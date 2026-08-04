@@ -1,0 +1,45 @@
+schema: spec-driven
+
+context: |
+  Project: access2web-blueprint, a study/blueprint for modernizing a legacy Microsoft Access + VBA ecosystem.
+  Current repository: documentation-only; no application source, binaries, or executable stack detected.
+  Initial domain hypothesis: Lanzadera is the source of users and permissions; most applications depend on an expediente created in Expedientes.
+  The hypothesis is unverified and must be treated as discovery input, not established architecture.
+  Artifact language: English by default; capability documentation produced under the Access/VBA capability-docs skill is Spanish (Spain).
+  Persistence: hybrid (OpenSpec files plus Engram).
+
+strict_tdd: false
+
+testing:
+  status: unavailable
+  runner: null
+  command: null
+  layers:
+    unit: unavailable
+    integration: unavailable
+    e2e: unavailable
+  coverage: unavailable
+  linter: unavailable
+  type_checker: unavailable
+  formatter: unavailable
+
+rules:
+  proposal:
+    - Include rollback considerations for risky changes.
+    - Do not design or implement migration work during initialization.
+  specs:
+    - Use Given/When/Then scenarios and RFC 2119 keywords where applicable.
+    - Separate verified facts from hypotheses and mark evidence confidence.
+  design:
+    - Document architectural decisions with rationale and explicit alternatives.
+  tasks:
+    - Group tasks by phase and keep each task completable in one session.
+  apply:
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: ""
+    build_command: ""
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.
