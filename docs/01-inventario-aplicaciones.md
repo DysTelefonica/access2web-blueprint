@@ -9,7 +9,7 @@ Registro vivo de las ocho aplicaciones dentro de alcance. Una fila por aplicaci�
 | Aplicación | Carpeta documental canónica | Checkout `00_main` | Frontend observable | Backend observable (raíz `C:\00repos\datos`) | Estado |
 |---|---|---|---|---|---|
 | Lanzadera | `C:\00repos\documentacion\OPENSPEC\00_LANZADERA` | `C:\00repos\codigo\00_LANZADERA\00_main` | `Lanzadera.accdb` | `Lanzadera_Datos.accdb` | Mapeo resuelto |
-| Gestion_Riesgos | `C:\00repos\documentacion\OPENSPEC\00_GESTION_RIESGOS` | `C:\00repos\codigo\00_GESTION_RIESGOS\00_main` | `Gestion_Riesgos.accdb` | `Gestion_Riesgos_Datos.accdb` | Mapeo resuelto |
+| Gestion_Riesgos | `C:\00repos\documentacion\OPENSPEC\00_GESTION_RIESGOS` | `C:\00repos\codigo\00_GESTION_RIESGOS\00_main` | `Gestion_Riesgos.accdb` | `Gestion_Riesgos_Datos.accdb` | Descubrimiento Batch 3 completado; queja del árbol caracterizada (D88); Dysflow read-only pendiente para segunda pasada |
 | No_Conformidades | `C:\00repos\documentacion\OPENSPEC\00_No_Conformidades` | `C:\00repos\codigo\00_NO_CONFORMIDADES\00_main` | `NoConformidades.accdb` | `NoConformidades_Datos.accdb` | Inventario Dysflow pendiente |
 | Condor | `C:\00repos\documentacion\OPENSPEC\00_CONDOR` | `C:\00repos\codigo\00_CONDOR\00_main` | `CONDOR.accdb` | `condor_datos.accdb` | Backend en `C:\00repos\datos`; `.dysflow/project.json` pendiente |
 | HPS_Solicitudes | `C:\00repos\documentacion\OPENSPEC\00_HPS_SOLICITUDES` | `C:\00repos\codigo\HPS_SOLICITUDES` (sin prefijo `00_`; fallback `main` por ausencia de checkout `00_HPS_SOLICITUDES/`/`staging/`) | Pendiente de inspección | `Solicitudes_HPS_datos.accdb` | Checkout localizado tras el Lote 1; `.dysflow/project.json` y CodeGraph pendientes |
@@ -55,3 +55,7 @@ Para evitar drift entre bases de discovery:
 ## Siguiente paso
 
 Cruzar esta tabla con la matriz de dependencias en `02-topologia-ecosistema/matriz-dependencias.md` para detectar aplicaciones aún sin consumidor identificado.
+
+## Actualización del Lote 3 · 2026-08-05
+
+Gestion_Riesgos tiene descubrimiento funcional, técnico y de migración documentado en `docs/03-aplicaciones/gestion-riesgos/`. La queja histórica del árbol de ediciones/riesgos queda caracterizada en [data-model.md § Rendimiento del árbol](docs/03-aplicaciones/gestion-riesgos/data-model.md#rendimiento-del-árbol-de-riesgos--causa-raíz-y-opciones-de-implementación) con propuesta técnica **D88** (HTMX + CTE recursivo + lazy expansion por nivel, descartando MSComctlLib.TreeView y el doble modelo `nuevo/antiguo`). El acoplamiento declarado con Lanzadera vía `getdbLanzadera()` se incorpora a D86/D87 como punto de migración. La inspección Dysflow sobre el binario y el backend autoritativo queda pendiente para una segunda pasada por límite de tiempo en esta sesión.
