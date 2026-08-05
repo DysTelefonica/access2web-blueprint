@@ -15,7 +15,7 @@ Registro vivo de las decisiones tomadas durante el descubrimiento y de las pregu
 
 ## Decisiones de producto y arquitectura (consolidadas)
 
-Las decisiones **D5–D35** están consolidadas en `09-arquitectura-objetivo-y-principios.md` con su detalle, `topic_key` de Engram y separación entre `APROBADO`, `PROVISIONAL`, `FUTURO` y `ABIERTO`. La tabla resumen se mantiene aquí como índice operativo. Las decisiones **D36–D63** son las adoptadas tras el commit baseline `d521d7b` durante la pasada de Lanzadera (Lote 1) y siguientes; cada una enlaza con su `topic_key`.
+Las decisiones **D5–D35** están consolidadas en `09-arquitectura-objetivo-y-principios.md` con su detalle, `topic_key` de Engram y separación entre `APROBADO`, `PROVISIONAL`, `FUTURO` y `ABIERTO`. La tabla resumen se mantiene aquí como índice operativo. Las decisiones **D36–D65** son las adoptadas tras el commit baseline `d521d7b` durante la pasada de Lanzadera (Lote 1) y siguientes; cada una enlaza con su `topic_key`. Las decisiones **D66–D82** cierran el estudio del prompt externo de arquitectura del 2026-08-05 (stack, polling, caché selectiva, despliegue, versionado y releases) tras revisión decisión por decisión con el usuario.
 
 | # | Tema | Estado | Origen detallado |
 |---|---|---|---|
@@ -80,6 +80,23 @@ Las decisiones **D5–D35** están consolidadas en `09-arquitectura-objetivo-y-p
 | D63 | Generar y enviar directamente sin vista previa cuando proceda | APROBADO | `architecture/direct-manual-report-send` |
 | D64 | Dashboard global de operaciones de notificación (diseño detallado ABIERTO) | APROBADO (dirección) | `architecture/notification-operations-dashboard` |
 | D65 | Evidencia legacy: cola por tabla + dispatcher externo cada 5 min | APROBADO | `discovery/legacy-email-queue-flow` |
+| D66 | Stack backend: Python 3.12+ con FastAPI 0.119+, Pydantic v2, SQLAlchemy 2.0.x (mixto ORM/Core), Alembic 1.13+, driver asyncpg 0.30+ | APROBADO | `external-prompt-review/stack-versions-verified` |
+| D67 | Stack frontend: HTMX 2.0.4 + Jinja2 3.1+ (async) + Alpine.js 3.15+ (SSR puro, sin SPA, sin build pipeline) | APROBADO | `external-prompt-review/stack-versions-verified` |
+| D68 | Estructura del repositorio: monorepo `access2web-blueprint/` con monolito modular, límites por paquete y ports por módulo | APROBADO | `external-prompt-review/section-2-resolution` |
+| D69 | Actualización de contadores pendientes vía polling HTMX (`hx-trigger="every 30s"`) + botón de refresh manual. Sin SSE, sin WebSockets | APROBADO | `external-prompt-review/section-1-resolution` |
+| D70 | Caché de aplicación selectiva y justificada por medición. Candidatos: catálogos, permisos efectivos, diccionarios. NO se cachean contadores ni métricas volátiles | APROBADO | `external-prompt-review/section-3-resolution` |
+| D71 | Redis queda como opción detrás del puerto de caché, no dependencia inicial. Pub/Sub se introduce solo cuando se justifique por escala horizontal | APROBADO | `external-prompt-review/section-3-resolution` |
+| D72 | Rendimiento HTTP: ETag + 304 Not Modified para fragmentos HTMX, compresión gzip/brotli por defecto, Cache-Control con fingerprint en assets estáticos | APROBADO | `external-prompt-review/section-3-resolution` |
+| D73 | No usar Insforge como BaaS. El backend hexagonal es nuestro (FastAPI + adaptadores propios). Insforge puede ser herramienta auxiliar para prototipos, nunca dependencia del backend | APROBADO | `external-prompt-review/section-4-resolution` |
+| D74 | No introducir Kubernetes ni OpenShift prematuramente. Para 200 usuarios concurrentes, una instancia de FastAPI + PostgreSQL es suficiente | APROBADO | `external-prompt-review/section-4-resolution` |
+| D75 | Topología de despliegue ABIERTA (consistente con P7). Decisión de cloud y orquestador queda pendiente de métricas + IT corporativa | APROBADO (apertura) | `external-prompt-review/section-4-resolution` |
+| D76 | PostgreSQL gestionado preferido sobre auto-instalado cuando se decida el cloud. Proveedor concreto se liga a D75 | APROBADO | `external-prompt-review/section-4-resolution` |
+| D77 | Contenedores Docker desde el día uno + Docker Compose para dev local con PostgreSQL + MinIO | APROBADO | `external-prompt-review/section-4-resolution` |
+| D78 | Versionado semántico por módulo Y plataforma base (`modulo/vX.Y.Z-rc.n` / `modulo/vX.Y.Z` y `platform/vX.Y.Z`) | APROBADO | `external-prompt-review/section-5-resolution` |
+| D79 | Trunk-based development + Conventional Commits como entrada al versionado y changelog | APROBADO | `external-prompt-review/section-5-resolution` |
+| D80 | Catálogo de versiones compatibles entre módulos y plataforma (evita combinaciones inválidas en despliegues) | APROBADO | `external-prompt-review/section-5-resolution` |
+| D81 | Despliegue coexistente estable+RC en UAT DIFERIDO hasta que cadencia y equipo lo justifiquen. UAT y Producción como entornos separados | APROBADO (diferimiento) | `external-prompt-review/section-5-resolution` |
+| D82 | Migraciones de BD backward-compatibles con estrategia Expand and Contract: nunca destructivas en una sola release | APROBADO | `external-prompt-review/section-5-resolution` |
 
 Reglas operativas de este subregistro:
 
@@ -115,9 +132,9 @@ Estas preguntas reflejan los puntos que `09-arquitectura-objetivo-y-principios.m
 
 | # | Pregunta | Bloquea | Notas |
 |---|---|---|---|
-| P6 | ¿Qué tecnología concreta de caché se usará detrás del puerto de caché? | Selección de stack | Redis es una opción, no una selección. |
-| P7 | ¿Cuál es la topología de despliegue objetivo (on-premise, nube corporativa, OCP u otro)? | Selección de stack / despliegue | El adaptador de scheduler debe sobrevivir al cambio. |
-| P8 | ¿Cuál es el stack exacto de implementación (framework, librerías, runtime)? | Diseño de módulos | No se prefija en esta fase. |
+| P6 | ¿Qué tecnología concreta de caché se usará detrás del puerto de caché? | Selección de stack | **Caché selectiva y justificada por medición (D70)**. Redis es una opción detrás del puerto (D71), no una selección. La caché NO se introduce proactivamente. |
+| P7 | ¿Cuál es la topología de despliegue objetivo (on-premise, nube corporativa, OCP u otro)? | Selección de stack / despliegue | **Kubernetes/OpenShift DIFERIDO (D74)**. Topología ABIERTA (D75). El adaptador de scheduler y los demás puertos sobreviven al cambio de topología sin tocar el dominio. PostgreSQL gestionado preferido (D76). |
+| P8 | ¿Cuál es el stack exacto de implementación (framework, librerías, runtime)? | Diseño de módulos | **Resuelta por D66/D67/D68**: Python 3.12+ / FastAPI 0.119+ / Pydantic v2 / SQLAlchemy 2.0.x (mixto ORM/Core) / Alembic 1.13+ / asyncpg 0.30+ / HTMX 2.0.4 / Jinja2 3.1+ (async) / Alpine.js 3.15+. Versiones verificadas en context7 (todas activamente mantenidas). |
 | P9 | ¿Cómo se descompone la plataforma (monolito modular vs microservicios vs mixto)? | Diseño y boundaries | Depende de capacidades y equipos. |
 | P10 | ¿Cuáles son los periodos definitivos de retención por cumplimiento normativo o política de IT corporativa? | Política de auditoría | Sustituye al baseline provisional 90 días hot + 1 año total. Aplica también a artefactos de informe y evidencia de entrega. |
 | P11 | ¿Qué integraciones corporativas se confirman (correo, identidad, monitorización)? | Adaptadores driven | SiteMinder/OCP/JWT, proveedor de email corporativo, etc. |
@@ -126,7 +143,7 @@ Estas preguntas reflejan los puntos que `09-arquitectura-objetivo-y-principios.m
 | P14 | ¿Cuál es el catálogo definitivo de health-checks (métricas, umbrales, severidades)? | Operación | Se construye tras Lotes 1–9. |
 | P15 | ¿Cuál es la estrategia de migración de datos desde `.accdb` a PostgreSQL? | Migración de datos | No se aborda en esta fase de discovery. |
 | P16 | ¿Cuál es el diseño exacto del ciclo UAT (workflow, visibilidad, entorno, aprobaciones, promoción)? | Release governance | Diseño posterior; la gobernanza global-admin-only ya está APROBADA (D48). |
-| P17 | ¿Cómo se representa la coexistencia UAT y producción en el menú global (visual, routing, autorización)? | Navegación | Diferida por D28 del Lote 1; no se asume el patrón legacy de IDs duplicados. |
+| P17 | ¿Cómo se representa la coexistencia UAT y producción en el menú global (visual, routing, autorización)? | Navegación | Diferida por D28 del Lote 1; **además el despliegue coexistente estable+RC está DIFERIDO por D81** hasta que cadencia y equipo lo justifiquen. No se asume el patrón legacy de IDs duplicados. |
 | P18 | ¿Cuál es la UX exacta del dashboard de operaciones de notificación (filtros, contenido sensible, umbrales, acciones operativas)? | Operación de notificaciones | Diseño posterior; la dirección está APROBADA (D64). |
 | P19 | ¿Cuál es el catálogo final de variantes de UI por módulo? | Diseño de módulos | Decidir durante cada discovery; Expedientes ya anticipa vistas especializadas. |
 | P20 | ¿Cuál es el contrato final del proveedor de email corporativo (host, remitente, entregabilidad)? | Adaptador de notificación | No se prefija; la cola por tabla es el adapter v1. |
@@ -146,4 +163,4 @@ Estas preguntas reflejan los puntos que `09-arquitectura-objetivo-y-principios.m
 
 ## Siguiente paso
 
-Resolver P1–P5 con el usuario antes de iniciar el Lote 2; mantener P6–P20 vivos para fases SDD posteriores.
+Resolver P1–P5 con el usuario antes de iniciar el Lote 2; mantener P6–P20 vivos para fases SDD posteriores. **P8 cerrada** tras la revisión del prompt externo (D66–D82). P6, P7 y P17 actualizadas con las salvaguardas D70/D71, D74/D75/D76 y D81 respectivamente.
