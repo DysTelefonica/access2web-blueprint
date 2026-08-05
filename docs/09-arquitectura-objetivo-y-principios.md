@@ -16,7 +16,7 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 
 1. Plataforma única, modular y permission-aware.
 2. Navegación app-first anidada; Lanzadera queda restringida a administración.
-3. Hexagonal real en todos los módulos; web y CLI como adaptadores driving; PostgreSQL, cola de correo por tabla, object storage, scheduler, autenticación, caché y almacenamiento de archivo como adaptadores driven.
+3. Hexagonal real en todos los módulos; web y CLI como adaptadores driving; PostgreSQL, cola de correo por tabla, object storage, scheduler, autenticación, caché selectiva (justificada por medición, no proactiva) y almacenamiento de archivo como adaptadores driven.
 4. Persistencia objetivo: PostgreSQL compartido con aislamiento por esquema.
 5. Notificaciones: servicio unificado; v1 solo email sobre la cola por tabla como adaptador transitorio; la cola real la consume un dispatcher externo cada cinco minutos aprox. en el legacy.
 6. Adjuntos: object storage S3-compatible detrás de un puerto; sin versionado de contenido; papelera con retención 30 días; restauración por el borrado o por administrador global.
@@ -48,6 +48,15 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | La cola de correo por tabla del legacy se mantiene como **adaptador transitorio** del servicio unificado de notificaciones; se sustituirá por la integración corporativa cuando IT defina su contrato. La cola real la consume un dispatcher externo cada cinco minutos aprox. en el legacy. | APROBADO | `architecture/notification-delivery-adapter-v1` + `discovery/legacy-email-queue-flow` |
 | El CLI nunca duplica lógica de negocio: invoca los mismos casos de uso y pasa por la misma autorización server-side que la web. | APROBADO | `architecture/ai-cli-first` |
 
+## Stack técnico
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| **Backend**: Python 3.12+ con FastAPI 0.119+, Pydantic v2, SQLAlchemy 2.0.x en modo mixto (ORM predominante + Core para queries complejas, CTEs recursivos y jerarquías), Alembic 1.13+ para migraciones DDL, driver asyncpg 0.30+ (D66). | APROBADO | `external-prompt-review/stack-versions-verified` (D66) |
+| **Frontend**: HTMX 2.0.4 + Jinja2 3.1+ en modo async + Alpine.js 3.15+ (D67). SSR puro, sin SPA, sin build pipeline. CSS plano. La API de SSE de HTMX cambió en 2.0 (extensión fuera del core); no la usamos. | APROBADO | `external-prompt-review/stack-versions-verified` (D67) |
+| **Estructura del repositorio**: monorepo `access2web-blueprint/` con monolito modular (D68). Límites de módulos por paquete y ports por módulo. Tests con pytest + pytest-asyncio + httpx; Playwright para flujos críticos de UI. | APROBADO | `external-prompt-review/section-2-resolution` (D68) |
+| Todas las librerías verificadas como **activamente mantenidas** en context7 (2026-08). Sin librerías zombies. | APROBADO | `external-prompt-review/stack-versions-verified` |
+
 ## Persistencia y rendimiento
 
 | Decisión | Estado | Origen |
@@ -55,7 +64,22 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | Persistencia objetivo preferida: una base de datos PostgreSQL compartida; cada módulo dueño de su esquema; servicios comunes en esquema(s) dedicado(s). | APROBADO (preferencia/dirección) | `architecture/target-database-topology` |
 | Una base de datos física compartida no implica propiedad compartida: los límites de esquema y las reglas de acceso deben preservar el aislamiento hexagonal y modular. | APROBADO | `architecture/target-database-topology` |
 | Rendimiento y caché deliberada como preocupación de producto y arquitectura de primer orden; se elimina la percepción de lentitud del legacy. | APROBADO | `architecture/performance-and-cache` |
-| Tecnología concreta de caché, topología de despliegue, stack exacto y descomposición en servicios. | ABIERTO | — |
+| Caché de aplicación **selectiva y justificada por medición** (D70). Candidatos naturales: catálogos estables (tipos, países, provincias, plantillas de informe), permisos efectivos precalculados y diccionarios. **NO** se cachean contadores de pendientes ni métricas de dashboard que mutan con cada acción de usuario. La lentitud legacy es de plataforma, no de datos: PostgreSQL bien indexado resuelve la mayoría sin caché. | APROBADO | `external-prompt-review/section-3-resolution` (D70) |
+| Redis queda como **opción detrás del puerto de caché**, no como dependencia inicial (D71). Pub/Sub se introduce solo si la escala horizontal lo justifica. | APROBADO | `external-prompt-review/section-3-resolution` (D71) |
+| Actualización de contadores pendientes vía polling HTMX (`hx-trigger="every 30s"`, intervalo configurable) con botón de refresh manual. Sin SSE, sin WebSockets, sin Redis pub/sub (D69). | APROBADO | `external-prompt-review/section-1-resolution` (D69) |
+| Rendimiento HTTP: ETag + `304 Not Modified` para fragmentos HTML servidos por HTMX; compresión gzip/brotli por defecto (Starlette); `Cache-Control` correcto en assets estáticos con fingerprint en el nombre (D72). | APROBADO | `external-prompt-review/section-3-resolution` (D72) |
+
+## Infraestructura y despliegue
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| **Hexagonal primero**: los detalles de infraestructura (cómo se ejecuta, dónde corre, qué cloud) son decisiones de adaptador, no de producto. El dominio y los casos de uso no saben dónde corren. | APROBADO (heredado) | `architecture/global-hexagonal-principle` |
+| **Contenedores Docker desde el día uno**: un `Dockerfile` por servicio (backend, scheduler, worker de cola, etc.) y `docker-compose.yml` para desarrollo local con PostgreSQL + MinIO (object storage local) + servicios auxiliares (D77). | APROBADO | `external-prompt-review/section-4-resolution` (D77) |
+| **El backend hexagonal es nuestro** (FastAPI + adaptadores propios). **No usar Insforge como BaaS** ni como sustituto del backend (D73). Insforge puede ser herramienta auxiliar para prototipos, nunca dependencia. | APROBADO | `external-prompt-review/section-4-resolution` (D73) |
+| **No introducir Kubernetes ni OpenShift prematuramente** (D74). Para 200 usuarios concurrentes, una instancia de FastAPI + PostgreSQL es suficiente. La introducción de orquestador se justifica con métricas reales de carga y con requerimientos de IT corporativa. | APROBADO | `external-prompt-review/section-4-resolution` (D74) |
+| **Topología de despliegue ABIERTA** (D75, consistente con P7). Decisión de cloud y orquestador queda pendiente de métricas reales + IT corporativa. Los puertos hexagonales (scheduler, object storage, base de datos) sobreviven al cambio de topología sin tocar el dominio. | APROBADO (apertura) | `external-prompt-review/section-4-resolution` (D75) |
+| **PostgreSQL gestionado preferido** sobre auto-instalado cuando se decida el cloud (D76). Proveedor concreto (Cloud SQL, RDS, on-premise) se liga a D75. | APROBADO | `external-prompt-review/section-4-resolution` (D76) |
+| **Desarrollo**: local con Docker Compose (preferido) o VPS corporativo con Coolify como panel de despliegue opcional. | APROBADO | `external-prompt-review/section-4-resolution` |
 
 ## Notificaciones
 
@@ -135,7 +159,18 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | Excepciones auditadas: un administrador global puede liberar con casos UAT fallidos o sin UAT ejecutado, registrando motivo, atribución y marca temporal con la evidencia del release. | APROBADO | `architecture/uat-release-exceptions` |
 | Excepciones visibles para usuarios: cuando un release publica con casos UAT fallidos o sin UAT, la excepción y su justificación aparecen en el historial de cambios. | APROBADO | `product/release-exception-transparency` |
 | Diseño detallado del ciclo UAT (workflow, visibilidad, entorno, aprobaciones, promoción). | ABIERTO | `product/module-uat-lifecycle` |
-| Navegación dual UAT + producción simultánea (representación, routing, autorización, marca visual). | ABIERTO | `open/dual-environment-navigation` |
+| Navegación dual UAT + producción simultánea (representación, routing, autorización, marca visual). | ABIERTO (diferida por D81) | `open/dual-environment-navigation` + `external-prompt-review/section-5-resolution` |
+
+## Versionado y estrategia de releases
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| **Versionado semántico por módulo Y plataforma base** (D78): formato `modulo/vX.Y.Z-rc.n` para Candidate Releases y `modulo/vX.Y.Z` para estables; la plataforma base usa el mismo formato (`platform/vX.Y.Z`). Cada módulo y la plataforma publican su propio ritmo. | APROBADO | `external-prompt-review/section-5-resolution` (D78) |
+| **Branching trunk-based development** (D79): `main` siempre desplegable; feature branches de vida corta; tags en `main`, no en branches. | APROBADO | `external-prompt-review/section-5-resolution` (D79) |
+| **Conventional Commits** como entrada al versionado y al changelog automático (D79). | APROBADO | `external-prompt-review/section-5-resolution` (D79) |
+| **Catálogo de versiones compatibles** entre módulos y plataforma (D80): la plataforma expone qué versión de cada módulo es compatible con qué versión de plataforma, evitando combinaciones inválidas en despliegues. | APROBADO | `external-prompt-review/section-5-resolution` (D80) |
+| **UAT y Producción como entornos separados** en esta fase. El despliegue coexistente estable+RC simultáneo en UAT queda **DIFERIDO** (D81) hasta que cadencia de releases y tamaño del equipo lo justifiquen. La coexistencia UAT + producción simultánea sigue ABIERTA en P17. | APROBADO (diferimiento) | `external-prompt-review/section-5-resolution` (D81) |
+| **Migraciones de BD backward-compatibles con estrategia Expand and Contract** (D82): Expand añade estructura nueva sin retirar la vieja; Migrate mueve datos en background o en fase posterior; Contract retira la vieja solo cuando la nueva está en uso. **Nunca** una migración destructiva en una sola release. Alembic soporta el flujo con migraciones forward y backward explícitas. | APROBADO | `external-prompt-review/section-5-resolution` (D82) |
 
 ## Registro y activación de aplicaciones
 
@@ -268,20 +303,37 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | D63 | Generar y enviar directamente sin vista previa cuando proceda | APROBADO | `architecture/direct-manual-report-send` |
 | D64 | Dashboard global de operaciones de notificación | APROBADO (dirección) | `architecture/notification-operations-dashboard` |
 | D65 | Evidencia legacy: cola por tabla + dispatcher externo cada 5 min | APROBADO | `discovery/legacy-email-queue-flow` |
+| D66 | Stack backend: Python 3.12+ / FastAPI 0.119+ / Pydantic v2 / SQLAlchemy 2.0.x (mixto ORM/Core) / Alembic 1.13+ / asyncpg 0.30+ | APROBADO | `external-prompt-review/stack-versions-verified` |
+| D67 | Stack frontend: HTMX 2.0.4 + Jinja2 3.1+ (async) + Alpine.js 3.15+ (SSR puro, sin SPA) | APROBADO | `external-prompt-review/stack-versions-verified` |
+| D68 | Estructura: monorepo + monolito modular, límites por paquete y ports por módulo | APROBADO | `external-prompt-review/section-2-resolution` |
+| D69 | Polling HTMX (`hx-trigger="every 30s"`) + botón de refresh manual para contadores pendientes | APROBADO | `external-prompt-review/section-1-resolution` |
+| D70 | Caché selectiva justificada por medición. NO contadores ni métricas volátiles | APROBADO | `external-prompt-review/section-3-resolution` |
+| D71 | Redis como opción detrás del puerto de caché, no dependencia inicial. Pub/Sub solo si escala horizontal | APROBADO | `external-prompt-review/section-3-resolution` |
+| D72 | ETag + 304 + gzip/brotli + Cache-Control con fingerprint para assets estáticos | APROBADO | `external-prompt-review/section-3-resolution` |
+| D73 | No usar Insforge como BaaS. El backend hexagonal es nuestro | APROBADO | `external-prompt-review/section-4-resolution` |
+| D74 | No introducir Kubernetes ni OpenShift prematuramente | APROBADO | `external-prompt-review/section-4-resolution` |
+| D75 | Topología de despliegue ABIERTA (consistente con P7) | APROBADO (apertura) | `external-prompt-review/section-4-resolution` |
+| D76 | PostgreSQL gestionado preferido sobre auto-instalado cuando se decida cloud | APROBADO | `external-prompt-review/section-4-resolution` |
+| D77 | Contenedores Docker desde día uno + Docker Compose para dev local | APROBADO | `external-prompt-review/section-4-resolution` |
+| D78 | Semver por módulo Y plataforma base (`modulo/vX.Y.Z-rc.n` / `modulo/vX.Y.Z`) | APROBADO | `external-prompt-review/section-5-resolution` |
+| D79 | Trunk-based development + Conventional Commits | APROBADO | `external-prompt-review/section-5-resolution` |
+| D80 | Catálogo de versiones compatibles entre módulos y plataforma | APROBADO | `external-prompt-review/section-5-resolution` |
+| D81 | Despliegue coexistente estable+RC en UAT DIFERIDO hasta cadencia/equipo lo justifiquen | APROBADO (diferimiento) | `external-prompt-review/section-5-resolution` |
+| D82 | Migraciones backward-compatibles con estrategia Expand and Contract | APROBADO | `external-prompt-review/section-5-resolution` |
 
 ## Decisiones aún no tomadas (ABIERTO)
 
-No se han decidido y **no se inventan** en este documento:
+No se han decidido y **no se inventan** en este documento. Las que tienen salvaguarda ya aprobada se marcan con la decisión de origen:
 
-- Tecnología concreta de caché (el "qué" del adaptador de caché).
-- Topología de despliegue (on-premise, nube corporativa, OCP u otro).
-- Stack exacto de implementación (framework, librerías, runtime).
-- Descomposición en servicios / monolito modular / microservicios.
+- Tecnología concreta de caché (el "qué" del adaptador de caché) — **salvaguardada por D70/D71**: caché selectiva justificada por medición; Redis queda como opción detrás del puerto, no como dependencia inicial.
+- Topología de despliegue (on-premise, nube corporativa, OCP u otro) — **salvaguardada por D74/D75/D76**: Kubernetes/OpenShift NO se introduce prematuramente; topología ABIERTA; PostgreSQL gestionado preferido cuando se decida.
+- Stack exacto de implementación — **CERRADO por D66/D67/D68** (Python 3.12+ / FastAPI 0.119+ / Pydantic v2 / SQLAlchemy 2.0.x / Alembic 1.13+ / asyncpg 0.30+ / HTMX 2.0.4 / Jinja2 3.1+ / Alpine.js 3.15+). Se cierra la pregunta P8 del blueprint.
+- Descomposición en monolito modular vs microservicios — **parcialmente cerrada por D68**: monolito modular confirmado; la posibilidad de extraer módulos a microservicios queda abierta si la escala lo exige.
 - Periodos definitivos de retención por cumplimiento normativo o políticas de IT.
 - Integraciones corporativas concretas (correo, identidad, monitorización, etc.).
 - Forma exacta del dashboard de operaciones de notificación (UX, filtros, acceso a contenido sensible, umbrales, acciones operativas).
 - Diseño detallado del ciclo UAT (workflow, visibilidad, entorno, aprobaciones, promoción).
-- Navegación dual UAT + producción simultánea cuando aplique.
+- Navegación dual UAT + producción simultánea cuando aplique — **salvaguardada por D81**: coexistente estable+RC DIFERIDO.
 - Estrategia de migración de datos desde los `.accdb` a PostgreSQL.
 - Catálogo definitivo de funciones de admin de aplicación por módulo (más allá del ejemplo de Gestion_Riesgos).
 - Catálogo definitivo de health-checks (métricas, umbrales, severidades).
@@ -289,7 +341,7 @@ No se han decidido y **no se inventan** en este documento:
 ## Reglas del documento
 
 - Este fichero no sustituye a `08-decisiones-y-preguntas-abiertas.md`: lo complementa con el detalle aprobado por el usuario.
-- Toda mención a SiteMinder, OCP, Redis, S3, frameworks o colas corporativas se trata como **opción futura** o **abierto**, nunca como decisión final.
+- Toda mención a SiteMinder, OCP, Redis, S3, frameworks o colas corporativas se trata como **opción futura** o **abierto**, nunca como decisión final. **Excepción**: cuando una opción se registra como decisión APROBADO con salvaguarda (por ejemplo, Redis como opción detrás de puerto en D71), se admite la mención explícita en la sección correspondiente y en el mapa rápido, pero se mantiene la salvedad de que **no es dependencia inicial**.
 - El legacy no es paridad de UX ni de implementación: es suelo mínimo de capacidad de negocio.
 - Los IDs de Engram (`topic_key`) son el anclaje autoritativo; cualquier cambio futuro debe actualizar simultáneamente este documento y la observación correspondiente.
 - APAP y APAP_WEB no aparecen ni se mencionan en este fichero.
@@ -304,4 +356,10 @@ No se han decidido y **no se inventan** en este documento:
 
 ## Siguiente paso
 
-Cruzar este documento con `08-decisiones-y-preguntas-abiertas.md` para incorporar las nuevas decisiones y preguntas derivadas. Las decisiones de stack, despliegue y plazos quedan para una fase SDD posterior; el siguiente lote de discovery (Lote 2 después de Lanzadera) no se bloquea con ellas.
+Documento cruzado con `08-decisiones-y-preguntas-abiertas.md` tras la revisión del prompt externo de arquitectura (D66–D82). El blueprint queda consistente: stack cerrado por D66–D68, topología ABIERTA con salvaguarda D74–D76, versionado y releases consolidados por D78–D82, polling HTMX para contadores por D69, caché selectiva por D70–D72, infraestructura y despliegue por D73–D77.
+
+Próximos pasos operativos:
+
+1. Resolver P1–P5 con el usuario antes de iniciar el Lote 2 (HPS_Solicitudes repo, backends Condor/Brass, autorización Dysflow, orden de prioridad Lote 3–5, baseline operativo).
+2. Continuar discovery por aplicación (Lotes 3 a 9) con la matriz legacy → web aprobada.
+3. Planificar la fase SDD (proposal → spec → design → tasks → apply → verify → archive) cuando el discovery esté lo bastante maduro y el stack esté validado en un primer esqueleto ejecutable.
