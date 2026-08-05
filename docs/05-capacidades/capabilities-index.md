@@ -14,7 +14,7 @@
 
 ## Estado del contenido
 
-**Placeholder.** Aún no se ha poblado ninguna ficha; la estructura se cierra con los Lotes 1 a 8 y se reconcilia en el Lote 9.
+**Lote 1 incorporado (2026-08-04):** las capacidades de Lanzadera están en [`03-aplicaciones/lanzadera/capabilities.md`](../03-aplicaciones/lanzadera/capabilities.md), con disposición semilla y ledger de confianza. Las fichas de los demás sistemas siguen pendientes.
 
 ## Reglas del índice
 
@@ -26,6 +26,10 @@
 
 | Capacidad | Aplicación | Tier | Estado | Fuente | Dependencia principal | Excepciones |
 |---|---|---|---|---|---|---|
+| Identidad, sesión y credenciales | Lanzadera | critical | Descubierta | reverse-engineered | `tbUsuarios` / `TbUsuariosAplicaciones` | SSO y contraseña requieren aclaración |
+| Catálogo y lanzamiento de aplicaciones | Lanzadera | critical | Descubierta | reverse-engineered | `TbAplicaciones` | `Shell`, rutas y comandos legacy |
+| Asignación de aplicaciones y roles | Lanzadera | critical | Descubierta | reverse-engineered | `TbUsuariosAplicacionesPermisos` | excepción de Expedientes accesible |
+| Configuración de backend y auditoría | Lanzadera | standard | Descubierta | hybrid | `TbConfiguracionBackends` | rutas duplicadas/hardcodeadas |
 
 ## Checklist
 

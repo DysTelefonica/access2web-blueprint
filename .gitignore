@@ -2,3 +2,6 @@
 .atl/
 .codegraph-vba/
 .dysflow/runtime/
+
+# Local-only raw evidence (sensitive — never version)
+inputs/automatizaciones-legacy/raw/

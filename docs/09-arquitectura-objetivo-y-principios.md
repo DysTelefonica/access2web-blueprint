@@ -18,11 +18,16 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 2. Navegación app-first anidada; Lanzadera queda restringida a administración.
 3. Hexagonal real en todos los módulos; web y CLI como adaptadores driving; PostgreSQL, cola de correo por tabla, object storage, scheduler, autenticación, caché y almacenamiento de archivo como adaptadores driven.
 4. Persistencia objetivo: PostgreSQL compartido con aislamiento por esquema.
-5. Notificaciones: servicio unificado; v1 solo email sobre la cola por tabla como adaptador transitorio.
+5. Notificaciones: servicio unificado; v1 solo email sobre la cola por tabla como adaptador transitorio; la cola real la consume un dispatcher externo cada cinco minutos aprox. en el legacy.
 6. Adjuntos: object storage S3-compatible detrás de un puerto; sin versionado de contenido; papelera con retención 30 días; restauración por el borrado o por administrador global.
 7. CLI exclusivo para administrador global; reutiliza los mismos casos de uso y autorización que la web; sin secretos en argumentos ni en logs.
 8. Logs canónicos industriales; retención por niveles configurable (90 días hot + 1 año total provisional).
-9. Diagnóstico bajo demanda y programado; remediación siempre con aprobación explícita del administrador global.
+9. Scheduler unificado para informes y automatizaciones; governance solo administrador global; configuración por separado del contenido de cada informe (que vive en el módulo).
+10. Diagnóstico bajo demanda y programado; remediación siempre con aprobación explícita del administrador global.
+11. Ciclo de credencial: hashes heredados preservados con rehash transparente al primer login; lockout configurable (umbral cinco por defecto, una hora por defecto, desbloqueo por admin global); activación y cambios de rol solo por admin global; notificación manual de cambios de permiso.
+12. Suplantación solo por administrador global, con doble identidad visible y auditoría completa.
+13. UAT gobernado por admin global; asignación explícita por ciclo; excepciones auditadas y visibles para usuarios.
+14. Registro de nuevos módulos híbrido: el despliegue crea un registro "pendiente" con metadatos técnicos; el admin global activa y configura la metadatos funcionales.
 
 ## Forma de la plataforma
 
@@ -39,8 +44,8 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | Hexagonal es obligatorio en toda la plataforma y en cada módulo, no solo en autenticación. Las capacidades dependen de puertos, no de mecanismos de infraestructura. | APROBADO | `architecture/global-hexagonal-principle` |
 | Adaptadores **driving**: interfaz web y CLI administrativo. | APROBADO | consolidación `ai-cli-first` + navegación |
 | Adaptadores **driven** reemplazables: PostgreSQL, cola de correo por tabla, object storage, scheduler, proveedores de autenticación, caché y almacenamiento de archivo. | APROBADO | consolidación `global-hexagonal-principle`, `attachment-storage`, `authentication-ports-adapters`, `notification-delivery-adapter-v1`, `audit-retention`, `scheduled-health-checks`, `performance-and-cache` |
-| Autenticación: adaptador inicial email/password migrado desde `Lanzadera_Datos.accdb` (contraseñas como hashes); un adaptador futuro e intercambiable podrá integrarse con SiteMinder y JWT unificado si la plataforma se aloja en OCP corporativo. SiteMinder y OCP son **opciones futuras**, no dependencias iniciales. | APROBADO (adaptador inicial) / FUTURO (SiteMinder/OCP) | `architecture/authentication-ports-adapters` |
-| La cola de correo por tabla del legacy se mantiene como **adaptador transitorio** del servicio unificado de notificaciones; se sustituirá por la integración corporativa cuando IT defina su contrato. | APROBADO | `architecture/notification-delivery-adapter-v1` |
+| Autenticación: adaptador inicial email/password migrado desde `Lanzadera_Datos.accdb`. Los hashes heredados se preservan y se verifican con un adapter de verificación legacy versionada. Un adaptador futuro e intercambiable podrá integrarse con SiteMinder y JWT unificado si la plataforma se aloja en OCP corporativo. SiteMinder y OCP son **opciones futuras**, no dependencias iniciales. | APROBADO (adaptador inicial) / FUTURO (SiteMinder/OCP) | `architecture/authentication-ports-adapters` + `product/credential-migration` |
+| La cola de correo por tabla del legacy se mantiene como **adaptador transitorio** del servicio unificado de notificaciones; se sustituirá por la integración corporativa cuando IT defina su contrato. La cola real la consume un dispatcher externo cada cinco minutos aprox. en el legacy. | APROBADO | `architecture/notification-delivery-adapter-v1` + `discovery/legacy-email-queue-flow` |
 | El CLI nunca duplica lógica de negocio: invoca los mismos casos de uso y pasa por la misma autorización server-side que la web. | APROBADO | `architecture/ai-cli-first` |
 
 ## Persistencia y rendimiento
@@ -59,6 +64,23 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | Un único servicio unificado de notificaciones compartido por todos los módulos. Los módulos aportan el disparador de negocio, destinatarios y mensaje semántico; canales, reintentos, plantillas, observabilidad e integración con proveedores quedan detrás del puerto. | APROBADO | `architecture/unified-notification-service` |
 | Primera versión de release: **solo email** (paridad mínima con el canal de comunicación legacy exigido). Notificaciones in-app y otros canales quedan fuera del alcance inicial. | APROBADO | `product/notification-v1-scope` |
 | Proveedor de email corporativo concreto. | ABIERTO (FUTURO considerado) | — |
+| Dashboard global de operaciones de notificación (salud de cola, estadísticas de entrega/fallo, reintentos controlados) para el administrador global. UX exacta, filtros, acceso a contenido sensible, retención, umbrales y acciones operativas. | APROBADO (dirección) / ABIERTO (diseño) | `architecture/notification-operations-dashboard` |
+| Retención de artefactos de informe y evidencia de entrega. | PROVISIONAL (mismo baseline que auditoría) / ABIERTO (definitivo) | `product/audit-retention-periods` |
+
+## Scheduler y jobs
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Scheduler unificado para jobs programados y procesos batch; los flags de tareas de Lanzadera y los mecanismos por aplicación se retiran. El motor concreto (cron-like inicial; reemplazable) vive detrás de un port. | APROBADO | `architecture/shared-scheduler-operations` |
+| Solo el administrador global configura y supervisa los jobs: periodicidad, frecuencia, severidad mínima de alerta. | APROBADO | `architecture/health-check-configuration-authorization` |
+| Configuración por separado del contenido: los horarios y destinatarios de informes los gestiona el administrador global desde el panel de operaciones; la lógica de negocio del informe vive y se prueba dentro del módulo. | APROBADO | `architecture/report-job-configuration` |
+| Ejecución manual bajo demanda: el administrador global puede ejecutar cualquier informe configurado además de su ejecución programada. | APROBADO | `architecture/manual-report-execution` |
+| Vista previa sin envío: el administrador global puede generar el artefacto exacto sin seleccionar destinatarios, sin encolar email ni enviar. | APROBADO | `architecture/report-preview` |
+| Generar y enviar directamente: cuando la urgencia lo justifique, se salta la vista previa mostrando destinatarios y parámetros antes de la confirmación explícita. | APROBADO | `architecture/direct-manual-report-send` |
+| Auditoría completa de cada ejecución: correlación, parámetros, destinatarios, resultado, reintentos, identificadores y referencia al artefacto. | APROBADO | `architecture/observability-audit-logs` |
+| Health inspections disponibles **bajo demanda** (CLI) y **programadas** (cron-like). Los jobs programados solo miden calidad y salud; no remedian automáticamente. | APROBADO | `architecture/scheduled-health-checks` |
+| Toda remediación requiere aprobación explícita del administrador global, incluso para acciones clasificadas como seguras. | APROBADO | `architecture/ai-remediation-approval` |
+| Destinatarios de anomalías configurables por aplicación. La configuración global de health checks la hace solo el administrador global. | APROBADO | `architecture/application-operations-settings` + `architecture/health-check-configuration-authorization` |
 
 ## Adjuntos
 
@@ -69,6 +91,58 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | Los adjuntos borrados pasan a una papelera con retención limitada antes del borrado permanente. | APROBADO | `product/attachment-deletion` |
 | Ventana de recuperación: **30 días**; pasado ese plazo, un proceso programado purga definitivamente el contenido y el estado recuperable. | APROBADO | `product/attachment-retention` |
 | Durante la papelera solo pueden restaurar: la persona que borró el adjunto o un **administrador global** de plataforma. Otros usuarios con permiso de edición del registro padre **no** pueden restaurar. | APROBADO | `product/attachment-restore-authorization` |
+
+## Ciclo de credencial y autenticación
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Preservar hashes heredados de Lanzadera en la migración; verificación legacy versionada; los campos con credenciales en claro no migran como secretos. | APROBADO | `product/credential-migration` |
+| Rehash transparente al primer login exitoso: la política moderna sustituye al hash heredado de forma atómica, idempotente y auditable. | APROBADO | `architecture/opportunistic-password-rehash` |
+| Umbral de lockout configurable por el administrador global; valor por defecto cinco intentos. | APROBADO | `architecture/login-lockout-policy` |
+| Duración de lockout de una hora por defecto; el administrador global puede desbloquear antes. | APROBADO | `architecture/login-lockout-recovery` |
+| Notificación de lockout a los administradores globales por el servicio unificado, con contexto seguro e identificadores de correlación. | APROBADO | `architecture/lockout-notification` |
+| Caducidad de contraseña configurable globalmente; posibilidad de eximir a un usuario concreto; "sin caducidad periódica" como valor válido. | APROBADO | `architecture/password-expiry-policy` |
+
+## Activación, permisos y notificación
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Solo el administrador global registra usuarios, los da de baja y crea roles por aplicación. Los administradores de aplicación asignan usuarios activos a roles existentes. | APROBADO | `architecture/global-only-identity-actions` |
+| La notificación de cambios de permiso la dispara explícitamente un administrador autorizado (no es automática). | APROBADO | `architecture/manual-permission-change-notification` |
+
+## Suplantación para pruebas
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Solo el administrador global inicia sesión suplantada; desarrolladores y administradores de aplicación **no** pueden impersonar directamente. Uso normal: pruebas/UAT. | APROBADO | `architecture/impersonation-authorization` |
+| La sesión suplantada muestra la doble identidad de forma visible y registra auditoría completa (actor real, persona impersonada, parámetros, marcas temporales, módulo y resultado). | APROBADO | `architecture/impersonation-authorization` |
+
+## Capabilities, políticas y vistas
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Cada módulo declara **capacidades estables** (estables, no strings ad-hoc). Los grupos de capabilities componen roles verificables. | APROBADO | `architecture/capability-driven-ui-variants` |
+| Las **políticas contextuales** que dependen de estado, recurso o condición de negocio se evalúan en el código del módulo, no en el catálogo. Capabilities y políticas coexisten. | APROBADO | `architecture/capability-driven-ui-variants` |
+| El backend es autoritativo: la UI consume el endpoint de capabilities/políticas y el servidor rechaza operaciones no autorizadas aunque la UI las muestre. | APROBADO | `architecture/capability-driven-ui-variants` |
+| Cada módulo decide por sí mismo si usa una vista adaptativa o varias especializadas; por defecto, vista única. Las vistas especializadas se justifican por diferencias materiales de flujo. | APROBADO | `architecture/per-module-ui-variant-policy` |
+
+## UAT, releases y excepciones
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Cada ciclo UAT declara explícitamente sus participantes y perfil de aplicación. El acceso UAT **no** espeja automáticamente el de producción. | APROBADO | `product/uat-participant-governance` |
+| Solo el administrador global define quién participa, qué perfil recibe cada participante y la configuración de acceso del ciclo. Los administradores de aplicación no configuran participación UAT. | APROBADO | `architecture/uat-global-admin-governance` |
+| Excepciones auditadas: un administrador global puede liberar con casos UAT fallidos o sin UAT ejecutado, registrando motivo, atribución y marca temporal con la evidencia del release. | APROBADO | `architecture/uat-release-exceptions` |
+| Excepciones visibles para usuarios: cuando un release publica con casos UAT fallidos o sin UAT, la excepción y su justificación aparecen en el historial de cambios. | APROBADO | `product/release-exception-transparency` |
+| Diseño detallado del ciclo UAT (workflow, visibilidad, entorno, aprobaciones, promoción). | ABIERTO | `product/module-uat-lifecycle` |
+| Navegación dual UAT + producción simultánea (representación, routing, autorización, marca visual). | ABIERTO | `open/dual-environment-navigation` |
+
+## Registro y activación de aplicaciones
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Registro **híbrido** de nuevos módulos: el despliegue crea un registro "pendiente" con metadatos técnicos (identificador estable, versión, rutas, health endpoint, capacidades declaradas). El administrador global revisa y configura metadatos funcionales y activa la visibilidad. El despliegue **nunca** expone un módulo a usuarios por sí mismo. | APROBADO | `architecture/application-registration` |
+| El registro debe ser idempotente entre redespliegues; la activación es auditable e independiente de los redespliegues. | APROBADO | `architecture/application-registration` |
 
 ## Autorización y roles
 
@@ -96,7 +170,7 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | Toda la plataforma emite logs estructurados canónicos de calidad industrial, con correlación de acciones de usuario/IA a través de web, CLI, módulos, servicios compartidos, adaptadores, colas y jobs. | APROBADO | `architecture/observability-audit-logs` |
 | Eventos canónicos con: ID de correlación/traza, actor, acción, objetivo, resultado, timestamp, módulo y contexto de error seguro; credenciales y cargas sensibles redactadas. | APROBADO | `architecture/observability-audit-logs` |
 | Retención por niveles configurable (no hard-coded): recientes en hot consultable; antiguos comprimidos y archivados en object storage S3-compatible a través de un puerto de archivo reemplazable. | APROBADO (mecanismo) | `architecture/audit-retention` |
-| Baseline provisional: 90 días en hot consultable + 1 año de retención total, con archivo en object storage. | PROVISIONAL | `product/audit-retention-periods` |
+| Baseline provisional: **90 días en hot consultable + 1 año de retención total**, con archivo en object storage. **Misma política** aplica a artefactos de informe y a evidencia de entrega. | PROVISIONAL | `product/audit-retention-periods` |
 | Periodos de retención definitivos por cumplimiento normativo o IT corporativa. | ABIERTO | — |
 
 ## Operaciones y salud
@@ -108,6 +182,18 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | Inspecciones de salud disponibles **bajo demanda** (CLI) y **programadas** (cron-like); los jobs programados solo miden calidad y salud, no remedian automáticamente. | APROBADO | `architecture/scheduled-health-checks` |
 | Cada aplicación expone un área de administración donde se configuran los destinatarios de anomalías de ese módulo. | APROBADO | `architecture/application-operations-settings` |
 | Solo el **administrador global** configura health-checks (destinatarios, checks activos, frecuencia, severidad mínima de alerta). Los administradores de aplicación no gestionan esta configuración operativa. | APROBADO | `architecture/health-check-configuration-authorization` |
+
+## Disposiciones sobre Lanzadera
+
+| Decisión | Estado | Origen |
+|---|---|---|
+| Preservar y modernizar identidad, catálogo de aplicaciones, registro de usuarios, asignaciones usuario-aplicación y auditoría de autenticación / apertura. | APROBADO | `product/lanzadera-core-capabilities` |
+| Retirar formación (vídeos, cuestionarios, visionados) y reproducciones ActiveX; el histórico queda archivado, no se migra al módulo operativo. | APROBADO | `product/lanzadera-training-disposition` |
+| Retirar mecanismo de lanzamiento Access (`Shell`, `/cmd`, copia/ejecutable, UNC); el menú web permission-aware sustituye el lanzador desktop. | APROBADO | `product/lanzadera-launcher-disposition` |
+| Retirar segmentación oficina / fuera de oficina; el control pre-producción será un ciclo UAT moderno. | APROBADO | `product/lanzadera-location-visibility` |
+| Retirar gestión de rutas y contraseñas de backend desde UI; la configuración técnica se externaliza a adapters. | APROBADO | `product/lanzadera-backend-config-disposition` |
+| Modernizar auditoría de Lanzadera: preservar eventos de autenticación y apertura; retirar telemetría de SSID / ubicación física / coordenadas. | APROBADO | `product/lanzadera-audit-disposition` |
+| UAT en Lanzadera: el ciclo detallado (workflow, visibilidad, entorno, aprobaciones, promoción) queda ABIERTO; la gobernanza global-admin-only ya está APROBADA. | APROBADO (apertura de diseño) | `product/module-uat-lifecycle` |
 
 ## Resultado del estudio
 
@@ -152,6 +238,36 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | D33 | Destinatarios de anomalías configurables por aplicación | APROBADO | `architecture/application-operations-settings` |
 | D34 | Solo administrador global configura health-checks | APROBADO | `architecture/health-check-configuration-authorization` |
 | D35 | Resultado del estudio = roadmap global + roadmap y plan por herramienta | APROBADO | `product/modernization-principles` |
+| D36 | Preservar hashes heredados en migración | APROBADO | `product/credential-migration` |
+| D37 | Rehash transparente al primer login exitoso | APROBADO | `architecture/opportunistic-password-rehash` |
+| D38 | Umbral de lockout configurable, default cinco | APROBADO | `architecture/login-lockout-policy` |
+| D39 | Bloqueo una hora por defecto + desbloqueo por admin global | APROBADO | `architecture/login-lockout-recovery` |
+| D40 | Notificación de lockout a administradores globales | APROBADO | `architecture/lockout-notification` |
+| D41 | Caducidad de contraseña configurable + exenciones por usuario | APROBADO | `architecture/password-expiry-policy` |
+| D42 | Activación, baja y creación de roles: solo admin global | APROBADO | `architecture/global-only-identity-actions` |
+| D43 | Notificación de cambios de permiso solo por acción del administrador | APROBADO | `architecture/manual-permission-change-notification` |
+| D44 | Suplantación restringida al administrador global | APROBADO | `architecture/impersonation-authorization` |
+| D45 | Capabilities declaradas por módulo + grupos | APROBADO | `architecture/capability-driven-ui-variants` |
+| D46 | Vista única por defecto; especializada por módulo | APROBADO | `architecture/per-module-ui-variant-policy` |
+| D47 | UAT: asignación explícita de participantes y perfil por ciclo | APROBADO | `product/uat-participant-governance` |
+| D48 | UAT: gobernanza reservada al admin global | APROBADO | `architecture/uat-global-admin-governance` |
+| D49 | UAT: excepciones auditadas con la evidencia del release | APROBADO | `architecture/uat-release-exceptions` |
+| D50 | UAT: excepciones visibles para usuarios | APROBADO | `product/release-exception-transparency` |
+| D51 | Lanzadera retira formación/vídeos/cuestionarios | APROBADO | `product/lanzadera-training-disposition` |
+| D52 | Lanzadera retira mecanismo de lanzamiento Access | APROBADO | `product/lanzadera-launcher-disposition` |
+| D53 | Lanzadera retira segmentación oficina / fuera de oficina | APROBADO | `product/lanzadera-location-visibility` |
+| D54 | Lanzadera retira gestión de rutas y contraseñas de backend | APROBADO | `product/lanzadera-backend-config-disposition` |
+| D55 | Lanzadera moderniza auditoría y retira telemetría de ubicación | APROBADO | `product/lanzadera-audit-disposition` |
+| D56 | Lanzadera preserva identidad, catálogo, usuarios y permisos | APROBADO | `product/lanzadera-core-capabilities` |
+| D57 | Lanzadera: ciclo UAT detallado ABIERTO (gobernanza APROBADA) | APROBADO (apertura) | `product/module-uat-lifecycle` |
+| D58 | Registro de aplicaciones híbrido (deployment técnico + activación global) | APROBADO | `architecture/application-registration` |
+| D59 | Scheduler unificado sustituye flags y tareas de aplicación | APROBADO | `architecture/shared-scheduler-operations` |
+| D60 | Configuración global de horarios y destinatarios de informes | APROBADO | `architecture/report-job-configuration` |
+| D61 | Ejecución manual bajo demanda de informes | APROBADO | `architecture/manual-report-execution` |
+| D62 | Vista previa de informe sin envío | APROBADO | `architecture/report-preview` |
+| D63 | Generar y enviar directamente sin vista previa cuando proceda | APROBADO | `architecture/direct-manual-report-send` |
+| D64 | Dashboard global de operaciones de notificación | APROBADO (dirección) | `architecture/notification-operations-dashboard` |
+| D65 | Evidencia legacy: cola por tabla + dispatcher externo cada 5 min | APROBADO | `discovery/legacy-email-queue-flow` |
 
 ## Decisiones aún no tomadas (ABIERTO)
 
@@ -160,14 +276,15 @@ No se han decidido y **no se inventan** en este documento:
 - Tecnología concreta de caché (el "qué" del adaptador de caché).
 - Topología de despliegue (on-premise, nube corporativa, OCP u otro).
 - Stack exacto de implementación (framework, librerías, runtime).
-- Descomposición en servicios / monolitio modular / microservicios.
+- Descomposición en servicios / monolito modular / microservicios.
 - Periodos definitivos de retención por cumplimiento normativo o políticas de IT.
 - Integraciones corporativas concretas (correo, identidad, monitorización, etc.).
-- Calidad y algoritmo de los hashes de contraseña del legacy (decide si se migran tal cual o se exige reset).
-- Comportamiento exacto de "responsable de aplicación" (capacidades operativas fuera de la administración delegada).
-- Forma final de los health-checks (catálogo concreto, métricas, umbrales).
+- Forma exacta del dashboard de operaciones de notificación (UX, filtros, acceso a contenido sensible, umbrales, acciones operativas).
+- Diseño detallado del ciclo UAT (workflow, visibilidad, entorno, aprobaciones, promoción).
+- Navegación dual UAT + producción simultánea cuando aplique.
 - Estrategia de migración de datos desde los `.accdb` a PostgreSQL.
 - Catálogo definitivo de funciones de admin de aplicación por módulo (más allá del ejemplo de Gestion_Riesgos).
+- Catálogo definitivo de health-checks (métricas, umbrales, severidades).
 
 ## Reglas del documento
 
@@ -180,11 +297,11 @@ No se han decidido y **no se inventan** en este documento:
 
 ## Checklist
 
-- [ ] Cada nueva decisión aprobada por el usuario añade una fila al mapa rápido (D36, D37, …) y actualiza su sección temática.
+- [ ] Cada nueva decisión aprobada por el usuario añade una fila al mapa rápido (D66, D67, …) y actualiza su sección temática.
 - [ ] Ningún elemento se mueve de ABIERTO/FUTURO a APROBADO sin confirmación explícita.
 - [ ] Los baselines PROVISIONALes se marcan con su condición de revisión.
 - [ ] Las referencias a SiteMinder, OCP, Redis, S3, frameworks o colas corporativas se mantienen como FUTURO/ABIERTO.
 
 ## Siguiente paso
 
-Cruzar este documento con `08-decisiones-y-preguntas-abiertas.md` para incorporar las nuevas decisiones y preguntas derivadas. Las decisiones de stack, despliegue y plazos quedan para una fase SDD posterior; el siguiente lote de discovery (Lote 1 – Lanzadera) no se bloquea con ellas.
+Cruzar este documento con `08-decisiones-y-preguntas-abiertas.md` para incorporar las nuevas decisiones y preguntas derivadas. Las decisiones de stack, despliegue y plazos quedan para una fase SDD posterior; el siguiente lote de discovery (Lote 2 después de Lanzadera) no se bloquea con ellas.

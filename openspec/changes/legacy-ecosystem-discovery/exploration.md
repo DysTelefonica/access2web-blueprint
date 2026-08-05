@@ -29,10 +29,10 @@ Estos hechos son autoridad de alcance y orientación, pero no sustituyen la comp
 | **Lanzadera** | `C:\00repos\documentacion\OPENSPEC\00_LANZADERA` | `C:\00repos\codigo\00_LANZADERA\00_main` | `Lanzadera.accdb` / `Lanzadera_Datos.accdb` | Mapeo resuelto. La documentación funcional detallada debe localizarse dentro de `openspec/`. |
 | **Gestion_Riesgos** | `C:\00repos\documentacion\OPENSPEC\00_GESTION_RIESGOS` | `C:\00repos\codigo\00_GESTION_RIESGOS\00_main` | `Gestion_Riesgos.accdb` / `Gestion_Riesgos_Datos.accdb` | Mapeo resuelto. Existe `docs/DISCOVERY_MAP.md` y ERD en el checkout principal. |
 | **No_Conformidades** | `C:\00repos\documentacion\OPENSPEC\00_No_Conformidades` | `C:\00repos\codigo\00_NO_CONFORMIDADES\00_main` | `NoConformidades.accdb` / `NoConformidades_Datos.accdb` | Mapeo resuelto. El target Dysflow no pudo inventariarse en esta pasada; requiere diagnóstico de acceso. |
-| **Condor** | `C:\00repos\documentacion\OPENSPEC\00_CONDOR` | `C:\00repos\codigo\00_CONDOR\00_main` | `CONDOR.accdb` / backend no presente en el checkout inspeccionado | Mapeo de frontend resuelto. Falta confirmar la ruta/nombre del backend de producción y restaurar `.dysflow/project.json`. |
-| **HPS_Solicitudes** | `C:\00repos\documentacion\OPENSPEC\00_HPS_SOLICITUDES` (PRD 01–05, ERD y cambios) | **No localizado** como `00_HPS_SOLICITUDES` bajo `C:\00repos\codigo` | No hay frontend/backend Access localizado para este nombre | Es una discrepancia crítica: la documentación describe un sistema Access, pero no existe checkout principal con ese nombre en el directorio inspeccionado. Resolver si corresponde a un repositorio renombrado, a una línea documental sin binario o a una aplicación integrada en HPS. |
+| **Condor** | `C:\00repos\documentacion\OPENSPEC\00_CONDOR` | `C:\00repos\codigo\00_CONDOR\00_main` | `CONDOR.accdb` / `condor_datos.accdb` localizado en `C:\00repos\datos`; sin `.dysflow/project.json` | Mapeo de frontend y backend resueltos. Restaurar `.dysflow/project.json` antes de cerrar el lote. |
+| **HPS_Solicitudes** | `C:\00repos\documentacion\OPENSPEC\00_HPS_SOLICITUDES` (PRD 01–05, ERD y cambios) | `C:\00repos\codigo\HPS_SOLICITUDES` (sin prefijo `00_`; **fallback explícito a `main`** por ausencia de `00_HPS_SOLICITUDES/`/`staging/`). 2026-08-05. | Backend localizado en `C:\00repos\datos\Solicitudes_HPS_datos.accdb`; sin `.dysflow/project.json` ni índice CodeGraph-VBA local | Identidad de checkout resuelta a `HPS_SOLICITUDES/`. Inventario Dysflow y CodeGraph pendientes de configuración en un lote posterior. |
 | **HPS** | `C:\00repos\documentacion\OPENSPEC\00_HPS` | `C:\00repos\codigo\00_HPS\00_main` | `HPS.accdb` / `HPST.accdb` | Mapeo resuelto. La documentación disponible incluye specs, UAT y releases. |
-| **Brass** | `C:\00repos\documentacion\OPENSPEC\00_BRASS` | `C:\00repos\codigo\00_BRASS\00_main` | `Gestion_Brass_Gestion.accdb` / backend no presente en el checkout inspeccionado | Mapeo de frontend resuelto. Falta confirmar backend y configurar Dysflow para inspección reproducible. |
+| **Brass** | `C:\00repos\documentacion\OPENSPEC\00_BRASS` | `C:\00repos\codigo\00_BRASS\00_main` | `Gestion_Brass_Gestion.accdb` / `Gestion_Brass_Gestion_Datos.accdb` localizado en `C:\00repos\datos`; sin `.dysflow/project.json` | Mapeo de frontend resuelto. Restaurar `.dysflow/project.json` antes de cerrar el lote. |
 | **Expedientes** | `C:\00repos\documentacion\OPENSPEC\00_EXPEDIENTES` | `C:\00repos\codigo\00_EXPEDIENTES\00_main` | `Expedientes.accdb` / `Expedientes_datos.accdb` (backend observado fuera de `00_main`, en staging) | Mapeo resuelto con advertencia: el `.dysflow/project.json` del main tiene `accessPath` absoluto y estado `path-mismatch`; no se modifica en esta exploración. |
 
 ### Fuentes documentales representativas consultadas
@@ -59,7 +59,7 @@ Estos hechos son autoridad de alcance y orientación, pero no sustituyen la comp
 
 ### Evidencia estática obtenida con CodeGraph
 
-El repositorio documental no tenía índice CodeGraph. Se comprobó previamente la raíz real y se documentó el fallback a herramientas de lectura; no se inicializó un índice nuevo en esta pasada.
+El índice CodeGraph-VBA recién inicializado en `C:\00repos\codigo\00_LANZADERA\00_main\.codegraph-vba` permitió cerrar los huecos estáticos principales de Lanzadera. Se consultó primero `codegraph-vba.codegraph_explore` por flujo y después por símbolos concretos; no se modificó el repositorio legacy.
 
 Sí existía índice `.codegraph-vba` en `Gestion_Riesgos`, `HPS` y `Expedientes`. Se usó `codegraph-vba.codegraph_explore` antes de ampliar búsquedas de archivos. Hallazgos relevantes:
 
@@ -68,6 +68,10 @@ Sí existía índice `.codegraph-vba` en `Gestion_Riesgos`, `HPS` y `Expedientes
 - Expedientes: el grafo confirma clases `UsuarioAplicacionPermisos`, `Expediente`, operaciones de expediente y el patrón de acceso a datos; la relación runtime concreta con cada aplicación consumidora sigue requiriendo búsqueda por símbolo/tabla en cada consumidor.
 
 En los demás repositorios no se encontró `.codegraph` ni `.codegraph-vba` en el `00_main` comprobado. Por contrato, se utilizó únicamente evidencia documental, inventarios de source ya localizados y lectura dirigida de archivos conocidos; no se presenta esa evidencia como grafo completo.
+
+Para Lanzadera, el grafo confirma además el flujo `Form_FormLogin.ComandoIniciarSesion_Click` → `Login` → `LoginCorrecto`, el contrato `UsuarioAplicacionPermisos`/`TbUsuariosAplicacionesPermisos`, los formularios de administración y `getBoton` → `Lanzar` → `Aplicacion.Lanzar` → `/cmd`. `getdb` tiene 76 callers internos y `UsuarioAplicacionPermisos` 7 callers dentro del repositorio. No se presentan como callers cross-repo.
+
+Permanecen dinámicos o no probados en runtime: DAO/SQL concatenado, `fso`, `EjecutarShelllanzar`, nombres de formularios/controles construidos, `Application.TempVars`, efectos de `DoCmd.Quit`, y la resolución efectiva de catálogo/permisos en cada entorno.
 
 ### Evidencia Dysflow de solo lectura
 
@@ -227,6 +231,44 @@ Cada lote debe producir un paquete revisable y detenerse hasta recibir aprobaci�
 4. ¿Qué lote debe priorizarse después de aprobar Lanzadera y Expedientes: Gestion_Riesgos, HPS o No Conformidades?
 5. ¿Qué catálogo de `TbAplicaciones` y qué versión de backends debe considerarse el baseline operativo actual?
 
+## Batch 1 · Lanzadera · baseline staging y uso real
+
+La baseline funcional queda fijada en `C:\00repos\codigo\00_LANZADERA\staging`, rama `staging`, commit `63ba5e01617fdda857503d43151f06bb7bc11829`. La referencia publicada es `C:\00repos\codigo\00_LANZADERA\00_main`, rama `main`, commit `1474e8e8c2a8c352599ffa8b846223c6eb6e0f17`. La comparación versionada no muestra delta en formas, módulos, clases, consultas ni informes; `staging` solo adelanta documentación operativa. El staging tiene índice CodeGraph-VBA propio; no se reutilizó el de main.
+
+El backend compartido se resolvió como `C:\00repos\datos\Lanzadera_Datos.accdb`. Dysflow declaró configuración válida para staging, pero su `backendPath` persistido es relativo/local; las consultas usaron la ruta compartida explícita mediante `query_sql`, contrato read-only. Categorías agregadas: catálogo, aperturas, conexiones, permisos, visionados, correo, histórico de contraseñas, flags/roles de tareas y perfiles. Clasificación: autenticación/lanzamiento/catálogo/permisos **Activos** por actividad histórica; vídeos/correo **Raros o stale**; tareas **Unknown** porque hay flags pero no ejecución demostrada; histórico de contraseñas tiene registros, pero no demuestra que el flujo siga siendo usado. Ventana observable: 2020-10-28–2026-05-11 según tabla, con máximos por categoría entre 2023-04-27 y 2024-12-10 salvo histórico de contraseñas.
+
+Estas etiquetas no deciden migración. Para cada capacidad se debe debatir con el usuario: **keep, modernize, merge shared, replace mechanism, postpone o retire**. El uso técnico no prueba valor de negocio; el siguiente paso es validar excepciones, criticidad y usuarios responsables sin exponer datos personales.
+
 ## Ready for Proposal
 
 **No.** La topología general y el plan de Fase 1 ya son suficientemente concretos para solicitar aprobación del primer lote, pero todavía no procede una propuesta de migración. El siguiente paso recomendado es que el usuario confirme las rutas/identidad de HPS_Solicitudes, los backends no localizados y la puerta de acceso para el lote 1; después se completa Lanzadera y se detiene para revisión.
+
+## Batch 1 · Lanzadera · estado 2026-08-04
+
+El Lote 1 queda **completado para revisión**, sin abrir propuesta/spec/design/tasks. Se actualizaron el índice y cuatro documentos de descubrimiento en `docs/03-aplicaciones/lanzadera/`, además de los índices transversal y de esta exploración. La evidencia incluye inventario Dysflow, catálogo `TbAplicaciones`, perfiles, esquemas, relaciones físicas, navegación de formularios, autenticación y contratos de integración.
+
+Limitaciones explícitas: no se ejecutaron tests; Dysflow no devolvió informes, consultas frontend ni macros; el mapa offline de formularios no resolvió sin `accessPath`, por lo que se completó con source `.cls`/`.form.txt`; CodeGraph-VBA no prueba efectos runtime ni relaciones cross-repo; no se leyeron secretos, contraseñas ni hashes.
+
+## Cobertura CodeGraph-VBA en la pasada
+
+CodeGraph-VBA solo se consulta cuando existe `.codegraph-vba` en el worktree objetivo. En esta pasada los índices disponibles fueron los de:
+
+- `00_LANZADERA\staging` (commit `63ba5e01617fdda857503d43151f06bb7bc11829`).
+- `00_LANZADERA\00_main` (commit `1474e8e8c2a8c352599ffa8b846223c6eb6e0f17`).
+- `00_GESTION_RIESGOS`, `00_HPS` y `00_EXPEDIENTES`.
+
+No se inicializó, sincronizó ni reconstruyó ningún índice durante esta pasada. **Condor** y **Brass** se quedaron sin inspección por CodeGraph-VBA por ausencia de `.dysflow/project.json` que valide la ruta antes de indexar; **HPS_Solicitudes** no se inspeccionó por CodeGraph-VBA hasta preparar su `.dysflow/project.json` y, si procede, su checkout bajo el patrón `00_*`.
+
+## Consolidación posterior al baseline (2026-08-05)
+
+Tras la publicación del baseline documental (`d521d7b`) se incorporaron al registro de decisiones las disposiciones **APROBADAS** que cierran el debate abierto por capacidad detectada en el Lote 1 y por la pasada de identidad/autorización de las ocho aplicaciones:
+
+- **Identidad, ciclo de credencial y notificación**: preservación de hashes heredados (D36), rehash transparente al primer login (D37), política de lockout configurable con default cinco y duración una hora (D38–D39), notificación a administradores globales en cada lockout (D40), caducidad configurable con exención por usuario (D41), activación y creación de roles reservados al administrador global (D42) y notificación manual de cambios de permiso (D43).
+- **Suplantación para pruebas**: solo administrador global, con doble identidad visible y auditoría completa (D44).
+- **Capabilities, políticas y vistas**: capabilities declaradas por módulo + grupos de capabilities (D45); políticas contextuales en código; backend autoritario; decisión de variantes de UI por módulo (D46).
+- **UAT, releases y excepciones**: asignación explícita de participantes y perfil por ciclo (D47), gobernanza global-admin-only (D48), excepciones auditadas (D49) y visibles para usuarios (D50).
+- **Disposiciones sobre Lanzadera**: preservar y modernizar identidad, catálogo, usuarios y permisos (D56); retirar formación (D51), lanzador Access (D52), segmentación oficina/fuera (D53), gestión de backend desde UI (D54); modernizar auditoría retirando telemetría de ubicación (D55); ciclo UAT detallado ABIERTO con gobernanza APROBADA (D57).
+- **Registro de aplicaciones híbrido (D58)**: el despliegue crea un registro "pendiente" con metadatos técnicos; el administrador global revisa y activa la configuración funcional y la visibilidad.
+- **Scheduler y reporting (D59–D65)**: scheduler unificado sustituyendo flags y tareas de aplicación; configuración global de horarios y destinatarios; ejecución manual, vista previa sin envío, generación y envío directo; dashboard global de operaciones de notificación (dirección APROBADA, diseño ABIERTO); evidencia legacy de cola por tabla con dispatcher externo cada cinco minutos.
+
+El detalle y los `topic_key` viven en `docs/08-decisiones-y-preguntas-abiertas.md` y `docs/09-arquitectura-objetivo-y-principios.md`. La actualización del inventario refleja que **HPS_Solicitudes** se localizó como `C:\00repos\codigo\HPS_SOLICITUDES` y que **Brass** y **Condor** tienen backend en `C:\00repos\datos` (sus rutas quedan pendientes de integración en el `.dysflow/project.json` de cada uno).
