@@ -320,6 +320,9 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | D80 | Catálogo de versiones compatibles entre módulos y plataforma | APROBADO | `external-prompt-review/section-5-resolution` |
 | D81 | Despliegue coexistente estable+RC en UAT DIFERIDO hasta cadencia/equipo lo justifiquen | APROBADO (diferimiento) | `external-prompt-review/section-5-resolution` |
 | D82 | Migraciones backward-compatibles con estrategia Expand and Contract | APROBADO | `external-prompt-review/section-5-resolution` |
+| D83 | HPS_Solicitudes documentada como aplicación **independiente** de HPS (ID 22 vs ID 17) | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
+| D84 | Baseline release de Condor y Brass: `00_<app>\00_main\` + `C:\00repos\datos\<backend>_datos.accdb` | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
+| D85 | Baseline operativo: catálogo `TbAplicaciones` con 8 IDs (5/6/8/12/17/19/22/23) y backends en `C:\00repos\datos\` | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
 
 ## Decisiones aún no tomadas (ABIERTO)
 
@@ -360,6 +363,8 @@ Documento cruzado con `08-decisiones-y-preguntas-abiertas.md` tras la revisión 
 
 Próximos pasos operativos:
 
-1. Resolver P1–P5 con el usuario antes de iniciar el Lote 2 (HPS_Solicitudes repo, backends Condor/Brass, autorización Dysflow, orden de prioridad Lote 3–5, baseline operativo).
-2. Continuar discovery por aplicación (Lotes 3 a 9) con la matriz legacy → web aprobada.
-3. Planificar la fase SDD (proposal → spec → design → tasks → apply → verify → archive) cuando el discovery esté lo bastante maduro y el stack esté validado en un primer esqueleto ejecutable.
+1. ~~Resolver P1–P5 con el usuario antes de iniciar el Lote 2~~ — **CERRADAS el 2026-08-05**: P1, P2 y P5 mediante D83/D84/D85; P3 autorizada (Dysflow read-only); P4 prioriza **Gestion_Riesgos** como Lote 3.
+2. Continuar discovery por aplicación (**Lote 3 = Gestion_Riesgos**) con la matriz legacy → web aprobada.
+3. Configurar Dysflow read-only contra Condor, Brass y Expedientes; diagnosticar el fallo de inventario de No Conformidades.
+4. Clarificar con el usuario la rama baseline de Brass (`develop` vs `release_2026-001`); no hay `staging/` como en el resto de apps.
+5. Planificar la fase SDD (proposal → spec → design → tasks → apply → verify → archive) cuando el discovery esté lo bastante maduro y el stack esté validado en un primer esqueleto ejecutable.

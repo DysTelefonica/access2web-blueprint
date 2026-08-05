@@ -97,6 +97,9 @@ Las decisiones **D5–D35** están consolidadas en `09-arquitectura-objetivo-y-p
 | D80 | Catálogo de versiones compatibles entre módulos y plataforma (evita combinaciones inválidas en despliegues) | APROBADO | `external-prompt-review/section-5-resolution` |
 | D81 | Despliegue coexistente estable+RC en UAT DIFERIDO hasta que cadencia y equipo lo justifiquen. UAT y Producción como entornos separados | APROBADO (diferimiento) | `external-prompt-review/section-5-resolution` |
 | D82 | Migraciones de BD backward-compatibles con estrategia Expand and Contract: nunca destructivas en una sola release | APROBADO | `external-prompt-review/section-5-resolution` |
+| D83 | HPS_Solicitudes se documenta como aplicación **independiente** de HPS: `TbAplicaciones.ID = 22` ("Solicitudes HPS"), con su propio checkout, frontend (`Solicitudes_HPS.accdb`) y backend (`Solicitudes_HPS_datos.accdb`). Comparte nombre conceptual con HPS (ID 17) por razones históricas pero son productos distintos | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
+| D84 | Baseline de release de Condor y Brass reside en `C:\00repos\codigo\00_<app>\00_main\` + `C:\00repos\datos\<backend>_datos.accdb`. Staging de Condor en `00_CONDOR\staging\`. Brass requiere clarificación de rama de desarrollo (develop vs release_2026-001) | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
+| D85 | Baseline operativo actual: catálogo `TbAplicaciones` con 8 IDs en alcance (5 Riesgos, 6 Brass, 8 No Conformidades, 12 Lanzadera, 17 HPS, 19 Expedientes, 22 Solicitudes HPS, 23 Condor), backends en `C:\00repos\datos\`. Tabla de referencia transversal para Lotes 2 a 9 | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
 
 Reglas operativas de este subregistro:
 
@@ -125,6 +128,13 @@ El detalle vive en `docs/02-topologia-ecosistema/lanzadera-identidad-permisos.md
 | P3 | ¿Se autoriza configurar solo lectura los targets Dysflow de **Condor**, **Brass** y **Expedientes**, y diagnosticar el fallo de inventario de **No Conformidades**? | Sí | Lotes 5, 6, 7 y 2 |
 | P4 | ¿Qué lote debe priorizarse después de aprobar Lanzadera y Expedientes: **Gestion_Riesgos**, **HPS** o **No Conformidades**? | Parcial | Lote 3, 4 o 5 |
 | P5 | ¿Qué catálogo de `TbAplicaciones` y qué versión de backends debe considerarse el **baseline operativo actual**? | Sí | Lote 1 y transversal |
+
+> **Cierre 2026-08-05** (revisión del prompt externo + descubrimiento de rutas):
+> - **P1 resuelta** por **D83**: HPS_Solicitudes se documenta como aplicación independiente (ID 22) distinta de HPS (ID 17).
+> - **P2 resuelta** por **D84**: baseline de Condor (`00_CONDOR\00_main\CONDOR.accdb` + `condor_datos.accdb`) y Brass (`00_BRASS\00_main\Gestion_Brass_Gestion.accdb` + `Gestion_Brass_Gestion_Datos.accdb`). Brass sin `staging/`; requiere clarificación de rama.
+> - **P3 autorizada**: Dysflow read-only configurado contra Condor, Brass y Expedientes; diagnóstico de inventario de No Conformidades en curso.
+> - **P4 resuelta**: Lote siguiente = **Gestion_Riesgos** (Lote 3).
+> - **P5 resuelta** por **D85**: catálogo baseline con los 8 IDs y rutas en `C:\00repos\datos\`.
 
 ## Preguntas abiertas derivadas de las decisiones de arquitectura
 
