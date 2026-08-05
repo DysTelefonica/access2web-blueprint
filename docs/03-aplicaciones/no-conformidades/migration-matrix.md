@@ -117,4 +117,31 @@ Mapeo a la nueva plataforma:
 | `CacheValida` (Boolean) | `EstadoCache` (enum: Válido, Inválido, Regenerándose) | Más expresivo en el modelo nuevo |
 | `CacheHabilitada` (de `TbConfiguracion`) | Config del módulo / feature flag | Alineado con D45 (capabilities) y la decisión de caché selectiva (D70) |
 
+## D103 · Unificación de projectIds Dysflow en los 4 worktrees
+
+**Estado**: APLICADO el 2026-08-05.
+
+### Hallazgo original
+
+Los 4 worktrees de `00_NO_CONFORMIDADES` (`00_main`, `hotfix-replanificadas`, `slice10`, `staging`) tenían el **mismo `projectId: "00-no-conformidades-staging-clean"`** en sus `.dysflow/project.json`. Esto causaba `FRONTEND_TARGET_AMBIGUOUS` en `resolve_project` y violaba HR-11 del arnés dysflow (un `projectId` único por worktree).
+
+### Fix aplicado
+
+Se aplicó `setup_project` con `apply: true` y `projectId` distintos para unificar los IDs:
+
+| Worktree | `projectId` (antes) | `projectId` (después) | `name` (después) |
+|---|---|---|---|
+| `00_main` | `00-no-conformidades-staging-clean` | `00-no-conformidades-00-main-clean` | (presumido) "NoConformidades 00_main clean" |
+| `hotfix-replanificadas` | `00-no-conformidades-staging-clean` | `00-no-conformidades-hotfix-replanificadas-clean` | (presumido) "NoConformidades hotfix-replanificadas clean" |
+| `slice10` | `00-no-conformidades-staging-clean` | `00-no-conformidades-slice10-clean` | (presumido) "NoConformidades slice10 clean" |
+| `staging` | `00-no-conformidades-staging-clean` | `00-no-conformidades-staging-clean` ⚠️ (mantenido) | "NoConformidades staging clean" |
+
+**Resultado**: `resolve_project` ahora lista los 4 projectIds distintos y el agente debe elegir uno por llamada (HR-11 comportamiento correcto). La ambigüedad persiste por diseño (múltiples proyectos visibles) pero cada proyecto es único.
+
+### Recomendación cross-cutting
+
+Aplicar el mismo patrón a cualquier repo que tenga múltiples worktrees hermanos con el mismo `.dysflow/project.json`. La regla HR-11 del arnés dysflow lo exige: **un `projectId` único por worktree**.
+
+⚠️ **Mismo principio que en Lanzadera, Expedientes, Gestion_Riesgos, Condor, HPS, HPS_Solicitudes, Brass**: auditar si tienen múltiples worktrees con mismo projectId y unificarlos antes de operar.
+
 Cada fila futura debe expandirse a `source table.field` para los 49 esquemas (cuando estén cosechados post-D89), con transformación, regla de reconciliación, rechazo y disposición aprobada.
