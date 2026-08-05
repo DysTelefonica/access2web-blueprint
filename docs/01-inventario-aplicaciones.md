@@ -15,7 +15,7 @@ Registro vivo de las ocho aplicaciones dentro de alcance. Una fila por aplicaci�
 | HPS_Solicitudes | `C:\00repos\documentacion\OPENSPEC\00_HPS_SOLICITUDES` | `C:\00repos\codigo\HPS_SOLICITUDES` (sin prefijo `00_`; fallback `main` por ausencia de checkout `00_HPS_SOLICITUDES/`/`staging/`) | Pendiente de inspección | `Solicitudes_HPS_datos.accdb` | Checkout localizado tras el Lote 1; `.dysflow/project.json` y CodeGraph pendientes |
 | HPS | `C:\00repos\documentacion\OPENSPEC\00_HPS` | `C:\00repos\codigo\00_HPS\00_main` | `HPS.accdb` | `HPST.accdb` | Mapeo resuelto |
 | Brass | `C:\00repos\documentacion\OPENSPEC\00_BRASS` | `C:\00repos\codigo\00_BRASS\00_main` | `Gestion_Brass_Gestion.accdb` | `Gestion_Brass_Gestion_Datos.accdb` | Backend en `C:\00repos\datos`; `.dysflow/project.json` pendiente |
-| Expedientes | `C:\00repos\documentacion\OPENSPEC\00_EXPEDIENTES` | `C:\00repos\codigo\00_EXPEDIENTES\00_main` | `Expedientes.accdb` | `Expedientes_datos.accdb` (observado en staging) | Aviso: `path-mismatch` en Dysflow |
+| Expedientes | `C:\00repos\documentacion\OPENSPEC\00_EXPEDIENTES` | `C:\00repos\codigo\00_EXPEDIENTES\00_main` | `Expedientes.accdb` | `C:\00repos\datos\Expedientes_datos.accdb` | Descubrimiento Batch 2 completado; Dysflow read-only |
 
 ## Fuentes y reglas
 
@@ -28,6 +28,10 @@ Registro vivo de las ocho aplicaciones dentro de alcance. Una fila por aplicaci�
 - [ ] Cada fila enlaza con su `README.md` en `03-aplicaciones/`.
 - [ ] Los huecos se mantienen como `pendiente`; no se inventan rutas.
 - [ ] APAP/APAP_WEB **no** aparecen en esta tabla.
+
+## Actualización del Lote 2 · 2026-08-05
+
+Expedientes tiene descubrimiento funcional, técnico y de migración documentado en `docs/03-aplicaciones/expedientes/`. El backend autoritativo queda confirmado bajo `C:\00repos\datos`; el cambio no modifica los checkouts ni sus configuraciones Dysflow.
 
 ## Actualización del Lote 1 · 2026-08-04
 

@@ -19,7 +19,7 @@ Describe cómo se localizan los binarios y configuraciones en cada entorno (desa
 | HPS_Solicitudes | `C:\00repos\datos\Solicitudes_HPS_datos.accdb` |
 | HPS | `C:\00repos\datos\HPST.accdb` |
 | Brass | `C:\00repos\datos\Gestion_Brass_Gestion_Datos.accdb` |
-| Expedientes | `C:\00repos\datos\Expedientes_datos.accdb` (observado en staging) |
+| Expedientes | `C:\00repos\datos\Expedientes_datos.accdb` (confirmado como backend autoritativo en Batch 2, 2026-08-05) |
 
 - **No mutar configuraciones Dysflow** durante la fase de discovery. Los avisos de `path-mismatch` o las configuraciones ausentes se resuelven en un lote aprobado de modernización.
 - **APAP y APAP_WEB fuera de alcance**: este documento no las contempla.

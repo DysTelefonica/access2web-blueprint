@@ -323,6 +323,8 @@ El legacy define el **suelo mínimo de capacidad de negocio**, no el objetivo de
 | D83 | HPS_Solicitudes documentada como aplicación **independiente** de HPS (ID 22 vs ID 17) | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
 | D84 | Baseline release de Condor y Brass: `00_<app>\00_main\` + `C:\00repos\datos\<backend>_datos.accdb` | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
 | D85 | Baseline operativo: catálogo `TbAplicaciones` con 8 IDs (5/6/8/12/17/19/22/23) y backends en `C:\00repos\datos\` | APROBADO | `blueprint/p1-p2-p5-resolved-aug2026` |
+| D86 | Forma hexagonal del legacy (clases de dominio, helpers por dominio, transaccionalidad, `getdb()` + `TbConfiguracionBackends`) se preserva como referencia de mapeo a la nueva plataforma | APROBADO | `blueprint/staging-expedientes-hexagonal-shape` |
+| D87 | Tests VBA en staging (`Test_*` por `Helper_*` + `tests.vba.json` + `tests.vba.responsable-71.json`) son evidencia de comportamiento que se preserva como referencia para pytest | APROBADO | `blueprint/staging-expedientes-hexagonal-shape` |
 
 ## Decisiones aún no tomadas (ABIERTO)
 
