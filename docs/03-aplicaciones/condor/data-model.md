@@ -231,11 +231,20 @@ Adjuntos de una Solicitud. Vinculados a `etapaWF` (etapa del workflow) y `TipoAc
 | `observacionesFinales` | 12 (Memo) | |
 | `NombreFirmanteFinal` | 10 (Text 100) | |
 
-### `tbDatosCDCASUB` y `tbDatosPCSUB` (schemas no inspeccionados en esta pasada)
+### `tbDatosCDCASUB` y `tbDatosPCSUB` (44 columnas cada una)
 
-⚠️ Pendiente para una segunda iteración. Análogos a `tbDatosCDCA` y `tbDatosPC` pero para los sub-tipos `CD_CA_SUB` y `PC_SUB`.
+**Tablas MUY anchas** (44 columnas cada una) — análogas a `tbDatosCDCA` y `tbDatosPC` pero para los sub-tipos `CD_CA_SUB` y `PC_SUB`. Manejan sub-suministradores con campos adicionales:
 
-### `tbValidacionRevision` (11 columnas) — **hash para validación**
+- `refSubSuministrador` (Text 100) — referencia del sub-suministrador.
+- `subSuministradorNombreDir` (Memo) / `SubsuministradorNombreDir` (Memo) — nombre y dirección.
+- `esSubSuministradorAD` (YesNo) — si el sub-suministrador es la autoridad de diseño.
+- `observacionesRACDelegador` (Memo) — observaciones del RAC delegador.
+- `racNombreDelegador` (Text 255) — nombre del RAC delegador.
+- `firmaOficinaTecnicaSubSuministradorNombre` (Text 100) / `firmaRepSubSuministradorNombre` (Text 100).
+
+**Disposición**: en la nueva plataforma, las 4 tablas de "Datos" (PC, CD_CA, PC_SUB, CDCASUB) se unifican en un solo modelo `datos_solicitud` con discriminador `tipo_solicitud` + JSONB para campos específicos del tipo, O se mantienen como 4 tablas especializadas si el dominio regulatorio lo requiere. Decisión pendiente con negocio.
+
+### `tbValidacionRevision` (11 columnas, 0 filas) — **hash para validación**
 
 Tabla de validación de revisión con **hash de datos**.
 
@@ -271,9 +280,21 @@ Tabla de validación de revisión con **hash de datos**.
 
 ⚠️ **`suplantadoPor`** confirma que **Condor tiene un sistema de impersonación** que registra quién suplantó a quién en cada cambio. Coherente con `rolUsuario` / `rolUsuarioReal` (preparación) y `g_blnImpersonando` (estado). Migrar a logs estructurados canónicos (D27).
 
-### `tbLogErrores` (schema no inspeccionado en detalle; 3 filas)
+### `tbLogErrores` (9 columnas, 3 filas) — **log de errores con suplantación**
 
-⚠️ Pendiente para una segunda iteración.
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `idLogError` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `fechaHora` | 8 (DateTime) | 8 | true | `TIMESTAMP NOT NULL` |
+| `usuario` | 10 (Text) | 100 | false | `VARCHAR(100) NULL` |
+| `suplantadoPor` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — **quién suplantó al usuario en el error** |
+| `modulo` | 10 (Text) | 100 | true | `VARCHAR(100) NOT NULL` — módulo donde ocurrió el error |
+| `procedimiento` | 10 (Text) | 100 | false | `VARCHAR(100) NULL` — procedimiento que falló |
+| `numeroError` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` — código de error |
+| `descripcionError` | 12 (Memo) | 0 | true | `TEXT NOT NULL` |
+| `contexto` | 12 (Memo) | 0 | false | `TEXT NULL` — stack trace, parámetros, etc. |
+
+⚠️ **`suplantadoPor`** en logs de errores también: el sistema de impersonación registra el sustituto en TODOS los eventos (cambios + errores). Migrar a logs estructurados canónicos (D27).
 
 ### `tbLogEstados` (6 columnas, 0 filas) — **log de transiciones de estado**
 
@@ -288,18 +309,55 @@ Tabla de validación de revisión con **hash de datos**.
 
 ⚠️ **NO hay FKs físicas declaradas** desde `idSolicitud`, `idEstadoAnterior`, `idEstadoNuevo`. Data integrity gap.
 
-### `tbMapeoCampos` (schema no inspeccionado; 183 filas)
+### `tbMapeoCampos` (6 columnas, 183 filas) — **sistema de merge de plantillas Word**
 
-⚠️ **Pendiente para segunda iteración**. Volumen alto (183 filas) sugiere que es **config de mapeo entre columnas legacy y modernas** — debe preservarse como datos (no como código).
+⚠️ **Hallazgo crítico**: `tbMapeoCampos` es un **sistema de merge de plantillas Word con 183 reglas** que mapea campos de tablas a campos de documentos Word. Es **integración legacy con Microsoft Word**.
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `idMapeo` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `nombrePlantilla` | 10 (Text) | 50 | true | `VARCHAR(50) NOT NULL` — nombre de la plantilla Word |
+| `nombreCampoTabla` | 10 (Text) | 100 | true | `VARCHAR(100) NOT NULL` — campo en la tabla |
+| `valorAsociado` | 10 (Text) | 100 | false | `VARCHAR(100) NULL` — valor fijo o mapping |
+| `nombreCampoWord` | 10 (Text) | 100 | true | `VARCHAR(100) NOT NULL` — campo en el documento Word |
+| `numExtensiones` | 3 (Integer) | 2 | false | `SMALLINT NULL` — número de extensiones |
+
+**Disposición D97** (ampliada):
+- **Migrar las 183 filas como `INSERT INTO tb_mapeo_campos VALUES (...)`** en la migración inicial.
+- **Disponer de un servicio de merge de plantillas** en la nueva plataforma. Opciones:
+  1. **Mantener merge con Word** (preservar `.docx` con campos mergeados vía `python-docx` o `docxtpl`).
+  2. **Migrar a Jinja2 + HTML/PDF** (reemplazar Word con templates HTML renderizados server-side).
+  3. **Generar PDF directamente** con `WeasyPrint` o `wkhtmltopdf`.
+- **Decisión pendiente** con negocio y el equipo de procurement. Las 183 reglas de mapeo son un activo del sistema que se preserva como datos.
+
+### `tbHistorialRechazos` (8 columnas, 0 filas) — **histórico de rechazos**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `ID` | 4 (LongInteger) | 4 | false | `BIGSERIAL` PK |
+| `IdSolicitud` | 4 (LongInteger) | 4 | false | `BIGINT NULL` — FK conceptual a `tbSolicitudes` ⚠️ |
+| `FechaRechazo` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `UsuarioCalidad` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `AreaAfectada` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `MotivoPrincipal` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `Comentarios` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `EstaResuelto` | 1 (YesNo) | 1 | false | `BOOLEAN DEFAULT FALSE` — si el rechazo fue subsanado |
+
+**Diferencia con `tbRechazos`**: `tbRechazos` es la cabecera activa del rechazo; `tbHistorialRechazos` es el log histórico de resoluciones.
 
 ### Pendientes de discovery (segunda pasada)
 
-- **`tbDatosCDCASUB`**, **`tbDatosPCSUB`**: schemas no inspeccionados.
-- **`tbLogErrores`**: schema no inspeccionado en detalle.
-- **`tbMapeoCampos`**: schema no inspeccionado en detalle (183 filas).
-- **`tbHistorialRechazos`**: schema no inspeccionado.
+- **`tbDatosCDCASUB`**: ✅ schema documentado (44 columnas, 0 filas).
+- **`tbDatosPCSUB`**: ✅ schema documentado (44 columnas, 0 filas).
+- **`tbLogErrores`**: ✅ schema documentado (9 columnas, 3 filas).
+- **`tbMapeoCampos`**: ✅ schema documentado (6 columnas, 183 filas).
+- **`tbHistorialRechazos`**: ✅ schema documentado (8 columnas, 0 filas).
+- **`tbValidacionRevision`**: ✅ schema documentado (11 columnas, 0 filas).
 
-Estos schemas se obtendrán en una iteración posterior.
+**Todos los schemas de las 15 tablas documentados en esta segunda pasada.** Pendientes de discovery para iteración posterior:
+- `tbConfiguracion` y `tbConfiguracionBackends` (no listados en staging; presumidos en `00_main`).
+- Volúmenes reales de producción (no staging).
+- Mapeo semántico entre columnas legacy y modernas (más allá de `tbMapeoCampos`).
 
 ### Relaciones físicas reales (5 FK desde `tbSolicitudes`, parciales)
 
