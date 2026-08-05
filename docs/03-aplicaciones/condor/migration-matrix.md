@@ -105,3 +105,32 @@ Recomendación:
 - **Mantener como referencia conceptual** en PostgreSQL (FK cross-app requiere orden de migración estricto: NoConformidades antes que Condor).
 - **Documentar la regla de negocio**: `idNCAsociada` solo se setea cuando hay NC explícitamente vinculada; no es FK directa.
 - **Validar en la migración**: si hay NCs vinculadas, deben migrarse antes que las Solicitudes de Condor que las referencian.
+
+## D96 · Workflow declarativo via `tbTransiciones`
+
+**Estado**: PROPUESTO.
+
+`tbTransiciones` (4 columnas: `idTransicion`, `idEstadoOrigen`, `idEstadoDestino`, `rolRequerido`) define el **workflow declarativo** de Condor: qué transiciones de estado son válidas y qué rol se requiere para ejecutarlas. Es la representación del workflow en datos, no en código.
+
+Recomendación:
+
+- **Preservar como tabla de datos** en PostgreSQL (`transiciones` con FKs a `estados(origen)` y `estados(destino)`, y `rol_requerido` como enum).
+- **La columna `rolRequerido` se traduce a una verificación de capabilities** en la nueva plataforma (D45-D46). El workflow service (`WorkflowServicio.cls`) lee esta tabla y valida en runtime.
+- **Disponer de un endpoint admin** para que el workflow pueda evolucionar sin deploys de código.
+- **Disponer de un endpoint de "transiciones disponibles"** que devuelva, para un usuario dado y un estado actual, las transiciones que puede ejecutar.
+
+## D97 · `tbMapeoCampos` con 183 filas — config que se preserva como datos
+
+**Estado**: PROPUESTO.
+
+`tbMapeoCampos` tiene **183 filas** en el backend autoritativo. Es **config de mapeo entre columnas legacy y modernas** que se preserva como datos, no como código. Esto significa que la nueva plataforma debe:
+
+- **Migrar las 183 filas como `INSERT INTO tb_mapeo_campos VALUES (...)`** en la migración inicial.
+- **Exponer un servicio de mapeo** (`MapeoServicio.cls` ya existe en staging) que la nueva plataforma use para resolver dinámicamente las equivalencias entre columnas legacy y modernas.
+- **Disponer de un endpoint admin** para mantener el mapeo sin deploys.
+
+Recomendación:
+
+- **Preservar como tabla `mapeo_campos` en PostgreSQL** con PK + columnas equivalentes a la legacy.
+- **NO migrar como código** (mapeos hardcodeados en `MapeoServicio.cls`). El mapeo es **datos de runtime**.
+- **Disponer de UI admin** (CRUD sobre `mapeo_campos`) con control de capabilities (D45).

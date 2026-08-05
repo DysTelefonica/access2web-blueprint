@@ -12,7 +12,7 @@ Evidencia de descubrimiento de **Condor**, aplicación Access/VBA que gestiona *
 - **Main de comparación:** `C:\00repos\codigo\00_CONDOR\00_main` (release publicado); no inspeccionado en esta pasada.
 - **Frontend:** `CONDOR.accdb` en staging (44 MB; el frontend más grande de las 8 aplicaciones). Backup `CONDOR.accdb.bak-20260626113218` (49 MB) presente en staging.
 - **Backend autoritativo:** `C:\00repos\datos\condor_datos.accdb` (5 MB). **Duplicado en staging local** (`staging/condor_datos.accdb`).
-- **Dysflow:** `staging/.dysflow/project.json` válido (`projectId: condor`). Inventario backend completo: **15 tablas**, **5 FKs**, staging con volumen bajo (1 solicitud, 9 estados, 3 errores, 0 rechazos, 0 adjuntos).
+- **Dysflow:** `staging/.dysflow/project.json` válido (`projectId: condor`). Inventario backend completo: **15 tablas**, **5 FKs**, **volumen real del backend autoritativo** (`C:\00repos\datos\condor_datos.accdb`): 1 solicitud, 9 estados, 0 rechazos, 0 adjuntos, 5 log cambios, 3 log errores, **183 mapeo campos**, 0 log estados, 0 validaciones. **Staging lee del backend autoritativo** vía `TbConfiguracionBackends` (mismo volumen).
 - **APAP y APAP_WEB** no aparecen (proyecto personal del desarrollador).
 
 ## Lote asociado
