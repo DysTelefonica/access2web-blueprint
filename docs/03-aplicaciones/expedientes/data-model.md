@@ -23,6 +23,269 @@ El diccionario fuente completo, con **cada tabla y cada campo**, está cosechado
 
 `TbExpedientes.IDExpediente` relaciona con las tablas de hijos y joins; `TbSuministradores.IDSuministrador` relaciona con `TbExpedientesSuministradores`. `IDExpedientePadre` es además una relación jerárquica autorreferente inferida por código y datos, aunque no aparece como FK física explícita en todas las relaciones Access.
 
+## Schemas detallados (segunda pasada, 20 tablas obtenidas)
+
+### `TbEstados` (3 columnas, 9 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDEstado` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `Estado` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` |
+| `DESCRIPCION` | 12 (Memo) | 0 | false | `TEXT NULL` |
+
+### `TbComerciales` (3 columnas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDComercial` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `Comercial` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` |
+| `Descripcion` | 12 (Memo) | 0 | false | `TEXT NULL` |
+
+### `TbCPV` (3 columnas)
+
+PK + CPV + DESCRIPCION.
+
+### `TbEjercitos` (3 columnas)
+
+PK + Ejercito + Descripcion.
+
+### `TbJefaturas` (3 columnas)
+
+PK + Jefatura + DESCRIPCION.
+
+### `TbJuridicas` (4 columnas, 417 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDJuridica` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `Juridica` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` |
+| `DESCRIPCION` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `IDSuministrador` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK a `TbSuministradores` |
+
+### `TbLugaresEjecucion` (3 columnas, 194 filas)
+
+PK + LugarEjecucion (Memo) + Descripcion.
+
+### `TbOficinasPrograma` (3 columnas)
+
+PK + OficinaPrograma + Descripcion.
+
+### `TbOrganosContratacion` (3 columnas)
+
+PK + OrganoContratacion + Descripcion.
+
+### `TbPECAL` (3 columnas)
+
+PK + PECAL + DESCRIPCION.
+
+### `TbRACS` (4 columnas, 37 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDRAC` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `RAC` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` |
+| `CORREO` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — correo del RAC |
+| `DESCRIPCION` | 12 (Memo) | 0 | false | `TEXT NULL` |
+
+### `TbExpedientesAnexos` (3 columnas, 712 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDDocumento` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDExpediente` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `NombreDocumento` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+
+### `TbExpedientesAnualidades` (11 columnas, 174 filas) — **anualidades con importes por tipo de impuesto**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDAnualidad` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDExpediente` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `Año` | 3 (Integer) | 2 | false | `SMALLINT NULL` |
+| `BIIVA` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` — Base imponible IVA |
+| `BIIPSI` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` — Base imponible IPSI |
+| `BIIGIC` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` — Base imponible IGIC |
+| `BIEXENTA` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` — Base imponible exenta |
+| `IVA` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` — cuota IVA |
+| `IPSI` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` — cuota IPSI |
+| `IGIC` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` — cuota IGIC |
+| `PeriodoFacturacion` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+
+⚠️ **Sistema multi-impuestos** (IVA, IPSI, IGIC) — migrar con `NUMERIC(15,2)` en PostgreSQL. **CRÍTICO para auditoría regulatoria**.
+
+### `TbExpedientesCadenaContratacion` (9 columnas) — **cadena de subcontratación con reglas**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `ID` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDPadre` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — padre (jerarquía) |
+| `IDExpediente` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `IDSuministrador` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `AplicaCalidad` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `AplicaRiesgos` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `AplicaContratosClasificados` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `AplicaHPS` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — ⚠️ anomalía: Text 255 (vs Text 2) |
+| `Observaciones` | 12 (Memo) | 0 | false | `TEXT NULL` |
+
+### `TbExpedientesCodigoCompras` (3 columnas)
+
+PK + IDExpediente + CodCompras (Text 255).
+
+### `TbExpedientesComerciales` (3 columnas)
+
+PK compuesta (IDComercialExpediente, IDComercial, IDExpediente).
+
+### `TbExpedientesConEntidades` (23 columnas) — **vista desnormalizada con cadenas ⚠️**
+
+⚠️ **CRÍTICO**: **23 columnas, 13 de ellas son `Cadena*` (cadenas separadas por comas)**. Esta tabla es una **vista desnormalizada** del expediente con todas las entidades relacionadas en strings.
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDExpediente` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` PK |
+| `Clasificacion` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `OrganoContratacion` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `OficinaPrograma` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `Ejercito` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `Estado` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `ResponsableCalidad` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `ResponsableSeguridad` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `CadenaPecal` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `Pecal` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `CadenaContratistas` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaSubContratistas` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaSuministradores` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaComerciales` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaJPs` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaRACs` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaCorreoRACs` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaHitos` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `TipoParaLista` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `CadenaLugares` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+| `CadenaJuridicas` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — cadena |
+
+⚠️ **D113 propuesta**: esta tabla es una **vista materializada** que se debe regenerar en la nueva plataforma. Las 13 `Cadena*` son strings separados por comas que **NO escalan** y dificultan queries. Migración: mantener como `VIEW` en PostgreSQL (no tabla) generada a partir de las tablas normalizadas.
+
+### `TbExpedientesCPVs` (3 columnas)
+
+PK compuesta (IDCPVExpediente, IDCPV, IDExpediente).
+
+### `TbExpedientesE2E` (7 columnas) — **sincronización E2E con hash**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDExpediente` | 4 (LongInteger) | 4 | false | `INTEGER NULL` |
+| `HashPayload` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — hash del payload E2E |
+| `Estado` | 10 (Text) | 20 | false | `VARCHAR(20) NULL` |
+| `FechaCreacion` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaModificacion` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `UsuarioCreacion` | 10 (Text) | 100 | false | `VARCHAR(100) NULL` |
+| `UsuarioModificacion` | 10 (Text) | 100 | false | `VARCHAR(100) NULL` |
+
+⚠️ **Otro sistema E2E con hash**. **D114**: consolidar con `TbExpedientes.HashActual` y `TbExpedientes.HashUltimaExportacion` en una sola tabla `expediente_sincronizacion_e2e`.
+
+### `TbExpedientesHitos` (6 columnas, 46 filas) — **hitos con importes**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDHitoExpediente` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDExpediente` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` — FK |
+| `Descripcion` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `FechaHito` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaGarantiaHito` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` — fecha de garantía |
+| `Importe` | 7 (Currency) | 8 | false | `NUMERIC(15,2) NULL` |
+
+### `TbExpedientesJefaturas` (3 columnas)
+
+PK compuesta (IDJefaturaExpediente, IDJefatura, IDExpediente).
+
+### `TbExpedientesJuridicas` (6 columnas, 417 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDExpedienteJuridica` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDExpediente` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `IDJuridica` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `IDSuministrador` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `ContratistaPrincipal` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `SubContratista` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+
+### `TbExpedientesLugaresEjecucion` (3 columnas, 194 filas)
+
+PK compuesta (IDExpedienteLugarEjecucion, IDExpediente, IDLugarEjecucion).
+
+### `TbExpedientesModificados` (6 columnas, 37 filas) — **modificaciones al expediente**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDExpedienteModificado` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDExpediente` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — FK |
+| `NModificado` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — número de modificado |
+| `FechaFirmaModificado` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaFinModificado` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `Descripcion` | 12 (Memo) | 0 | false | `TEXT NULL` |
+
+### `TbExpedientesPECAL` (3 columnas)
+
+PK compuesta (IDPECALExpediente, IDExpediente, IDPECAL).
+
+### `TbExpedientesRACS` (3 columnas)
+
+PK compuesta (IDRacExpediente, IDExpediente, IDRAC).
+
+### `TbExpedientesResponsables` (6 columnas, volumen TBD)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDExpedienteResponsable` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IdExpediente` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` — FK |
+| `IdUsuario` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` — FK |
+| `CorreoSiempre` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `EsJefeProyecto` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `esPreventa` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+
+### `TbExpedientesSuministradores` (7 columnas, 72 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDExpedienteSuministrador` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDExpediente` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` — FK |
+| `IDSuministrador` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` — FK |
+| `IDPadre` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — padre (jerarquía) |
+| `Descripcon` | 12 (Memo) | 0 | false | `TEXT NULL` — ⚠️ typo: debería ser "Descripcion" |
+| `ContratistaPrincipal` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `SubContratista` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+
+### `TbSuministradores` (10 columnas, 72 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDSuministrador` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `Nombre` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `CIF` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` |
+| `DESCRIPCION` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `TramitadoraHPS` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+| `Nemotecnico` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `Direccion` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `CP` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — código postal |
+| `Ciudad` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `ConsorcioPropio` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (D102) |
+
+### `TbResponsablesPorRol` (3 columnas, volumen TBD)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDResponsablePorRol` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDUsuario` | 4 (LongInteger) | 4 | true | `INTEGER NOT NULL` — FK |
+| `Rol` | 10 (Text) | 50 | true | `VARCHAR(50) NOT NULL` — enum: Administrador, Calidad, Técnico |
+
+## Hallazgos críticos del esquema de Expedientes
+
+1. **D102 cross-cutting**: **20+ columnas como `Text 2)` (Sí/No como texto)**. Inconsistencia a estandarizar a `BOOLEAN` en PostgreSQL.
+2. **D113 (Expedientes)**: `TbExpedientesConEntidades` con **13 columnas `Cadena*` (cadenas separadas por comas)**. Anti-patrón de modelado. Migración: reemplazar con `VIEW` generada a partir de tablas normalizadas.
+3. **D114 (Expedientes)**: múltiples sistemas E2E con hash (`TbExpedientes.HashActual`, `TbExpedientes.HashUltimaExportacion`, `TbExpedientesE2E.HashPayload`). Consolidar en una sola tabla `expediente_sincronizacion_e2e`.
+4. **Multi-impuestos** (IVA, IPSI, IGIC) en `TbExpedientesAnualidades` — sistema regulatorio crítico para migración.
+5. **TYPO**: `Descripcon` en `TbExpedientesSuministradores` (debería ser "Descripcion"). Migración: corregir a `descripcion`.
+
 ## Semántica Access que debe conservarse
 
 - Tipos 1/3/4/7/8/10/12 observados: Boolean, Integer/Long, Currency, DateTime, Text y Memo según columna; confirmar mapeo final por campo.
