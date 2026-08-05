@@ -53,3 +53,31 @@ Estado Lanzadera tras el lote:
 ## Próximo paso
 
 Revisar este lote y aclarar los huecos de catálogo efectivo, macros, formularios de vídeo, consultas guardadas y política de migración de credenciales antes de pasar al lote siguiente.
+
+## Inventario real Dysflow (2026-08-05, segunda pasada)
+
+**Volúmenes principales del backend autoritativo** (`C:\00repos\datos\Lanzadera_Datos.accdb`):
+
+- **`tbUsuarios`**: **156 filas** (usuarios Lanzadera activos en producción).
+- **`TbUsuariosAplicacionesPermisos`**: **622 filas** (permisos por aplicación, alto volumen).
+- **35 tablas totales** (vs 22 de HPS, 11 de HPS_Solicitudes, 15 de Condor, 42 de NoConformidades, 49 de Expedientes, 71 de Gestion_Riesgos).
+
+**Hallazgos del inventario real**:
+
+1. **Datos personales explícitos en `tbUsuarios`**: `Matricula_DNI` (Text 50), `Nombre`, `DirCorreo`, `telfijo`, `telmovil`. Mismo riesgo que HPS (D92) y HPS_Solicitudes (D98). 156 filas con datos personales.
+
+2. **Sistema de flags booleanos mixtos**:
+   - `SeLogean`, `ParaTareasProgramadas`, `Autorizador` son `YesNo` (type 1) en `tbUsuarios` (consistente con booleanos reales).
+   - `EmplazamientoExterno`, `UsuarioDeGestionRiesgos`, `UsuariosI3D` son `Text 2` (Sí/No) en `tbUsuarios` (inconsistencia — booleanos como texto).
+
+3. **Inconsistencias de naming detectadas**:
+   - `tbUsuarios` (minúscula) vs `TbAplicaciones` (mayúscula) en la misma app.
+   - `TbCuestionaroRespuestas` (typo: debería ser `TbCuestionarioRespuestas`).
+
+4. **Sistema de cuestionarios y vídeos** (formación): `TbCuestionarios`, `TbCuestionarioPreguntas`, `TbCuestionaroRespuestas` (typo), `TbVideos`, `TbVideosCategorias`, `TbVideosCuestionario`, `TbVideosVisionados`. Sistema de formación interno para usuarios.
+
+5. **Cross-app flags**: `UsuarioDeGestionRiesgos`, `UsuariosI3D` (Text 2) en `tbUsuarios` — flags de acceso a Gestion_Riesgos e I3D. Cross-app.
+
+6. **Día de envío de tareas** (`DiaEnvioTareas`, Integer 1) — sistema de tareas programadas.
+
+7. **`.dysflow/project.json` creado en esta pasada** (con `setup_project` autorizado) en `00_LANZADERA/00_main/.dysflow/`. `projectId: 00-lanzadera-staging`, `frontendFile: Lanzadera.accdb`, `allowWrites: true`, `destinationRoot: src`.

@@ -81,3 +81,32 @@ Implicaciones para el Lote 3 (Gestion_Riesgos) y siguientes:
 - **D87**: los `Test_*` de VBA son evidencia de comportamiento que se preserva como referencia para los nuevos tests pytest. Ningún `Test_*` se descarta sin trazabilidad.
 
 Esta capa no introduce diseño ni propuesta: deja el mapeo conceptual explícito para que las fases SDD posteriores (proposal, spec, design, tasks) arranquen con la forma destino ya caracterizada.
+
+## Inventario real Dysflow (2026-08-05, segunda pasada)
+
+**Volúmenes principales del backend autoritativo** (`C:\00repos\datos\Expedientes_datos.accdb`):
+
+- **`TbExpedientes`**: **453 filas** (expedientes en producción).
+- **`TbExpedientesAnexos`**: **712 filas** (anexos, más que expedientes por anexo múltiple).
+- **49 tablas totales** (segunda app más grande después de Gestion_Riesgos con 71).
+
+**Hallazgos críticos del esquema de `TbExpedientes`** (55 columnas reales, esquema de procurement regulatorio):
+
+- **Jerarquía AM/lote**: `IDExpedientePadre` (Long) — jerarquía recursiva. La nueva plataforma debe **formalizar con CTE recursivo** en PostgreSQL.
+- **Importes como `Currency` (type 7)**: `ImporteLicitacion`, `ImporteContratacion` (tamaño 8 bytes). **Crítico para auditoría regulatoria**.
+- **Códigos múltiples**: `CodProyecto`, `CodExp`, `CodExpLargo`, `CodS4H` (4 códigos por expediente). **Migración**: cada código se preserva como columna o como tabla de normalización.
+- **Fechas del workflow regulatorio** (11 fechas, algunas en MAYÚSCULAS ⚠️): `FechaInicioContrato`, `FechaFinContrato`, `FechaFinGarantia`, `FECHAPREOFERTA` (⚠️), `FECHAINICIOLICITACION` (⚠️), `FECHAOFERTA` (⚠️), `FECHAADJUDICACION` (⚠️), `FECHAFIRMACONTRATO` (⚠️), `FECHACERTIFICACION` (⚠️), `FECHAPERDIDA` (⚠️), `FECHADESESTIMADA` (⚠️).
+- **Flags booleanos como Text(2)**: 14 columnas con valores 'Sí'/'No' (⚠️ cross-cutting con HPS, NoConformidades, Condor). Inconsistencia a normalizar en PostgreSQL.
+- **Hashes E2E** ⚠️⚠️: `HashActual` (Text 64), `HashUltimaExportacion` (Text 64) — **patrón de sincronización bidireccional** entre Expedientes y Lanzadera. La nueva plataforma debe **preservar este patrón** (sincronización E2E con verificación de hash).
+- **FKs conceptuales sin constraint**: `IdGradoClasificacion`, `IDOrganoContratacion`, `IDOficinaPrograma`, `IDEjercito`, `IDResponsableCalidad`, `IDResponsableSeguridad`, `IDEstado` (a catálogos internos). Decisión D94 sigue aplicando.
+- **Audit con `IDUsuario` como Text(255)**: `IDUsuarioCreacion`, `IDUsuarioUltimoCambio` (⚠️ NO son FK numéricas a `tbUsuarios` — son **strings** que probablemente contienen el email o el `UsuarioRed` del usuario). Migración: agregar FK numérica real.
+
+**Sub-tablas de Expedientes** (14+ tablas que comparten `IDExpediente` con la cabecera):
+
+- `TbExpedientesAnexos` (712 filas), `TbExpedientesAnualidades` (174), `TbExpedientesCadenaContratacion`, `TbExpedientesCodigoCompras`, `TbExpedientesComerciales`, `TbExpedientesConEntidades`, `TbExpedientesCPVs`, `TbExpedientesE2E`, `TbExpedientesHitos` (46), `TbExpedientesJefaturas`, `TbExpedientesJuridicas` (417), `TbExpedientesLugaresEjecucion` (194), `TbExpedientesModificados` (37), `TbExpedientesPECAL`, `TbExpedientesRACS`, `TbExpedientesResponsables`, `TbExpedientesSuministradores`, `TbExpedientes_antes` (legacy, presumido).
+
+**Inconsistencias cross-cutting detectadas en flags Sí/No** (coherente con HPS, NoConformidades, Condor): 14 columnas Text(2) en `TbExpedientes` + columnas análogas en las sub-tablas. **D102 propuesta**: estandarizar a `BOOLEAN` en PostgreSQL con regla de migración explícita (similar a D92 cross-cutting).
+
+**Sentinels detectados** (de `Copia de TbExpedientes`, `Copia de TbExpedientesConEntidades`, `ListaPrevia`, `TbAusExpPostAGEDO`, `TbAuxEstadosMartina`, `TbAuxNemotecnico`, `TbConfMostrarEstado`): patrón legacy de copia antes de cambios masivos + tablas auxiliares.
+
+**`.dysflow/project.json` creado en esta pasada** (con `setup_project` autorizado) en `00_EXPEDIENTES/00_main/.dysflow/`. `projectId: 00-expedientes-staging`, `frontendFile: Expedientes.accdb`, `allowWrites: true`.
