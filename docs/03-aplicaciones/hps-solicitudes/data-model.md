@@ -143,4 +143,124 @@ TbUltimoCambio
 
 ### Pendientes de discovery (segunda pasada)
 
-Schemas de: `TbResponsables`, `TbJustificaciones`, `TbHPSGrado`, `TbConfiguracion`, `TbLogs`, `TbLogsGeneral`, `TbCorreosEnviados`, `TbSolicitudesFechas`, `TbUltimoCambio`, `Copia de TbExpedientes`. Se obtendrán en una iteración posterior.
+Schemas de: `TbLogs` (vacía, no enumerable), `TbLogsGeneral` (falló en get_schema por colección vacía), `Copia de TbExpedientes` (legacy, presumida). Se obtendrán en una iteración posterior. **Los 7 schemas principales restantes ya están documentados** (ver a continuación).
+
+## Schemas detallados (segunda pasada, 7 tablas)
+
+### `TbResponsables` (4 columnas, 27 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDResponsable` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `Nombre` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` |
+| `Correo` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` |
+| `Descripcion` | 12 (Memo) | 0 | false | `TEXT NULL` |
+
+⚠️ **`Correo` es el campo clave de la FK conceptual** (D99: `TbResponsables.Correo → TbSolicitudes.emailResponsable`). Migración: agregar `idResponsable` numérica y mantener `Correo` para búsqueda.
+
+### `TbJustificaciones` (4 columnas, 7 filas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `idjustificacion` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `titulo` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `descripcion` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `activa` | 1 (YesNo) | 1 | false | `BOOLEAN DEFAULT TRUE` |
+
+### `TbHPSGrado` (2 columnas, 13 filas) — **catálogo con clave compuesta**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `TipoHPS` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` — parte 1 de la clave compuesta |
+| `Grado` | 10 (Text) | 255 | true | `VARCHAR(255) NOT NULL` — parte 2 de la clave compuesta |
+
+PK compuesta `(TipoHPS, Grado)`. Migración: `PRIMARY KEY (tipo_hps, grado)` en PostgreSQL.
+
+### `TbSolicitudesFechas` (21 columnas, 245 filas) — **workflow regulatorio de HPS con 20 fechas**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDSolicitud` | 4 (LongInteger) | 4 | true | `BIGINT NOT NULL` — PK + FK a `TbSolicitudes` |
+| `FechaEnvioExcel` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaRecepcionExcel` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaTramitacionAltaMarga` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaEnvioDPS` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaEnvioONS` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaRegistroEnHPS` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaCorreoRecordatorioExcel1` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaCorreoRecordatorioExcel2` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaCorreoRecordatorioRellenoMarga1` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaCorreoRecordatorioRellenoMarga2` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaDesestimado` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaAutocancelacion` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaPrevistaCorreoRecordatorioExcel1` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaPrevistaCorreoRecordatorioExcel2` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaPrevistaCorreoRecordatorioRellenoMarga1` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaPrevistaCorreoRecordatorioRellenoMarga2` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaPrevistaAutocancelacionPreMarga` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaPrevistaAutocancelacionMarga` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaCancelado` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaEnvioTraspasoONS` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+
+⚠️ **CRÍTICO**: **20 fechas en 21 columnas**. Esto es un **workflow regulatorio completo de HPS** con eventos: envío/recepción de Excel, recordatorios, desestimación, autocancelación, traspasos a ONS. **Migración crítica**: cada fecha es un evento de workflow que debe preservarse como `TIMESTAMP NULL` en PostgreSQL. Decidir si se normaliza (consolidar fechas relacionadas) o se preserva tal cual.
+
+### `TbConfiguracion` (15 columnas, 1 fila presumida)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `ID` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `DiasParaRecordatorioExcel1` | 3 (Integer) | 2 | false | `SMALLINT NULL` |
+| `DiasParaRecordatorioExcel2` | 3 (Integer) | 2 | false | `SMALLINT NULL` |
+| `DiasCancelacionPreMARGA` | 3 (Integer) | 2 | false | `SMALLINT NULL` |
+| `DiasParaRecordatorioRellenoMarga1` | 3 (Integer) | 2 | false | `SMALLINT NULL` |
+| `DiasParaRecordatorioRellenoMarga2` | 3 (Integer) | 2 | false | `SMALLINT NULL` |
+| `DiasCancelacionMARGA` | 3 (Integer) | 2 | false | `SMALLINT NULL` |
+| `BuzonSeguridad` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — buzón de seguridad |
+| `EmailDirectorSeguridad` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `CorreodeEnvio` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `AutocancelacionPreMARGA` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (inconsistencia D102) |
+| `AutocancelacionMARGA` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (inconsistencia D102) |
+| `CorreosAutomaticos` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (inconsistencia D102) |
+| `VersionPlantillasHTML` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — versionado de plantillas HTML |
+| `VersionPlantillasExcel` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — versionado de plantillas Excel |
+
+⚠️ **CRÍTICO**: 3 campos de booleanos como `Text(2)` (inconsistencia D102). Migración: `BOOLEAN` en PostgreSQL.
+
+⚠️ **CRÍTICO**: **6 campos de días** (`DiasParaRecordatorio*` y `DiasCancelacion*`) son config del workflow. Migración: a config del módulo + tabla de workflow declarativo (similar a D96 de Condor).
+
+### `TbUltimoCambio` (4 columnas, 245 filas presumidas)
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `ID` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `IDSolicitud` | 4 (LongInteger) | 4 | true | `BIGINT NOT NULL` — FK a `TbSolicitudes` |
+| `FechaCambio` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `IDUsuarioCambio` | 4 (LongInteger) | 4 | false | `BIGINT NULL` — FK conceptual a `TbUsuarios` (Lanzadera) |
+
+### `TbCorreosEnviados` (21 columnas, 9 filas) — **sistema completo de correos**
+
+| Columna | Tipo DAO | Size | Required | Notas para PostgreSQL |
+|---|---|---|---|---|
+| `IDCorreo` | 4 (LongInteger) | 4 | true | `BIGSERIAL` PK |
+| `URLAdjunto` | 12 (Memo) | 0 | false | `TEXT NULL` — ruta a fichero adjunto |
+| `Aplicacion` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` — aplicación origen |
+| `Destinatarios` | 12 (Memo) | 0 | false | `TEXT NULL` — destinatarios (TO) |
+| `DestinatariosConCopia` | 12 (Memo) | 0 | false | `TEXT NULL` — destinatarios (CC) |
+| `DestinatariosConCopiaOculta` | 12 (Memo) | 0 | false | `TEXT NULL` — destinatarios (BCC) |
+| `Asunto` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `FechaEnvio` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaOrdenEnvio` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `FechaGrabacion` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+| `NombrePlantilla` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `VersionPlantilla` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `CadenaRecursos` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `IDSolicitud` | 4 (LongInteger) | 4 | true | `BIGINT NOT NULL` — FK a `TbSolicitudes` |
+| `Accion` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `DesencadenadoPor` | 10 (Text) | 255 | false | `VARCHAR(255) NULL` |
+| `Programado` | 10 (Text) | 2 | false | `VARCHAR(2) NULL` — ⚠️ Sí/No como texto (inconsistencia D102) |
+| `TipoCorreo` | 4 (LongInteger) | 4 | false | `BIGINT NULL` — FK conceptual a un catálogo de tipos |
+| `Observaciones` | 12 (Memo) | 0 | false | `TEXT NULL` |
+| `Intentos` | 4 (LongInteger) | 4 | false | `INTEGER NULL` — número de intentos de envío |
+| `FechaProceso` | 8 (DateTime) | 8 | false | `TIMESTAMP NULL` |
+
+⚠️ **CRÍTICO**: sistema completo de correos con adjuntos, destinatarios múltiples (TO/CC/BCC), plantillas, versionado, intentos de envío, programación. Migración: traducir a un **servicio de correo** server-side con la misma semántica. El campo `Programado` (Text 2) es inconsistencia D102.
