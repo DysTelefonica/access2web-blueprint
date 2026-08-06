@@ -1,0 +1,396 @@
+{
+  "group": "G2",
+  "method_version": "v3",
+  "generated_at": "2026-08-06T00:00:00Z",
+  "forms_count": 6,
+  "known_skipped_tools": [
+    "analyze_form_layout (bug #1407 — RESULT_CONTRACT_VIOLATION, 5/5 variants × 3 forms confirmed)"
+  ],
+  "known_degraded_tools": [
+    "map_form_behavior autoFetchCodeGraph — dysflow internal CLI wrapper fails with 'unknown option --json' on codegraph-vba.cmd. CodeGraph-VBA MCP works fine standalone, but dysflow cannot pipe through it. 6/6 forms affected. Effective status: empty_internal_cli_error (not the documented empty_bug_1408)."
+  ],
+  "known_broken_tools": [
+    "verify_form_bindings (round-4 bug, RESULT_CONTRACT_VIOLATION) — skipped on all 6 forms per round-3 instructions; no fallback schema fan-out attempted because the bug prevents ANY output."
+  ],
+  "forms": [
+    {
+      "formName": "Form_FormAuditoriaSeleccion",
+      "sourcePath": "C:\\00repos\\codigo\\access2web-blueprint\\data\\staging\\no-conformidades\\src\\forms\\Form_FormAuditoriaSeleccion.form.txt",
+      "clsLines": 104,
+      "codegraph_summary": {
+        "symbols_count": 36,
+        "files": 2,
+        "stale_banner_ignored": true,
+        "blast_radius_top_5": [
+          "Form_FormAuditoriaSeleccion (data/staging/no-conformidades/src/forms/Form_FormAuditoriaSeleccion.cls:1)",
+          "Form (data/staging/brass/src/forms/Form_FormInformesDesdeLista.cls:19)",
+          "Form (data/staging/brass/src/forms/Form_FormInformesPorFactura.cls:15)",
+          "Form (data/staging/condor/src/forms/Form_frmAltaSolicitud.cls:268)",
+          "Form (data/staging/condor/src/forms/Form_frmGestionSolicitud.cls:322)"
+        ],
+        "call_path_top_3": [
+          "Form_Open → EstablecerCombos → EstablecerComboAuditoriasNombres(Me.Auditoria)",
+          "ComandoSeleccionar_Click → getAuditoria → DoCmd.OpenForm Form_FormAuditoria",
+          "Form_Open → Ajustar / AvanceCerrar / CorreoAlAdministrador"
+        ]
+      },
+      "ui": {
+        "controls_count": 8,
+        "controls_with_event_binding": 2,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "bindings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 4,
+        "controls_missing_geometry": 4,
+        "overlap_findings_count": 1,
+        "alignment_findings_count": 1,
+        "tab_order_findings_count": 1,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "info", "controls": ["Auditoria", "ComandoSeleccionar"], "detail": "ComandoSeleccionar (L=3615,W=1213,T=278,H=345) sits inside the Auditoria ComboBox rectangle (L=1425,W=3446,T=337,H=297): horiz overlap 3615-4828, vert overlap 337-623. Likely intentional (button inside combo width), but should be verified visually."},
+          {"kind": "ALIGNMENT_ROW", "severity": "info", "controls": ["Etiqueta86", "Auditoria"], "detail": "Etiqueta86 T=315 vs Auditoria T=337 — diff 22 twips, minor row misalignment of label vs input."},
+          {"kind": "TAB_ORDER_MISMATCH", "severity": "warning", "controls": ["cmdSalir"], "detail": "cmdSalir has explicit TabIndex=1, jumping over ComandoSeleccionar (TabIndex not set, defaults to insertion order). Natural flow would be Auditoria → ComandoSeleccionar → cmdSalir."},
+          {"kind": "MISSING_GEOMETRY", "severity": "info", "controls": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario", "lblEstado"], "detail": "Sections + header/footer labels have no direct L/T (expected — inherit section position)."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "codegraph_evidence_status": "empty_internal_cli_error",
+        "tables_referenced": ["Auditoria"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings (round-4 bug, RESULT_CONTRACT_VIOLATION) — fallback skipped per round-3 instructions."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Open → EstablecerCombos → EstablecerComboAuditoriasNombres(Me.Auditoria, p_Error). ComboBox `Auditoria` has 0 declared bindings in form.txt; RowSource assigned entirely from code in Form_Open lifecycle. Strict unattended pattern.",
+      "tool_warnings": [
+        "map_form_behavior: dysflow codegraph-vba CLI wrapper fails ('unknown option --json') — 0 codegraphEvidence entries returned. CodeGraph MCP standalone works.",
+        "verify_form_bindings: skipped per round-4 bug. No FORM_BINDING_* findings available."
+      ],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormAuditoria",
+      "sourcePath": "C:\\00repos\\codigo\\access2web-blueprint\\data\\staging\\no-conformidades\\src\\forms\\Form_FormAuditoria.form.txt",
+      "clsLines": 173,
+      "codegraph_summary": {
+        "symbols_count": 44,
+        "files": 2,
+        "stale_banner_ignored": true,
+        "blast_radius_top_5": [
+          "Form_FormAuditoria (data/staging/no-conformidades/src/forms/Form_FormAuditoria.cls:1) — 1 caller in Form_FormAuditoriasGestion.cls",
+          "Form (Form_FormInformesDesdeLista.cls:19)",
+          "Form (Form_FormInformesPorFactura.cls:15)",
+          "Form (Form_frmAltaSolicitud.cls:268)",
+          "Form (Form_frmGestionSolicitud.cls:322)"
+        ],
+        "call_path_top_3": [
+          "Form_Open → EstablecerDatos → getAuditoria",
+          "ComandoAdjuntarDocumentacion_Click → FormularioAbierto(Form_FormAuditoriaDocumentos)",
+          "ComandoRegistrar_Click → AvanceCerrar / CorreoAlAdministrador"
+        ]
+      },
+      "ui": {
+        "controls_count": 15,
+        "controls_with_event_binding": 3,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 1,
+        "bindings": [{"control": "Tipo", "value": "Interna;Externa"}]
+      },
+      "geometry": {
+        "controls_with_geometry": 10,
+        "controls_missing_geometry": 5,
+        "overlap_findings_count": 1,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "warning", "controls": ["ComandoRegistrar", "FechaFin"], "detail": "ComandoRegistrar (L=6945,W=1213,T=278,H=345) overlaps FechaFin (L=7452,W=1521,T=375,H=297): horiz 7452-8158, vert 375-623. Button likely sits on top of FechaFin's right edge — likely intentional layout, verify visually."},
+          {"kind": "MISSING_GEOMETRY", "severity": "info", "controls": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario", "lblEstado"], "detail": "Sections + header/footer labels without direct L/T (expected)."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "codegraph_evidence_status": "empty_internal_cli_error",
+        "tables_referenced": ["Auditoria", "AuditoriaOperaciones"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings (round-4 bug, RESULT_CONTRACT_VIOLATION) — skipped per round-3 instructions."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [
+        "map_form_behavior: dysflow codegraph-vba CLI wrapper fails ('unknown option --json') — 0 codegraphEvidence entries.",
+        "verify_form_bindings: skipped per round-4 bug. Solo Tipo ComboBox has a form.txt value-list binding; FechaInicio/FechaFin receive imperative values from getAuditoria via EstablecerDatos (not unattended strict)."
+      ],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormAuditoriasGestion",
+      "sourcePath": "C:\\00repos\\codigo\\access2web-blueprint\\data\\staging\\no-conformidades\\src\\forms\\Form_FormAuditoriasGestion.form.txt",
+      "clsLines": 667,
+      "codegraph_summary": {
+        "symbols_count": 44,
+        "files": 2,
+        "stale_banner_ignored": true,
+        "blast_radius_top_5": [
+          "Form_FormAuditoriasGestion (cls:1)",
+          "Form_FormAuditoriaDocumentos (cross-form reference)",
+          "NCAuditoria (class)",
+          "Auditoria (class)",
+          "DocumentoAuditoria (class)"
+        ],
+        "call_path_top_3": [
+          "Form_Load → Filtrar → lst.RowSource = 'ID;Nombre;FInicial;FFinal' → AddItem loop",
+          "ComandoEditar_Click → DoCmd.OpenForm Form_FormAuditoria",
+          "ComandoAnexos_Click → DoCmd.OpenForm Form_FormAuditoriaDocumentos"
+        ]
+      },
+      "ui": {
+        "controls_count": 18,
+        "controls_with_event_binding": 14,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 2,
+        "bindings": [
+          {"control": "ListaFiltrados", "value": "ID;Nombre;Tipo;FInicial;FFinal"},
+          {"control": "Tipo", "value": "Interna;Externa"}
+        ]
+      },
+      "geometry": {
+        "controls_with_geometry": 14,
+        "controls_missing_geometry": 4,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "MISSING_GEOMETRY", "severity": "info", "controls": ["EncabezadoDelFormulario", "lblTitulo1", "Detalle", "PieDelFormulario"], "detail": "Sections + header label without direct L/T."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "codegraph_evidence_status": "empty_internal_cli_error",
+        "tables_referenced": ["Auditoria", "NCAuditoria", "DocumentoAuditoria"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings (round-4 bug) — skipped."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [
+        "map_form_behavior: dysflow CLI bug — 0 codegraphEvidence entries.",
+        "verify_form_bindings: skipped. ListaFiltrados RowSource is set imperatively by Filtrar() from Form_Load (cls:274) — overrides form.txt header (cls:797 also documents the column list string). Tipo ComboBox has a value-list binding in form.txt."
+      ],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormAuditoriaDocumentos",
+      "sourcePath": "C:\\00repos\\codigo\\access2web-blueprint\\data\\staging\\no-conformidades\\src\\forms\\Form_FormAuditoriaDocumentos.form.txt",
+      "clsLines": 541,
+      "codegraph_summary": {
+        "symbols_count": 33,
+        "files": 2,
+        "stale_banner_ignored": true,
+        "blast_radius_top_5": [
+          "Form_FormAuditoriaDocumentos (cls:1) — 1 caller in Form_FormAuditoriasGestion.cls",
+          "Scripting (FileSystemObject, Dictionary)",
+          "DocumentoAuditoriaOperaciones (helper)",
+          "ListBox (DAO ListBox)",
+          "EnumSino"
+        ],
+        "call_path_top_3": [
+          "Form_Load → EstablecerDatos → EstablecerLista → lst.RowSource = 'IDDocumento;Documento;Archivo'",
+          "btnAceptar_Click → fso.GetFileName / fso.FileExists / Registrar / LimpiarControlesEntrada",
+          "Documentos → getDocumentosCCCambio → getdb"
+        ]
+      },
+      "ui": {
+        "controls_count": 14,
+        "controls_with_event_binding": 9,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "bindings": [{"control": "ListaDocumentos", "value": "IDDocumento;DOCUMENTO;Archivo"}]
+      },
+      "geometry": {
+        "controls_with_geometry": 10,
+        "controls_missing_geometry": 4,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "MISSING_GEOMETRY", "severity": "info", "controls": ["EncabezadoDelFormulario", "lblTitulo1", "Detalle", "PieDelFormulario"], "detail": "Sections + header label without direct L/T."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "codegraph_evidence_status": "empty_internal_cli_error",
+        "tables_referenced": ["DocumentoAuditoria", "DocumentoAuditoriaOperaciones", "Scripting"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings (round-4 bug) — skipped."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [
+        "map_form_behavior: dysflow CLI bug — 0 codegraphEvidence entries.",
+        "verify_form_bindings: skipped. ListaDocumentos RowSource declared in form.txt BUT ALSO overridden imperatively by EstablecerLista() from Form_Load (cls:106)."
+      ],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoria",
+      "sourcePath": "C:\\00repos\\codigo\\access2web-blueprint\\data\\staging\\no-conformidades\\src\\forms\\Form_FormNCAuditoria.form.txt",
+      "clsLines": 207,
+      "codegraph_summary": {
+        "symbols_count": 44,
+        "files": 2,
+        "stale_banner_ignored": true,
+        "blast_radius_top_5": [
+          "Form_FormNCAuditoria (cls:1)",
+          "EnumSino",
+          "NCAuditoria (class)",
+          "FormNCAuditoriaGeneral (subform target)",
+          "GenerarWordNoConformidades"
+        ],
+        "call_path_top_3": [
+          "Form_Load → EstablecerDatos → getNCAuditoria / EstablecerColorPestañasNCAuditoria",
+          "ComandoInforme_Click → GenerarWordNoConformidades → CorreoAlAdministrador",
+          "Form_Close → CorreoAlAdministrador"
+        ]
+      },
+      "ui": {
+        "controls_count": 16,
+        "controls_with_event_binding": 2,
+        "formEvents": ["OnClose", "OnLoad"],
+        "bindings_count": 0,
+        "bindings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 13,
+        "controls_missing_geometry": 3,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "MISSING_GEOMETRY", "severity": "info", "controls": ["EncabezadoDelFormulario", "Detalle", "PieDelFormulario"], "detail": "Sections without direct L/T (expected)."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "codegraph_evidence_status": "empty_internal_cli_error",
+        "tables_referenced": ["NCAuditoria"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings (round-4 bug) — skipped."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [
+        "map_form_behavior: dysflow CLI bug — 0 codegraphEvidence entries.",
+        "verify_form_bindings: skipped. NavigationControl pattern — actual data bindings live on the embedded subform (FormNCAuditoriaGeneral etc.), not on this parent form. Form.txt correctly shows 0 bindings at this level."
+      ],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaGestion",
+      "sourcePath": "C:\\00repos\\codigo\\access2web-blueprint\\data\\staging\\no-conformidades\\src\\forms\\Form_FormNCAuditoriaGestion.form.txt",
+      "clsLines": 1179,
+      "codegraph_summary": {
+        "symbols_count": 53,
+        "files": 2,
+        "stale_banner_ignored": true,
+        "blast_radius_top_5": [
+          "Form_FormNCAuditoriaGestion (cls:1)",
+          "NCAuditoria (class)",
+          "NCAuditoriaGestionListadoHelper (module)",
+          "Auditoria (class)",
+          "Expediente (class)"
+        ],
+        "call_path_top_3": [
+          "Form_Open → EstablecerCombos → EstablecerComboResponsablesImplantacion / EstablecerComboAuditoriasNombres / EstablecerComboEstado on Me.RESPONSABLEIMPLANTACION / Me.Auditoria / Me.Estado",
+          "ComandoActualizarLista_Click → ActualizarLista → Me.ListaFiltrados.RowSource = '...' → getNCsAudtoriasFiltrados",
+          "ComandoEditar_Click → EnsureNCAuditoriaGestionSelected → DoCmd.OpenForm Form_FormNCAuditoria"
+        ]
+      },
+      "ui": {
+        "controls_count": 40,
+        "controls_with_event_binding": 28,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 7,
+        "bindings": [
+          {"control": "ListaFiltrados", "value": "IDNoconformidad;Auditoría;Código;Descripción;Responsable;Estado"},
+          {"control": "Auditoria", "value": "5;2025_Interna;4;2023_Interna;3;2023_Externa;2;2024_Externa;1;2024_Interna"},
+          {"control": "Estado", "value": "Borrada;1;Registrada;2;...;10;Abiertas;0"},
+          {"control": "ComboRequiereControlEficacia", "value": "Sí;No;Seleccionar"},
+          {"control": "ComboControlEficaciaRelleno", "value": "Sí;No"},
+          {"control": "RESPONSABLEIMPLANTACION", "value": "Ana Rubio Canales;Beatriz Noval Gutiérrez;Martina Torralba Rodríguez;Natalia Casán García;Sergio García Montalvo;Mario Martín Abad"},
+          {"control": "Tipo", "value": "NC;OB;OP"}
+        ]
+      },
+      "geometry": {
+        "controls_with_geometry": 35,
+        "controls_missing_geometry": 5,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "MISSING_GEOMETRY", "severity": "info", "controls": ["EncabezadoDelFormulario", "lblTitulo1", "Detalle", "PieDelFormulario", "cmdSalir"], "detail": "Sections + header label + cmdSalir (last column) without direct L/T (cmdSalir expected to inherit right edge position)."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "codegraph_evidence_status": "empty_internal_cli_error",
+        "tables_referenced": ["NCAuditoria", "Auditoria", "Expediente", "NCAuditoriaGestionListadoHelper"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings (round-4 bug) — skipped."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [
+        "map_form_behavior: dysflow CLI bug — 0 codegraphEvidence entries.",
+        "verify_form_bindings: skipped. Largest form in group (40 controls, 1179 cls lines). ListaFiltrados RowSource assigned imperatively by ActualizarLista() (cls:797), but combo boxes (Auditoria, Estado, RESPONSABLEIMPLANTACION) receive form.txt value-list bindings. NOT unattended strict — bindings are visible in form.txt."
+      ],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 14,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 6,
+    "unattended_forms": 1,
+    "tables_referenced_union": [
+      "Auditoria",
+      "AuditoriaOperaciones",
+      "NCAuditoria",
+      "DocumentoAuditoria",
+      "DocumentoAuditoriaOperaciones",
+      "Expediente"
+    ],
+    "blast_radius_shared_symbols": [
+      "getAuditoria (called by Form_FormAuditoriaSeleccion and Form_FormAuditoria)",
+      "EstablecerComboAuditoriasNombres (called by Form_FormAuditoriaSeleccion and Form_FormNCAuditoriaGestion)",
+      "Ajustar (called by Form_FormAuditoriaSeleccion, Form_FormAuditoria, Form_FormAuditoriasGestion, Form_FormNCAuditoria)",
+      "AvanceCerrar (called by Form_FormAuditoriaSeleccion and Form_FormAuditoria)",
+      "CorreoAlAdministrador (called by Form_FormAuditoriaSeleccion, Form_FormAuditoria, Form_FormAuditoriasGestion, Form_FormNCAuditoria)",
+      "FormularioAbierto (called by Form_FormAuditoriaSeleccion and Form_FormAuditoria)"
+    ]
+  }
+}

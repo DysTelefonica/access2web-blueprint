@@ -1,0 +1,72 @@
+{
+  "group": "G5",
+  "method_version": "v2",
+  "known_skipped_tools": ["analyze_form_layout (bug #1407)"],
+  "known_degraded_tools": ["map_form_behavior autoFetchCodeGraph (bug #1408)"],
+  "generated_at": "2026-08-06T00:00:00.000Z",
+  "forms_count": 2,
+  "forms": [
+    {
+      "form": "Form_FormNCProyectoTipologiaGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoTipologiaGestion.form.txt",
+      "declared_controls": 9,
+      "formEvents": ["OnOpen"],
+      "declared_bindings": 0,
+      "layout_status": "skipped_bug_1407",
+      "geometry_findings": [
+        {"kind":"TAB_ORDER_MISMATCH","controls":["ComandoAlta","ComandoEditar","ComandoEliminar","Lista"],"detail":"visual order differs from TabIndex sequence 1,2,3"}
+      ],
+      "handlers_count": 5,
+      "source_size_lines": null,
+      "blast_radius_top_5": ["Form_FormTipologiaNCProyecto","TipologiaNCProyectos","Scripting","ListBox","EnumSino"],
+      "call_path_top_3": ["Form_Open -> RellenarLista -> getTipologiasNCProyecto -> TipologiaNCProyectos","Lista_Click -> getTipologiaNCProyecto -> TipologiaNCProyectos","ComandoAlta_Click -> Form_FormTipologiaNCProyecto"],
+      "handler_evidence_count": 0,
+      "codegraph_evidence_status": "empty_bug_1408",
+      "binding_findings": [{"code":"FORM_BINDING_EMPTY","severity":"warning"}],
+      "unattended": true,
+      "unattended_note": "Bindings are assigned from Form_Open rather than declared in FormIR; codegraph indicates TipologiaNCProyectos/TbTiposNCProyectos usage.",
+      "tool_warnings": ["CodeGraph auto-sync disabled: file lock held by another process past retry budget.","map_form_behavior internal lookup failed with unknown option '--json'."]
+    },
+    {
+      "form": "Form_FormTipologiaNCProyecto",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormTipologiaNCProyecto.form.txt",
+      "declared_controls": 8,
+      "formEvents": ["OnOpen"],
+      "declared_bindings": 0,
+      "layout_status": "skipped_bug_1407",
+      "geometry_findings": [
+        {"kind":"OVERLAP","controls":["Tipologia","ComandoRegistrar"]},
+        {"kind":"OVERLAP","controls":["Tipologia","cmdSalir"]},
+        {"kind":"MISSING_GEOMETRY","controls":["EncabezadoDelFormulario","lblTitulo1","Detalle","PieDelFormulario"]}
+      ],
+      "handlers_count": 3,
+      "source_size_lines": null,
+      "blast_radius_top_5": ["Form_FormNCProyectoTipologiaGestion","TipologiaNCProyectos","TbTiposNCProyectos","EnumSino","CorreoAlAdministrador"],
+      "call_path_top_3": ["Form_Open -> EstablecerDatos -> TipologiaNCProyectos","ComandoRegistrar_Click -> TipologiaNCProyectos -> CorreoAlAdministrador","cmdSalir_Click -> CorreoAlAdministrador"],
+      "handler_evidence_count": 0,
+      "codegraph_evidence_status": "empty_bug_1408",
+      "binding_findings": [{"code":"FORM_BINDING_EMPTY","severity":"warning"}],
+      "unattended": true,
+      "unattended_note": "Form_Open establishes data in code; bindings are not declared in FormIR.",
+      "tool_warnings": ["CodeGraph auto-sync disabled: file lock held by another process past retry budget.","map_form_behavior internal lookup failed with unknown option '--json'.","query_execute TipologiaNCProyectos failed: table/query not found.","verify_form_bindings failed: RESULT_CONTRACT_VIOLATION."]
+    }
+  ],
+  "summary": {
+    "forms_processed": 2,
+    "forms_unattended": ["Form_FormNCProyectoTipologiaGestion","Form_FormTipologiaNCProyecto"],
+    "critical_findings": 2,
+    "geometry_findings": 4,
+    "binding_findings": 2,
+    "tool_failures": ["verify_form_bindings: RESULT_CONTRACT_VIOLATION", "map_form_behavior internal CodeGraph call: unknown option '--json'", "CodeGraph auto-sync disabled due to file lock"],
+    "self_check": {
+      "skills_loaded": "SI",
+      "capabilities_before_tools": "SI",
+      "describe_before_new_dysflow_tools": "SI",
+      "loop_order_followed": "SI",
+      "empty_bindings_unattended_check": "SI",
+      "no_form_source_read": "SI",
+      "analyze_form_layout_skipped": "SI",
+      "map_behavior_degraded_status_recorded": "SI"
+    }
+  }
+}

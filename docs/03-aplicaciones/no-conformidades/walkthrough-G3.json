@@ -1,0 +1,680 @@
+{
+  "group": "G3",
+  "method_version": "v3",
+  "known_skipped_tools": [
+    "analyze_form_layout (bug #1407)",
+    "map_form_behavior autoFetchCodeGraph (bug #1408)",
+    "verify_form_bindings (round-4 bug, RESULT_CONTRACT_VIOLATION)"
+  ],
+  "known_degraded_tools": [
+    "map_form_behavior autoFetchCodeGraph (bug #1408) — returns empty codegraph_evidence for all 13 forms",
+    "codegraph-vba — file lock held by another process; stale index banner present but ignored (per host instructions)"
+  ],
+  "known_broken_tools": [
+    "verify_form_bindings (round-4 bug, RESULT_CONTRACT_VIOLATION) — confirmed empirically on Form_FormNCAuditoriaGeneral"
+  ],
+  "generated_at": "2026-08-06T00:00:00.000Z",
+  "forms_count": 13,
+  "forms": [
+    {
+      "formName": "Form_FormNCAuditoriaGeneral",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaGeneral.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 34,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 5,
+        "warnings": [],
+        "controlNames": ["Detalle","Descripcion","Etiqueta50","CAUSARAIZ","Etiqueta51","FechaApertura","FPREVCIERRE","PuntoNorma","Etiqueta246","Etiqueta250","Etiqueta251","Etiqueta249","Etiqueta55","Tipo","RESPONSABLEIMPLANTACION","Etiqueta59","RequiereControlEficacia","Etiqueta254","ComandoGrabar","FECHACIERRE","NombreAuditoria","Etiqueta63","ESTADO","Etiqueta65","ComandoActualizar","ComandoControlEficaciaDatos","Numero","Etiqueta87","Etiqueta90","RequiereAccionCorrectiva","MotivoNoAccionCorrectiva","Etiqueta93","ComandoVerNoRequiere","ImagenMotivosNoCE"]
+      },
+      "geometry": {
+        "controls_with_geometry": 33,
+        "controls_missing_geometry": 0,
+        "missing_geometry_names": [],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 0,
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaAC",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaAC.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": ["Form_FormNCAuditoriaAcciones"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 23,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": [],
+        "controlNames": ["EncabezadoDelFormulario","lblTitulo","Detalle","AccionCorrectiva","FechaInicialMinima","lblfecha1","NoConformidad","Etiqueta52","Etiqueta31","FechaFinalUltima","lblfecha2","Estado","lblEstado1","ComandoActualizar","Notas","Etiqueta61","Etiqueta38","Responsable","FechaFinPrevistaUltima","lblfecha3","PieDelFormulario","cmdSalir","ComandoRegistrar"]
+      },
+      "geometry": {
+        "controls_with_geometry": 16,
+        "controls_missing_geometry": 6,
+        "missing_geometry_names": ["EncabezadoDelFormulario","lblTitulo","FechaInicialMinima","FechaFinalUltima","FechaFinPrevistaUltima","PieDelFormulario"],
+        "overlap_findings_count": 2,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 8,
+        "findings": [
+          {"a":"NoConformidad","b":"cmdSalir","kind":"OVERLAP","severity":"info"},
+          {"a":"NoConformidad","b":"ComandoRegistrar","kind":"OVERLAP","severity":"info"},
+          {"control":"EncabezadoDelFormulario","type":"FormHeader","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"lblTitulo","type":"Label","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"FechaInicialMinima","type":"TextBox","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"FechaFinalUltima","type":"TextBox","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"FechaFinPrevistaUltima","type":"TextBox","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"PieDelFormulario","type":"FormFooter","kind":"MISSING_GEOMETRY","severity":"info"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form has 0 declared bindings but uses imperative Me.X = value assignments in Form_Open → EstablecerDatos helper (NOT Me.X.RowSource/ControlSource). NOT unattended by prompt's strict definition.",
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaAR",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaAR.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": ["Form_FormNCAuditoriaAcciones"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 25,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": [],
+        "controlNames": ["EncabezadoDelFormulario","lblTitulo","Detalle","AccionRealizada","Etiqueta78","FechaInicio","Etiqueta80","FechaFinPrevista","Etiqueta82","FechaFinReal","Etiqueta55","AC","Etiqueta52","ESTADOAR","lblEstadoAR","ComandoActualizar","ImagenAnexo","Notas","Etiqueta61","Etiqueta38","Responsable","PieDelFormulario","cmdSalir","ComandoRegistrar","ComandoDocumentos"]
+      },
+      "geometry": {
+        "controls_with_geometry": 21,
+        "controls_missing_geometry": 3,
+        "missing_geometry_names": ["EncabezadoDelFormulario","lblTitulo","PieDelFormulario"],
+        "overlap_findings_count": 3,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 6,
+        "findings": [
+          {"a":"AC","b":"cmdSalir","kind":"OVERLAP","severity":"info"},
+          {"a":"AC","b":"ComandoRegistrar","kind":"OVERLAP","severity":"info"},
+          {"a":"AC","b":"ComandoDocumentos","kind":"OVERLAP","severity":"info"},
+          {"control":"EncabezadoDelFormulario","type":"FormHeader","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"lblTitulo","type":"Label","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"PieDelFormulario","type":"FormFooter","kind":"MISSING_GEOMETRY","severity":"info"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form has 0 declared bindings but uses imperative Me.X = value assignments (NOT Me.X.RowSource/ControlSource). NOT unattended by prompt's strict definition.",
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaControlEficacia",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaControlEficacia.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "warnings": [],
+        "controlNames": ["Detalle","FechaPrevistaControlEficacia","Etiqueta254","Etiqueta255","ControlEficacia","Etiqueta256","FechaControlEficacia","Etiqueta264","ComandoGrabar","ResultadoControlEficacia","Etiqueta63","ConformeControlEficacia","Etiqueta65","RequiereControlEficacia"]
+      },
+      "geometry": {
+        "controls_with_geometry": 13,
+        "controls_missing_geometry": 0,
+        "missing_geometry_names": [],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 0,
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaControlEficaciaAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaControlEficaciaAlta.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 19,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 12,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": [],
+        "controlNames": ["EncabezadoDelFormulario","lblTitulo","Detalle","FechaPrevistaControlEficacia","Etiqueta254","Etiqueta255","ControlEficacia","Etiqueta256","ComandoGrabar","RequiereControlEficacia","PieDelFormulario","cmdSalir"]
+      },
+      "geometry": {
+        "controls_with_geometry": 7,
+        "controls_missing_geometry": 4,
+        "missing_geometry_names": ["EncabezadoDelFormulario","lblTitulo","PieDelFormulario","cmdSalir"],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 4,
+        "findings": [
+          {"control":"EncabezadoDelFormulario","type":"FormHeader","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"lblTitulo","type":"Label","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"PieDelFormulario","type":"FormFooter","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"cmdSalir","type":"CommandButton","kind":"MISSING_GEOMETRY","severity":"info"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form has 0 declared bindings; relies on Form_Open and helper getters to populate values imperatively.",
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaAcciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaAcciones.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 27,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 23,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 2,
+        "warnings": [],
+        "controlNames": ["Detalle","Etiqueta50","ListaAC","ComandoACAlta","ComandoACBorrar","ComandoACEdicion","ComandoACHistorial","Etiqueta64","ListaAR","ComandoARAlta","ComandoARBorrar","ComandoAREdicion","ComandoARHistorial","ImagenAnexo","ComandoARDocumentos","ComandoActualizarACs","ComandoActualizarARs","ImagenNotaAR","ImagenNotaAC","Etiqueta246","OrdenAC","Etiqueta75","OrdenAR"]
+      },
+      "geometry": {
+        "controls_with_geometry": 21,
+        "controls_missing_geometry": 1,
+        "missing_geometry_names": ["ImagenNotaAC"],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 2,
+        "tab_order_findings_count": 0,
+        "findings_count": 3,
+        "findings": [
+          {"row":100,"diff":15,"controls":["Etiqueta246","OrdenAC"],"kind":"ALIGNMENT_ROW","severity":"warning"},
+          {"row":3500,"diff":15,"controls":["Etiqueta75","OrdenAR"],"kind":"ALIGNMENT_ROW","severity":"warning"},
+          {"control":"ImagenNotaAC","type":"Image","kind":"MISSING_GEOMETRY","severity":"info"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaDocumentos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaDocumentos.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 14,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "warnings": [],
+        "controlNames": ["Detalle","ComandoEliminar","ListaDocumentos","ImagenAnexo","btnExaminar","URLDocumento","Etiqueta62","Documento","ComandoCambiarNombre","btnAceptar"]
+      },
+      "geometry": {
+        "controls_with_geometry": 9,
+        "controls_missing_geometry": 0,
+        "missing_geometry_names": [],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 0,
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaNota",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaNota.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 5,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": [],
+        "controlNames": ["Detalle","Notas","Etiqueta50","ComandoGrabar","ComandoEliminar"]
+      },
+      "geometry": {
+        "controls_with_geometry": 4,
+        "controls_missing_geometry": 0,
+        "missing_geometry_names": [],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 0,
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form has 0 declared bindings; relies on Form_Load + helper to set values.",
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaMotivoEliminado",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaMotivoEliminado.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 4,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": [],
+        "controlNames": ["Detalle","MotivoBorrado","Etiqueta50","ComandoGrabar"]
+      },
+      "geometry": {
+        "controls_with_geometry": 3,
+        "controls_missing_geometry": 0,
+        "missing_geometry_names": [],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 0,
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form has 0 declared bindings; relies on Form_Load + helper.",
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaReplanificaciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaReplanificaciones.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 25,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 9,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "warnings": [],
+        "controlNames": ["Detalle","Etiqueta50","ListaReplanificaciones","AC","AR","Etiqueta70","Etiqueta71","Observaciones","Etiqueta73"]
+      },
+      "geometry": {
+        "controls_with_geometry": 8,
+        "controls_missing_geometry": 0,
+        "missing_geometry_names": [],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings_count": 0,
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaSeguimiento",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaSeguimiento.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 12,
+        "blast_radius_top_5": ["Form_FormNCAuditoriaSeguimientoTareas"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 12,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": [],
+        "controlNames": ["EncabezadoDelFormulario","lblTitulo","ComandoActualizar","Detalle","Etiqueta237","ControlDeNavegación0","NavTareas","NavNC","BotónDeNavegación1","FrmDetalle","PieDelFormulario","cmdSalir"]
+      },
+      "geometry": {
+        "controls_with_geometry": 7,
+        "controls_missing_geometry": 4,
+        "missing_geometry_names": ["EncabezadoDelFormulario","lblTitulo","Etiqueta237","PieDelFormulario"],
+        "overlap_findings_count": 8,
+        "alignment_findings_count": 1,
+        "tab_order_findings_count": 0,
+        "findings_count": 13,
+        "findings": [
+          {"a":"ComandoActualizar","b":"ControlDeNavegación0","kind":"OVERLAP","severity":"info"},
+          {"a":"ComandoActualizar","b":"FrmDetalle","kind":"OVERLAP","severity":"info"},
+          {"a":"ComandoActualizar","b":"cmdSalir","kind":"OVERLAP","severity":"info"},
+          {"a":"ControlDeNavegación0","b":"NavTareas","kind":"OVERLAP","severity":"info"},
+          {"a":"ControlDeNavegación0","b":"NavNC","kind":"OVERLAP","severity":"info"},
+          {"a":"ControlDeNavegación0","b":"BotónDeNavegación1","kind":"OVERLAP","severity":"info"},
+          {"a":"ControlDeNavegación0","b":"cmdSalir","kind":"OVERLAP","severity":"info"},
+          {"a":"FrmDetalle","b":"cmdSalir","kind":"OVERLAP","severity":"info"},
+          {"row":50,"diff":11,"controls":["ComandoActualizar","cmdSalir"],"kind":"ALIGNMENT_ROW","severity":"warning"},
+          {"control":"EncabezadoDelFormulario","type":"FormHeader","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"lblTitulo","type":"Label","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"Etiqueta237","type":"Label","kind":"MISSING_GEOMETRY","severity":"info"},
+          {"control":"PieDelFormulario","type":"FormFooter","kind":"MISSING_GEOMETRY","severity":"info"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form is a container/wrapper using ControlDeNavegación subform; navigation tabs swap child forms (NavTareas, NavNC). 0 declared bindings is expected for shell form.",
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaSeguimientoNC",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaSeguimientoNC.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "warnings": [],
+        "controlNames": ["Detalle","ListaFiltrados","Etiqueta237","lblListaDeResultados","ComandoVerDetalle","Etiqueta57","Responsable","Etiqueta261","Estado","ComandoLimpiarResposable","ComandoLimpiarEstado","Auditoria","ComandoLimpiarAuditoria","Etiqueta86"]
+      },
+      "geometry": {
+        "controls_with_geometry": 12,
+        "controls_missing_geometry": 1,
+        "missing_geometry_names": ["Etiqueta237"],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 1,
+        "tab_order_findings_count": 0,
+        "findings_count": 2,
+        "findings": [
+          {"row":850,"diff":30,"controls":["Auditoria","ComandoLimpiarAuditoria","Etiqueta86"],"kind":"ALIGNMENT_ROW","severity":"warning"},
+          {"control":"Etiqueta237","type":"Label","kind":"MISSING_GEOMETRY","severity":"info"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    },
+    {
+      "formName": "Form_FormNCAuditoriaSeguimientoTareas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCAuditoriaSeguimientoTareas.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "symbols_in_graph": 23,
+        "blast_radius_top_5": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 2,
+        "warnings": [],
+        "controlNames": ["Detalle","Etiqueta237","ListaFiltrados","lblListaDeResultados","Etiqueta57","Responsable","Etiqueta261","Estado","ComandoVerDetalle","ComandoLimpiarResposable","ComandoLimpiarEstado","Auditoria","ComandoLimpiarAuditoria","Etiqueta86"]
+      },
+      "geometry": {
+        "controls_with_geometry": 12,
+        "controls_missing_geometry": 1,
+        "missing_geometry_names": ["Etiqueta237"],
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 1,
+        "tab_order_findings_count": 0,
+        "findings_count": 2,
+        "findings": [
+          {"row":200,"diff":30,"controls":["Etiqueta57","Responsable","Etiqueta261","Estado","ComandoLimpiarResposable","ComandoLimpiarEstado"],"kind":"ALIGNMENT_ROW","severity":"warning"},
+          {"control":"Etiqueta237","type":"Label","kind":"MISSING_GEOMETRY","severity":"info"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "handlers": [],
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["codegraph-vba stale index banner ignored"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)", "map_form_behavior autoFetchCodeGraph (bug #1408)", "verify_form_bindings (round-4 bug)"]
+    }
+  ],
+  "summary": {
+    "total_controls": 199,
+    "total_geometry_findings": 38,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 13,
+    "unattended_forms": 0,
+    "tables_referenced_union": [],
+    "blast_radius_shared_symbols": ["Form_FormNCAuditoriaAcciones", "Form_FormNCAuditoriaSeguimientoTareas"],
+    "forms_with_zero_bindings": [
+      "Form_FormNCAuditoriaAC",
+      "Form_FormNCAuditoriaAR",
+      "Form_FormNCAuditoriaControlEficaciaAlta",
+      "Form_FormNCAuditoriaNota",
+      "Form_FormNCAuditoriaMotivoEliminado",
+      "Form_FormNCAuditoriaSeguimiento"
+    ],
+    "forms_with_geometry_findings": [
+      {"name":"Form_FormNCAuditoriaAC","count":8},
+      {"name":"Form_FormNCAuditoriaAR","count":6},
+      {"name":"Form_FormNCAuditoriaControlEficaciaAlta","count":4},
+      {"name":"Form_FormNCAuditoriaAcciones","count":3},
+      {"name":"Form_FormNCAuditoriaSeguimiento","count":13},
+      {"name":"Form_FormNCAuditoriaSeguimientoNC","count":2},
+      {"name":"Form_FormNCAuditoriaSeguimientoTareas","count":2}
+    ],
+    "critical_findings": [
+      {
+        "form": "Form_FormNCAuditoriaSeguimiento",
+        "issue": "8 OVERLAP findings — ComandoActualizar, ControlDeNavegación0, FrmDetalle, cmdSalir all overlap each other. This is the wrapper shell form hosting subforms via NavigationControl; overlapping suggests subform regions may clip toolbar buttons.",
+        "severity": "warning"
+      },
+      {
+        "form": "Form_FormNCAuditoriaAR",
+        "issue": "AC field overlaps with cmdSalir, ComandoRegistrar, ComandoDocumentos — likely a layout regression where the AC description TextBox width is too large.",
+        "severity": "warning"
+      },
+      {
+        "form": "Form_FormNCAuditoriaAC",
+        "issue": "NoConformidad TextBox overlaps with cmdSalir and ComandoRegistrar — same regression pattern as AR form (sibling forms with same layout issue).",
+        "severity": "warning"
+      }
+    ]
+  }
+}
