@@ -12,11 +12,11 @@ Esta matriz no decide el esquema PostgreSQL. Su regla es conservadora: todo camp
 | `tbDatosPCSUB` (volumen TBD) | datos de Solicitud tipo PC_SUB | FK a `tbSolicitudes` + campos específicos del tipo | mapeado preliminar | cardinalidad | cardinalidad vs Solicitud |
 | `tbEstados` (9 filas) | catálogo de estados del workflow | entidad de catálogo | mapeado preliminar | unicidad; coherencia con `tbLogEstados` | versionado |
 | `tbTransiciones` (volumen TBD) | transiciones de estado registradas | entidad de auditoría + FK a `tbEstados` (origen y destino) | mapeado preliminar | secuencialidad; **FK a `tbSolicitudes` no explícita** ⚠️ | migrar con FK explícita |
-| `tbHistorialRechazos` (volumen TBD) | histórico de rechazos | FK a `tbSolicitudes` + FK a `tbRechazos` | mapeado preliminar | trazabilidad | retención |
+| `tbHistorialRechazos` (volumen TBD) | histórico de rechazos | FK a `tbSolicitudes` + FK a `tbRechazos` | mapeado preliminar | trazabilidad | **tabla de negocio (no log). Full CRUD en web. Audit lower bound; tabla existe y se migra como feature.** |
 | `tbRechazos` (0 filas en staging) | rechazos de solicitudes | entidad con motivo, fecha, autor | mapeado preliminar | cardinalidad | retención |
-| `tbLogCambios` (volumen TBD) | log de cambios general | evento + timestamp + actor + tabla afectada | mapeado preliminar | trazabilidad | **traducir a logs estructurados canónicos (D27)** |
-| `tbLogErrores` (3 filas en staging) | log de errores | evento + timestamp + tipo + mensaje | mapeado preliminar | trazabilidad | **traducir a logs estructurados canónicos (D27)** |
-| `tbLogEstados` (volumen TBD) | log de cambios de estado | evento + FK a `tbSolicitudes` + estado anterior/nuevo + timestamp | mapeado preliminar | trazabilidad; **FK a `tbSolicitudes` y `tbEstados` no explícitas** ⚠️ | migrar con FK explícita |
+| `tbLogCambios` (volumen TBD) | log de cambios general | evento + timestamp + actor + tabla afectada | mapeado preliminar | trazabilidad | **REPLACE - no PostgreSQL, stack web-native (Sentry/OTel) per decisión 2026-08-05 (engram obs #24085, topic_key condor/log-strategy-2026-08-05)** |
+| `tbLogErrores` (3 filas en staging) | log de errores | evento + timestamp + tipo + mensaje | mapeado preliminar | trazabilidad | **REPLACE - no PostgreSQL, stack web-native (Sentry/OTel) per decisión 2026-08-05 (engram obs #24085, topic_key condor/log-strategy-2026-08-05)** |
+| `tbLogEstados` (volumen TBD) | log de cambios de estado | evento + FK a `tbSolicitudes` + estado anterior/nuevo + timestamp | mapeado preliminar | trazabilidad; **FK a `tbSolicitudes` y `tbEstados` no explícitas** ⚠️ | **REPLACE - no PostgreSQL, stack web-native (Sentry/OTel) per decisión 2026-08-05 (engram obs #24085, topic_key condor/log-strategy-2026-08-05)** |
 | `tbMapeoCampos` (volumen TBD) | mapeo de columnas legacy ↔ modernas | entidad de configuración | mapeado preliminar | unicidad; uso real | deprecate o migrar a mapping config |
 | `tbValidacionRevision` (volumen TBD) | validación de revisión de calidad | FK a `tbSolicitudes` + estado + comentarios + autor + fecha | mapeado preliminar | trazabilidad | retención |
 | `tbConfiguracion` (no en staging; presumido en `00_main`) | configuración de la app | config + flags | mapeado preliminar | unicidad | migrar a config del módulo |
@@ -134,3 +134,17 @@ Recomendación:
 - **Preservar como tabla `mapeo_campos` en PostgreSQL** con PK + columnas equivalentes a la legacy.
 - **NO migrar como código** (mapeos hardcodeados en `MapeoServicio.cls`). El mapeo es **datos de runtime**.
 - **Disponer de UI admin** (CRUD sobre `mapeo_campos`) con control de capabilities (D45).
+
+## Decisión D-new (2026-08-05) — Logs a stack web-native
+
+**Estado**: APLICADA en este lote.
+
+**Alcance**: `tbLogCambios`, `tbLogErrores`, `tbLogEstados` NO migran como tablas PostgreSQL. Se reemplazan por stack de observabilidad web-native (Sentry / OpenTelemetry / structured logs a Loki o CloudWatch).
+
+**Motivación**: trade-off explícito del usuario (opción B sobre opción A 'migrar como tablas PostgreSQL'):
+- A favor: tooling moderno de observabilidad con rotación/retención resuelta por el stack; queries de logs vía UI/SQL del backend de logs en vez de PostgreSQL.
+- En contra: hay que traducir las llamadas VBA existentes a eventos web; se pierde la posibilidad de JOINs SQL directos sobre logs.
+
+**Excluido de esta decisión**: `tbHistorialRechazos` (tabla de negocio, no log — histórico de motivos de rechazo).
+
+**Persistencia**: engram topic_key `condor/log-strategy-2026-08-05`, obs #24085 (audit), obs de corrección.

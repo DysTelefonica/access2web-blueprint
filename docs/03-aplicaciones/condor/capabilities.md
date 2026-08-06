@@ -25,7 +25,7 @@ La aplicación cubre un agregado de **gestión de solicitudes de calidad** vincu
 | Suministradores | `Suministrador.cls`, `SuministradorServicio.cls` (vinculación a `ExpedienteSuministrador`) | mismas |
 | Documentos | `DocumentoServicio.cls` (gestión de documentos anexos) | mismo |
 | Notificaciones | `NotificacionServicio.cls` (envío de avisos) + `MockNotifServ.cls` (test double) | mismos |
-| Logs estructurados | `LogCambio.cls`, `LogCambioServicio.cls`, `LogError.cls`, `LogErrorRepositorio.bas`, `LogEstado.cls`, `LogEstadoRepositorio.bas` → `tbLogCambios`, `tbLogErrores`, `tbLogEstados` | confirma D27 (logs estructurados canónicos) |
+| Logs estructurados | Eventos de observabilidad web-native (Sentry / OpenTelemetry / structured logs a Loki/CloudWatch). Las 3 tablas VBA `tbLogCambios`, `tbLogErrores`, `tbLogEstados` NO migran a PostgreSQL; sus llamadas se traducen a eventos web. Confirma D27. | confirma D27 (logs estructurados canónicos) |
 | Mapeo de campos | `MapeoCampos.cls`, `MapeoServicio.cls`, `MapeoRepositorio.bas` → `tbMapeoCampos` (config de mapeo entre columnas legacy y modernas) | `src/classes/MapeoCampos.cls` |
 | Errores | `CondorError.cls` (clase de error tipada con `.Create`, `.Raise`) | `src/classes/CondorError.cls` |
 | Sandbox | `SandboxConfig.cls`, `SandboxGestor.cls`, `SandboxValidator.cls` (gestión del entorno de pruebas) | `src/classes/Sandbox*.cls` |

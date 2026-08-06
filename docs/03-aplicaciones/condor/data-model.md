@@ -184,7 +184,7 @@ Adjuntos de una Solicitud. Vinculados a `etapaWF` (etapa del workflow) y `TipoAc
 | `obsDecisionFinal` | 12 (Memo) | |
 | `NombreFirmanteFinal` | 10 (Text 100) | |
 
-### `tbDatosCDCA` (39 columnas, 0 filas) — **Solicitud tipo CD_CA**
+### `tbDatosCDCA` (40 columnas, 0 filas) — **Solicitud tipo CD_CA**
 
 **Tabla MUY ancha** (39 columnas) — datos completos de una Comunicación de Desviación / Corrección de Anomalía (CD_CA).
 
