@@ -13,3 +13,20 @@ Thumbs.db
 
 # Local-only raw evidence (sensitive - never version)
 inputs/automatizaciones-legacy/raw/
+
+# --- Bulk binaries live in Cloudflare R2 (not git) ---
+# The setup-staging.ps1 script downloads them from R2 on demand.
+# Repo keeps only text (src/, docs/, scripts, READMEs, project.json).
+data/staging/**/frontend/
+data/staging/**/backend/
+data/staging/**/resources/
+data/staging/**/.codegraph-vba/
+# Root .codegraph-vba/ index (regenerable; useful config kept via !exception)
+.codegraph-vba/codegraph.db
+.codegraph-vba/codegraph.db-shm
+.codegraph-vba/codegraph.db-wal
+# Root .accdb copies (legacy default for Dysflow)
+*.accdb
+# Local logs (rclone, sync, etc.)
+logs/
+*.log
