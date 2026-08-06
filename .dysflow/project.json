@@ -2,9 +2,9 @@
   "id": "access2web-blueprint",
   "name": "access2web-blueprint",
   "version": "1.0",
-  "frontendFile": "CONDOR.accdb",
-  "backendPath": "condor_datos.accdb",
-  "destinationRoot": "data/staging/condor/src",
+  "frontendFile": "NoConformidades.accdb",
+  "backendPath": "NoConformidades_Datos.accdb",
+  "destinationRoot": "data/staging/no-conformidades/src",
   "capabilities": {
     "allowWrites": true,
     "writeExecutionPolicy": "developer"

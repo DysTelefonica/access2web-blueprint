@@ -1,0 +1,906 @@
+{
+  "group": "G4",
+  "workflow": "NC de Proyecto",
+  "method_version": "v2",
+  "project": "access2web-blueprint",
+  "generated_at": "2026-08-06T00:00:00.000Z",
+  "known_skipped_tools": [
+    "analyze_form_layout (DysTelefonica/dysflow issue #1407 — RESULT_CONTRACT_VIOLATION on all variants)"
+  ],
+  "known_degraded_tools": [
+    "map_form_behavior autoFetchCodeGraph (DysTelefonica/dysflow issue #1408 — codegraphEvidence[] empty for all 16 forms)"
+  ],
+  "known_broken_tools": [
+    "verify_form_bindings (RESULT_CONTRACT_VIOLATION on multiple input shapes; schema-validated dispatch seam does not return data)"
+  ],
+  "ambient_conditions": {
+    "codegraph_vba_index": "FROZEN — auto-sync DISABLED (live file lock contention from another writer)",
+    "codegraph_vba_warning": "All codegraph_explore results carry the ⚠️ stale-index banner. Counts and handler estimates are still reliable for static symbol topology, but on-disk confirmation is recommended before any refactor.",
+    "number_of_forms": 16,
+    "number_of_cls_files": 16
+  },
+  "forms_count": 16,
+  "forms": [
+    {
+      "id": 1,
+      "name": "Form_FormNCProyecto",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyecto.form.txt",
+      "source_size_bytes": 95708,
+      "formName_in_ir": "FormNCProyecto",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 16,
+        "formEvents": ["OnClose", "OnLoad"],
+        "warnings": [],
+        "bindings_count": 0,
+        "events_count": 2,
+        "controls_with_events": ["ComandoSalir", "ComandoInforme"]
+      },
+      "form_list_controls": {
+        "control_count": 16,
+        "missing_geometry": ["EncabezadoDelFormulario", "Detalle", "PieDelFormulario"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Navigation host; binds to FrmDetalle subform."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION"
+      },
+      "unattended": {
+        "detected": true,
+        "evidence": "Form_Open assigns RowSource on controls (Me.X.RowSource)",
+        "reason": "Navigation host — actual data bindings live in sibling FrmDetalle subform"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "NavGeneral..NavMotivoBorrado + BotónDeNavegación1 all on top=90 — horizontal nav strip (intentional, top-aligned)",
+        "manual_missing_geometry": ["EncabezadoDelFormulario", "Detalle", "PieDelFormulario"],
+        "manual_tab_order": "No TabIndex present in IR; tab order inherits visual layout"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["Scripting", "Expediente", "EnumSino", "NCProyecto"],
+        "calls_top": ["ComandoInforme_Click", "Form_Close", "Form_Load", "ComandoSalir_Click"]
+      }
+    },
+    {
+      "id": 2,
+      "name": "Form_FormNCProyectoGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoGestion.form.txt",
+      "source_size_bytes": 384050,
+      "formName_in_ir": "FormNCProyectoGestion",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 61,
+        "formEvents": ["OnOpen"],
+        "warnings": [],
+        "bindings_count": 10,
+        "events_count": 42,
+        "controls_with_events_count": 41,
+        "controls_with_bindings": ["ListaFiltrados", "ComboCodigo", "ComboJuridica", "ComboTipo", "EstadoNC", "ComboRequiereControlEficacia", "ComboControlEficaciaRelleno", "ComboRegistrosCerrados", "RESPONSABLECALIDAD", "RESPONSABLETELEFONICA"]
+      },
+      "form_list_controls": {
+        "control_count": 61,
+        "missing_geometry": [],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 54,
+        "handlers_pattern_match": 19,
+        "notes": "Largest form in G4; querying/listing grid."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "Has 10 declared bindings (ListaFiltrados + 9 combos) — multi-combo filter form is bound at design time"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Filter strip + grid list esperado (sin TabIndex en IR; tab order por defecto)",
+        "manual_missing_geometry": [],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["Form_FormExpedientesBusqueda", "ncProyecto", "Scripting", "Expediente", "Nz"],
+        "calls_top": ["ActualizarLista", "ListaFiltrados_Click", "ComandoInformeLista_Click", "ComandoEnviarCorreoElectronico_Click", "ComandoListaEnExcel_Click"]
+      }
+    },
+    {
+      "id": 3,
+      "name": "Form_FormNCProyectoGeneral",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoGeneral.form.txt",
+      "source_size_bytes": 185183,
+      "formName_in_ir": "FormNCProyectoGeneral",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 49,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 0,
+        "events_count": 0,
+        "controls_with_events_count": 0,
+        "controls_with_bindings": []
+      },
+      "form_list_controls": {
+        "control_count": 49,
+        "missing_geometry": [],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 55,
+        "handlers_pattern_match": 15,
+        "notes": "Detalle subform contents (loaded by Form_FormNCProyecto host)."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": true,
+        "evidence": "Form_Open assigns RowSource on controls (.RowSource present in codegraph output)",
+        "reason": "Detalle subform — controls vacíos en .form.txt; bindings en runtime"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Sección Detalle con layout columnar; TabIndex por defecto",
+        "manual_missing_geometry": [],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["ncProyecto", "Scripting", "Expediente"],
+        "calls_top": ["PintarIndicadores", "CargarDatos", "ComandoGuardar_Click"]
+      }
+    },
+    {
+      "id": 4,
+      "name": "Form_FormNCProyectoGeneralConVinculoNC",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoGeneralConVinculoNC.form.txt",
+      "source_size_bytes": 91794,
+      "formName_in_ir": "FormNCProyectoGeneralConVinculoNC",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 28,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 0,
+        "events_count": 0,
+        "controls_with_events_count": 0,
+        "controls_with_bindings": []
+      },
+      "form_list_controls": {
+        "control_count": 28,
+        "missing_geometry": [],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Variant of General with linked NC subform."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": true,
+        "evidence": "Form_Open assigns RowSource on controls",
+        "reason": "Detalle subform variante con vínculo NC"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Layout columnar; TabIndex por defecto",
+        "manual_missing_geometry": [],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["ncProyecto", "Expediente"],
+        "calls_top": ["PintarIndicadores", "CargarVinculoNC"]
+      }
+    },
+    {
+      "id": 5,
+      "name": "Form_FormNCProyectoAC",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoAC.form.txt",
+      "source_size_bytes": 74312,
+      "formName_in_ir": "FormNCProyectoAC",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 23,
+        "formEvents": ["OnOpen"],
+        "warnings": [],
+        "bindings_count": 1,
+        "events_count": 5,
+        "controls_with_events_count": 5,
+        "controls_with_bindings": ["Responsable"]
+      },
+      "form_list_controls": {
+        "control_count": 23,
+        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "FechaInicialMinima", "FechaFinalUltima", "FechaFinPrevistaUltima", "PieDelFormulario"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Acción Correctiva detail form."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "Responsable declared combo binding; rest of controls get value at runtime via Me.X in cls"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Layout columnar con fechas como Section-band (sin geometría explícita en IR)",
+        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "FechaInicialMinima", "FechaFinalUltima", "FechaFinPrevistaUltima", "PieDelFormulario"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNCAccionCorrectivas", "ncProyecto"],
+        "calls_top": ["ComandoGuardar_Click", "CalcularFechasAC", "Form_Open"]
+      }
+    },
+    {
+      "id": 6,
+      "name": "Form_FormNCProyectoAR",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoAR.form.txt",
+      "source_size_bytes": 91955,
+      "formName_in_ir": "FormNCProyectoAR",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 25,
+        "formEvents": ["OnOpen"],
+        "warnings": [],
+        "bindings_count": 1,
+        "events_count": 9,
+        "controls_with_events_count": 9,
+        "controls_with_bindings": ["Responsable"]
+      },
+      "form_list_controls": {
+        "control_count": 25,
+        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Acción Realizada detail form."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "Same pattern as AC: 1 combo binding + runtime assignment"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Layout columnar",
+        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNCAccionesRealizadas", "ncProyecto"],
+        "calls_top": ["ComandoGuardar_Click", "ActualizarFechasAR", "Form_Open"]
+      }
+    },
+    {
+      "id": 7,
+      "name": "Form_FormNCProyectoControlEficacia",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoControlEficacia.form.txt",
+      "source_size_bytes": 44979,
+      "formName_in_ir": "FormNCProyectoControlEficacia",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 14,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 1,
+        "events_count": 6,
+        "controls_with_events_count": 6,
+        "controls_with_bindings": ["ConformeControlEficacia"]
+      },
+      "form_list_controls": {
+        "control_count": 14,
+        "missing_geometry": ["Detalle"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Control de eficacia view (Sí/No)."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "ConformeControlEficacia Sí/No combo; rest assigned by Form_Load"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Layout simple",
+        "manual_missing_geometry": ["Detalle"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNoConformidades", "ncProyecto"],
+        "calls_top": ["Form_Load", "ComandoGuardar_Click"]
+      }
+    },
+    {
+      "id": 8,
+      "name": "Form_FormNCProyectoControlEficaciaAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoControlEficaciaAlta.form.txt",
+      "source_size_bytes": 33035,
+      "formName_in_ir": "FormNCProyectoControlEficaciaAlta",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 12,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 0,
+        "events_count": 4,
+        "controls_with_events_count": 4,
+        "controls_with_bindings": []
+      },
+      "form_list_controls": {
+        "control_count": 12,
+        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario", "cmdSalir"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 42,
+        "handlers_pattern_match": 9,
+        "notes": "Alta (new) form — shared with FormAlta/FormGastoAlta/FormSubContratacionAlta/FormSubSistemaAlta/FormActividadTipoAlta/FormEventoAlta helper pattern."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": true,
+        "evidence": "Form_Open assigns RowSource on controls",
+        "reason": "Alta form — no design-time bindings; relies on Form_Open"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Layout simple vertical",
+        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario", "cmdSalir"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNoConformidades", "Expediente"],
+        "calls_top": ["Form_Open", "ComandoAceptar_Click"]
+      }
+    },
+    {
+      "id": 9,
+      "name": "Form_FormNCProyectoAcciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoAcciones.form.txt",
+      "source_size_bytes": 110139,
+      "formName_in_ir": "FormNCProyectoAcciones",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 23,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 4,
+        "events_count": 18,
+        "controls_with_events_count": 18,
+        "controls_with_bindings": ["ListaAC", "ListaAR", "OrdenAC", "OrdenAR"]
+      },
+      "form_list_controls": {
+        "control_count": 23,
+        "missing_geometry": ["Detalle", "ImagenNotaAC"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 51,
+        "handlers_pattern_match": 11,
+        "notes": "Container with two lists (AC + AR) + 2 sort/order combos."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "ListaAC, ListaAR, OrdenAC, OrdenAR declared bindings"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Two parallel lists AC + AR",
+        "manual_missing_geometry": ["Detalle", "ImagenNotaAC"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNCAccionCorrectivas", "TbNCAccionesRealizadas", "ncProyecto"],
+        "calls_top": ["Form_Load", "ComandoAnadirAC_Click", "ComandoAnadirAR_Click"]
+      }
+    },
+    {
+      "id": 10,
+      "name": "Form_FormNCProyectoDocumentos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoDocumentos.form.txt",
+      "source_size_bytes": 68832,
+      "formName_in_ir": "FormNCProyectoDocumentos",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 10,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 1,
+        "events_count": 7,
+        "controls_with_events_count": 6,
+        "controls_with_bindings": ["ListaDocumentos"]
+      },
+      "form_list_controls": {
+        "control_count": 10,
+        "missing_geometry": ["Detalle"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 21,
+        "handlers_pattern_match": 0,
+        "notes": "Documentos list (attachments)."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "ListaDocumentos declared binding"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Lista Documentos vertical",
+        "manual_missing_geometry": ["Detalle"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNCDocumentos", "ncProyecto"],
+        "calls_top": ["Form_Load", "ComandoAnadirDocumento_Click"]
+      }
+    },
+    {
+      "id": 11,
+      "name": "Form_FormNCProyectoNota",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoNota.form.txt",
+      "source_size_bytes": 70885,
+      "formName_in_ir": "FormNCProyectoNota",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 5,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 0,
+        "events_count": 2,
+        "controls_with_events_count": 2,
+        "controls_with_bindings": []
+      },
+      "form_list_controls": {
+        "control_count": 5,
+        "missing_geometry": ["Detalle"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Notas subsection (links to TbNCInformacionRAC)."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": true,
+        "evidence": "Form_Open assigns RowSource on controls",
+        "reason": "Subsection form — 5 controls, no design-time bindings"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Layout vertical simple",
+        "manual_missing_geometry": ["Detalle"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNCInformacionRAC"],
+        "calls_top": ["Form_Open", "ComandoAnadirNota_Click"]
+      }
+    },
+    {
+      "id": 12,
+      "name": "Form_FormNCProyectoMotivoEliminado",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoMotivoEliminado.form.txt",
+      "source_size_bytes": 68337,
+      "formName_in_ir": "FormNCProyectoMotivoEliminado",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 4,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 0,
+        "events_count": 2,
+        "controls_with_events_count": 2,
+        "controls_with_bindings": []
+      },
+      "form_list_controls": {
+        "control_count": 4,
+        "missing_geometry": ["Detalle"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Subsection for elimination-reason (writes to TbNoConformidades.MotivoBorrado)."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": true,
+        "evidence": "Form_Open assigns RowSource on controls",
+        "reason": "Subsection form — 4 controls, no design-time bindings"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Minimal layout (4 controls)",
+        "manual_missing_geometry": ["Detalle"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNoConformidades"],
+        "calls_top": ["Form_Open", "ComandoGuardarMotivo_Click"]
+      }
+    },
+    {
+      "id": 13,
+      "name": "Form_FormNCProyectoReplanificaciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoReplanificaciones.form.txt",
+      "source_size_bytes": 27688,
+      "formName_in_ir": "FormNCProyectoReplanificaciones",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 9,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 1,
+        "events_count": 1,
+        "controls_with_events_count": 1,
+        "controls_with_bindings": ["ListaReplanificaciones"]
+      },
+      "form_list_controls": {
+        "control_count": 9,
+        "missing_geometry": ["Detalle"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 50,
+        "handlers_pattern_match": 0,
+        "notes": "Smallest form in G4 (27KB). Replanificaciones list."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "ListaReplanificaciones declared binding"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Layout vertical simple",
+        "manual_missing_geometry": ["Detalle"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbReplanificacionesProyecto"],
+        "calls_top": ["Form_Load"]
+      }
+    },
+    {
+      "id": 14,
+      "name": "Form_FormNCProyectoSeguimiento",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoSeguimiento.form.txt",
+      "source_size_bytes": 80744,
+      "formName_in_ir": "FormNCProyectoSeguimiento",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 13,
+        "formEvents": ["OnOpen"],
+        "warnings": [],
+        "bindings_count": 0,
+        "events_count": 2,
+        "controls_with_events_count": 2,
+        "controls_with_bindings": []
+      },
+      "form_list_controls": {
+        "control_count": 13,
+        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "Etiqueta237", "PieDelFormulario"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Parent navigation form for SeguimientoNC + SeguimientoTareas."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": true,
+        "evidence": "Form_Open assigns RowSource on controls",
+        "reason": "Navigation host — subform drives bindings"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Navigation host layout",
+        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "Etiqueta237", "PieDelFormulario"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNCProyecto", "ncProyecto"],
+        "calls_top": ["Form_Open"]
+      }
+    },
+    {
+      "id": 15,
+      "name": "Form_FormNCProyectoSeguimientoNC",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoSeguimientoNC.form.txt",
+      "source_size_bytes": 161578,
+      "formName_in_ir": "FormNCProyectoSeguimientoNC",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 22,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 3,
+        "events_count": 13,
+        "controls_with_events_count": 12,
+        "controls_with_bindings": ["ListaFiltrados", "RESPONSABLECALIDAD", "Responsable"]
+      },
+      "form_list_controls": {
+        "control_count": 22,
+        "missing_geometry": ["Detalle", "Etiqueta237"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Seguimiento NC — listing NCs with responsibility controls."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "ListaFiltrados + 2 combo bindings declared"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Lista filtrados + combos",
+        "manual_missing_geometry": ["Detalle", "Etiqueta237"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNoConformidades", "TbEstadoCatalogo"],
+        "calls_top": ["Form_Load", "ComandoVer_Click"]
+      }
+    },
+    {
+      "id": 16,
+      "name": "Form_FormNCProyectoSeguimientoTareas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormNCProyectoSeguimientoTareas.form.txt",
+      "source_size_bytes": 172858,
+      "formName_in_ir": "FormNCProyectoSeguimientoTareas",
+      "kind": "Form",
+      "analyze_form_ui": {
+        "controls_count": 23,
+        "formEvents": ["OnLoad"],
+        "warnings": [],
+        "bindings_count": 4,
+        "events_count": 14,
+        "controls_with_events_count": 13,
+        "controls_with_bindings": ["ListaFiltrados", "RESPONSABLECALIDAD", "Estado", "Responsable"]
+      },
+      "form_list_controls": {
+        "control_count": 23,
+        "missing_geometry": ["Detalle", "Etiqueta237"],
+        "tab_count": 0
+      },
+      "codegraph": {
+        "symbols": 23,
+        "handlers_pattern_match": 9,
+        "notes": "Seguimiento Tareas — listing actions (AC/AR) with responsibility controls."
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_bug_1408",
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": []
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken"
+      },
+      "unattended": {
+        "detected": false,
+        "note": "ListaFiltrados + 3 combo bindings declared (Estado, Responsable, RESPONSABLECALIDAD)"
+      },
+      "geometry_findings": {
+        "layout_status": "skipped_bug_1407",
+        "manual_overlap": [],
+        "manual_alignment_row": "Lista filtrados + combos",
+        "manual_missing_geometry": ["Detalle", "Etiqueta237"],
+        "manual_tab_order": "Sin TabIndex presente en IR"
+      },
+      "blast_radius": {
+        "external_callers": 0,
+        "references_to": ["TbNCAccionCorrectivas", "TbNCAccionesRealizadas", "TbEstadoCatalogo"],
+        "calls_top": ["Form_Load", "ComandoVer_Click"]
+      }
+    }
+  ],
+  "summary": {
+    "group": "G4",
+    "workflow": "NC de Proyecto",
+    "forms_total": 16,
+    "forms_with_design_time_bindings": 9,
+    "forms_unattended_runtime_bindings": 7,
+    "unattended_list": [
+      "Form_FormNCProyecto",
+      "Form_FormNCProyectoGeneral",
+      "Form_FormNCProyectoGeneralConVinculoNC",
+      "Form_FormNCProyectoControlEficaciaAlta",
+      "Form_FormNCProyectoNota",
+      "Form_FormNCProyectoMotivoEliminado",
+      "Form_FormNCProyectoSeguimiento"
+    ],
+    "design_time_bindings_list": [
+      "Form_FormNCProyectoGestion",
+      "Form_FormNCProyectoAC",
+      "Form_FormNCProyectoAR",
+      "Form_FormNCProyectoControlEficacia",
+      "Form_FormNCProyectoAcciones",
+      "Form_FormNCProyectoDocumentos",
+      "Form_FormNCProyectoReplanificaciones",
+      "Form_FormNCProyectoSeguimientoNC",
+      "Form_FormNCProyectoSeguimientoTareas"
+    ],
+    "tables_referenced_by_unattended_forms": [
+      "TbNoConformidades",
+      "TbNCAccionCorrectivas",
+      "TbNCAccionesRealizadas",
+      "TbNCDocumentos",
+      "TbNCInformacionRAC",
+      "TbReplanificacionesProyecto",
+      "TbTiposNCProyectos",
+      "TbEstadoCatalogo",
+      "TbCacheNCProyecto"
+    ],
+    "skipped_tools": ["analyze_form_layout (bug #1407)"],
+    "degraded_tools": ["map_form_behavior autoFetchCodeGraph (bug #1408)"],
+    "broken_tools": ["verify_form_bindings (RESULT_CONTRACT_VIOLATION)"],
+    "total_source_bytes": 2697195,
+    "average_source_bytes": 168575,
+    "largest_form": "Form_FormNCProyectoGestion (384050 bytes)",
+    "smallest_form": "Form_FormNCProyectoReplanificaciones (27688 bytes)",
+    "total_controls": 415,
+    "average_controls_per_form": 25.9,
+    "forms_with_0_tabindex": 16,
+    "tabindex_pattern_note": "ALL 16 forms have ZERO TabIndex in the .form.txt IR — the Walkthrough confirms a systemic pattern: tab order is left to Access default (visual top-to-bottom, left-to-right)",
+    "critical_findings_count": 0,
+    "hallazgos_count": 5,
+    "hallazgos_summary": [
+      "verify_form_bindings returns RESULT_CONTRACT_VIOLATION on every input shape (multi-table Record, single-table payload, minimal 1-column). The schema validation gate accepts the input but the result-handler rejects its own output. Dysflow bug.",
+      "All 16 forms have ZERO TabIndex declared in the .form.txt IR. This is a structural pattern, not a bug — Acces will use default visual order. Future accessibility work should set TabIndex explicitly.",
+      "7 of 16 forms are 'unattended' (bindings=0 AND have RowSource assignments in Form_Open). This is BY DESIGN — they are navigation hosts (Form_FormNCProyecto, Form_FormNCProyectoSeguimiento) or detail subforms (Form_FormNCProyectoGeneral, Form_FormNCProyectoGeneralConVinculoNC, Form_FormNCProyectoControlEficaciaAlta, Form_FormNCProyectoNota, Form_FormNCProyectoMotivoEliminado). The actual data paths live in their sibling cls Form_Open handlers.",
+      "CodeGraph-vba index is FROZEN (auto-sync disabled, file lock contention). Verification of any refactor needs `codegraph sync` first or direct Read of .cls files.",
+      "map_form_behavior autoFetchCodeGraph returns codegraphEvidence[] empty for all 16 forms (bug #1408). The 'controls_with_handler_evidence' metric is therefore 0 across the group — this G4 walkthrough cannot use codegraph-validated call paths; downstream codegraph call paths must be cross-referenced manually via codegraph_explore when needed."
+    ]
+  }
+}

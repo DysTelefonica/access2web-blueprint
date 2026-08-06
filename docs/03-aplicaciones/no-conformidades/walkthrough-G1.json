@@ -1,0 +1,597 @@
+{
+  "group": "G1",
+  "method_version": "v3",
+  "known_skipped_tools": ["analyze_form_layout (bug #1407)"],
+  "known_degraded_tools": ["map_form_behavior autoFetchCodeGraph (bug #1408 — passes --json flag rejected, falls back to .form.txt-declared events only)"],
+  "known_broken_tools": ["verify_form_bindings (round-4 bug — RESULT_CONTRACT_VIOLATION on every call regardless of schema)"],
+  "generated_at": "2026-08-06T00:00:00Z",
+  "forms_count": 11,
+  "forms": [
+    {
+      "formName": "Form_Form0BDOpciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_Form0BDOpciones.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 5,
+        "source_size_lines": 204,
+        "symbols_total": 47,
+        "files_scanned": 2,
+        "blast_radius_top_5": ["Form_Form0BDOpciones (1 caller) — ⚠️ no covering tests", "Usuario (refs)", "Form_FormGestionRiesgos", "Form_FormTareasTramitadorPendientes", "Form_FormConfiguracion"],
+        "call_path_top_3": ["ComandoMenuAuditorias_Click → DoCmd.OpenForm", "lblNoConformidadesDeProyecto_Click → ComandoMenuAuditorias_Click", "Form_Open → Ajustar/AvanceCerrar"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 11,
+        "controls_missing_geometry": 2,
+        "overlap_findings_count": 2,
+        "alignment_findings_count": 2,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "info", "controls": ["lblVersion", "Imagen376"], "rationale": "lblVersion (810-3635,165-450) ocupa header que también cubre Imagen376 (45-3795,45-870). Visible artifact: lblVersion placed ON TOP of logo image."},
+          {"kind": "OVERLAP", "severity": "info", "controls": ["Imagen70", "Imagen376"], "rationale": "Imagen70 (240-720,30-525) sobre Imagen376 (45-3795,45-870). Decorative NC icon overlays logo."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["ComandoMenuParteProyecto", "ComandoMenuAuditorias"], "row_y": 690, "tolerance_twips": 50, "rationale": "Both NC menu buttons on same Y=690."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblNoConformidadesDeProyecto", "lblMenuAuditoria"], "row_y": 2490, "tolerance_twips": 50, "rationale": "Both NC labels on same Y=2490."},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblEstado"], "rationale": "left=null and top=null. State label never positioned on canvas."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 5,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected by upstream; fell back to .form.txt-declared events only"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow round-4 bug). Skipped per host walkthrough protocol."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Open in cls sets Me.lblTitulo1.Caption / Me.lblVersion.Caption / Me.Caption / DoCmd.ShowToolbar — all visual state is computed at Form_Open time, no static bindings in .form.txt.",
+      "tool_warnings": ["map_form_behavior: CodeGraph-VBA lookup failed (--json flag rejected, bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4 bug)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_Form0BDOpcionesParteProyectos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_Form0BDOpcionesParteProyectos.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 14,
+        "source_size_lines": 444,
+        "symbols_total": 24,
+        "files_scanned": 1,
+        "blast_radius_top_5": ["Form_Form0BDOpcionesParteProyectos (1 caller) — ⚠️ no covering tests", "Parte (5 callers in brass)", "TbEventos", "TbPartesPpal", "TbPartesDetalle"],
+        "call_path_top_3": ["Form_Timer → Indicadores_MensajeAvance/PintarIndicadores", "ComandoActualizar_Click → m_IndicadoresModo='PROYECTO'", "ComandoGestionNCProyecto_Click → DoCmd.OpenForm"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 22,
+        "formEvents": ["OnOpen", "OnTimer"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 18,
+        "controls_missing_geometry": 2,
+        "overlap_findings_count": 2,
+        "alignment_findings_count": 4,
+        "tab_order_findings_count": 1,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "info", "controls": ["lblVersion", "Imagen376"], "rationale": "Header label lblVersion (810-2415,165-450) overlaps logo Imagen376 (45-3795,45-870)."},
+          {"kind": "OVERLAP", "severity": "info", "controls": ["ComandoAyuda", "cmdSalir"], "rationale": "Both at top-right header: ComandoAyuda(10785-11403,255-873) and cmdSalir(10785-11363,53-631) share X range 10785-11363 and overlapping Y 255-631."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["ComandoGestionNCProyecto", "ComandoSeguimiento"], "row_y": 690},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblBuscarNC", "lblSeguimientos", "lblNuevaNoConformidad"], "row_y": 2490},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["ComandoConfiguracion", "ComandoIndicadores"], "row_y": 3091},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblTipologiaGestion", "lblInformeIndicador"], "row_y": 4890},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["Imagen70"], "rationale": "top=null. NC icon left/top partially missing."},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblEstado"], "rationale": "left=null and top=null. State label never positioned."},
+          {"kind": "TAB_ORDER_CONFLICT", "severity": "warning", "controls": ["Imagen376", "ComandoConfiguracion"], "rationale": "Both share TabIndex=1. Access resolves by z-order, undocumented tie-break."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 14,
+        "tables_referenced": ["TbEventos", "TbPartesPpal", "TbPartesDetalle"],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Open initializes Me.lblTitulo1.Caption, Me.lblVersion.Caption, Me.Caption; Form_Timer drives Indicadores via PintarIndicadores (data refresh, no RowSource on ListBox). HOTFIX-20260519 marker confirms deferred indicator load.",
+      "tool_warnings": ["map_form_behavior: CodeGraph-VBA --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_Form0BDOpcionesAuditorias",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_Form0BDOpcionesAuditorias.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 11,
+        "source_size_lines": 363,
+        "symbols_total": 23,
+        "files_scanned": 1,
+        "blast_radius_top_5": ["Form_Form0BDOpcionesAuditorias (1 caller) — ⚠️ no covering tests", "Form_FormInformesDesdeLista", "Form_FormInformesPorFactura", "Form_frmAltaSolicitud (condor)", "Form_frmGestionSolicitud (condor)"],
+        "call_path_top_3": ["Form_Timer → PintarIndicadores(p_Modo='AUDITORIA')", "ComandoActualizar_Click → m_IndicadoresModo='AUDITORIA'", "Form_Load → Ajustar + PintarTareas"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 22,
+        "formEvents": ["OnLoad", "OnTimer"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 18,
+        "controls_missing_geometry": 2,
+        "overlap_findings_count": 2,
+        "alignment_findings_count": 4,
+        "tab_order_findings_count": 1,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "info", "controls": ["lblVersion", "Imagen376"], "rationale": "Header label lblVersion (640-2245,165-450) overlaps logo Imagen376 (60-3810,60-885)."},
+          {"kind": "OVERLAP", "severity": "info", "controls": ["ComandoAyuda", "cmdSalir"], "rationale": "Header buttons share X range: ComandoAyuda(10785-11403,285-903), cmdSalir(10785-11363,30-608) — overlap on both axes."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["ComandoGestionAuditorias", "ComandoGestionNCAuditorias", "ComandoSeguimiento"], "row_y": 720},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["ComandoAltaNCAuditoría", "ComandoAltaAuditoría"], "row_y": 3090},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblBuscarAuditoria", "lblBuscarNCAuditorias", "lblSeguimientos"], "row_y": 2520},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblNuevaAuditoría", "lblNuevaNCAuditoria"], "row_y": 4860},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["Imagen70"], "rationale": "top=null. Decorative icon position incomplete."},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblEstado"], "rationale": "top=null. Status label position incomplete."},
+          {"kind": "TAB_ORDER_CONFLICT", "severity": "warning", "controls": ["Imagen376", "ComandoAltaNCAuditoría", "ComandoMenuParteProyecto"], "rationale": "Triple conflict on TabIndex=1. Access resolves by z-order; user-visible misorder possible."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 11,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Load initializes lblTitulo1.Caption / lblVersion.Caption / Caption; Form_Timer drives PintarIndicadores with p_Modo='AUDITORIA'; Form_FormLoad pattern indicates unattended indicator refresh.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_Form0BDTecnicos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_Form0BDTecnicos.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 6,
+        "source_size_lines": 203,
+        "symbols_total": 18,
+        "files_scanned": 2,
+        "blast_radius_top_5": ["Form_Form0BDTecnicos (1 caller) — ⚠️ no covering tests", "Tecnico (14 callers in brass)", "TbTecnicos", "TbTecnicosFiestas", "TbTecnicosAusencias"],
+        "call_path_top_3": ["Form_Open → Ajustar + AjustarTamaño", "ComandoMenuParteProyecto_Click → DoCmd.OpenForm 'Form0BDOpcionesParteProyectos'", "ComandoSeguimiento_Click → DoCmd.OpenForm"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 12,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 3,
+        "alignment_findings_count": 1,
+        "tab_order_findings_count": 1,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "info", "controls": ["lblVersion", "Imagen376"], "rationale": "Header label lblVersion (810-3630,165-450) overlaps logo Imagen376 (45-3795,45-870)."},
+          {"kind": "OVERLAP", "severity": "info", "controls": ["Imagen70", "Imagen376"], "rationale": "Imagen70 (240-720,30-525) overlays Imagen376 (45-3795,45-870)."},
+          {"kind": "OVERLAP", "severity": "info", "controls": ["ComandoAyuda", "cmdSalir"], "rationale": "Header buttons overlap: ComandoAyuda(7620-8238,252-870), cmdSalir(7660-8238,45-623)."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["ComandoMenuParteProyecto", "ComandoSeguimiento"], "row_y": 690},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblEstado"], "rationale": "left=null and top=null. State label never positioned."},
+          {"kind": "TAB_ORDER_CONFLICT", "severity": "warning", "controls": ["Imagen376", "ComandoSeguimiento"], "rationale": "Both share TabIndex=1. Z-order tie-break."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 6,
+        "tables_referenced": ["TbTecnicos", "TbTecnicosFiestas", "TbTecnicosAusencias", "TbEventos", "TbActividades"],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Open initializes lblTitulo1.Caption / lblVersion.Caption / Caption; no RowSource on any control; relies on DoCmd.OpenForm to dispatch.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormIndicadores",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormIndicadores.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 7,
+        "source_size_lines": 444,
+        "symbols_total": 44,
+        "files_scanned": 2,
+        "blast_radius_top_5": ["Form_FormIndicadores (1 caller) — ⚠️ no covering tests", "Indicador (2 callers in hps)", "Funciones Generales (hps)", "VariablesEntorno (hps)", "IndicadorServicio"],
+        "call_path_top_3": ["btnCalcular_Click → TotalAbiertasPeriodo/CalcularFechasPeriodo/TotalReplanificadas/TotalStockActivo/TotalConRiesgo", "btnExcelRiesgo_Click → ExportarDirecto", "btnExcelReplan_Click → ExportarDirecto"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 28,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "bindings_note": "cmbSemestre has RowSource='S1;S2' ValueList (static, not table-bound)",
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 24,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 1,
+        "alignment_findings_count": 6,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "warning", "controls": ["cmdAyuda", "btnSalir"], "rationale": "Both top-right: cmdAyuda(8055-9636,90-525), btnSalir(8060-9641,105-540) — almost complete overlap. cmdAyuda caption='Ayuda', btnSalir caption='Salir' — possible UX conflict if user clicks between them."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblTit1", "lblTit2"], "row_y": 1565},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblResAbiertas", "lblResReplan"], "row_y": 2246},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["btnExcelAbiertas", "btnExcelReplan"], "row_y": 3669},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblTit3", "lblTit4"], "row_y": 4704},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["lblResStock", "lblResRiesgo"], "row_y": 5385},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["btnExcelStock", "btnExcelRiesgo"], "row_y": 6750},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblTitulo"], "rationale": "top=null. Title label top position not set."},
+          {"kind": "TAB_ORDER", "severity": "info", "controls": ["txtAnio", "btnCalcular", "btnExcelAbiertas", "btnExcelReplan", "btnExcelStock", "btnExcelRiesgo"], "rationale": "Sequential TabIndex 1-6, coherent."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 7,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Load → LimpiarResultados (no RowSource assignment on any of the 4 result label ListBoxes). Results populated by btnCalcular_Click → PintarIndicadores. ValueList on cmbSemestre is static.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormCorreo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormCorreo.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 4,
+        "source_size_lines": 155,
+        "symbols_total": 37,
+        "files_scanned": 2,
+        "blast_radius_top_5": ["Form_FormCorreosGestion (hps-solicitudes, 1 caller) — ⚠️ no covering tests", "Correo class", "CorreoOperaciones", "TbSolicitudes (via caller)", "Form_FormInformesDesdeLista"],
+        "call_path_top_3": ["Form_Open → Ajustar + EstablecerDatos", "ComandoEnviarCorreo_Click → HTMLNCProyecto/HTMLNCAuditoria + Correo.Registrar", "EstablecerDatos → Asunto/DESTINATARIOS/DestinatariosConCopia assignments"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 12,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 9,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 3,
+        "tab_order_findings_count": 1,
+        "findings": [
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Asunto", "DESTINATARIOS", "DestinatariosConCopia"], "rationale": "All input TextBoxes share Left=1442. Aligned column."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Etiqueta232", "Etiqueta253", "Etiqueta247"], "rationale": "All labels share Left=210. Aligned column."},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblTitulo"], "rationale": "left=null and top=null. Title label position incomplete."},
+          {"kind": "TAB_ORDER_CONFLICT", "severity": "warning", "controls": ["DESTINATARIOS", "ComandoEnviarCorreo"], "rationale": "Both share TabIndex=1. Z-order tie-break — DESTINATARIOS likely first by tab order definition order."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 4,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Open assigns Me.Asunto, Me.DESTINATARIOS, Me.DestinatariosConCopia, Me.Caption via EstablecerDatos; EstablecerDatos reads m_ObjNCProyectoActiva/m_ObjNCAuditoriaActiva. Classic unattended pattern — values set in code, no RecordSource/RowSource on form.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormMotivosNoRequiereControlEficacia",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormMotivosNoRequiereControlEficacia.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": 108,
+        "symbols_total": 49,
+        "files_scanned": 2,
+        "blast_radius_top_5": ["Form_FormMotivosNoRequiereControlEficacia (2 callers: Form_FormNCAuditoriaGeneral, Form_FormNCProyectoGeneral) — ⚠️ no covering tests", "Form_FormInformesDesdeLista", "Form_FormInformesPorFactura"],
+        "call_path_top_3": ["Motivos → Constructor.getMotivos", "ComandoRegistrar_Click → Nz(Me.MotivoNoRequiereControlEficacia)", "Form_Load → Nz(Me.OpenArgs)"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 7,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 5,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 0,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblTitulo"], "rationale": "left=null and top=null. Title label position incomplete."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 2,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Load reads m_ObjNCAuditoriaActiva/m_ObjNCProyectoActiva via OpenArgs; no RecordSource on MotivoNoRequiereControlEficacia TextBox. Values set by parent form caller.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_formRiesgosSeleccion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_formRiesgosSeleccion.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 5,
+        "source_size_lines": 369,
+        "symbols_total": 84,
+        "files_scanned": 3,
+        "blast_radius_top_5": ["Form_formRiesgosSeleccion (1 caller) — ⚠️ no covering tests", "riesgo class (1 caller in InformeRiesgoPDFServicio)", "Riesgo class", "RiesgoExterno class", "RiesgoMaterializacion class"],
+        "call_path_top_3": ["btnAceptar_Click → InvalidarCache/Collection.Add/SincronizarCampoTextoNC/ActualizarRiesgosNC", "Form_Load → RellenarListBox/PreseleccionarActuales/getNCProyecto/ListarRiesgosCandidatos", "Form_Open → Nz(Me.OpenArgs)"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 9,
+        "formEvents": ["OnOpen", "OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 8,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 1,
+        "alignment_findings_count": 1,
+        "tab_order_findings_count": 1,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "warning", "controls": ["btnAceptar", "lstRiesgos"], "rationale": "btnAceptar (9533-11624, 120-555) overlaps lstRiesgos (284-11624, 231-6588) — X overlap 9533-11624, Y overlap 231-555. Aceptar button sits ON TOP of the riesgos listbox visually."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["btnAceptar", "btnCancelar"], "row_y": 120, "rationale": "Both header buttons aligned Y=120."},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblTitulo"], "rationale": "left=null and top=null. Title label position incomplete."},
+          {"kind": "TAB_ORDER_CONFLICT", "severity": "warning", "controls": ["btnQuitarTodos", "btnCancelar"], "rationale": "Both share TabIndex=1. Z-order tie-break."},
+          {"kind": "CAPTION_MISMATCH", "severity": "warning", "controls": ["lblTitulo"], "rationale": "Caption says 'GESTIÓN DE LAS AUDITORÍAS' but form is formRiesgosSeleccion — copy/paste residue from sibling form."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 5,
+        "tables_referenced": ["TbRiesgosAIntegrar", "TbRiesgosMaterializaciones", "TbRiesgos"],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Load → RellenarListBox(ListarRiesgosCandidatos), PreseleccionarActuales. ListBox lstRiesgos has RowSourceType='Value List' static; populated dynamically by RellenarListBox.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormExpedientesBusqueda",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormExpedientesBusqueda.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 9,
+        "source_size_lines": 352,
+        "symbols_total": 45,
+        "files_scanned": 2,
+        "blast_radius_top_5": ["Form_FormExpedientesBusqueda (3 callers: Form_FormGestionRiesgosDatosGenerales, Form_FormAltaDatosSolicitante, Form_FormSolicitudRenovacionDatos) — ⚠️ no covering tests", "Expediente class", "Edicion class", "Proyecto class", "Usuario class"],
+        "call_path_top_3": ["Form_Open → Ajustar + ListaFiltrados.RowSource header", "ComandoElegir_Click → constructor.getExpediente + RaiseEvent Seleccionado", "Filtrar → constructor.getExpedientesBusqueda + ListaFiltrados.AddItem"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 15,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 2,
+        "bindings_note": "ListaFiltrados RowSource=ValueList (static header), IDResponsableCalidad RowSource=ValueList (5 hardcoded users)",
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 13,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 2,
+        "alignment_findings_count": 4,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "OVERLAP", "severity": "warning", "controls": ["ComandoActualizar", "ComandoSalir"], "rationale": "Both top-right header: ComandoActualizar(13719-14337,45-663), ComandoSalir(13759-14337,45-623). X overlap 13759-14337, Y overlap 45-623. Refresh and Salir buttons stacked with overlapping bounds."},
+          {"kind": "OVERLAP", "severity": "warning", "controls": ["Titulo", "ComandoElegir"], "rationale": "Titulo (283-14365, 4762-5629) overlaps ComandoElegir (13047-14337, 5850-6285). X overlap 13047-14337, Y overlap 5850-5629 (ComandoElegir's top extends INTO Titulo's bottom)."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Etiqueta29", "PalabraClave", "ComandoLimpiarPalabraClave"], "row_y": 165},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Etiqueta30", "IDResponsableCalidad", "ComandoLimpiarIDResponsableCalidad"], "row_y": 165},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblTitulo1"], "rationale": "left=null and top=null. Title label position incomplete."},
+          {"kind": "TAB_ORDER", "severity": "info", "controls": ["IDResponsableCalidad", "ListaFiltrados", "ComandoLimpiarPalabraClave", "ComandoLimpiarIDResponsableCalidad", "Titulo", "ComandoElegir"], "rationale": "Sequential TabIndex 1-6, coherent."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 9,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "Form_Open sets Me.Caption, Me.ListaFiltrados.RowSource header (string), but actual rows populated by Filtrar → ListaFiltrados.AddItem. IDResponsableCalidad has hardcoded ValueList of 5 users, not query-bound — likely stale data.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormARAuditoriaDocumentos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormARAuditoriaDocumentos.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 8,
+        "source_size_lines": 287,
+        "symbols_total": 19,
+        "files_scanned": 1,
+        "blast_radius_top_5": ["Form_FormARAuditoriaDocumentos (2 callers: Form_FormNCAuditoriaAR, Form_FormNCAuditoriaAcciones) — ⚠️ no covering tests", "DocumentoAuditoria class", "DocumentoAuditoriaOperaciones", "ARAuditoria class", "AR class"],
+        "call_path_top_3": ["ListaDocumentos_DblClick → ImagenAnexo_Click", "ComandoAnexar_Click → EstablecerLista → ListBox.AddItem", "ComandoEliminar_Click → EstablecerLista → ListBox.AddItem"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": ["OnClose", "OnLoad"],
+        "bindings_count": 1,
+        "bindings_note": "ListaDocumentos RowSource=ValueList (static, contains a single hardcoded sample row '1080;Prueba de documento;NC0226_01.xlsx')",
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 12,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 3,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Etiqueta62", "Documento", "ComandoCambiarNombre"], "row_y": 180},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["ComandoEliminar", "ComandoCambiarNombre"], "row_y": 4047, "rationale": "Both document-management actions at bottom row."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Documento", "URLDocumento"], "rationale": "Both share Left=2839, header column aligned."},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblTitulo"], "rationale": "left=null and top=null. Title label position incomplete."},
+          {"kind": "TAB_ORDER", "severity": "info", "controls": ["ComandoAnexar", "ComandoEliminar", "ListaDocumentos", "URLDocumento", "ComandoCambiarNombre", "ImagenAnexo"], "rationale": "Sequential TabIndex 1-6, coherent."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 8,
+        "tables_referenced": ["TbNCDocumentosAux (Tag on ListaDocumentos)"],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "ListaDocumentos has hardcoded RowSource sample row and Tag='TbNCDocumentosAux' — populated dynamically by EstablecerLista via ListBox.AddItem in handlers. Form_Load not extracted here but caller sets Documento/URLDocumento/ListaDocumentos via ARAuditoria.Documentos property.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    },
+    {
+      "formName": "Form_FormARProyectoDocumentos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/no-conformidades/src/forms/Form_FormARProyectoDocumentos.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 7,
+        "source_size_lines": 314,
+        "symbols_total": 21,
+        "files_scanned": 1,
+        "blast_radius_top_5": ["Form_FormARProyectoDocumentos (2 callers: Form_FormNCProyectoAR, Form_FormNCProyectoAcciones) — ⚠️ no covering tests", "DocumentoProyecto class", "DocumentoProyectoOperaciones", "ARProyecto class", "AR class"],
+        "call_path_top_3": ["btnExaminar_Click → Seleccionar/fso.GetFileName/fso.FileExists/Nz + ListaDocumentos_Click", "Documentos → getDocumentosCCCambio/getdb", "ComandoEliminar_Click/ComandoCambiarNombre_Click → EstablecerLista"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "bindings_note": "ListaDocumentos RowSource=ValueList (static header 'IDDocumento;DOCUMENTO;Archivo')",
+        "warnings": []
+      },
+      "geometry": {
+        "controls_with_geometry": 12,
+        "controls_missing_geometry": 1,
+        "overlap_findings_count": 0,
+        "alignment_findings_count": 2,
+        "tab_order_findings_count": 0,
+        "findings": [
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Documento", "ComandoCambiarNombre"], "row_y": 180, "rationale": "Title input and Cambiar nombre share Y=180. Documento(1204-10889), ComandoCambiarNombre(11055-12795) — 166 twips gap, no overlap."},
+          {"kind": "ALIGNMENT_ROW_OK", "severity": "info", "controls": ["Documento", "URLDocumento"], "rationale": "Both share Left=1204 column."},
+          {"kind": "MISSING_GEOMETRY", "severity": "warning", "controls": ["lblTitulo"], "rationale": "left=null and top=null. Title label position incomplete."},
+          {"kind": "TAB_ORDER", "severity": "info", "controls": ["btnExaminar", "ComandoEliminar", "ListaDocumentos", "URLDocumento", "ComandoCambiarNombre", "btnAceptar", "ImagenAnexo"], "rationale": "Sequential TabIndex 1-7, coherent."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 7,
+        "tables_referenced": ["TbNCDocumentosAux (Tag on ListaDocumentos)"],
+        "codegraph_evidence_status": "empty_bug_1408",
+        "warnings": ["CodeGraph-VBA --json flag rejected"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (round-4 bug)."
+      },
+      "unattended": true,
+      "unattended_evidence": "ListaDocumentos has Tag='TbNCDocumentosAux' and RowSource header — rows populated dynamically by btnExaminar_Click → EstablecerLista / ListBox.AddItem. btnAceptar caption='Aceptar' but ControlTipText='ir a los riesgos' — caption/TipText mismatch indicates UX debt.",
+      "tool_warnings": ["map_form_behavior: --json rejected (bug #1408)", "verify_form_bindings: RESULT_CONTRACT_VIOLATION (round-4)"],
+      "known_skipped_tools": ["analyze_form_layout (bug #1407)"]
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 50,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 11,
+    "unattended_forms": 11,
+    "tables_referenced_union": ["TbEventos", "TbPartesPpal", "TbPartesDetalle", "TbTecnicos", "TbTecnicosFiestas", "TbTecnicosAusencias", "TbTecnicosAusencias", "TbTecnicosFiestas", "TbActividades", "TbRiesgosAIntegrar", "TbRiesgosMaterializaciones", "TbRiesgos", "TbNCDocumentosAux"],
+    "blast_radius_shared_symbols": [
+      "Form_Form0BDOpcionesParteProyectos ↔ Form_Form0BDOpcionesAuditorias (sibling pattern: timer-driven PintarIndicadores)",
+      "Form_FormARAuditoriaDocumentos ↔ Form_FormARProyectoDocumentos (sibling pattern: lista documentos + establecer lista)",
+      "Form_Form0BDOpcionesTecnicos → Form_Form0BDOpcionesParteProyectos (DoCmd.OpenForm navigation)",
+      "Form_FormMotivosNoRequiereControlEficacia is called by both NCAuditoria and NCProyecto generals"
+    ],
+    "common_geometry_issues": {
+      "MISSING_GEOMETRY_lblTitulo": ["Form_Form0BDOpciones", "Form_Form0BDOpcionesParteProyectos", "Form_Form0BDOpcionesAuditorias", "Form_Form0BDTecnicos", "Form_FormIndicadores", "Form_FormCorreo", "Form_FormMotivosNoRequiereControlEficacia", "Form_formRiesgosSeleccion", "Form_FormExpedientesBusqueda", "Form_FormARAuditoriaDocumentos", "Form_FormARProyectoDocumentos"],
+      "MISSING_GEOMETRY_lblEstado": ["Form_Form0BDOpciones", "Form_Form0BDOpcionesParteProyectos", "Form_Form0BDOpcionesAuditorias", "Form_Form0BDTecnicos"],
+      "OVERLAP_Imagen376_vs_lblVersion": ["Form_Form0BDOpciones", "Form_Form0BDOpcionesParteProyectos", "Form_Form0BDOpcionesAuditorias", "Form_Form0BDTecnicos"],
+      "TAB_INDEX_CONFLICTS_TabIndex_1": ["Form_Form0BDOpcionesParteProyectos (Imagen376+ComandoConfiguracion)", "Form_Form0BDOpcionesAuditorias (Imagen376+ComandoAltaNCAuditoría+ComandoMenuParteProyecto)", "Form_Form0BDTecnicos (Imagen376+ComandoSeguimiento)", "Form_FormCorreo (DESTINATARIOS+ComandoEnviarCorreo)", "Form_formRiesgosSeleccion (btnQuitarTodos+btnCancelar)"]
+    },
+    "tool_failure_summary": {
+      "verify_form_bindings": "RESULT_CONTRACT_VIOLATION on every call (round-4 bug) — 11 forms skipped",
+      "map_form_behavior_codegraph_enrichment": "CodeGraph-VBA --json flag rejected by upstream CLI (bug #1408) — fell back to .form.txt-declared events for all 11 forms",
+      "analyze_form_layout": "Bug #1407 — tool skipped per host protocol"
+    }
+  }
+}
