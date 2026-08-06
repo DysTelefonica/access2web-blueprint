@@ -1,0 +1,871 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-1030496804
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12474
+    DatasheetFontHeight =11
+    ItemSuffix =119
+    Left =4380
+    Top =10980
+    Right =17070
+    Bottom =17655
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x7bf11d65d99ee540
+    End
+    GUID = Begin
+        0x2d5c8bf547c0ec45b9381f22d8aeda62
+    End
+    Caption ="Usuario conectado: Administrador ( Administrador )"
+    DatasheetFontName ="Calibri"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    NoSaveCTIWhenDisabled =1
+    NoSaveCTIWhenDisabled =1
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin OptionButton
+            BorderLineStyle =0
+            LabelX =230
+            LabelY =-30
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =6521
+            BackColor =16774386
+            Name ="Detalle"
+            GUID = Begin
+                0x9c6dd35eed169e4391a5e058f502fd58
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin Rectangle
+                    SpecialEffect =4
+                    BackStyle =1
+                    BorderWidth =3
+                    OverlapFlags =93
+                    Left =285
+                    Top =170
+                    Width =11907
+                    Height =5792
+                    BorderColor =14996945
+                    Name ="shpAutoridadDiseno"
+                    GUID = Begin
+                        0xe9b908e093311440938022c5927195fb
+                    End
+                    LayoutCachedLeft =285
+                    LayoutCachedTop =170
+                    LayoutCachedWidth =12192
+                    LayoutCachedHeight =5962
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =567
+                    Top =340
+                    Width =5220
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta43"
+                    Caption ="PARTE 2 - A CUMPLIMENTAR POR EL RAC DELEGADOR"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x658c5e76b2887c4ca1a02c2b79359362
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =567
+                    LayoutCachedTop =340
+                    LayoutCachedWidth =5787
+                    LayoutCachedHeight =655
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    BorderWidth =1
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =570
+                    Top =5368
+                    Width =5670
+                    Height =315
+                    FontSize =10
+                    BorderColor =12419407
+                    ForeColor =4666411
+                    Name ="racDelegadoNombre"
+                    FontName ="Segoe UI"
+                    OnChange ="[Procedimiento de evento]"
+                    GUID = Begin
+                        0x8b0aeb965d413b40b696b656c2d9febc
+                    End
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =5368
+                    LayoutCachedWidth =6240
+                    LayoutCachedHeight =5683
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =570
+                    Top =5010
+                    Width =840
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta97"
+                    Caption ="Nombre"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xd19609f3fb5e284b8e1b28cb2bccf2a8
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =5010
+                    LayoutCachedWidth =1410
+                    LayoutCachedHeight =5325
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    BorderWidth =1
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =570
+                    Top =1135
+                    Width =4536
+                    Height =315
+                    FontSize =10
+                    TabIndex =1
+                    BorderColor =12419407
+                    ForeColor =4666411
+                    Name ="racCodigo"
+                    FontName ="Segoe UI"
+                    OnChange ="[Procedimiento de evento]"
+                    GUID = Begin
+                        0xc1b50a093e938545bcedd414cbb2e559
+                    End
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =1135
+                    LayoutCachedWidth =5106
+                    LayoutCachedHeight =1450
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =570
+                    Top =795
+                    Width =2268
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta105"
+                    Caption ="Código"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x5776721504c81149ab6611655599dc3b
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =795
+                    LayoutCachedWidth =2838
+                    LayoutCachedHeight =1110
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =570
+                    Top =1605
+                    Width =1425
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta107"
+                    Caption ="Observaciones"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xddc5d4f1c0f12a4db76cdf8b1df09fc0
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =1605
+                    LayoutCachedWidth =1995
+                    LayoutCachedHeight =1920
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    BorderWidth =1
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =570
+                    Top =1945
+                    Width =11058
+                    Height =2927
+                    FontSize =10
+                    TabIndex =2
+                    BorderColor =12419407
+                    ForeColor =4666411
+                    Name ="observacionesRACDelegador"
+                    FontName ="Segoe UI"
+                    OnChange ="[Procedimiento de evento]"
+                    GUID = Begin
+                        0xe80c0f5016572249ba740d6a4ae1e857
+                    End
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =1945
+                    LayoutCachedWidth =11628
+                    LayoutCachedHeight =4872
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =570
+                    Top =3400
+                    Width =1425
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta180"
+                    Caption ="Nombre Delegador"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xddc5d4f1c0f12a4db76cdf8b1df09fc1
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =3400
+                    LayoutCachedWidth =1995
+                    LayoutCachedHeight =3715
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    BorderWidth =1
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =570
+                    Top =3750
+                    Width =11058
+                    Height =315
+                    FontSize =10
+                    TabIndex =3
+                    BorderColor =12419407
+                    ForeColor =4666411
+                    Name ="racNombreDelegador"
+                    FontName ="Segoe UI"
+                    OnChange ="[Procedimiento de evento]"
+                    GUID = Begin
+                        0xe80c0f5016572249ba740d6a4ae1e858
+                    End
+                    LayoutCachedLeft =570
+                    LayoutCachedTop =3750
+                    LayoutCachedWidth =11628
+                    LayoutCachedHeight =4065
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =11058
+                    Top =6124
+                    Width =1134
+                    Height =340
+                    FontWeight =700
+                    TabIndex =4
+                    ForeColor =16777215
+                    Name ="cmdGuardar"
+                    Caption ="Grabar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    ControlTipText ="grabar"
+                    GUID = Begin
+                        0x86c6cbb68dea2746aa601aedfec08e4e
+                    End
+                    LayoutCachedLeft =11058
+                    LayoutCachedTop =6124
+                    LayoutCachedWidth =12192
+                    LayoutCachedHeight =6464
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    Gradient =0
+                    BackColor =16737792
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    OldBorderStyle =0
+                    ThemeFontIndex =-1
+                    HoverColor =4666411
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =3414531
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16737792
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16737792
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =2
+                    WebImagePaddingBottom =2
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =5145
+                    Top =1135
+                    Width =180
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta111"
+                    Caption ="*"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x50e064d55d2bde4fb9c32176bda0ab67
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =5145
+                    LayoutCachedTop =1135
+                    LayoutCachedWidth =5325
+                    LayoutCachedHeight =1480
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6285
+                    Top =5370
+                    Width =180
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta113"
+                    Caption ="*"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x6f4df20d8246464fafe57f15c8c36f7c
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6285
+                    LayoutCachedTop =5370
+                    LayoutCachedWidth =6465
+                    LayoutCachedHeight =5715
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =3930
+                    Top =6120
+                    Width =1134
+                    Height =340
+                    FontWeight =700
+                    TabIndex =5
+                    ForeColor =16777215
+                    Name ="cmdRestaurarDatos"
+                    Caption ="Restaurar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    ControlTipText ="grabar"
+                    GUID = Begin
+                        0xafb94cb36736af45ac68c3d46ab95ea4
+                    End
+                    LayoutCachedLeft =3930
+                    LayoutCachedTop =6120
+                    LayoutCachedWidth =5064
+                    LayoutCachedHeight =6460
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    Gradient =0
+                    BackColor =7043286
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    OldBorderStyle =0
+                    BorderColor =9737945
+                    BorderThemeColorIndex =5
+                    ThemeFontIndex =-1
+                    HoverColor =3423364
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =1579081
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =14745599
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16777215
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =2
+                    WebImagePaddingBottom =2
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =286
+                    Top =6120
+                    Width =3504
+                    Height =340
+                    FontWeight =700
+                    TabIndex =6
+                    ForeColor =16777215
+                    Name ="cmdCargarDatosPredeterminados"
+                    Caption ="Cargar Datos Predeterminados"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    ControlTipText ="grabar"
+                    GUID = Begin
+                        0xf577ecf3c9bb30439d200a97aecf9939
+                    End
+                    LayoutCachedLeft =286
+                    LayoutCachedTop =6120
+                    LayoutCachedWidth =3790
+                    LayoutCachedHeight =6460
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    Gradient =0
+                    BackColor =16737792
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    OldBorderStyle =0
+                    ThemeFontIndex =-1
+                    HoverColor =4666411
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =3414531
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16737792
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16737792
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =2
+                    WebImagePaddingBottom =2
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+' ==========================================================================
+' MÓDULO: subfrmDatosPCSUB_DictamenRAC.cls
+' VERSIÓN: Alineado con ERD (tbDatosPCSUB)
+'           Usa campos estándar: racDelegadoNombre, racCodigo, observacionesRACDelegador, racNombreDelegador
+'           Mapeo de controles a VM según especificación:
+'             racDelegadoNombre     -> vm_racNombre
+'             racCodigo             -> vm_racCodigo
+'             observacionesRACDelegador -> vm_observacionesRACDelegador
+'             racNombreDelegador    -> vm_racNombreDelegador
+' ==========================================================================
+
+Option Compare Database
+Option Explicit
+
+Private m_ViewModel As DatosPCSUBViewModel
+Private m_original_racDelegadoNombre As String
+
+Public Sub PoblarControles(ByRef vm As DatosPCSUBViewModel)
+    On Error GoTo Errores
+    Set m_ViewModel = vm
+    If m_ViewModel Is Nothing Then Exit Sub
+
+    ' Volcar datos a controles (campos estándar ERD / RAC Delegador)
+    Me.racDelegadoNombre = Nz(vm.vm_racNombre, "")
+    Me.racCodigo = Nz(vm.vm_racCodigo, "")
+    Me.observacionesRACDelegador = Nz(vm.vm_observacionesRACDelegador, "")
+    Me.racNombreDelegador = Nz(vm.vm_racNombreDelegador, "")
+
+    ' Lógica de Bloqueo VISUAL
+    Dim habilitado As Boolean
+    habilitado = m_ViewModel.PuedeGuardar_DictamenRAC
+
+    Me.racDelegadoNombre.Enabled = habilitado
+    Me.racCodigo.Enabled = habilitado
+    Me.observacionesRACDelegador.Enabled = False
+
+    Me.cmdGuardar.Enabled = habilitado
+    Me.cmdCargarDatosPredeterminados.Visible = True
+    Me.cmdCargarDatosPredeterminados.Enabled = habilitado
+    Call QuitarFocoControl(Me, "cmdRestaurarDatos")
+    Me.cmdRestaurarDatos.Visible = False
+
+    Exit Sub
+Errores:
+    ManejadorErroresFormulario "subfrmDatosPCSUB_DictamenRAC.PoblarControles", Me
+End Sub
+
+Public Sub RecogerValores(ByRef vm As DatosPCSUBViewModel)
+    On Error GoTo Errores
+    If vm Is Nothing Then Exit Sub
+
+    ' Recogemos los campos estándar del bloque RAC
+    vm.vm_racNombre = Nz(Me.racDelegadoNombre.value, "")
+    vm.vm_racCodigo = Nz(Me.racCodigo.value, "")
+    vm.vm_observacionesRACDelegador = Nz(Me.observacionesRACDelegador.value, "")
+    vm.vm_racNombreDelegador = Nz(Me.racNombreDelegador.value, "")
+
+    Exit Sub
+Errores:
+    ManejadorErroresFormulario "subfrmDatosPCSUB_DictamenRAC.RecogerValores", Me
+End Sub
+
+Private Sub cmdGuardar_Click()
+    On Error GoTo Errores
+
+    Call RecogerValores(m_ViewModel)
+    Me.Parent.GuardarDesdeSubform Me.name
+
+    Exit Sub
+Errores:
+    ManejadorErroresFormulario "subfrmDatosPCSUB_DictamenRAC.cmdGuardar_Click", Me
+End Sub
+
+Private Sub cmdCargarDatosPredeterminados_Click()
+    Dim expServ As New ExpedienteServicio
+    Dim nombreDelegador As String
+
+    On Error GoTo Errores
+
+    If m_ViewModel Is Nothing Then Exit Sub
+
+    Me.Parent.lblBloqueo.Visible = True
+    DoCmd.Hourglass True
+
+    m_original_racDelegadoNombre = Nz(Me.racDelegadoNombre.value, "")
+
+    nombreDelegador = expServ.GetRacAsignadoPorExpediente(m_ViewModel.Solicitud.idExpediente)
+
+    If nombreDelegador <> "" Then
+        Me.racDelegadoNombre = nombreDelegador
+    Else
+        MsgBox "Este expediente no tiene un RAC asignado. Hable con el gestor de expedientes", vbExclamation, "Sin RAC"
+    End If
+
+    Me.cmdCargarDatosPredeterminados.Enabled = False
+    Me.cmdRestaurarDatos.Visible = True
+    Me.cmdRestaurarDatos.Enabled = True
+
+LimpiarYSalir:
+    Me.Parent.lblBloqueo.Visible = False
+    DoCmd.Hourglass False
+    Exit Sub
+Errores:
+    Call ManejadorErroresFormulario("cmdCargarDatosPredeterminados_Click", Me)
+    Resume LimpiarYSalir
+End Sub
+
+Private Sub cmdRestaurarDatos_Click()
+    On Error GoTo Errores
+
+    Me.racDelegadoNombre = m_original_racDelegadoNombre
+
+    Call RecogerValores(m_ViewModel)
+
+    Me.cmdGuardar.SetFocus
+    Call QuitarFocoControl(Me, "cmdRestaurarDatos")
+    Me.cmdRestaurarDatos.Visible = False
+    Me.cmdCargarDatosPredeterminados.Enabled = True
+    If Me.cmdCargarDatosPredeterminados.Enabled And Me.cmdCargarDatosPredeterminados.Visible Then
+        Me.cmdCargarDatosPredeterminados.SetFocus
+    End If
+
+    Exit Sub
+Errores:
+    ManejadorErroresFormulario "subfrmDatosPCSUB_DictamenRAC.cmdRestaurarDatos_Click", Me
+End Sub

@@ -1,0 +1,649 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-322045752
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =5555
+    DatasheetFontHeight =11
+    Left =1290
+    Top =705
+    Right =6840
+    Bottom =2985
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0x4cd66c1e454c884d936bb2f118ad0e97
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000f6a0050118ec00000000000000000000 ,
+        0x010403069c000c0353ef8001010009009a0b3408640001000f00b00402000100 ,
+        0xb004030001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220054000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000545330303200000000000000 ,
+        0x0000
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00006547a80100001973df278500000000982f63a80100004c00000000000000 ,
+        0x0b000000000000000b0000000000000000006605000000000a982f63a8010000 ,
+        0x01040306dc000c0353ef8001010009009a0b3408640001000f00b00402000100 ,
+        0xb0040300010041003400000000000000000000004c0000000100000000000000 ,
+        0x1004000000000000040000000000000000982f63a80100000b00000000000000 ,
+        0x00006547a8010000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e0050000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x54005300300030003200000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =2247
+            Name ="Detalle"
+            GUID = Begin
+                0xf9e9ac0160bb1d4cb6fbcd1ef2f0937e
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Width =5458
+                    Height =612
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0x3653a3bce96db246a1b647dec638be22
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =5458
+                    LayoutCachedHeight =612
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =1635
+                    Width =5458
+                    Height =612
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0x6c53531a2ba5484794689b27a1ead671
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =1635
+                    LayoutCachedWidth =5458
+                    LayoutCachedHeight =2247
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4755
+                    Top =1770
+                    Width =645
+                    Height =405
+                    FontWeight =700
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir"
+                    GUID = Begin
+                        0x81607921c5106548bb3d00a3402db03c
+                    End
+
+                    LayoutCachedLeft =4755
+                    LayoutCachedTop =1770
+                    LayoutCachedWidth =5400
+                    LayoutCachedHeight =2175
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =105
+                    Top =855
+                    Width =1290
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta210"
+                    Caption ="REPARACIÓN"
+                    GUID = Begin
+                        0x04111e9d1f7690479c5ec0dcbcecd273
+                    End
+                    LayoutCachedLeft =105
+                    LayoutCachedTop =855
+                    LayoutCachedWidth =1395
+                    LayoutCachedHeight =1170
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =2
+                    Left =1530
+                    Top =855
+                    Width =921
+                    Height =315
+                    TabIndex =1
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    GUID = Begin
+                        0x457f7aa7da9ddb48ac7ceecc0560c92b
+                    End
+                    Name ="ComboEsReparacion"
+                    RowSourceType ="Value List"
+                    RowSource ="\"Sí\";\"No\""
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =1530
+                    LayoutCachedTop =855
+                    LayoutCachedWidth =2451
+                    LayoutCachedHeight =1170
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4081
+                    Top =1770
+                    Width =555
+                    Height =405
+                    FontWeight =700
+                    TabIndex =2
+                    Name ="ComandoAlta"
+                    Caption ="Alta"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x602ae44a648fbd40a2f7839cd5f83a9a
+                    End
+
+                    LayoutCachedLeft =4081
+                    LayoutCachedTop =1770
+                    LayoutCachedWidth =4636
+                    LayoutCachedHeight =2175
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =223
+                    Left =900
+                    Top =60
+                    Width =3330
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="TIPO MATERIAL"
+                    GUID = Begin
+                        0x1fccd6fb701fd4438ddac4f64afcf80c
+                    End
+                    LayoutCachedLeft =900
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =4230
+                    LayoutCachedHeight =720
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =855
+                    Width =3330
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="TIPO MATERIAL"
+                    GUID = Begin
+                        0x327ce3caf0097748b005812651c1eea3
+                    End
+                    LayoutCachedLeft =855
+                    LayoutCachedWidth =4185
+                    LayoutCachedHeight =660
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Dim strIDEvento As String, strIDActividad As String, strArgumento As String
+Dim strBUI As String, strSUBSISTEMA As String, strIDEquipo As String, strEquipo As String
+Private Sub cmdSalir_Click()
+     On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Sub ComandoAlta_Click()
+    Dim rcdDatos As DAO.Recordset, strEsReparacion As String, strTextoError As String, strNombreFormulario As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    strNombreFormulario = Me.Name
+    strEsReparacion = Nz(Me.ComboEsReparacion, "")
+    If strEsReparacion <> "Sí" And strEsReparacion <> "No" Then
+        strTextoError = "No se ha elegido sí o no"
+        Err.Raise 1000
+    End If
+    dato = Split(strArgumento, "|")
+    If strEsReparacion = "Sí" Then
+        
+        '-----------------------------------------------------
+        '   -Devuelve
+        '       FormularioAbierto = true or false
+        '       FormularioAbierto =False-->Error
+        '-----------------------------------------------------
+        If FormularioAbierto("FormMaterialAltaReparacion") Then
+            DoCmd.Close acForm, "FormMaterialAltaReparacion", acSaveNo
+        End If
+        If UBound(dato) = 1 Then
+            m_SQL = "SELECT  TbEventos.BUI, TbEventos.SUBSISTEMA, TbEventos.IDEquipo, TbEquipos.Equipo " & _
+                        "FROM TbEventos LEFT JOIN TbEquipos ON TbEventos.IDEquipo = TbEquipos.IDEquipo " & _
+                    "WHERE (((TbEventos.IDEvento)='" & strIDEvento & "'));"
+        
+            Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+            With rcdDatos
+                If .EOF Then
+                    strTextoError = "Ne está registrado el evento: " & strIDEvento
+                    Err.Raise 1000
+                End If
+                strBUI = Nz(.Fields("BUI"), "")
+                strSUBSISTEMA = Nz(.Fields("SUBSISTEMA"), "")
+                strIDEquipo = Nz(.Fields("IDEquipo"), "")
+                strEquipo = Nz(.Fields("Equipo"), "")
+            End With
+            rcdDatos.Close
+            Set rcdDatos = Nothing
+            'strArgumento=strBUI & "|" & strSubSistema & "|" & strIDEquipo & "|" & strIDEquipo & "|" & strIDEvento & "|" & strIDActividad
+            strArgumento = strBUI & "|" & strSUBSISTEMA & "|" & strIDEquipo & "|" & strIDEquipo & "|" & strIDEvento & "|" & strIDActividad
+        ElseIf UBound(dato) = 3 Then
+            'strArgumento=strBUI & "|" & strSubSistema & "|" & strIDEquipo & "|" & strIDEquipo
+            strArgumento = strBUI & "|" & strSUBSISTEMA & "|" & strIDEquipo & "|" & strIDEquipo
+        End If
+        DoCmd.OpenForm "FormMaterialAltaReparacion", , , , , , strArgumento
+    Else
+         m_SQL = "SELECT  TbEventos.BUI, TbEventos.SUBSISTEMA, TbEventos.IDEquipo, TbEquipos.Equipo " & _
+                    "FROM TbEventos LEFT JOIN TbEquipos ON TbEventos.IDEquipo = TbEquipos.IDEquipo " & _
+                "WHERE (((TbEventos.IDEvento)='" & strIDEvento & "'));"
+        Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+        With rcdDatos
+            If .EOF Then
+                strTextoError = "Ne está registrado el evento: " & strIDEvento
+                Err.Raise 1000
+            End If
+            strBUI = Nz(.Fields("BUI"), "")
+            strSUBSISTEMA = Nz(.Fields("SUBSISTEMA"), "")
+            strIDEquipo = Nz(.Fields("IDEquipo"), "")
+            strEquipo = Nz(.Fields("Equipo"), "")
+        End With
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+        '-----------------------------------------------------
+        '   -Devuelve
+        '       FormularioAbierto = true or false
+        '       FormularioAbierto =False-->Error
+        '-----------------------------------------------------
+        If FormularioAbierto("FormMaterialRepuestoAlta") Then
+            DoCmd.Close acForm, "FormMaterialRepuestoAlta", acSaveNo
+        End If
+        If UBound(dato) <> 1 Then
+            strTextoError = "No venimos de una actividad"
+            Err.Raise 1000
+        End If
+        'strArgumento=strBUI & "|" & strSubSistema & "|" & strIDEquipo & "|" & strIDEquipo & "|" & strIDEvento & "|" & strIDActividad
+        strArgumento = strBUI & "|" & strSUBSISTEMA & "|" & strIDEquipo & "|" & strEquipo & "|" & strIDEvento & "|" & strIDActividad
+        DoCmd.OpenForm "FormMaterialRepuestoAlta", , , , , , strArgumento
+    End If
+    DoCmd.Close acForm, strNombreFormulario, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar abrir el formulario se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub Form_Open(Cancel As Integer)
+    Dim strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    AjustarTamaño Me
+    
+    '   0) Desde cero-->Sin argumentos
+    '   1) Desde Actividad-->strArgumento=strIDEvento;strIDActividad
+    '   2) Desde Equipo elegido-->strArgumento=strBUI;strSubsistema;strIDEquipo;strIdEquipo
+    
+    strArgumento = Nz(Me.OpenArgs, "")
+    If strArgumento = "" Then
+        DoCmd.Hourglass False
+        Exit Sub
+    End If
+    dato = Split(strArgumento, "|")
+    If UBound(dato) <> 1 And UBound(dato) <> 3 Then
+        strTextoError = "No se ha abierto el formulario con los datos necesarios"
+        Err.Raise 1000
+    End If
+    If UBound(dato) = 1 Then
+        strIDEvento = CStr(dato(0))
+        strIDActividad = CStr(dato(1))
+        If strIDEvento = "" Or strIDActividad = "" Then
+            strTextoError = "No se ha abierto el formulario con los datos necesarios"
+            Err.Raise 1000
+        End If
+    Else
+        strBUI = CStr(dato(0))
+        strSUBSISTEMA = CStr(dato(1))
+        strIDEquipo = CStr(dato(2))
+        strIDEquipo = CStr(dato(3))
+        If strBUI = "" Or strSUBSISTEMA = "" Or strIDEquipo = "" Or strIDEquipo = "" Then
+            strTextoError = "No se ha abierto el formulario con los datos necesarios"
+            Err.Raise 1000
+        End If
+    End If
+    Me.Caption = Me.lblTitulo1.Caption
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar abrir el formulario se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub

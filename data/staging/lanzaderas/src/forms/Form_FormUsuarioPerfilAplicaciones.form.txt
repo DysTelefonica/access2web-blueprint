@@ -1,0 +1,1254 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-960397471
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowEdits = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =15639
+    DatasheetFontHeight =11
+    ItemSuffix =37
+    Left =2820
+    Top =3855
+    Right =18795
+    Bottom =11775
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xec6987a7738ce540
+    End
+    GUID = Begin
+        0xf5cf267413ad0c4dbdba1553c72e3cee
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x005cd94d00fa581ce8f9581c5c159a14acce3c00d2c0b66bffffffffb8ce3c00 ,
+        0x010403069c000c0353ef8001010009009a0b3408640001000f00580202000100 ,
+        0x580203000100413400d23c00000000000100000000000000020000000000c842 ,
+        0x0000c84201000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000000000 ,
+        0x0000000000000000000000000000000000
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00000000000000001c88cc000000010070021814cc455b005003000000000000 ,
+        0x50030000700218141f15181464383e0000000000e4113e0030af7c77eaa58092 ,
+        0x01040306dc000c0353ef8001010009009a0b3408640001000f00580202000100 ,
+        0x5802030001004100340000003c0f3e00b62f0a010000982208000000fc010000 ,
+        0xb06c8500b0049822e52f0a01480000007f000000c0009822ab8c797700000000 ,
+        0x0000000010000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c006500000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin CheckBox
+            BorderLineStyle =0
+            LabelX =230
+            LabelY =-30
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =7923
+            Name ="Detalle"
+            GUID = Begin
+                0x272c3eb9d88dde41ad66c3142ae693f7
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =660
+                    Top =360
+                    Width =1080
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta10"
+                    Caption ="Aplicación"
+                    GUID = Begin
+                        0x3a769f63c989cb4bbb34128451f2cdcc
+                    End
+                    LayoutCachedLeft =660
+                    LayoutCachedTop =360
+                    LayoutCachedWidth =1740
+                    LayoutCachedHeight =675
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ColumnCount =2
+                    Left =2085
+                    Top =1014
+                    Width =3156
+                    Height =315
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    GUID = Begin
+                        0xdca08dc4aec0534583972dae1f9e4f2f
+                    End
+                    Name ="ComboAplicacion"
+                    RowSourceType ="Value List"
+                    RowSource ="IDAplicacion;Aplicacion;1;Sirdee;2;AGEDYS ECO;3;AGEDYS TEC;4;AGEDO;5;GESTIÓN DE "
+                        "RIESGOS;6;BRASS;8;No Conformidades;10;Registro;12;Lanzadera;16;Seguridad;17;HPS;"
+                        "31;AGEDYS PRUEBA;101;RegistroAntiguo;51;GESTIÓN DE RIESGOS PRUEBA"
+                    ColumnWidths ="0;3157"
+                    Tag ="NOPROTEGIDO"
+
+                    LayoutCachedLeft =2085
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =5241
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =0
+                    ForeTint =75.0
+                    ForeShade =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    OverlapFlags =93
+                    Left =14059
+                    Top =1710
+                    Width =915
+                    Height =405
+                    FontWeight =800
+                    TabIndex =1
+                    ForeColor =16777215
+                    Name ="ComandoAltaPerfil"
+                    Caption ="Alta"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Registrar"
+                    GUID = Begin
+                        0xe89954f09a2fa84d9ee0de4a28e5e0ef
+                    End
+
+                    LayoutCachedLeft =14059
+                    LayoutCachedTop =1710
+                    LayoutCachedWidth =14974
+                    LayoutCachedHeight =2115
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    Gradient =0
+                    BackColor =13273922
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =13273922
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    HoverColor =11630130
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =11630130
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16777215
+                    HoverForeThemeColorIndex =1
+                    HoverForeTint =100.0
+                    PressedForeColor =13476219
+                    PressedForeThemeColorIndex =4
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    TabStop = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =247
+                    IMESentenceMode =3
+                    ColumnCount =8
+                    Left =600
+                    Top =1710
+                    Width =13320
+                    Height =3910
+                    TabIndex =2
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaUsuarios"
+                    RowSourceType ="Value List"
+                    RowSource ="IDAplicacion;Aplicación;Admin;Calidad;Economia;Técnico;Secretaría;Cal Avisos;2;A"
+                        "GEDYS ECO;No;No;No;No;No;No;3;AGEDYS TEC;No;No;No;No;Sí;No;4;AGEDO;No;Sí;No;No;N"
+                        "o;No;5;GESTIÓN DE RIESGOS;No;No;No;Sí;No;No;6;BRASS;No;No;No;No;No;No;8;No Confo"
+                        "rmidades;No;Sí;No;No;No;No;10;Registro;No;No;No;Sí;No;No;16;Seguridad;Sí;No;No;N"
+                        "o;No;No;17;HPS;Sí;No;No;No;No;No;31;AGEDYS PRUEBA;No;No;No;No;Sí;No;51;GESTIÓN D"
+                        "E RIESGOS PRUEBA;No;No;No;No;No;No"
+                    ColumnWidths ="0;2835;1701;1701;1701;1701;1701;1701"
+                    StatusBarText ="Listado de Usuarios que han pasado el filtro"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xd2b2972009d66f4fa9447e74828fd79f
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =600
+                    LayoutCachedTop =1710
+                    LayoutCachedWidth =13920
+                    LayoutCachedHeight =5620
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    OverlapFlags =93
+                    Left =14059
+                    Top =2855
+                    Width =915
+                    Height =405
+                    FontWeight =800
+                    TabIndex =3
+                    ForeColor =16777215
+                    Name ="ComandoEliminar"
+                    Caption ="Eliminar"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Registrar"
+                    GUID = Begin
+                        0xdfc7fda15e922d42b4ed8ad1119681e5
+                    End
+
+                    LayoutCachedLeft =14059
+                    LayoutCachedTop =2855
+                    LayoutCachedWidth =14974
+                    LayoutCachedHeight =3260
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    Gradient =0
+                    BackColor =4535772
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =4535772
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    HoverColor =3351496
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =3351496
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16777215
+                    HoverForeThemeColorIndex =1
+                    HoverForeTint =100.0
+                    PressedForeColor =16777215
+                    PressedForeThemeColorIndex =1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =5460
+                    Top =1014
+                    Width =690
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta17"
+                    Caption ="Admin"
+                    GUID = Begin
+                        0x63b0e5858e89664890e7dec72bac358c
+                    End
+                    LayoutCachedLeft =5460
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =6150
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =6285
+                    Top =1089
+                    TabIndex =4
+                    Name ="EsUsuarioAdministrador"
+                    GUID = Begin
+                        0x1e20ccbf3109a5469cb37d2880eb5be3
+                    End
+
+                    LayoutCachedLeft =6285
+                    LayoutCachedTop =1089
+                    LayoutCachedWidth =6545
+                    LayoutCachedHeight =1329
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =9457
+                    Top =1014
+                    Width =765
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta20"
+                    Caption ="Calidad"
+                    GUID = Begin
+                        0x58810e06c2f3174da2ccc505b782805b
+                    End
+                    LayoutCachedLeft =9457
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =10222
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =10282
+                    Top =1089
+                    TabIndex =5
+                    Name ="EsUsuarioCalidad"
+                    GUID = Begin
+                        0x407b5c8c9aa5984fb457a16cb6442cd1
+                    End
+
+                    LayoutCachedLeft =10282
+                    LayoutCachedTop =1089
+                    LayoutCachedWidth =10542
+                    LayoutCachedHeight =1329
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =6675
+                    Top =1014
+                    Width =975
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta26"
+                    Caption ="Economia"
+                    GUID = Begin
+                        0x05ab656873ea7e42be2778fdd6d8c9e4
+                    End
+                    LayoutCachedLeft =6675
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =7650
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =7755
+                    Top =1089
+                    TabIndex =6
+                    Name ="EsUsuarioEconomia"
+                    GUID = Begin
+                        0x34ec4fb860075b458dc5e831287e251f
+                    End
+
+                    LayoutCachedLeft =7755
+                    LayoutCachedTop =1089
+                    LayoutCachedWidth =8015
+                    LayoutCachedHeight =1329
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =10672
+                    Top =1014
+                    Width =1005
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta28"
+                    Caption ="Secretaria"
+                    GUID = Begin
+                        0x6257cebe4722ef4c8b1ae42e471472ea
+                    End
+                    LayoutCachedLeft =10672
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =11677
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =11752
+                    Top =1089
+                    TabIndex =7
+                    Name ="EsUsuarioSecretaria"
+                    GUID = Begin
+                        0x227a8be220b00a4a9d9e2ca5f8b650a1
+                    End
+
+                    LayoutCachedLeft =11752
+                    LayoutCachedTop =1089
+                    LayoutCachedWidth =12012
+                    LayoutCachedHeight =1329
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =8115
+                    Top =1014
+                    Width =780
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta30"
+                    Caption ="Tecnico"
+                    GUID = Begin
+                        0x4b420031d1002e4fa6e20b53863023db
+                    End
+                    LayoutCachedLeft =8115
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =8895
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =8985
+                    Top =1089
+                    TabIndex =8
+                    Name ="EsUsuarioTecnico"
+                    GUID = Begin
+                        0x12931b4bd7db5349a950e4df20b0b38d
+                    End
+
+                    LayoutCachedLeft =8985
+                    LayoutCachedTop =1089
+                    LayoutCachedWidth =9245
+                    LayoutCachedHeight =1329
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =12112
+                    Top =1014
+                    Width =1410
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta32"
+                    Caption ="Calidad Avisos"
+                    GUID = Begin
+                        0x6c434339b78ff3469be06eb89d247628
+                    End
+                    LayoutCachedLeft =12112
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =13522
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =93
+                    Left =13627
+                    Top =1089
+                    TabIndex =9
+                    Name ="EsUsuarioCalidadAvisos"
+                    GUID = Begin
+                        0xde9a680d7f425545aeb1dbc8b4234a84
+                    End
+
+                    LayoutCachedLeft =13627
+                    LayoutCachedTop =1089
+                    LayoutCachedWidth =13887
+                    LayoutCachedHeight =1329
+                End
+                Begin OptionGroup
+                    SpecialEffect =0
+                    OverlapFlags =255
+                    Top =497
+                    Width =15024
+                    Height =5746
+                    TabIndex =10
+                    Name ="Marco17"
+                    GUID = Begin
+                        0xddc13a61067b3e4b994927c9a72e6c69
+                    End
+
+                    LayoutCachedTop =497
+                    LayoutCachedWidth =15024
+                    LayoutCachedHeight =6243
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OldBorderStyle =1
+                            OverlapFlags =247
+                            TextAlign =2
+                            Left =121
+                            Top =375
+                            Width =2205
+                            Height =315
+                            FontWeight =700
+                            BorderColor =8210719
+                            ForeColor =8210719
+                            Name ="Etiqueta18"
+                            Caption ="Datos Generales"
+                            GUID = Begin
+                                0x431e6d1d95da1442b928e44e44831fb6
+                            End
+                            LayoutCachedLeft =121
+                            LayoutCachedTop =375
+                            LayoutCachedWidth =2326
+                            LayoutCachedHeight =690
+                            ThemeFontIndex =-1
+                            BorderThemeColorIndex =2
+                            BorderTint =100.0
+                            ForeThemeColorIndex =2
+                            ForeTint =100.0
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =247
+                    TextAlign =1
+                    Left =600
+                    Top =1014
+                    Width =1200
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta36"
+                    Caption ="Aplicación"
+                    GUID = Begin
+                        0x8c57112ad0ccbe4ea73457d155e8696d
+                    End
+                    LayoutCachedLeft =600
+                    LayoutCachedTop =1014
+                    LayoutCachedWidth =1800
+                    LayoutCachedHeight =1329
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private m_Error As String
+
+Private m_ObjAplicacionSeleccionada As Aplicacion
+
+
+Private Sub ComandoAltaPerfil_Click()
+    
+    Dim m_ObjUsuarioAplicacionPermisos As UsuarioAplicacionPermisos
+    Dim Admin As String
+    Dim Calidad As String
+    Dim CalidadAvisos As String
+    Dim Secretaria As String
+    Dim Tecnico As String
+    Dim Economia As String
+    Dim PartePermisos As String
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If Nz(Me.ComboAplicacion, "") = "" Then
+        m_Error = "Seleccione un elemento de la lista"
+        Err.Raise 1000
+    End If
+    Set m_ObjAplicacionSeleccionada = Constructor.getAplicacion(Me.ComboAplicacion.Column(0), m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_ObjAplicacionSeleccionada Is Nothing Then
+        m_Error = "Seleccione un elemento de la lista"
+        Err.Raise 1000
+    End If
+    If Me.EsUsuarioAdministrador = True Then
+        Admin = "Sí"
+    Else
+        Admin = "No"
+    End If
+    If Me.EsUsuarioCalidad = True Then
+        Calidad = "Sí"
+    Else
+        Calidad = "No"
+    End If
+    If Me.EsUsuarioEconomia = True Then
+        Economia = "Sí"
+    Else
+        Economia = "No"
+    End If
+    If Me.EsUsuarioSecretaria = True Then
+        Secretaria = "Sí"
+    Else
+        Secretaria = "No"
+    End If
+    If Me.EsUsuarioTecnico = True Then
+        Tecnico = "Sí"
+    Else
+        Tecnico = "No"
+    End If
+    If Me.EsUsuarioCalidadAvisos = True Then
+        CalidadAvisos = "Sí"
+    Else
+        CalidadAvisos = "No"
+    End If
+    If Admin = "No" And Calidad = "No" And Economia = "No" And Secretaria = "No" And Tecnico = "No" And CalidadAvisos = "No" Then
+        m_Error = "Para dar de alta una aplicación, al menos ha de haber uno de los permisos"
+        Err.Raise 1000
+    End If
+    Set m_ObjUsuarioAplicacionPermisos = Constructor.getUsuarioAplicacionPermisos(m_ObjUsuarioActivo.CorreoUsuario, _
+                        m_ObjAplicacionSeleccionada.IDAplicacion, m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_ObjUsuarioAplicacionPermisos Is Nothing Then
+        Set m_ObjUsuarioAplicacionPermisos = New UsuarioAplicacionPermisos
+        m_ObjUsuarioAplicacionPermisos.CorreoUsuario = m_ObjUsuarioActivo.CorreoUsuario
+    End If
+    With m_ObjUsuarioAplicacionPermisos
+        
+        .IDAplicacion = m_ObjAplicacionSeleccionada.IDAplicacion
+        .EsUsuarioAdministrador = Admin
+        .EsUsuarioCalidad = Calidad
+        .EsUsuarioEconomia = Economia
+        .EsUsuarioSecretaria = Secretaria
+        .EsUsuarioTecnico = Tecnico
+        .EsUsuarioCalidadAvisos = CalidadAvisos
+        .RegistrarPermisosCompletos m_Error
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    End With
+    Set m_ObjUsuarioActivo = Constructor.getUsuario(m_ObjUsuarioActivo.ID, , , , m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    EstablecerLista m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAltaPerfil_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoEliminar_Click()
+    Dim m_ObjUsuarioAplicacionPermisos As UsuarioAplicacionPermisos
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    If m_ObjAplicacionSeleccionada Is Nothing Then
+        m_Error = "Seleccione un elemento de la lista"
+        Err.Raise 1000
+    End If
+    Set m_ObjUsuarioAplicacionPermisos = Constructor.getUsuarioAplicacionPermisos(m_ObjUsuarioActivo.CorreoUsuario, _
+                        m_ObjAplicacionSeleccionada.IDAplicacion, m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_ObjUsuarioAplicacionPermisos Is Nothing Then
+        m_Error = "No registrado"
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Pregunta = MsgBox("¿Desea eliminar los permisos de la aplicación seleccionada?", vbExclamation + vbYesNo + vbDefaultButton2, "Eliminar Permisos")
+    If Pregunta <> vbYes Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_ObjUsuarioAplicacionPermisos.Borrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Set m_ObjUsuarioActivo = Constructor.getUsuario(m_ObjUsuarioActivo.ID, , , , m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    EstablecerLista m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEliminar_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+    
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+   
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    If m_ObjUsuarioActivo Is Nothing Then
+        m_Error = "No hay un usuario activo"
+        Err.Raise 1000
+    End If
+    If m_ObjUsuarioConectadoLogin.EsAdministradorCalculado = EnumSino.Sí Then
+        Me.AllowEdits = True
+    Else
+        Me.AllowEdits = False
+    End If
+    EstablecerCombo m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    EstablecerLista m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Me.ComandoEliminar.Enabled = False
+    If Me.AllowEdits = True Then
+        Me.ComandoAltaPerfil.Enabled = True
+    Else
+        Me.ComandoAltaPerfil.Enabled = False
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Open se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+    
+End Sub
+
+Public Function EstablecerLista(Optional ByRef p_Error As String) As String
+    
+    Dim lst As ListBox
+    Dim m_ID As Variant
+    Dim m_IDApp As String
+    Dim m_ObjCol As Scripting.Dictionary
+    Dim m_objAplicacion As Aplicacion
+    Dim m_ObjUsuarioAplicacionPermisos As UsuarioAplicacionPermisos
+    Dim Admin As String
+    Dim Calidad As String
+    Dim CalidadAvisos As String
+    Dim Secretaria As String
+    Dim Tecnico As String
+    Dim Economia As String
+    Dim PartePermisos As String
+    On Error GoTo errores
+    
+    p_Error = ""
+    Set lst = Me.ListaUsuarios
+    
+    lst.RowSource = "IDAplicacion;Aplicación;Admin;Calidad;Economia;Técnico;Secretaría;Cal Avisos"
+    
+    Set m_ObjCol = m_ObjUsuarioActivo.ColAplicacionesPermisos
+    p_Error = m_ObjUsuarioActivo.Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_ObjCol Is Nothing Then
+        Exit Function
+    End If
+    For Each m_ID In m_ObjCol
+        Set m_ObjUsuarioAplicacionPermisos = m_ObjCol(m_ID)
+        With m_ObjUsuarioAplicacionPermisos
+            If .EsUsuarioAdministradorCalculado = EnumSino.Sí Then
+                Admin = "Sí"
+            Else
+                Admin = "No"
+            End If
+            If .EsUsuarioTecnicoCalculado = EnumSino.Sí Then
+                Tecnico = "Sí"
+            Else
+                Tecnico = "No"
+            End If
+            If .EsUsuarioCalidadAvisosCalculado = EnumSino.Sí Then
+                CalidadAvisos = "Sí"
+            Else
+                CalidadAvisos = "No"
+            End If
+            If .EsUsuarioCalidadCalculado = EnumSino.Sí Then
+                Calidad = "Sí"
+            Else
+                Calidad = "No"
+            End If
+            If .EsUsuarioEconomiaCalculado = EnumSino.Sí Then
+                Economia = "Sí"
+            Else
+                Economia = "No"
+            End If
+            If .EsUsuarioSecretariaCalculado = EnumSino.Sí Then
+                Secretaria = "Sí"
+            Else
+                Secretaria = "No"
+            End If
+            'lst.RowSource = "IDAplicacion;Aplicación;Admin;Calidad;Economia;Técnico;Secretaría;Cal Avisos"
+            PartePermisos = Admin & ";" & Calidad & ";" & Economia & ";" & Tecnico & ";" & Secretaria & ";" & CalidadAvisos
+            lst.AddItem .IDAplicacion & ";" & .Aplicacion.NombreAplicacion & ";" & PartePermisos
+        End With
+        Set m_ObjUsuarioAplicacionPermisos = Nothing
+    Next
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerLista ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+End Function
+
+
+
+Public Function EstablecerCombo(Optional ByRef p_Error As String) As String
+    
+    Dim cmb As ComboBox
+    Dim m_ID As Variant
+    Dim m_objAplicacion As Aplicacion
+    
+    On Error GoTo errores
+    
+    Set cmb = Me.ComboAplicacion
+    cmb.RowSource = ""
+    If m_ObjEntorno.ColAplicaciones Is Nothing Then
+        p_Error = m_ObjEntorno.Error
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+        Exit Function
+    End If
+    
+   
+    For Each m_ID In m_ObjEntorno.ColAplicaciones
+        Set m_objAplicacion = m_ObjEntorno.ColAplicaciones(m_ID)
+        If m_objAplicacion.ConIconoEnLanzaderaCalculado = EnumSino.Sí Then
+            cmb.AddItem m_objAplicacion.IDAplicacion & ";" & m_objAplicacion.NombreAplicacion
+            Set m_objAplicacion = Nothing
+        End If
+    Next
+    Set m_objAplicacion = m_ObjEntorno.ColAplicaciones("12")
+    cmb.AddItem m_objAplicacion.IDAplicacion & ";" & m_objAplicacion.NombreAplicacion
+    Set m_objAplicacion = Nothing
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerCombo ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+End Function
+
+Private Sub ListaUsuarios_Click()
+    
+    Dim m_IDAplicacion As String
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+   
+    Me.ComandoEliminar.Enabled = False
+    m_IDAplicacion = Nz(Me.ListaUsuarios, "")
+    
+    If m_IDAplicacion = "" Then
+        Set m_ObjAplicacionSeleccionada = Nothing
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    If m_ObjAplicacionSeleccionada Is Nothing Then
+        Set m_ObjAplicacionSeleccionada = Constructor.getAplicacion(m_IDAplicacion, m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    Else
+        If m_IDAplicacion <> m_ObjAplicacionSeleccionada.IDAplicacion Then
+            Set m_ObjAplicacionSeleccionada = Constructor.getAplicacion(m_IDAplicacion, m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+    End If
+    If Me.AllowEdits = True Then
+        Me.ComandoEliminar.Enabled = True
+        Me.ComandoAltaPerfil.Enabled = True
+    Else
+        Me.ComandoEliminar.Enabled = False
+        Me.ComandoAltaPerfil.Enabled = False
+    End If
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ListaUsuarios_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    
+End Sub

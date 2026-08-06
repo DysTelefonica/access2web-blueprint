@@ -1,0 +1,1283 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =1564530510
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    BorderStyle =3
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =13436
+    DatasheetFontHeight =11
+    ItemSuffix =23
+    Left =3075
+    Top =3540
+    Right =18105
+    Bottom =12735
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x202d31e85128e640
+    End
+    GUID = Begin
+        0x6373f9d54df6ba4eab569b7259433c65
+    End
+    Caption ="Usuario conectado: Administrador ( Administrador )(64 bits)"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000000000c8420000c842eeece100e0c27e1947020000a022a34dff7f0000 ,
+        0x010403069c000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc800020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0024000100000000000000000000000000000000000000000000000000 ,
+        0x00000000433a5c50726f6772616d446174615c54656368536d6974685c536e61 ,
+        0x6769742031315c5072696e746572506f727446696c6500000000000000000000 ,
+        0x0000000000000000000000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x000000000000000032e7454cf87f000002000000000000000000000000000000 ,
+        0x60147021470200007014702147020000f0147021470200005b00000000000000 ,
+        0x01040306dc000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc8000200010041003400000047020000e0f4f6114702000000000000f87f0000 ,
+        0x0200000000000000000000000000000000000000000000005001c37a47020000 ,
+        0xb074c31947020000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160020000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x43003a005c00500072006f006700720061006d0044006100740061005c005400 ,
+        0x65006300680053006d006900740068005c0053006e0061006700690074002000 ,
+        0x310031005c005000720069006e0074006500720050006f007200740046006900 ,
+        0x6c00650000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =6710886
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =60.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin Subform
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            BorderShade =65.0
+            ShowPageHeaderAndPageFooter =1
+        End
+        Begin EmptyCell
+            Height =240
+            GridlineColor =10921638
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin NavigationControl
+            BorderWidth =1
+            BorderLineStyle =0
+            BorderColor =16777215
+            ForeColor =4138256
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            GridlineColor =10921638
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin NavigationButton
+            Width =283
+            Height =283
+            ForeColor =4210752
+            GridlineColor =10921638
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            HoverColor =15849926
+            HoverThemeColorIndex =2
+            HoverTint =20.0
+            PressedColor =13995605
+            PressedThemeColorIndex =2
+            PressedTint =60.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+            BackThemeColorIndex =1
+            OldBorderStyle =0
+            BorderLineStyle =0
+            BorderColor =12835293
+            BorderThemeColorIndex =3
+            BorderShade =90.0
+            ThemeFontIndex =1
+            TextFontCharSet =177
+            TextFontFamily =0
+            FontName ="Calibri"
+            FontWeight =400
+            FontSize =11
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+        End
+        Begin FormHeader
+            Height =542
+            BackColor =16737792
+            Name ="EncabezadoDelFormulario"
+            GUID = Begin
+                0xbf63d75f9a79e4459437c9cb044fc28b
+            End
+            AutoHeight =1
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =12645
+                    Top =75
+                    Width =391
+                    Height =390
+                    Name ="ComandoAyuda"
+                    Caption ="Comando47"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Actualizar"
+                    Picture ="Ayda1_25x25.png"
+                    GUID = Begin
+                        0x777fc38044e37d4d9de9efeb91766d40
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7a ,
+                        0xf4000000097048597300001ec200001ec2016ed0753e0000000774494d4507e8 ,
+                        0x0a14093a1dea766209000003d0494441545885ad9741685c551486bf73decb4c ,
+                        0x92c6a426ad3154add480ba08d86e7523158aa520ad018b2101115b13228d0b17 ,
+                        0x6eac44c595082969825205c562a935b87061f722e84e17b676110bd5226dadb5 ,
+                        0x936466debc735c4c2633c9bcc94c9cf9e1c19b3be7deffbbe7be77ef7942b39a ,
+                        0xb047087d06d38338e0abed0a84abf705c056ef05c00cd5cfc8f86b4153e62f59 ,
+                        0x1729ff860e7d9a7c457b00881788fd07ccaf20f413486a0d02113a7902fc3e6d ,
+                        0x0a20cd202efbc856b42920be446c53cc064f311b3c438123985da772bacb8033 ,
+                        0xd61c00a42927b7a83620969f381dcef2ba3dcb093fc9bc5ec4f984b68a380790 ,
+                        0x5473008e515ef5a20c70ef63dc0e01efa336b0de74dd0085663350ad08101962 ,
+                        0x1b0b44bec8875f4d30111d20e01885eaf0d60394e412829c83170c0d66087527 ,
+                        0x71755858ddd40a738a99701f6532de8733482e39b4b90c48f199af0981f4e0b2 ,
+                        0x03279f1c256173002a599226211473eb9c23236f82ff53152580b0924c5fa949 ,
+                        0x7f14780cbc9b58fe05bfcc9c5e0260c43ab9978b74c99364a9def1c46e021902 ,
+                        0x7db8ca3c0d2cfba9da00c76d9014d3e007407bd1d2e07e1be13bb2f2361fc965 ,
+                        0xc66d8834ef800f92e701447bf0d50cc49e25f0ebb844546ed2a147987ccf6d79 ,
+                        0x2319e0f8ca6ed2e905da652f5958f7f406403b90f35fc8cb73ccc922875de9f7 ,
+                        0x3e941952721480d8fe269231324b3fd2dd555e80c885809879bd01b5de82b6f4 ,
+                        0x1469d94b26e1bf029001b6c9106e53c00916c4801b4cda122920ef196239c6bc ,
+                        0x7e5b33c36be9d8a871df8ef9a175874b92f280c941c6bca7dce87d0810d914a7 ,
+                        0xf5423d7348cc803f8848df861dbe5a06c47e3f297601770010394b36fe9ad9f0 ,
+                        0xf346cc930194142af5df8ea2a1a274acfd3ea5e71b352edb6d54813b984735b6 ,
+                        0x970df21c296e6dd57473807eb98af815ea952a21207e895ef9a3b500d312e1f2 ,
+                        0xf1ba922ac95c01d5334c4bd45a0080bfe40b72fe010a74502c324a5707a00e39 ,
+                        0x9fe1371a7ed86a69f3957e353a42180c633c8ed08e9345fd576239cf9c2e346b ,
+                        0x5e1fa0a4c3ae6cf74e76c912ef4a555dd33a805756f6906e1fc2fc21ccd2a086 ,
+                        0x99a35ac03104c52c445500452c0fc155e067e664f1ff038c5827bdbc45e04771 ,
+                        0xdd8d9250bfd5e8ed00fe3b265f72d7dfe3534ddac0371962d8db18f03374c828 ,
+                        0x398a7bbdd3d8e294e242200564fd2c7ff2321734bb79c7b2941dbe9f50465966 ,
+                        0xb58caa18bcde558a8b8015a04d5e6427c38d9a1701421f41d858dd6f5da5fe29 ,
+                        0x7f9e93def0179712b3bfeec9b7358841ae7977e300a2034dcfbe12c0b807a77d ,
+                        0x0b002d322f4924205df724a90070bbd5320801dc33dcadf51550adff0068405a ,
+                        0x616efc64a00000000049454e44ae426082
+                    End
+
+                    LayoutCachedLeft =12645
+                    LayoutCachedTop =75
+                    LayoutCachedWidth =13036
+                    LayoutCachedHeight =465
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =300
+                    Top =60
+                    Width =12000
+                    Height =460
+                    FontSize =18
+                    FontWeight =700
+                    BorderColor =8210719
+                    ForeColor =16777215
+                    Name ="lblTitulo"
+                    Caption ="ALTA DE GESTIÓN DE RIESGOS"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x4f4cef0b4a252445a3614be50d470b72
+                    End
+                    GroupTable =3
+                    LayoutCachedLeft =300
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =12300
+                    LayoutCachedHeight =520
+                    LayoutGroup =3
+                    ThemeFontIndex =-1
+                    BorderThemeColorIndex =2
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GroupTable =3
+                End
+            End
+        End
+        Begin Section
+            Height =7880
+            Name ="Detalle"
+            GUID = Begin
+                0xcfaab31614598f468b2f509d12400d76
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin NavigationControl
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    Left =330
+                    Top =135
+                    Width =12645
+                    Height =600
+                    TabIndex =1
+                    Name ="CtrNav"
+                    GUID = Begin
+                        0xe089385c8e23e94293e6b09cc5e77d52
+                    End
+                    GroupTable =2
+                    LeftPadding =0
+                    TopPadding =0
+                    RightPadding =0
+                    GridlineStyleBottom =1
+                    GridlineWidthTop =0
+                    GridlineWidthBottom =4
+
+                    LayoutCachedLeft =330
+                    LayoutCachedTop =135
+                    LayoutCachedWidth =12975
+                    LayoutCachedHeight =735
+                    LayoutGroup =2
+                    NavigationSubform ="FormDetalle"
+                    GridlineColor =12419407
+                    GridlineThemeColorIndex =4
+                    GridlineShade =100.0
+                    GroupTable =2
+                    Begin
+                        Begin NavigationButton
+                            OverlapFlags =87
+                            Left =330
+                            Top =135
+                            Width =2280
+                            Height =405
+                            Name ="NavDatosGenerales"
+                            Caption ="Datos generales"
+                            GUID = Begin
+                                0xa0149adac8b1fb4b9b7da50587993af6
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+
+                            LayoutCachedLeft =330
+                            LayoutCachedTop =135
+                            LayoutCachedWidth =2610
+                            LayoutCachedHeight =540
+                            LayoutGroup =1
+                            NavigationTargetName ="FormGestionRiesgosDatosGenerales"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =-1
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            Enabled = NotDefault
+                            OverlapFlags =87
+                            Left =2640
+                            Top =135
+                            Width =1440
+                            Height =405
+                            TabIndex =1
+                            Name ="NavResponsables"
+                            Caption ="Responsables"
+                            GUID = Begin
+                                0x05afdae4d0465440975cb3750b17fdca
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+
+                            LayoutCachedLeft =2640
+                            LayoutCachedTop =135
+                            LayoutCachedWidth =4080
+                            LayoutCachedHeight =540
+                            ColumnStart =1
+                            ColumnEnd =1
+                            LayoutGroup =1
+                            NavigationTargetName ="FormGestionRiesgosAutorizados"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            Enabled = NotDefault
+                            OverlapFlags =87
+                            Left =4110
+                            Top =135
+                            Width =2295
+                            Height =405
+                            TabIndex =2
+                            Name ="NavRiesgosOferta"
+                            Caption ="Riesgos de oferta"
+                            GUID = Begin
+                                0x77c1cefd388c5a498e7b549c6dd7c439
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+
+                            LayoutCachedLeft =4110
+                            LayoutCachedTop =135
+                            LayoutCachedWidth =6405
+                            LayoutCachedHeight =540
+                            ColumnStart =2
+                            ColumnEnd =2
+                            LayoutGroup =1
+                            NavigationTargetName ="FormGestionRiesgosRiesgosOferta"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            Enabled = NotDefault
+                            OverlapFlags =87
+                            Left =6435
+                            Top =135
+                            Width =2235
+                            Height =405
+                            TabIndex =3
+                            Name ="NavSuministradores"
+                            Caption ="Suministradores"
+                            GUID = Begin
+                                0x68df53753a82cf47baa67e12595f394e
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+
+                            LayoutCachedLeft =6435
+                            LayoutCachedTop =135
+                            LayoutCachedWidth =8670
+                            LayoutCachedHeight =540
+                            ColumnStart =3
+                            ColumnEnd =3
+                            LayoutGroup =1
+                            NavigationTargetName ="FormGestionRiesgosSuministradores"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            OverlapFlags =87
+                            Left =8700
+                            Top =135
+                            Width =1665
+                            Height =405
+                            TabIndex =4
+                            Name ="BotónDeNavegación1"
+                            Caption ="[Agregar nuevo]"
+                            ControlTipText ="Agregue un formulario o un informe colocándolo aquí"
+                            GUID = Begin
+                                0xa8e90b328711994b95c1e3f59e49578c
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+
+                            LayoutCachedLeft =8700
+                            LayoutCachedTop =135
+                            LayoutCachedWidth =10365
+                            LayoutCachedHeight =540
+                            ColumnStart =4
+                            ColumnEnd =4
+                            LayoutGroup =1
+                            DefaultInsertButton =1
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            GroupTable =1
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =330
+                    Top =795
+                    Width =12645
+                    Height =7005
+                    Name ="FormDetalle"
+                    GUID = Begin
+                        0x9ceb62e4aef8de4f8d65a23883e19161
+                    End
+                    GroupTable =2
+                    LeftPadding =0
+                    TopPadding =0
+                    RightPadding =0
+
+                    LayoutCachedLeft =330
+                    LayoutCachedTop =795
+                    LayoutCachedWidth =12975
+                    LayoutCachedHeight =7800
+                    RowStart =1
+                    RowEnd =1
+                    LayoutGroup =2
+                    GroupTable =2
+                End
+            End
+        End
+        Begin FormFooter
+            Height =453
+            BackColor =16737792
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0xe38d779db14cf444a4256c77c9f73c09
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =12642
+                    Top =56
+                    Width =391
+                    Height =390
+                    Name ="ComandoSalir"
+                    Caption ="Comando47"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir"
+                    Picture ="Salir1_25x25.png"
+                    GUID = Begin
+                        0x53a8e6e88e58064995b5b127343972b6
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000019000000190806000000c4e985 ,
+                        0x63000000097048597300000ec400000ec401952b0e1b0000000774494d4507e8 ,
+                        0x0a1507132534100f13000004a14944415448898d966b88555514c77f6b9d7bee ,
+                        0xb977ee0c3a8e398e1a3d4d198b420d1d7a88815090d14021f9aca6314c2a8bfc ,
+                        0xd097fa12f5252c4b3ff82841c55e42d293124224ca12fba0e00c2888e2e02832 ,
+                        0x33eaccdcd7397bf5e19e7be6ce385a0b361cd6defbbfd6faffd7defb0837b2b5 ,
+                        0xd6446073101ec2591bd04a440b9041280217f03889da1122fb8321ef04bbf4f2 ,
+                        0x7850729de70d6bc2ec45d49613ea03a4000784f1bc1f7f1b9002349ec71dc7e9 ,
+                        0x3e866c179fe9a51b0759677309dc8778ba18038a3198c52bc5aea19cc0d92c44 ,
+                        0x9b88aa7e200d7840d90e33cc4676e8df55584d02bc64f7e3bb3df8ba9822908f ,
+                        0xc1abd9d7034a37fd2cc5e430b91858e24a0af148cba3d4b187b56edee820ab6d ,
+                        0x0219db445a5b198e37499c5916c05dc3ec0c7095bdda87d187d969b08b046382 ,
+                        0x0d0169b987c03ea663a07124c8047b9e401ea350434f1a10cb13da16f2ae9d7e ,
+                        0x9e23a48bf5ae0571e7e867050596e2ec5d70e7096a681f06027d98baface4a90 ,
+                        0xd5fd1310566140142f4a03e62e10b19ccdf23a0dde30757492e2764a3280c974 ,
+                        0xb2f616f5cce0bc7cc0a02cc1ec4f823841170fd59574b846a531370b9379946a ,
+                        0x08142b90b70d283ff19afb1ce12039e90026b343f2408e9c3e8bf02533ec200d ,
+                        0x0c50660dcece26159500e43e82f05e85d402fc1a1d02c0d97eb67bdfe0f894ac ,
+                        0xaea124390a00385e7569048f22509034be2c02be45394bd96d41e344232a2dee ,
+                        0xa5da94d01e4c74f080d09509e5001b6d261eabc8c71bca80492b210710594429 ,
+                        0x4e6c18505948c40af2fa23919d2715571301912d5084d989161e80f432481779 ,
+                        0x9e2425d964ce01c64432f204222d950358d328668f335dba414ee3c5ac54ced1 ,
+                        0x6cc53125a10a40e8a32c1771dcc158ab1e50378e1f66f09e1865776994dfd1ac ,
+                        0xb10ad5006052a64c016799eb82dccc3c4dc7c0c3c92136402450349634719a8f ,
+                        0x4f06219f2cfe2f13c05915a7be8615c00a8ad18b52c32d4dd4975a1039f5bfab ,
+                        0x10c0ec1ceda6a4a43949ae72aff52a2a272b825315aa9994df8af23da11b4ce6 ,
+                        0x6e1600c0ec0726d91c3c66c64d42dc655d0a1c4d6e520778e2e3d3ce9677ce12 ,
+                        0xb1932c24dd32165c813a207487b8e87d451d4b51999a3c0b0a881c11d695e6e2 ,
+                        0x79471155c2183065458aae93d0fb823af7112a6b1069184503546e86b2fd4641 ,
+                        0x5723a5e964fc9f41a6518a711488ac2d8577f514daf81729da08e36a4c027cdd ,
+                        0x84678e1e7d935b6d1ba13d4d6477577297226a3df8f22b9fe821d6d95c32a9ed ,
+                        0x884c231f27100065fb87beabdd959cd6bb9749b395b278099f69c02c44d9433e ,
+                        0x3a40e41d67407ad82f65da4d996c5390a895b42ec1a303d55b28d6d014008568 ,
+                        0x035b539b2b4196bb0626d95eb2fa14c38c3c569a6454463983e3324611c1c763 ,
+                        0x22ce6ec3d306222a176255db1c50b05f18b8b28cdd8d5746e47c257f17a9602f ,
+                        0x812ca440e51dafce7a35e20b23ed5e7dfbab49a5804c4c539e956cd3ae5a0989 ,
+                        0x699b896fef23fa0ccac815325670c6f8aa151b10b9ef1892b7d9a92719675bc5 ,
+                        0x3a7bb2f8cdabc8e8324af60869f5473d445603acf177c945f8f23b215f33c86e ,
+                        0x76e9602de4f541aaf682ab27c79df8cc27b4f93866214cc5918dffbb7af1a41b ,
+                        0x8f639438463fa7d9a7d7c683fa1781d0dafb3c6cde5d0000000049454e44ae42 ,
+                        0x6082
+                    End
+
+                    LayoutCachedLeft =12642
+                    LayoutCachedTop =56
+                    LayoutCachedWidth =13033
+                    LayoutCachedHeight =446
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin Label
+                    Visible = NotDefault
+                    OverlapFlags =93
+                    Left =390
+                    Top =60
+                    Width =8340
+                    Height =390
+                    FontSize =10
+                    BorderColor =0
+                    ForeColor =16777215
+                    Name ="lblEstado"
+                    Caption ="URLDirectorioAyuda"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xf0658cab6861fa469b898e1232ef243d
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =390
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =8730
+                    LayoutCachedHeight =450
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    Visible = NotDefault
+                    OverlapFlags =215
+                    Left =5280
+                    Top =105
+                    Width =2338
+                    Height =315
+                    FontWeight =800
+                    ForeColor =2366701
+                    Name ="lblPendienteGrabacion"
+                    Caption ="Pte. Grabación"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x2a2e322d79f7484bb7331b4324c2561c
+                    End
+                    LayoutCachedLeft =5280
+                    LayoutCachedTop =105
+                    LayoutCachedWidth =7618
+                    LayoutCachedHeight =420
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =11550
+                    Width =1020
+                    Height =435
+                    FontWeight =700
+                    TabIndex =1
+                    ForeColor =16737792
+                    Name ="ComandoGrabar"
+                    Caption ="Guardar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    ControlTipText ="Guardar"
+                    GUID = Begin
+                        0x1713e99ca29afc40a0a8587f53aa913d
+                    End
+
+                    LayoutCachedLeft =11550
+                    LayoutCachedWidth =12570
+                    LayoutCachedHeight =435
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    ThemeFontIndex =-1
+                    HoverForeColor =16737792
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16737792
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    OverlapFlags =85
+                    Left =9977
+                    Width =1020
+                    Height =435
+                    FontWeight =700
+                    TabIndex =2
+                    ForeColor =16737792
+                    Name ="ComandoRegistrarRiesgos"
+                    Caption ="Riesgos"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    ControlTipText ="ir a los riesgos"
+                    GUID = Begin
+                        0xaff0d4dc9fd6ae47a09f44278909d430
+                    End
+
+                    LayoutCachedLeft =9977
+                    LayoutCachedWidth =10997
+                    LayoutCachedHeight =435
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    ThemeFontIndex =-1
+                    HoverForeColor =16737792
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16737792
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_Name = "Form_FormGestionRiesgos"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Public Event Alta()
+Public Event Edicion()
+Public blnPermitidoEditar As Boolean
+Private blnAltaProyecto As Boolean
+Private blnEdicionProyecto As Boolean
+Private m_Error As String
+
+
+
+Private Sub ComandoAyuda_Click()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    AbrirAyuda m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAyuda_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+End Sub
+
+Private Sub ComandoGrabar_Click()
+    
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If Me.FormDetalle.SourceObject = "FormGestionRiesgosDatosGenerales" Then
+        modGestionRiesgosDatosGeneralesHelper.DatosGenerales_RellenarDatosAlObjeto _
+            Me.FormDetalle.Form, m_ObjProyectoActivo, m_Error
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    End If
+    grabar EnumSiNo.No, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    m_EsAlta = EnumSiNo.No
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    
+    pregunta = MsgBox("Datos guardados con éxito", vbInformation, "Guardar")
+    
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoGrabar_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+End Sub
+Public Function grabar(Optional ByRef p_SinEco As EnumSiNo = EnumSiNo.No, Optional ByRef p_Error As String) As String
+    
+    Dim blnHaHabidocambios As Boolean
+    Dim blnAvisarNoInforme As Boolean
+    Dim saveDecisionService As GestionRiesgosSaveDecisionService
+    Dim m_Usuario As Usuario
+    Dim m_IDProyecto As String
+    Dim m_Form As Form
+    On Error GoTo errores
+    If p_SinEco = Empty Then
+        p_SinEco = EnumSiNo.No
+    End If
+    If m_ObjProyectoActivo Is Nothing Then
+        Set m_ObjProyectoActivo = New Proyecto
+        If Me.FormDetalle.SourceObject = "FormGestionRiesgosDatosGenerales" Then
+            With Me.FormDetalle
+                m_ObjProyectoActivo.IDExpediente = .Controls("IDExpediente")
+                m_ObjProyectoActivo.ParaInformeAvisos = .Controls("ParaInformeAvisos")
+                m_ObjProyectoActivo.EnUTE = .Controls("EnUTE")
+                m_ObjProyectoActivo.Elaborado = .Controls("Elaborado")
+                m_ObjProyectoActivo.Revisado = .Controls("Revisado")
+                m_ObjProyectoActivo.Aprobado = .Controls("Aprobado")
+            End With
+        End If
+    End If
+    blnHaHabidocambios = HaHabidoCambios(p_Error)
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If Not blnHaHabidocambios Then
+        p_Error = "Ningún cambio que grabar"
+        Err.Raise 1000
+    End If
+    
+    Set saveDecisionService = New GestionRiesgosSaveDecisionService
+    blnAvisarNoInforme = saveDecisionService.DebeAvisarNoInforme(p_SinEco, m_ObjProyectoAlInicio, m_ObjProyectoActivo, p_Error)
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If p_SinEco = EnumSiNo.No Then
+        If blnAvisarNoInforme = True Then
+            
+            pregunta = MsgBox("Al poner que no es para informes, implica que este proyecto no va a generar ningún correo electrónico" & vbNewLine & _
+                                "¿Está de acuerdo con eso?", vbExclamation + vbYesNo + vbDefaultButton2, "Sin informes")
+            If pregunta <> vbYes Then
+                AvanceCerrar
+                
+                Exit Function
+            End If
+            
+        End If
+    End If
+    
+    With m_ObjProyectoActivo
+        
+        .Registrar m_ObjProyectoAlInicio, p_Error
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+        m_IDProyecto = .IDProyecto
+        If m_ObjProyectoAlInicio Is Nothing Then
+            
+            'se ha de generar la primera edición
+           Set m_ObjEdicionActiva = .EdicionActiva
+            p_Error = .Error
+            If p_Error <> "" Then
+                Err.Raise 1000
+            End If
+            If m_ObjEdicionActiva Is Nothing Then
+                p_Error = "No se ha generado la primera edición automáticamente"
+                Err.Raise 1000
+            End If
+            If EsTecnico = EnumSiNo.Sí Then
+                EstablecerTareasTecnico EnumSiNo.Sí, p_Error
+            Else
+                EstablecerTareasCalidad EnumSiNo.Sí, EnumSiNo.No, p_Error
+            End If
+            
+            If p_Error <> "" Then
+                Err.Raise 1000
+            End If
+            
+            RaiseEvent Alta
+            
+        Else
+            RaiseEvent Edicion
+                
+        End If
+        m_EsAlta = EnumSiNo.No
+        Set m_ObjProyectoActivo = GetCachedProyecto(m_IDProyecto, p_Error)
+        Set m_ObjProyectoAlInicio = GetCachedProyecto(m_ObjProyectoActivo.IDProyecto, p_Error)
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+        .EstablecerFechaMaxPublicacion (p_Error)
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+    End With
+    
+    AvanceCerrar
+    
+    Me.NavResponsables.Enabled = True
+    Me.NavRiesgosOferta.Enabled = True
+    Me.NavSuministradores.Enabled = True
+    Me.lblPendienteGrabacion.Visible = False
+    Me.ComandoRegistrarRiesgos.Visible = True
+    Me.ComandoRegistrarRiesgos.Enabled = True
+    Exit Function
+    
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método Grabar ha devuelto el error: " & Err.description
+    End If
+End Function
+
+Private Sub ComandoRegistrarRiesgos_Click()
+    
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    If FormularioAbierto("FormRiesgosGestion") Then
+        DoCmd.Close acForm, "FormRiesgosGestion", acSaveNo
+    End If
+    
+    DoCmd.OpenForm "FormRiesgosGestion"
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoRegistrarRiesgos_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+End Sub
+
+Private Sub ComandoSalir_Click()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoSalir_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+End Sub
+
+Private Sub Form_Load()
+      
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Me.InsideHeight = 9195
+    Me.InsideWidth = 13440
+    
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Me.NavDatosGenerales.NavigationTargetName = "FormGestionRiesgosDatosGenerales"
+    Me.FormDetalle.SourceObject = "FormGestionRiesgosDatosGenerales"
+    Me.Caption = m_ObjEntorno.TituloUsuarioConectado
+    AvanceCerrar
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Load se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Public Function EstablecerDatos( _
+                                    Optional ByRef p_Error As String _
+                                    ) As String
+   
+    
+    Dim builder As GestionRiesgosViewStateBuilder
+    Dim state As GestionRiesgosViewState
+    Dim strNombreProyecto As String
+    
+    
+    On Error GoTo errores
+    
+    Me.Caption = m_ObjEntorno.TituloUsuarioConectado
+    
+    Set builder = New GestionRiesgosViewStateBuilder
+    If m_EsAlta = Empty Then
+        Set state = builder.Build(m_EsAlta, _
+                                  EsTecnico, _
+                                  vbNullString, _
+                                  p_Error)
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+    End If
+
+    If m_ObjProyectoActivo Is Nothing Then
+        Set m_ObjProyectoActivo = New Proyecto
+        Me.ComandoRegistrarRiesgos.Visible = False
+    Else
+        Me.ComandoRegistrarRiesgos.Visible = True
+    End If
+
+    If m_EsAlta <> Empty And m_EsAlta <> EnumSiNo.Sí Then
+        If m_ObjProyectoAlInicio Is Nothing Then
+            Set m_ObjProyectoAlInicio = Constructor.getProyecto(m_ObjProyectoActivo.IDProyecto, p_Error)
+            If p_Error <> "" Then
+                Err.Raise 1000
+            End If
+            If m_ObjProyectoAlInicio Is Nothing Then
+                p_Error = "No se conocen los datos de la gestión de riesgos"
+                Err.Raise 1000
+            End If
+        End If
+        strNombreProyecto = m_ObjProyectoActivo.NombreProyecto
+    End If
+
+    Set state = builder.Build(m_EsAlta, _
+                              EsTecnico, _
+                              strNombreProyecto, _
+                              p_Error)
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+
+    Me.NavResponsables.Enabled = state.NavResponsablesEnabled
+    Me.NavRiesgosOferta.Enabled = state.NavRiesgosOfertaEnabled
+    Me.NavSuministradores.Enabled = state.NavSuministradoresEnabled
+    Me.NavDatosGenerales.Enabled = state.NavDatosGeneralesEnabled
+    Me.lblTitulo.Caption = state.Titulo
+    blnPermitidoEditar = state.PermitidoEditar
+    Me.ComandoGrabar.Enabled = state.ComandoGrabarEnabled
+    'Me.FormDetalle.SourceObject = "FormGestionRiesgosDatosGenerales"
+    
+    Exit Function
+    
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerDatos ha devuelto el error: " & vbNewLine & Err.description
+    End If
+End Function
+
+Public Function HaHabidoCambios(Optional ByRef p_Error As String) As Boolean
+
+    Dim detector As GestionRiesgosChangeDetector
+    On Error GoTo errores
+
+    Set detector = New GestionRiesgosChangeDetector
+    HaHabidoCambios = detector.HaHabidoCambios(m_ObjProyectoAlInicio, m_ObjProyectoActivo, p_Error)
+
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "Error en el método HaHabidoCambios" & vbNewLine & Err.description
+    End If
+End Function

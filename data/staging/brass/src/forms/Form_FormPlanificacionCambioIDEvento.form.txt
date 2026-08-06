@@ -1,0 +1,1117 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-821941379
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =8263
+    DatasheetFontHeight =11
+    ItemSuffix =14
+    Left =2985
+    Top =3765
+    Right =11250
+    Bottom =7575
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0x35ffdcf7a02d114188d4a1c9b9d7ed8f
+    End
+    NameMap = Begin
+        0x0acc0e55000000004cbf74549da0a14582d87612f3d62e9600000000c63e020c ,
+        0x9a2be6400000000000000000540062004500760065006e0074006f0073000000 ,
+        0x0000000099c7feaba17d8b49968293feca2c0950000000006f1d1d0c9a2be640 ,
+        0x00000000000000005400620050006c0061006e00690066006900630061006300 ,
+        0x69006f006e000000000000002fc8c4c968f90342b270986067e7a28107000000 ,
+        0x4cbf74549da0a14582d87612f3d62e96490044004500760065006e0074006f00 ,
+        0x000000000000ddb42941cf5815458cd7c20c8442850f070000004cbf74549da0 ,
+        0xa14582d87612f3d62e965400490050004f004500560045004e0054004f000000 ,
+        0x000000004128d72ec071b949926c080abc51b2f6070000004cbf74549da0a145 ,
+        0x82d87612f3d62e964600450043004800410041004c0054004100450056004500 ,
+        0x4e0054004f000000000000002d2a5006749746438ddb6f45b2e4f09507000000 ,
+        0x99c7feaba17d8b49968293feca2c0950490044004500760065006e0074006f00 ,
+        0x000000000000000000000000000000000000000000000c000000050000000000 ,
+        0x000000000000000000000000
+    End
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000f6a0050118ec00000000000000000000 ,
+        0x010403069c000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc800020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000000000 ,
+        0x00
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00006547a80100001973df278500000010182b54a80100007a00000000000000 ,
+        0x390000000000000039000000000000000000660e000000001a182b54a8010000 ,
+        0x01040306dc000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc8000200010041003400000000000000000000007a0000000100000000000000 ,
+        0x1004000000000000040000000000000010182b54a80100003900000000000000 ,
+        0x00006547a8010000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c006500000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Line
+            BorderLineStyle =0
+            Width =1701
+            GridlineColor =10921638
+            BorderThemeColorIndex =0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Tab
+            TextFontFamily =18
+            Width =5103
+            Height =3402
+            FontSize =11
+            FontName ="Cambria"
+            GridlineColor =10921638
+            ThemeFontIndex =0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =3
+            BackColor =14277081
+            BackThemeColorIndex =1
+            BackShade =85.0
+            BorderLineStyle =0
+            BorderColor =13995605
+            BorderThemeColorIndex =2
+            BorderTint =60.0
+            ForeColor =4210752
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+        End
+        Begin Page
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =2709
+            Name ="Detalle"
+            GUID = Begin
+                0xd2a1f0412516b0468dde1d4cebc684f4
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =686
+                    Width =8263
+                    Height =1337
+                    BorderColor =0
+                    Name ="Cuadro69"
+                    GUID = Begin
+                        0x9cd7a51719c4f34c806369d75ad8778b
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =686
+                    LayoutCachedWidth =8263
+                    LayoutCachedHeight =2023
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =95
+                    Width =8263
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0xc4f6e5defb94c24dba5eb875ce4d01ba
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =8263
+                    LayoutCachedHeight =686
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =95
+                    Top =2023
+                    Width =8263
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0x1a15442024cbae49a42dd29f7a18a22c
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =2023
+                    LayoutCachedWidth =8263
+                    LayoutCachedHeight =2709
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7537
+                    Top =2100
+                    Width =577
+                    Height =577
+                    FontWeight =700
+                    TabIndex =1
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir del formulario"
+                    GUID = Begin
+                        0x7ca371418ccbf845a821503fc0893360
+                    End
+
+                    LayoutCachedLeft =7537
+                    LayoutCachedTop =2100
+                    LayoutCachedWidth =8114
+                    LayoutCachedHeight =2677
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =223
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2400
+                    Top =990
+                    Width =1536
+                    Height =297
+                    TabIndex =2
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="FechaPrevistaCierre"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x975cdb7e60009f4db52be7decc1d0ecb
+                    End
+
+                    LayoutCachedLeft =2400
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =3936
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    ColumnHeads = NotDefault
+                    LimitToList = NotDefault
+                    OverlapFlags =223
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ColumnCount =3
+                    ListWidth =8505
+                    Left =2664
+                    Top =1429
+                    Width =2451
+                    Height =297
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    ColumnInfo ="\"\";\"\";\"\";\"\";\"\";\"\";\"10\";\"100\""
+                    GUID = Begin
+                        0x1976e85261b0434e9929a43daef3e35b
+                    End
+                    Name ="ComboIDEventoNuevo"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT TbEventos.IDEvento, TbEventos.TIPOEVENTO, TbEventos.FECHAALTAEVENTO FROM "
+                        "TbEventos RIGHT JOIN TbPlanificacion ON TbEventos.IDEvento = TbPlanificacion.IDE"
+                        "vento WHERE (((TbEventos.TIPOEVENTO)='MANT. PROGRAMADO') AND ((TbPlanificacion.I"
+                        "DEvento) Is Null) AND ((TbEventos.EquipoID)=94)); "
+                    ColumnWidths ="1701;2268;1701"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =2664
+                    LayoutCachedTop =1429
+                    LayoutCachedWidth =5115
+                    LayoutCachedHeight =1726
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =223
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =5868
+                    Top =990
+                    Width =1686
+                    Height =297
+                    TabIndex =3
+                    BackColor =16047562
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="IDEvento"
+                    GUID = Begin
+                        0xf6abd4fc25b6c34e81242a6bb0befad7
+                    End
+
+                    LayoutCachedLeft =5868
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =7554
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6435
+                    Top =2302
+                    Width =1020
+                    Height =375
+                    FontWeight =700
+                    TabIndex =4
+                    Name ="ComandoRegistrar"
+                    Caption ="Registrar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xc4d9451658651d46ada9e68c2b4ca959
+                    End
+
+                    LayoutCachedLeft =6435
+                    LayoutCachedTop =2302
+                    LayoutCachedWidth =7455
+                    LayoutCachedHeight =2677
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =223
+                    TextAlign =1
+                    Left =297
+                    Top =983
+                    Width =2025
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    Name ="lbl1"
+                    Caption ="Fecha Prev. de Cierre"
+                    GUID = Begin
+                        0x71c82fd046a1834ba240a44ce5041dc8
+                    End
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =983
+                    LayoutCachedWidth =2322
+                    LayoutCachedHeight =1280
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeTint =75.0
+                End
+                Begin Label
+                    OverlapFlags =223
+                    Left =45
+                    Top =60
+                    Width =7080
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="Cambio de Evento de Cierre"
+                    GUID = Begin
+                        0xcb5db6ba62263840aee47d9996d122fb
+                    End
+                    LayoutCachedLeft =45
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =7125
+                    LayoutCachedHeight =720
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Width =7080
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="Cambio de Evento de Cierre"
+                    GUID = Begin
+                        0xb7e1dc9719a25743843ee29d6d7711b6
+                    End
+                    LayoutCachedWidth =7080
+                    LayoutCachedHeight =660
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin OptionGroup
+                    TabStop = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =255
+                    Left =148
+                    Top =835
+                    Width =7966
+                    Height =1040
+                    TabIndex =5
+                    BorderColor =-2147483602
+                    Name ="Marco120"
+                    GUID = Begin
+                        0xf6883e12877e744d934cf2a4bfb305ab
+                    End
+
+                    LayoutCachedLeft =148
+                    LayoutCachedTop =835
+                    LayoutCachedWidth =8114
+                    LayoutCachedHeight =1875
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =247
+                    TextAlign =1
+                    Left =4110
+                    Top =990
+                    Width =1620
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    Name ="Etiqueta10"
+                    Caption ="Evento de Cierre"
+                    GUID = Begin
+                        0x88d5d4b22b6334479344618582dd1492
+                    End
+                    LayoutCachedLeft =4110
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =5730
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeTint =75.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =247
+                    Left =7653
+                    Top =990
+                    Width =297
+                    Height =297
+                    FontWeight =700
+                    TabIndex =6
+                    Name ="ComandoVerEventoCierre"
+                    Caption ="Ver Evento"
+                    OnClick ="[Procedimiento de evento]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaadadadadadadadaddadadadadadadada ,
+                        0xa000adad000dadad08e80ad08e80dada0e8e0da0e8e0adad0fe80ad0fe80dada ,
+                        0x0efe0da0efe0adad7000d00a0007dadaa0adadadada0ada0da0ada0adada0ad0 ,
+                        0xada0ad0dadada0a0dada0a0adadada0aadada0adadadadaddadadadadadadada ,
+                        0xadadadadadadadad
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x5a3096d759ea2c4a948c4e1aec3b52eb
+                    End
+
+                    LayoutCachedLeft =7653
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =7950
+                    LayoutCachedHeight =1287
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =247
+                    TextAlign =1
+                    Left =300
+                    Top =1429
+                    Width =2280
+                    Height =300
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    Name ="Etiqueta11"
+                    Caption ="Nuevo Evento de Cierre"
+                    GUID = Begin
+                        0x9b7d16d858144747b8e406e9ce4e760f
+                    End
+                    LayoutCachedLeft =300
+                    LayoutCachedTop =1429
+                    LayoutCachedWidth =2580
+                    LayoutCachedHeight =1729
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeTint =75.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7538
+                    Top =45
+                    Width =576
+                    Height =576
+                    FontWeight =700
+                    TabIndex =7
+                    Name ="ComandoAyudaFormulario"
+                    Caption ="Comando46"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaadada00dadadadaddadad00adadadada ,
+                        0xadad00adad444dad0ada00dada444ada00a00dadadadadad00000adada447ada ,
+                        0x00000000ad447dad0000000adad44ada000000adadad447d00000ad744da7447 ,
+                        0x0000ada447ada444000adad447dad44400adadad44ad74470adadadad444447a ,
+                        0xadadadadadadadad
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0xda2f152a06d3fc4184f76114b78b1003
+                    End
+
+                    LayoutCachedLeft =7538
+                    LayoutCachedTop =45
+                    LayoutCachedWidth =8114
+                    LayoutCachedHeight =621
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =247
+                    Left =5220
+                    Top =1429
+                    Width =297
+                    Height =297
+                    FontWeight =700
+                    TabIndex =8
+                    Name ="ComandoVerNuevoEventoCierre"
+                    Caption ="Ver Evento"
+                    OnClick ="[Procedimiento de evento]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaadadadadadadadaddadadadadadadada ,
+                        0xa000adad000dadad08e80ad08e80dada0e8e0da0e8e0adad0fe80ad0fe80dada ,
+                        0x0efe0da0efe0adad7000d00a0007dadaa0adadadada0ada0da0ada0adada0ad0 ,
+                        0xada0ad0dadada0a0dada0a0adadada0aadada0adadadadaddadadadadadadada ,
+                        0xadadadadadadadad
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0xcd2aa1c2bcc73d4d9a97d998ed7aa87a
+                    End
+
+                    LayoutCachedLeft =5220
+                    LayoutCachedTop =1429
+                    LayoutCachedWidth =5517
+                    LayoutCachedHeight =1726
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Dim strIDPlanificacion As String, strIDEventoCierre As String, strIDEquipo As String, strFechaPrevistaCierre As String
+Private Sub cmdSalir_Click()
+    On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Sub ComandoRegistrar_Click()
+    Dim strIDEventoNuevo As String, strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    strIDEventoNuevo = Nz(Me.ComboIDEventoNuevo, "")
+    '-------------------------------------------------------------------
+    '   -Devuelve:
+    '       CerrarPlanificacionCambioTrabajo = strDescriptivo
+    '       CerrarPlanificacionCambioTrabajo = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------
+    flag = CerrarPlanificacionCambioTrabajo(strIDPlanificacion, strIDEventoNuevo)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método CerrarPlanificacionCambioTrabajo ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    '--------------------------------------------
+    '   -Devuelve
+    '       FormularioAbierto = true or false
+    '       FormularioAbierto =False-->Error
+    '--------------------------------------------
+    If FormularioAbierto("FormPlanificacionesBusqueda") Then
+        Forms("FormPlanificacionesBusqueda").Controls("ListaFiltrados").Requery
+    End If
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar cambiar el trabajo de cierre se ha devuelto el error: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+
+End Sub
+Private Sub ComandoVerEventoCierre_Click()
+    Dim strIDEvento As String, strTextoError As String
+    On Error GoTo errores
+    strIDEvento = Nz(Me.IDEVENTO, "")
+    If strIDEvento = "" Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    '-------------------------------------------------
+    '   -Llamada desde
+    '       FormularioAbierto = true or false
+    '       FormularioAbierto =False-->Error
+    '-------------------------------------------------
+    If Not FormularioAbierto("FormEventoGestion") Then
+        DoCmd.OpenForm "FormEventoGestion"
+        Forms("FormEventoGestion").Controls("ComboIDEventoBusqueda").Value = strIDEvento
+        Form_FormEventoGestion.ComboIDEventoBusqueda_AfterUpdate
+    Else
+        Forms("FormEventoGestion").SetFocus
+        If Forms("FormEventoGestion").Controls("ComboIDEventoBusqueda").Value <> strIDEvento Then
+            Form_FormEventoGestion.ComandoActualizarTodo_Click
+            Forms("FormEventoGestion").Controls("ComboIDEventoBusqueda").Value = strIDEvento
+            Form_FormEventoGestion.ComboIDEventoBusqueda_AfterUpdate
+        End If
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar ver el Evento se ha devuelto el error: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub ComandoVerNuevoEventoCierre_Click()
+    Dim strIDEvento As String, strTextoError As String
+    On Error GoTo errores
+    strIDEvento = Nz(Me.ComboIDEventoNuevo, "")
+    If strIDEvento = "" Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    '-------------------------------------------------
+    '   -Llamada desde
+    '       FormularioAbierto = true or false
+    '       FormularioAbierto =False-->Error
+    '-------------------------------------------------
+    If Not FormularioAbierto("FormEventoGestion") Then
+        DoCmd.OpenForm "FormEventoGestion"
+        Forms("FormEventoGestion").Controls("ComboIDEventoBusqueda").Value = strIDEvento
+        Form_FormEventoGestion.ComboIDEventoBusqueda_AfterUpdate
+    Else
+        Forms("FormEventoGestion").SetFocus
+        If Forms("FormEventoGestion").Controls("ComboIDEventoBusqueda").Value <> strIDEvento Then
+            Form_FormEventoGestion.ComandoActualizarTodo_Click
+            Forms("FormEventoGestion").Controls("ComboIDEventoBusqueda").Value = strIDEvento
+            Form_FormEventoGestion.ComboIDEventoBusqueda_AfterUpdate
+        End If
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar ver el Evento se ha devuelto el error: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub Form_Load()
+    Dim strTextoError As String, strArgumento As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    AjustarTamaño Me
+    'strArgumento=strIDPlanificacion & "|" & strIDEventoCierre & "|" & strIDEquipo & "|" & strFechaPrevistaCierre
+    Me.Caption = Me.lblTitulo1.Caption
+    strArgumento = Nz(Me.OpenArgs(), "")
+    If InStr(1, strArgumento, "|") = 0 Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    dato = Split(strArgumento, "|")
+    If UBound(dato) <> 3 Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    strIDPlanificacion = dato(0)
+    strIDEventoCierre = dato(1)
+    strIDEquipo = dato(2)
+    strFechaPrevistaCierre = dato(3)
+    If Not IsNumeric(strIDPlanificacion) Or strIDEventoCierre = "" Or Not IsNumeric(strIDEquipo) Or Not IsDate(strFechaPrevistaCierre) Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.IDEVENTO = strIDEventoCierre
+    Me.FechaPrevistaCierre = Format(strFechaPrevistaCierre, "dd/mm/yyyy")
+    m_SQL = "SELECT TbEventos.IDEvento, TbEventos.TIPOEVENTO, TbEventos.FECHAALTAEVENTO " & _
+            "FROM TbEventos LEFT JOIN TbPlanificacion ON TbEventos.IDEvento = TbPlanificacion.IDEvento " & _
+            "WHERE (((TbEventos.TIPOEVENTO)='MANT. PROGRAMADO') AND ((TbEventos.IDEquipo)=" & strIDEquipo & _
+            ") AND ((TbPlanificacion.IDEvento) Is Null));"
+    Me.ComboIDEventoNuevo.RowSource = m_SQL
+    Me.ComboIDEventoNuevo.Requery
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Public Function CerrarPlanificacionCambioTrabajo( _
+                                                strIDPlanificacion As String, _
+                                                strIDEventoNuevo As String _
+                                                ) As String
+     '--------------------------------------------------------
+    ' Función creada por Andrés Román del Peral el día 17/06/2014
+    '   -Modificaciones:
+    '
+    '   -Funcionamiento:
+    
+    
+    '       2) ACTUACIÓN
+    
+   
+    '   -llamada por:
+    
+    '   -Devuelve:
+    '       CerrarPlanificacionCambioTrabajo = Descriptivo
+    '       CerrarPlanificacionCambioTrabajo = "#ERR" & "|" & strTextoError
+    '-------------------------------------------------------------------
+    Dim rcdDatos As DAO.Recordset, strFechaCierre As String, strTextoError As String
+    On Error GoTo errores
+    If Not IsNumeric(strIDPlanificacion) Then
+        strTextoError = "Se ha de introducir un valor correcto de la planificación a cerrar"
+        Err.Raise 1000
+    End If
+    If strIDEventoNuevo = "" Then
+        strTextoError = "Ha de introducir el evento que va a ser permutado"
+        Err.Raise 1000
+    End If
+    '-----------------------------------------------
+    '   -Devuelve:
+    '       Dame = strDescriptivo
+    '       Dame = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------
+    flag = Dame("TbPlanificacion", "IDEvento", "IDEvento", strIDEventoNuevo)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método Dame ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    If flag <> "" Then
+        strTextoError = "Ese evento ya ha sido usado para cerrar otra planificación anteriormente."
+        Err.Raise 1000
+    End If
+    '------------------------------------------
+    '   -Devuelve:
+    '       Dame = strValorObtenido
+    '       Dame = "#ERR" & "|" & strTextoError
+    '--------------------------------------------
+    flag = Dame("TbEventos", "TIPOEVENTO", "IDEvento", strIDEventoNuevo)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método Dame ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    If flag <> "MANT. PROGRAMADO" Then
+        strTextoError = "El evento ha de ser del tipo MANT. PROGRAMADO"
+        Err.Raise 1000
+    End If
+    '----------------------------------------------------------------
+    '   -Devuelve:
+    '       DameFechaFinEvento = strFechaUltimaActividad
+    '       DameFechaFinEvento = #ERR
+    '----------------------------------------------------------------
+    flag = DameFechaFinEvento(strIDEventoNuevo)
+    If flag = "#ERR" Then
+        strTextoError = "No se ha podido determinar la fecha fin del Evento"
+        Err.Raise 1000
+    End If
+    If Not IsDate(flag) Then
+        strTextoError = "El evento ha de estar cerrado"
+        Err.Raise 1000
+    End If
+    strFechaCierre = flag
+    m_SQL = "SELECT TbPlanificacion.* " & _
+            "FROM TbPlanificacion " & _
+            "WHERE (((TbPlanificacion.IDPlanificacion)=" & strIDPlanificacion & "));"
+    Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+    With rcdDatos
+        If .EOF Then
+            strTextoError = "La Planificacion con ID: " & strIDPlanificacion & " no ha sido grabada en el Sismeta"
+            Err.Raise 1000
+        End If
+        .Edit
+            .Fields("FechaCierre") = Format(strFechaCierre, "dd/mm/yyyy")
+            .Fields("IDEvento") = strIDEventoNuevo
+        .Update
+    End With
+    rcdDatos.Close
+    Set rcdDatos = Nothing
+    CerrarPlanificacionCambioTrabajo = "Cambio de evento que cierra la planificación a Fecha " & strFechaCierre
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método CerrarPlanificacionCambioTrabajo ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatos Is Nothing Then
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+    End If
+    CerrarPlanificacionCambioTrabajo = "#ERR" & "|" & strTextoError
+End Function

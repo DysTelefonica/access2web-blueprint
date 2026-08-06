@@ -1,0 +1,2020 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-1378059129
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12474
+    DatasheetFontHeight =11
+    ItemSuffix =176
+    Left =2955
+    Top =5295
+    Right =15645
+    Bottom =11970
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x7bf11d65d99ee540
+    End
+    GUID = Begin
+        0x532b99b7e9ba7947a2bae96870e82df0
+    End
+    Caption ="Usuario conectado: Administrador ( Administrador )"
+    DatasheetFontName ="Calibri"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    NoSaveCTIWhenDisabled =1
+    NoSaveCTIWhenDisabled =1
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin OptionButton
+            BorderLineStyle =0
+            LabelX =230
+            LabelY =-30
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CheckBox
+            BorderLineStyle =0
+            LabelX =230
+            LabelY =-30
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ToggleButton
+            Width =283
+            Height =283
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =2
+            Bevel =1
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeThemeColorIndex =1
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =6522
+            BackColor =16774386
+            Name ="Detalle"
+            GUID = Begin
+                0x9c6dd35eed169e4391a5e058f502fd58
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OverlapFlags =93
+                    Left =284
+                    Top =5103
+                    Width =11907
+                    Height =907
+                    BorderColor =14996945
+                    Name ="Cuadro172"
+                    GUID = Begin
+                        0xd0fd2e94d0110a469d7179dd8510a936
+                    End
+                    LayoutCachedLeft =284
+                    LayoutCachedTop =5103
+                    LayoutCachedWidth =12191
+                    LayoutCachedHeight =6010
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OverlapFlags =93
+                    Left =5670
+                    Top =170
+                    Width =6521
+                    Height =4820
+                    BorderColor =14996945
+                    Name ="shpIncidencias"
+                    GUID = Begin
+                        0x8c8c6671e1144247ba4dac38a6b4b707
+                    End
+                    LayoutCachedLeft =5670
+                    LayoutCachedTop =170
+                    LayoutCachedWidth =12191
+                    LayoutCachedHeight =4990
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OverlapFlags =93
+                    Left =284
+                    Top =170
+                    Width =5103
+                    Height =4820
+                    BorderColor =14996945
+                    Name ="shpMotivos"
+                    GUID = Begin
+                        0x31763ffec077554a8386e3af76cb1836
+                    End
+                    LayoutCachedLeft =284
+                    LayoutCachedTop =170
+                    LayoutCachedWidth =5387
+                    LayoutCachedHeight =4990
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =1
+                    Left =6060
+                    Top =810
+                    Width =1065
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta43"
+                    Caption ="(a) Coste"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x658c5e76b2887c4ca1a02c2b79359362
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6060
+                    LayoutCachedTop =810
+                    LayoutCachedWidth =7125
+                    LayoutCachedHeight =1125
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =1
+                    Left =6060
+                    Top =3105
+                    Width =900
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta101"
+                    Caption ="(b) Plazo"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x57c3b475519deb41adaa30f20cade6cd
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6060
+                    LayoutCachedTop =3105
+                    LayoutCachedWidth =6960
+                    LayoutCachedHeight =3420
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin OptionGroup
+                    OverlapFlags =223
+                    Left =6060
+                    Top =3375
+                    Width =1985
+                    Height =1418
+                    TabIndex =1
+                    Name ="grpIncidenciaPlazo"
+                    GUID = Begin
+                        0xe8026ead83cbe9448c2ab38739aa9bbb
+                    End
+                    LayoutCachedLeft =6060
+                    LayoutCachedTop =3375
+                    LayoutCachedWidth =8045
+                    LayoutCachedHeight =4793
+                    Begin
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =6173
+                            Top =3536
+                            OptionValue =1
+                            Name ="Opción126"
+                            GUID = Begin
+                                0xc84e2e238f7d6e418c658d039ae24345
+                            End
+                            LayoutCachedLeft =6173
+                            LayoutCachedTop =3536
+                            LayoutCachedWidth =6433
+                            LayoutCachedHeight =3776
+                        End
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =6174
+                            Top =3986
+                            TabIndex =1
+                            OptionValue =2
+                            Name ="Opción128"
+                            GUID = Begin
+                                0x3d85de601856594096b2fff62668ef28
+                            End
+                            LayoutCachedLeft =6174
+                            LayoutCachedTop =3986
+                            LayoutCachedWidth =6434
+                            LayoutCachedHeight =4226
+                        End
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =6180
+                            Top =4436
+                            TabIndex =2
+                            OptionValue =3
+                            Name ="Opción130"
+                            GUID = Begin
+                                0xfd4f334dde2cad4cb3658414f1a00d38
+                            End
+                            LayoutCachedLeft =6180
+                            LayoutCachedTop =4436
+                            LayoutCachedWidth =6440
+                            LayoutCachedHeight =4676
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8638
+                    Top =1304
+                    Width =2820
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta132"
+                    Caption ="Seguridad ......................"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x8491eb2b7f4ce3499a314a7fddda1c79
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8638
+                    LayoutCachedTop =1304
+                    LayoutCachedWidth =11458
+                    LayoutCachedHeight =1619
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =11670
+                    Top =1308
+                    TabIndex =2
+                    Name ="incidenciaSeguridad"
+                    GUID = Begin
+                        0x871a53082e44c9439ff4104e4a8ddbb0
+                    End
+                    LayoutCachedLeft =11670
+                    LayoutCachedTop =1308
+                    LayoutCachedWidth =11930
+                    LayoutCachedHeight =1548
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8640
+                    Top =1758
+                    Width =2820
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta133"
+                    Caption ="Fiabilidad ......................"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x04962c5e4d8d024ba97cde47c0913d09
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8640
+                    LayoutCachedTop =1758
+                    LayoutCachedWidth =11460
+                    LayoutCachedHeight =2073
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =11672
+                    Top =1763
+                    TabIndex =3
+                    Name ="incidenciaFiabilidad"
+                    GUID = Begin
+                        0x3bc588fdfcd7b84f97026422d8b43f3e
+                    End
+                    LayoutCachedLeft =11672
+                    LayoutCachedTop =1763
+                    LayoutCachedWidth =11932
+                    LayoutCachedHeight =2003
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8640
+                    Top =2211
+                    Width =2820
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta103"
+                    Caption ="Mantenibilidad .............."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x5fa6d39c465c53469dfa8e6dba3b7ac0
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8640
+                    LayoutCachedTop =2211
+                    LayoutCachedWidth =11460
+                    LayoutCachedHeight =2526
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =11672
+                    Top =2215
+                    TabIndex =4
+                    Name ="incidenciaMantenibilidad"
+                    GUID = Begin
+                        0xeb16fc4190801343b09fd33dfc121aa0
+                    End
+                    LayoutCachedLeft =11672
+                    LayoutCachedTop =2215
+                    LayoutCachedWidth =11932
+                    LayoutCachedHeight =2455
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8640
+                    Top =2665
+                    Width =2820
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta105"
+                    Caption ="\011Intercambiabilidad ........."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x839bfe4751bb2441a3c5c6ae99410852
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8640
+                    LayoutCachedTop =2665
+                    LayoutCachedWidth =11460
+                    LayoutCachedHeight =2980
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =11672
+                    Top =2669
+                    TabIndex =5
+                    Name ="incidenciaIntercambiabilidad"
+                    GUID = Begin
+                        0xf2a881dbd355734c83e412d42358706f
+                    End
+                    LayoutCachedLeft =11672
+                    LayoutCachedTop =2669
+                    LayoutCachedWidth =11932
+                    LayoutCachedHeight =2909
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8640
+                    Top =3119
+                    Width =2820
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta107"
+                    Caption ="Vida Útil/Almacén .........."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xe6a899071dc85142ae1c72894471f6ca
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8640
+                    LayoutCachedTop =3119
+                    LayoutCachedWidth =11460
+                    LayoutCachedHeight =3434
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =11672
+                    Top =3124
+                    TabIndex =6
+                    Name ="incidenciaVidaUtilAlmacen"
+                    GUID = Begin
+                        0x84019194bc30794499dfc00c031caa91
+                    End
+                    LayoutCachedLeft =11672
+                    LayoutCachedTop =3124
+                    LayoutCachedWidth =11932
+                    LayoutCachedHeight =3364
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8640
+                    Top =3572
+                    Width =2820
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta109"
+                    Caption ="Funcionamiento/Función"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x42a107ade47fa84f9b03807fe309689c
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8640
+                    LayoutCachedTop =3572
+                    LayoutCachedWidth =11460
+                    LayoutCachedHeight =3887
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =11672
+                    Top =3576
+                    TabIndex =7
+                    Name ="incidenciaFuncionamientoFuncion"
+                    GUID = Begin
+                        0x027cddc88fe5f540a30ce4719fda8ef8
+                    End
+                    LayoutCachedLeft =11672
+                    LayoutCachedTop =3576
+                    LayoutCachedWidth =11932
+                    LayoutCachedHeight =3816
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8638
+                    Top =810
+                    Width =2850
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta134"
+                    Caption ="(c) Si el Cambio es autorizado"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x8b9816638dda1f43bd071dd1785f785f
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8638
+                    LayoutCachedTop =810
+                    LayoutCachedWidth =11488
+                    LayoutCachedHeight =1125
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =4536
+                    Top =5220
+                    Width =2010
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta135"
+                    Caption ="9) El cambio afecta a"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xec0304467c4fb041a682298e63a8aacd
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =4536
+                    LayoutCachedTop =5220
+                    LayoutCachedWidth =6546
+                    LayoutCachedHeight =5535
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin OptionGroup
+                    OverlapFlags =223
+                    Left =6783
+                    Top =5220
+                    Width =2717
+                    Height =683
+                    TabIndex =8
+                    Name ="grpAfeccionMaterial"
+                    GUID = Begin
+                        0x7c521920966ca94d962b83688a197804
+                    End
+                    LayoutCachedLeft =6783
+                    LayoutCachedTop =5220
+                    LayoutCachedWidth =9500
+                    LayoutCachedHeight =5903
+                    Begin
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =7029
+                            Top =5276
+                            OptionValue =1
+                            Name ="Opción144"
+                            GUID = Begin
+                                0x7b8605d9d274964ab6119f740884d22e
+                            End
+                            LayoutCachedLeft =7029
+                            LayoutCachedTop =5276
+                            LayoutCachedWidth =7289
+                            LayoutCachedHeight =5516
+                        End
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =7029
+                            Top =5616
+                            OptionValue =2
+                            Name ="Opción146"
+                            GUID = Begin
+                                0x2a602e836b34144ca3edfa8e4fd25ea1
+                            End
+                            LayoutCachedLeft =7029
+                            LayoutCachedTop =5616
+                            LayoutCachedWidth =7289
+                            LayoutCachedHeight =5856
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =454
+                    Top =851
+                    Width =4305
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta154"
+                    Caption ="Corregir deficiencias del proyecto ..............."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xcda4a4259533a642a3904812adda7631
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =851
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =1166
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =4935
+                    Top =855
+                    TabIndex =9
+                    Name ="motivoCorregirDeficiencias"
+                    GUID = Begin
+                        0x60f5f74fbd71204b9b491a74d5071e44
+                    End
+                    LayoutCachedLeft =4935
+                    LayoutCachedTop =855
+                    LayoutCachedWidth =5195
+                    LayoutCachedHeight =1095
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =454
+                    Top =1304
+                    Width =4305
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta155"
+                    Caption ="Mejorar la capacidad operativa del Sistema"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x96d1b1ec6e3d984f9049f648b8678b6d
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =1304
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =1619
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =4935
+                    Top =1308
+                    TabIndex =10
+                    Name ="motivoMejorarCapacidad"
+                    GUID = Begin
+                        0x04411cf7b435eb418a950a528f7be44b
+                    End
+                    LayoutCachedLeft =4935
+                    LayoutCachedTop =1308
+                    LayoutCachedWidth =5195
+                    LayoutCachedHeight =1548
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =454
+                    Top =1758
+                    Width =4305
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta156"
+                    Caption ="Aumentar el grado de nacionalización........."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xcab879fd4470204db09780c334f429f9
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =1758
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =2073
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =4935
+                    Top =1762
+                    TabIndex =11
+                    Name ="motivoAumentarNacionalizacion"
+                    GUID = Begin
+                        0x4b23b5a2cf685a4c9563a49aa04e2335
+                    End
+                    LayoutCachedLeft =4935
+                    LayoutCachedTop =1762
+                    LayoutCachedWidth =5195
+                    LayoutCachedHeight =2002
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =454
+                    Top =2211
+                    Width =4305
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta157"
+                    Caption ="\011Mejorar la seguridad del personal..............."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x9b7ab2f742123e41830d0f198a4d92d0
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =2211
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =2526
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =4935
+                    Top =2215
+                    TabIndex =12
+                    Name ="motivoMejorarSeguridad"
+                    GUID = Begin
+                        0xe3429804d2768a4095bc6ce5b2b0e6c5
+                    End
+                    LayoutCachedLeft =4935
+                    LayoutCachedTop =2215
+                    LayoutCachedWidth =5195
+                    LayoutCachedHeight =2455
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =454
+                    Top =2665
+                    Width =4305
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta158"
+                    Caption ="Mejorar la fiabilidad del Sistema ................"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x73578dc53fe2074b9b68af98a08a52b7
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =2665
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =2980
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =4935
+                    Top =2669
+                    TabIndex =13
+                    Name ="motivoMejorarFiabilidad"
+                    GUID = Begin
+                        0x337f66b4c30e3744b633e7517f7f1bfd
+                    End
+                    LayoutCachedLeft =4935
+                    LayoutCachedTop =2669
+                    LayoutCachedWidth =5195
+                    LayoutCachedHeight =2909
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =454
+                    Top =3119
+                    Width =4305
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta159"
+                    Caption ="Mejorar el índice coste/eficacia .................."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x5d11b41e567c5941968dc84f3945979c
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =3119
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =3434
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =4935
+                    Top =3123
+                    TabIndex =14
+                    Name ="motivoMejorarCosteEficacia"
+                    GUID = Begin
+                        0xdbceb4d43b9994499fc4cb9c1b9dbb97
+                    End
+                    LayoutCachedLeft =4935
+                    LayoutCachedTop =3123
+                    LayoutCachedWidth =5195
+                    LayoutCachedHeight =3363
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =454
+                    Top =3572
+                    Width =4305
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta111"
+                    Caption ="\011Otros ........................................................."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x6298de12ef538749838dde23ef00cff8
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =3572
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =3887
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CheckBox
+                    OverlapFlags =215
+                    Left =4935
+                    Top =3576
+                    TabIndex =15
+                    Name ="motivoOtros"
+                    GUID = Begin
+                        0xa9615239c719c7429ab9a48d751b208a
+                    End
+                    LayoutCachedLeft =4935
+                    LayoutCachedTop =3576
+                    LayoutCachedWidth =5195
+                    LayoutCachedHeight =3816
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    BorderWidth =1
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =454
+                    Top =4026
+                    Width =4305
+                    Height =735
+                    FontSize =10
+                    TabIndex =16
+                    BackColor =16774386
+                    BorderColor =14996945
+                    ForeColor =4666411
+                    Name ="motivoOtrosDetalle"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x33ed038793dc4041aaefca5a924f0e64
+                    End
+                    LayoutCachedLeft =454
+                    LayoutCachedTop =4026
+                    LayoutCachedWidth =4759
+                    LayoutCachedHeight =4761
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =567
+                    Top =340
+                    Width =3870
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta160"
+                    Caption ="6.Motivo de la Propuesta de Cambio"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x3d28528b13277648b4de5cdf4d2e7058
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =567
+                    LayoutCachedTop =340
+                    LayoutCachedWidth =4437
+                    LayoutCachedHeight =685
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6237
+                    Top =340
+                    Width =1335
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta161"
+                    Caption ="7. Incidencias"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x45de4128cd550246ab5378a43c1821a9
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6237
+                    LayoutCachedTop =340
+                    LayoutCachedWidth =7572
+                    LayoutCachedHeight =655
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =567
+                    Top =5220
+                    Width =1470
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta164"
+                    Caption ="8. Clasificación"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xca5817e752509744a4cc1a8de737856d
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =567
+                    LayoutCachedTop =5220
+                    LayoutCachedWidth =2037
+                    LayoutCachedHeight =5535
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin OptionGroup
+                    OverlapFlags =223
+                    Left =2205
+                    Top =5220
+                    Height =680
+                    TabIndex =17
+                    Name ="grpClasificacion"
+                    GUID = Begin
+                        0x7b08708fd950164ea12d3425b2d7ef83
+                    End
+                    LayoutCachedLeft =2205
+                    LayoutCachedTop =5220
+                    LayoutCachedWidth =3906
+                    LayoutCachedHeight =5900
+                    Begin
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =2317
+                            Top =5276
+                            OptionValue =1
+                            Name ="Opción166"
+                            GUID = Begin
+                                0x0cd5a6345df3644bbcb9aff80c9c7f7d
+                            End
+                            LayoutCachedLeft =2317
+                            LayoutCachedTop =5276
+                            LayoutCachedWidth =2577
+                            LayoutCachedHeight =5516
+                        End
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =2317
+                            Top =5616
+                            TabIndex =1
+                            OptionValue =2
+                            Name ="Opción168"
+                            GUID = Begin
+                                0x829ebd17d8c6104ba8705c6de9faa0d4
+                            End
+                            LayoutCachedLeft =2317
+                            LayoutCachedTop =5616
+                            LayoutCachedWidth =2577
+                            LayoutCachedHeight =5856
+                        End
+                    End
+                End
+                Begin OptionGroup
+                    OverlapFlags =223
+                    Left =6060
+                    Top =1094
+                    Width =1985
+                    Height =1418
+                    Name ="grpIncidenciaCoste"
+                    GUID = Begin
+                        0x34937791390c46478cd6b7d90db2fd54
+                    End
+                    LayoutCachedLeft =6060
+                    LayoutCachedTop =1094
+                    LayoutCachedWidth =8045
+                    LayoutCachedHeight =2512
+                    Begin
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =6173
+                            Top =1261
+                            OptionValue =1
+                            Name ="Opción117"
+                            GUID = Begin
+                                0x507275f14b3dc140af91b755ff7bd551
+                            End
+                            LayoutCachedLeft =6173
+                            LayoutCachedTop =1261
+                            LayoutCachedWidth =6433
+                            LayoutCachedHeight =1501
+                        End
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =6173
+                            Top =1693
+                            TabIndex =1
+                            OptionValue =2
+                            Name ="Opción119"
+                            GUID = Begin
+                                0x6201b42db30a2f42b067b9ed426c69b8
+                            End
+                            LayoutCachedLeft =6173
+                            LayoutCachedTop =1693
+                            LayoutCachedWidth =6433
+                            LayoutCachedHeight =1933
+                        End
+                        Begin OptionButton
+                            SpecialEffect =2
+                            OverlapFlags =215
+                            Left =6173
+                            Top =2128
+                            TabIndex =2
+                            OptionValue =3
+                            Name ="Opción121"
+                            GUID = Begin
+                                0x6b907687dddfed4094df42d9fb1ec8dc
+                            End
+                            LayoutCachedLeft =6173
+                            LayoutCachedTop =2128
+                            LayoutCachedWidth =6433
+                            LayoutCachedHeight =2368
+                        End
+                    End
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6630
+                    Top =3446
+                    Width =1110
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta127"
+                    Caption ="Aumentará"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xa162d6015e73c142994a8fe77ebd5db3
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6630
+                    LayoutCachedTop =3446
+                    LayoutCachedWidth =7740
+                    LayoutCachedHeight =3761
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6633
+                    Top =3911
+                    Width =1110
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta129"
+                    Caption ="Disminuirá"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x14bf5926eb8cac4392318e281de236a0
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6633
+                    LayoutCachedTop =3911
+                    LayoutCachedWidth =7743
+                    LayoutCachedHeight =4226
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6630
+                    Top =4376
+                    Width =1110
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta131"
+                    Caption ="No Variará"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xd487d39c0a77c04b9ff2dfa2c380ea7d
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6630
+                    LayoutCachedTop =4376
+                    LayoutCachedWidth =7740
+                    LayoutCachedHeight =4691
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6630
+                    Top =1215
+                    Width =1110
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta118"
+                    Caption ="Aumentará"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xfffcd0b52b99ea4a941ed53871891558
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6630
+                    LayoutCachedTop =1215
+                    LayoutCachedWidth =7740
+                    LayoutCachedHeight =1530
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6630
+                    Top =1650
+                    Width =1110
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta120"
+                    Caption ="Disminuirá"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x5d1fb0b4d5e2d443b7945c8eb5e7aadb
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6630
+                    LayoutCachedTop =1650
+                    LayoutCachedWidth =7740
+                    LayoutCachedHeight =1965
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =6630
+                    Top =2070
+                    Width =1110
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta122"
+                    Caption ="No Variará"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x5e70637dfdc4034a941153681b2d95e2
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6630
+                    LayoutCachedTop =2070
+                    LayoutCachedWidth =7740
+                    LayoutCachedHeight =2385
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =1
+                    Left =2715
+                    Top =5280
+                    Width =690
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta167"
+                    Caption ="Mayor"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x57beadd4550c6244aa7c2ebd7ce1913b
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =2715
+                    LayoutCachedTop =5280
+                    LayoutCachedWidth =3405
+                    LayoutCachedHeight =5595
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =2715
+                    Top =5563
+                    Width =690
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta169"
+                    Caption ="Menor"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x0ed59aca6afc06419178e5557966bd5b
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =2715
+                    LayoutCachedTop =5563
+                    LayoutCachedWidth =3405
+                    LayoutCachedHeight =5878
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =255
+                    TextAlign =1
+                    Left =7256
+                    Top =5280
+                    Width =2115
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta145"
+                    Caption ="Material ya entregado"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x006dcd44773ed94b93570a80e02e512c
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =7256
+                    LayoutCachedTop =5280
+                    LayoutCachedWidth =9371
+                    LayoutCachedHeight =5595
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =247
+                    TextAlign =1
+                    Left =7256
+                    Top =5563
+                    Width =2115
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta147"
+                    Caption ="Material por entregar"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x20e8cb6cd93c8f4bbd928f5abad4385f
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =7256
+                    LayoutCachedTop =5563
+                    LayoutCachedWidth =9371
+                    LayoutCachedHeight =5878
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =11059
+                    Top =6125
+                    Width =1134
+                    Height =340
+                    FontWeight =700
+                    TabIndex =18
+                    ForeColor =16777215
+                    Name ="cmdGuardar"
+                    Caption ="Grabar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    ControlTipText ="grabar"
+                    GUID = Begin
+                        0x70555d38a85b52498daf24b310be1966
+                    End
+                    LayoutCachedLeft =11059
+                    LayoutCachedTop =6125
+                    LayoutCachedWidth =12193
+                    LayoutCachedHeight =6465
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    Gradient =0
+                    BackColor =16737792
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    OldBorderStyle =0
+                    ThemeFontIndex =-1
+                    HoverColor =4666411
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =3414531
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16737792
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16737792
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =2
+                    WebImagePaddingBottom =2
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8050
+                    Top =1077
+                    Width =180
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta93"
+                    Caption ="*"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xfa7f59398ef8734ba4c8d62e7910fb3f
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8050
+                    LayoutCachedTop =1077
+                    LayoutCachedWidth =8230
+                    LayoutCachedHeight =1422
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =8055
+                    Top =3375
+                    Width =180
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta173"
+                    Caption ="*"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x21750e3bc2319e4ebd2d4d54b8f5574d
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =8055
+                    LayoutCachedTop =3375
+                    LayoutCachedWidth =8235
+                    LayoutCachedHeight =3720
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =3945
+                    Top =5220
+                    Width =180
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta174"
+                    Caption ="*"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x3028567fc861c94ebfe36d5fbc7d10d1
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =3945
+                    LayoutCachedTop =5220
+                    LayoutCachedWidth =4125
+                    LayoutCachedHeight =5565
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =9525
+                    Top =5265
+                    Width =180
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta175"
+                    Caption ="*"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xec50f7317824184ea62efa7167aa1a34
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =9525
+                    LayoutCachedTop =5265
+                    LayoutCachedWidth =9705
+                    LayoutCachedHeight =5610
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+
+
+Option Compare Database
+Option Explicit
+' ==========================================================================
+' MÓDULO: subfrmDatosPCSUB_Impacto.cls
+' VERSIÓN: Clone de Form_subfrmDatosPC_Impacto adaptado para PCSUB.
+' ==========================================================================
+
+Private m_ViewModel As DatosPCSUBViewModel
+
+Public Sub PoblarControles(ByRef vm As DatosPCSUBViewModel)
+    On Error GoTo Errores
+    If vm Is Nothing Then Exit Sub
+
+    ' Motivos
+    Me.motivoCorregirDeficiencias = vm.vm_motivoCorregirDeficiencias
+    Me.motivoMejorarCapacidad = vm.vm_motivoMejorarCapacidad
+    Me.motivoAumentarNacionalizacion = vm.vm_motivoAumentarNacionalizacion
+    Me.motivoMejorarSeguridad = vm.vm_motivoMejorarSeguridad
+    Me.motivoMejorarFiabilidad = vm.vm_motivoMejorarFiabilidad
+    Me.motivoMejorarCosteEficacia = vm.vm_motivoMejorarCosteEficacia
+    Me.motivoOtros = vm.vm_motivoOtros
+    Me.motivoOtrosDetalle = Nz(vm.vm_motivoOtrosDetalle, "")
+
+    ' Incidencias
+    
+    Select Case Nz(vm.vm_incidenciaCoste, "")
+        Case "Aumentará": Me.grpIncidenciaCoste = 1
+        Case "Disminuirá": Me.grpIncidenciaCoste = 2
+        Case "No Variará": Me.grpIncidenciaCoste = 3
+        Case Else: Me.grpIncidenciaCoste = 0
+    End Select
+    
+    Select Case Nz(vm.vm_incidenciaPlazo, "")
+        Case "Aumentará": Me.grpIncidenciaPlazo = 1
+        Case "Disminuirá": Me.grpIncidenciaPlazo = 2
+        Case "No Variará": Me.grpIncidenciaPlazo = 3
+        Case Else: Me.grpIncidenciaPlazo = 0
+    End Select
+    
+   
+    Me.incidenciaSeguridad = vm.vm_incidenciaSeguridad
+    Me.incidenciaFiabilidad = vm.vm_incidenciaFiabilidad
+    Me.incidenciaMantenibilidad = vm.vm_incidenciaMantenibilidad
+    Me.incidenciaIntercambiabilidad = vm.vm_incidenciaIntercambiabilidad
+    Me.incidenciaVidaUtilAlmacen = vm.vm_incidenciaVidaUtilAlmacen
+    Me.incidenciaFuncionamientoFuncion = vm.vm_incidenciaFuncionamientoFuncion
+
+    ' Afectación
+    Select Case Nz(vm.vm_impactoClasificacion, "")
+        Case "MAYOR": Me.grpClasificacion = 1
+        Case "MENOR": Me.grpClasificacion = 2
+        
+        Case Else: Me.grpClasificacion = 0
+    End Select
+    
+    Select Case Nz(vm.vm_CambioAfectaAMaterial, "")
+        Case "Material ya entregado": Me.grpAfeccionMaterial = 1
+        Case "Material por entregar": Me.grpAfeccionMaterial = 2
+        
+        Case Else: Me.grpAfeccionMaterial = 0
+    End Select
+    
+    
+    Exit Sub
+Errores:
+    ManejadorErroresFormulario "subfrmDatosPCSUB_Impacto.PoblarControles", Me
+End Sub
+
+Public Sub RecogerValores(ByRef vm As DatosPCSUBViewModel)
+    On Error GoTo Errores
+    If vm Is Nothing Then Exit Sub
+
+    vm.vm_motivoCorregirDeficiencias = CBool(Me.motivoCorregirDeficiencias.value)
+    vm.vm_motivoMejorarCapacidad = CBool(Me.motivoMejorarCapacidad.value)
+    vm.vm_motivoAumentarNacionalizacion = CBool(Me.motivoAumentarNacionalizacion.value)
+    vm.vm_motivoMejorarSeguridad = CBool(Me.motivoMejorarSeguridad.value)
+    vm.vm_motivoMejorarFiabilidad = CBool(Me.motivoMejorarFiabilidad.value)
+    vm.vm_motivoMejorarCosteEficacia = CBool(Me.motivoMejorarCosteEficacia.value)
+    vm.vm_motivoOtros = CBool(Me.motivoOtros.value)
+    vm.vm_motivoOtrosDetalle = Nz(Me.motivoOtrosDetalle.value, "")
+    
+    ' --- Incidencias (OptionGroup ? texto canónico) ---
+    Select Case Nz(Me.grpIncidenciaCoste.value, 0)
+        Case 1: vm.vm_incidenciaCoste = "Aumentará"
+        Case 2: vm.vm_incidenciaCoste = "Disminuirá"
+        Case 3: vm.vm_incidenciaCoste = "No Variará"
+        Case Else: vm.vm_incidenciaCoste = ""
+    End Select
+    ' --- Incidencias (OptionGroup ? texto canónico) ---
+    Select Case Nz(Me.grpIncidenciaPlazo.value, 0)
+        Case 1: vm.vm_incidenciaPlazo = "Aumentará"
+        Case 2: vm.vm_incidenciaPlazo = "Disminuirá"
+        Case 3: vm.vm_incidenciaPlazo = "No Variará"
+        Case Else: vm.vm_incidenciaPlazo = ""
+    End Select
+    
+    
+    
+    vm.vm_incidenciaSeguridad = CBool(Me.incidenciaSeguridad.value)
+    vm.vm_incidenciaFiabilidad = CBool(Me.incidenciaFiabilidad.value)
+    vm.vm_incidenciaMantenibilidad = CBool(Me.incidenciaMantenibilidad.value)
+    vm.vm_incidenciaIntercambiabilidad = CBool(Me.incidenciaIntercambiabilidad.value)
+    vm.vm_incidenciaVidaUtilAlmacen = CBool(Me.incidenciaVidaUtilAlmacen.value)
+    vm.vm_incidenciaFuncionamientoFuncion = CBool(Me.incidenciaFuncionamientoFuncion.value)
+    
+    Select Case Nz(Me.grpClasificacion.value, 0)
+        Case 1: vm.vm_impactoClasificacion = "MAYOR"
+        Case 2: vm.vm_impactoClasificacion = "MENOR"
+        Case Else: vm.vm_impactoClasificacion = ""
+    End Select
+    Select Case Nz(Me.grpAfeccionMaterial.value, 0)
+        Case 1: vm.vm_CambioAfectaAMaterial = "Material ya entregado"
+        Case 2: vm.vm_CambioAfectaAMaterial = "Material por entregar"
+        Case Else: vm.vm_CambioAfectaAMaterial = ""
+    End Select
+   
+    
+   
+    Exit Sub
+Errores:
+    ManejadorErroresFormulario "subfrmDatosPCSUB_Impacto.RecogerValores", Me
+End Sub
+
+Private Sub cmdGuardar_Click()
+    On Error GoTo Errores
+    'CommitEditsOnForm Me
+    Me.Parent.GuardarDesdeSubform Me.name
+    
+    Exit Sub
+Errores:
+    ManejadorErroresFormulario "subfrmDatosPCSUB_Impacto.cmdGuardar_Click", Me
+End Sub

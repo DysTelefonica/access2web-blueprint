@@ -1,0 +1,651 @@
+Version =21
+VersionRequired =20
+Checksum =700749601
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =0
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridX =24
+    GridY =24
+    Width =15978
+    DatasheetFontHeight =10
+    ItemSuffix =58
+    Left =1620
+    Top =5040
+    Right =17265
+    Bottom =13545
+    DatasheetGridlinesColor =12632256
+    RecSrcDt = Begin
+        0x49e4a809700be240
+    End
+    GUID = Begin
+        0xa1b0bdcc175a1048b3ea44123e16600d
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    DatasheetFontName ="Arial"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00f9731418d13c00180000005863c56a18d13c0020f973141800000018d13c00 ,
+        0x010403069c000c03038f0000010009009a0b3408640001000100b00402000100 ,
+        0xc80002000000413400ce3c00aa97ca0020f97314b197ca00e454a37104f97314 ,
+        0xfcd03c0000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000000000 ,
+        0x00000000000000000000000000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    DatasheetGridlinesColor12 =12632256
+    PrtDevModeW = Begin
+        0x00000000000000001c88cc00dc00010070021814cc455b005003000000000000 ,
+        0x50030000700218141f15181464383e0000000000e4113e0030af7c77eaa58092 ,
+        0x01040306dc000c03038f0000010009009a0b3408640001000100b00402000100 ,
+        0xc800020000004100340000005094a17124103e0058d74c017f0000001a0eda00 ,
+        0x00009a229598ca0000009a22480000007f000000c0009a22ab8c797700000000 ,
+        0x0000000010000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c006500000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Line
+            BorderLineStyle =0
+            Width =1701
+            GridlineColor =10921638
+            BorderThemeColorIndex =0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            FontSize =8
+            FontWeight =400
+            ForeColor =-2147483630
+            FontName ="MS Sans Serif"
+            BorderLineStyle =0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Subform
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            BorderShade =65.0
+            ShowPageHeaderAndPageFooter =1
+        End
+        Begin FormHeader
+            Height =567
+            BackColor =8210719
+            Name ="EncabezadoDelFormulario"
+            OnMouseMove ="[Event Procedure]"
+            GUID = Begin
+                0xcaa4c13ad999824789bf45094c13e1b4
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =2
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =93
+                    Left =2145
+                    Width =2203
+                    Height =397
+                    BackColor =8210719
+                    Name ="MENU3"
+                    GUID = Begin
+                        0xd0cd544c2a771748a91b9d494cf111be
+                    End
+                    LayoutCachedLeft =2145
+                    LayoutCachedWidth =4348
+                    LayoutCachedHeight =397
+                    BackThemeColorIndex =-1
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =93
+                    Width =1978
+                    Height =397
+                    BackColor =8210719
+                    Name ="MENU1"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0x1f9f002b1fc2b84ba58d34dc8c7dc059
+                    End
+                    LayoutCachedWidth =1978
+                    LayoutCachedHeight =397
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    Visible = NotDefault
+                    BackStyle =1
+                    OverlapFlags =95
+                    Top =397
+                    Width =1979
+                    Height =170
+                    BackColor =16051931
+                    ForeColor =6710886
+                    Name ="IND1"
+                    GUID = Begin
+                        0xa12e87eb594ffd4f9a1a2c0ddf69be6a
+                    End
+                    LayoutCachedTop =397
+                    LayoutCachedWidth =1979
+                    LayoutCachedHeight =567
+                    BackThemeColorIndex =8
+                    BackTint =20.0
+                    ForeTint =60.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =788
+                    Top =45
+                    Width =930
+                    Height =285
+                    FontSize =9
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblMenu1"
+                    Caption ="Búsqueda"
+                    FontName ="Arial"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0x44ea9f29ea839a40b48752e8c5e76362
+                    End
+                    LayoutCachedLeft =788
+                    LayoutCachedTop =45
+                    LayoutCachedWidth =1718
+                    LayoutCachedHeight =330
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =223
+                    Left =2145
+                    Top =15
+                    Width =2173
+                    Height =397
+                    BackColor =8210719
+                    Name ="MENU2"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0xf2702b664d26cb4ab5450711e1bc16a0
+                    End
+                    LayoutCachedLeft =2145
+                    LayoutCachedTop =15
+                    LayoutCachedWidth =4318
+                    LayoutCachedHeight =412
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    Visible = NotDefault
+                    BackStyle =1
+                    OverlapFlags =223
+                    Left =2145
+                    Top =397
+                    Width =2173
+                    Height =170
+                    BackColor =16051931
+                    ForeColor =6710886
+                    Name ="IND2"
+                    GUID = Begin
+                        0xd03833f01d300a419712a34616d3ded4
+                    End
+                    LayoutCachedLeft =2145
+                    LayoutCachedTop =397
+                    LayoutCachedWidth =4318
+                    LayoutCachedHeight =567
+                    BackThemeColorIndex =8
+                    BackTint =20.0
+                    ForeTint =60.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =2860
+                    Top =45
+                    Width =1365
+                    Height =285
+                    FontSize =9
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblMenu2"
+                    Caption ="Datos Generales"
+                    FontName ="Arial"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0x8f8914f832445141ae98577dcbdd7950
+                    End
+                    LayoutCachedLeft =2860
+                    LayoutCachedTop =45
+                    LayoutCachedWidth =4225
+                    LayoutCachedHeight =330
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Image
+                    Left =105
+                    Width =405
+                    Height =405
+                    Name ="Imagen1"
+                    Picture ="Aplicacion-modified.png"
+                    GUID = Begin
+                        0x4357d67de6cb814abbd8b6b4226393d1
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7a ,
+                        0xf4000000017352474200aece1ce900000284494441545847e5974d884e6114c7 ,
+                        0x7f7ff988e463a1466421949424ca473eb291acb0f05148948664e163a789922c ,
+                        0x6c884494c286666523291f496c448846a2a6a41026cdc28c577f9d57772ebdf7 ,
+                        0xb9b7779ae2d9dc6ef73ce7fc9e73ce73ceb96280976ab5da74e02430ad04cb1a ,
+                        0x6012705552adc4be3f440df008985552c962a015e894b4bfe4de3ee206e80506 ,
+                        0x9554520758076c9774b6e4fedfe206a8e2c23ac07ae03bb052d28d2a10cd00b0 ,
+                        0xdd2fc04249cfca42340bc076df00f324bd2f0351156089630f6cc8197b082c95 ,
+                        0xd49d0a51156007f016380c0cce196b97d4d6df009f806dc01de047ce584dd2e7 ,
+                        0xfe0668a4bf5bd2887f0ac0f7fc28d00e7c4d389943f03a41ee97484a126e045c ,
+                        0xae0f00e3531517c8b9f875586711804fe266e5e7842619cfaab95504e0f2ba1b ,
+                        0x781ebb1c8e0bc00b6028b01a98131eba98d1dc12b7642c70067819dfdc73e603 ,
+                        0xabec7da0b708e03ab007781a0a5c7c1e00cb00179bcbc04de015b017581b7296 ,
+                        0xff08b830ad0863336c3072691fb02b2507f20063e2eecf0c436ec93ea5df4fc5 ,
+                        0x377fea0146014f809d80bbe696d87309380ddcad02e0fb7d2e930f1e64260273 ,
+                        0x8123c08930f2187035ec0c77cf0e4fd803c7628f210a6f41de030618070c0943 ,
+                        0x1f80ad01e013d613d53960a045c0f2c8117ba49e03c781d15501ecd62901e0fc ,
+                        0xf0b207b221c866ba01b221e87399ca26a13df07f01dc063645ebb5eb3cf1d8fd ,
+                        0xc3c28fefe2391c70879cfc9762e541c5f1f66dc9afaea2107445c69e073c8a37 ,
+                        0x7b1d2a02b0c12bc066c05390b3bb59ab43d2bd14001b742fb896d80d7b241d4c ,
+                        0xa54c0548d567b9d20349951f934640df248d4c25aefa6bd648ff7d490bca00b8 ,
+                        0xdfbb8a4d4dddd440ce6dba5592878da4e59e3ca0eb271a63f93ca7ef07830000 ,
+                        0x000049454e44ae426082
+                    End
+
+                    LayoutCachedLeft =105
+                    LayoutCachedWidth =510
+                    LayoutCachedHeight =405
+                End
+                Begin Image
+                    Left =2250
+                    Width =405
+                    Height =405
+                    Name ="Imagen2"
+                    Picture ="DatosAplicacion-modified.png"
+                    GUID = Begin
+                        0xb60b0341947aec4984520e244d4aafa3
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7a ,
+                        0xf4000000017352474200aece1ce9000001c6494441545847ed96cf4a025114c6 ,
+                        0xbf73240d6a63112644bbda2814b40afaa733b3f1316ad513b5cac7703333da3f ,
+                        0x721554e8a676219844b90a52e19cb8903165398b145bcc7d8073bf73ceeffbee ,
+                        0x254cf8d084efc75001954a6549443645648d9957547509c082aace11d12c80a9 ,
+                        0x8f067a005e013c037822a28688dc33f30d335773b95ce3b7460704944aa54422 ,
+                        0x913814917d22caaaea9fa64444aaaa35662e763a9da342a1d0098a1928eebaee ,
+                        0x3980ad31ade6c2719cedff2d605c2b0050ecf57ae12bf07d7fc7b2ac3333a6df ,
+                        0x2004300f60260cc2582c764b44977d0883b5fb6b1860c0f3bc3700c7069a7c3e ,
+                        0x7f350a16cae5f286811ac0816ddbd3610ce8a73aa247005500d700ee88e80140 ,
+                        0x2b1e8fbf2493c9d74c2663ec877abd3ed56eb767baddee1c8094aa2e035805b0 ,
+                        0x0e60535517fb351dc7f9d2f44f2ef814308aeebfd78804844ec0f7fd1311d91d ,
+                        0xc7f899f9d4b2acbda110d66ab578b3d93c202243edc628a218c095aa16d3e9f4 ,
+                        0x71369bed0e1510f4aae779a90f8a0dcdabccbc2c22292232b40fe480aabe3073 ,
+                        0x4b448c5b8c6b8c7baab66db7cca5510e98298442e8ba6e9403939d409403510e ,
+                        0x046d48d17f600c4fe2ff4fc22807826b1ff57fe027a4de01b661af301fc02d4a ,
+                        0x0000000049454e44ae426082
+                    End
+
+                    LayoutCachedLeft =2250
+                    LayoutCachedWidth =2655
+                    LayoutCachedHeight =405
+                    TabIndex =1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =10065
+                    Top =135
+                    Width =5565
+                    Height =285
+                    FontSize =9
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblAplicacionActiva"
+                    Caption ="Aplicación Activa: "
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x57819228a5404340997309a4c172fa38
+                    End
+                    LayoutCachedLeft =10065
+                    LayoutCachedTop =135
+                    LayoutCachedWidth =15630
+                    LayoutCachedHeight =420
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =7923
+            Name ="Detail"
+            GUID = Begin
+                0x1323c800ae01ab4a83692bf0160be0fd
+            End
+            Begin
+                Begin Subform
+                    OverlapFlags =85
+                    OldBorderStyle =0
+                    Width =15978
+                    Height =7923
+                    Name ="FormDetalle"
+                    GUID = Begin
+                        0x605520321312fa478bbdd526090f7c45
+                    End
+
+                    LayoutCachedWidth =15978
+                    LayoutCachedHeight =7923
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0xfc73efa83cfd524b987126b5e2d14d12
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private WithEvents m_Form As Form_FormAplicacionesGestion
+Attribute m_Form.VB_VarHelpID = -1
+Private m_Error As String
+
+
+Private Sub EncabezadoDelFormulario_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    If Me.IND1.Visible = True Then
+        Me.IND1.Visible = False
+    End If
+    If Me.IND2.Visible = True Then
+        Me.IND2.Visible = False
+    End If
+    
+    If Me.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado Then
+        Me.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado
+    End If
+    If Me.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado Then
+        Me.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado
+    End If
+    
+End Sub
+
+Private Sub Form_Load()
+
+    On Error GoTo errores
+    
+    m_Error = ""
+    
+    Me.IND1.Visible = True
+    
+    Me.IND2.Visible = False
+    
+    Me.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado
+    Me.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado
+    
+    
+    
+    Me.FormDetalle.SourceObject = ""
+    Set m_ObjUsuarioActivo = Nothing
+    Me.lblAplicacionActiva.Caption = "Aplicación Activa: "
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al intentar Form_Load se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub m_Form_QuitarAplicacionSeleccionada()
+    Me.lblAplicacionActiva.Caption = "Aplicación Activa: "
+End Sub
+
+Private Sub m_Form_AplicacionSeleccionada(m_objAplicacion As Aplicacion)
+    Me.lblAplicacionActiva.Caption = "Aplicación Activa: " & m_objAplicacion.NombreAplicacion
+End Sub
+
+Public Sub MENU1_Click()
+    If Me.FormDetalle.SourceObject <> "FormAplicacionesGestion" Then
+        Me.FormDetalle.SourceObject = "FormAplicacionesGestion"
+    End If
+    Set m_ObjAplicacionActiva = Nothing
+    Set m_Form = Me.FormDetalle.Form
+End Sub
+
+Private Sub lblMenu1_Click()
+    MENU1_Click
+End Sub
+Private Sub MENU2_Click()
+    If Me.FormDetalle.SourceObject <> "FormAplicacionDatosGenerales" Then
+        Me.FormDetalle.SourceObject = "FormAplicacionDatosGenerales"
+    End If
+End Sub
+
+Private Sub lblMenu2_Click()
+    MENU2_Click
+End Sub
+
+
+Private Sub MENU1_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    
+    If Me.IND1.Visible = False Then
+        Me.IND1.Visible = True
+    End If
+    If Me.IND2.Visible = True Then
+        Me.IND2.Visible = False
+    End If
+    
+    If Me.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+        Me.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado
+    End If
+    If Me.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado Then
+        Me.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado
+    End If
+    
+End Sub
+Private Sub lblMenu1_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    
+    MENU1_Mousemove Button, Shift, x, y
+    
+End Sub
+
+Private Sub MENU2_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    
+    If Me.IND2.Visible = False Then
+        Me.IND2.Visible = True
+    End If
+    If Me.IND1.Visible = True Then
+        Me.IND1.Visible = False
+    End If
+    
+    If Me.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+        Me.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado
+    End If
+    If Me.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado Then
+        Me.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado
+    End If
+    
+End Sub
+
+Private Sub lblMenu2_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    
+    MENU2_Mousemove Button, Shift, x, y
+End Sub

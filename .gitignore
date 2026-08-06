@@ -1,7 +1,15 @@
-# Local AI/tooling state
+# OS / editor noise
+.vs/
+.idea/
+.vscode/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Local AI/tool state (transient; runtime regenerates)
 .atl/
-.codegraph-vba/
 .dysflow/runtime/
 
-# Local-only raw evidence (sensitive — never version)
+# Local-only raw evidence (sensitive - never version)
 inputs/automatizaciones-legacy/raw/

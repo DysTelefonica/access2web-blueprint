@@ -1,0 +1,13 @@
+{
+  "backends": {
+    "HPST": {
+      "path": "HPST.accdb",
+      "tables": []
+    }
+  },
+  "frontend": "HPS.accdb",
+  "testing": {
+    "runner": null,
+    "testsPath": null
+  }
+}

@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Estado de planificacion B2/Punto 15 / Anexos - 2026-07-08 (post-merge-staging)</title>
+  <style>
+    :root {
+      --color-brand: #0066CC;
+      --color-brand-dark: #003D7A;
+      --color-text-primary: #1A1A1A;
+      --color-text-secondary: #5C5C5C;
+      --color-background: #FFFFFF;
+      --color-surface: #F5F7FA;
+      --color-surface-strong: #E8EEF5;
+      --color-border: #D4DBE3;
+      --color-success: #2E7D32;
+      --color-warning: #ED6C02;
+      --color-danger: #C62828;
+      --color-info: #0277BD;
+      --radius-card: 12px;
+      --radius-chip: 24px;
+      --radius-input: 8px;
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 1180px; margin: 0 auto; padding: var(--space-7) var(--space-5) var(--space-7); }
+    .hero {
+      background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+      color: #fff;
+      border-radius: var(--radius-card);
+      padding: var(--space-6) var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    .hero .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 600;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.2;
+      margin: var(--space-3) 0 var(--space-3);
+      font-weight: 700;
+    }
+    .hero p.lead {
+      font-size: 16px;
+      opacity: 0.95;
+      max-width: 880px;
+      margin: 0;
+    }
+    section.card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    section.card h2 {
+      font-size: 18px;
+      margin: 0 0 var(--space-4);
+      color: var(--color-brand-dark);
+      font-weight: 700;
+    }
+    section.card h3 {
+      font-size: 15px;
+      margin: var(--space-4) 0 var(--space-3);
+      color: var(--color-text-primary);
+      font-weight: 700;
+    }
+    section.card p { margin: 0 0 var(--space-4); }
+    section.card p:last-child { margin-bottom: 0; }
+    section.card ul, section.card ol { padding-left: var(--space-5); margin: 0 0 var(--space-4); }
+    section.card li { margin-bottom: var(--space-2); }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      font-size: 13px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .rag-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-chip);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .rag-green  { background: #E8F5E9; color: var(--color-success); }
+    .rag-amber  { background: #FFF3E0; color: var(--color-warning); }
+    .rag-red    { background: #FFEBEE; color: var(--color-danger); }
+    .rag-grey   { background: var(--color-surface-strong); color: var(--color-text-secondary); }
+    .footer-note {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-5);
+      text-align: center;
+    }
+    .commit-sha {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: var(--color-surface-strong);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="hero" role="banner">
+      <div class="eyebrow">Estado de planificacion - 2026-07-08 - B2/Punto 15/Anexos (post-merge-staging)</div>
+      <h1>Feature cerrado: 2 forms con boton (Edicion + Riesgo) + 4 items descartados con razon documentada</h1>
+      <p class="lead">
+        Actualizacion post-merge a staging (PR #84 cerrado en
+        <span class="commit-sha">5ba84e7</span>) + verificacion contra el modelo de datos de
+        <code>Anexo</code>. Boton "Ver Anexos" implementado SOLO en
+        <code>Form_FormRiesgosGestionEdicion</code> y
+        <code>Form_FormRiesgosGestionRiesgo</code>: las unicas 2 entidades con anexos
+        ademas del Proyecto. PlanAcciones y PlanPrincipal NO reciben boton porque
+        <code>TbAnexos</code> solo tiene FKs a <code>IDProyecto</code>, <code>IDEdicion</code>,
+        <code>IDRiesgo</code> y <code>Anexo.Tipo()</code> solo distingue "R" vs "E".
+        Subform embebido (Opcion C del session summary original) tambien descartado:
+        el popup ya cumple, no duplicar feature.
+      </p>
+    </header>
+
+    <section class="card" aria-labelledby="sec-resumen">
+      <h2 id="sec-resumen">1. Resumen ejecutivo</h2>
+      <p>
+        La rama <strong>b2-punto-15-anexos-helper</strong> esta lista para merge a staging.
+        El feature B2/Punto 15 / Anexos cubre:
+      </p>
+      <ul>
+        <li>Data layer cache-first (<code>modFormRiesgoDocumentosHelper</code>) + presenter anti-N+1 (<code>modAnexosListPresenter</code>).</li>
+        <li>Boton "Ver Anexos" en <code>Form_FormRiesgosGestionEdicion</code> (commit <span class="commit-sha">34964b5</span>).</li>
+        <li>Boton "Ver Anexos" en <code>Form_FormRiesgosGestionRiesgo</code> (commit <span class="commit-sha">92c8d59</span>) — patron identico al de Edicion con <code>openArgs:="Riesgo"</code>.</li>
+        <li>Tests 18/18 verdes: presenter 6/6 (obs #16137 resuelta) + friction 12/12.</li>
+        <li>Tooling: <code>.dysflow/project.json</code> migrado al schema <code>capabilities</code> (commit <span class="commit-sha">3f1314a</span>) requerido por dysflow v1.15.0+.</li>
+      </ul>
+      <p>
+        Quedan 2 forms detalle (PlanAcciones, PlanPrincipal) sin boton, fuera del alcance
+        pedido en esta iteracion. Tambien quedan 4 pre-existing failures en
+        <code>Test_modFormRiesgoDocumentosHelper</code> trackeadas por separado (issue nuevo),
+        que no son regresion de B2 y no bloquean staging.
+      </p>
+      <div class="legend" aria-label="Leyenda RAG">
+        <span><span class="rag-pill rag-green">Verde</span> on track o terminado</span>
+        <span><span class="rag-pill rag-amber">Ambar</span> 2-5 dias de retraso o riesgo identificado</span>
+        <span><span class="rag-pill rag-red">Rojo</span> &gt;5 dias o bloqueado</span>
+        <span><span class="rag-pill rag-grey">Gris</span> planificado, no iniciado</span>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="sec-fases">
+      <h2 id="sec-fases">2. Estado por fase</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 220px;">Fase</th>
+            <th style="width: 80px;">RAG</th>
+            <th>Estado</th>
+            <th style="width: 130px;">Proximo paso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>F15/F17/F18/F20</strong><br><em>Data layer (cierre 5 issues)</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Issues <code>#77</code> a <code>#81</code> cerrados con SHA
+              <span class="commit-sha">5f8c527</span> + test reference
+              (<code>tests.vba.friction-F15-F17-F18-F20.json</code>, 12/12 verde). Tag
+              <em>F15</em>: capturar <code>Anexo.Registrar</code> en String; <em>F17</em>:
+              <code>Riesgo.ColAnexosTotales</code> Public Function; <em>F18</em>: shadowing
+              <code>edicion</code> a <code>m_Edicion</code>; <em>F19</em>: binary sync;
+              <em>F20</em>: <code>err</code> a <code>errMsg</code>.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Issue #83</strong><br><em>3 root causes del data layer</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Tres fixes en commit <span class="commit-sha">d45dbac</span>:
+              <ol>
+                <li><strong>Anexo.Tipo</strong> ahora es propiedad computada: "R" si IDRiesgo poblado, "E" en caso contrario.</li>
+                <li><strong>EliminarAnexo</strong> invalida cache de edicion padre ademas de riesgo.</li>
+                <li><strong>Riesgo.ColAnexosTotales</strong> re-raise Err 1000 en lugar de absorberlo.</li>
+              </ol>
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Obs #16137</strong><br><em>Presenter 4/6 happy-path "matriz es fija"</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Resuelto en commits <span class="commit-sha">6982918</span> (refactor de
+              <code>getEdicion</code>/<code>getRiesgo</code>/<code>getAnexosTotalesDeEdicion</code>
+              a local <code>m_Result</code>) y <span class="commit-sha">06df44b</span> (presenter
+              6/6 verde). Root cause: <code>InitLogs</code> hacia <code>ReDim</code> sobre
+              array de tamano fijo, no DAO locking ni refactor de <code>m_Result</code> como
+              se asumia en el prompt a mantenedora original.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>B2 UI: modAnexosListPresenter + thin form</strong><br><em>Presenter cache-first</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Helper <code>modAnexosListPresenter.bas</code> con preload maps anti-N+1
+              (<code>PreloadEdicionDisplays</code> + <code>PreloadRiesgoCodigos</code>).
+              Thin form: <code>Form_FormAnexos.EstablecerLista</code> = helper call + render.
+              Tests 6/6 verdes (sad + happy + edge + cache-first contract).
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>B2 UI: Ver Anexos (Edicion)</strong><br><em>FormRiesgosGestionEdicion</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>ComandoVerAnexos</code> en <code>Form_FormRiesgosGestionEdicion</code> con
+              <code>openArgs:="Edicion"</code>. Cache-first preservado. Posicionado en
+              <code>Top=4424</code>, <code>Left=345</code> (gap 244 twips). Tool:
+              <code>dysflow_form_move_control</code>. Commit
+              <span class="commit-sha">34964b5</span> + fix de posicion
+              <span class="commit-sha">fc57d96</span>.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>B2 UI: Ver Anexos (Riesgo)</strong><br><em>FormRiesgosGestionRiesgo</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>ComandoVerAnexos</code> en <code>Form_FormRiesgosGestionRiesgo</code> con
+              <code>openArgs:="Riesgo"</code>. Patron identico al de Edicion. Posicionado
+              en <code>Left=170</code>, <code>Top=3899</code>, <code>Width=1985</code>,
+              <code>Height=567</code>, <code>TabIndex=21</code> (stacked en columna izquierda,
+              gap ~837 twips despues de ComandoAltaPC). Tool:
+              <code>dysflow_form_add_control</code> con <code>apply:true</code> (automatiza
+              <code>import_modules</code> LoadFromText gate). Commit
+              <span class="commit-sha">92c8d59</span>.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Forms detalle restantes</strong><br><em>PlanAcciones, PlanPrincipal</em></td>
+            <td><span class="rag-pill rag-grey">Descartado</span></td>
+            <td>
+              <code>Form_FormRiesgosGestionPlanAcciones</code> y
+              <code>Form_FormRiesgosGestionPlanPrincipal</code> <strong>NO</strong> reciben
+              boton "Ver Anexos". Verificado contra <code>src/classes/Anexo.cls</code> lineas
+              15-17 (<code>IDProyecto</code>/<code>IDEdicion</code>/<code>IDRiesgo</code> son las
+              unicas FKs) + <code>Anexo.Tipo()</code> lineas 242-260 (solo "R" o "E") +
+              <code>Form_FormAnexos.cls</code> lineas 386-413 (openArgs "Proyecto"/"Edicion"/"Riesgo"
+              son las unicas opciones). PlanAcciones y PlanPrincipal no tienen anexos en el
+              modelo: un boton "Ver Anexos" seria UI sin contrato de backing.
+            </td>
+            <td>Cerrado (descartado con razon).</td>
+          </tr>
+          <tr>
+            <td><strong>Subform embebido</strong><br><em>Opcion C del session summary</em></td>
+            <td><span class="rag-pill rag-grey">Descartado</span></td>
+            <td>
+              Subform embebido (<code>Form_FormRiesgosGestionEdicionAnexos</code> +
+              <code>Form_FormRiesgosGestionRiesgoAnexos</code> embebidos en padres,
+              crecer Detalle ~6600->7700 twips) <strong>NO</strong> se implementa.
+              El popup <code>FormAnexos</code> con <code>openArgs:="Edicion"</code> /
+              <code>openArgs:="Riesgo"</code> ya cumple la spec del acta 25/06 + contrato
+              22/06 ("Anexos visibles desde la vista de proyecto"). Duplicar la feature
+              con subform embebido seria trabajo nuevo sin valor anadido para el usuario
+              final.
+            </td>
+            <td>Cerrado (descartado con razon).</td>
+          </tr>
+          <tr>
+            <td><strong>Tooling: dysflow project.json</strong><br><em>Migration a capabilities schema</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>.dysflow/project.json</code> migrado de los campos deprecados
+              <code>allowWrites</code>/<code>allowedProcedures</code> (top-level) al nuevo
+              schema <code>capabilities.allowWrites</code> + <code>capabilities.procedures.allow</code>
+              requerido por dysflow v1.15.0+. Sin este fix, dysflow rechaza TODAS las writes
+              con <code>CONFIG_TOP_LEVEL_FIELDS_REMOVED</code> (incluido <code>inspect_form</code>
+              read-only). Commit <span class="commit-sha">3f1314a</span>.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Pre-existing failures</strong><br><em>Test_modFormRiesgoDocumentosHelper</em></td>
+            <td><span class="rag-pill rag-amber">Ambar</span></td>
+            <td>
+              4 tests fallan pre-existentes (trackeados por separado, NO son regresion de B2):
+              <code>Test_Helper_EliminarAnexo_InvalidaCaches</code>,
+              <code>Test_Edicion_ColAnexosTotales_AgregaDirectosYDeRiesgosHijos</code>,
+              <code>Test_Constructor_GetAnexosTotalesDeEdicion_OrdenaPorTipoYRiesgo</code>,
+              <code>Test_Riesgo_ColAnexosTotales_ErrorSiIDRiesgoVacio</code>. Excluidos del
+              manifest <code>tests.vba.friction-F15-F17-F18-F20.json</code> por
+              designacion explicita.
+            </td>
+            <td>Issue nuevo a abrir (fuera de scope B2).</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" aria-labelledby="sec-decisiones">
+      <h2 id="sec-decisiones">3. Decisiones para Calidad</h2>
+      <h3>Lo que esta listo para UAT sign-off (merge a staging + acceptance web)</h3>
+      <ul>
+        <li><strong>Data layer (F15/F17/F18/F20 + Issue #83)</strong>: cierre completo, 12/12 tests verdes (<code>tests.vba.friction-F15-F17-F18-F20.json</code>).</li>
+        <li><strong>UI cache-first</strong>: <code>modAnexosListPresenter</code> con preload maps anti-N+1. 6/6 tests verdes (sad + happy + edge + cache-first contract). <code>Form_FormAnexos</code> consume el helper, thin form.</li>
+        <li><strong>Boton Ver Anexos en Edicion</strong>: <code>Form_FormRiesgosGestionEdicion.ComandoVerAnexos</code> abre popup <code>FormAnexos</code> con <code>openArgs:="Edicion"</code>, cache-first preservado.</li>
+        <li><strong>Boton Ver Anexos en Riesgo</strong>: <code>Form_FormRiesgosGestionRiesgo.ComandoVerAnexos</code> abre popup <code>FormAnexos</code> con <code>openArgs:="Riesgo"</code>, cache-first preservado.</li>
+        <li><strong>obs #16137 resuelta</strong>: presenter 6/6 verde. Root cause fue <code>InitLogs</code> ReDim sobre array fijo, no DAO locking.</li>
+        <li><strong>Tooling</strong>: <code>.dysflow/project.json</code> migrado a capabilities schema (dysflow v1.15.0+).</li>
+      </ul>
+
+      <h3>Lo que NO bloquea el merge a staging pero queda registrado</h3>
+      <ul>
+        <li><strong>2 forms detalle descartados</strong> (PlanAcciones, PlanPrincipal): sin boton "Ver Anexos" por razon de modelo (<code>TbAnexos</code> no tiene FK a PM/PC). Si en algun momento anexos pasan a esas entidades, hay que: agregar FKs en <code>TbAnexos</code> + extender <code>Anexo.Tipo()</code> + extender <code>FormAnexos.cls</code> Form_Open con <code>openArgs:="PM"</code>/<code>"PC"</code> + extender <code>modAnexosListPresenter.DeriveTipoFromAnexo</code> + crear helper <code>getAnexosDePM/PC</code>. Trabajo de modelo completo, no solo UI.</li>
+        <li><strong>4 pre-existing failures</strong> en <code>Test_modFormRiesgoDocumentosHelper.bas</code>: ya estaban antes del trabajo B2, no son regresion. Excluidos del manifest friction por designacion explicita. Abrir issue nuevo para trackear (ver roadmap).</li>
+        <li><strong>6 lint diagnostics pre-existentes</strong> en <code>Form_FormRiesgosGestionRiesgo.cls</code> (lineas 99, 262, 362, 403, 517, 525): <code>Forms(...)</code> y <code>CStr(...)</code> bare function calls + <code>EnumSiNo.Sí</code> acentos. Ninguno es del cambio B2. Si VBA los acepta (pre-compilacion manual del usuario), no bloquean; si no, sera el primer issue post-merge.</li>
+      </ul>
+
+      <h3>Como se prueba en staging</h3>
+      <ol>
+        <li>Abrir <code>Form_FormRiesgosGestion</code>, seleccionar una edicion.</li>
+        <li>Pulsar <em>Anexos</em> en el nav form — debe abrir <code>FormAnexos</code> con TODOS los anexos (directos + de riesgos hijos), cache-first preservado.</li>
+        <li>Alternativa A: abrir <code>Form_FormRiesgosGestionEdicion</code> y pulsar el boton <em>Ver Anexos</em> (commit <span class="commit-sha">34964b5</span>) — mismo efecto, hardcoded a "Edicion".</li>
+        <li>Alternativa B: abrir <code>Form_FormRiesgosGestionRiesgo</code> y pulsar el boton <em>Ver Anexos</em> (commit <span class="commit-sha">92c8d59</span>) — popup con <code>openArgs:="Riesgo"</code>, muestra SOLO anexos directos del riesgo activo.</li>
+        <li>Regression: ejecutar <code>tests.vba.modAnexosListPresenter.json</code> (6 tests) + <code>tests.vba.friction-F15-F17-F18-F20.json</code> (12 tests). Esperado: 18/18 verde.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="sec-next">
+      <h2 id="sec-next">4. Roadmap</h2>
+      <ol>
+        <li><del><strong>Merge a staging</strong>: la rama <code>b2-punto-15-anexos-helper</code> se mergeo via PR #84 en <span class="commit-sha">5ba84e7</span> (2026-07-08T10:50:32Z). Rama feature borrada (local + remote).</del></li>
+        <li><strong>Acceptance web UAT</strong>: generar <code>docs/uat/uat-staging-2026-07-08.html</code> (audiencia <em>usuario</em>, para Natalia de Calidad) + <code>docs/uat/uat-dev-2026-07-08.html</code> (audiencia <em>desarrollo</em>) usando la skill <code>feature-acceptance-uat</code>. Cubre el alcance derivado de <code>git log &lt;latest-main&gt;..HEAD --oneline</code> agrupado por cambio.</li>
+        <li><strong>UAT sign-off con Natalia</strong>: validar en staging los criterios de aceptacion del acta 25/06 + contrato 22/06 (Punto 15 — visibilidad de anexos en gestion de riesgos).</li>
+        <li><strong>Promover a main</strong> (solo tras UAT verde explicito del usuario): <code>git checkout main &amp;&amp; git merge --ff-only origin/staging &amp;&amp; git push origin main</code>. La regla <code>staging-acceptance-contract</code> requiere que los records de aceptacion esten cerrados antes de promover.</li>
+        <li><del><strong>Iteracion futura: replicar boton en PlanAcciones + PlanPrincipal</strong>. Descartado el 2026-07-08: <code>TbAnexos</code> no tiene FK a PM/PC, no hay anexos para esas entidades. No se replicara el boton.</del></li>
+        <li><del><strong>Iteracion futura: subform embebido (Opcion C)</strong>. Descartado el 2026-07-08: el popup <code>FormAnexos</code> ya cumple la spec del acta 25/06 + contrato 22/06. Duplicar feature con subform embebido seria trabajo nuevo sin valor anadido para el usuario final.</del></li>
+        <li><strong>Issue nuevo: 4 pre-existing failures en Test_modFormRiesgoDocumentosHelper</strong> (trackeados por separado, NO son regresion de B2): <code>Test_Helper_EliminarAnexo_InvalidaCaches</code>, <code>Test_Edicion_ColAnexosTotales_AgregaDirectosYDeRiesgosHijos</code>, <code>Test_Constructor_GetAnexosTotalesDeEdicion_OrdenaPorTipoYRiesgo</code>, <code>Test_Riesgo_ColAnexosTotales_ErrorSiIDRiesgoVacio</code>. Excluidos del manifest <code>tests.vba.friction-F15-F17-F18-F20.json</code> por designacion explicita. Estimacion: 1 sesion de investigacion + fix.</li>
+        <li><strong>Issue nuevo: 6 lint diagnostics pre-existentes en Form_FormRiesgosGestionRiesgo.cls</strong> (lineas 99, 262, 362, 403, 517, 525): <code>Forms(...)</code> y <code>CStr(...)</code> bare function calls + <code>EnumSiNo.Sí</code> acentos. Detectados por <code>lint_form_code</code> en commit <span class="commit-sha">92c8d59</span>, pre-existentes a B2. Si VBA los acepta, no son bloqueantes; si no, abrir issue y resolver antes de promover a main. Estimacion: 30 min.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="sec-riesgos">
+      <h2 id="sec-riesgos">5. Riesgos y notas</h2>
+      <ul>
+        <li><strong>Descubrimiento de modelo (2026-07-08): TbAnexos tiene 3 FKs, no 4+</strong>. <code>Anexo.cls</code> lineas 15-17 declara solo <code>IDProyecto</code>/<code>IDEdicion</code>/<code>IDRiesgo</code>. No hay FK a PM/PC/Accion/Plan. Esto significa que PlanAcciones, PlanPrincipal, y cualquier entidad debajo de riesgo (materializaciones, etc.) NO pueden tener anexos en el modelo actual. Si en el futuro se quiere anexos a materializaciones o PMs/PCs, hay que hacer trabajo de modelo completo (schema + clase + presenter + popup), no solo UI.</li>
+        <li><strong>Dysflow 2.0.0 + capabilities schema</strong>: el fix del <code>project.json</code> es requerido para CUALQUIER write dysflow (&gt;= v1.15.0). Si otro repo del proyecto tiene schema viejo, tambien va a fallar. Recomiendo auditar <code>.dysflow/project.json</code> en los otros repos (no_conformidades, hps, etc.) cuando se dispare el primer error alli.</li>
+        <li><strong>GUID del nuevo control</strong>: dysflow <code>form_add_control</code> no genera GUID para controles nuevos. Access lo regenera al abrir el form. Si en algun momento futuro se quiere preservar identidad del control entre exportaciones, hay que generarlo explicitamente via <code>form_deserialize</code> o agregar la propiedad <code>GUID</code> manualmente.</li>
+        <li><strong>LayoutCached*</strong>: dysflow <code>form_add_control</code> no genera <code>LayoutCached*</code> properties. Access los regenera al abrir. No es un bloqueante, pero cualquier comparacion de <code>compare_form</code> los va a marcar como drift hasta que Access se abra y guarde.</li>
+      </ul>
+    </section>
+
+    <p class="footer-note">
+      Estado de planificacion actualizado el 2026-07-08 post-merge a staging (PR #84 cerrado en
+      <span class="commit-sha">5ba84e7</span>).
+      Botones "Ver Anexos" implementados SOLO en Edicion + Riesgo (las unicas 2 entidades con anexos
+      ademas del Proyecto); PlanAcciones y PlanPrincipal descartados con razon documentada en el modelo.
+      Pendiente: acceptance web UAT + UAT sign-off con Natalia + promover a main + 2 issues nuevos
+      (pre-existing failures + lint diagnostics).
+    </p>
+  </div>
+</body>
+</html>

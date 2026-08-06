@@ -1,0 +1,184 @@
+# Capacidad: ciclo de vida de NC Proyecto
+
+## §0 Identidad
+- **ID de capacidad**: `CAP-NCP-LIFECYCLE`
+- **Nivel**: critical
+- **Estado**: active / documentación alineada con v5; plan 3/3 de cache-form-filter-coverage (Issue #94) cerrado, Issue #97 cerrado, audit form paso 3 cerrado, OpenSpec reconciliado, 0 form-coupled tests, 0 OpenSpec changes abiertas
+- **Fuente**: hybrid (documentos de funcionalidad existentes + inventario de repositorio/fuente + confirmación de negocio pendiente)
+- **Responsable / autoridad de producto**: Confirmación pendiente — dominio Calidad / NC Proyecto
+- **Última verificación**: 2026-06-18 cierre de sesión. Plan 3/3 de cache-form-filter-coverage (Issue #94) cerrado: SQL `LIKE`→`=` (`11dd047`), VM unificado en fallback (`8bc2163`), `GetFallbackSource` alineado con la selección de fuente del form (`f3dfc02`), refactor de `Form_FormNCProyectoGestion.getNCsFiltrados` 154→34 líneas (`2f4442d`). Issue #97 cerrado (`fb7135b` + `gh issue close 97`). Empty-search decoupled del form al helper (`50bec22` + `482a0db`). 3 form-coupled tests migrados a helper-only (`38033c3`). Judgment Day round 1: 4 CRITICALs remediados (`2e842eb`). Round 2: 1 WARNING (theoretical) remediado (`70747f9`). Stub form-coupled borrado (`76ac883`). Audit form `getNCsAudtoriasFiltrados` reducido 100→30 líneas delegando al helper (`487db9e`). OpenSpec repo reconciliado con external mirror: 4 changes traídas al repo + 2 changes archivadas (cache-form-business-logic-extraction, staging-release-open-issues). 0 OpenSpec changes abiertas.
+- **Confianza global**: mixed — hay evidencia runtime para listado/apertura helper, gestión/refresco de caché de proyecto y seguimiento de tareas; el ciclo de vida completo aún debe pruebas de capacidad; los 2 contratos divergentes de seguimiento de proyecto (Issue38, Issue50) se resolvieron funcionalmente el 2026-06-15; el plan 3/3 de cache-form-filter-coverage se cerró el 2026-06-18 (commits `11dd047` / `8bc2163` / `f3dfc02` / `2f4442d`)
+- **Session 2026-06-18 — achievements**: 5 PRs merged (#98 cache-form-filter-coverage, #99 test exit-function fix, #100 audit form paso 3, #101 delete form-coupled stub, #102 OpenSpec reconciliation). 2 OpenSpec changes archived. 0 form-coupled tests in manifest. 0 OpenSpec changes abiertas. Branch limpia: solo `main`, `feature_capability_docs`, `ops_localize_staging_backends`, `staging` (3 pre-existentes + staging).
+
+## §1 Intención de negocio
+- **Propósito**: Gestionar las no conformidades con origen en proyecto desde la creación y el listado hasta la edición, cierre, comportamiento de recuperación/eliminación y evidencia de seguimiento asociada.
+- **Usuarios / personas**: Equipo de calidad, usuarios de proyecto/operativos, revisores UAT, desarrolladores/agentes IA.
+- **Problema que resuelve**: Mantiene coherente el ciclo de vida de NC Proyecto entre formularios UI, costuras helper, comportamiento de caché/modelo de lectura y diagnóstico de regresiones de release.
+- **Valor de negocio / por qué existe**: Las NC de proyecto son registros centrales de calidad; los usuarios deben poder crearlas, encontrarlas, actualizarlas, cerrarlas y diagnosticarlas sin perder estado ni aplicar reglas de cierre demasiado pronto.
+- **No objetivos**: Esta página no define el comportamiento de NC con origen en auditoría, la política de almacenamiento documental ni el modelo completo de indicadores/cuadro de mando.
+- **Fuente de intención**: Borrador de capacidad existente + documentos de funcionalidad de apoyo; los nombres exactos de estado y permisos son `Intended` / pendientes de confirmación.
+- **Referencia tracker de origen**: Issue #67 trazabilidad documental; Issue #45 / issue-19 gate de cumplimiento; Issue #39 confianza de caché.
+
+## §2 Contrato de comportamiento
+
+### Escenarios (Given / When / Then)
+- **GIVEN** la superficie de gestión de NC Proyecto **WHEN** un usuario busca o filtra **THEN** el listado se carga mediante comportamiento respaldado por helper con paridad caché/legacy.
+- **GIVEN** un usuario elige `Alta` **WHEN** se abre la ruta de creación **THEN** la ausencia de `FechaPrevistaControlEficacia` no debe bloquear la creación.
+- **GIVEN** un usuario elige `Edicion` para una NC existente **WHEN** se abre el formulario **THEN** se carga el registro; si falta, el sistema informa del registro ausente en lugar de editar silenciosamente un estado inválido.
+- **GIVEN** una NC Proyecto abierta sin los datos de eficacia requeridos para cierre **WHEN** el usuario la cierra **THEN** el cierre queda bloqueado por la validación en tiempo de cierre.
+- **GIVEN** una NC Proyecto eliminada/retirada **WHEN** se usa un flujo soportado de recuperación/eliminación **THEN** el comportamiento de `borrado`/rehabilitación debe ser intencional y probado antes de afirmar cobertura de release.
+
+### Reglas de negocio
+| ID de regla | Enunciado (previsto) | Autoridad | ¿Aplicada en código? | Prueba (evidencia) | Confianza |
+|---|---|---|---|---|---|
+| BR-NCP-LC-1 | El listado/búsqueda debe usar comportamiento respaldado por helper, no lógica DAO directa en formulario. | Documentos existentes de funcionalidad de listado de proyecto | Sí — `Form_FormNCProyectoGestion`, `NCProyectoGestionListadoHelper` según docs | `tests/tests.vba.form-helper.json` cubierto por slices: `FormHelper_Coverage` 1/1, `FormHelper_Listing` 4/4 y `FormHelper_Open` 4/4; total único 9/9 verde | Verified-runtime |
+| BR-NCP-LC-2 | Una caché vacía o desactivada cae a la fuente legacy; la semántica de caché cargada-vacía no debe mostrar blancos falsos. | Documentos de funcionalidad de caché/listado | Sí — ruta `CacheNCProyecto`/helper según docs | `Test_FormHelper_Listing_EmptyCacheFallback_Atomic` y `Test_FormHelper_Listing_DisabledCacheFallback_Atomic` verifican fallback con logs en fixtures sandbox | Verified-runtime |
+| BR-NCP-LC-3 | Las rutas de listado por caché y legacy preservan la paridad de filtros. | Documentos de funcionalidad de listado de proyecto | Sí según docs | `Test_FormHelper_Listing_CacheFilters_Atomic` verifica filtros por `Codigo`, `Juridica`, columna pipe de Google y sin filtro | Verified-runtime |
+| BR-NCP-LC-3b | Las operaciones helper de gestión/refresco de caché de proyecto deben poder ejecutarse por costuras acotadas sin depender de una ejecución amplia del runner. | Documentos de funcionalidad de caché/listado | Sí — `CacheNCProyecto`, `NCProyectoGestionListadoHelper` y costuras de formulario según docs | `tests/tests.vba.proyecto-gestion-helper.json` 8/8 por filtros: `CacheOff` 1/1, `RebuildForce` 2/2, `RefreshCache` 2/2, `ProyectoGestionForm` 2/2, `RenameHandler` 1/1 | Verified-runtime |
+| BR-NCP-LC-4 | `Alta` y `Edicion` no deben requerir `FechaPrevistaControlEficacia`. | Documento de funcionalidad de cumplimiento / issue-19 | Sí — `NCProyectoOperaciones` según docs | El documento existente informa pruebas issue-19; hace falta reejecutar | Verified-static |
+| BR-NCP-LC-5 | El cierre debe exigir `FechaPrevistaControlEficacia` cuando sea obligatorio y preservar la invariancia de `EficaciaOK`. | Documento de funcionalidad de cumplimiento | Sí según docs | El documento existente informa pruebas issue-19; hace falta reejecutar | Verified-static |
+| BR-NCP-LC-6 | Los indicadores de seguimiento reflejan el estado de tareas diferidas de proyecto donde las vistas de ciclo de vida usan datos de seguimiento. | Documento de funcionalidad de seguimiento | Sí a nivel helper según docs | `tests/tests.vba.seguimiento-tareas-helper.json`: procedimientos únicos 9/9 verdes; fallback/log 4/4, helper 4/4 y formulario 1/1 | Verified-runtime |
+| BR-NCP-LC-7 | Crear/editar/buscar/ver/cerrar/reabrir/eliminar/rehabilitar debe estar cubierto como escenarios de ciclo de vida de negocio. | Contrato de capacidad | Parcial / eventos UI exactos sin confirmar | FALTA → crear mediante access-vba-tdd; probar costuras helper/servicio, no comportamiento directo de formulario | Intended |
+| BR-NCP-LC-8 | Los roles y permisos para cerrar/reabrir/eliminar/rehabilitar deben ser explícitos. | Autoridad de producto pendiente | Desconocido | FALTA → crear mediante access-vba-tdd tras confirmar la regla | Intended |
+
+### Validaciones
+- El registro existente debe cargarse para `Edicion`; si falta, debe informarse.
+- `Alta` devuelve un `NCProyecto` nuevo; `Edicion` diferencia registro existente, no encontrado y `borrado` según las pruebas helper recientes.
+- `FechaPrevistaControlEficacia` no es obligatoria para crear/editar; sí lo es al cerrar cuando FE es requerido.
+- La paridad de esquema/fallback/filtros de caché debe mantenerse antes de confiar en los resultados del listado.
+- Las reglas de reabrir/eliminar/rehabilitar están pendientes de confirmación.
+
+### Transiciones de estado
+- `None` --(`Alta`)--> `Borrador/nueva NC Proyecto` — la fecha prevista FE no bloquea la creación.
+- `NC Proyecto existente` --(`Edicion/guardar`)--> `NC Proyecto editada` — el registro existente se carga o se informa de su ausencia.
+- `NC Proyecto abierta` --(`Close`, FE data valid)--> `NC Proyecto cerrada`.
+- `NC Proyecto cerrada` --(`Reabrir`)--> `NC Proyecto reabierta` — pendiente de confirmación.
+- `NC Proyecto retirada/eliminada` --(`Rehabilitate`/flujo `borrado`)--> `NC Proyecto activa o recuperable` — pendiente de confirmación.
+
+### Caminos límite y de error
+- Una caché vacía/desactivada no debe producir un listado falsamente vacío.
+- Los resultados de caché AC/AR/Riesgo cargada-vacía son válidos y distintos de fallos de caché.
+- La ausencia de registro al editar debe ser visible para llamador/usuario.
+
+### Señales de aceptación / presencia
+- El listado de NC Proyecto puede buscar/filtrar y cargar registros mediante costuras helper.
+- Las rutas de creación/edición no se bloquean por ausencia de fecha prevista FE.
+- La ruta de cierre bloquea la ausencia de fecha prevista FE cuando es obligatoria.
+- Reabrir/eliminar/rehabilitar no puede afirmarse hasta que existan pruebas dedicadas.
+
+## §3 Mapa de implementación
+- **Puntos de entrada UI**: `Form_FormNCProyectoGestion` (cableado UI fino: `getNCsFiltrados` reducido a 34 líneas que delega al helper — `2f4442d`); `Form_FormNCProyectoSeguimiento`; formularios de detalle/general/creación/edición/cierre pendientes de mapeo exacto. `Form_FormNCProyectoGestion.getNCsFiltrados` mantiene `As Scripting.Dictionary` por simetría con `Form_FormNCAuditoriaGestion.getNCsAudtoriasFiltrados`.
+- **Puntos de entrada de fuente**: `NCProyectoGestionListadoHelper` (público: `GetNCsProyectoGestionFiltrados`, `BuildNCProyectoGestionListRow`, `BuildNCProyectoGestionReportCollection`, `ResolveNCProyectoGestionSelection`; privados: `GetNCsProyectoGestionFallback`, `GetFallbackSource`, `ShouldIncludeFallbackNC`, `HasAnyFilter`, `ResolveEstadoFiltro`, `LogFallback`, `GetNCProyectoGestionItemID`); `CacheNCProyecto.GetListadoFiltradoSQL`; `NCProyectoListItemVM` (view-model de cache y de fallback; `CargarDesdeRecordset` para el path de cache, `CargarDesdeNCProyecto` para el path de fallback con IsDate checks en fechas vacías); `NCProyectoSeguimientoHelper`; `NCProyectoOperaciones`.
+- **Datos tocados**: tablas fuente de NC Proyecto (esquema exacto pendiente); `CacheNCProyecto`; datos relacionados de AC/AR/Riesgo; campos de control-eficacia; documentos/evidencia.
+- **Salidas**: listado de NC Proyecto, indicadores de seguimiento, estado de control-eficacia, documentos/informes relacionados.
+- **Dependencias e integraciones**: gestión de caché de proyecto, control eficacia, acciones/seguimiento, documentos, indicadores.
+- **Sincronización fuente↔binario**: no comprobada en esta tarea solo documental. Cualquier cambio de fuente debe pasar por importación Dysflow MCP; después el usuario compila manualmente.
+- **Evaluación de diseño (as-built vs ideal)**: las costuras helper son buenas anclas de migración. El ciclo de vida completo sigue demasiado acoplado a formularios y poco especificado hasta extraer reglas de crear/editar/cerrar/reabrir/eliminar a costuras helper/servicio probadas. El formulario `Form_FormNCProyectoSeguimiento` ya replica el patrón diferido/concurrente de `Form_FormNCAuditoriaSeguimiento` (flags privados, `Form_Timer`, `Form_Load`, delegación a `NCProyectoSeguimientoHelper`).
+
+## §4 Receta de reconstrucción
+1. Confirmar nombres de estado de producto, permisos por rol y eventos UI canónicos para crear/editar/ver/cerrar/reabrir/eliminar/rehabilitar.
+2. Mapear cada evento de formulario a una costura helper/servicio; mantener los formularios como cableado UI fino.
+3. Completar pruebas pendientes con `access-vba-tdd`: fixtures con esquema primero, datos sandbox explícitos, pruebas JSON `Public Function`, aserciones fuertes, cardinalidad para mutaciones.
+4. Para comportamiento de formulario, probar la costura helper/servicio; usar pruebas de formulario solo para demostrar cableado de eventos cuando sea inevitable.
+5. Importar módulos modificados mediante `dysflow.import_modules`; el usuario compila manualmente en Access; después ejecutar `dysflow.test_vba`.
+6. Actualizar §5 y §7 con evidencia Dysflow reciente solo después de ejecutar las pruebas.
+
+## §5 Evidencia y trazabilidad
+- **Pruebas verificadas en runtime**:
+  - `tests/tests.vba.form-helper.json` — 9/9 procedimientos únicos verdes por slices: `FormHelper_Coverage` 1/1 (`Test_FormHelper_Coverage_Canary_Atomic`), `FormHelper_Listing` 4/4 (`Test_FormHelper_Listing_EnsureSchema_Atomic`, `Test_FormHelper_Listing_EmptyCacheFallback_Atomic`, `Test_FormHelper_Listing_DisabledCacheFallback_Atomic`, `Test_FormHelper_Listing_CacheFilters_Atomic`) y `FormHelper_Open` 4/4 (`Test_FormHelper_Open_AltaMode_Atomic`, `Test_FormHelper_Open_EdicionMode_Exists_Atomic`, `Test_FormHelper_Open_EdicionMode_NotFound_Atomic`, `Test_FormHelper_Open_EdicionMode_Borrado_Atomic`). Evidencia: schema ensure para campos pipe de `TbCacheListadoNC`; fallback de caché vacía/desactivada con logs; filtros por `Codigo`, `Juridica`, Google pipe-column y sin filtro; `Alta` devuelve `NCProyecto` nuevo; `Edicion` cubre existente/no encontrado/`borrado` con fixtures sandbox.
+  - `tests/tests.vba.seguimiento-tareas-helper.json` — 9/9 procedimientos únicos verdes. El filtro fallback ejecutó 4/4; el filtro amplio `TareasHelper_` repitió esos 4 y añadió 4 pruebas helper; `TareasForm` ejecutó 1/1. Evidencia: gate de esquema documentado; backend sandbox seguro; fallback de caché vacía registrado; caché desactivada registrada; sin usuario registra como `Sistema`; error forzado en seam de caché registrado; helper conserva orden de predicados legacy; selecciona fuente por `Estado`; no hidrata AR/AC/NC por fila; orden/export input determinista; el formulario delega rutas de filtro/carga/limpieza al helper.
+  - `tests/tests.vba.proyecto-gestion-helper.json` — 8/8 procedimientos verdes por filtros pequeños: `CacheOff` 1/1 (`Test_ProyectoGestionHelper_CacheOff_NoOp_Atomic`), `RebuildForce` 2/2 (`Test_ProyectoListadoCache_RebuildForceFull_DeleteAndRegen_Atomic`, `Test_ProyectoListadoCache_RebuildForceStale_OnlyStaleRegen_Atomic`, ~27s y ~25s), `RefreshCache` 2/2 (`Test_ProyectoGestionHelper_RefreshCache_TrueOnSuccess_Atomic`, `Test_ProyectoGestionHelper_RefreshCache_FalseOnError_Atomic`, TrueOnSuccess ~27s), `ProyectoGestionForm` 2/2 (`Test_ProyectoGestionForm_ActualizarLista_SequenceHappyPath_Atomic`, `Test_ProyectoGestionForm_ActualizarLista_RefreshError_RaiseAndCleanup_Atomic`, HappyPath ~26s) y `RenameHandler` 1/1 (`Test_AuditGestionForm_RenameHandler_NoRegression_Atomic`).
+  - **Evidencia cache-form-filter-coverage 2026-06-17 / 2026-06-18** (Issue #94, scoped a `NCProyectoGestionListadoHelper`):
+    - `Test_CacheListado_ResponsableTelefonica_ExactNoSubstring_Atomic` (TEST 14) — GREEN tras SQL `LIKE '*val*'`→`= 'val'` en `CacheNCProyecto.bas:1658,1696` (commit `11dd047`).
+    - `Test_ProyectoGestionHelper_CacheFirstContract_Atomic` — GREEN (commit `8bc2163` verifica contrato A→C de la fallback con VM unificado).
+    - `Test_FormHelper_Listing_EmptyCacheFallback_Atomic` (SC-1.1) y `Test_FormHelper_Listing_DisabledCacheFallback_Atomic` (SC-1.3) — GREEN tras el seed de `SeedFallbackNCFixture` con AC/AR abiertas (`FechaFinReal=Null`) que permiten el JOIN de `getNCsProyectoAbiertas` (commit `f3dfc02`).
+    - `Test_FormHelper_Listing_CacheFilters_Atomic` SC-1.2/1.4/1.5/1.6/1.7 — todos GREEN tras `fb7135b` (issue #97 cerrado). SC-1.6 ahora verifica que `p_Google` busca en `AccionesCorrectivasConcatenadas` y `AccionesRealizadasConcatenadas` además de `Descripcion`/`Notas`.
+    - `Test_FormHelper_TodosParametrosBusquedaVacios_AllEmpty_Atomic` — GREEN tras la mudanza de `TodosParametrosBusquedaVacios` del form al helper como función pura booleana (commit `50bec22`). Dos tests redundantes (`AnyNonEmpty_Atomic` con 13 sub-assertions del mismo `AND` trivial, y `ExcludesEstadoAndGoogle_Atomic` cuyo body no verificaba lo que el nombre decía) fueron removidos en una remediación posterior de test-quality (round de Judgment Day 2026-06-18); ver §7 entrada sobre `Test design: no tests-for-the-sake-of-tests`.
+    - `Test_FormHelper_Listing_NoUserResilient_Atomic` — GREEN tras reemplazar el form-coupled `Test_Form_Fallback_NoLogFailure_Atomic` (TEST 13) por una versión helper-only con `m_ObjUsuarioConectado=Nothing` (commit `38033c3`). La versión original no era fixture-first (dependía del estado del sandbox); una round de Judgment Day detectó el problema y la versión actual siembra 1 NC con AC/AR abiertas, asegura schema, y asserta cardinalidad (`col` incluye `TEST_ID_NC_FALLBACK_EMPTY`).
+- **Pruebas no verificadas en esta evidencia**: las pruebas `issue-19` y `cache-e2e` siguen como evidencia documental/pendiente salvo ejecución reciente específica. La cobertura anterior no prueba el ciclo completo crear/cerrar/reabrir/eliminar/rehabilitar.
+- **Caveat de runner histórico**: una ejecución amplia previa quedó interrumpida y dejó la operación Dysflow obsoleta `dysflow-51869803-608b-44bc-8792-ef9ca837b894`; posteriormente pasó a `status=timed_out`. La verificación válida de `tests/tests.vba.proyecto-gestion-helper.json` es la ejecución por filtros pequeños 8/8. Los filtros lentos (~25-27s) son coste de ejecución, no fallo del runner.
+
+| Elemento (funcionalidad o arreglo) | Ref. tracker | Versión staging (UAT) | Estado UAT | Release de producción | Fecha en prod | Nota |
+|---|---|---|---|---|---|---|
+| Listado respaldado por helper y evidencia de caché | Issue #67 | Pendiente | pending | Pendiente | Pendiente | `tests/tests.vba.form-helper.json` 9/9 Verified-runtime por slices; no cubre ciclo completo crear/cerrar/reabrir/eliminar/rehabilitar. |
+| Gestión/refresco de caché de listado de proyecto | Issue #67 / cache invalidation | Pendiente | pending | Pendiente | Pendiente | `tests/tests.vba.proyecto-gestion-helper.json` 8/8 Verified-runtime por filtros pequeños. |
+| Indicadores de seguimiento diferido | Cambio de helper de seguimiento | Pendiente | pending | Pendiente | Pendiente | `tests/tests.vba.seguimiento-tareas-helper.json` 9/9 procedimientos únicos Verified-runtime. |
+| Gate FE solo en cierre | Issue #45 / issue-19 | Pendiente | pending | Pendiente | Pendiente | Los documentos existentes citan `8cb7f0a`. |
+| Lecturas AC/AR/Riesgo cache-first | Issue #39 / Issue #67 | Pendiente | pending | Pendiente | Pendiente | Los documentos existentes citan `23af345` / `20b71f64`. |
+| Form filter coverage — SQL exact match + helper VM unificado + form refactor + helper-only tests + empty-search decoupled + p_Google AC/AR | Issue #94 + #97 | Pendiente | pending | Pendiente | Pendiente | Branch `feature/cache-idempotent-warmup-2026-06-17` 16 commits ahead: `11dd047`, `8bc2163`, `f3dfc02`, `2f4442d`, `50bec22`, `38033c3`, `25314e7`, `fb7135b` (issue #97 cerrado). Story completo: SQL exacto, VM unificado, form refactor, helper-only tests, empty-search decoupled, p_Google con AC/AR. SC-1.6 GREEN. |
+
+| Síntoma | Causa probable | Comprobación (Dysflow) | Ancla documental |
+|---|---|---|---|
+| El listado de proyecto se abre en blanco | Regresión de fallback/paridad de filtros de caché o refresco de caché de gestión | Reejecutar `tests/tests.vba.form-helper.json` y `tests/tests.vba.proyecto-gestion-helper.json` por filtros pequeños | BR-NCP-LC-1..3b |
+| Crear/editar queda bloqueado por fecha FE | El gate FE solo en cierre se movió demasiado pronto | Reejecutar pruebas issue-19 | BR-NCP-LC-4 |
+| El cierre permite ausencia de fecha FE | Validación de cierre omitida | Reejecutar pruebas issue-19 | BR-NCP-LC-5 |
+| Comportamiento de reabrir/eliminar poco claro | Falta contrato/prueba de negocio | Crear pruebas tras confirmar la regla | BR-NCP-LC-7..8 |
+
+## §6 Notas de migración web
+
+### §6.1 Conservar (comportamiento de negocio que debe sobrevivir)
+- El listado/búsqueda usa comportamiento respaldado por helper, no lógica DAO directa en formulario (BR-NCP-LC-1): la web debe seguir resolviendo el listado mediante la capa de aplicación (`NCProyectoGestionListadoHelper` equivalente), no mediante SQL ad-hoc desde la UI.
+- Una caché vacía o desactivada cae a la fuente legacy; la semántica cargado-vacía no muestra blancos falsos (BR-NCP-LC-2): la web debe distinguir "caché vacía" de "caché no disponible" y caer al fallback con logs, replicando `Test_FormHelper_Listing_EmptyCacheFallback_Atomic` y `Test_FormHelper_Listing_DisabledCacheFallback_Atomic`.
+- Las rutas de listado por caché y legacy preservan la paridad de filtros (BR-NCP-LC-3): la web debe aplicar el mismo conjunto de filtros en ambas rutas, sin divergencia. `Test_FormHelper_Listing_CacheFilters_Atomic` ya documenta los filtros (`Codigo`, `Juridica`, columna pipe de Google).
+- Las operaciones helper de gestión/refresco de caché de proyecto son ejecutables por costuras acotadas (BR-NCP-LC-3b): la web debe permitir invocar `CacheOff`, `RebuildForce`, `RefreshCache`, `ProyectoGestionForm`, `RenameHandler` desde el servicio, no solo desde la UI.
+- `Alta` y `Edicion` no requieren `FechaPrevistaControlEficacia` (BR-NCP-LC-4): la web debe permitir crear/editar NC sin fecha prevista FE; el campo puede ser nulo o vacío y el guardado no debe bloquearse.
+- El cierre exige `FechaPrevistaControlEficacia` cuando es obligatoria y preserva la invariancia de `EficaciaOK` (BR-NCP-LC-5): el endpoint de cierre de la web debe rechazar la operación cuando el control es requerido y la fecha es vacía o futura más allá de la fecha de cierre.
+- Los indicadores de seguimiento reflejan el estado de tareas diferidas de proyecto (BR-NCP-LC-6): la web debe seguir garantizando que el helper de seguimiento de tareas devuelve el mismo estado que la app VBA actual.
+- Crear/editar/buscar/ver/cerrar/reabrir/eliminar/rehabilitar como escenarios de ciclo de vida de negocio (BR-NCP-LC-7): la web debe cubrir todos estos flujos con pruebas dedicadas, no inferirlos desde nombres de UI.
+- Los roles y permisos para cerrar/reabrir/eliminar/rehabilitar son explícitos (BR-NCP-LC-8): la API web debe aplicar la matriz de permisos y devolver `403` cuando corresponda.
+
+### §6.2 Transformar (mecanismo legacy que se reformula)
+- Sustituir `Form_FormNCProyectoGestion` y `Form_FormNCProyectoSeguimiento` por endpoints REST con discriminador de dominio, no por formularios Access con lógica DAO directa.
+- Convertir `NCProyectoGestionListadoHelper` y `CacheNCProyecto` en una capa de aplicación con dos servicios diferenciados: `Listado` y `Cache`, no un módulo VBA con helper y caché entrelazados.
+- Reemplazar el patrón de carga diferida de indicadores (`OnTimer` + `m_CargaInicialIndicadoresPendiente = True` + `Me.TimerInterval = 100`) por un endpoint asíncrono o un skeleton explícito, no por un timer del cliente.
+- Mover la validación FE (gate de cierre) a un servicio de dominio invocado por el comando de cerrar, no como evento de formulario.
+- Sustituir el patrón "leer config desde `Variables Globales` cada vez" por una configuración inmutable por despliegue, leída al arranque.
+- Reemplazar `DoCmd.OpenForm "FormNCProyectoGestion"` con `OpenArgs` por un endpoint REST con `IDNCProyecto` en la URL.
+
+### §6.3 NO copiar (deuda legacy de Access que no debe portarse)
+- No portar `OnTimer` con `TimerInterval = 100` como patrón de carga diferida: la web debe poder invocar el helper de forma síncrona o asíncrona real.
+- No duplicar la lógica de "esto es una NC de proyecto" en cada `.cls` de formulario: la web debe tener un único discriminador de dominio.
+- No usar la cinta (Ribbon) ni la visibilidad de menús como control de seguridad: la web debe aplicar permisos en el servidor.
+- No migrar la separación física de formularios (general, gestión, seguimiento, AC, AR, documentos, control-eficacia) si la lógica de negocio es compartible: la web debe poder unificar bajo un mismo recurso con sub-estados.
+- No propagar el resultado de un hook de sincronización fallido como éxito: la web debe devolver error explícito.
+
+### §6.4 Preguntas abiertas al product owner
+- ¿Los estados canónicos de NC Proyecto son los mismos que en auditoría? (BR-NCP-LC-7) Confirmar lista y transiciones (crear → abrir → cerrar → reabrir → eliminar → rehabilitar).
+- ¿La rehabilitación de una NC de proyecto borrada es indefinida o tiene un plazo? (BR-NCP-LC-7)
+- ¿El cierre de una NC de proyecto exige todas las ACs cerradas o se permite cierre parcial? (BR-NCP-LC-5, adyacente a `control-eficacia-workflow` BR-CE-2)
+- ¿La diferencia entre `NC Proyecto` y `NC Auditoría` debe mantenerse en la web como dos entidades con servicios paralelos, o se unifican en una sola con `tipoDominio`? (BR-NCP-LC-7)
+- ¿La `borrado` de proyecto es soft delete (campo `Borrado`) o hard delete? (BR-NCP-LC-7) Hoy se prueba `Test_FormHelper_Open_EdicionMode_Borrado_Atomic`; la web debe replicar el comportamiento.
+- ¿El refactor de `Form_FormNCProyectoSeguimiento.cls` (Issue #38 + Issue #50) se mantiene como contrato de la web o se reescribe? Hoy la web debe consumir el helper `NCProyectoSeguimientoHelper.CargarIndicadoresSeguimientoProyecto` con la firma `p_DuracionSegundos`.
+
+## §7 Libro de confianza
+| Hecho | Confianza | Evidencia | Fecha |
+|---|---|---|---|
+| BR-NCP-LC-1 — El listado/búsqueda debe usar comportamiento respaldado por helper, no lógica DAO directa en formulario. | Verified-runtime | `tests/tests.vba.form-helper.json` cubierto por slices: `FormHelper_Coverage` 1/1, `FormHelper_Listing` 4/4 y `FormHelper_Open` 4/4; total único 9/9 verde | 2026-06-15 |
+| BR-NCP-LC-2 — Una caché vacía o desactivada cae a la fuente legacy; la semántica de caché cargada-vacía no debe mostrar blancos falsos. | Verified-runtime | `Test_FormHelper_Listing_EmptyCacheFallback_Atomic` y `Test_FormHelper_Listing_DisabledCacheFallback_Atomic` verifican fallback con logs en fixtures sandbox | 2026-06-15 |
+| BR-NCP-LC-3 — Las rutas de listado por caché y legacy preservan la paridad de filtros. | Verified-runtime | `Test_FormHelper_Listing_CacheFilters_Atomic` verifica filtros por `Codigo`, `Juridica`, columna pipe de Google y sin filtro | 2026-06-15 |
+| BR-NCP-LC-3b — Las operaciones helper de gestión/refresco de caché de proyecto deben poder ejecutarse por costuras acotadas sin depender de una ejecución amplia del runner. | Verified-runtime | `tests/tests.vba.proyecto-gestion-helper.json` 8/8 por filtros: `CacheOff` 1/1, `RebuildForce` 2/2, `RefreshCache` 2/2, `ProyectoGestionForm` 2/2, `RenameHandler` 1/1 | 2026-06-15 |
+| BR-NCP-LC-4 — `Alta` y `Edicion` no deben requerir `FechaPrevistaControlEficacia`. | Verified-static | `NCProyectoOperaciones` según docs de cumplimiento; FALTA → reejecutar pruebas issue-19 | 2026-06-15 |
+| BR-NCP-LC-5 — El cierre debe exigir `FechaPrevistaControlEficacia` cuando sea obligatorio y preservar la invariancia de `EficaciaOK`. | Verified-static | Documento de funcionalidad de cumplimiento; FALTA → reejecutar pruebas issue-19 | 2026-06-15 |
+| BR-NCP-LC-6 — Los indicadores de seguimiento reflejan el estado de tareas diferidas de proyecto donde las vistas de ciclo de vida usan datos de seguimiento. | Verified-runtime | `tests/tests.vba.seguimiento-tareas-helper.json`: procedimientos únicos 9/9 verdes; fallback/log 4/4, helper 4/4 y formulario 1/1 | 2026-06-15 |
+| BR-NCP-LC-7 — Crear/editar/buscar/ver/cerrar/reabrir/eliminar/rehabilitar debe estar cubierto como escenarios de ciclo de vida de negocio. | Intended | FALTA → crear mediante access-vba-tdd; probar costuras helper/servicio, no comportamiento directo de formulario | 2026-06-15 |
+| BR-NCP-LC-8 — Los roles y permisos para cerrar/reabrir/eliminar/rehabilitar deben ser explícitos. | Intended | FALTA → crear mediante access-vba-tdd tras confirmar la regla | 2026-06-15 |
+| Existe comportamiento de listado/helper/caché para NC Proyecto. | Verified-runtime | `tests/tests.vba.form-helper.json` 9/9 por slices: schema, fallback, filtros y apertura `Alta`/`Edicion` | 2026-06-15 |
+| La gestión/refresco de caché de proyecto está cubierta por costuras helper y formulario. | Verified-runtime | `tests/tests.vba.proyecto-gestion-helper.json` 8/8 por filtros pequeños: `CacheOff`, `RebuildForce`, `RefreshCache`, `ProyectoGestionForm`, `RenameHandler` | 2026-06-15 |
+| La fecha FE está prevista como validación solo de cierre, no de creación/edición. | Verified-static | Documento de funcionalidad de cumplimiento; sin reejecución en esta tarea | 2026-06-15 |
+| Los indicadores de seguimiento de tareas de proyecto están cubiertos a nivel helper/form delegation. | Verified-runtime | `tests/tests.vba.seguimiento-tareas-helper.json` 9/9 procedimientos únicos; fallback/log, helper y formulario | 2026-06-15 |
+| El ciclo de vida completo, incluidos cerrar/reabrir/eliminar/rehabilitar, está protegido para release. | Intended | FALTA → crear mediante access-vba-tdd; UI/reglas/pruebas exactas pendientes | 2026-06-15 |
+| El comportamiento de negocio en formularios debe probarse mediante costuras helper/servicio. | Intended | Regla de usuario/proyecto para migración solo documental | 2026-06-15 |
+| La selección de fuente de fallback del helper de listado replica exactamente la de `Form_FormNCProyectoGestion.getNCsFiltrados`. | Verified-runtime | `GetFallbackSource` alineado a 4 ramas (Branch A: enum=0 → `getNCsProyectoAbiertas`; Branch B: enum>0 + Google → `getNCsProyectoPorPalabraClave`; Branch C: enum>0 + `EstadoValor="Abiertas"` → `getNCsProyectosTotalesParaAbiertas`; Branch D: enum>0 + otro → `getNCsProyectosTotales`). SC-1.1 + SC-1.3 GREEN con fixtures de AC/AR abiertas tras `f3dfc02`. | 2026-06-18 |
+| El helper de listado expone API unificada `Collection of NCProyectoListItemVM` para cache y fallback. | Verified-runtime | `CargarDesdeRecordset` (cache) y `CargarDesdeNCProyecto` (fallback) con IsDate checks en fechas vacías; `GetNCsProyectoGestionFiltrados` retorna `Collection` con VMs en ambos paths. SC-1.1 + SC-1.3 + `Test_ProyectoGestionHelper_CacheFirstContract_Atomic` GREEN tras `8bc2163`. | 2026-06-18 |
+| El SQL de `GetListadoFiltradoSQL` aplica `=` exacto (no `LIKE`) para `CodigoNoConformidad` y `ResponsableTelefonica`, y `p_Google` busca en las 4 columnas (`Descripcion`, `Notas`, `AccionesCorrectivasConcatenadas`, `AccionesRealizadasConcatenadas`). | Verified-runtime | TEST 1, 2, SC-1.2/1.4/1.5, TEST 14 + SC-1.6 GREEN tras `11dd047` + `fb7135b` (issue #97 cerrado). | 2026-06-18 |
+| `Form_FormNCProyectoGestion.getNCsFiltrados` delega al helper; el form es un cableado UI fino. | Verified-runtime | Refactor 154→34 líneas en `2f4442d`. La selección de fuente y los predicados viven en el helper. Helper tests siguen GREEN (SC-1.1, SC-1.3, contract, SC-1.2/1.4/1.5/1.7); SC-1.6 RED pre-existente. | 2026-06-18 |
+| Las pruebas de capacidad de listado deben ejercitar el helper directamente, no el form. | Verified-runtime | Los 3 tests form-coupled pre-existentes (`Test_Form_Fallback_EmptyCache_Atomic`, `Test_Form_Fallback_DisabledCache_Atomic`, `Test_Form_Fallback_NoLogFailure_Atomic`) fueron reemplazados en `38033c3`. TEST 11/12 eran duplicados estrictos de SC-1.1/SC-1.3; TEST 13 se reemplazó por `Test_FormHelper_Listing_NoUserResilient_Atomic`. El stub `Test_Form_FNCProyectoGestion_CacheFirst_Atomic` (no-op, unreachable) fue borrado en `db7dbdc`. Queda 0 tests form-coupled en el manifest. Adicionalmente, `TodosParametrosBusquedaVacios` y `CasiTodosParametrosBusquedaVacios` salieron del form al helper como funciones puras booleanas (`50bec22`). | 2026-06-18 |
+| Tests de helpers pure-function no son test-for-the-sake-of-test. | Verified-runtime | Round de Judgment Day 2026-06-18 detectó 4 CRITICALs en los tests de `50bec22`/`38033c3`: `AnyNonEmpty_Atomic` (project 13 asserts + audit 8 asserts del mismo `AND` trivial), `ExcludesEstadoAndGoogle_Atomic` (el body no verificaba lo que el nombre decía porque el helper `CasiTodos…` no recibe `EstadoValor` por signature — exclusion es estructural, no runtime), `NoUserResilient_Atomic` (no era fixture-first — dependía del estado del sandbox), HandleError pattern roto en varios tests. Remediación aplicada: borrados `AnyNonEmpty_Atomic` (project + audit) y `ExcludesEstadoAndGoogle_Atomic`; reescrito `NoUserResilient_Atomic` con seed de 1 NC con AC/AR abierta + cardinalidad; aplicado `Cleanup:` label + `Resume Cleanup` + `result` inicializado a fail antes de `On Error` en los 2 `AllEmpty_Atomic`. | 2026-06-18 |
+
+**⚠️ Divergencias (intención SDD ≠ realidad del código)**
+- Sin divergencia confirmada. Hueco confirmado de evidencia: la cobertura runtime reciente prueba helpers de listado/apertura y seguimiento, pero no el ciclo completo crear/cerrar/reabrir/eliminar/rehabilitar.
+
+**✅ Divergencias resueltas el 2026-06-15**
+- `Test_Issue38_SeguimientoProyecto_ActualizarModoProyecto_Contract` — `ComandoActualizar_Click` ya no llama a `PintarIndicadores` directamente; delega la carga diferida al helper `NCProyectoSeguimientoHelper.CargarIndicadoresSeguimientoProyecto` vía `Form_Timer` (`m_CargaInicialIndicadoresPendiente = True`, `Me.TimerInterval = 100`).
+- `Test_Issue50_SeguimientoProyecto_CargaDiferidaHelper_Contract` — el mismo refactor añadió en `src/forms/Form_FormNCProyectoSeguimiento.cls` los flags privados `m_CargaInicialIndicadoresPendiente`, `m_CargandoIndicadores`, `m_UltimaDuracionIndicadores`; el sub `Form_Timer`; la programación del timer en `Form_Load`; la delegación al helper y la llamada al helper usando `p_DuracionSegundos:=m_UltimaDuracionIndicadores` para casar con la firma del helper.
+- Detalle adicional en `docs/capabilities/nc-proyecto-actions-follow-up.md` y en `docs/capabilities/indicators-dashboard.md` §5 / §7.

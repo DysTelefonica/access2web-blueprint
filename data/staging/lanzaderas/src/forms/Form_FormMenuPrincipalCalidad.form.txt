@@ -1,0 +1,1989 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =1617520889
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =18308
+    DatasheetFontHeight =11
+    ItemSuffix =49
+    Left =1170
+    Top =3375
+    Right =15195
+    Bottom =8760
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x46597055abd3e540
+    End
+    GUID = Begin
+        0x9f1bb0328e12564eb93f334522ff3e20
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="Usuario Conectado: Fátima Muñoz Curado"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000565cb2761a2b00000000000000000000 ,
+        0x010403069c000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc800020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220052000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000545330303100
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x6900720065006300630069006f006e00610064006f0029002000280000000000 ,
+        0x01040306dc000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc800020001004100340000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e004e000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000054005300 ,
+        0x3000300031000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =6710886
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =60.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin BoundObjectFrame
+            AddColon = NotDefault
+            SizeMode =3
+            SpecialEffect =2
+            BorderLineStyle =0
+            Width =4536
+            Height =2835
+            LabelX =-1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Subform
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            BorderShade =65.0
+            ShowPageHeaderAndPageFooter =1
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+            BorderColor =10921638
+            ForeColor =4138256
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CustomControl
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin FormHeader
+            Height =686
+            BackColor =8210719
+            Name ="EncabezadoDelFormulario"
+            GUID = Begin
+                0x55b4ba2fc8640845887818b2c151d62e
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =225
+                    Top =150
+                    Width =10890
+                    Height =285
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblUsuarioConectado"
+                    Caption ="Usuario Conectado: Fátima Muñoz Curado Miembro del equipo de Calidad"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x6c04eac13f479a43960ace96d613ca6a
+                    End
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =150
+                    LayoutCachedWidth =11115
+                    LayoutCachedHeight =435
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =13020
+                    Top =150
+                    Width =3570
+                    Height =285
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblUsuarioUbicacion"
+                    Caption ="Ubicación: Fuera de la Oficina"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x280a9b0ae724dd48a34966e9ca2fda75
+                    End
+                    LayoutCachedLeft =13020
+                    LayoutCachedTop =150
+                    LayoutCachedWidth =16590
+                    LayoutCachedHeight =435
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Image
+                    Left =17475
+                    Width =567
+                    Height =567
+                    Name ="ImagenSalir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Cerrar Aplicación"
+                    Picture ="Logout-modified.png"
+                    GUID = Begin
+                        0x3d3a1d8b2d4017458ac0294382d7c94b
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7a ,
+                        0xf4000000017352474200aece1ce9000001a0494441545847c597312f044114c7 ,
+                        0x7fff522224f42825f42a11b544940a2509572a1522c1118242e2a297f8007c01 ,
+                        0x54be814ea3568804054f9e8c64dddddecdbabb9d69363b3b33efb76fdefbcf1b ,
+                        0x91b829b17d1a00ccccfbc68129a0af00e017f000dc4b7a8f9dd70c6001380146 ,
+                        0xa111b0cdc2afc019b029e92306e20f80990d0257c074cce49c312fc0bca49b98 ,
+                        0x35ea0146803bc09fb7c065a4173e81596031185d9574de29404d522566111f63 ,
+                        0x666bc1fdfe5a91548b99dbca03450196806a30ba21e9a26c807e6028187d96e4 ,
+                        0x01d9b675cd03bf96421a4f028f31105d0708f1700cbc01dbed34a157001e802b ,
+                        0xc02eb0d70aa257002e469e15ae8807ad200a01989907d93a30ec99971361de3f ,
+                        0x034c84ef2d218a026485aa6d846706e4429405e02c7e36784c5425b972feb4b2 ,
+                        0x01b680c31400be053bc0517d4614f5c07f83b0a9f1c25b101b7566964dc35ce3 ,
+                        0xbd0470215a067ccf1bdc9efd91425b50c0032ec55e98eca79262af299f4a3d8c ,
+                        0xcc2ced716c66c90b92ae9764498ad201e03a59591eaa9939e014188b2cc9b3d9 ,
+                        0xd9d9c52400a4bd9ac58a4db7c625bf1d7f03f4a418306b71014f000000004945 ,
+                        0x4e44ae426082
+                    End
+
+                    LayoutCachedLeft =17475
+                    LayoutCachedWidth =18042
+                    LayoutCachedHeight =567
+                End
+                Begin Image
+                    Left =16781
+                    Width =567
+                    Height =567
+                    Name ="ImagenLogout"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Cerrar Sesión"
+                    Picture ="LogOut1-modified.png"
+                    GUID = Begin
+                        0xc801da5cbfac814393daecae68637a9d
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7a ,
+                        0xf4000000017352474200aece1ce9000002ef494441545847cd974ba84d7114c6 ,
+                        0x7fcb6b28af185006065ec5000961a0ab14f22e53794479947b8beb35400cae81 ,
+                        0xe2baa4987be431512e068430228a4c14b906e86220afa5efb60efbee7b1e7b9f ,
+                        0xe376ac3a9d3ae7bfd7ff5bdffffbaff56da3ce6175de9f5c00dc5deb0702a381 ,
+                        0x91c028e8caf11a7803bc023acdccb316960980bbf707a6020b8179c098003220 ,
+                        0x36fa067c065e02b7802bc02333fb5e09484500ee3e1ed80aac0486544a18ff7f ,
+                        0x00ce0347cdec59b9674a0270f7bec022e010302e92a8a217c0c3f8fe18bf0f02 ,
+                        0xc6025362ad18533c07f60217ccec6731204501b87b1f60037020aafe053c004e ,
+                        0x01d7808ef439873e86030b80f5c07440793a81ddc08962204a01580a9c8ecdbf ,
+                        0xe861e08899bdcb7204ee3e02d80eac00c4c67b60b399dd4e3fdf0380bb4f1065 ,
+                        0x41a536df031ccf22a86472779740c58858d0e79399491bdda21b0077ef071c0b ,
+                        0xfa75955a805d7937cfc252614d1ac00ce02a3014b8072c33b38e3c09d36b431b ,
+                        0x83a33ff410621ac041a019f8212199d9995a362f3cebeefb428c6d66f63599f3 ,
+                        0x0f0077d75592c2a5dea7408399bdfd470024e2b5c049607f52cc490093801bc0 ,
+                        0x30e02cb0264f4b2d07d4dd5b818d8074a5229bcc4c45fe9d05eeaefb7b09907a ,
+                        0x9bcd4c0da864b8fb44606e242dbb14580dcc492c7a0c3402ed4906d43c449162 ,
+                        0x939989b6720054912aab36d4535afe2b00c923d86966877bf10874fe4dd24392 ,
+                        0x81c92142f580de14e1f510a174d04d84c96bf804985f6b134af481cad7508bdd ,
+                        0x5dcadf118d689d9989899a2353230a0033c3cde818ee02cb6b65216f2baeef30 ,
+                        0x0a16348e65a764c5348e65265af34ec4aac6714234ab80364053ac5a43b2253a ,
+                        0xa00c89acdb3633bb9916541e4b763f40b597b16472420de12734da0b964ca646 ,
+                        0x2c961fc74974614a17872995e154144ce99d98981adb0a6947b3615698d38229 ,
+                        0x9581d5283e97cb94a6804813f2774b72daf2cbe123bba65ea9a8f85e10c25445 ,
+                        0xd30099d5d9155e4cc4ce4559f72cc2cd042021cefabc9ad5dc0a6b3d82de04f0 ,
+                        0x1b2790390e2bfb60700000000049454e44ae426082
+                    End
+
+                    LayoutCachedLeft =16781
+                    LayoutCachedWidth =17348
+                    LayoutCachedHeight =567
+                    TabIndex =1
+                End
+            End
+        End
+        Begin Section
+            CanGrow = NotDefault
+            Height =8505
+            Name ="Detalle"
+            OnMouseMove ="[Event Procedure]"
+            GUID = Begin
+                0x008fb1c263cd9f42821d369cfe1da8c0
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    BackStyle =1
+                    OverlapFlags =93
+                    Width =2657
+                    Height =8505
+                    BackColor =8210719
+                    Name ="PANEL1"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0xe98b37013acf814e9ceb6ad5b49b0e25
+                    End
+                    LayoutCachedWidth =2657
+                    LayoutCachedHeight =8505
+                    BackThemeColorIndex =-1
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =223
+                    Top =2625
+                    Width =2608
+                    Height =567
+                    BackColor =8210719
+                    Name ="MENU1"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0xfc283007d227a947956e9bed496f4571
+                    End
+                    LayoutCachedTop =2625
+                    LayoutCachedWidth =2608
+                    LayoutCachedHeight =3192
+                    BackThemeColorIndex =-1
+                End
+                Begin Image
+                    Left =389
+                    Top =2730
+                    Width =397
+                    Height =397
+                    BackColor =8210719
+                    Name ="Imagen1"
+                    OnClick ="[Event Procedure]"
+                    Picture ="KEGIATAN.gif"
+                    GUID = Begin
+                        0x76e3ceb07cac7944b025911bb0c4162d
+                    End
+                    ImageData = Begin
+                        0x4749463839612600260070000021f90401000003002c00000000260026008100 ,
+                        0x0000fefefeffffff000000028f9c8fa9cbed0fa39ca2da8b3386bafbca7de215 ,
+                        0x8293413ea915a50ee97628abb2b1ec36303dc83dafa30183a6d7b07554e424cb ,
+                        0xc5aa6884327645cf4feab4f17c4da5109b0527ba3531821c1594d457a4f94065 ,
+                        0x5f37f3757da6b9a7f16e39d1cf943426b857c646788688a77693b168d7e88806 ,
+                        0xa75595a7f7c7676778f26838f2b1066af5397ad9899aaabaca3a5000003b
+                    End
+
+                    LayoutCachedLeft =389
+                    LayoutCachedTop =2730
+                    LayoutCachedWidth =786
+                    LayoutCachedHeight =3127
+                    TabIndex =1
+                    BackThemeColorIndex =2
+                End
+                Begin Label
+                    Visible = NotDefault
+                    BackStyle =1
+                    OverlapFlags =215
+                    Top =2625
+                    Width =170
+                    Height =567
+                    Name ="IND1"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xc20cfc9d3938774cbf29e8f00b2e0b53
+                    End
+                    LayoutCachedTop =2625
+                    LayoutCachedWidth =170
+                    LayoutCachedHeight =3192
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =839
+                    Top =2790
+                    Width =1245
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BackColor =8210719
+                    ForeColor =16777215
+                    Name ="lblMenu1"
+                    Caption ="Aplicaciones"
+                    FontName ="Arial"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x0e4f238941b22d4eaa9b5488247b68e8
+                    End
+                    LayoutCachedLeft =839
+                    LayoutCachedTop =2790
+                    LayoutCachedWidth =2084
+                    LayoutCachedHeight =3105
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =2
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =223
+                    Top =3305
+                    Width =2608
+                    Height =567
+                    BackColor =8210719
+                    Name ="MENU2"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0x2339ba32bc35b246863d0a25444acd93
+                    End
+                    LayoutCachedTop =3305
+                    LayoutCachedWidth =2608
+                    LayoutCachedHeight =3872
+                    BackThemeColorIndex =-1
+                End
+                Begin Image
+                    Left =389
+                    Top =3404
+                    Width =397
+                    Height =397
+                    BackColor =8210719
+                    Name ="Imagen2"
+                    OnClick ="[Event Procedure]"
+                    Picture ="DASHBOARD.gif"
+                    GUID = Begin
+                        0xf3f84e97cd192740ab717eb499e6a4f2
+                    End
+                    ImageData = Begin
+                        0x4749463839612c002c0070000021f90401000003002c000000002c002c008100 ,
+                        0x0000fffffffefefe00000002719c8fa9cbed0fa39cb4da8bb3debcfbdf05e248 ,
+                        0x96e62946e8ca96500bafefc89173bad98faef18d8f012e841662c248411e9412 ,
+                        0xe6c0790b446bb45db577fd6583db61b7f83d8693e365b9797ea6a7d6983bfd8e ,
+                        0x4bdb7258b4ce0261eb08bcd40f3817e8a75768788898a8b8c8d8e8b85100003b
+                    End
+
+                    LayoutCachedLeft =389
+                    LayoutCachedTop =3404
+                    LayoutCachedWidth =786
+                    LayoutCachedHeight =3801
+                    TabIndex =2
+                    BackThemeColorIndex =2
+                End
+                Begin Label
+                    Visible = NotDefault
+                    BackStyle =1
+                    OverlapFlags =215
+                    Top =3305
+                    Width =170
+                    Height =567
+                    Name ="IND2"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xfaf18f554422db4284341b4eea0df11c
+                    End
+                    LayoutCachedTop =3305
+                    LayoutCachedWidth =170
+                    LayoutCachedHeight =3872
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =839
+                    Top =3464
+                    Width =1245
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    BackColor =8210719
+                    ForeColor =16777215
+                    Name ="lblMenu2"
+                    Caption ="Videos-Guías"
+                    FontName ="Arial"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x66f7670a0aec964aadc3df20bab665ef
+                    End
+                    LayoutCachedLeft =839
+                    LayoutCachedTop =3464
+                    LayoutCachedWidth =2084
+                    LayoutCachedHeight =3779
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =2
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =223
+                    Top =3985
+                    Width =2608
+                    Height =567
+                    BackColor =8210719
+                    Name ="MENU3"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0x89ff1b4b5ec135448964539f15fb72fd
+                    End
+                    LayoutCachedTop =3985
+                    LayoutCachedWidth =2608
+                    LayoutCachedHeight =4552
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    BackStyle =1
+                    OverlapFlags =215
+                    Top =3985
+                    Width =170
+                    Height =567
+                    Name ="IND3"
+                    GUID = Begin
+                        0x1c67cd0a4280f440891f7292c34b7eca
+                    End
+                    LayoutCachedTop =3985
+                    LayoutCachedWidth =170
+                    LayoutCachedHeight =4552
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =839
+                    Top =4144
+                    Width =1245
+                    Height =315
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblMenu3"
+                    Caption ="Perfil"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x30ff8470eadffb40a9ec3fadf9f3c0b3
+                    End
+                    LayoutCachedLeft =839
+                    LayoutCachedTop =4144
+                    LayoutCachedWidth =2084
+                    LayoutCachedHeight =4459
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Image
+                    Left =705
+                    Top =60
+                    Width =1021
+                    Height =1021
+                    Name ="Imagen36"
+                    Picture ="Lanzadera.ico"
+                    GUID = Begin
+                        0x3cbf70469c3682428e006ea72fd154b2
+                    End
+                    ImageData = Begin
+                        0x0000010001004848000001002000885400001600000028000000480000009000 ,
+                        0x000001002000000000006054000000000000000000000000000000000000ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff010000 ,
+                        0x0001000000010000000100000001ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff0100000001000000020000 ,
+                        0x00070000000a0000000a000000070000000200000001ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff0100000001000000050000000e6464 ,
+                        0x6426707070340f0f0f22000000180000000b0000000200000001ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff010000000100000003000000097c7c7c25ebebeb9cfbfb ,
+                        0xfbf1fcfcfcf7f2f2f2cf9494944f0000001a0000000900000001ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff0100000001000000050000000fc2c2c250f9f9f9d8fffffffeffff ,
+                        0xfffffffffffffffffffff6f6f6db49494934000000140000000500000001ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff010000 ,
+                        0x000100000002000000085b5b5b1ceaeaea94fdfdfdf7fffffffffffffffffefd ,
+                        0xfdfffaf7f7fffffffffffffffffed9d9d994000000200000000c00000002ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01000000010000 ,
+                        0x0001000000010000000100000001ffffff01ffffff0100000001000000010000 ,
+                        0x00040000000db8b8b845f7f7f7cefffffffefffffffffffffffff5efefffa86d ,
+                        0x6fffa16062fffdfcfcfffffffffffbfbfbf37d7d7d4700000018000000060000 ,
+                        0x0001ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff0100000001000000050000 ,
+                        0x000b0000000e0000000b00000006000000020000000100000002000000084e4e ,
+                        0x4e1ae2e2e284fdfdfdf4fffffffffffffffffefdfdffdac1c2ff812b2eff6800 ,
+                        0x04ff6b0509ffd5b9baffffffffffffffffffe9e9e9ba0d0d0d260000000f0000 ,
+                        0x0003ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff010000000100000002000000065b5b5b1ca3a3 ,
+                        0xa346858585410e0e0e23000000160000000a000000060000000cacacac3bf4f4 ,
+                        0xf4c4fffffffefffffffffffffffff8f3f3ffb27d7fff6d080cff680004ff6800 ,
+                        0x04ff680004ff863336fff9f6f6fffffffffffcfcfcfbb2b2b2670000001c0000 ,
+                        0x000900000001ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff010000000100000002000000050000000bcacaca49fafafaddffff ,
+                        0xfffdfdfdfdf9ebebebbb555555390000001d3434341ddcdcdc77fcfcfcefffff ,
+                        0xfffffffffffffefefeffe2cecfff863437ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ffbd9192fffefefefffffffffff4f4f4d9353535300000 ,
+                        0x001200000004ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff0100000001000000010000 ,
+                        0x000200000005000000090000000f14141419bcbcbc54fcfcfceaffffffffffff ,
+                        0xffffffffffffffffffffefefefcb91919154eeeeeebdfffffffcfffffffffefe ,
+                        0xfefffbf8f8ffb9898bff700f13ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff76181bffeee3e3fffffffffffffffffecfcfcf860000 ,
+                        0x001c0000000800000001ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff0100000002000000080000 ,
+                        0x000e0000001693939339d8d8d87ef3f3f3c9fdfdfdf9fffffffffffffffffefd ,
+                        0xfdfffefefefffffffffffffffffefdfdfdfbffffffffffffffffffffffffe6d6 ,
+                        0xd7ff8f4245ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ffa76c6efffefefefffffffffff6f6f6df3e3e ,
+                        0x3e2d0000000d00000002ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01000000021313130d8a8a8a30d6d6 ,
+                        0xd678f3f3f3c4fcfcfcf4fffffffefffffffffffffffffffffffffdfcfcffefe4 ,
+                        0xe5ffddc6c7fffcfafbfffffffffffffffffffffffffffbf9f9ffc2999aff7314 ,
+                        0x17ff680004ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff6e0a0eff9e5c5efff8f3f3fffffffffffdfdfdfcaaaa ,
+                        0xaa5a0000001200000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01000000016d6d6d0eefefef97fcfcfcf3ffff ,
+                        0xfffffffffffffffffffffffffffffffffffffbf8f8ffd8bebfffa46568ff7a1e ,
+                        0x22ff690206ffb17c7efffdfcfcffffffffffede0e1ff985153ff680105ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff6e0a0eff985154ffa46668ffe0cbcbffffffffffffffffffd6d6 ,
+                        0xd68c0000001600000004ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff0100000003f1f1f174fffffffdffffffffffff ,
+                        0xfffffffffffff8f4f4ffdcc4c5ffa96e71ff7a2023ff690206ff680004ff6800 ,
+                        0x04ff680004ff690105ffb07b7dffcaa6a8ff76181bff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff6e0b0fff975154ffa36567ffa46668ffcdabacffffffffffffffffffe8e8 ,
+                        0xe8ac0000001700000005ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff0171717109fbfbfbcfffffffffffffffffe3d0 ,
+                        0xd0ffad7678ff7f282bff6a0407ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff954c4fffac7476ff680105ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff680004ff680004ff6d09 ,
+                        0x0dff975153ffa46668ffa46668ffa46668ffc7a2a3ffffffffffffffffffebeb ,
+                        0xebb60000001700000005ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff0100000001e0e0e032fffffffcfffffffff7f2f3ff7415 ,
+                        0x19ff680004ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff964e51ffefe4e6fff3ebecffaf797bff6a0307ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff680004ff6e0b0fff9852 ,
+                        0x55ffa46668ffa46668ffa46668ffa46668ffc8a3a4ffffffffffffffffffebeb ,
+                        0xebb30000001600000005ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff0100000002f5f5f581fefefeffffffffffd2b3b5ff6801 ,
+                        0x05ff680004ff680105ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff954d50ffece0e1fff4ecedfff4ecedfff1e8e9ffae7779ff690206ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff6e0a0eff975153ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffcca9aaffffffffffffffffffe6e6 ,
+                        0xe6a90000001600000005ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01000000018b8b8b0bfbfbfbd0fffffffffefdfdff9f5d5fff6800 ,
+                        0x04ff680004ff812c2fff873538ff690206ff680004ff680004ff680004ff954d ,
+                        0x50ffeee2e3fff4ecedfff4ecedfff4ecedfff4ecedfff3eaebffad7577ff6901 ,
+                        0x05ff680004ff680004ff680004ff680004ff6e0a0eff985254ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffcdabacffffffffffffffffffe6e6 ,
+                        0xe6a60000001600000005ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff0100000001e0e0e03afffffff9fffffffff4ededff75161aff6800 ,
+                        0x04ff680004ff6c080cff985254ff92484aff6d0a0dff680004ff964f52ffede0 ,
+                        0xe1fff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff0e6e7ff8735 ,
+                        0x38ff680004ff680004ff680004ff6e0b0fff975153ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffd1b2b3ffffffffffffffffffe1e1 ,
+                        0xe19c0000001600000005ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff010000000100000007f0f0f089ffffffffffffffffd0afb1ff680004ff6800 ,
+                        0x04ff680004ff680004ff721215ff9f5e60ff9a5557ff985254ffede1e2fff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedffae77 ,
+                        0x79ff680004ff680004ff6d090dff985255ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffd3b5b6ffffffffffffffffffe1e1 ,
+                        0xe19a0000001500000004ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff0100000005d4d4d448fcfcfcedfffffffffefefeff9d5a5cff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff7b2124ffa26466ffa86d6fffd6bbbcfff3ea ,
+                        0xebfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedffaf79 ,
+                        0x7bff680004ff6e0b0fff975153ffa36567ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffd6bbbcffffffffffffffffffdcdc ,
+                        0xdc8e0000001300000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff010000 ,
+                        0x0001d8d8d835fcfcfceafffffffffffffffff3ececff75171bff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff964d50ffc7a0a2ffa46668ffa5686affc7a2 ,
+                        0xa3fff1e7e8fff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedffd0b1 ,
+                        0xb2ff771a1dff975154ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffd8bebeffffffffffffffffffdada ,
+                        0xda8d0000001200000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff010000 ,
+                        0x0001fafafaa1fffffffffffffffffdfdfdffc8a4a5ff680105ff680004ff6800 ,
+                        0x04ff680004ff680004ff954d50ffeee2e3fff1e8e9ffbd9091ffa46668ffa466 ,
+                        0x68ffba8b8cffebdedffff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3eb ,
+                        0xecffdac1c2ffa76c6effa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffdbc3c4ffffffffffffffffffd3d3 ,
+                        0xd3810000001200000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff010000 ,
+                        0x0001fdfdfdbffffffffffffffffff9f5f5ff975053ff680004ff680004ff6800 ,
+                        0x04ff680004ff964e51ffece0e1fff4ecedfff4ecedffede0e1ffb17b7dffa466 ,
+                        0x68ffa46668ffaf797affe2cfd0fff3ebecfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff3ebecffdbc2c3ffa86d6effa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffddc7c8ffffffffffffffffffd3d3 ,
+                        0xd3800000001200000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01fbfbfb89fffffffefffffffffdfcfcffa05f62ff680004ff680004ff6800 ,
+                        0x04ff944b4effefe4e6fff4ecedfff4ecedfff4ecedfff4ecedffe4d2d3ffaa70 ,
+                        0x72ffa46668ffa46668ffa86d6fffd5b8b9fff3eaebfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff3ebecffdcc5c6ffa76b6dffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffe0ccccffffffffffffffffffc8c8 ,
+                        0xc8760000001200000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01f4f4f418ffffffd1fffffffffffffffff8f4f4ff9c585aff680004ff964e ,
+                        0x51ffede0e1fff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3ebecffd8be ,
+                        0xbfffa5686affa46668ffa46668ffa56769ffc7a1a2fff0e6e7fff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedffdbc2c3ffa86d6fffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffe3d0d1ffffffffffffffffffc6c6 ,
+                        0xc6750000001300000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff0100000001dadada23fbfbfbd9fffffffffffffffff8f3f4ffa26366ffede1 ,
+                        0xe2fff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3eb ,
+                        0xecffc9a5a7ffa46668ffa46668ffa46668ffa46668ffc49c9dfff3ebecfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff3ebecffdbc4c5ffa86c6effa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffe2cfd0ffffffffffffffffffc7c7 ,
+                        0xc777000000170000000500000001ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01000000028a8a8a18fbfbfbd5ffffffffffffffffdcc4c5ff711013ffbd8f ,
+                        0x91fff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff1e7e8ffbb8e8fffa46668ffa46668ffa46668ffad7678fff2eaebfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff3ebecffdbc2c4ffa86c6effa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffd7bcbdffffffffffffffffffe1e1 ,
+                        0xe1a40000001e0000000a00000001ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff010000 ,
+                        0x00011c1c1c09f1f1f196fffffffefffffffff5eeefff822c30ff680004ff6c06 ,
+                        0x0affba8c8efff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedffede0e1ffb07b7dffa46668ffa46668ffc09698fff3ebecfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3ebecffdbc3c4ffa86d ,
+                        0x6fffa46668ffa46668ffa46668ffa46668ffc09697fffefefefffffffffff9f9 ,
+                        0xf9e644444434000000130000000500000001ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01000000010000 ,
+                        0x0004dbdbdb50fdfdfdf8fffffffffefdfdffa96e71ff680004ff680004ff6800 ,
+                        0x04ff6a0508ffbd9092fff3eaebfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedffe9dbdcffcca9abffd0b1b2ffeee3e4fff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3ebecffdbc3 ,
+                        0xc4ffa86c6effa46668ffa46668ffa46668ffaa7072fff5eeeeffffffffffffff ,
+                        0xfffed7d7d793000000200000000c00000002ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01000000029a9a ,
+                        0x9a1cfbfbfbdeffffffffffffffffd5b9baff6a0408ff680004ff680004ff6800 ,
+                        0x04ff680004ff6c070bffae7779ffe9d9dbfff3ebecffefe3e4fff3ebecfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3eb ,
+                        0xecffdbc2c4ffa86c6effa46668ffa46668ffa46668ffcdacadfffefefeffffff ,
+                        0xfffffafafaf07b7b7b46000000170000000600000001ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01000000013333330af4f4 ,
+                        0xf4a3fffffffefffffffff0e7e7ff7d2427ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff6e0b0fff75171bff75171bffd1b1b2fff3eb ,
+                        0xecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff3ebecffdbc4c5ffa86d6fffa46668ffa46668ffa86c6effefe5e5ffffff ,
+                        0xffffffffffffe8e8e8b4060606250000000f0000000300000001ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff010000000100000005e2e2e25afdfd ,
+                        0xfdfafffffffffefdfdffa26264ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff6f0c0fffa05f62ffdfc9 ,
+                        0xcbfff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff3ebecffdbc2c3ffa76b6dffa46668ffa46668ffc19798fffdfd ,
+                        0xfdfffffffffffcfcfcf9a6a6a65f0000001b0000000800000001ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff0100000003b5b5b526fcfcfce7ffff ,
+                        0xfffffefefeffcba8aaff690206ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff700e11ff9a5658ffa46668ffa86d ,
+                        0x6fffdec8c9fff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedffdcc5c6ffa86d6effa46668ffa5686affe3d0 ,
+                        0xd1fffffffffffffffffff4f4f4d32828282c0000001200000003ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01000000015555550cf6f6f6aefffffffeffff ,
+                        0xffffeee3e3ff781c1fff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff680004ff6f0d11ff995457ffa46668ffa46668ffa466 ,
+                        0x68ffa96f71ffdfc9cafff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff3ebecffdbc2c3ffa76c6effa46668ffb481 ,
+                        0x83fffbf9f9fffffffffffffffffec9c9c9800000001e0000000a00000001ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff010000000100000005e9e9e96afffffffcfffffffffcfb ,
+                        0xfbff985154ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff680004ff6f0d11ff9a5558ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa86e70ffdfc9cafff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff3ebecffdbc3c5ffa76c6effa466 ,
+                        0x68ffd5b9bafffefefefffffffffff9f9f9e76666663e00000016000000050000 ,
+                        0x0001ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff0100000003bcbcbc2efcfcfcecfffffffffefefeffc49c ,
+                        0x9eff680105ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff680004ff700e11ff995457ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa96f71ffdec8c9fff3ebecfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3ebecffdbc2c4ffa86d ,
+                        0x6fffab7375fff3ececfffffffffffffffffee0e0e0a6000000220000000e0000 ,
+                        0x0002ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01000000018989890df8f8f8bafffffffeffffffffe8d9daff7415 ,
+                        0x18ff680004ff680004ff680004ff680004ff680004ff680004ff680004ff6800 ,
+                        0x04ff6f0c0fff9a5658ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa96f71ffdfc9cafff3ebecfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3ebecffdbc3 ,
+                        0xc4ffa76c6effc6a0a1fffefefefffffffffffdfdfdfa96969653000000190000 ,
+                        0x000700000001ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff0100000001f1f1f15cfffffffefffffffffaf8f8ff904447ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff680004ff680004ff700e ,
+                        0x11ff995457ffa36567ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffa96f71ffdec7c9fff3ebecfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff3eb ,
+                        0xecffdbc3c4ffab7274ffe8d8d9fffefefeffffffffffefefefca2e2e2e2c0000 ,
+                        0x00110000000400000001ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff0100000001fbfbfb93ffffffffffffffffccaaabff690206ff6800 ,
+                        0x04ff680004ff680004ff680004ff680004ff680004ff680004ff6f0c10ff9955 ,
+                        0x57ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffa46668ffa96f71ffdfc9cafff3eb ,
+                        0xecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff3ebecffdbc2c4ffbb8d8ffffcfafafffffffffffdfdfdfdc5c5c57d0000 ,
+                        0x001e0000000c00000002ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff0100000001fcfcfc7cfffffffffffffffffbf9f9ffc59e9fff7a1f ,
+                        0x22ff680004ff680004ff680004ff680004ff680004ff6f0d11ff9a5557ffa365 ,
+                        0x67ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa96f71ffdec8 ,
+                        0xc9fff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff3ebecffdbc4c5ffdcc5c6fffffffffffffffffffafafaeb7878 ,
+                        0x78440000001a0000000900000001ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01f7f7f720ffffffe2fffffffefffffffffefefefff2e9 ,
+                        0xeaffab7173ff6d090dff680004ff680004ff6f0d10ff995457ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa96f ,
+                        0x71ffdfc9cafff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff3ebecffe4d2d3fff8f4f4fffefefefffffffffeefef ,
+                        0xefc939393931000000150000000600000001ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff25fdfdfdb3fffffffbffffffffffff ,
+                        0xfffffefefeffe4d1d2ff92474aff711014ff9a5558ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa46668ffa466 ,
+                        0x68ffa86e70ffdfc9cafff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff3ebecfff6f0f0fffefefeffffffffffffff ,
+                        0xffffe2e2e2a813131327000000110000000500000001ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01cccccc05fbfbfb51fdfdfdd7ffff ,
+                        0xfffefffffffffffffffffcfafaffdec8c9ffbd9092ffaa7072ffa5686affa568 ,
+                        0x6affa5686affa5696bffa6696bffa76b6dffa97072ffab7274ffae7778ffaf79 ,
+                        0x7affb17d7fffb27f80ffb58485ffb07b7dffa66b6cffa46668ffa46668ffa466 ,
+                        0x68ffa46668ffa96f71ffdec8c9fff3ebecfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff9f5f5fffefefeffffff ,
+                        0xfffffffffffbc8c8c87f000000210000000d00000002ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ececec0efafa ,
+                        0xfa7bfdfdfdedfffffffffffffffffffffffffefefefffaf6f6fff1e8e9fff1e8 ,
+                        0xe8fff3ececfff6f0f0fff9f5f5fff9f6f6fffaf7f7fffaf8f8fffcfafafffcfa ,
+                        0xfafffdfcfcfffdfcfcfffefefefffdfbfbfff5eeefffddc6c7ffb88889ffa467 ,
+                        0x69ffa46668ffa46668ffa86d6fffdfc9cbfff3ebecfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff1e7e8fff9f6f6ffffff ,
+                        0xfffffffffffffcfcfcf49b9b9b570000001b0000000800000001ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01f8f8f826fdfdfda8fffffff9fffffffeffffffffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffffffffffffffffffffcfafaffdcc5 ,
+                        0xc6ffaf787affa46668ffa46668ffaa7072ffdec8c9fff3ebecfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedffdec7c8ffc8a2a4fffcfb ,
+                        0xfbfffefefefffffffffff4f4f4d442424232000000130000000500000001ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff02f5f5f536fdfdfd93fdfdfdd7fffffff3fffffffeffff ,
+                        0xfffffffffffcfffffff7fdfdfdf6fdfdfdf1fdfdfdf0fdfdfdeafdfdfde9fdfd ,
+                        0xfde3fdfdfddbfdfdfdd6fdfdfdd9fdfdfdeafdfdfdfdfffffffffffffffffefe ,
+                        0xfefff8f4f5ffceaeafffa96e70ffa46668ffa96e70ffdec8cafff3ebecfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedffe0cbccff7c2225ffecdf ,
+                        0xe0fffefdfdfffffffffffffffffedadada99000000210000000d00000002ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01dfdfdf08ededed1df2f2f22ae7e7 ,
+                        0xe72ce6e6e629e2e2e224e1e1e122dadada1cd9d9d91bd6d6d613d2d2d211cccc ,
+                        0xcc0aaaaaaa09bfbfbf08aaaaaa09e2e2e212f6f6f63ffdfdfda6fffffff5ffff ,
+                        0xfffefffffffffefefefff0e6e7ffc09596ffa5696bffa96f71ffdec8c9fff3eb ,
+                        0xecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedffdac1c2ff6c070bffc299 ,
+                        0x9bfff8f4f4fffefefefffffffffffcfcfcf48c8c8c4c00000018000000060000 ,
+                        0x0001ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff017f7f7f02fafafa37fdfd ,
+                        0xfdbdfffffffefffffffffffffffffefdfdffe3d1d2ffb38081ffa96f71ffdec8 ,
+                        0xcafff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedffc09496ff680004ffa76b ,
+                        0x6dfff4ecedfffcfafaffffffffffffffffffeaeaeab80d0d0d250000000e0000 ,
+                        0x0002ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff0100000001dada ,
+                        0xda07fcfcfc63ffffffe4fffffffefffffffffefefefffaf8f8ffd5b8b9ffb07b ,
+                        0x7dffdec8c9fff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff4ecedfff3eaebff8b3c40ff680004ffa365 ,
+                        0x67fff4ecedfff6f0f1fffefefefffffffffffcfcfcfa9f9f9f58000000180000 ,
+                        0x000600000001ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff0100000001f6f6f61ffdfdfd9bfffffffdfffffffefffffffffefefefff2ea ,
+                        0xeaffc9a4a6ffe0cbccfff3ebecfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff4ecedfff3ebecffc6a0a2ff680105ff680004ffb583 ,
+                        0x85fff4ecedfff4ecedfffbf9f9ffffffffffffffffffe8e8e8b5000000210000 ,
+                        0x000c00000001ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff0100000001f5f5f537fdfdfdbafffffffcffffffffffff ,
+                        0xfffffefefeffebdedefff2e9e9fff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedfff3ebecffcdaaacff700f12ff680004ff6d080cffdfc9 ,
+                        0xcafff4ecedfff4ecedfff6f0f0fffefefefffffffffffcfcfcf7777777420000 ,
+                        0x001300000003ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01dadada07f9f9f956fdfdfdd7ffff ,
+                        0xfffefffffffffffffffffdfdfdfff7f2f3fff4ecedfff3ebecfff4ecedfff3eb ,
+                        0xecfff3ebecffe9dadcffb07b7dff6f0c10ff680004ff680004ffa36366fff3eb ,
+                        0xecfff4ecedfff4ecedfff4ecedffede2e2ffffffffffffffffffd5d5d58d0000 ,
+                        0x001b0000000700000001ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff0100000001ececec0efdfd ,
+                        0xfd81fffffff4fffffffffffffffffefefefff9f6f6ffd7bcbdffa96e71ffa669 ,
+                        0x6cff92474aff721115ff680004ff680004ff680004ff954c4fffecdfe0fff4ec ,
+                        0xedfff4ecedfff4ecedffefe4e5ffa46669fffefdfdfffffffffff4f4f4d61414 ,
+                        0x14260000000c00000002ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff017f7f ,
+                        0x7f02fafafa3cfdfdfdd5fffffffefffffffffefefefffaf7f8ffcca8aaff8a3a ,
+                        0x3dff6f0c10ff6b0509ff6d090dff812a2effba8a8cfff0e6e7fff4ecedfff4ec ,
+                        0xedfff4ecedfff4ecedffd3b5b7ff700e12ffeee2e2fffffffffffdfdfdf88a8a ,
+                        0x8a480000001100000003ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff0100000001f3f3f317fdfdfdb0fffffffefffffffffffffffffdfcfcfff5ef ,
+                        0xf0ffe6d5d6ffddc5c7ffe3d0d1fff0e6e8fff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff4ecedfff1e8e9ff904346ff680004ffc9a5a6fffffffffffffffffec8c8 ,
+                        0xc87a0000001600000004ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01dadada07fdfdfd80fffffff8fffffffffffffffffefe ,
+                        0xfefffaf7f7fff5edeefff4ecedfff4ecedfff4ecedfff4ecedfff4ecedfff4ec ,
+                        0xedfff2e9eaffb0797bff680105ff680004ffa6696bfffefefeffffffffffe5e5 ,
+                        0xe5a70000001900000006ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff02fbfbfb53fdfdfde6ffffffffffff ,
+                        0xfffffffffffffdfcfcfff8f4f4fff4ecedfff4ecedfff4ecedfff3ebecffeadc ,
+                        0xdeffa46668ff6a0408ff680004ff680004ff8e4043fffdfdfdffffffffffefef ,
+                        0xefc40000001a00000006ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01f7f7f720fdfdfdb0ffff ,
+                        0xfffcfffffffffffffffffefefefffdfcfcfff9f5f5ffd5b8b9ffab7174ff781b ,
+                        0x1eff680004ff680004ff680004ff680004ff975053fffefdfdfffffffffff1f1 ,
+                        0xf1c30000001700000005ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff05fcfc ,
+                        0xfc57fdfdfddcfffffffefffffffffffffffffefefeffede1e2ffbe9294ff9146 ,
+                        0x48ff721115ff680004ff680004ff76181bffe0cacbfffffffffffffffffee6e6 ,
+                        0xe69a0000000f00000002ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01eeeeee0ffcfcfc71ffffffdffffffffeffffffffffffffffffffffffffff ,
+                        0xfffff6f0f0ffe2cecfffd5b8bafff3eaebfffffffffffffffffffcfcfcf4b6b6 ,
+                        0xb63f0000000700000001ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff0100000001efefef10fcfcfc64fdfdfdc5fffffffbfffffffeffff ,
+                        0xfffffffffffffffffffffffffffffffffffffffffffffffffffbe8e8e87a0000 ,
+                        0x000a00000002ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff0100000001bfbfbf04f4f4f430fafafa7dfdfd ,
+                        0xfdc2ffffffecfffffffbfefefefffffffffafcfcfcd4e8e8e85c1c1c1c090000 ,
+                        0x0002ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff0100000001bfbf ,
+                        0xbf04e7e7e716f5f5f535f4f4f447ebebeb34a3a3a30e0000000200000001ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffff ,
+                        0xff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff01ffffff010000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x000000000000000000000000000000000000000000000000000000000000
+                    End
+
+                    LayoutCachedLeft =705
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =1726
+                    LayoutCachedHeight =1081
+                    TabIndex =3
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Top =1133
+                    Width =2622
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblLanzadera"
+                    Caption ="Lanzadera de Aplicaciones"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xb5a104fe27421a4e8d8938ba487fcba6
+                    End
+                    LayoutCachedTop =1133
+                    LayoutCachedWidth =2622
+                    LayoutCachedHeight =1418
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =283
+                    Top =1530
+                    Width =1980
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblVer"
+                    Caption ="Versión 2.06.025"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x072aee67fe5b5b47a5d374cb52cbc184
+                    End
+                    LayoutCachedLeft =283
+                    LayoutCachedTop =1530
+                    LayoutCachedWidth =2263
+                    LayoutCachedHeight =1815
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    OldBorderStyle =0
+                    Left =2670
+                    Width =15636
+                    Height =8505
+                    Name ="FormDetalle"
+                    GUID = Begin
+                        0x74fc144fd6bdd4479e6972926ccdec06
+                    End
+
+                    LayoutCachedLeft =2670
+                    LayoutCachedWidth =18306
+                    LayoutCachedHeight =8505
+                End
+                Begin Image
+                    Left =360
+                    Top =4050
+                    Width =397
+                    Height =397
+                    Name ="Imagen3"
+                    Picture ="user_search-modified.png"
+                    GUID = Begin
+                        0xf4ff4f2295b84f49ad83589107208c47
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7a ,
+                        0xf4000000017352474200aece1ce900000332494441545847c5974f88566514c6 ,
+                        0x7f4fa64244a29984851025b8b0ac450aa1629243823334b8081c47536c614120 ,
+                        0x460332882e94085c44e146cb3f48282e8cd9e4245824ae5c68195604161a81a6 ,
+                        0x06f987d4b1130fbcdff0f9f9dd7bdfef0676367771effb9edf7bce799f73aef8 ,
+                        0x9f4d9dfa8f8849c04bc00bc0e380f7b8009c048e4bbadcc99ed90011f120b004 ,
+                        0x580fbc088c6f71740b38017c087c2ee9760e481640448c05de0636038f546c7c ,
+                        0x15d8047c9403910bb03a9dece19c5301d781759276547d5f091011338021607a ,
+                        0xd5662def7f067a24fd58b62e07600078bf43e78dcf07256da90d10112eb443c0 ,
+                        0xe29a005f00bd926e16ad2f8d40444c05beae11fe863fa76181a4dfeb024c038e ,
+                        0x017ed6b173c03c497eb6b5aa084c068e02cfd6f10e9c06164aba5417600cb017 ,
+                        0x585613e000d027e94e2d002f8a883e60176031eac446803725edae7d0b12c044 ,
+                        0x603fd0d58977e008f0baa43fff134082989b52f15426c4afc00a492ee052ab14 ,
+                        0xa2c6ea8858047c003c5fb1e7b7c080a4e12ae77e9f0d9022e108ac495df169e0 ,
+                        0xa1e4e406f04b92ec4f249dcd71de31408230f4a3499c9e017c53ecf027e0a2a4 ,
+                        0xc8755e17605c12268b930b7458d2b566a749c2ddc4ac1f06fe1ef841d2dfad70 ,
+                        0xd92988083b734f580acc01a60096d8f9cd4a17113381f7d2b79e9e6cbe095f02 ,
+                        0x5b251966d4b20022c223d846ab5a8b1edc25b5c9b985cbe35a3bf3d8f686a4ef ,
+                        0x1a2f2b0122a21bf8b8a01f8c02448453b313e8b77e01dfa4a2b4af1e472aa5e3 ,
+                        0x336095248f70e5b720225e492af864c1899a016625f1792c39b704ff960af789 ,
+                        0xa4238ee01fc02249beaec50011e1223b08cc2ea9ea6680e5c01ee001e05d49db ,
+                        0x5a0af39d34d6fd03ac94b4af0a6003503acd00ad00cebfd35a06e0f458258b01 ,
+                        0x22c2213b0cb8a2cbac19c085e74a770b77fe8b52e0d6dc25c905d93e0511d10b ,
+                        0xb8955675c066008f6f9fa6d6ed537ee5ff8344ff1af072f267b86e497f9501e4 ,
+                        0x84dfeb3bbd865ee3ff864160bba491b6d73022b6036b2bc27f0f40aaf8e7dc8c ,
+                        0x52fb6e08d115e00ce09b3201f0e9fb250d1501f8ce5a465db145e6b5dec8bf61 ,
+                        0x3952ec01d53f382e6c0fba6f493a5f29441951c8fe2489d5abc0a9867cdf5780 ,
+                        0x76a4ff026ae823301610e2950000000049454e44ae426082
+                    End
+
+                    LayoutCachedLeft =360
+                    LayoutCachedTop =4050
+                    LayoutCachedWidth =757
+                    LayoutCachedHeight =4447
+                    TabIndex =4
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =223
+                    Top =4695
+                    Width =2608
+                    Height =567
+                    BackColor =8210719
+                    Name ="MENU4"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    GUID = Begin
+                        0x3fd2d66b7ac25349a93ae3b4473b22b2
+                    End
+                    LayoutCachedTop =4695
+                    LayoutCachedWidth =2608
+                    LayoutCachedHeight =5262
+                    BackThemeColorIndex =-1
+                End
+                Begin Image
+                    Left =389
+                    Top =4794
+                    Width =397
+                    Height =397
+                    Name ="Imagen4"
+                    OnClick ="[Event Procedure]"
+                    Picture ="PENGATURAN.gif"
+                    GUID = Begin
+                        0x0bb7a26b43190a4e83c936a34d618eed
+                    End
+                    ImageData = Begin
+                        0x4749463839612600250070000021f90401000003002c00000000260025008100 ,
+                        0x0000fefefeffffff00000002649c8fa9cbed0fa39cb4da5b851638eedd3d9f16 ,
+                        0x22e0380ea085b66de6c61f25d71c6dbf709ee2ae21f3f54c3a488c717404174b ,
+                        0x6452d1643e13516991faf35c815b51b26ae40d27e2b1b63c23a3d3eaf5e5745c ,
+                        0x9554e639516ec792f2fcbeff0f18785000003b
+                    End
+
+                    LayoutCachedLeft =389
+                    LayoutCachedTop =4794
+                    LayoutCachedWidth =786
+                    LayoutCachedHeight =5191
+                    TabIndex =5
+                End
+                Begin Label
+                    BackStyle =1
+                    OverlapFlags =215
+                    Top =4695
+                    Width =170
+                    Height =567
+                    Name ="IND4"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xc3b42e66d40b814aa53e596da9540615
+                    End
+                    LayoutCachedTop =4695
+                    LayoutCachedWidth =170
+                    LayoutCachedHeight =5262
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =839
+                    Top =4854
+                    Width =1440
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblMenu4"
+                    Caption ="Configuración"
+                    FontName ="Arial"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xaf06efa5aab53e4ea191c48ea1397e0d
+                    End
+                    LayoutCachedLeft =839
+                    LayoutCachedTop =4854
+                    LayoutCachedWidth =2279
+                    LayoutCachedHeight =5139
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    OldBorderStyle =0
+                    OverlapFlags =223
+                    Top =5375
+                    Width =2608
+                    Height =370
+                    BackColor =8210719
+                    Name ="SUBMENU1"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="MENU4"
+                    GUID = Begin
+                        0x89a13bb95954704bbdad0ef37a466e79
+                    End
+                    LayoutCachedTop =5375
+                    LayoutCachedWidth =2608
+                    LayoutCachedHeight =5745
+                    BackThemeColorIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =720
+                    Top =5415
+                    Width =1542
+                    Height =285
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblSubMenu1"
+                    Caption ="Videos-Guías"
+                    FontName ="Arial"
+                    OnClick ="[Event Procedure]"
+                    Tag ="MENU4"
+                    GUID = Begin
+                        0x797f9de970b52a4cab7fdeff3d56069d
+                    End
+                    LayoutCachedLeft =720
+                    LayoutCachedTop =5415
+                    LayoutCachedWidth =2262
+                    LayoutCachedHeight =5700
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin FormFooter
+            Height =0
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0xcea53c38747df44584a525350e85c30c
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private m_Error As String
+Private m_ObjMenu As Menu
+
+Private Sub Form_Load()
+    
+    Dim m_NumeroEtiquetaUltima As String
+    Dim ctlIndicador As Control
+    Dim ctlMenu As Control
+    Dim frm1 As Form
+    Dim m_Nombre As String
+    
+    On Error GoTo errores
+    m_Error = ""
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+   Ajustar Me
+
+    
+    Set m_ObjMenu = getMenu(Me, m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    m_Nombre = getNombreUsuarioConectado()
+    
+    
+    Me.lblVer.Caption = "Versión " & m_ObjEntorno.VersionAplicacion
+    Me.Caption = "Usuario conectado: " & m_Nombre
+    Me.EncabezadoDelFormulario.BackColor = m_ObjEntorno.ColorMenuDesactivado
+    Me.lblUsuarioConectado.Caption = "Usuario Conectado: " & m_ObjUsuarioConectadoLogin.Nombre & _
+                                    " Miembro del equipo de " & m_ObjUsuarioConectadoLogin.Equipo
+    If m_EnOficina = EnumSino.Sí Then
+    
+        Me.lblUsuarioUbicacion.Caption = "Ubicación: " & "En Oficina"
+    Else
+        Me.lblUsuarioUbicacion.Caption = "Ubicación: " & "Fuera de la Oficina"
+    End If
+    Me.FormDetalle.SourceObject = ""
+    m_ObjMenu.RatonSobreDetalle
+    ActivarObjetoMenu
+    m_ObjMenu.ActDesActMenu 1, EnumSino.Sí
+    MENU1_Click
+    Set frm1 = Me.FormDetalle.Form
+    If frm1.IND1.Visible = False Then
+        frm1.IND1.Visible = True
+    End If
+    If frm1.IND2.Visible = True Then
+        frm1.IND2.Visible = False
+    End If
+    
+    
+    If frm1.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+        frm1.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado
+    End If
+    If frm1.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado Then
+        frm1.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado
+    End If
+    
+    
+    If frm1.FormDetalle.SourceObject <> "FormAplicacionesFueraOficina" Then
+        frm1.FormDetalle.SourceObject = "FormAplicacionesFueraOficina"
+    End If
+'    If IsNumeric(m_ObjUsuarioConectadoLogin.EtiquetaAplicacionesAPulsar) Then
+'        ActivarObjetoMenu
+'        m_ObjMenu.ActDesActMenu 1, EnumSino.Sí
+'        MENU1_Click
+'        Set frm1 = Me.FormDetalle.Form
+'        m_NumeroEtiquetaUltima = m_ObjUsuarioConectadoLogin.EtiquetaAplicacionesAPulsar
+'
+'        If m_NumeroEtiquetaUltima = "1" Then
+'            If frm1.IND1.Visible = False Then
+'                frm1.IND1.Visible = True
+'            End If
+'            If frm1.IND2.Visible = True Then
+'                frm1.IND2.Visible = False
+'            End If
+'
+'
+'            If frm1.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+'                frm1.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado
+'            End If
+'            If frm1.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado Then
+'                frm1.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado
+'            End If
+'
+'
+'            If frm1.FormDetalle.SourceObject <> "FormAplicacionesFueraOficina" Then
+'                frm1.FormDetalle.SourceObject = "FormAplicacionesFueraOficina"
+'            End If
+'        ElseIf m_NumeroEtiquetaUltima = "2" Then
+'            If frm1.IND2.Visible = False Then
+'                frm1.IND2.Visible = True
+'            End If
+'            If frm1.IND1.Visible = True Then
+'                frm1.IND1.Visible = False
+'            End If
+'
+'
+'            If frm1.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+'                frm1.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado
+'            End If
+'            If frm1.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado Then
+'                frm1.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado
+'            End If
+'
+'
+'            If frm1.FormDetalle.SourceObject <> "FormAplicacionesOficina" Then
+'                frm1.FormDetalle.SourceObject = "FormAplicacionesOficina"
+'            End If
+'
+'        End If
+'    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Activate se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ImagenLogout_Click()
+    On Error GoTo errores
+    Pregunta = MsgBox("¿Desea cerrar sesión?", vbExclamation + vbYesNo + vbDefaultButton2, "Cerrar sesión")
+    If Pregunta <> vbYes Then
+        Exit Sub
+    End If
+    
+    HechoLogout = EnumSino.Sí
+    DoCmd.Close acForm, Me.Name
+    
+    
+    DoCmd.OpenForm "FormLogin"
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ImagenLogout_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ImagenSalir_Click()
+    On Error Resume Next
+    Pregunta = MsgBox("¿Desea salir de la lanzadera", vbExclamation + vbYesNo + vbDefaultButton2, "Salir de la Lanzadera")
+    If Pregunta <> vbYes Then
+        Exit Sub
+    End If
+    
+    DoCmd.Quit acQuitSaveAll
+End Sub
+
+Private Sub MENU1_Click()
+    Dim m_NumeroEtiquetaUltima As String
+    Dim m_Form As Form
+    On Error GoTo errores
+    
+    If Me.FormDetalle.SourceObject <> "FormAplicaciones" Then
+        Me.FormDetalle.SourceObject = "FormAplicaciones"
+    End If
+    If Not m_ObjUsuarioConectadoLogin.UltimaAplicacionAbierta Is Nothing Then
+        m_NumeroEtiquetaUltima = m_ObjUsuarioConectadoLogin.EtiquetaAplicacionesAPulsar
+        If IsNumeric(m_NumeroEtiquetaUltima) Then
+            Set m_Form = Me.FormDetalle.Form
+            If m_NumeroEtiquetaUltima = "1" Then
+                If m_Form.IND1.Visible = False Then
+                    m_Form.IND1.Visible = True
+                End If
+                If m_Form.IND2.Visible = True Then
+                    m_Form.IND2.Visible = False
+                End If
+                
+                
+                If m_Form.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+                    m_Form.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado
+                End If
+                If m_Form.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado Then
+                    m_Form.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado
+                End If
+                
+                
+                Form_FormAplicaciones.MENU1_Click
+            ElseIf m_NumeroEtiquetaUltima = "2" Then
+                If m_Form.IND2.Visible = False Then
+                    m_Form.IND2.Visible = True
+                End If
+                If m_Form.IND1.Visible = True Then
+                    m_Form.IND1.Visible = False
+                End If
+                
+                
+                If m_Form.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+                    m_Form.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado
+                End If
+                If m_Form.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado Then
+                    m_Form.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado
+                End If
+                
+                
+                Form_FormAplicaciones.MENU2_Click
+            
+            
+            End If
+        End If
+    End If
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al MENU1_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+Private Sub IND1_Click()
+    MENU1_Click
+End Sub
+Private Sub imagen1_Click()
+    MENU1_Click
+End Sub
+Private Sub lblMenu1_Click()
+    MENU1_Click
+End Sub
+Private Sub MENU2_Click()
+    Pregunta = MsgBox("En construcción", vbExclamation, "En construcción")
+'
+'    If Me.FormDetalle.SourceObject <> "FormVideosUsuarios" Then
+'        Me.FormDetalle.SourceObject = "FormVideosUsuarios"
+'    End If
+End Sub
+Private Sub IND2_Click()
+    MENU2_Click
+End Sub
+Private Sub imagen2_Click()
+    MENU2_Click
+End Sub
+Private Sub lblMenu2_Click()
+    MENU2_Click
+End Sub
+
+
+
+
+Private Sub MENU4_Click()
+    If Me.SUBMENU1.Visible = True Then
+        Plegar
+    Else
+        Desplegar
+    End If
+End Sub
+Private Sub IND4_Click()
+    MENU4_Click
+End Sub
+Private Sub imagen4_Click()
+    MENU4_Click
+End Sub
+Private Sub lblMenu4_Click()
+    MENU4_Click
+End Sub
+
+Private Sub SUBMENU1_Click()
+    
+    Set m_ObjUsuarioActivo = Nothing
+    If Me.FormDetalle.SourceObject <> "FormVideosGestion" Then
+        Me.FormDetalle.SourceObject = "FormVideosGestion"
+    End If
+    
+End Sub
+Private Sub lblSubMenu1_Click()
+    SUBMENU1_Click
+End Sub
+
+
+
+Private Sub Desplegar()
+    ActivarObjetoMenu
+    m_ObjMenu.MostrarSubMenus
+    If Me.FormDetalle.SourceObject <> "" Then
+        Me.FormDetalle.SourceObject = ""
+    End If
+End Sub
+
+Private Sub Plegar()
+    ActivarObjetoMenu
+    m_ObjMenu.OcultarSubMenus
+    If Me.FormDetalle.SourceObject <> "" Then
+        Me.FormDetalle.SourceObject = ""
+    End If
+End Sub
+
+    
+Private Sub MENU1_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    ActivarObjetoMenu
+    m_ObjMenu.ActDesActMenu 1, EnumSino.Sí
+End Sub
+
+
+Private Sub MENU2_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    ActivarObjetoMenu
+    m_ObjMenu.ActDesActMenu 2, EnumSino.Sí
+End Sub
+Private Sub MENU3_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    ActivarObjetoMenu
+    m_ObjMenu.ActDesActMenu 3, EnumSino.Sí
+End Sub
+Private Sub MENU4_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    ActivarObjetoMenu
+    m_ObjMenu.ActDesActMenu 4, EnumSino.Sí
+End Sub
+
+Private Sub SUBMENU1_Mousemove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    ActivarObjetoMenu
+    m_ObjMenu.ActivarSubMenu 1
+End Sub
+
+Private Sub PANEL1_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    ActivarObjetoMenu
+     m_ObjMenu.RatonSobrePANEL1
+    
+End Sub
+Private Sub Detalle_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+    ActivarObjetoMenu
+    If Me.FormDetalle.SourceObject = "" Then
+        m_ObjMenu.RatonSobreDetalle
+        Exit Sub
+    End If
+    If Me.FormDetalle.SourceObject = "FormAplicaciones" Then
+        If Me.IND1.Visible = False Then
+            Me.IND1.Visible = True
+        End If
+        If Me.IND2.Visible = True Then
+            Me.IND2.Visible = False
+        End If
+        If Me.IND3.Visible = True Then
+            Me.IND3.Visible = False
+        End If
+        If Me.IND4.Visible = True Then
+            Me.IND4.Visible = False
+        End If
+        If Me.MENU1.BackColor = m_ObjEntorno.ColorMenuDesactivado Then
+            Me.MENU1.BackColor = m_ObjEntorno.ColorMenuActivado
+        End If
+        If Me.MENU2.BackColor = m_ObjEntorno.ColorMenuActivado Then
+            Me.MENU2.BackColor = m_ObjEntorno.ColorMenuDesactivado
+        End If
+        If Me.MENU3.BackColor = m_ObjEntorno.ColorMenuActivado Then
+            Me.MENU3.BackColor = m_ObjEntorno.ColorMenuDesactivado
+        End If
+        If Me.MENU4.BackColor = m_ObjEntorno.ColorMenuActivado Then
+            Me.MENU4.BackColor = m_ObjEntorno.ColorMenuDesactivado
+        End If
+    End If
+End Sub
+
+
+Private Sub ActivarObjetoMenu()
+    If m_ObjMenu Is Nothing Then
+        Set m_ObjMenu = getMenu(Me)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    End If
+End Sub

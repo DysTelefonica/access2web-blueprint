@@ -1,0 +1,827 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =1716379636
+Begin Form
+    AutoResize = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AllowDeletions = NotDefault
+    CloseButton = NotDefault
+    AllowAdditions = NotDefault
+    AllowEdits = NotDefault
+    DefaultView =2
+    ViewsAllowed =2
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12315
+    RowHeight =285
+    DatasheetFontHeight =11
+    ItemSuffix =647
+    Left =5610
+    Top =2700
+    Right =17460
+    Bottom =8475
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x484072d0f050e640
+    End
+    GUID = Begin
+        0x687fc5952eaae74da2748e89d0655edc
+    End
+    NameMap = Begin
+        0x0acc0e55000000008cb00afd1259f14c803e1c46ff8b14fe000000001ed96fd0 ,
+        0x9374e6400000000000000000540062005500730075006100720069006f007300 ,
+        0x53004900430041004c006f00630061006c000000000000005344cc7dd9e9e147 ,
+        0x9a9292f88da2b7bb070000008cb00afd1259f14c803e1c46ff8b14fe49004400 ,
+        0x000000000000b0d8f0ca5bcf6d40b23de8e12cc975f3070000008cb00afd1259 ,
+        0xf14c803e1c46ff8b14fe4e006f006d006200720065000000000000006c87e102 ,
+        0xf893ce4b9e800e79aa3774bb070000008cb00afd1259f14c803e1c46ff8b14fe ,
+        0x4100700065006c006c00690064006f005f00310000000000000056c5978149b5 ,
+        0xae4c83d6f6f6f7598dfc070000008cb00afd1259f14c803e1c46ff8b14fe4100 ,
+        0x700065006c006c00690064006f005f0032000000000000005f249abdc9caa444 ,
+        0xb07bf9b2437255c7070000008cb00afd1259f14c803e1c46ff8b14fe54007200 ,
+        0x61006d00690074006100630069006f006e00450078007400650072006e006100 ,
+        0x0000000000001812c7dc59b6b3468981e2907da24f84070000008cb00afd1259 ,
+        0xf14c803e1c46ff8b14fe43006f007200720065006f005f006500000000000000 ,
+        0x0000000000000000000000000000000007000000000000000000000000000000 ,
+        0x0000000045006d00700072006500730061005400720061006d00690074000000 ,
+        0x00000000eefee939851c9f4b801d61cbf2b4d6c2070000008cb00afd1259f14c ,
+        0x803e1c46ff8b14fe460041006c0074006100540053004f004c00000000000000 ,
+        0x3b2e299ae5476d4f876f7e06c055049b070000008cb00afd1259f14c803e1c46 ,
+        0xff8b14fe460041006c007400610054006400450000000000000064edb6bb3e0c ,
+        0x744095d158a683e0582b070000008cb00afd1259f14c803e1c46ff8b14fe4600 ,
+        0x620061006a006100540053004f004c000000000000004a8e2bb16d173f49aa69 ,
+        0xd8b915dc4133070000008cb00afd1259f14c803e1c46ff8b14fe460042006100 ,
+        0x6a0061005400640045000000000000004675134e1518e04e95f78fb467a82691 ,
+        0x070000008cb00afd1259f14c803e1c46ff8b14fe4f0062007300650072007600 ,
+        0x6100630069006f006e00650073000000000000009929ea8d38a9cd44a2c802c4 ,
+        0x3d4dba64070000008cb00afd1259f14c803e1c46ff8b14fe4900440048005000 ,
+        0x530000000000000066b6c1ff915e79468f1a4e3b7191a7d8070000008cb00afd ,
+        0x1259f14c803e1c46ff8b14fe4900440048005000530048006900730074006f00 ,
+        0x7200690063006f00000000000000000000000000000000000000000000000c00 ,
+        0x0000050000000000000000000000000000000000
+    End
+    RecordSource ="SELECT TbUsuariosSICALocal.* FROM TbUsuariosSICALocal; "
+    OnCurrent ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000000000c8420000c842eeece100e029bcc6c2010000b000b05dfe7f0000 ,
+        0x010403069c000c030f930100010009009a0b3408640001000700c80001000200 ,
+        0xc800020000004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220052000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000005453303031000000000000000000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowFormView =0
+    FilterOnLoad =0
+    SplitFormDatasheet =1
+    SplitFormDatasheet =1
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x0000000000000000000000000000000048000000000000003000000000000000 ,
+        0x0000000000000000a0657fbac201000038000000000000004400000000000000 ,
+        0x01040306dc000c030f930100010009009a0b3408640001000700c80001000200 ,
+        0xc800020000004100340000000000000000000000000000000200000200000000 ,
+        0x4800000000000000b80000000000000000000000000000004c00004c00000000 ,
+        0x3800000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e004e000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000054005300 ,
+        0x300030003100000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin CheckBox
+            BorderLineStyle =0
+            LabelX =230
+            LabelY =-30
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Subform
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            BorderShade =65.0
+            ShowPageHeaderAndPageFooter =1
+        End
+        Begin Section
+            Height =8107
+            Name ="Detalle"
+            GUID = Begin
+                0x6613f82fecabb0479172ebb0159584b8
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =56
+                    Height =315
+                    ColumnOrder =0
+                    Name ="ID"
+                    ControlSource ="ID"
+                    StatusBarText ="(Ext001)"
+                    GUID = Begin
+                        0x794715f8d363844394345519df7b0150
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =56
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =371
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =56
+                            Width =270
+                            Height =315
+                            Name ="Etiqueta633"
+                            Caption ="ID"
+                            GUID = Begin
+                                0x2e09a6da9877524ebe4c3105c8012b37
+                            End
+                            LayoutCachedTop =56
+                            LayoutCachedWidth =270
+                            LayoutCachedHeight =371
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =453
+                    Height =315
+                    ColumnOrder =4
+                    TabIndex =1
+                    Name ="Nombre"
+                    ControlSource ="Nombre"
+                    GUID = Begin
+                        0x3fa0c4448d4522488406ff2897179ed4
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =453
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =768
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =453
+                            Width =840
+                            Height =315
+                            Name ="Etiqueta634"
+                            Caption ="Nombre"
+                            GUID = Begin
+                                0x7224b800d8fc35408472967ee710af3f
+                            End
+                            LayoutCachedTop =453
+                            LayoutCachedWidth =840
+                            LayoutCachedHeight =768
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =850
+                    Height =315
+                    ColumnOrder =5
+                    TabIndex =2
+                    Name ="Apellido_1"
+                    ControlSource ="Apellido_1"
+                    GUID = Begin
+                        0xaa16349e8d048a4e86f1366bd7708c8a
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =850
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =1165
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =850
+                            Width =1080
+                            Height =315
+                            Name ="Etiqueta635"
+                            Caption ="Apellido_1"
+                            GUID = Begin
+                                0x57b09b70fefe61439e7a655b8d411edf
+                            End
+                            LayoutCachedTop =850
+                            LayoutCachedWidth =1080
+                            LayoutCachedHeight =1165
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =1247
+                    Height =315
+                    ColumnOrder =6
+                    TabIndex =3
+                    Name ="Apellido_2"
+                    ControlSource ="Apellido_2"
+                    GUID = Begin
+                        0x17f17f345d52d44baa86c00446923577
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =1247
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =1562
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =1247
+                            Width =1080
+                            Height =315
+                            Name ="Etiqueta636"
+                            Caption ="Apellido_2"
+                            GUID = Begin
+                                0xf056980ba7504344a411001f74c29d6c
+                            End
+                            LayoutCachedTop =1247
+                            LayoutCachedWidth =1080
+                            LayoutCachedHeight =1562
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =1644
+                    Height =315
+                    ColumnWidth =2220
+                    ColumnOrder =3
+                    TabIndex =4
+                    Name ="TramitacionExterna"
+                    ControlSource ="TramitacionExterna"
+                    StatusBarText ="Sí/No"
+                    GUID = Begin
+                        0x7b29ef4f0c762247940b26b322a5c40f
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =1644
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =1959
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =1644
+                            Width =1875
+                            Height =315
+                            Name ="Etiqueta637"
+                            Caption ="TramitacionExterna"
+                            GUID = Begin
+                                0x07de7d40958be940ada084d321f6aabc
+                            End
+                            LayoutCachedTop =1644
+                            LayoutCachedWidth =1875
+                            LayoutCachedHeight =1959
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =2040
+                    Height =315
+                    ColumnOrder =7
+                    TabIndex =5
+                    Name ="Correo_e"
+                    ControlSource ="Correo_e"
+                    StatusBarText ="Creado el 27/04/2022"
+                    GUID = Begin
+                        0xcc2e9df167657c419f0b81229d6586a1
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =2040
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =2355
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =2040
+                            Width =930
+                            Height =315
+                            Name ="Etiqueta638"
+                            Caption ="Correo_e"
+                            GUID = Begin
+                                0x44bc9533d7fa15499f3c3273e5841c10
+                            End
+                            LayoutCachedTop =2040
+                            LayoutCachedWidth =930
+                            LayoutCachedHeight =2355
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =2437
+                    Height =315
+                    ColumnWidth =2055
+                    ColumnOrder =8
+                    TabIndex =6
+                    Name ="EmpresaTramit"
+                    ControlSource ="EmpresaTramit"
+                    GUID = Begin
+                        0xaf8312c4e8f9ae47bda3bab70dca9486
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =2437
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =2752
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =2437
+                            Width =1470
+                            Height =315
+                            Name ="Etiqueta639"
+                            Caption ="EmpresaTramit"
+                            GUID = Begin
+                                0x5528e2bfbac2364bb5bec4f14c5b93cb
+                            End
+                            LayoutCachedTop =2437
+                            LayoutCachedWidth =1470
+                            LayoutCachedHeight =2752
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =2834
+                    Height =315
+                    ColumnOrder =9
+                    TabIndex =7
+                    Name ="FAltaTSOL"
+                    ControlSource ="FAltaTSOL"
+                    GUID = Begin
+                        0x3436253fcc3be8418bbd88f823d8359e
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =2834
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =3149
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =2834
+                            Width =1005
+                            Height =315
+                            Name ="Etiqueta640"
+                            Caption ="FAltaTSOL"
+                            GUID = Begin
+                                0xea10c112ce87bb408ad5704d34d81de4
+                            End
+                            LayoutCachedTop =2834
+                            LayoutCachedWidth =1005
+                            LayoutCachedHeight =3149
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =3231
+                    Height =315
+                    ColumnOrder =10
+                    TabIndex =8
+                    Name ="FAltaTdE"
+                    ControlSource ="FAltaTdE"
+                    GUID = Begin
+                        0xd236ad62183290448ade6c1c29b89177
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =3231
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =3546
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =3231
+                            Width =885
+                            Height =315
+                            Name ="Etiqueta641"
+                            Caption ="FAltaTdE"
+                            GUID = Begin
+                                0x69f65f44494fb947bfe812e97d4c2cc8
+                            End
+                            LayoutCachedTop =3231
+                            LayoutCachedWidth =885
+                            LayoutCachedHeight =3546
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =3628
+                    Height =315
+                    ColumnOrder =11
+                    TabIndex =9
+                    Name ="FbajaTSOL"
+                    ControlSource ="FbajaTSOL"
+                    GUID = Begin
+                        0x7f1419de77a0be4c9b0129228cfb93e7
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =3628
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =3943
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =3628
+                            Width =1020
+                            Height =315
+                            Name ="Etiqueta642"
+                            Caption ="FbajaTSOL"
+                            GUID = Begin
+                                0x30624b01858a404bad8b4970f5f19b82
+                            End
+                            LayoutCachedTop =3628
+                            LayoutCachedWidth =1020
+                            LayoutCachedHeight =3943
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =4025
+                    Height =315
+                    ColumnOrder =12
+                    TabIndex =10
+                    Name ="FBajaTdE"
+                    ControlSource ="FBajaTdE"
+                    GUID = Begin
+                        0x85a62d17eab2df44b7eae3d5f7ca8600
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =4025
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =4340
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =4025
+                            Width =900
+                            Height =315
+                            Name ="Etiqueta643"
+                            Caption ="FBajaTdE"
+                            GUID = Begin
+                                0x5f4a5d41044bcf4891cfa3ed323ed29d
+                            End
+                            LayoutCachedTop =4025
+                            LayoutCachedWidth =900
+                            LayoutCachedHeight =4340
+                        End
+                    End
+                End
+                Begin TextBox
+                    EnterKeyBehavior = NotDefault
+                    ScrollBars =2
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =56
+                    Top =4422
+                    Width =4320
+                    Height =1008
+                    ColumnOrder =13
+                    TabIndex =11
+                    Name ="Observaciones"
+                    ControlSource ="Observaciones"
+                    StatusBarText ="Creado el 27/04/2022"
+                    GUID = Begin
+                        0x4a23a48b74d1aa449898ce37b9f04605
+                    End
+
+                    LayoutCachedLeft =56
+                    LayoutCachedTop =4422
+                    LayoutCachedWidth =1757
+                    LayoutCachedHeight =4737
+                    Begin
+                        Begin Label
+                            OverlapFlags =93
+                            Top =4422
+                            Width =1440
+                            Height =315
+                            Name ="Etiqueta644"
+                            Caption ="Observaciones"
+                            GUID = Begin
+                                0x296f0f0c6b15e246b5d7432adc132e90
+                            End
+                            LayoutCachedTop =4422
+                            LayoutCachedWidth =1440
+                            LayoutCachedHeight =4737
+                        End
+                    End
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =2664
+                    Top =3401
+                    Height =315
+                    ColumnOrder =1
+                    TabIndex =12
+                    Name ="IDHPS"
+                    ControlSource ="IDHPS"
+                    GUID = Begin
+                        0xa135a2b1c27dba4c8ac62cfc60e4b5ca
+                    End
+
+                    LayoutCachedLeft =2664
+                    LayoutCachedTop =3401
+                    LayoutCachedWidth =4365
+                    LayoutCachedHeight =3716
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =5329
+                    Top =3288
+                    Height =315
+                    ColumnOrder =2
+                    TabIndex =13
+                    Name ="IDHPSHistorico"
+                    ControlSource ="IDHPSHistorico"
+                    GUID = Begin
+                        0xe9de7b9056ea8848ab072fbadcdb1410
+                    End
+
+                    LayoutCachedLeft =5329
+                    LayoutCachedTop =3288
+                    LayoutCachedWidth =7030
+                    LayoutCachedHeight =3603
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_Name = "Form_FormInicial07UsuariosSICADatos"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private m_Error As String
+
+
+Private Sub Form_Current()
+    Dim m_ID As String
+    On Error GoTo errores
+    
+    m_Error = ""
+    m_ID = Nz(Me.IDHPS, "")
+    EstablecerSemaforo m_ID
+    Set m_ObjUsuarioSICAActivo = Constructor.getUsuarioSICA(Nz(Me.ID, ""), , , m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Current se ha producido el error: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub Form_Load()
+    Me.RecordSource = "SELECT * " & _
+                    "FROM TbUsuariosSICALocal;"
+    Me.Requery
+End Sub

@@ -1,0 +1,495 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =1018055245
+Begin Form
+    AutoResize = NotDefault
+    PopUp = NotDefault
+    Modal = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =6120
+    DatasheetFontHeight =11
+    Left =19515
+    Top =9255
+    Right =26145
+    Bottom =13425
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xee0d97fa6d8fe640
+    End
+    GUID = Begin
+        0xd9af30ed3efe604bad6814b6855be8a3
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="Materializar riesgo"
+    DatasheetFontName ="Calibri"
+    OnLoad ="[Event Procedure]"
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =10
+            BorderColor =8355711
+            ForeColor =6710886
+            FontName ="Segoe UI"
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =60.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =345
+            ForeColor =4210752
+            FontName ="Segoe UI"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin TextBox
+            BorderLineStyle =0
+            Width =1701
+            Height =315
+            FontSize =10
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Segoe UI"
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            FontSize =10
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Segoe UI"
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =2490
+            Name ="Detalle"
+            GUID = Begin
+                0x8ce941831de04748bd9fe02313c9948f
+            End
+            AutoHeight =1
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =340
+                    Top =360
+                    Width =2210
+                    Height =330
+                    FontWeight =700
+                    ForeColor =16737792
+                    Name ="lblFechaMaterializacion"
+                    Caption ="Fecha materialización"
+                    GUID = Begin
+                        0x68159d1ebdf3fe4c84d9bf6dca485f59
+                    End
+                    LayoutCachedLeft =340
+                    LayoutCachedTop =360
+                    LayoutCachedWidth =2550
+                    LayoutCachedHeight =690
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2670
+                    Top =330
+                    Width =1700
+                    BackColor =16446961
+                    BorderColor =14136213
+                    Name ="txtFechaMaterializacion"
+                    Format ="Short Date"
+                    ControlTipText ="Fecha en la que se materializa el riesgo"
+                    GUID = Begin
+                        0x486b365dae4e2b489f57e3508b6390ee
+                    End
+
+                    LayoutCachedLeft =2670
+                    LayoutCachedTop =330
+                    LayoutCachedWidth =4370
+                    LayoutCachedHeight =645
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =340
+                    Top =930
+                    Width =2210
+                    Height =330
+                    FontWeight =700
+                    ForeColor =16737792
+                    Name ="lblPlanContingencia"
+                    Caption ="Plan contingencia"
+                    GUID = Begin
+                        0xcc9193e7b5ba824ea2ac2d99e3afb97d
+                    End
+                    LayoutCachedLeft =340
+                    LayoutCachedTop =930
+                    LayoutCachedWidth =2550
+                    LayoutCachedHeight =1260
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    ColumnHeads = NotDefault
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ColumnCount =3
+                    ListRows =12
+                    ListWidth =6349
+                    Left =2670
+                    Top =900
+                    Width =3060
+                    Height =330
+                    TabIndex =1
+                    BackColor =16446961
+                    BorderColor =14136213
+                    GUID = Begin
+                        0x4de966778044b045a6655b51300290f9
+                    End
+                    Name ="cmbPlanContingencia"
+                    RowSourceType ="Value List"
+                    ColumnWidths ="0;1814;4535"
+
+                    LayoutCachedLeft =2670
+                    LayoutCachedTop =900
+                    LayoutCachedWidth =5730
+                    LayoutCachedHeight =1230
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =2670
+                    Top =1710
+                    Width =1320
+                    Height =390
+                    TabIndex =2
+                    ForeColor =16737792
+                    Name ="btnAceptar"
+                    Caption ="Aceptar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x72b254100b18c443a61f87313ba2d4d1
+                    End
+
+                    LayoutCachedLeft =2670
+                    LayoutCachedTop =1710
+                    LayoutCachedWidth =3990
+                    LayoutCachedHeight =2100
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =4230
+                    Top =1710
+                    Width =1500
+                    Height =390
+                    TabIndex =3
+                    ForeColor =2366701
+                    Name ="btnCancelar"
+                    Caption ="Cancelar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x17fd887b3b70344790e34f8300a1b5bb
+                    End
+
+                    LayoutCachedLeft =4230
+                    LayoutCachedTop =1710
+                    LayoutCachedWidth =5730
+                    LayoutCachedHeight =2100
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_Name = "Form_FormMaterializacionPlanContingencia"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private m_IdRiesgo As String
+Private m_IDMaterializacion As String
+Private m_IDPlanInicial As String
+Private m_EsModoEdicion As Boolean
+Private m_Error As String
+Private Const TEMP_MAT_ACEPTADA As String = "MaterializacionPlanContingenciaAceptada"
+Private Const TEMP_MAT_FECHA As String = "MaterializacionPlanContingenciaFecha"
+Private Const TEMP_MAT_PLAN As String = "MaterializacionPlanContingenciaPlan"
+Private Const OPENARGS_EDIT_MATERIALIZACION As String = "EDIT"
+
+Private Sub Form_Load()
+    On Error GoTo errores
+
+    m_Error = ""
+    ResolverArgumentosApertura
+    If m_IdRiesgo = "" Then
+        m_Error = "No se ha podido determinar el riesgo a materializar"
+        Err.Raise 1000
+    End If
+
+    If m_EsModoEdicion Then
+        Me.Caption = "Editar materialización"
+    Else
+        Me.txtFechaMaterializacion = Date
+    End If
+    CargarPlanesContingenciaElegibles m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+
+    Exit Sub
+
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Load de FormMaterializacionPlanContingencia se ha producido el error: " & _
+            Err.description
+    End If
+    MsgBox m_Error, vbExclamation, "Materialización"
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Sub btnAceptar_Click()
+    Dim m_FechaMaterializacion As String
+    Dim m_IDPlanContingencia As String
+
+    On Error GoTo errores
+
+    m_Error = ""
+    m_FechaMaterializacion = Trim$(Nz(Me.txtFechaMaterializacion, ""))
+    m_IDPlanContingencia = Trim$(Nz(Me.cmbPlanContingencia, ""))
+
+    If Not IsDate(m_FechaMaterializacion) Then
+        m_Error = "Debe indicar una fecha de materialización válida"
+        Err.Raise 1000
+    End If
+    If m_IDPlanContingencia <> "" Then
+        If ValidarYResolverPlanContingenciaMaterializacion( _
+            m_IdRiesgo, _
+            m_IDPlanContingencia, _
+            m_Error) <> EnumSiNo.Sí Then
+            Err.Raise 1000
+        End If
+    End If
+
+    If m_EsModoEdicion Then
+        If ActualizarMaterializacionVigentePlan( _
+            m_IdRiesgo, _
+            m_IDMaterializacion, _
+            m_FechaMaterializacion, _
+            m_IDPlanContingencia, _
+            m_Error) <> EnumSiNo.Sí Then
+            Err.Raise 1000
+        End If
+    End If
+
+    SetTempVarMaterializacion TEMP_MAT_ACEPTADA, "Sí"
+    SetTempVarMaterializacion TEMP_MAT_FECHA, CStr(CDate(m_FechaMaterializacion))
+    SetTempVarMaterializacion TEMP_MAT_PLAN, m_IDPlanContingencia
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    Exit Sub
+
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al btnAceptar_Click se ha producido el error: " & Err.description
+    End If
+    MsgBox m_Error, vbExclamation, "Materialización"
+End Sub
+
+Private Sub ResolverArgumentosApertura()
+    Dim rawArgs As String
+    Dim parts As Variant
+
+    rawArgs = Trim$(Nz(Me.openArgs, ""))
+    If rawArgs = "" Then Exit Sub
+
+    parts = Split(rawArgs, "|")
+    If UBound(parts) < 0 Then Exit Sub
+    If StrComp(CStr(parts(0)), OPENARGS_EDIT_MATERIALIZACION, vbTextCompare) <> 0 Then
+        m_IdRiesgo = rawArgs
+        Exit Sub
+    End If
+
+    m_EsModoEdicion = True
+    If UBound(parts) >= 1 Then m_IdRiesgo = Trim$(CStr(parts(1)))
+    If UBound(parts) >= 2 Then m_IDMaterializacion = Trim$(CStr(parts(2)))
+    If UBound(parts) >= 3 Then Me.txtFechaMaterializacion = Trim$(CStr(parts(3)))
+    If UBound(parts) >= 4 Then m_IDPlanInicial = Trim$(CStr(parts(4)))
+End Sub
+
+Private Sub btnCancelar_Click()
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Sub CargarPlanesContingenciaElegibles(Optional ByRef p_Error As String)
+    Dim m_SQL As String
+
+    On Error GoTo errores
+
+    p_Error = ""
+    m_SQL = SQLPlanesContingenciaElegiblesMaterializacion(m_IdRiesgo, p_Error)
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+
+    With Me.cmbPlanContingencia
+        .RowSourceType = "Table/Query"
+        .RowSource = m_SQL
+        .ColumnCount = 3
+        .BoundColumn = 1
+        .ColumnWidths = "0;1814;4535"
+        .Requery
+        If m_EsModoEdicion And m_IDPlanInicial <> "" Then
+            If ComboTieneValor(Me.cmbPlanContingencia, m_IDPlanInicial) Then
+                .value = m_IDPlanInicial
+                Exit Sub
+            End If
+            p_Error = "El plan de contingencia asociado ya no es elegible"
+            Err.Raise 1000
+        End If
+        If .ListCount = 0 Then
+            p_Error = "El riesgo no tiene planes de contingencia elegibles"
+            Err.Raise 1000
+        End If
+        If .ListCount = 1 Then
+            .value = .ItemData(0)
+        End If
+    End With
+    Exit Sub
+
+errores:
+    If p_Error = "" Then
+        p_Error = "El método CargarPlanesContingenciaElegibles ha devuelto el error: " & _
+            Err.description
+    End If
+End Sub
+
+Private Function ComboTieneValor( _
+    ByVal p_Combo As ComboBox, _
+    ByVal p_Valor As String _
+) As Boolean
+    Dim index As Long
+
+    For index = 0 To p_Combo.ListCount - 1
+        If StrComp(CStr(p_Combo.ItemData(index)), p_Valor, vbTextCompare) = 0 Then
+            ComboTieneValor = True
+            Exit Function
+        End If
+    Next index
+End Function
+
+Private Sub SetTempVarMaterializacion( _
+    ByVal p_Nombre As String, _
+    ByVal p_Valor As String _
+)
+    On Error Resume Next
+    TempVars.Remove p_Nombre
+    On Error GoTo 0
+    TempVars.Add p_Nombre, p_Valor
+End Sub

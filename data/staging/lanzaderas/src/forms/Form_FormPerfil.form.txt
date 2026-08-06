@@ -1,0 +1,1374 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-261558745
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =15638
+    DatasheetFontHeight =11
+    ItemSuffix =25
+    Left =1740
+    Top =3360
+    Right =17055
+    Bottom =11865
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xec6987a7738ce540
+    End
+    GUID = Begin
+        0xe8f56507e6bb8b4680e2ebd7d21142e3
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x005cd94d00fa581ce8f9581c5c159a14acce3c00d2c0b66bffffffffb8ce3c00 ,
+        0x010403069c000c0353ef8001010009009a0b3408640001000f00580202000100 ,
+        0x580203000100413400d23c00000000000100000000000000020000000000c842 ,
+        0x0000c84201000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000000000 ,
+        0x00000000000000000000000000
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00000000000000001c88cc000000010070021814cc455b005003000000000000 ,
+        0x50030000700218141f15181464383e0000000000e4113e0030af7c77eaa58092 ,
+        0x01040306dc000c0353ef8001010009009a0b3408640001000f00580202000100 ,
+        0x5802030001004100340000003c0f3e00b62f0a010000962208000000fc010000 ,
+        0xb06c8500b0049622e52f0a01480000007f000000c0009622ab8c797700000000 ,
+        0x0000000010000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c006500000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =8505
+            Name ="Detalle"
+            GUID = Begin
+                0x3d154b7b0be15f4e9888255e1262476f
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =3
+                    Left =584
+                    Top =1012
+                    Width =840
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta66"
+                    Caption ="Nombre"
+                    GUID = Begin
+                        0xe3f8fb1a1d2d504c9ccf2c8d12104936
+                    End
+                    LayoutCachedLeft =584
+                    LayoutCachedTop =1012
+                    LayoutCachedWidth =1424
+                    LayoutCachedHeight =1327
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1595
+                    Top =1012
+                    Width =4331
+                    Height =297
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="Nombre"
+                    Tag ="DATO"
+                    ControlTipText ="Nombre Completo de Usuario (Obligatorio)"
+                    GUID = Begin
+                        0x1d4250cc4bac984aa258645bd9efd332
+                    End
+
+                    LayoutCachedLeft =1595
+                    LayoutCachedTop =1012
+                    LayoutCachedWidth =5926
+                    LayoutCachedHeight =1309
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =3
+                    Left =6254
+                    Top =1545
+                    Width =960
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta85"
+                    Caption ="Matrícula"
+                    GUID = Begin
+                        0x638931088eabeb4d89d1ac8b32a87ecc
+                    End
+                    LayoutCachedLeft =6254
+                    LayoutCachedTop =1545
+                    LayoutCachedWidth =7214
+                    LayoutCachedHeight =1860
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =7365
+                    Top =1545
+                    Width =1525
+                    Height =297
+                    TabIndex =6
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="Matricula"
+                    Tag ="DATO"
+                    ControlTipText ="Opcional"
+                    GUID = Begin
+                        0xad7821848f21e347a24c9744944eacf0
+                    End
+
+                    LayoutCachedLeft =7365
+                    LayoutCachedTop =1545
+                    LayoutCachedWidth =8890
+                    LayoutCachedHeight =1842
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =9524
+                    Top =1550
+                    Width =915
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta87"
+                    Caption ="Teléfono"
+                    GUID = Begin
+                        0x3856d2794da6444cb052cd11c8280367
+                    End
+                    LayoutCachedLeft =9524
+                    LayoutCachedTop =1550
+                    LayoutCachedWidth =10439
+                    LayoutCachedHeight =1847
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =10547
+                    Top =1550
+                    Width =1480
+                    Height =297
+                    TabIndex =3
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="Telefono"
+                    Tag ="DATO"
+                    ControlTipText ="Opcional"
+                    GUID = Begin
+                        0x141e6ef5a3193a4c8c4ef735942f3860
+                    End
+
+                    LayoutCachedLeft =10547
+                    LayoutCachedTop =1550
+                    LayoutCachedWidth =12027
+                    LayoutCachedHeight =1847
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =12374
+                    Top =1550
+                    Width =660
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta89"
+                    Caption ="Móvil"
+                    GUID = Begin
+                        0xa7862f686a3894468bd6e8398a958fe9
+                    End
+                    LayoutCachedLeft =12374
+                    LayoutCachedTop =1550
+                    LayoutCachedWidth =13034
+                    LayoutCachedHeight =1847
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =13142
+                    Top =1548
+                    Width =1945
+                    Height =297
+                    TabIndex =4
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="Movil"
+                    Tag ="DATO"
+                    ControlTipText ="Opcional"
+                    GUID = Begin
+                        0x9cfc82444a682840a8916c875748c4ec
+                    End
+
+                    LayoutCachedLeft =13142
+                    LayoutCachedTop =1548
+                    LayoutCachedWidth =15087
+                    LayoutCachedHeight =1845
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =3
+                    Left =6254
+                    Top =1010
+                    Width =600
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta72"
+                    Caption ="email"
+                    GUID = Begin
+                        0x85a683533c9ada4cb830ebf606b5f1ff
+                    End
+                    LayoutCachedLeft =6254
+                    LayoutCachedTop =1010
+                    LayoutCachedWidth =6854
+                    LayoutCachedHeight =1325
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =7021
+                    Top =1010
+                    Width =5006
+                    Height =297
+                    TabIndex =1
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="CorreoUsuario"
+                    Tag ="DATO"
+                    GUID = Begin
+                        0xd1fc80a7701f554f8e9598325d7e4cf2
+                    End
+
+                    LayoutCachedLeft =7021
+                    LayoutCachedTop =1010
+                    LayoutCachedWidth =12027
+                    LayoutCachedHeight =1307
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =584
+                    Top =1548
+                    Width =630
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta113"
+                    Caption ="F.Alta"
+                    GUID = Begin
+                        0xef891ea2ac007f41a51c501e89d8d454
+                    End
+                    LayoutCachedLeft =584
+                    LayoutCachedTop =1548
+                    LayoutCachedWidth =1214
+                    LayoutCachedHeight =1845
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1319
+                    Top =1548
+                    Width =1480
+                    Height =297
+                    TabIndex =2
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="FechaAlta"
+                    Format ="Short Date"
+                    Tag ="DATO"
+                    GUID = Begin
+                        0xd0ef23b0e2efc8439b13d14c8d052b1a
+                    End
+
+                    LayoutCachedLeft =1319
+                    LayoutCachedTop =1548
+                    LayoutCachedWidth =2799
+                    LayoutCachedHeight =1845
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =12395
+                    Top =2055
+                    Width =1050
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta117"
+                    Caption ="Fecha Baja"
+                    GUID = Begin
+                        0x95cf24131b2c1b459bfd18a37dfcd3bb
+                    End
+                    LayoutCachedLeft =12395
+                    LayoutCachedTop =2055
+                    LayoutCachedWidth =13445
+                    LayoutCachedHeight =2370
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =13607
+                    Top =2055
+                    Width =1480
+                    Height =297
+                    TabIndex =7
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="FechaBaja"
+                    Format ="Short Date"
+                    Tag ="DATO"
+                    GUID = Begin
+                        0xe0fa563138244c4b9334b39e0dc668bf
+                    End
+
+                    LayoutCachedLeft =13607
+                    LayoutCachedTop =2055
+                    LayoutCachedWidth =15087
+                    LayoutCachedHeight =2352
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =12269
+                    Top =1010
+                    Width =1200
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta120"
+                    Caption ="Usuario Red"
+                    GUID = Begin
+                        0x4709c468f584194191f60438a5430224
+                    End
+                    LayoutCachedLeft =12269
+                    LayoutCachedTop =1010
+                    LayoutCachedWidth =13469
+                    LayoutCachedHeight =1325
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =3
+                    Left =584
+                    Top =2066
+                    Width =1395
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta123"
+                    Caption ="Pass Caduca en"
+                    GUID = Begin
+                        0xde4d336fee2b2b4aab48e5dc7f578ebb
+                    End
+                    LayoutCachedLeft =584
+                    LayoutCachedTop =2066
+                    LayoutCachedWidth =1979
+                    LayoutCachedHeight =2381
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =3
+                    Left =8505
+                    Top =2055
+                    Width =2715
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta125"
+                    Caption ="Mantener Lanzadera Abierta"
+                    GUID = Begin
+                        0x5d42357f13df4e44aae663d799240cf7
+                    End
+                    LayoutCachedLeft =8505
+                    LayoutCachedTop =2055
+                    LayoutCachedWidth =11220
+                    LayoutCachedHeight =2370
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =13607
+                    Top =1010
+                    Width =1480
+                    Height =297
+                    TabIndex =5
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =0
+                    Name ="UsuarioRed"
+                    Tag ="DATO"
+                    GUID = Begin
+                        0xf2b0e9e1de92b04f8e4c1364477bcfd7
+                    End
+
+                    LayoutCachedLeft =13607
+                    LayoutCachedTop =1010
+                    LayoutCachedWidth =15087
+                    LayoutCachedHeight =1307
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                End
+                Begin TextBox
+                    Visible = NotDefault
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =13982
+                    Top =2535
+                    Width =1105
+                    Height =297
+                    TabIndex =8
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =0
+                    Name ="ID"
+                    Tag ="DATO"
+                    ControlTipText ="Opcional"
+                    GUID = Begin
+                        0x3082089b5e449e4c9f9fcf7b65110976
+                    End
+
+                    LayoutCachedLeft =13982
+                    LayoutCachedTop =2535
+                    LayoutCachedWidth =15087
+                    LayoutCachedHeight =2832
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                End
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    TabStop = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    ColumnCount =8
+                    Left =750
+                    Top =4275
+                    Width =14385
+                    Height =3610
+                    TabIndex =10
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaUsuarios"
+                    RowSourceType ="Value List"
+                    RowSource ="IDAplicacion;Aplicación;Admin;Calidad;Economia;Técnico;Secretaría;Cal Avisos;2;A"
+                        "GEDYS ECO;No;No;Sí;No;No;No;3;AGEDYS TEC;No;No;Sí;No;No;No;4;AGEDO;No;No;No;Sí;N"
+                        "o;No;5;GESTIÓN DE RIESGOS;No;No;No;Sí;No;No;6;BRASS;No;No;No;No;No;No;8;No Confo"
+                        "rmidades;No;No;No;No;No;No;10;Registro;No;No;No;Sí;No;No;16;Seguridad;No;No;No;N"
+                        "o;No;No;31;AGEDYS PRUEBA;No;No;Sí;No;No;No"
+                    ColumnWidths ="0;2835;1701;1701;1701;1701;1701;1701"
+                    StatusBarText ="Listado de Usuarios que han pasado el filtro"
+                    GUID = Begin
+                        0x078f1bf09fe6444ebc613c9cad0eed8d
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =4275
+                    LayoutCachedWidth =15135
+                    LayoutCachedHeight =7885
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin OptionGroup
+                    SpecialEffect =0
+                    OverlapFlags =255
+                    Left =375
+                    Top =495
+                    Width =15024
+                    Height =2731
+                    TabIndex =9
+                    Name ="Marco17"
+                    GUID = Begin
+                        0x2287f32d90e50145bec4621ce1fe0b10
+                    End
+
+                    LayoutCachedLeft =375
+                    LayoutCachedTop =495
+                    LayoutCachedWidth =15399
+                    LayoutCachedHeight =3226
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OldBorderStyle =1
+                            OverlapFlags =247
+                            TextAlign =2
+                            Left =495
+                            Top =375
+                            Width =2205
+                            Height =315
+                            FontWeight =700
+                            BorderColor =8210719
+                            ForeColor =8210719
+                            Name ="Etiqueta18"
+                            Caption ="Datos Generales"
+                            GUID = Begin
+                                0x11068abff6c79e418baa475d20410424
+                            End
+                            LayoutCachedLeft =495
+                            LayoutCachedTop =375
+                            LayoutCachedWidth =2700
+                            LayoutCachedHeight =690
+                            ThemeFontIndex =-1
+                            BorderThemeColorIndex =2
+                            BorderTint =100.0
+                            ForeThemeColorIndex =2
+                            ForeTint =100.0
+                        End
+                    End
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =247
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =11376
+                    Top =2079
+                    Width =651
+                    Height =297
+                    TabIndex =12
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =0
+                    Name ="MantenerLanzaderaAbierta"
+                    Tag ="DATO"
+                    GUID = Begin
+                        0x593c0b828da5cf4c8b96d355c2c24205
+                    End
+
+                    LayoutCachedLeft =11376
+                    LayoutCachedTop =2079
+                    LayoutCachedWidth =12027
+                    LayoutCachedHeight =2376
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =247
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2105
+                    Top =2066
+                    Width =3821
+                    Height =297
+                    TabIndex =13
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="TextoTiempoParaExpirarPass"
+                    Tag ="DATO"
+                    ControlTipText ="Opcional"
+                    GUID = Begin
+                        0xa1b0a02a7c67114297f1d229ca18ef48
+                    End
+
+                    LayoutCachedLeft =2105
+                    LayoutCachedTop =2066
+                    LayoutCachedWidth =5926
+                    LayoutCachedHeight =2363
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =247
+                    TextAlign =3
+                    Left =584
+                    Top =2595
+                    Width =1260
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta23"
+                    Caption ="Responsable"
+                    GUID = Begin
+                        0xaea9b66f19f64245bc205fb907b91e1b
+                    End
+                    LayoutCachedLeft =584
+                    LayoutCachedTop =2595
+                    LayoutCachedWidth =1844
+                    LayoutCachedHeight =2910
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =247
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2105
+                    Top =2595
+                    Width =3821
+                    Height =297
+                    TabIndex =14
+                    BackColor =16511723
+                    BorderColor =14136213
+                    Name ="Responsable"
+                    Tag ="DATO"
+                    ControlTipText ="Nombre Completo de Usuario (Obligatorio)"
+                    GUID = Begin
+                        0xf2b4c813a001fb4eb1c51ba274d8b0b7
+                    End
+
+                    LayoutCachedLeft =2105
+                    LayoutCachedTop =2595
+                    LayoutCachedWidth =5926
+                    LayoutCachedHeight =2892
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin OptionGroup
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    Left =375
+                    Top =3915
+                    Width =15024
+                    Height =4246
+                    TabIndex =11
+                    Name ="Marco19"
+                    GUID = Begin
+                        0x6c262036186df2469f1aaba8537345eb
+                    End
+
+                    LayoutCachedLeft =375
+                    LayoutCachedTop =3915
+                    LayoutCachedWidth =15399
+                    LayoutCachedHeight =8161
+                    Begin
+                        Begin Label
+                            BackStyle =1
+                            OldBorderStyle =1
+                            OverlapFlags =215
+                            TextAlign =2
+                            Left =495
+                            Top =3795
+                            Width =2550
+                            Height =315
+                            FontWeight =700
+                            BorderColor =8210719
+                            ForeColor =8210719
+                            Name ="Etiqueta20"
+                            Caption ="Perfil Aplicaciones"
+                            GUID = Begin
+                                0x69d44eca7ef7d84aa9963e4acb62399c
+                            End
+                            LayoutCachedLeft =495
+                            LayoutCachedTop =3795
+                            LayoutCachedWidth =3045
+                            LayoutCachedHeight =4110
+                            ThemeFontIndex =-1
+                            BorderThemeColorIndex =2
+                            BorderTint =100.0
+                            ForeThemeColorIndex =2
+                            ForeTint =100.0
+                        End
+                    End
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =13776
+                    Top =3401
+                    Width =1605
+                    Height =405
+                    FontWeight =800
+                    TabIndex =15
+                    ForeColor =16777215
+                    Name ="ComandoCambiarPass"
+                    Caption ="Cambiar Pass"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Registrar"
+                    GUID = Begin
+                        0xad8e108383e92c43b476ff2c2cba91f2
+                    End
+
+                    LayoutCachedLeft =13776
+                    LayoutCachedTop =3401
+                    LayoutCachedWidth =15381
+                    LayoutCachedHeight =3806
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    Gradient =0
+                    BackColor =13273922
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =13273922
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    HoverColor =11630130
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =11630130
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16777215
+                    HoverForeThemeColorIndex =1
+                    HoverForeTint =100.0
+                    PressedForeColor =13476219
+                    PressedForeThemeColorIndex =4
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private m_Error As String
+Private m_NombreFormulario As String
+Private m_ObjUsuario As usuario
+
+
+Private Function EstablecerDatos(Optional ByRef p_Error As String) As String
+    
+    Dim ctl As Control
+    Dim lst As ListBox
+    On Error GoTo errores
+    
+    
+    If m_ObjUsuarioConectadoLogin Is Nothing Then
+        p_Error = "No se sabe quién ha hecho login"
+        Err.Raise 1000
+    End If
+    Set m_ObjUsuario = m_ObjUsuarioConectadoLogin
+    With m_ObjUsuario
+        If .Nombre <> "" Then
+            Me.Nombre = .Nombre
+        End If
+        If .CorreoUsuario <> "" Then
+            Me.CorreoUsuario = .CorreoUsuario
+        End If
+        If .UsuarioRed <> "" Then
+            Me.UsuarioRed = .UsuarioRed
+        End If
+        If IsDate(.FechaAlta) Then
+            Me.FechaAlta = Format(.FechaAlta, "dd/mm/yyyy")
+        End If
+        If .Matricula <> "" Then
+            Me.Matricula = .Matricula
+        End If
+        If .Telefono <> "" Then
+            Me.Telefono = .Telefono
+        End If
+        If .Movil <> "" Then
+            Me.Movil = .Movil
+        End If
+        If .TextoTiempoParaExpirarPass <> "" Then
+            Me.TextoTiempoParaExpirarPass = .TextoTiempoParaExpirarPass
+        End If
+        If .MantenerLanzaderaAbierta = True Then
+            Me.MantenerLanzaderaAbierta = "Sí"
+        Else
+            Me.MantenerLanzaderaAbierta = "No"
+        End If
+        If IsDate(.FechaBaja) Then
+            Me.FechaBaja = Format(.FechaBaja, "dd/mm/yyyy")
+        End If
+        If Not .JefeUsuarioObj Is Nothing Then
+            p_Error = .Error
+            If p_Error <> "" Then
+                Err.Raise 1000
+            End If
+            Me.Responsable = .JefeUsuarioObj.Nombre
+        End If
+       
+        Me.ID = .ID
+        
+    End With
+    Me.AllowEdits = True
+    For Each ctl In Me.Controls
+        If ctl.ControlType = acTextBox Then
+            If InStr(1, ctl.Tag, "DATO") <> 0 Then
+                ctl.Enabled = True
+                ctl.Locked = True
+            End If
+        End If
+    Next
+    Set lst = Me.ListaUsuarios
+    lst.Enabled = True
+    EstablecerLista p_Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerDatos se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+End Function
+Public Function EstablecerLista(Optional ByRef p_Error As String) As String
+    
+    Dim lst As ListBox
+    Dim m_ID As Variant
+    Dim m_IDApp As String
+    Dim m_ObjCol As Scripting.Dictionary
+    Dim m_objAplicacion As Aplicacion
+    Dim m_ObjUsuarioAplicacionPermisos As UsuarioAplicacionPermisos
+    Dim Admin As String
+    Dim Calidad As String
+    Dim CalidadAvisos As String
+    Dim Secretaria As String
+    Dim Tecnico As String
+    Dim Economia As String
+    Dim PartePermisos As String
+    On Error GoTo errores
+    
+    p_Error = ""
+    Set lst = Me.ListaUsuarios
+    
+    lst.RowSource = "IDAplicacion;Aplicación;Admin;Calidad;Economia;Técnico;Secretaría;Cal Avisos"
+    If m_ObjUsuario Is Nothing Then
+        p_Error = "No se conoce el usuario"
+        Err.Raise 1000
+    End If
+    
+    Set m_ObjCol = m_ObjUsuario.ColAplicacionesPermisos
+    p_Error = m_ObjUsuario.Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_ObjCol Is Nothing Then
+        Exit Function
+    End If
+    For Each m_ID In m_ObjCol
+        Set m_ObjUsuarioAplicacionPermisos = m_ObjCol(m_ID)
+        With m_ObjUsuarioAplicacionPermisos
+            If .EsUsuarioAdministradorCalculado = EnumSino.Sí Then
+                Admin = "Sí"
+            Else
+                Admin = "No"
+            End If
+            If .EsUsuarioTecnicoCalculado = EnumSino.Sí Then
+                Tecnico = "Sí"
+            Else
+                Tecnico = "No"
+            End If
+            If .EsUsuarioCalidadAvisosCalculado = EnumSino.Sí Then
+                CalidadAvisos = "Sí"
+            Else
+                CalidadAvisos = "No"
+            End If
+            If .EsUsuarioCalidadCalculado = EnumSino.Sí Then
+                Calidad = "Sí"
+            Else
+                Calidad = "No"
+            End If
+            If .EsUsuarioEconomiaCalculado = EnumSino.Sí Then
+                Economia = "Sí"
+            Else
+                Economia = "No"
+            End If
+            If .EsUsuarioSecretariaCalculado = EnumSino.Sí Then
+                Secretaria = "Sí"
+            Else
+                Secretaria = "No"
+            End If
+            'lst.RowSource = "IDAplicacion;Aplicación;Admin;Calidad;Economia;Técnico;Secretaría;Cal Avisos"
+            PartePermisos = Admin & ";" & Calidad & ";" & Economia & ";" & Tecnico & ";" & Secretaria & ";" & CalidadAvisos
+            lst.AddItem .IDAplicacion & ";" & .Aplicacion.NombreAplicacion & ";" & PartePermisos
+        End With
+        Set m_ObjUsuarioAplicacionPermisos = Nothing
+    Next
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerLista ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+End Function
+Private Sub Form_Open(Cancel As Integer)
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    m_NombreFormulario = Me.Name
+    
+    
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Open se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+    
+End Sub
+Private Sub ComandoCambiarPass_Click()
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If FormularioAbierto("FormUsuarioCambioPass") Then
+        DoCmd.Close acForm, "FormUsuarioCambioPass", acSaveNo
+    End If
+    DoCmd.OpenForm "FormUsuarioCambioPass"
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoCambiarPass_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    
+    Pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub

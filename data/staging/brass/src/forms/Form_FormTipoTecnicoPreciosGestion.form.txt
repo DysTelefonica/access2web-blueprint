@@ -1,0 +1,1391 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-17585377
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =11625
+    DatasheetFontHeight =11
+    ItemSuffix =17
+    Left =4740
+    Top =3720
+    Right =16365
+    Bottom =11415
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0xe8320ea4ea26934584de30fa5eb06f06
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="Gestión de Técnicos"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000103dc11b103dc11bf44d3c0069161560103dc11b566efc31e893a728 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x580202000100413400d17801ffffffff4f7ef7006598fe0076786d1628583c00 ,
+        0x7c513c0000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220052000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000545330303100
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x6900720065006300630069006f006e00610064006f0029002000280000000000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e004e000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000054005300 ,
+        0x3000300031000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =7691
+            Name ="Detalle"
+            GUID = Begin
+                0xed603805b42c19449f36305ce4a8b44b
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Width =11625
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0x38d39731eb486f4ba6ea91bfd5b36a3a
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =11625
+                    LayoutCachedHeight =686
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =7005
+                    Width =11625
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0xea03015adc55344fb3b87eb5f10e6e14
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =7005
+                    LayoutCachedWidth =11625
+                    LayoutCachedHeight =7691
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =300
+                    Top =6480
+                    Width =1965
+                    Height =405
+                    FontWeight =700
+                    TabIndex =1
+                    Name ="ComandoAltaPerfilHora"
+                    Caption ="Alta Nuevo Precio"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xeb834a8b515a5d44b42afa1acba646f4
+                    End
+
+                    LayoutCachedLeft =300
+                    LayoutCachedTop =6480
+                    LayoutCachedWidth =2265
+                    LayoutCachedHeight =6885
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =10777
+                    Top =7062
+                    Width =578
+                    Height =578
+                    FontWeight =700
+                    TabIndex =2
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir"
+                    GUID = Begin
+                        0xf00209b9a01a2f4d8c14e5db4e834875
+                    End
+
+                    LayoutCachedLeft =10777
+                    LayoutCachedTop =7062
+                    LayoutCachedWidth =11355
+                    LayoutCachedHeight =7640
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =2415
+                    Top =6480
+                    Width =1350
+                    Height =405
+                    FontWeight =700
+                    TabIndex =3
+                    Name ="ComandoEdicionPerfilHora"
+                    Caption ="Editar Precio"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x5b5c2f26d1df0c4ca04128c5162f6d82
+                    End
+
+                    LayoutCachedLeft =2415
+                    LayoutCachedTop =6480
+                    LayoutCachedWidth =3765
+                    LayoutCachedHeight =6885
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =9630
+                    Top =6480
+                    Width =1725
+                    Height =405
+                    FontWeight =700
+                    TabIndex =4
+                    ForeColor =683236
+                    Name ="ComandoEliminarPerfilHora"
+                    Caption ="Eliminar Precio"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x9793dbf47a0b5c4497069896450d26d7
+                    End
+
+                    LayoutCachedLeft =9630
+                    LayoutCachedTop =6480
+                    LayoutCachedWidth =11355
+                    LayoutCachedHeight =6885
+                    ForeThemeColorIndex =9
+                    ForeTint =100.0
+                    ForeShade =75.0
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    TabStop = NotDefault
+                    IMEHold = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    ColumnCount =6
+                    Left =297
+                    Top =1537
+                    Width =11058
+                    Height =4819
+                    TabIndex =5
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaPreciosPerfil"
+                    RowSourceType ="Value List"
+                    RowSource ="ALIAS;NOMBRE;TIPO;FECHAALTA;FECHABAJA;JMSH;Juan Miguel Sánchez Hernández;TÉCNICO"
+                        " EN RADIOFRECUENCIA;21/11/2022;'';FGG;Francisco Galisteo Gonzalez;INGENIERO DE S"
+                        "ISTEMAS;01/09/2022;'';PCF;Pablo Carrasco Fernández;TÉCNICO SISTEMAS;01/09/2022;'"
+                        "';SMC;Santiago Martinez Cañada;TÉCNICO EN COMUNICACIONES;01/09/2022;'';MIT;Marco"
+                        "s Iglesias Torres;INGENIERO DE SISTEMAS;30/05/2022;'';RSG;Rafael Soler Garijo;TÉ"
+                        "CNICO EN RADIOFRECUENCIA;09/03/2022;'';EMS;Edison Mantilla Simba;ANTENISTA;25/11"
+                        "/2021;'';JGA;Jorge Luis Gómez Almeida;ANTENISTA;25/11/2021;'';JMM;Jorge Mora Mor"
+                        "eno;ANTENISTA;25/11/2021;'';SGJ;STEVE ROGET GUERRERO JIMENEZ;ANTENISTA;25/11/202"
+                        "1;'';VBT;Víctor Borregón Tirado;ANTENISTA;17/02/2021;'';JCC;Julio Carrascal Cáma"
+                        "ra;TÉCNICO SISTEMAS;11/02/2021;'';RCD;Raúl Cano Delgado;TÉCNICO SISTEMAS;27/01/2"
+                        "021;'';DMP;Daniel Murillo Piña;ANTENISTA;22/07/2020;'';JVV;Javier Villar Villar;"
+                        "ANTENISTA;22/07/2020;'';MATR;Marco Aurelio Tortosa Rodríguez;ANTENISTA;22/07/202"
+                        "0;'';AGS;Ángel Rodríguez Sánchez;ANTENISTA;01/04/2020;'';kpk;Konstantin Petrov K"
+                        "onstantinov;TÉCNICO EN COMUNICACIONES;01/03/2020;'';SSI;Santiago Sandoval Igelmo"
+                        ";INGENIERO DE SISTEMAS;01/01/2020;'';DEL1;David Escudero Lázaro;TÉCNICO EN COMUN"
+                        "ICACIONES;02/11/2019;'';FSP;Félix Sánchez Pimentel;GESTOR;01/11/2019;'';FSP1;Fél"
+                        "ix Sánchez Pimentel;INGENIERO DE RADIO;01/11/2019;'';MIS1;Miguel Izquierdo Sánch"
+                        "ez;TÉCNICO EN RADIOFRECUENCIA;01/11/2019;'';RBC;Rodolfo Bucalo Chiuan;INGENIERO "
+                        "DE RADIO;01/11/2019;'';ASG;Adrian Sevilla Gonzalez;ANTENISTA;01/09/2018;'';JFC;F"
+                        "rancisco Javir de la Fuente Calvo;ANTENISTA;01/09/2018;'';SPV;Sebastian Perez Va"
+                        "lido;ANTENISTA;01/09/2018;'';YIRA;Yera Ivan Ramirez Alejandro;ANTENISTA;01/09/20"
+                        "18;'';AAY;AYOSO CANTADOR, ANDRES;ANTENISTA;27/02/2015;'';AGM;GOMEZ MARQUEZ, ANTO"
+                        "NIO;ANTENISTA;27/02/2015;'';APV;PASCUAL VELA, ADRIANO;ANTENISTA;27/02/2015;'';DF"
+                        "C;FIERRO CANTERO, DANIEL\01113.715.467-S;ANTENISTA;27/02/2015;'';DOA;OTERO ANELO"
+                        ", DOMINGO;ANTENISTA;27/02/2015;'';JAVA;VELA ALBA, JUAN ANTONIO;ANTENISTA;27/02/2"
+                        "015;'';JGR;GARCIA RUEDA, JULIO;ANTENISTA;27/02/2015;'';JMGP;GALAN PEREZ, JOSE MA"
+                        "RIA;ANTENISTA;27/02/2015;'';ABV;Antolin Borregon Ballejo;ANTENISTA;;'';DCJ;Darwi"
+                        "n Calva Jaramillo;ANTENISTA;;'';FSM;Felix Sanchez Martin;ANTENISTA;;'';JGJ;Jaime"
+                        " Guerrero Jimenez;ANTENISTA;;'';LFB;No lo sabemos;TÉCNICO EN COMUNICACIONES;;'';"
+                        "LGJ;Luciano Guerrero Jimenez;ANTENISTA;;'';LMBL;Luis Manuel Baena Lucas;ANTENIST"
+                        "A;;'';OCB;Oscar Cuellar Blanco;ANTENISTA;;'';RVV;Roberto Velasquez Vargas;ANTENI"
+                        "STA;;'';ARG;Alberto Rodriguez Galdo;INGENIERO DE SISTEMAS;07/12/2022;'';YPB;Yola"
+                        "nda Porras Borrajo;INGENIERO DE SISTEMAS;07/12/2022;'';JLL;Julian López López;IN"
+                        "GENIERO DE SISTEMAS;07/12/2022;'';JMUM;Jose María Urgel Magaña;INGENIERO DE SIST"
+                        "EMAS;07/12/2022;'';BCB;Beatriz Caballero Bernalte;INGENIERO DE SISTEMAS;07/12/20"
+                        "22;'';FJSB;Francisco Javier San Juan Bello;TÉCNICO EN COMUNICACIONES;07/12/2022;"
+                        "'';JAGA;José Alberto González Iglesias;INGENIERO DE SISTEMAS;07/12/2022;'';AGC;A"
+                        "lberto García Consuegra;INGENIERO DE SISTEMAS;07/12/2022;'';DGR;David Gonzalez R"
+                        "odriguez;TÉCNICO SISTEMAS;07/12/2022;'';PRA;Pedro-Francisco Requena Del Amo;TÉCN"
+                        "ICO SISTEMAS;07/12/2022;'';COC;Usuario de Prueba;GESTOR;01/01/2001;''"
+                    ColumnWidths ="0;4536;1419;1419;1425;1425"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xa0841893c5141c4ab5a8f27d16f9b345
+                    End
+                    RowSource ="ALIAS;NOMBRE;TIPO;FECHAALTA;FECHABAJA;JMSH;Juan Miguel Sánchez Hernández;TÉCNICO"
+                        " EN RADIOFRECUENCIA;21/11/2022;'';FGG;Francisco Galisteo Gonzalez;INGENIERO DE S"
+                        "ISTEMAS;01/09/2022;'';PCF;Pablo Carrasco Fernández;TÉCNICO SISTEMAS;01/09/2022;'"
+                        "';SMC;Santiago Martinez Cañada;TÉCNICO EN COMUNICACIONES;01/09/2022;'';MIT;Marco"
+                        "s Iglesias Torres;INGENIERO DE SISTEMAS;30/05/2022;'';RSG;Rafael Soler Garijo;TÉ"
+                        "CNICO EN RADIOFRECUENCIA;09/03/2022;'';EMS;Edison Mantilla Simba;ANTENISTA;25/11"
+                        "/2021;'';JGA;Jorge Luis Gómez Almeida;ANTENISTA;25/11/2021;'';JMM;Jorge Mora Mor"
+                        "eno;ANTENISTA;25/11/2021;'';SGJ;STEVE ROGET GUERRERO JIMENEZ;ANTENISTA;25/11/202"
+                        "1;'';VBT;Víctor Borregón Tirado;ANTENISTA;17/02/2021;'';JCC;Julio Carrascal Cáma"
+                        "ra;TÉCNICO SISTEMAS;11/02/2021;'';RCD;Raúl Cano Delgado;TÉCNICO SISTEMAS;27/01/2"
+                        "021;'';DMP;Daniel Murillo Piña;ANTENISTA;22/07/2020;'';JVV;Javier Villar Villar;"
+                        "ANTENISTA;22/07/2020;'';MATR;Marco Aurelio Tortosa Rodríguez;ANTENISTA;22/07/202"
+                        "0;'';AGS;Ángel Rodríguez Sánchez;ANTENISTA;01/04/2020;'';kpk;Konstantin Petrov K"
+                        "onstantinov;TÉCNICO EN COMUNICACIONES;01/03/2020;'';SSI;Santiago Sandoval Igelmo"
+                        ";INGENIERO DE SISTEMAS;01/01/2020;'';DEL1;David Escudero Lázaro;TÉCNICO EN COMUN"
+                        "ICACIONES;02/11/2019;'';FSP;Félix Sánchez Pimentel;GESTOR;01/11/2019;'';FSP1;Fél"
+                        "ix Sánchez Pimentel;INGENIERO DE RADIO;01/11/2019;'';MIS1;Miguel Izquierdo Sánch"
+                        "ez;TÉCNICO EN RADIOFRECUENCIA;01/11/2019;'';RBC;Rodolfo Bucalo Chiuan;INGENIERO "
+                        "DE RADIO;01/11/2019;'';ASG;Adrian Sevilla Gonzalez;ANTENISTA;01/09/2018;'';JFC;F"
+                        "rancisco Javir de la Fuente Calvo;ANTENISTA;01/09/2018;'';SPV;Sebastian Perez Va"
+                        "lido;ANTENISTA;01/09/2018;'';YIRA;Yera Ivan Ramirez Alejandro;ANTENISTA;01/09/20"
+                        "18;'';AAY;AYOSO CANTADOR, ANDRES;ANTENISTA;27/02/2015;'';AGM;GOMEZ MARQUEZ, ANTO"
+                        "NIO;ANTENISTA;27/02/2015;'';APV;PASCUAL VELA, ADRIANO;ANTENISTA;27/02/2015;'';DF"
+                        "C;FIERRO CANTERO, DANIEL\01113.715.467-S;ANTENISTA;27/02/2015;'';DOA;OTERO ANELO"
+                        ", DOMINGO;ANTENISTA;27/02/2015;'';JAVA;VELA ALBA, JUAN ANTONIO;ANTENISTA;27/02/2"
+                        "015;'';JGR;GARCIA RUEDA, JULIO;ANTENISTA;27/02/2015;'';JMGP;GALAN PEREZ, JOSE MA"
+                        "RIA;ANTENISTA;27/02/2015;'';ABV;Antolin Borregon Ballejo;ANTENISTA;;'';DCJ;Darwi"
+                        "n Calva Jaramillo;ANTENISTA;;'';FSM;Felix Sanchez Martin;ANTENISTA;;'';JGJ;Jaime"
+                        " Guerrero Jimenez;ANTENISTA;;'';LFB;No lo sabemos;TÉCNICO EN COMUNICACIONES;;'';"
+                        "LGJ;Luciano Guerrero Jimenez;ANTENISTA;;'';LMBL;Luis Manuel Baena Lucas;ANTENIST"
+                        "A;;'';OCB;Oscar Cuellar Blanco;ANTENISTA;;'';RVV;Roberto Velasquez Vargas;ANTENI"
+                        "STA;;'';ARG;Alberto Rodriguez Galdo;INGENIERO DE SISTEMAS;07/12/2022;'';YPB;Yola"
+                        "nda Porras Borrajo;INGENIERO DE SISTEMAS;07/12/2022;'';JLL;Julian López López;IN"
+                        "GENIERO DE SISTEMAS;07/12/2022;'';JMUM;Jose María Urgel Magaña;INGENIERO DE SIST"
+                        "EMAS;07/12/2022;'';BCB;Beatriz Caballero Bernalte;INGENIERO DE SISTEMAS;07/12/20"
+                        "22;'';FJSB;Francisco Javier San Juan Bello;TÉCNICO EN COMUNICACIONES;07/12/2022;"
+                        "'';JAGA;José Alberto González Iglesias;INGENIERO DE SISTEMAS;07/12/2022;'';AGC;A"
+                        "lberto García Consuegra;INGENIERO DE SISTEMAS;07/12/2022;'';DGR;David Gonzalez R"
+                        "odriguez;TÉCNICO SISTEMAS;07/12/2022;'';PRA;Pedro-Francisco Requena Del Amo;TÉCN"
+                        "ICO SISTEMAS;07/12/2022;'';COC;Usuario de Prueba;GESTOR;01/01/2001;''"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =1537
+                    LayoutCachedWidth =11355
+                    LayoutCachedHeight =6356
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =297
+                    Top =990
+                    Width =885
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta5"
+                    Caption ="Activos"
+                    GUID = Begin
+                        0x30835268d5840242aa09cc04a85e8f2a
+                    End
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =1182
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =2
+                    Left =1320
+                    Top =990
+                    Width =711
+                    Height =297
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    GUID = Begin
+                        0x6e78431bb91c504b825b018604bb95f9
+                    End
+                    Name ="ComboEnActivo"
+                    RowSourceType ="Value List"
+                    RowSource ="Sí;No"
+                    AfterUpdate ="[Event Procedure]"
+                    AllowValueListEdits =0
+
+                    LayoutCachedLeft =1320
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =2031
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =285
+                    Top =75
+                    Width =9870
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="Gestión de Precios Por Perfil"
+                    GUID = Begin
+                        0x71680c5f6f872b46abe0950ed8709d8e
+                    End
+                    LayoutCachedLeft =285
+                    LayoutCachedTop =75
+                    LayoutCachedWidth =10155
+                    LayoutCachedHeight =735
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =240
+                    Top =15
+                    Width =9870
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="Gestión de Precios Por Perfil"
+                    GUID = Begin
+                        0xa1e569625d0c594897963ba430882979
+                    End
+                    LayoutCachedLeft =240
+                    LayoutCachedTop =15
+                    LayoutCachedWidth =10110
+                    LayoutCachedHeight =675
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =2160
+                    Top =990
+                    Width =297
+                    Height =297
+                    FontWeight =700
+                    TabIndex =6
+                    Name ="ComandoLimpiarEnActivo"
+                    Caption ="ComandoLimpiarEquipo"
+                    OnClick ="[Event Procedure]"
+                    Picture ="Cepillo.ico"
+                    GUID = Begin
+                        0x0aed0c471af65548ad20a9cab33e1b2a
+                    End
+                    ImageData = Begin
+                        0x0000010001001e230000010020001c11000016000000280000001e0000004600 ,
+                        0x00000100200000000000f4100000d70d0000d70d00000000000000000000ffff ,
+                        0xff00ffffff00ffffff00ffffff0000000001000000060000000b000000100000 ,
+                        0x0015000000190000001d00000021000000190000001b0000001b0000001c0000 ,
+                        0x00220000002a0000002d0000002c0000002b0000002900000027000000240000 ,
+                        0x00210000001d0000001900000015000000100000000bffffff00ffffff000000 ,
+                        0x0001000000060000000d00000012000000180000001d00000023000000280000 ,
+                        0x002d00000022006d877d029fc1c1028faeb100759590004d6568000d11450000 ,
+                        0x0034000000360000003d0000003c0000003900000036000000310000002d0000 ,
+                        0x0028000000230000001e00000018ffffff0000000001000000080000000f0000 ,
+                        0x00150000001b00000021000000280000002d000000340000002b00546d6f23ba ,
+                        0xd8ff7fe6f8ff53cfe8ff5ddaf0ff4bc7e0ff069dbfe70082a2b300485d770000 ,
+                        0x004a0000004000000046000000450000003f00000039000000340000002e0000 ,
+                        0x002800000021ffffff00000000060000000d000000140000001a000000210000 ,
+                        0x00270000002e000000350000003500212b4c10a4c5ee84e8f6ff2ab4d0ff18bf ,
+                        0xd8ff76e4efff4cc5dcff1cbad8ff77e4f7ff47c5dfff0091b4d80058748f0000 ,
+                        0x00510000004300000048000000430000003c000000350000002e00000027ffff ,
+                        0xff00000000070000000e000000150000001c0000002200000029000000300000 ,
+                        0x00370000002f0082a3b763e0f5ff50c9deff00aacaff3ad4e5ff40c4dbff00a4 ,
+                        0xc7ff1ac9deff73e1edff5dcfe2ff28bddcff51d0eaff119dbedb00576e820000 ,
+                        0x00400000003d0000003f000000370000003000000029ffffff00000000050000 ,
+                        0x000c000000130000001a00000021000000270000002e0000002a0042575f27b9 ,
+                        0xd6ff78e2efff09afceff07c0d9ff4ed3e4ff0ca9c9ff02bfd9ff42d5e6ff56d5 ,
+                        0xe5ff00a5c7ff30c9deff95ecf4ff43c9e3ff15b0d4ff008daec0002e3d520000 ,
+                        0x002b000000340000002f00000027ffffff0000000001000000070000000e0000 ,
+                        0x00150000001b00000021000000270000001e008cadb55edff4ff45cbdfff00b0 ,
+                        0xcfff25d0e3ff31bbd5ff00b4d3ff1bd0e6ff62dfeeff2bb8d3ff01b1cfff54db ,
+                        0xeaff2abdd6ff00a7c9ff46d4e6ff60def3ff13a9caee006a89740000001b0000 ,
+                        0x002400000022ffffff00ffffff0000000001000000060000000c000000120000 ,
+                        0x001800000016003248371eafcdf664e0eeff17bad4ff01bed8ff31d0e4ff13b0 ,
+                        0xd0ff0fcce5ff3bdaedff59d3e7ff00a7c9ff31d1e4ff45c9deff00a5c7ff00bf ,
+                        0xd8ff0ec6dcff7ae1edff94edf8ff1db7d8ff0081a7970000001100000011ffff ,
+                        0xff00ffffff00ffffff00ffffff0000000002000000060000000b000000010081 ,
+                        0xa77145d2ebff3ed1e3ff08b8d4ff12cee5ff22c2dcff11bedaff1fd8efff56e1 ,
+                        0xf2ff21b2d0ff0dbfdaff4cd4e6ff0aa7c9ff00bbd5ff08c5dcff50d6e7ff51d5 ,
+                        0xe6ff2cb9d3ff2ab8d4ff4dd1ecff0a9ebfad003d5e07ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00049ec2b357def1ff12c3 ,
+                        0xdbff0cc1dcff1fd6edff13bbd9ff21d2ebff34e2f7ff3fcae3ff00adceff3dda ,
+                        0xedff21b3d0ff00b4d1ff01c4dbff46d4e5ff4fd1e3ff0caacaff0eb0ceff65db ,
+                        0xe9ffb4f5fbff3ed6f6ff0096bd97ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff000065990919accbe655ddeeff07c1dcff1bcfe7ff23d4 ,
+                        0xedff19c2dfff31e2f9ff36dff5ff0eaccdff23d1e8ff34c6deff00afceff00c3 ,
+                        0xdbff38d1e3ff46cbe0ff00a8c9ff1ebdd7ff80e5f0ff8feaf8ff32b8d5fc00a0 ,
+                        0xc59100a1c225ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff000084af2f2fbad6ff4cdbedff0ec9e3ff2adcf2ff25d1ebff29d2ecff3fed ,
+                        0xffff1cc2e0ff12bedcff36d7edff0eb4d2ff00c2daff28cde1ff3dc7ddff00aa ,
+                        0xcaff28c7dcff95ecf4ff75e0f5ff11a8cbcb0086b436ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000090ba5444ce ,
+                        0xe8ff44dbeeff1cd3ecff34e3faff29d1ebff3fe3faff3be0f7ff14bad9ff30dd ,
+                        0xf4ff1bc0dcff07c4ddff1dcce0ff31c3daff00adcdff2ecce0ff9deef7ff55ce ,
+                        0xe8ff0099c293001e6d06ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff000095bb7153d9f1ff40dff3ff2ce0 ,
+                        0xf7ff3be3faff38d6efff52ebffff29c7e3ff2ed7f1ff26d2ecff13c6e0ff1cd0 ,
+                        0xe6ff24c1d9ff00b2cfff2fcee1ff9aedf9ff3abdd9fb008fba64ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff0000a7c6795de0f7ff42e4f8ff3ae6feff43dff6ff52e3 ,
+                        0xf8ff49dcf3ff32d0eaff3ae2faff1fcce7ff20d4ebff1bc4dcff00b5d1ff30ce ,
+                        0xe1ff8eeaf8ff28b3d3ef0085b544ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff0000005b0a0000 ,
+                        0x515a0073a2a567f0ffff4cf1ffff44e6fdff53e2f7ff60e7f9ff44d5edff4be6 ,
+                        0xfcff30d9f2ff26d8efff19cbe4ff00bbd6ff35d0e2ff7ee6f7ff1aaccfe2007f ,
+                        0xaf2fffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00000068a20000a1ff000882ff386b ,
+                        0xa0ff6ee5f1ff65fdffff67ecfdff60e1f4ff5ae6f9ff48e5fbff31def6ff21d5 ,
+                        0xedff07c6e0ff3ed4e5ff6ae0f4ff10a8ccd40078a521ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff0000004126000081ff0000d5ff0000c8ff000098ff1b1f81ff5c92 ,
+                        0xb7ff8cf4fbff77fbffff5bebfeff42e6fcff28def6ff1dd4ebff56ddedff54d9 ,
+                        0xf1ff04a2c8c3006d9d14ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000000 ,
+                        0x0004001279dc00008fff0000bdff1717e3ff2320d6ff170f9cff2f3789ff69b0 ,
+                        0xcbff66fbffff40f1ffff46e3f7ff6ee7f7ff42ceeaff009dc4a4005e7e07ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff000091b61b00a5ca9e1fc0d8f32b87 ,
+                        0xb2ff05197eff09009eff3330e8ff5454ffff423edfff17108eff2f5093ff67c9 ,
+                        0xdfff63e7faff22b5d4f10096bf6fffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff000098c13102a5cbf82ed4efff41daeaff31e5f3ff49d9ebff3372 ,
+                        0xa6ff0f1384ff342bc7ff5b5affff4342f4ff150cafff060a83ff006da4a5008b ,
+                        0xb120ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00009f ,
+                        0xbf1700a3c99215b2d1f63ed3e9ff62e4f4ff6df3ffff75ffffff62cde0ff2a52 ,
+                        0x94ff13118eff2a22c7ff2323e0ff050292ff00002133ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000096 ,
+                        0xc321008eb7d930c0ddff79e9f7ff8ef6ffff83fcffff82ffffff66b3cdff0f2c ,
+                        0x83ff08088dff00006aacffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00003c73360a6099f00777 ,
+                        0xadff0794bcff49cae1ff90f2fdff9afaffff9bffffff16accad5000048340000 ,
+                        0x2805ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00003b7810065e95e22581b9ff116ca9ff0a68a3ff0077 ,
+                        0xaaff119fc3ff64e0f4ff8df9ffff0aa7c9bdffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00005489ab2f8ac2ff1e7fbaff086fadff1a78b2ff1066a0ff004b8253009b ,
+                        0xc07214b8dbf604a3c7b1ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff0000457e662c83baff3793 ,
+                        0xccff0975b8ff1178b7ff2986c0ff065b91d0ffffff00ffffff00008cb227009d ,
+                        0xc32effffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff0000316f281c6fa3f652a4d7ff107ec2ff0978beff288a ,
+                        0xc7ff2681b9ff004b835effffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000000 ,
+                        0x00020a5c90cd60abd9ff2389c9ff0a79bfff107ec2ff429bd3ff0e6397e4001a ,
+                        0x5308ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00004b80684d9ccdff3c97 ,
+                        0xd0ff0074bbff0b7cc1ff2f90ccff4195c9ff004b827cffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00116598c857a4d4ff1a6fa4ff2071a2ff0572 ,
+                        0xb6ff59a9dbff1d6fa1f2002b6316ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff001b6c9fd43c8dbfff7aa4bfff9bb9ccff1773acff59a8d9ff004f ,
+                        0x8698ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000657 ,
+                        0x8e8b4b9ed1ff3f88b5ff3881afff5ea8d7ff1a6ea3fc00397227ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00003b6d14086099cf3387 ,
+                        0xbbff3b8bbdff196ea3dd00477d4effffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff000037792d0037742d0000 ,
+                        0x0004ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00f0000000c0000000800000008000000080000000800000008000 ,
+                        0x0000c0000000f0000000ff000000fe000000fe00000cfe00001cfe00007cfe00 ,
+                        0x00fcf80001fcf80003fcf00007fcf0000ffce0003ffcc0007ffcc000fffcf001 ,
+                        0xfffcf001fffce007fffce007fffcc067fffc807ffffc007ffffc00fffffc00ff ,
+                        0xfffc01fffffc01fffffc03fffffcc7fffffc
+                    End
+
+                    LayoutCachedLeft =2160
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =2457
+                    LayoutCachedHeight =1287
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =4290
+                    Top =6480
+                    Width =1455
+                    Height =405
+                    FontWeight =700
+                    TabIndex =7
+                    Name ="ComandoAltaPerfil"
+                    Caption ="Alta Perfil"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x69c3ccf24e981d4c859e664502d65b16
+                    End
+
+                    LayoutCachedLeft =4290
+                    LayoutCachedTop =6480
+                    LayoutCachedWidth =5745
+                    LayoutCachedHeight =6885
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+
+Private m_Error As String
+Private m_ObjTipoTecnicoPrecioSeleccionado As TipoTecnicoPrecio
+Private WithEvents m_Form As Form_FormTipoTecnicoPrecio
+Attribute m_Form.VB_VarHelpID = -1
+Private WithEvents m_FormTipoTecnico As Form_FormTecnicoTipo
+Attribute m_FormTipoTecnico.VB_VarHelpID = -1
+
+Private Sub ComandoAltaPerfil_Click()
+    
+    On Error GoTo errores
+    m_Error = ""
+    Set m_ObjTipoTecnicoActivo = Nothing
+    If FormularioAbierto("FormTecnicoTipo") Then
+        DoCmd.Close acForm, "FormTecnicoTipo", acSaveNo
+    End If
+    DoCmd.OpenForm "FormTecnicoTipo"
+    Set m_FormTipoTecnico = Forms("FormTecnicoTipo")
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAltaPerfil_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+End Sub
+
+Private Sub ComandoAltaPerfilHora_Click()
+    
+    On Error GoTo errores
+    m_Error = ""
+    
+    If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+        If Nz(Me.ListaPreciosPerfil.Column(0), "") = "" Then
+            m_Error = "Ha de seleccionar un elemento de la lista"
+            Err.Raise 1000
+        End If
+        Set m_ObjTipoTecnicoPrecioSeleccionado = Constructor.getTecnico(Me.ListaPreciosPerfil.Column(0), m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+        If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+            m_Error = "Ha de seleccionar un elemento de la lista"
+            Err.Raise 1000
+        End If
+    End If
+    
+    Set m_ObjTipoTecnicoPrecioActivo = m_ObjTipoTecnicoPrecioSeleccionado
+    m_ObjTipoTecnicoPrecioActivo.ParaAlta = EnumSino.Sí
+    If FormularioAbierto("FormTipoTecnicoPrecio") Then
+        DoCmd.Close acForm, "FormTipoTecnicoPrecio", acSaveNo
+    End If
+    DoCmd.OpenForm "FormTipoTecnicoPrecio"
+    Set m_Form = Forms("FormTipoTecnicoPrecio")
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAltaPerfilHora_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+End Sub
+
+Private Sub ComandoEdicionPerfilHora_Click()
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+        If Nz(Me.ListaPreciosPerfil.Column(0), "") = "" Then
+            m_Error = "Ha de seleccionar un elemento de la lista"
+            Err.Raise 1000
+        End If
+        Set m_ObjTipoTecnicoPrecioSeleccionado = Constructor.getTecnico(Me.ListaPreciosPerfil.Column(0), m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+        If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+            m_Error = "Ha de seleccionar un elemento de la lista"
+            Err.Raise 1000
+        End If
+    End If
+   
+    Set m_ObjTipoTecnicoPrecioActivo = m_ObjTipoTecnicoPrecioSeleccionado
+    If m_ObjTipoTecnicoPrecioSeleccionado.EsUltima = EnumSino.No Then
+        m_Error = "Solo se puede editar el último perfil del seleccionado"
+        Err.Raise 1000
+    End If
+    m_ObjTipoTecnicoPrecioActivo.ParaAlta = EnumSino.No
+    
+    If FormularioAbierto("FormTipoTecnicoPrecio") Then
+        DoCmd.Close acForm, "FormTipoTecnicoPrecio", acSaveNo
+    End If
+    DoCmd.OpenForm "FormTipoTecnicoPrecio"
+    Set m_Form = Forms("FormTipoTecnicoPrecio")
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEdicionPerfilHora_Click se ha dado el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+
+
+
+
+Private Sub ComandoEditarPerfil_Click()
+    
+End Sub
+
+
+Private Sub ComandoEliminarPerfilHora_Click()
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+    If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+        If Nz(Me.ListaPreciosPerfil.Column(0), "") = "" Then
+            m_Error = "Ha de seleccionar un elemento de la lista"
+            Err.Raise 1000
+        End If
+        Set m_ObjTipoTecnicoPrecioSeleccionado = Constructor.getTipoTecnicoPrecio(Me.ListaPreciosPerfil.Column(0), , , m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+        If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+            m_Error = "Ha de seleccionar un elemento de la lista"
+            Err.Raise 1000
+        End If
+    End If
+    
+    pregunta = MsgBox("¿Desea realmente eliminar el Perfil/Precio seleccionado?", vbExclamation + vbYesNo + vbDefaultButton2, "Eliminación de Perfil/Técnico")
+    If pregunta <> vbYes Then
+        Exit Sub
+    End If
+    DoCmd.Hourglass True
+    m_ObjTipoTecnicoPrecioSeleccionado.Borrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Set m_ObjTipoTecnicoPrecioSeleccionado = Nothing
+    Set m_ObjTipoTecnicoPrecioActivo = Nothing
+    
+    
+    Filtrar Nz(Me.ComboEnActivo, ""), m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    DoCmd.Hourglass False
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEliminarPerfilHora_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+
+
+Private Sub ComandoLimpiarEnActivo_Click()
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    Me.ComboEnActivo = Null
+    Filtrar Nz(Me.ComboEnActivo, ""), m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoLimpiarEnActivo_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComboEnActivo_AfterUpdate()
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    Filtrar Nz(Me.ComboEnActivo, ""), m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComboEnActivo_AfterUpdate se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+
+
+Private Sub Form_Open(Canel As Integer)
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    AjustarTamaño Me
+'    Me.InsideHeight = 8700
+'    Me.InsideWidth = 9810
+    Me.Caption = Me.lblTitulo1.Caption
+    Filtrar , m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Open se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Sub cmdSalir_Click()
+   On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Sub ListaPreciosPerfil_Click()
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    Me.ComandoAltaPerfilHora.Enabled = False
+    Me.ComandoEdicionPerfilHora.Enabled = False
+    Me.ComandoEliminarPerfilHora.Enabled = False
+    Me.ComandoAltaPerfil.Enabled = True
+    
+    If Nz(Me.ListaPreciosPerfil.Column(0), "") = "" Then
+        Set m_ObjTipoTecnicoPrecioSeleccionado = Nothing
+        Exit Sub
+    End If
+    If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+        Set m_ObjTipoTecnicoPrecioSeleccionado = Constructor.getTipoTecnicoPrecio(Me.ListaPreciosPerfil.Column(0), , , m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    Else
+        If Me.ListaPreciosPerfil.Column(0) <> m_ObjTipoTecnicoPrecioSeleccionado.IDTipoTecnicoFecha Then
+            Set m_ObjTipoTecnicoPrecioSeleccionado = Constructor.getTipoTecnicoPrecio(Me.ListaPreciosPerfil.Column(0), , , m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+    End If
+    If m_ObjTipoTecnicoPrecioSeleccionado Is Nothing Then
+        m_Error = "Seleccione un elemento de la lista"
+        Err.Raise 100
+    End If
+    Me.ComandoAltaPerfilHora.Enabled = True
+    Me.ComandoEdicionPerfilHora.Enabled = True
+    
+    Me.ComandoEliminarPerfilHora.Enabled = True
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ListaPreciosPerfil_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Public Function Filtrar( _
+                        Optional p_EnActivo As String, _
+                        Optional ByRef p_Error As String _
+                        ) As String
+    
+    Dim rcdDatos As DAO.Recordset
+    Dim m_SQL As String
+    
+    Dim m_Valor As String
+    Dim m_Where As String
+    Dim i As Integer
+    Dim m_WhereActivo As String
+    Dim m_SQLInicio As String
+    Dim lst As ListBox
+    On Error GoTo errores
+    
+    Set m_ObjTipoTecnicoPrecioActivo = Nothing
+    Set lst = Me.ListaPreciosPerfil
+    Me.ComandoAltaPerfilHora.Enabled = False
+    Me.ComandoEdicionPerfilHora.Enabled = False
+    
+    Me.ComandoEliminarPerfilHora.Enabled = False
+    Me.ComandoAltaPerfil.Enabled = True
+   
+    
+    lst.RowSource = "ID;PERFIL;FInicial;FFinal;PrecioHLab;PrecioHExtra"
+    m_SQLInicio = "SELECT TbTipoTecnicoPrecios.* " & _
+                    "FROM TbTipoTecnicoPrecios "
+    
+    If p_EnActivo = "" Then
+        m_WhereActivo = "(FechaFinal Like '*' Or FechaFinal Is Null)"
+    Else
+        If p_EnActivo = "Sí" Then
+            m_WhereActivo = "FechaFinal Is Null"
+        Else
+            m_WhereActivo = "Not FechaFinal Is Null"
+        End If
+        
+    End If
+    
+    m_Where = "WHERE " & _
+                            m_WhereActivo & _
+                            " ORDER BY TbTipoTecnicoPrecios.TIPOTECNICO;"
+    m_SQL = m_SQLInicio & m_Where
+    'TODO: Cambiar currentdb por getdb
+    Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+    With rcdDatos
+        If Not .EOF Then
+            .MoveFirst
+            Do While Not .EOF
+                lst.AddItem Nz(.Fields("IDTipoTecnicoFecha"), "") & ";" & Nz(.Fields("TIPOTECNICO"), "") & ";" & _
+                            Nz(.Fields("FechaInicial"), "") & ";" & Nz(.Fields("FechaFinal"), "") & ";" & _
+                            Format(Nz(.Fields("PrecioHoraLab"), "0"), "#,##0.00 €") & ";" & _
+                            Format(Nz(.Fields("PrecioHoraExtra"), "0"), "#,##0.00 €")
+                .MoveNext
+            Loop
+        End If
+    End With
+    rcdDatos.Close
+    Set rcdDatos = Nothing
+    
+    If lst.ListCount = 2 Then
+        lst.Selected(1) = True
+        ListaPreciosPerfil_Click
+    Else
+        If lst.ItemsSelected.count > 0 Then
+            For i = 1 To lst.ListCount - 1
+                If lst.Selected(i) = True Then
+                    ListaPreciosPerfil_Click
+                    Exit For
+                End If
+            Next
+        End If
+    End If
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método Filtrar ha producido el error nº: " & Err.Number & _
+        vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+End Function
+
+
+
+Private Sub m_Form_Alta(m_ObjTipoTecnico As TipoTecnicoPrecio)
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+    
+    Filtrar Nz(Me.ComboEnActivo, ""), m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_Form_Alta se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+
+
+Private Sub m_Form_Edicion(m_ObjTipoTecnicoPrecio As TipoTecnicoPrecio)
+    On Error GoTo errores
+    
+    m_Error = ""
+    
+    Filtrar Nz(Me.ComboEnActivo, ""), m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_Form_Edicion se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub m_FormTipoTecnico_Alta(m_ObjTipoTecnicoPrecio As TipoTecnicoPrecio)
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+    
+    Filtrar Nz(Me.ComboEnActivo, ""), m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_FormTipoTecnico_Alta se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub

@@ -1,0 +1,2276 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =755641590
+Begin Form
+    RecordSelectors = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12075
+    DatasheetFontHeight =11
+    ItemSuffix =49
+    Left =3285
+    Top =5340
+    Right =15915
+    Bottom =9615
+    DatasheetGridlinesColor =14806254
+    OnUnload ="[Event Procedure]"
+    RecSrcDt = Begin
+        0x8dbd7a4690f6e540
+    End
+    GUID = Begin
+        0x038dee999e94734fad38b9447bcde1c9
+    End
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000000000c8420000c842eeece100a090deed95020000c0612d8afd7f0000 ,
+        0x010403069c000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc800020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0024000100000000000000000000000000000000000000000000000000 ,
+        0x00000000433a5c50726f6772616d446174615c54656368536d6974685c536e61 ,
+        0x6769742031315c5072696e746572506f727446696c6500000000000000000000 ,
+        0x000000000000000000000000000000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x000000000000000062aa6988fe7f000002000000950200000000000000000000 ,
+        0xe00776f695020000e61958daf67f00006d6f6454657374696c00000000000000 ,
+        0x01040306dc000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc8000200010041003400000095020000b0f617df9502000000000000fe7f0000 ,
+        0x0200000000000000000000000000000000000000000000005001d1c895020000 ,
+        0x60581aee95020000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160020000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x43003a005c00500072006f006700720061006d0044006100740061005c005400 ,
+        0x65006300680053006d006900740068005c0053006e0061006700690074002000 ,
+        0x310031005c005000720069006e0074006500720050006f007200740046006900 ,
+        0x6c00650000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =6710886
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =60.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =6795
+            Name ="Detalle"
+            GUID = Begin
+                0xe4eb7d6897b5d643917e459f315b281f
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =225
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta232"
+                    Caption ="Buscar expediente"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x1d7d892aa7e61f40aa40fddd5b795460
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =225
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =570
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2834
+                    Top =225
+                    Width =3351
+                    Height =315
+                    BackColor =16446961
+                    BorderColor =14136213
+                    Name ="PalabraClave"
+                    FontName ="Segoe UI"
+                    OnKeyDown ="[Event Procedure]"
+                    ControlTipText ="Buscará en IDExpediente,Nemotécnico o Título del Expediente"
+                    GUID = Begin
+                        0xb11024a0bb63a44f9ccc998a06cd9da6
+                    End
+
+                    LayoutCachedLeft =2834
+                    LayoutCachedTop =225
+                    LayoutCachedWidth =6185
+                    LayoutCachedHeight =540
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =93
+                    Left =6292
+                    Top =225
+                    Width =317
+                    Height =315
+                    TabIndex =10
+                    Name ="ComandoBuscarExpediente"
+                    Caption ="Comando36"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Buscar Expediente por palabra clave"
+                    Picture ="Flecha arriba abajo_3Masa_16x16.ico"
+                    GUID = Begin
+                        0x8c3f8807f26e8842826f8ad655dd59f7
+                    End
+                    ImageData = Begin
+                        0x0000010001001010000001002000680400001600000028000000100000002000 ,
+                        0x0000010020000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000ff690033ff6a00e0ff69005f000000000000000000000000000000000000 ,
+                        0x000000000000000000000000000000000000000000000000000000000000ff6d ,
+                        0x002fff6a00ecff6a00ffff6a00fdff6a005e0000000000000000000000000000 ,
+                        0x0000000000000000000000000000000000000000000000000000ff69002eff6a ,
+                        0x00ebff6a00ffff6a00ffff6a00ffff6a00fcff6a005e00000000000000000000 ,
+                        0x00000000000000000000000000000000000000000000ff6a0024ff6a00eaff6a ,
+                        0x00ffff6a00ffff6a00ffff6a00ffff6a00ffff6a00fcff6b0051000000000000 ,
+                        0x00000000000000000000000000000000000000000000ff6c002dff6a00a9ff6a ,
+                        0x00c3ff6a00ffff6a00ffff6a00ffff6a00d8ff6b00aaff690055000000000000 ,
+                        0x000000000000000000000000000000000000000000000000000000000000ff6a ,
+                        0x004dff6a00ffff6a00ffff6a00ffff6b00880000000000000000000000000000 ,
+                        0x000000000000000000000000000000000000000000000000000000000000ff6a ,
+                        0x004dff6a00ffff6a00ffff6a00ffff6b00880000000000000000000000000000 ,
+                        0x000000000000000000000000000000000000000000000000000000000000ff69 ,
+                        0x0027ff6a00f3ff6a00ffff6a00fdff6a00590000000000000000000000000000 ,
+                        0x00000000000000000000ff690068ff6a00fdff6a00ffff6a00ebff6600190000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x00000000000000000000ff69009bff6a00ffff6a00ffff6a00ffff6b00390000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x00000000000000000000ff69009bff6a00ffff6a00ffff6a00ffff6b00390000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000ff6a0060ff6b00aaff6a00deff6a00ffff6a00ffff6a00ffff6b00bdff6a ,
+                        0x00a8ff6800200000000000000000000000000000000000000000000000000000 ,
+                        0x0000ff6b0062ff6a00feff6a00ffff6a00ffff6a00ffff6a00ffff6a00ffff6a ,
+                        0x00e3ff6c001a0000000000000000000000000000000000000000000000000000 ,
+                        0x000000000000ff690066ff6a00feff6a00ffff6a00ffff6a00ffff6a00e8ff6a ,
+                        0x0029000000000000000000000000000000000000000000000000000000000000 ,
+                        0x00000000000000000000ff690066ff6a00feff6a00ffff6a00e8ff67002a0000 ,
+                        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+                        0x0000000000000000000000000000ff6b006eff6900dcff6a0029000000000000 ,
+                        0x000000000000000000000000000000000000000000000000000000000000ff8f ,
+                        0x0000ff070000fe030000fc010000fc010000ff070000ff070000ff070000e0ff ,
+                        0x0000e0ff0000e0ff0000803f0000803f0000c07f0000e0ff0000f1ff0000
+                    End
+
+                    CursorOnHover =1
+                    LayoutCachedLeft =6292
+                    LayoutCachedTop =225
+                    LayoutCachedWidth =6609
+                    LayoutCachedHeight =540
+                    UseTheme =0
+                    HoverColor =16777215
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =16777215
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16777215
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16777215
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =6600
+                    Top =225
+                    Width =317
+                    Height =315
+                    TabIndex =17
+                    Name ="ComandoIrABusquedaExpedientes"
+                    Caption ="Comando36"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Buscar Expediente por palabra clave"
+                    Picture ="Lupa16x16.png"
+                    GUID = Begin
+                        0x07b4f336e399044a867b93b404f59c43
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d49484452000000100000001008060000001ff3ff ,
+                        0x61000000097048597300000ec400000ec401952b0e1b0000000774494d4507e8 ,
+                        0x0a120a393b347b55b2000001af49444154388d9dd1bf6fcd6114c7f1d7f9f656 ,
+                        0x5549ec1221919449426245885f312012a6267e84b658c56833183a88a2036194 ,
+                        0xf8d122d158fc012465b09030898548a5edbd69ef730caee0b695f0599ee139e7 ,
+                        0xfdbccf79c2ef395bf60947a5d54248df84d78a5bae566f2d90007dd965458eea ,
+                        0x904a5c272775e854a4b04a7152d3a86bd5e576400596e723bc33e5bc2afb312e ,
+                        0x635c7a28edd2d02fec365006e61b0c94fd38af38aecb845af468205b7edd68e4 ,
+                        0x07cd38408e683ae846f5f19741382d5cd261582d7ad45bcd5ae73496c61a99a7 ,
+                        0x84073a1c6b1f612d31891d1a0bad097584039ade63433ba053954bd4a25aa4fd ,
+                        0x87495aa912d29276c08c62ce5c2ef6fecfbffad4aa9f6d074c601dee5ab608a0 ,
+                        0x1be13636092f7fbfaa1143e43d61af7a6ed113bdea282d7c37a63c37eb999a2b ,
+                        0xc4ce3f0d86e315eee38e9938a2914332df89fc42be31e3a2665ed0630c4f5c8b ,
+                        0xaff3a783c17251a7434adcd3ccb72a45892eb5dca8d8a6cb03d3faa473ae574f ,
+                        0xe703e06cf6aaf284623d3a31adf2423d468cc467fd65bbca180e1baec6175dfa ,
+                        0x5f7326b71a2cdff4973df30dfe0592f958c4feff03c0a9b259cdcdef7ab89b44 ,
+                        0x922d28280000000049454e44ae426082
+                    End
+
+                    CursorOnHover =1
+                    LayoutCachedLeft =6600
+                    LayoutCachedTop =225
+                    LayoutCachedWidth =6917
+                    LayoutCachedHeight =540
+                    UseTheme =0
+                    HoverColor =16777215
+                    HoverThemeColorIndex =-1
+                    HoverTint =100.0
+                    PressedColor =16777215
+                    PressedThemeColorIndex =-1
+                    PressedShade =100.0
+                    HoverForeColor =16777215
+                    HoverForeThemeColorIndex =-1
+                    HoverForeTint =100.0
+                    PressedForeColor =16777215
+                    PressedForeThemeColorIndex =-1
+                    PressedForeTint =100.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =6973
+                    Top =225
+                    Width =317
+                    Height =315
+                    FontWeight =700
+                    TabIndex =18
+                    Name ="ComandoActualizar"
+                    Caption ="Contador"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Actualizar"
+                    Picture ="Actualizar_1Light_16x16.png"
+                    GUID = Begin
+                        0xd72fd12fcee6f44f84a446145cd90d48
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d49484452000000100000001008060000001ff3ff ,
+                        0x61000000097048597300000b1300000b1301009a9c180000017a49444154388d ,
+                        0x9dd33d48950114c6f1df79dfab46d0146a41b4448b605b10145150535193504b ,
+                        0x4883746fdf436d1135353804762323ac405aa2350a9284a0a60611a4a5252210 ,
+                        0x0bb388303f4e8365092aea331e9eff1f9ee184c5d291a566edc216903e1a33ec ,
+                        0x71cccc776ab9170f6301782a5b84cbc231e99df01ea5b44dd88e7e0d6e98b20b ,
+                        0x4f30599987abb95fe893ee2ab5e9896f0be4a773a359174c19c226344aa37382 ,
+                        0x33b9db8cfb0a47dd8aa14567d5e38b5a0e63331a40f85ae8caf5663c5038be24 ,
+                        0x3cb7b9138fe6e1b98c57944e08afd4e3cd9230a423c2534c60429a5018a49603 ,
+                        0x6ab96759789914d8a1c9dbb50aa8e6f7b5c314c267e7b275ad820a5e9b7210fd ,
+                        0xab22ab7900e305fa70d1d52c560c9fcd26d4cdfa59b81d03c20763aeac5830ad ,
+                        0x5b78a137462a7f0e9d4a83aa596a71ddb5985e14ecc846cdbad1e68743f0ef99 ,
+                        0x4ee606ebdc91da859bc233f5f804ba72abd2619c179e2b5dd213930b057f53cd ,
+                        0x9d4227f649adc22f69142fcdbaa73746feafff06936575e73fdf9b1800000000 ,
+                        0x49454e44ae426082
+                    End
+
+                    LayoutCachedLeft =6973
+                    LayoutCachedTop =225
+                    LayoutCachedWidth =7290
+                    LayoutCachedHeight =540
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =7305
+                    Top =225
+                    Width =975
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta31"
+                    Caption ="ID Exp."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x2c934c023fb9bd4ea12e2d0442510a68
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =7305
+                    LayoutCachedTop =225
+                    LayoutCachedWidth =8280
+                    LayoutCachedHeight =570
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =8417
+                    Top =225
+                    Width =3351
+                    Height =315
+                    TabIndex =16
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="IDExpediente"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x7985184ef4125443820ddee98e0d9561
+                    End
+
+                    LayoutCachedLeft =8417
+                    LayoutCachedTop =225
+                    LayoutCachedWidth =11768
+                    LayoutCachedHeight =540
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =720
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta6"
+                    Caption ="Juridica"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x5630565ce9de3e40bf5cac0eae1fe7fc
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =720
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =1065
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2834
+                    Top =720
+                    Width =3351
+                    Height =315
+                    TabIndex =11
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="Juridica"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0xcb56daf3ceac5d4b977d2379685f44ca
+                    End
+
+                    LayoutCachedLeft =2834
+                    LayoutCachedTop =720
+                    LayoutCachedWidth =6185
+                    LayoutCachedHeight =1035
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =7305
+                    Top =721
+                    Width =975
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta7"
+                    Caption ="Cod exp."
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xabc93d3c32d7eb45a1080d8f6a4c0bd3
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =7305
+                    LayoutCachedTop =721
+                    LayoutCachedWidth =8280
+                    LayoutCachedHeight =1066
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =8417
+                    Top =721
+                    Width =3351
+                    Height =315
+                    TabIndex =12
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="CodExp"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0x53622c237a61e04d8e1f114a79e73004
+                    End
+
+                    LayoutCachedLeft =8417
+                    LayoutCachedTop =721
+                    LayoutCachedWidth =11768
+                    LayoutCachedHeight =1036
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =1260
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta9"
+                    Caption ="Nemotécnico"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xbac9d1c3af0d204bb614b4186c075e36
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =1260
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =1605
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2839
+                    Top =1260
+                    Width =8929
+                    Height =315
+                    FontSize =9
+                    TabIndex =8
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="Nemotecnico"
+                    OnExit ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0xafc90b4f6d8a714681def2d7fc0db637
+                    End
+
+                    LayoutCachedLeft =2839
+                    LayoutCachedTop =1260
+                    LayoutCachedWidth =11768
+                    LayoutCachedHeight =1575
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =1710
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta48"
+                    Caption ="Título"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x4c5e8ea64cd0444c95dad08ccdfe26ab
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =1710
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =2055
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2839
+                    Top =1710
+                    Width =8929
+                    Height =540
+                    FontSize =9
+                    TabIndex =20
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="Titulo"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0xec518fce2063284797f19e81d0804c0f
+                    End
+
+                    LayoutCachedLeft =2839
+                    LayoutCachedTop =1710
+                    LayoutCachedWidth =11768
+                    LayoutCachedHeight =2250
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =2370
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta10"
+                    Caption ="F.Inicio contrato"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x3e2135e5cafada449e8896d175754a26
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =2370
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =2715
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2839
+                    Top =2371
+                    Width =3351
+                    Height =315
+                    TabIndex =9
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="FechaInicioContrato"
+                    Format ="Short Date"
+                    OnExit ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0xfd6ea86051a3864890291c9a2e59c972
+                    End
+
+                    LayoutCachedLeft =2839
+                    LayoutCachedTop =2371
+                    LayoutCachedWidth =6190
+                    LayoutCachedHeight =2686
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =6465
+                    Top =2371
+                    Width =1815
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta11"
+                    Caption ="F.Fin contrato"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x3161909f40b08a449478e2149ded7dfb
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6465
+                    LayoutCachedTop =2371
+                    LayoutCachedWidth =8280
+                    LayoutCachedHeight =2716
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =8417
+                    Top =2371
+                    Width =3351
+                    Height =315
+                    TabIndex =13
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="FechaFinContrato"
+                    Format ="Short Date"
+                    FontName ="Segoe UI"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0xab2452294742e44b9a032493cd6f9036
+                    End
+
+                    LayoutCachedLeft =8417
+                    LayoutCachedTop =2371
+                    LayoutCachedWidth =11768
+                    LayoutCachedHeight =2686
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =2840
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta15"
+                    Caption ="Cliente"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x55eab7ebc582e94c9296724d29fa1759
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =2840
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =3185
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2839
+                    Top =2840
+                    Width =8946
+                    Height =315
+                    TabIndex =14
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="OrganoContratacion"
+                    FontName ="Segoe UI"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0x40d953ba528a1f4e8d20466f5bb3650c
+                    End
+
+                    LayoutCachedLeft =2839
+                    LayoutCachedTop =2840
+                    LayoutCachedWidth =11785
+                    LayoutCachedHeight =3155
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =3310
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta18"
+                    Caption ="Responsable Calidad"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x6a0944f6f85c21469ea229182608a156
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =3310
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =3655
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2839
+                    Top =3310
+                    Width =8946
+                    Height =315
+                    TabIndex =15
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="ResponsableCalidad"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Viene dado por la herramienta de Expedientes"
+                    GUID = Begin
+                        0xc644a65ea2675e41bab71e1632b501b6
+                    End
+
+                    LayoutCachedLeft =2839
+                    LayoutCachedTop =3310
+                    LayoutCachedWidth =11785
+                    LayoutCachedHeight =3625
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =3780
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta46"
+                    Caption ="Fecha cierre"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x79bcdc16da02e54893b0e83ff2720b5c
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =3780
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =4125
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2839
+                    Top =3781
+                    Width =3351
+                    Height =315
+                    TabIndex =19
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="FechaCierre"
+                    Format ="Short Date"
+                    FontName ="Segoe UI"
+                    ControlTipText ="Es la fecha de la última edición publicada"
+                    GUID = Begin
+                        0x283ec3babef57842a52edc6f60ef6246
+                    End
+
+                    LayoutCachedLeft =2839
+                    LayoutCachedTop =3781
+                    LayoutCachedWidth =6190
+                    LayoutCachedHeight =4096
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =6465
+                    Top =4815
+                    Width =1815
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta33"
+                    Caption ="Para informes"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x839e377a6f80e84ba9008a3a4a4ee93f
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6465
+                    LayoutCachedTop =4815
+                    LayoutCachedWidth =8280
+                    LayoutCachedHeight =5160
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =10065
+                    Top =4819
+                    Width =495
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta38"
+                    Caption ="UTE"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x0d37b562a62edb40947916ec894da1e3
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =10065
+                    LayoutCachedTop =4819
+                    LayoutCachedWidth =10560
+                    LayoutCachedHeight =5164
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =4844
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta19"
+                    Caption ="Código documento"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x6780d86ba58c954a889364ff99aec662
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =4844
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =5189
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2834
+                    Top =4845
+                    Width =3351
+                    Height =315
+                    TabIndex =1
+                    BackColor =16446961
+                    BorderColor =14136213
+                    Name ="CodigoDocumento"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Es el código que aparecerá en el informe de la edición (Viene de Expedientes)"
+                    GUID = Begin
+                        0xbfce8f2db68ecb478797ab45c18b4ba9
+                    End
+
+                    LayoutCachedLeft =2834
+                    LayoutCachedTop =4845
+                    LayoutCachedWidth =6185
+                    LayoutCachedHeight =5160
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin ComboBox
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =3
+                    IMESentenceMode =3
+                    ListRows =2
+                    ListWidth =1116
+                    Left =8545
+                    Top =4845
+                    Width =1116
+                    Height =315
+                    TabIndex =2
+                    BackColor =16446961
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    GUID = Begin
+                        0x765ac8f308da0e498b09c34e076b70bd
+                    End
+                    Name ="ParaInformeAvisos"
+                    RowSourceType ="Value List"
+                    RowSource ="Sí;No"
+                    ColumnWidths ="1116"
+                    BeforeUpdate ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Si es para informe es que es una Gestión de Riesgos Oficia, de lo contrario es d"
+                        "e prueba"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =8545
+                    LayoutCachedTop =4845
+                    LayoutCachedWidth =9661
+                    LayoutCachedHeight =5160
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =0
+                    ForeTint =75.0
+                    ForeShade =100.0
+                End
+                Begin ComboBox
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =3
+                    IMESentenceMode =3
+                    ListRows =2
+                    ListWidth =1116
+                    Left =10669
+                    Top =4845
+                    Width =1116
+                    Height =315
+                    TabIndex =3
+                    BackColor =16446961
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    GUID = Begin
+                        0x4d9cda4008f0474e8fc966ca1a4c4c0f
+                    End
+                    Name ="EnUTE"
+                    RowSourceType ="Value List"
+                    RowSource ="Sí;No"
+                    ColumnWidths ="1116"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =10669
+                    LayoutCachedTop =4845
+                    LayoutCachedWidth =11785
+                    LayoutCachedHeight =5160
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =0
+                    ForeTint =75.0
+                    ForeShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =4200
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta41"
+                    Caption ="Correo RAC"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xdc5e4b14ea73964f93358365e2ef7506
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =4200
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =4545
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2834
+                    Top =4230
+                    Width =8946
+                    Height =525
+                    FontSize =9
+                    TabIndex =4
+                    BackColor =15786452
+                    BorderColor =14136213
+                    Name ="CorreoRAC"
+                    FontName ="Segoe UI"
+                    ControlTipText ="Viene determinado por Expedientes"
+                    GUID = Begin
+                        0x88fd59d0f35f2045960a92ab6b14e91a
+                    End
+
+                    LayoutCachedLeft =2834
+                    LayoutCachedTop =4230
+                    LayoutCachedWidth =11780
+                    LayoutCachedHeight =4755
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =5280
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta23"
+                    Caption ="Elaborado"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x3d7b6be70c6b1d4f9cd862a8b17ac5fa
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =5280
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =5625
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin ComboBox
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =30
+                    ListWidth =4536
+                    Left =2834
+                    Top =5280
+                    Width =8946
+                    Height =315
+                    TabIndex =5
+                    BackColor =16446961
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    GUID = Begin
+                        0xef55ba3394a215448060297237666620
+                    End
+                    Name ="Elaborado"
+                    RowSourceType ="Value List"
+                    RowSource ="Aitor Solar Azcona;Álvaro Álvarez Toboso;Álvaro García Ramiro;Álvaro González Ca"
+                        "ballero;Ana Rubio Canales;Ángel Lozano García-Prieto;Ángel Luis Martín Olivenza;"
+                        "Ángel Luis Sánchez Cesteros;Ángel Martín-Dorado Caballero;ÁNGELES ARRIBAS GOMEZ;"
+                        "Antonio Sánchez Tejero;Antonio Simarro Moya;Beatriz Cogollo del Toro;Beatriz Nov"
+                        "al Gutiérrez;Blanca Aguado Vicente;Carlos Alonso Carmona;Cristina Serrano Núñez;"
+                        "Daniel Gil Santiuste;David Escudero Lázaro;Emma Delgadillo Gómez;Esperanza del Á"
+                        "lamo Arriba;Félix Sánchez Pimentel;Fernando Durante Fernandez;Gustavo Jonsson Ga"
+                        "rrido;Javier Amo Usanos;Javier Ciruelos Gil;Javier Fernández de Lomana Pérez;Jav"
+                        "ier Mendoza Cano;Javier Rivilla Ramos;Jesús Ramos Cano;Jorge Hidalgo Férnandez;J"
+                        "osé Luis Delgado Marín;José Luis GilPérez;José Pérez Dionisio;Juan Jerez García;"
+                        "Julio Benedicto Vicario Mancho;Leticia Roldán Montero;Mª Jesús Garzón Ladrón de "
+                        "Guevara;Manuel María Fernández Gaspar;María Dolores Carrasco Moreno;Mario Martín"
+                        " Abad;Marta Garrido Vaamonde;Martina Torralba Rodríguez;Matilde González Gonzalo"
+                        ";Miguel Ángel Gómez Sánchez;Natalia Casán García;Nuria María Cubas Morera;Oswald"
+                        "o Rafael Molina Villarroel;Pedro Ángel Amor Zárate;Pedro Duarte Bravo;Pedro Marí"
+                        "a García Liquete;Pedro Simarro Pérez;Pilar Salvador Sánchez;Raquel Velasco Sáez;"
+                        "Ricardo Bardo Torres;Rodolfo Bucalo;Rosa María Fuentes Herrero;Santiago Sandoval"
+                        " Igelmo;Sara Martínez Santolaya;Sergio García Montalvo;Susana González Matesanz;"
+                        "Tamara Sánchez López;Tomás Sancho López;Yolanda Porras Borrajo"
+                    ColumnWidths ="5670"
+                    BeforeUpdate ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Quién va a elaborar la gestión de riesgos"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =2834
+                    LayoutCachedTop =5280
+                    LayoutCachedWidth =11780
+                    LayoutCachedHeight =5595
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =0
+                    ForeTint =75.0
+                    ForeShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =5865
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta26"
+                    Caption ="Revisado"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xc68e65261c9b8d4fa0efce463815b67a
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =5865
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =6210
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin ComboBox
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =30
+                    ListWidth =4536
+                    Left =2834
+                    Top =5865
+                    Width =8946
+                    Height =315
+                    TabIndex =6
+                    BackColor =16446961
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    GUID = Begin
+                        0x2a3811b8198e9b4082d64469181a8e75
+                    End
+                    Name ="Revisado"
+                    RowSourceType ="Value List"
+                    RowSource ="Aitor Solar Azcona;Álvaro Álvarez Toboso;Álvaro García Ramiro;Álvaro González Ca"
+                        "ballero;Ana Rubio Canales;Ángel Lozano García-Prieto;Ángel Luis Martín Olivenza;"
+                        "Ángel Luis Sánchez Cesteros;Ángel Martín-Dorado Caballero;ÁNGELES ARRIBAS GOMEZ;"
+                        "Antonio Sánchez Tejero;Antonio Simarro Moya;Beatriz Cogollo del Toro;Beatriz Nov"
+                        "al Gutiérrez;Blanca Aguado Vicente;Carlos Alonso Carmona;Cristina Serrano Núñez;"
+                        "Daniel Gil Santiuste;David Escudero Lázaro;Emma Delgadillo Gómez;Esperanza del Á"
+                        "lamo Arriba;Félix Sánchez Pimentel;Fernando Durante Fernandez;Gustavo Jonsson Ga"
+                        "rrido;Javier Amo Usanos;Javier Ciruelos Gil;Javier Fernández de Lomana Pérez;Jav"
+                        "ier Mendoza Cano;Javier Rivilla Ramos;Jesús Ramos Cano;Jorge Hidalgo Férnandez;J"
+                        "osé Luis Delgado Marín;José Luis GilPérez;José Pérez Dionisio;Juan Jerez García;"
+                        "Julio Benedicto Vicario Mancho;Leticia Roldán Montero;Mª Jesús Garzón Ladrón de "
+                        "Guevara;Manuel María Fernández Gaspar;María Dolores Carrasco Moreno;Mario Martín"
+                        " Abad;Marta Garrido Vaamonde;Martina Torralba Rodríguez;Matilde González Gonzalo"
+                        ";Miguel Ángel Gómez Sánchez;Natalia Casán García;Nuria María Cubas Morera;Oswald"
+                        "o Rafael Molina Villarroel;Pedro Ángel Amor Zárate;Pedro Duarte Bravo;Pedro Marí"
+                        "a García Liquete;Pedro Simarro Pérez;Pilar Salvador Sánchez;Raquel Velasco Sáez;"
+                        "Ricardo Bardo Torres;Rodolfo Bucalo;Rosa María Fuentes Herrero;Santiago Sandoval"
+                        " Igelmo;Sara Martínez Santolaya;Sergio García Montalvo;Susana González Matesanz;"
+                        "Tamara Sánchez López;Tomás Sancho López;Yolanda Porras Borrajo"
+                    ColumnWidths ="5670"
+                    BeforeUpdate ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Quién va a elaborar la gestión de riesgos"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =2834
+                    LayoutCachedTop =5865
+                    LayoutCachedWidth =11780
+                    LayoutCachedHeight =6180
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =0
+                    ForeTint =75.0
+                    ForeShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =3
+                    Left =225
+                    Top =6450
+                    Width =2340
+                    Height =345
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16737792
+                    Name ="Etiqueta29"
+                    Caption ="Aprobado"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x7c7df9ac3c3cf74ca00563b12d73437d
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =6450
+                    LayoutCachedWidth =2565
+                    LayoutCachedHeight =6795
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin ComboBox
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =30
+                    ListWidth =4536
+                    Left =2834
+                    Top =6450
+                    Width =8946
+                    Height =315
+                    TabIndex =7
+                    BackColor =16446961
+                    BorderColor =14136213
+                    ForeColor =4210752
+                    GUID = Begin
+                        0x22726ce1c783024cb12bb7eff30691a5
+                    End
+                    Name ="Aprobado"
+                    RowSourceType ="Value List"
+                    RowSource ="Aitor Solar Azcona;Álvaro Álvarez Toboso;Álvaro García Ramiro;Álvaro González Ca"
+                        "ballero;Ana Rubio Canales;Ángel Lozano García-Prieto;Ángel Luis Martín Olivenza;"
+                        "Ángel Luis Sánchez Cesteros;Ángel Martín-Dorado Caballero;ÁNGELES ARRIBAS GOMEZ;"
+                        "Antonio Sánchez Tejero;Antonio Simarro Moya;Beatriz Cogollo del Toro;Beatriz Nov"
+                        "al Gutiérrez;Blanca Aguado Vicente;Carlos Alonso Carmona;Cristina Serrano Núñez;"
+                        "Daniel Gil Santiuste;David Escudero Lázaro;Emma Delgadillo Gómez;Esperanza del Á"
+                        "lamo Arriba;Félix Sánchez Pimentel;Fernando Durante Fernandez;Gustavo Jonsson Ga"
+                        "rrido;Javier Amo Usanos;Javier Ciruelos Gil;Javier Fernández de Lomana Pérez;Jav"
+                        "ier Mendoza Cano;Javier Rivilla Ramos;Jesús Ramos Cano;Jorge Hidalgo Férnandez;J"
+                        "osé Luis Delgado Marín;José Luis GilPérez;José Pérez Dionisio;Juan Jerez García;"
+                        "Julio Benedicto Vicario Mancho;Leticia Roldán Montero;Mª Jesús Garzón Ladrón de "
+                        "Guevara;Manuel María Fernández Gaspar;María Dolores Carrasco Moreno;Mario Martín"
+                        " Abad;Marta Garrido Vaamonde;Martina Torralba Rodríguez;Matilde González Gonzalo"
+                        ";Miguel Ángel Gómez Sánchez;Natalia Casán García;Nuria María Cubas Morera;Oswald"
+                        "o Rafael Molina Villarroel;Pedro Ángel Amor Zárate;Pedro Duarte Bravo;Pedro Marí"
+                        "a García Liquete;Pedro Simarro Pérez;Pilar Salvador Sánchez;Raquel Velasco Sáez;"
+                        "Ricardo Bardo Torres;Rodolfo Bucalo;Rosa María Fuentes Herrero;Santiago Sandoval"
+                        " Igelmo;Sara Martínez Santolaya;Sergio García Montalvo;Susana González Matesanz;"
+                        "Tamara Sánchez López;Tomás Sancho López;Yolanda Porras Borrajo"
+                    ColumnWidths ="5670"
+                    BeforeUpdate ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    Tag ="OBLIGATORIO"
+                    ControlTipText ="Quién va a elaborar la gestión de riesgos"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =2834
+                    LayoutCachedTop =6450
+                    LayoutCachedWidth =11780
+                    LayoutCachedHeight =6765
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BackTint =8.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =0
+                    ForeTint =75.0
+                    ForeShade =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_Name = "Form_FormGestionRiesgosDatosGenerales"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private WithEvents m_FormExpedientes As Form_FormExpedientesBusqueda
+Attribute m_FormExpedientes.VB_VarHelpID = -1
+Private m_UltimoValorJuridica As String
+Private m_Expediente As Expediente
+Private m_Error As String
+
+
+Private Sub Aprobado_BeforeUpdate(Cancel As Integer)
+    m_ObjProyectoActivo.Aprobado = Nz(Me.Aprobado, "")
+    RellenarBordeCamposObligatorios Me
+End Sub
+
+Private Sub ComandoActualizar_Click()
+    On Error GoTo errores
+    
+   
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Set m_Expediente = Constructor.getExpediente(p_IDExpediente:=Nz(Me.idExpediente, ""), p_Error:=m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    RellenarDatosExpediente m_Expediente, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    RellenarBordeCamposObligatorios Me
+    Me.Elaborado.SetFocus
+    AvanceCerrar
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoActualizar_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+End Sub
+
+Private Sub ComandoIrABusquedaExpedientes_Click()
+    On Error GoTo errores
+    
+   
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If FormularioAbierto("FormExpedientesBusqueda") Then
+        DoCmd.Close acForm, "FormExpedientesBusqueda", acSaveNo
+    End If
+    DoCmd.OpenForm "FormExpedientesBusqueda"
+    If FormularioAbierto("FormExpedientesBusqueda") Then
+        Set m_FormExpedientes = Forms("FormExpedientesBusqueda")
+        If Nz(Me.PalabraClave, "") <> "" Then
+            m_FormExpedientes.PalabraClave = Nz(Me.PalabraClave, "")
+            Form_FormExpedientesBusqueda.Filtrar
+        End If
+        
+    End If
+    AvanceCerrar
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoIrABusquedaExpedientes_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+    AvanceCerrar
+    
+End Sub
+
+Private Sub Elaborado_BeforeUpdate(Cancel As Integer)
+    m_ObjProyectoActivo.Elaborado = Nz(Me.Elaborado, "")
+    RellenarBordeCamposObligatorios Me
+End Sub
+
+Private Sub Form_Unload(Cancel As Integer)
+    On Error GoTo errores
+    
+   
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    RellenarDatosAlObjeto m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    AvanceCerrar
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Unload se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+    AvanceCerrar
+   
+End Sub
+
+Private Sub m_FormExpedientes_Seleccionado(m_Exp As Expediente)
+    On Error GoTo errores
+    
+   
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    RellenarDatosExpediente m_Exp
+    If Nz(Me.idExpediente, "") = "" Then
+        Me.ComandoActualizar.Enabled = False
+    Else
+        Me.ComandoActualizar.Enabled = True
+    End If
+    Me.PalabraClave = Null
+    RellenarBordeCamposObligatorios Me
+    Me.Elaborado.SetFocus
+    AvanceCerrar
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_FormExpedientes_Seleccionado se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+    AvanceCerrar
+   
+End Sub
+
+Private Sub PalabraClave_KeyDown(KeyCode As Integer, Shift As Integer)
+    
+    If Me.ComandoBuscarExpediente.Enabled = False Then
+        Exit Sub
+    End If
+    
+    If KeyCode = vbKeyReturn Then
+        Me.ComandoBuscarExpediente.SetFocus
+        Me.PalabraClave.SetFocus
+        'Debug.Print Me.Pass
+        ' Código que deseas ejecutar cuando se pulse Enter
+        ComandoBuscarExpediente_Click
+        
+        ' Si deseas evitar que Access realice la acción predeterminada de Enter,
+        ' puedes utilizar la siguiente línea:
+        KeyCode = 0
+    End If
+End Sub
+
+
+Private Sub ParaInformeAvisos_BeforeUpdate(Cancel As Integer)
+    m_ObjProyectoActivo.ParaInformeAvisos = Nz(Me.ParaInformeAvisos, "")
+    RellenarBordeCamposObligatorios Me
+End Sub
+
+Private Sub Revisado_BeforeUpdate(Cancel As Integer)
+    m_ObjProyectoActivo.Revisado = Nz(Me.Revisado, "")
+    RellenarBordeCamposObligatorios Me
+End Sub
+
+
+Private Sub Form_Load()
+    
+    On Error GoTo errores
+    
+   
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+   ' Debug.Print Me.IDExpediente.BackColor
+    AvanceCerrar
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Load se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+    AvanceCerrar
+    
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+
+
+
+Private Sub ComandoBuscarExpediente_Click()
+    
+    Dim m_Col As Scripting.Dictionary
+    Dim m_ID As Variant
+    Dim m_Expediente As Expediente
+    
+    Dim m_PalabraClave As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    
+    m_PalabraClave = Nz(Me.PalabraClave, "")
+    If m_PalabraClave = "" Then
+        VBA.DoEvents
+        DoCmd.Hourglass False
+        VBA.DoEvents
+        Exit Sub
+    End If
+    
+    Set m_Col = Constructor.getExpedientesBusqueda(p_PalabraClave:=m_PalabraClave, p_Error:=m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_Col Is Nothing Then
+        Me.idExpediente = Null
+        Me.Juridica = Null
+        Me.CodExp = Null
+        Me.Nemotecnico = Null
+        Me.FechaInicioContrato = Null
+        Me.FechaFinContrato = Null
+        Me.OrganoContratacion = Null
+        Me.ResponsableCalidad = Null
+        Me.CodigoDocumento = Null
+        Me.CorreoRAC = Null
+        If Nz(Me.idExpediente, "") = "" Then
+            Me.ComandoActualizar.Enabled = False
+        Else
+            Me.ComandoActualizar.Enabled = True
+        End If
+        RellenarBordeCamposObligatorios Me
+        ComandoIrABusquedaExpedientes_Click
+        VBA.DoEvents
+        DoCmd.Hourglass False
+        VBA.DoEvents
+        Exit Sub
+    End If
+    
+    If m_Col.Count = 1 Then
+        For Each m_ID In m_Col
+            Set m_Expediente = m_Col(m_ID)
+            RellenarDatosExpediente m_Expediente, m_Error
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+            If Nz(Me.idExpediente, "") = "" Then
+                Me.ComandoActualizar.Enabled = False
+            Else
+                Me.ComandoActualizar.Enabled = True
+            End If
+        Next
+        Me.PalabraClave = Null
+        RellenarBordeCamposObligatorios Me
+        VBA.DoEvents
+        DoCmd.Hourglass False
+        VBA.DoEvents
+        Exit Sub
+    End If
+    If FormularioAbierto("FormExpedientesBusqueda") Then
+        DoCmd.Close acForm, "FormExpedientesBusqueda", acSaveNo
+    End If
+    DoCmd.OpenForm "FormExpedientesBusqueda"
+    If FormularioAbierto("FormExpedientesBusqueda") Then
+        Set m_FormExpedientes = Forms("FormExpedientesBusqueda")
+        m_FormExpedientes.PalabraClave = Nz(Me.PalabraClave, "")
+        Form_FormExpedientesBusqueda.Filtrar
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoBuscarExpediente_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+End Sub
+
+Public Function RellenarDatosExpediente(Optional p_Expediente As Expediente, Optional ByRef p_Error As String) As String
+    
+    Dim m_EnUTE As EnumSiNo
+    On Error GoTo errores
+    
+    If p_Expediente Is Nothing Then
+        Me.idExpediente = Null
+        Me.Juridica = Null
+        Me.CodExp = Null
+        Me.Nemotecnico = Null
+        Me.Titulo = Null
+        Me.FechaInicioContrato = Null
+        Me.FechaFinContrato = Null
+        Me.OrganoContratacion = Null
+        Me.ResponsableCalidad = Null
+        Me.CodigoDocumento = Null
+        Me.CorreoRAC = Null
+        Me.EnUTE = Null
+        Exit Function
+    End If
+    With p_Expediente
+        Me.idExpediente = .idExpediente
+        Me.Juridica = .CadenaJuridicas
+        Me.CodExp = .CodExp
+        If Not m_ObjProyectoAlInicio Is Nothing Then
+            If m_ObjProyectoAlInicio.NombreProyecto <> "" Then
+                Me.Nemotecnico = m_ObjProyectoAlInicio.NombreProyecto
+            Else
+                Me.Nemotecnico = Null
+            End If
+        Else
+            If .Nemotecnico <> "" Then
+                Me.Nemotecnico = .Nemotecnico
+            Else
+                Me.Nemotecnico = .Titulo
+            End If
+        End If
+        Me.Titulo = .Titulo
+        
+        If IsDate(.FechaInicioContrato) Then
+            Me.FechaInicioContrato = .FechaInicioContrato
+        End If
+        
+        If IsDate(.FechaFinContrato) Then
+            Me.FechaFinContrato = .FechaFinContrato
+        End If
+        If Not .OrganoContratacion Is Nothing Then
+            Me.OrganoContratacion = .OrganoContratacion.OrganoContratacion
+        End If
+        If Not .ResponsableCalidad Is Nothing Then
+            Me.ResponsableCalidad = .ResponsableCalidad.Nombre
+        End If
+        If Not m_ObjProyectoAlInicio Is Nothing Then
+            If m_ObjProyectoAlInicio.EnUTE <> "" Then
+                Me.EnUTE = m_ObjProyectoAlInicio.EnUTE
+            Else
+                Me.EnUTE = Null
+            End If
+        Else
+            If .EnUTE = EnumSiNo.Sí Then
+                Me.EnUTE = "Sí"
+            Else
+                Me.EnUTE = "No"
+            End If
+            
+        End If
+        
+        If Not m_ObjProyectoAlInicio Is Nothing Then
+            If m_ObjProyectoAlInicio.CodigoDocumento <> "" Then
+                Me.CodigoDocumento = m_ObjProyectoAlInicio.CodigoDocumento
+            Else
+                Me.CodigoDocumento = Null
+            End If
+        Else
+            If .CodigoDocParteExpediente <> "" Then
+                Me.CodigoDocumento = .CodigoDocParteExpediente
+            Else
+                Me.CodigoDocumento = Null
+            End If
+        End If
+        Me.CorreoRAC = .CadenaCorreoRACs
+        
+    End With
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método RellenarDatosExpediente ha devuelto el error: " & vbNewLine & Err.description
+        
+    End If
+End Function
+Public Function RellenarDatosAlObjeto(Optional ByRef p_Error As String) As String
+    
+    
+    On Error GoTo errores
+    
+    If m_ObjProyectoActivo Is Nothing Then
+        Exit Function
+    End If
+    With m_ObjProyectoActivo
+        .idExpediente = Nz(Me.idExpediente, "")
+        .CodigoDocumento = Nz(Me.CodigoDocumento, "")
+        .ParaInformeAvisos = Nz(Me.ParaInformeAvisos, "")
+        .EnUTE = Nz(Me.EnUTE, "")
+        .CorreoRAC = Nz(Me.CorreoRAC, "")
+        .Elaborado = Nz(Me.Elaborado, "")
+        .Revisado = Nz(Me.Revisado, "")
+        .Aprobado = Nz(Me.Aprobado, "")
+        
+    End With
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método RellenarDatosAlObjeto ha devuelto el error: " & vbNewLine & Err.description
+        
+    End If
+End Function
+
+Public Function EstablecerDatos(Optional ByRef p_Error As String) As String
+    
+    On Error GoTo errores
+    Me.PalabraClave.Enabled = True
+    Me.PalabraClave.Locked = False
+    Me.ComandoIrABusquedaExpedientes.Enabled = True
+    Me.ComandoBuscarExpediente.Enabled = True
+    If m_EsAlta = EnumSiNo.No Then
+        If m_ObjProyectoAlInicio Is Nothing Then
+            Set m_ObjProyectoAlInicio = Constructor.getProyecto(m_ObjProyectoActivo.IDProyecto, p_Error)
+            If p_Error <> "" Then
+                Err.Raise 1000
+            End If
+            If m_ObjProyectoAlInicio Is Nothing Then
+                p_Error = "No se conoce la gestión de riesgos"
+                Err.Raise 1000
+            End If
+        End If
+    End If
+    
+    
+    
+    If Not m_ObjProyectoAlInicio Is Nothing Then
+        If Not m_ObjProyectoAlInicio.EdicionActiva Is Nothing Then
+            If Not m_ObjProyectoAlInicio.EdicionActiva.FechaPublicacion <> "" Then
+                Me.PalabraClave.Enabled = False
+                Me.PalabraClave.Locked = True
+                Me.ComandoIrABusquedaExpedientes.Enabled = False
+                Me.ComandoBuscarExpediente.Enabled = False
+            End If
+        End If
+    End If
+    If Nz(Me.idExpediente, "") = "" Then
+        Me.ComandoActualizar.Enabled = False
+    Else
+        Me.ComandoActualizar.Enabled = True
+    End If
+    If m_EsAlta = Empty Then
+        p_Error = "No se sabe si es para alta o no"
+        Err.Raise 1000
+    End If
+    Me.Elaborado = ""
+    Me.Revisado = ""
+    Me.Aprobado = ""
+    EstablecerCombos p_Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    If Form_FormGestionRiesgos.blnPermitidoEditar = False Then
+        Me.AllowEdits = False
+    Else
+        Me.AllowEdits = True
+    End If
+    If m_ObjProyectoActivo Is Nothing Then
+        RellenarBordeCamposObligatorios Me
+        Exit Function
+    End If
+    With m_ObjProyectoActivo
+        
+        RellenarDatosExpediente .Expediente, p_Error
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+
+        If IsDate(.FechaCierre) Then
+            Me.FechaCierre = .FechaCierre
+        End If
+
+        
+        If .ParaInformeAvisos = "" Then
+            .ParaInformeAvisos = "Sí"
+        End If
+        
+        Me.ParaInformeAvisos = .ParaInformeAvisos
+        
+
+        
+        If .Elaborado <> "" Then
+            Me.Elaborado = .Elaborado
+        Else
+            Me.Elaborado = Null
+        End If
+        If .Revisado <> "" Then
+            Me.Revisado = .Revisado
+        Else
+            Me.Revisado = Null
+        End If
+        If .Aprobado <> "" Then
+            Me.Aprobado = .Aprobado
+        Else
+            Me.Aprobado = Null
+        End If
+        
+    End With
+    
+    RellenarBordeCamposObligatorios Me
+    
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerDatos ha devuelto el error: " & vbNewLine & Err.description
+        
+    End If
+End Function
+
+Private Function EstablecerCombos(Optional ByRef p_Error As String) As String
+    
+    Dim m_UsuarioRed As Variant
+    Dim m_ObjUsuario As Usuario
+    Dim m_ColUsuariosTecnicos As Scripting.Dictionary
+   
+    Dim m_SoloActivos As EnumSiNo
+    On Error GoTo errores
+    
+    
+    
+    
+    
+    Me.ParaInformeAvisos.RowSource = "Sí;No"
+    Me.ParaInformeAvisos.Requery
+    
+   
+    
+    
+    Me.Elaborado.RowSource = ""
+    Me.Elaborado.Requery
+    Me.Revisado.RowSource = ""
+    Me.Revisado.Requery
+    Me.Aprobado.RowSource = ""
+    Me.Aprobado.Requery
+    If m_ObjProyectoAlInicio Is Nothing Then
+        m_SoloActivos = EnumSiNo.Sí
+    Else
+        m_SoloActivos = EnumSiNo.No
+    End If
+    
+    EstablecerComboTecnicos Me.Elaborado, m_SoloActivos, p_Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    EstablecerComboTecnicos Me.Revisado, m_SoloActivos, p_Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    EstablecerComboTecnicos Me.Aprobado, m_SoloActivos, p_Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerDatos ha devuelto el error: " & vbNewLine & Err.description
+        
+    End If
+    
+    
+End Function
+
+
+
+Private Function EstablecerComboTecnicos( _
+                                            ByRef cmb As ComboBox, _
+                                            Optional ByRef p_SoloActivos As EnumSiNo = EnumSiNo.Sí, _
+                                            Optional ByRef p_Error As String _
+                                            ) As String
+    
+    Dim m_objColUsuarios As Scripting.Dictionary
+    Dim m_UsuarioRed  As Variant
+    Dim m_ObjUsuario As Usuario
+    
+    On Error GoTo errores
+    cmb.RowSource = ""
+    If p_SoloActivos = Empty Then
+        p_SoloActivos = EnumSiNo.Sí
+    End If
+    If p_SoloActivos = EnumSiNo.Sí Then
+        Set m_objColUsuarios = m_ObjEntorno.ColUsuariosTecnicosActivos
+    Else
+        Set m_objColUsuarios = m_ObjEntorno.ColUsuariosTecnicos
+    End If
+    If m_objColUsuarios Is Nothing Then
+        Exit Function
+    End If
+    
+    For Each m_UsuarioRed In m_objColUsuarios
+        Set m_ObjUsuario = m_objColUsuarios(m_UsuarioRed)
+        cmb.AddItem m_ObjUsuario.Nombre
+        Set m_ObjUsuario = Nothing
+siguiente:
+    Next
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerComboTecnicos ha devuelto el error: " & vbNewLine & Err.description
+    End If
+End Function

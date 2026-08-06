@@ -1,0 +1,1540 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =815343906
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =9088
+    DatasheetFontHeight =11
+    ItemSuffix =3
+    Left =465
+    Top =1980
+    Right =9555
+    Bottom =5430
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0xb746fd5390387248bc2d5e22a862ec4a
+    End
+    NameMap = Begin
+        0x0acc0e5500000000ec9f381b29eaaf40bdf2eca3f6384f340000000059b6240c ,
+        0x9a2be64000000000000000005400620053007500620063006f006e0074007200 ,
+        0x610074006100630069006f006e0065007300000000000000483560ad10482040 ,
+        0xa3418834c87b628f07000000ec9f381b29eaaf40bdf2eca3f6384f3445006d00 ,
+        0x7000720065007300610000000000000000000000000000000000000000000000 ,
+        0x0c000000050000000000000000000000000000000000
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000f6a0050118ec00000000000000000000 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000000000 ,
+        0x00
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00006547a80100001973df2785000000e07d7f63a80100006400000000000000 ,
+        0x230000000000000023000000000000000000b01200000000ea7d7f63a8010000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000000000000000000000640000000100000000000000 ,
+        0x10040000000000000400000000000000e07d7f63a80100002300000000000000 ,
+        0x00006547a8010000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c006500000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =3420
+            Name ="Detalle"
+            GUID = Begin
+                0xc6f5a6146507fb4897caa282d9cdea6a
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Width =9088
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0x590f4ab3cc7d8148b3effb9f6e1d1e83
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =9088
+                    LayoutCachedHeight =686
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =2734
+                    Width =9088
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0x5f0cbc3349abc84384f9a927bb543f74
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =2734
+                    LayoutCachedWidth =9088
+                    LayoutCachedHeight =3420
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6275
+                    Top =990
+                    Width =1035
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta142"
+                    Caption ="Fecha Alta"
+                    GUID = Begin
+                        0xb06b27921b4950468863a35de60bfd96
+                    End
+                    LayoutCachedLeft =6275
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =7310
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =7378
+                    Top =990
+                    Width =1413
+                    Height =297
+                    TabIndex =1
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="FechaAlta"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0x3cbc5e943317fa4790eb28e799807c7c
+                    End
+
+                    LayoutCachedLeft =7378
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =8791
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    ColumnHeads = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =20
+                    ListWidth =5670
+                    Left =1545
+                    Top =990
+                    Width =3570
+                    Height =297
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    ColumnInfo ="\"\";\"\";\"10\";\"510\""
+                    GUID = Begin
+                        0xe3f6bba6b3f89a4293f6d5f033ffa4c6
+                    End
+                    Name ="ComboEmpresa"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT DISTINCT TbSubcontrataciones.Empresa FROM TbSubcontrataciones ORDER BY Tb"
+                        "Subcontrataciones.Empresa; "
+                    ColumnWidths ="5670"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =1545
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =5115
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =297
+                    Top =983
+                    Width =1185
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta198"
+                    Caption ="Empresa"
+                    GUID = Begin
+                        0xe039da1328bd124db3ab13878986756d
+                    End
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =983
+                    LayoutCachedWidth =1482
+                    LayoutCachedHeight =1280
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =297
+                    Top =1429
+                    Width =1185
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta201"
+                    Caption ="Descripción"
+                    GUID = Begin
+                        0x28bdcbc701aada408c1aca7fa6489951
+                    End
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =1429
+                    LayoutCachedWidth =1482
+                    LayoutCachedHeight =1726
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1545
+                    Top =1436
+                    Width =7246
+                    Height =555
+                    TabIndex =2
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Descripcion"
+                    GUID = Begin
+                        0x3fa096ce52d2fc439f7f4896dfd03069
+                    End
+
+                    LayoutCachedLeft =1545
+                    LayoutCachedTop =1436
+                    LayoutCachedWidth =8791
+                    LayoutCachedHeight =1991
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =6485
+                    Top =2140
+                    Width =825
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta219"
+                    Caption ="Importe"
+                    GUID = Begin
+                        0x32d1a86a45e89c49ad4278a2805abfbc
+                    End
+                    LayoutCachedLeft =6485
+                    LayoutCachedTop =2140
+                    LayoutCachedWidth =7310
+                    LayoutCachedHeight =2437
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =7378
+                    Top =2140
+                    Width =1413
+                    Height =297
+                    TabIndex =4
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Importe"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    GUID = Begin
+                        0xd51257b81d109a4e89b42175e0f23753
+                    End
+
+                    LayoutCachedLeft =7378
+                    LayoutCachedTop =2140
+                    LayoutCachedWidth =8791
+                    LayoutCachedHeight =2437
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =297
+                    Top =2140
+                    Width =1185
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta222"
+                    Caption ="Fecha Fin"
+                    GUID = Begin
+                        0xc8d12a90e3548948a0475de8141bde4d
+                    End
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =2140
+                    LayoutCachedWidth =1482
+                    LayoutCachedHeight =2437
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1545
+                    Top =2140
+                    Width =1713
+                    Height =297
+                    TabIndex =3
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="FechaFin"
+                    Format ="Short Date"
+                    GUID = Begin
+                        0xc8bdaa1ac6c84140a4b66940193f707b
+                    End
+
+                    LayoutCachedLeft =1545
+                    LayoutCachedTop =2140
+                    LayoutCachedWidth =3258
+                    LayoutCachedHeight =2437
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Image
+                    BackStyle =1
+                    OldBorderStyle =1
+                    SizeMode =1
+                    Left =8391
+                    Top =60
+                    Width =555
+                    Height =555
+                    BackColor =14136213
+                    BorderColor =14136213
+                    Name ="ImagenAnexo"
+                    OnClick ="[Event Procedure]"
+                    Picture ="Sobre.png"
+                    GUID = Begin
+                        0x4c03c2608b4f1446816a663a13a5518b
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000080000000800806000000c33e61 ,
+                        0xcb0000000473424954080808087c086488000000097048597300000b1300000b ,
+                        0x1301009a9c1800000fbd49444154789ced9d69981cd57586bf73aaba471283c4 ,
+                        0xa8bb4612bb1d114362ec908445800081c823c02c010bfc841070020a90082c9c ,
+                        0x0488a6bbd2332356831c0b071b6c27c19027046c16036211ab84241227784980 ,
+                        0x38c4460683a4ee193c966034b59c931fa34057f7cc88695557f552ef3fddd375 ,
+                        0xcf51dd6faace5dea5e2021212121212121212121212121212121212121212121 ,
+                        0xa195a1b803889dc56a58077bb70040f135f38bb88ffcb8438a92b616c0becb64 ,
+                        0xea8e4eef6e223a1b0004fa9da9dbcc0bde5ac9c371c716156d2b8039b6661df1 ,
+                        0x1e62c2d1e5e5a258dfe11a67bc7d030fc4155b94b4a500baede18fab9a8f0338 ,
+                        0x68cc1f087ec2ea2ddab262eacfa28d2c7a38ee00a22693730ef77dde80f11a1f ,
+                        0x0018bfee116fccd8ceef4617593cb49500b2b6fb19a83ec7ccdde5e50abd4ba1 ,
+                        0x7795973173377c7d3e9b734f8b36ca68691b0174e79c4bc9978798795ac0a0e8 ,
+                        0x2bf5a62e2af5a62e826245b98999a791cac3d99cb324d26023a4f573005b39ab ,
+                        0xde0a02ae091ac457e0b2526fc79de5a599bcf3a72cfa77600efe71285614fbcc ,
+                        0x1c405af79823a4b505606bdaf2dd6f81e9fcf26211799f88cf2df5a51e1debb2 ,
+                        0x4cce3d1d24f732786a79b98a7ebb64a42e46819c7a861d252d2b8019b6ee9556 ,
+                        0xe7bb002f282f1791ad30e8b48142fafb135d3fd3768e20d547186c95972be469 ,
+                        0x7f247dcebb37d2503de28e9a961440d772d9cf30fcd504fc6685e97f88bc455b ,
+                        0x0b537ffa51eab1ece1b9e29bab9931b7bc5c043f52314e1dbc8e7f115ad031d1 ,
+                        0x7202b07a463e0dd06360dabbbc5c810d2932cf78a740a5c9d437fb5ab17cd37f ,
+                        0x0484230206d1b7087aead6fe8e1f8710766cc42e804cce399c899608b08021fb ,
+                        0x039c8a3ba6681117e037a0784655be5eeaef78394aefb109c0b2b5537df73662 ,
+                        0xba30ae181a946f98645ef94e81de8fc2592c02b06ced54f19e22c25171f86f02 ,
+                        0xd69a642e8a4204b10c04a9ba5f4d1a7f42e67beaad8cc251e44f809deffc7f0d ,
+                        0x140a5e5103571bdb8d67b7dcc2ef451d539c58b67612bc85aab80995f3132487 ,
+                        0x150b1d3fa8a77fb39e958f052b5d12909de015df30e60d16f85751c7d208140b ,
+                        0xb41dc083d36d7921e5fb2f95773955780980cbebe93ff2578000818119357075 ,
+                        0xbb367e39bf2af0205370b89a1427d5db6fe402609603caff6d6c379e8d3a8646 ,
+                        0xc567e3a94001cbc7eaed33862430d8cf6fb777fe440c16685bb0a4fe63226d33 ,
+                        0x1ddc1c443fd39808a0cd4904d0e6240268731201b4398900da9c44006d4ee443 ,
+                        0xc193c5cabb2db508b3d89b8a7d0d4639c913a0cd4904d0e6240268731a3e0768 ,
+                        0xb47766ab11e9136074c56ec264e8b6473e55cffa23134077ce3d198cb551f96b ,
+                        0x1554b1aedb7617d6abfe480460e5bd0b55e53180f78cc25f6bc17baa2fabad1e ,
+                        0xef8fea527b3d2afd10a56cdec901fa0f606ef87ca3616136c1fa8fd99cd30368 ,
+                        0xa83951fd1ac556d352ef76802eae9b8f368388faac1e6fffa2a197a3405e1875 ,
+                        0xd6e50960d9da69a9f3308040e38bc8f67af86b65aaee19e3124b9c872c5b3bc3 ,
+                        0xa83f740158b6ce86ef3d0ff029418bbc43c07161fb6b7508384e4436070bf954 ,
+                        0xa8f79c65ebec10ea0f8f8cbde360f8bc9a990eac30bd6af8c6299b57f0a6cab1 ,
+                        0xfd5df5f3db6d2e60acfb337bb91ce093ff38180797db44f40d1872ca4061ca6b ,
+                        0xb5c613da13209b73e6b3d2fa311a7fade398c76c5ec19bc2f2d56e6c5ec19b1c ,
+                        0xcf3c5a14ebcacb99e940565a6fd9ceb1b5d61d8a00acbcb758499f02b82b68d1 ,
+                        0xfb66bc6b9c3c7403bd1b869f7666e8067ab7eb97c64251bd3f68e12e515d63e5 ,
+                        0xbdc5b5d4bbdb02c8e69d6580fe0b833b0206c5ca626feabcd757f1c8eefa4818 ,
+                        0xe5f5553c32d0973a17c097cbcb47efbd7fef685b4c8eddee0612e8d6ddad6322 ,
+                        0x92b9808f0a1301b70298d447a5f51b07202cb37adcbd670cc985c953201ce62e ,
+                        0x958ea12ef72e80ce0dabcefa8e04329d37d4e53f31c3d6bdeaeaa70d9861eb5e ,
+                        0x435dfe1361363e10cd5cc0f129df5b3bd3967d23f0d592742d97fd52eaad0370 ,
+                        0x7cd875872e00855e0548a02f4b8c4f1aea6decee1939346c7fad4e77cfc8a1a6 ,
+                        0xe16da8daf14c445475d2495f25a10ba0d49b5e09e2730552f1dea77d34990e9e ,
+                        0x34a3f78cf6292f13911d307871a92ffde5f1aefba8d4e515502ca4ee67a59320 ,
+                        0x3258e16e463dfcb536c17b26222583e8c46221f5dd506a0fa392b128f6a55f54 ,
+                        0x43e789e0236dca98b06b04f85f821ebdb52fbd21ac3aeb3a475f2a4cf9c92c5b ,
+                        0xe689fa8f00387ccc1fd99a9e68efdd769a0b98693b47609cffad022fa55ce3f4 ,
+                        0xcdd7a78a61c653f75ec096026fe5f78c05507d782cbb25ceeaaeabb5ed5f0d59 ,
+                        0xdb3d957c1d73b714557d70ca3663c1e6eb39d4c607225a12b6e5167eaff85aea ,
+                        0x6c557cb5ca487c2277b4773731db33f2c7a4f270d559060014b8adc4a973ea75 ,
+                        0x905574ab82ef23bfd4672e85ea5f8e11c4a1edd94d54cae69c1e62fe26c046d0 ,
+                        0x262ad0bf28f5a696a24052af08225ea7475aecc397b279ef4d12ff2e30a7cb6c ,
+                        0xfb28745dc6767f7fa0907ae6ff4b5b762e60b11ad943bcdb087469a54920230c ,
+                        0xe382815ef3be7a8711cb9741a55ef35e255a0848709a98793aab3c9ee9f1fe20 ,
+                        0x8eb8a262df6532357bb07b3f01558d0f9141265a588ca0f181183f0d2bf5a5d7 ,
+                        0xfaa2c788e81b410ba798f51e2bef5c1df60ad84660ba2d33873bfd35447456a5 ,
+                        0x4d809f09f4e86221bd6eac6beb41acdf060ef64f79958dd43c00ff5e6da51bb2 ,
+                        0x79ef362c56a3dad69ccc5e2e0774f8fe8b958755eee4df4c328e1ae89ff2df51 ,
+                        0xc614fbc7a1c5026d06992740e5b14a1b0197670f71bf33c7d6aaecb8d9e8b647 ,
+                        0x3ee593b7be725d1f0040e51193cc13b614786bd471c52e006074bfdc22a7cf04 ,
+                        0x7047a58d4067baea3d33fb5ab1c6b8b429c8e4dc05ea636de5292600a0c0d78a ,
+                        0xafa5cf8aea7c804a1a420000800279c55ef35240ffbad244c091aee1afb7960f ,
+                        0xff5a1ca1ed0ed9bc771eab3c0ee6e9418b28a0d7947a5397c5796279e3080000 ,
+                        0x405aec4d5f2fa03f1c3d4ae5439831570cde30d3768e18efea46239b73be40d0 ,
+                        0x7f0e76770188380ae3fc626ffac69842fb8086fc5e6fa0d7bc279373df669207 ,
+                        0xca67c3186c41f192957727babcb111f9a5129d55ea359f8f3b14a0e19e001f32 ,
+                        0xd0977a9605c700fa66dcb184854237f9861e53ea4b3744e3030d2c0000d8d2df ,
+                        0xf15f42e65122a8eba9199120f80f78e6bcc1c29457e20ea59c861600000c14f8 ,
+                        0x6d8c18c709e489b863a91d590dc33cbe741dbf1377249534640e50c9c0cdbc0d ,
+                        0x4bf474abdbbb1d8c3fa9b4abca1ae1d439719d3c92edd97190b2f10403d5073c ,
+                        0x08ee2c1ae9d03ee70e9b867f027cc01de416fbcd4b5435576922e285a4fe0b19 ,
+                        0x5baafad9f56656ce395241ebc76a7c85f614fb534b1ab5f1816612000080b4d4 ,
+                        0x97ee87d0851009dc54063ecdea6d9c658f7c32aa68b2b6fb194ff51966ce062d ,
+                        0xe292d005a5def48aa862a9952613c028c57ef32e225e04918a473eed278a7599 ,
+                        0x9cbb60ec2bc323db337231a93c58bd8843868478d1d67ef3ee7ac710064d2900 ,
+                        0x00d8da977a9a806301ad38c19b67b0cae399bc777ebd7c5b39f76f88f9ceea45 ,
+                        0x1cfa26138e2d5fcfd0e834ad0000606b7fc78f7d328f1220788237739ae17fdb ,
+                        0xca3bd786ea70b11a568f7b070876a549801ffa9e396f4ba1e33f43f559679a5a ,
+                        0x00003058e0b764c49caf2a6b82162680aecbe6dddbc398529e63eb34eb10f701 ,
+                        0x302ea9b4a9ca931836e60f5ec7bf18ebda46a629ba81bbe2dd1b6908b69e96f5 ,
+                        0xdd3b2a4f2327e052eb10771fdf96cb5380430ef4fd347c13f052dbe14fe9247f ,
+                        0xd33bf03107fe786bef2c5b3b5df59e24d0bc4a9b08fe7ec0482fc1cd8d9be94f ,
+                        0x444b08000050804b39faf9d8463add50ff74018014d0b173edbdec01bcaf8035 ,
+                        0x1b8002186f8e41bd71375362c2cf1bb99bb72b5a4300b6a6b3befb0d105d10b9 ,
+                        0x6f829dc9bb070c6c3697e00e6aba59aaa6cf0166d8ba9725ce6ae2181a7f270c ,
+                        0x5c949dedac9e69cbf45dffbab1686a0174d9ba7f4abd75203e31ee58087c12a9 ,
+                        0xbfaed93e7069da5740b667e43052e75180e7040c22a244cb4a7de9afd4d57fce ,
+                        0xb982545782f9833f22060e85efbd64d923a7150b1d4d3183d9944f80aced9e3a ,
+                        0xfadd7cb0f105f29e1a7c66bd1b1f004a7de9af08f15902091e7ecdb437142f58 ,
+                        0xb6bba8de318441d309209b739690cac30cde2360107d9b04f34b85d42351c532 ,
+                        0xd097fa1e09e643f4eda085f7842fdfcbf68c34fc46d9cd23005b399b77af27a2 ,
+                        0xaf570ec18ae007be611e59eaef7839eab04afd1d2ffb8679a4003f0c18984d62 ,
+                        0xbed3cab9fd51c734199a420073974a87a5ee3d045c536d9547d930e70f16f8ad ,
+                        0xe8231b65b0c06f61d8980fc8a35546c272abc7b91bb6a6c7b834761a5e00d36d ,
+                        0x9939b497ff24409fabb4896255f1d5f499c502c5be0dfdc0cdbcad48e9b344b1 ,
+                        0xaacac874be254e436e97d7d00298b57cf8631dbeff22a8629bf9d11db2ae1ce8 ,
+                        0x4b5d11e79afa2a0ae40df4a5ae50d52b21121c56263e21ed7b2fce5e2e07c414 ,
+                        0xdd9834ac003239e7708f7863d516e91166fab5327e0f01bfe192bb316b8ffc76 ,
+                        0x4ca155d19002c8d8ee19507d8e99bb03861832fd5a19af87c0ccb355f14236e7 ,
+                        0x9e16576ce5349c00acbcf367eccb03952b6de2ccf46b65bc1e0283f7209287ba ,
+                        0x734ef5fe0011d33802b095ad9cfb25806e2b1f5d1b25fe4cbf56c6ef21b0a144 ,
+                        0xb767f3ee8d71ee83d01002d877994ccd887b2f085facb43552a65f2b13f51008 ,
+                        0xf82b2beffed3dca5d231d6b5f5267601ccb1353bdce9af61a2cf060c8d9ae9d7 ,
+                        0xca443d04d0e786bafca7a6db3233eab0621580650fcff5d45b5fb963463364fa ,
+                        0xb5326e0f0198dfa1fefa59cb87ab3f2ea923b109a03be7cc139f370038286068 ,
+                        0xa24cbf56c69f43c0273ce28d999c33f6aeaa7520160158b67bb63fc60715cd98 ,
+                        0xe9d7cab83d04e66ea83e97b1dd33a2882372016473ce17a0723f334f095a9a37 ,
+                        0xd3af95f17a08cc3c8d7d79c0ca397f5eef18a213c06235acbcfbb744b47274c9 ,
+                        0xf687b442a65f2be3f610981944abacbc7b4b3dbb8991ac089a63eb3457dc7b80 ,
+                        0x8abdf176aede1968c1646f5214c81b00aec8e69cd72b571901b82a9373f7ef64 ,
+                        0xbd6053817684edbaee4f8059b6747be23d5bb931622b67fab5325e0f81893ebb ,
+                        0x5dbca7e7d89a1defda5a094100c1cd9ccaf7f4cbf4ecf884e7fb1b40086eecd4 ,
+                        0x06997ead8c3b874038da532fb0535af509e232e965e9bb2d0091e099c0be7827 ,
+                        0x0380653bc732683d333e1efc7dfb64fab532ee2a23e02021ded86d3b470100ed ,
+                        0xbcd71fc2933e9d65b705c040e0900355dc94ed19b95854d780b96264abfd32fd ,
+                        0x5a99a08790f5559fb1f2239ff7153795db14787ab27e763bbbcce69cdf21a2ef ,
+                        0xefea77a25835f09ab9ac258675a3c4563323dead4c58bacbdf8afc56b1bfa3f2 ,
+                        0xa93121a1742f323deeb798f1f930ea4aa80d05be56ea4d5d36d9eb42e90598c3 ,
+                        0xc65251ac0fa3ae849a787eca36e3aa5a2e0c45005b6ee1f7ccf78ddf83e09b61 ,
+                        0xd497f0511155c5edd3c85c54eb9942a18f30657b460e03f312129c08c88155fb ,
+                        0xe426ec1e220ec03f55c61a26b9736ba1e3477187949090909090909090909090 ,
+                        0x909090d01cfc1fe41381fefd39f6160000000049454e44ae426082
+                    End
+
+                    LayoutCachedLeft =8391
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =8946
+                    LayoutCachedHeight =615
+                    TabIndex =8
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7086
+                    Top =2946
+                    Width =1065
+                    Height =405
+                    FontWeight =700
+                    TabIndex =5
+                    Name ="ComandoRegistrar"
+                    Caption ="Registrar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xde5c9768ace4e143be9964e7a8e21a2c
+                    End
+
+                    LayoutCachedLeft =7086
+                    LayoutCachedTop =2946
+                    LayoutCachedWidth =8151
+                    LayoutCachedHeight =3351
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8370
+                    Top =2775
+                    Width =576
+                    Height =576
+                    FontWeight =700
+                    TabIndex =6
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir del formulario"
+                    GUID = Begin
+                        0xc43124971d0e254093f275512da8a444
+                    End
+
+                    LayoutCachedLeft =8370
+                    LayoutCachedTop =2775
+                    LayoutCachedWidth =8946
+                    LayoutCachedHeight =3351
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =270
+                    Top =120
+                    Width =7950
+                    Height =540
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="Edición de Subcontratación"
+                    GUID = Begin
+                        0x65315589361d77439ceb80b7bab44bec
+                    End
+                    LayoutCachedLeft =270
+                    LayoutCachedTop =120
+                    LayoutCachedWidth =8220
+                    LayoutCachedHeight =660
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =225
+                    Top =60
+                    Width =7950
+                    Height =540
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="Edición de Subcontratación"
+                    GUID = Begin
+                        0x2af59e36dd79ce44aa712ef514652c71
+                    End
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =8175
+                    LayoutCachedHeight =600
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =165
+                    Top =1050
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta4"
+                    Caption ="*"
+                    GUID = Begin
+                        0x44644b73b05d1649b7da7b34bba2a40f
+                    End
+                    LayoutCachedLeft =165
+                    LayoutCachedTop =1050
+                    LayoutCachedWidth =345
+                    LayoutCachedHeight =1347
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =6075
+                    Top =990
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta1"
+                    Caption ="*"
+                    GUID = Begin
+                        0x79ebc15af25c944884696ebad90d3516
+                    End
+                    LayoutCachedLeft =6075
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =6255
+                    LayoutCachedHeight =1287
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =6360
+                    Top =2205
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta2"
+                    Caption ="*"
+                    GUID = Begin
+                        0x45816d486d62f440ac40df12ac1e0ed3
+                    End
+                    LayoutCachedLeft =6360
+                    LayoutCachedTop =2205
+                    LayoutCachedWidth =6540
+                    LayoutCachedHeight =2502
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    Visible = NotDefault
+                    OverlapFlags =215
+                    Left =297
+                    Top =3066
+                    Width =2550
+                    Height =285
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =13209
+                    BorderColor =0
+                    ForeColor =683236
+                    Name ="lblFacturada"
+                    Caption ="Facturado"
+                    GUID = Begin
+                        0xfad51bfa15ac794cbe7d320006559ee9
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =3066
+                    LayoutCachedWidth =2847
+                    LayoutCachedHeight =3351
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =9
+                    ForeTint =100.0
+                    ForeShade =75.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =6576
+                    Top =2948
+                    Width =422
+                    Height =422
+                    FontWeight =700
+                    TabIndex =7
+                    Name ="ComandoAdjuntar"
+                    Caption ="Adjuntar"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaadadadadadadadad00000000000adada ,
+                        0x003333333330adad0b03333333330ada0fb03333333330ad0bfb03333333330a ,
+                        0x0fbfb000000000000bfbfbfbfb0adada0fbfbfbfbf0dadad0bfb0000000adada ,
+                        0xa000adadadad000ddadadadadadad00aadadadad0dad0d0ddadadadad000dada ,
+                        0xadadadadadadadad
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x130762ecf399444dac74bcf7a24e5969
+                    End
+
+                    LayoutCachedLeft =6576
+                    LayoutCachedTop =2948
+                    LayoutCachedWidth =6998
+                    LayoutCachedHeight =3370
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Dim strIDSubContratacion As String, strURLAnexo As String, strEscritura As String, strEstaFacturado As String
+Dim strEmpresaAlInicio As String, strFechaInicialAlInicio As String, strDescripcionAlInicio As String, strFechaFinAlInicio As String, _
+    strImporteAlInicio As String, strFormularioQueAbre As String
+Private Function HaHabidoCambios() As Boolean
+     '--------------------------------------------------------
+    ' Función creada por Andrés Román del Peral el día  13/06/2013
+    '   -Modificaciones:
+    
+    '   -Funcionamiento:
+    '       -Va a True si hay cambios y False si no
+    
+    '   -Llamada desde
+    
+    '   -Devuelve:
+    '       HaHabidoCambios = True Or False
+    '
+    '           strEstado="1"----> True Or False
+    '           strEstado="-1"--->False
+    '-------------------------------------------------------------------
+    Dim strEmpresa As String, strFechaInicial As String, strDESCRIPCION As String, strFechaFin As String, strImporte As String
+    On Error GoTo errores
+    strEmpresa = Nz(Me.ComboEmpresa, "")
+    strFechaInicial = Nz(Me.FechaAlta, "")
+    strDESCRIPCION = Nz(Me.Descripcion, "")
+    strFechaFin = Nz(Me.FechaFin, "")
+    strImporte = Nz(Me.Importe, "")
+    If IsDate(strFechaInicial) Then
+        strFechaInicial = Format(strFechaInicial, "dd/mm/yyyy")
+    End If
+    If IsDate(strFechaFin) Then
+        strFechaFin = Format(strFechaFin, "dd/mm/yyyy")
+    End If
+    If IsDate(strImporte) Then
+        strImporte = CStr(CDbl(strImporte))
+    End If
+    If strEmpresa <> strEmpresaAlInicio Or strFechaInicial <> strFechaInicialAlInicio Or strDESCRIPCION <> strDescripcionAlInicio Or _
+        strFechaFin <> strFechaFinAlInicio Or strImporte <> strImporteAlInicio Then
+        HaHabidoCambios = True
+    Else
+        HaHabidoCambios = False
+    End If
+    Exit Function
+errores:
+    HaHabidoCambios = True
+End Function
+Private Sub cmdSalir_Click()
+    Dim strNombreFormulario As String, strTextoError As String
+    On Error GoTo errores
+    strNombreFormulario = Me.Name
+    If HaHabidoCambios() And strEscritura = "Sí" Then
+        pregunta = MsgBox("¿Desea guardar los cambios producidos?", vbExclamation + vbYesNo + vbDefaultButton1, "Guardar Cambios")
+        If pregunta = vbYes Then
+            VBA.DoEvents
+            DoCmd.Hourglass True
+            VBA.DoEvents
+            '-------------------------------------------------------------------
+            '   -Devuelve:
+            '       Registrar = strEstado & "|" & strTextoOk & "|" & strTextoError
+            '           strEstado="1"---->strTextoOk=Descriptivo
+            '           strEstado="-1"--->strTextoError
+            '-------------------------------------------------------------------
+            flag = Registrar()
+            If InStr(1, flag, "|") <> 0 Then
+                dato = Split(flag, "|")
+                strTextoError = "El método Registrar ha devuelto un error: " & vbNewLine & dato(1)
+                Err.Raise 1000
+            End If
+            VBA.DoEvents
+            DoCmd.Hourglass False
+            VBA.DoEvents
+        End If
+    End If
+    DoCmd.Close acForm, strNombreFormulario, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar salir del formulario se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub ComandoAdjuntar_Click()
+    Dim m_SubContratacion As Subcontratacion
+    Dim strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    If strIDSubContratacion = "" Then
+        strTextoError = "No se ha podido determinar La IDSubcontratación"
+        Err.Raise 1000
+    End If
+    If HaHabidoCambios() Then
+        '-------------------------------------------------------------------
+        '   -Devuelve:
+        '       Registrar = strEstado & "|" & strTextoOk & "|" & strTextoError
+        '           strEstado="1"---->strTextoOk=Descriptivo
+        '           strEstado="-1"--->strTextoError
+        '-------------------------------------------------------------------
+        flag = Registrar()
+        If InStr(1, flag, "|") <> 0 Then
+            dato = Split(flag, "|")
+            strTextoError = "El método Registrar ha devuelto un error: " & vbNewLine & dato(1)
+            Err.Raise 1000
+        End If
+    End If
+    Set m_SubContratacion = Constructor.getSubContratacion(strIDSubContratacion, strTextoError)
+    If strTextoError <> "" Then
+        Err.Raise 1000
+    End If
+    
+    If FormularioAbierto("FormAnexos") Then
+        DoCmd.Close acForm, "FormAnexos", acSaveNo
+    End If
+    strFormularioQueAbre = Me.Name
+    Set m_ObjEntidadParaAnexoActiva = m_SubContratacion
+    'strArgumento=strFormularioQueAbre
+    DoCmd.OpenForm "FormAnexos", , , , , , strFormularioQueAbre
+
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar ver los adjuntos se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+
+Private Function Registrar() As String
+    '--------------------------------------------------------
+    ' Función creada por Andrés Román del Peral el día x
+    '   -Modificaciones:
+    '
+    '   -Funcionamiento:
+    '   -llamada por:
+    
+    '   -Devuelve:
+    '       Registrar = Descriptivo
+    '       Registrar = "#ERR" & "|" & strTextoError
+    '-------------------------------------------------------------------
+    Dim strEmpresa As String, strFechaInicial As String, strDESCRIPCION As String, strFechaFin As String, strImporte As String, strTextoError As String
+    On Error GoTo errores
+    If strIDSubContratacion = "" Then
+        strTextoError = "El formulario no se ha abierto con los datos suficientes"
+        Err.Raise 1000
+    End If
+    strEmpresa = Nz(Me.ComboEmpresa, "")
+    strFechaInicial = Nz(Me.FechaAlta, "")
+    strDESCRIPCION = Nz(Me.Descripcion, "#")
+    strFechaFin = Nz(Me.FechaFin, "#")
+    strImporte = Nz(Me.Importe, "")
+    '-----------------------------------------------
+    '   -Devuelve:
+    '       editar = Descriptivo
+    '       editar = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------
+    flag = editar(strIDSubContratacion, strEmpresa, strFechaInicial, strDESCRIPCION, strImporte, strFechaFin)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método SubContratacion.editar ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    Registrar = "OK"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método Registrar ha producido el error nº: " & Err.Number & _
+        vbCrLf & "Detalle: " & Err.Description
+    End If
+    Registrar = "#ERR" & "|" & strTextoError
+End Function
+Private Sub ComandoRegistrar_Click()
+    Dim strNombreFormulario As String, strTextoError As String
+    On Error GoTo errores
+    strNombreFormulario = Me.Name
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    If Not HaHabidoCambios() Then
+        strTextoError = "No hay cambios que registrar"
+        Err.Raise 1000
+    End If
+    '-----------------------------------------------------
+    '   -Devuelve:
+    '       Registrar = Descriptivo
+    '       Registrar = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------------
+    flag = Registrar()
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método Registrar ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    pregunta = MsgBox("Edición correcta", vbInformation, "Edición")
+    DoCmd.Close acForm, strNombreFormulario, acSaveNo
+    Exit Sub
+errores:
+     If Err.Number <> 1000 Then
+        strTextoError = "Al intentar registrar se ha devuelto el error: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub Form_Open(Cancel As Integer)
+    Dim strArgumento As String, strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    AjustarTamaño Me
+    Me.Caption = Me.lblTitulo1.Caption
+    'strArgumento=strIDSubContratacion & "|" & strEstaFacturado & "|" & strEscritura
+    strArgumento = Nz(Me.OpenArgs, "")
+    If strArgumento = "" Then
+        strTextoError = "No se han cargado todos los datos"
+        Err.Raise 1000
+    End If
+    dato = Split(strArgumento, "|")
+    If UBound(dato) <> 2 Then
+        strTextoError = "No se han cargado todos los datos"
+        Err.Raise 1000
+    End If
+    strIDSubContratacion = Nz(dato(0), "")
+    strEstaFacturado = Nz(dato(1), "")
+    strEscritura = Nz(dato(2), "")
+    If strIDSubContratacion = "" Then
+        strTextoError = "No se han cargado todos los datos"
+        Err.Raise 1000
+    End If
+    If strEstaFacturado <> "Sí" And strEstaFacturado <> "No" Then
+        strEstaFacturado = "Sí"
+    End If
+    If strEscritura <> "Sí" And strEscritura <> "No" Then
+        strEscritura = "No"
+    End If
+    '-------------------------------------------------------------------
+    '   -Devuelve:
+    '       EstablecerDatos = strDescriptivo
+    '       EstablecerDatos = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------
+    flag = EstablecerDatos()
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método EstablecerDatos ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar abrir el formulario se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Function EstablecerDatos() As String
+    Dim m_SubContratacion As Subcontratacion
+    Dim rcdDatos As DAO.Recordset, ctl As Control, strTextoError As String
+    On Error GoTo errores
+    If strIDSubContratacion = "" Then
+        strTextoError = "No se han cargado todos los datos"
+        Err.Raise 1000
+    End If
+    m_SQL = "SELECT TbSubcontrataciones.* " & _
+                "FROM TbSubcontrataciones " & _
+                "WHERE (((TbSubcontrataciones.IDSubcontratacion)=" & strIDSubContratacion & "));"
+    Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+    With rcdDatos
+        If .EOF Then
+            strTextoError = "No se han cargado todos los datos"
+            Err.Raise 1000
+        End If
+        strEmpresaAlInicio = Nz(.Fields("Empresa"), "")
+        strFechaInicialAlInicio = Nz(.Fields("FechaAlta"), "")
+        strDescripcionAlInicio = Nz(.Fields("Descripcion"), "")
+        strFechaFinAlInicio = Nz(.Fields("FechaFin"), "")
+        strImporteAlInicio = Nz(.Fields("Importe"), "")
+    End With
+    rcdDatos.Close
+    Set rcdDatos = Nothing
+    If strEmpresaAlInicio <> "" Then
+        Me.ComboEmpresa = strEmpresaAlInicio
+    End If
+    If strFechaInicialAlInicio <> "" Then
+        If IsDate(strFechaInicialAlInicio) Then
+            strFechaInicialAlInicio = Format(strFechaInicialAlInicio, "dd/mm/yyyy")
+        End If
+        Me.FechaAlta = strFechaInicialAlInicio
+    End If
+    If strDescripcionAlInicio <> "" Then
+        Me.Descripcion = strDescripcionAlInicio
+    End If
+    If IsDate(strFechaFinAlInicio) Then
+        If IsDate(strFechaFinAlInicio) Then
+            strFechaFinAlInicio = Format(strFechaFinAlInicio, "dd/mm/yyyy")
+        End If
+        Me.FechaFin = strFechaFinAlInicio
+    End If
+    If IsNumeric(strImporteAlInicio) Then
+        Me.Importe = Format(strImporteAlInicio, "#,##0.00 €")
+    End If
+    If strEstaFacturado = "No" Then
+        Me.lblTitulo1.Caption = "EDICIÓN DE SUBCONTRATACIÓN: " & Format(strIDSubContratacion, "000")
+       For Each ctl In Me.Controls
+            If ctl.ControlType = acComboBox Or ctl.ControlType = acTextBox Then
+                ctl.BackColor = lngColorCampoEditable
+                ctl.Enabled = True
+                ctl.Locked = False
+            End If
+        Next
+        Me.ComandoRegistrar.Enabled = True
+        Me.ComandoAdjuntar.Enabled = True
+    Else
+        Me.lblTitulo1.Caption = "DETALLE DE SUBCONTRATACIÓN: " & Format(strIDSubContratacion, "000")
+        Me.cmdSalir.SetFocus
+        For Each ctl In Me.Controls
+            If ctl.ControlType = acComboBox Or ctl.ControlType = acTextBox Then
+                ctl.BackColor = lngColorCampoNoEditable
+                ctl.Enabled = True
+                ctl.Locked = True
+            End If
+        Next
+        Me.ComandoRegistrar.Enabled = False
+        Me.ComandoAdjuntar.Enabled = False
+    End If
+    If strEstaFacturado = "Sí" Then
+        Me.lblFacturada.Visible = True
+    Else
+        Me.lblFacturada.Visible = False
+    End If
+    
+    Set m_SubContratacion = Constructor.getSubContratacion(strIDSubContratacion, strTextoError)
+    If strTextoError <> "" Then
+        Err.Raise 1000
+    End If
+    
+    strURLAnexo = m_SubContratacion.URLAnexos
+    If strURLAnexo = "" Then
+        Me.ImagenAnexo.Visible = False
+    Else
+        Me.ImagenAnexo.Visible = True
+    End If
+    EstablecerDatos = "Datos de la subcontratación establecidos correctamente"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método EstablecerDatos ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatos Is Nothing Then
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+    End If
+    EstablecerDatos = "#ERR" & "|" & strTextoError
+End Function
+Private Sub ImagenAnexo_Click()
+    Dim strTextoError As String
+    On Error GoTo errores
+    DoCmd.Hourglass True
+    '-------------------------------------------------------------------
+    '   -Devuelve:
+    '       AbrirEnLocal = strURLAnexoLocal
+    '       AbrirEnLocal = "#ERR" & "|" & strTextoError
+    '-------------------------------------------------------------------
+    flag = AbrirEnLocal(strURLAnexo, Me.hWnd)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método AbrirEnLocal ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    DoCmd.Hourglass False
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar abrir se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Public Function editar( _
+                        strIDSubContratacion As String, _
+                        Optional strEmpresa As String, _
+                        Optional strFechaInicial As String, _
+                        Optional strDESCRIPCION As String, _
+                        Optional strImporte As String, _
+                        Optional strFechaFin As String _
+                        ) As String
+    '-------------------------------------------------------------------------
+    ' Función creada por Andrés Román del Peral el día 13/06/13
+    '   -Modificaciones:
+    
+    '   -Funcionamiento:
+    '       -1) Ver si se ha facturado ya si lo está no se puede cambiar strFechaInicial,strImporte,strFechaFin
+    '   -Llamada desde
+    '       -Form_FormSubContratacionEdicion.Editar
+    '   -Devuelve:
+    '       editar = Descriptivo
+    '       editar = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------
+    Dim rcdDatos As DAO.Recordset, strID As String, strTextoError As String
+    On Error GoTo errores
+    If Not IsNumeric(strIDSubContratacion) Then
+        strTextoError = "No se ha introducido un IDSubcontratación correcto"
+        Err.Raise 1000
+    End If
+    If strEmpresa = "" Or strEmpresa = "#" Then
+        strTextoError = "Se ha de introducir el nombre de la empresa subcontratada"
+        Err.Raise 1000
+    End If
+    If Not IsDate(strFechaInicial) Then
+        strTextoError = "Se ha de introducir una fecha inicial válida"
+        Err.Raise 1000
+    End If
+    If Not IsNumeric(strImporte) Then
+        strTextoError = "Se ha de introducir un importe válido"
+        Err.Raise 1000
+    End If
+    If strFechaFin <> "" And strFechaFin <> "#" Then
+        If CDate(strFechaFin) < CDate(strFechaInicial) Then
+            strTextoError = "Si se introduce una fecha de fin ha de ser mayor o igual que la inicial"
+            Err.Raise 1000
+        End If
+    End If
+    If strEstaFacturado = "Sí" Then
+        strTextoError = "Ya está facturada, por lo que no se permiten cambios"
+        Err.Raise 1000
+    End If
+    m_SQL = "SELECT TbSubcontrataciones.* " & _
+            "FROM TbSubcontrataciones " & _
+            "WHERE (((TbSubcontrataciones.IDSubcontratacion)=" & strIDSubContratacion & "));"
+    Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+    With rcdDatos
+        If .EOF Then
+            strTextoError = "La subcontratación: " & strIDSubContratacion & " no estaba registrada en la base de datos"
+            Err.Raise 1000
+        End If
+        .Edit
+            If IsDate(strFechaInicial) Then
+                .Fields("FechaAlta") = strFechaInicial
+            End If
+            If strEmpresa <> "" Then
+                .Fields("Empresa") = strEmpresa
+            End If
+            If strDESCRIPCION <> "" And strDESCRIPCION <> "#" Then
+                .Fields("Descripcion") = strDESCRIPCION
+            ElseIf strDESCRIPCION = "#" Then
+                .Fields("Descripcion") = Null
+            End If
+            If IsDate(strFechaFin) Then
+                 .Fields("FechaFin") = strFechaFin
+            Else
+                If strFechaFin = "#" Then
+                    .Fields("FechaFin") = Null
+                End If
+            End If
+            If IsNumeric(strImporte) Then
+                .Fields("Importe") = strImporte
+            End If
+        .Update
+    End With
+    rcdDatos.Close
+    Set rcdDatos = Nothing
+    editar = "Editada correctamente"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método Editar ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatos Is Nothing Then
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+    End If
+    editar = "#ERR" & "|" & strTextoError
+End Function

@@ -1,0 +1,111 @@
+{
+  "id": "access2web-blueprint",
+  "name": "access2web-blueprint",
+  "version": "1.0",
+  "frontendFile": "CONDOR.accdb",
+  "backendPath": "condor_datos.accdb",
+  "destinationRoot": "data/staging/condor/src",
+  "capabilities": {
+    "allowWrites": true,
+    "writeExecutionPolicy": "developer"
+  },
+  "notes": "Multi-backend staging repo. The contract fields (id, frontendFile, backendPath, destinationRoot, capabilities) point at the condor app as the default target. To target another app, pass per-call accessPath/backendPath/cwd overrides. The backends[] array below is documentation/metadata for human and AI discovery; the Dysflow runtime ignores unknown fields (and setup_project drops them on apply). See data/staging/README.md and data/staging/<app>/README.md for the authoritative per-app docs.",
+  "backends": [
+    {
+      "id": "condor",
+      "displayName": "Condor",
+      "sourceBase": "C:/00repos/codigo/00_CONDOR/staging",
+      "frontendFile": "CONDOR.accdb",
+      "accessPath": "data/staging/condor/frontend/CONDOR.accdb",
+      "backendPath": "data/staging/condor/backend/condor_datos.accdb",
+      "destinationRoot": "data/staging/condor/src",
+      "docsPath": "data/staging/condor/docs",
+      "writable": true,
+      "notes": "Default del runtime. 15 tablas en backend, 1 fila de staging. src/ tiene 221 archivos."
+    },
+    {
+      "id": "hps",
+      "displayName": "HPS",
+      "sourceBase": "C:/00repos/codigo/00_HPS/staging",
+      "frontendFile": "HPS.accdb",
+      "accessPath": "data/staging/hps/frontend/HPS.accdb",
+      "backendPath": "data/staging/hps/backend/HPST.accdb",
+      "destinationRoot": "data/staging/hps/src",
+      "docsPath": null,
+      "writable": true,
+      "notes": "Backend se llama HPST.accdb (no _datos). src/ tiene 139 archivos + backends.json + tests.vba.json."
+    },
+    {
+      "id": "hps-solicitudes",
+      "displayName": "HPS Solicitudes",
+      "sourceBase": "C:/00repos/codigo/HPS_SOLICITUDES",
+      "frontendFile": "Solicitudes_HPS.accdb",
+      "accessPath": "data/staging/hps-solicitudes/frontend/Solicitudes_HPS.accdb",
+      "backendPath": "data/staging/hps-solicitudes/backend/Solicitudes_HPS_datos.accdb",
+      "destinationRoot": "data/staging/hps-solicitudes/src",
+      "docsPath": "data/staging/hps-solicitudes/docs",
+      "writable": true,
+      "notes": "Checkout sin prefijo 00_; staging/ no existe. Solo 2 archivos en docs/."
+    },
+    {
+      "id": "brass",
+      "displayName": "BRASS",
+      "sourceBase": "C:/00repos/codigo/00_BRASS/00_main",
+      "frontendFile": "Gestion_Brass_Gestion.accdb",
+      "accessPath": "data/staging/brass/frontend/Gestion_Brass_Gestion.accdb",
+      "backendPath": "data/staging/brass/frontend/Gestion_Brass_Gestion.accdb",
+      "destinationRoot": "data/staging/brass/src",
+      "docsPath": null,
+      "writable": true,
+      "notes": "No tiene staging/. Un unico .accdb (frontend y backend en el mismo archivo). src/ 218 archivos."
+    },
+    {
+      "id": "gestion-riesgos",
+      "displayName": "Gestion de Riesgos",
+      "sourceBase": "C:/00repos/codigo/00_GESTION_RIESGOS/staging",
+      "frontendFile": "Gestion_Riesgos.accdb",
+      "accessPath": "data/staging/gestion-riesgos/frontend/Gestion_Riesgos.accdb",
+      "backendPath": "data/staging/gestion-riesgos/backend/Gestion_Riesgos_Datos.accdb",
+      "destinationRoot": "data/staging/gestion-riesgos/src",
+      "docsPath": "data/staging/gestion-riesgos/docs",
+      "writable": true,
+      "notes": "src/ 328 archivos; docs/ 29 archivos. Acoplamiento con Lanzadera via getdbLanzadera() (D86/D87)."
+    },
+    {
+      "id": "no-conformidades",
+      "displayName": "No Conformidades",
+      "sourceBase": "C:/00repos/codigo/00_NO_CONFORMIDADES/staging",
+      "frontendFile": "NoConformidades.accdb",
+      "accessPath": "data/staging/no-conformidades/frontend/NoConformidades.accdb",
+      "backendPath": "data/staging/no-conformidades/backend/NoConformidades_Datos.accdb",
+      "destinationRoot": "data/staging/no-conformidades/src",
+      "docsPath": "data/staging/no-conformidades/docs",
+      "writable": true,
+      "notes": "Frontend pesa 66.96 MB (el mas grande del set). src/ 249; docs/ 51."
+    },
+    {
+      "id": "expedientes",
+      "displayName": "Expedientes",
+      "sourceBase": "C:/00repos/codigo/00_EXPEDIENTES/staging",
+      "frontendFile": "Expedientes.accdb",
+      "accessPath": "data/staging/expedientes/frontend/Expedientes.accdb",
+      "backendPath": "data/staging/expedientes/backend/Expedientes_datos.accdb",
+      "destinationRoot": "data/staging/expedientes/src",
+      "docsPath": "data/staging/expedientes/docs",
+      "writable": true,
+      "notes": "src/ 302 archivos; docs/ 69 (el set mas documental)."
+    },
+    {
+      "id": "lanzaderas",
+      "displayName": "Lanzadera",
+      "sourceBase": "C:/00repos/codigo/00_LANZADERA/staging",
+      "frontendFile": "Lanzadera.accdb",
+      "accessPath": "data/staging/lanzaderas/frontend/Lanzadera.accdb",
+      "backendPath": "data/staging/lanzaderas/backend/Lanzadera_Datos.accdb",
+      "destinationRoot": "data/staging/lanzaderas/src",
+      "docsPath": null,
+      "writable": true,
+      "notes": "src/ 89 archivos (suite mas chica del set)."
+    }
+  ]
+}

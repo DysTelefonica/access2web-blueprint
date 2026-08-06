@@ -1,0 +1,1343 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =432295571
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10378
+    DatasheetFontHeight =11
+    ItemSuffix =13
+    Left =3675
+    Top =4320
+    Right =17925
+    Bottom =10965
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0xf1853e7ba64fc14296703ec80970affd
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000f6a0050118ec00000000000000000000 ,
+        0x010403069c000c0353ef8001010009009a0b3408640001000f00b00402000100 ,
+        0xb004030001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220054000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000545330303100000000000000 ,
+        0x0000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00006547a80100001973df2785000000a0078663a80100004b00000000000000 ,
+        0x0a000000000000000a000000000000000000000000000000aa078663a8010000 ,
+        0x01040306dc000c0353ef8001010009009a0b3408640001000f00b00402000100 ,
+        0xb0040300010041003400000000000000000000004b0000000100000000000000 ,
+        0x10040000000000000400000000000000a0078663a80100000a00000000000000 ,
+        0x00006547a8010000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e0050000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x54005300300030003100000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =5659
+            Name ="Detalle"
+            GUID = Begin
+                0x9a75207bb9f4c246929ba68dfd031a9e
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin TextBox
+                    OverlapFlags =93
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =148
+                    Top =2619
+                    Width =10067
+                    Height =2205
+                    TabIndex =4
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Descripcion"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xc0fa461c0b173d4a9e70aed928f7f6af
+                    End
+
+                    LayoutCachedLeft =148
+                    LayoutCachedTop =2619
+                    LayoutCachedWidth =10215
+                    LayoutCachedHeight =4824
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    OverlapFlags =119
+                    IMESentenceMode =3
+                    Left =7784
+                    Top =3300
+                    Width =6
+                    Height =0
+                    FontSize =9
+                    TabIndex =9
+                    BorderColor =8421504
+                    ForeColor =0
+                    Name ="Numero_Actividad"
+                    ControlSource ="IDActividad"
+                    DefaultValue ="=DCount(\"*\",\"Tabla_Parte_Actividad\")+1"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x39a0888352716e499c0fcb806b1a6ec1
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =7784
+                    LayoutCachedTop =3300
+                    LayoutCachedWidth =7790
+                    LayoutCachedHeight =3300
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Width =10363
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0x44c0b73ccc590b43bc98ec83d2bc92a1
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =10363
+                    LayoutCachedHeight =686
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Left =15
+                    Top =4973
+                    Width =10363
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0xfeb8404f2343fb4f8ffdba702189fe6a
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =15
+                    LayoutCachedTop =4973
+                    LayoutCachedWidth =10378
+                    LayoutCachedHeight =5659
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =8445
+                    Top =5205
+                    Width =1020
+                    Height =405
+                    FontWeight =700
+                    TabIndex =5
+                    Name ="ComandoAlta"
+                    Caption ="Registrar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x374d0f01d7b52541be036306def63b17
+                    End
+
+                    LayoutCachedLeft =8445
+                    LayoutCachedTop =5205
+                    LayoutCachedWidth =9465
+                    LayoutCachedHeight =5610
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =9637
+                    Top =5025
+                    Width =578
+                    Height =578
+                    FontWeight =700
+                    TabIndex =7
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir del formulario"
+                    GUID = Begin
+                        0xd8708e49f89345488f7fcc34d8f0d27e
+                    End
+
+                    LayoutCachedLeft =9637
+                    LayoutCachedTop =5025
+                    LayoutCachedWidth =10215
+                    LayoutCachedHeight =5603
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin TextBox
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2115
+                    Top =840
+                    Width =798
+                    Height =297
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="HorasLaborables"
+                    Format ="General Number"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x9356b9a31ef8bd4297ef4307ada06a30
+                    End
+
+                    LayoutCachedLeft =2115
+                    LayoutCachedTop =840
+                    LayoutCachedWidth =2913
+                    LayoutCachedHeight =1137
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1305
+                    Top =1275
+                    Width =1338
+                    Height =297
+                    TabIndex =1
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="FechaAlta"
+                    Format ="Short Date"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x9b7b53b2adf2dc4ea6bc407ff8a71c3b
+                    End
+
+                    LayoutCachedLeft =1305
+                    LayoutCachedTop =1275
+                    LayoutCachedWidth =2643
+                    LayoutCachedHeight =1572
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    TabStop = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =9380
+                    Top =840
+                    Width =798
+                    Height =297
+                    TabIndex =8
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="HorasExtras"
+                    Format ="General Number"
+                    GUID = Begin
+                        0xcf06b99ca75d8c48bb0770b51d0b0d37
+                    End
+
+                    LayoutCachedLeft =9380
+                    LayoutCachedTop =840
+                    LayoutCachedWidth =10178
+                    LayoutCachedHeight =1137
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =10
+                    ListWidth =2835
+                    Left =6953
+                    Top =1286
+                    Width =3225
+                    Height =297
+                    FontSize =9
+                    TabIndex =6
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    GUID = Begin
+                        0x5b7e5850fd1d1f458d048c9e2a75d848
+                    End
+                    Name ="ComboUbicacion"
+                    RowSourceType ="Value List"
+                    ColumnWidths ="8505"
+                    OnEnter ="[Event Procedure]"
+                    Tag ="OBLIGATORIO"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =6953
+                    LayoutCachedTop =1286
+                    LayoutCachedWidth =10178
+                    LayoutCachedHeight =1583
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ColumnCount =2
+                    ListRows =20
+                    ListWidth =10206
+                    Left =1305
+                    Top =2167
+                    Width =3975
+                    Height =297
+                    TabIndex =3
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    GUID = Begin
+                        0x2e67e3a2edd82d4f84354478ab55267a
+                    End
+                    Name ="ComboActividad"
+                    RowSourceType ="Value List"
+                    ColumnWidths ="1134;8505"
+                    OnEnter ="[Event Procedure]"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =1305
+                    LayoutCachedTop =2167
+                    LayoutCachedWidth =5280
+                    LayoutCachedHeight =2464
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =148
+                    Top =1727
+                    Width =1050
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta241"
+                    Caption ="TÉCNICO"
+                    GUID = Begin
+                        0x2e75fbe5681781498d9e4e16fb4e63c1
+                    End
+                    LayoutCachedLeft =148
+                    LayoutCachedTop =1727
+                    LayoutCachedWidth =1198
+                    LayoutCachedHeight =2024
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6017
+                    Top =1280
+                    Width =855
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta209"
+                    Caption ="UBICAC."
+                    GUID = Begin
+                        0x52b4c09ca9fe4941a055e26b4807bd55
+                    End
+                    LayoutCachedLeft =6017
+                    LayoutCachedTop =1280
+                    LayoutCachedWidth =6872
+                    LayoutCachedHeight =1577
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =148
+                    Top =1281
+                    Width =1050
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta210"
+                    Caption ="F.ALTA"
+                    GUID = Begin
+                        0x417da14a221eff49b5a52184f5ad4ad2
+                    End
+                    LayoutCachedLeft =148
+                    LayoutCachedTop =1281
+                    LayoutCachedWidth =1198
+                    LayoutCachedHeight =1578
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =148
+                    Top =835
+                    Width =1935
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="lbl1"
+                    Caption ="H.LAB (x,y) decimal"
+                    GUID = Begin
+                        0xc37323f57ae53a488baac9bb70442692
+                    End
+                    LayoutCachedLeft =148
+                    LayoutCachedTop =835
+                    LayoutCachedWidth =2083
+                    LayoutCachedHeight =1132
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =7243
+                    Top =840
+                    Width =2055
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta212"
+                    Caption ="H.EXT (x,y) decimal"
+                    GUID = Begin
+                        0x47668611fdbdd045befaa1ba393c1edb
+                    End
+                    LayoutCachedLeft =7243
+                    LayoutCachedTop =840
+                    LayoutCachedWidth =9298
+                    LayoutCachedHeight =1137
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6002
+                    Top =2180
+                    Width =1230
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta213"
+                    Caption ="EV. GRADO."
+                    GUID = Begin
+                        0x1dd55055a7e0c842a5ff78247b32a16a
+                    End
+                    LayoutCachedLeft =6002
+                    LayoutCachedTop =2180
+                    LayoutCachedWidth =7232
+                    LayoutCachedHeight =2495
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =1
+                    Left =148
+                    Top =2173
+                    Width =1050
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta214"
+                    Caption ="ACTIVIDAD"
+                    GUID = Begin
+                        0x1609dc96d282024abf39c6e1f893a179
+                    End
+                    LayoutCachedLeft =148
+                    LayoutCachedTop =2173
+                    LayoutCachedWidth =1198
+                    LayoutCachedHeight =2470
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =7358
+                    Top =2198
+                    Width =2820
+                    Height =297
+                    TabIndex =10
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="IDEventoGenerado"
+                    OnEnter ="[Event Procedure]"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xbef29d6ae471ee409871aa8cb72e9013
+                    End
+
+                    LayoutCachedLeft =7358
+                    LayoutCachedTop =2198
+                    LayoutCachedWidth =10178
+                    LayoutCachedHeight =2495
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =165
+                    Top =60
+                    Width =9765
+                    Height =660
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="Alta de Actividad"
+                    GUID = Begin
+                        0x8dad8c774fb37a4e8ba762a44f8e58bb
+                    End
+                    LayoutCachedLeft =165
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =9930
+                    LayoutCachedHeight =720
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =120
+                    Width =9765
+                    Height =660
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="Alta de Actividad"
+                    GUID = Begin
+                        0x3c00bf45aea4e74b964b975dbbc2a95e
+                    End
+                    LayoutCachedLeft =120
+                    LayoutCachedWidth =9885
+                    LayoutCachedHeight =660
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =30
+                    Top =855
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta6"
+                    Caption ="*"
+                    GUID = Begin
+                        0x3e2bab86ae10d345a52172d766d1e10f
+                    End
+                    LayoutCachedLeft =30
+                    LayoutCachedTop =855
+                    LayoutCachedWidth =210
+                    LayoutCachedHeight =1152
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =30
+                    Top =1350
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta3"
+                    Caption ="*"
+                    GUID = Begin
+                        0x818e04a87f51b844852d6f23f1b2eaec
+                    End
+                    LayoutCachedLeft =30
+                    LayoutCachedTop =1350
+                    LayoutCachedWidth =210
+                    LayoutCachedHeight =1647
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =30
+                    Top =1815
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta4"
+                    Caption ="*"
+                    GUID = Begin
+                        0xeff42f1a8786a24f9e3f5ac0728aaa77
+                    End
+                    LayoutCachedLeft =30
+                    LayoutCachedTop =1815
+                    LayoutCachedWidth =210
+                    LayoutCachedHeight =2112
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =60
+                    Top =2220
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta5"
+                    Caption ="*"
+                    GUID = Begin
+                        0xa24d7c767a79a4419379109ee39ef2d7
+                    End
+                    LayoutCachedLeft =60
+                    LayoutCachedTop =2220
+                    LayoutCachedWidth =240
+                    LayoutCachedHeight =2517
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    Left =5805
+                    Top =1350
+                    Width =180
+                    Height =297
+                    BorderColor =16777215
+                    ForeColor =8210719
+                    Name ="Etiqueta7"
+                    Caption ="*"
+                    GUID = Begin
+                        0x1f036a29d80656449fd520b77cfe7551
+                    End
+                    LayoutCachedLeft =5805
+                    LayoutCachedTop =1350
+                    LayoutCachedWidth =5985
+                    LayoutCachedHeight =1647
+                    BorderThemeColorIndex =1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =4445
+                    Top =840
+                    Width =1908
+                    Height =297
+                    TabIndex =11
+                    BackColor =16047562
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="IDEVENTO"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x2c541b4cf3ed414a9bd7b31859ff73c4
+                    End
+
+                    LayoutCachedLeft =4445
+                    LayoutCachedTop =840
+                    LayoutCachedWidth =6353
+                    LayoutCachedHeight =1137
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =3288
+                    Top =840
+                    Width =1050
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta10"
+                    Caption ="IDEVENTO"
+                    GUID = Begin
+                        0x1f4510402d2d634a8a9f270e7b008977
+                    End
+                    LayoutCachedLeft =3288
+                    LayoutCachedTop =840
+                    LayoutCachedWidth =4338
+                    LayoutCachedHeight =1137
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    ColumnHeads = NotDefault
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ColumnCount =3
+                    ListRows =100
+                    ListWidth =9639
+                    Left =1305
+                    Top =1739
+                    Width =1620
+                    Height =285
+                    TabIndex =2
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    GUID = Begin
+                        0xb0da6622c6bb6340bbb665e5baa18ce6
+                    End
+                    Name ="ComboTecnico"
+                    RowSourceType ="Value List"
+                    ColumnWidths ="1134;4536;3969"
+                    Tag ="OBLIGATORIO"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =1305
+                    LayoutCachedTop =1739
+                    LayoutCachedWidth =2925
+                    LayoutCachedHeight =2024
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Dim strIDEvento As String, strIDActividadOriginal As String, strEventoFacturado As String
+
+
+
+Private Sub ComandoAlta_Click()
+    Dim strHorasEscritasAhora As String, strHorasYaHechasEseDia As String, strHorasTotales As String
+    Dim strAliasTecnico As String, strUbicacion As String, strFechaAlta As String, strHorasLaborables As String, _
+        strHORASEXTRAS As String, strActividad As String, strIDEventoGenerado As String, strDESCRIPCION As String, _
+        m_IDActividad As String, strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    strAliasTecnico = Nz(Me.ComboTecnico, "")
+    strUbicacion = Nz(Me.ComboUbicacion, "")
+    strFechaAlta = Nz(Me.FechaAlta, "")
+    strHorasLaborables = Nz(Me.HorasLaborables, "")
+    strHORASEXTRAS = Nz(Me.HorasExtras, "")
+    strActividad = Nz(Me.ComboActividad, "")
+    strIDEventoGenerado = Nz(Me.IDEventoGenerado, "")
+    strDESCRIPCION = Nz(Me.Descripcion, "")
+    
+    If Not IsNumeric(strHorasLaborables) Then
+        strHorasLaborables = "0"
+    End If
+    If Not IsNumeric(strHORASEXTRAS) Then
+        strHORASEXTRAS = "0"
+    End If
+    strHorasEscritasAhora = CStr(CDbl(strHorasLaborables) + CDbl(strHORASEXTRAS))
+    If strAliasTecnico <> "" And strFechaAlta <> "" Then
+        '-------------------------------------------------------------------
+        '   -Devuelve:
+        '       DameHorasTecnico = cstr(dblHoras)
+        '       DameHorasTecnico = "#ERR" & "|" & strTextoError
+        '-------------------------------------------------------------------
+        flag = DameHorasTecnico(strAliasTecnico, strFechaAlta)
+        If InStr(1, flag, "|") <> 0 Then
+            flag = ""
+        End If
+        strHorasYaHechasEseDia = flag
+        If IsNumeric(strHorasYaHechasEseDia) Then
+            strHorasTotales = CStr(CDbl(strHorasYaHechasEseDia) + CDbl(strHorasLaborables))
+            If CDbl(strHorasTotales) > 7.5 Then
+                strTextoError = "Ese día " & strAliasTecnico & " ya llevaba " & strHorasYaHechasEseDia & _
+                                " horas y si se suman las " & strHorasEscritasAhora & " haría " & strHorasTotales & " horas"
+                Me.HorasExtras.SetFocus
+                Err.Raise 1000
+            End If
+        End If
+    End If
+    
+    '-----------------------------------------------
+    '   -Devuelve:
+    '       ActividadAlta = strIDActividad
+    '       ActividadAlta = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------
+    m_IDActividad = ActividadAlta( _
+                        strAliasTecnico, strDESCRIPCION, strFechaAlta, strUbicacion, strHorasLaborables, strHORASEXTRAS, _
+                        strActividad, strIDEvento, strIDEventoGenerado, , strEventoFacturado)
+    If InStr(1, m_IDActividad, "|") <> 0 Then
+        dato = Split(m_IDActividad, "|")
+        strTextoError = "El método ActividadAlta ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    
+    '---------------------------------------------
+    '       FormularioAbierto = true or false
+    '       FormularioAbierto =False-->Error
+    '---------------------------------------------
+    If FormularioAbierto("FormEventoGestion") Then
+        Form_FormEventoGestion.ListaEventos_Click
+    End If
+    '---------------------------------------------
+    '       FormularioAbierto = true or false
+    '       FormularioAbierto =False-->Error
+    '---------------------------------------------
+    If FormularioAbierto("FormActividadGestion") Then
+        Forms("FormActividadGestion").Controls("ListaFiltrados").Requery
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar dar de alta la actividad se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub ComboActividad_Enter()
+    On Error Resume Next
+     Me.ComboActividad.Requery
+End Sub
+Private Sub IDEventoGenerado_Enter()
+    On Error Resume Next
+     Me.IDEventoGenerado.Requery
+End Sub
+Private Sub ComboUbicacion_Enter()
+     On Error Resume Next
+     Me.ComboUbicacion.Requery
+End Sub
+Private Sub cmdSalir_Click()
+    On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Function EstablecerDatos() As String
+    
+    Dim rcdDatos As DAO.Recordset, cbo As ComboBox, strTextoError As String
+    Dim strAliasTecnico As String, strUbicacion As String, strFechaAlta As String, strHorasLaborables As String, _
+        strHORASEXTRAS As String, strActividad As String, strIDEventoGenerado As String, strDESCRIPCION As String, _
+        strActividadFinalizaEvento As String
+    On Error GoTo errores
+    m_SQL = "SELECT TbCodActividad.CODIGO, TbCodActividad.ACTIVIDADNOPROGRAMADA FROM TbCodActividad ORDER BY TbCodActividad.CODIGO;"
+    Set cbo = Me.ComboActividad
+    RellenaCombo cbo, m_SQL
+    m_SQL = "SELECT TbUbicacion.UBICACION FROM TbUbicacion ORDER BY TbUbicacion.UBICACION; "
+    Set cbo = Me.ComboUbicacion
+    RellenaCombo cbo, m_SQL
+    If strIDActividadOriginal <> "" Then
+        m_SQL = "SELECT TbActividades.* " & _
+                    "FROM TbActividades " & _
+                    "WHERE (((TbActividades.IDActividad)='" & strIDActividadOriginal & "'));"
+        Set rcdDatos = getdb().OpenRecordset(m_SQL)
+        With rcdDatos
+            If .EOF Then
+                strTextoError = "No se han cargado todos los datos"
+                Err.Raise 1000
+            End If
+            strIDEvento = Nz(.Fields("IDEvento"), "")
+            strAliasTecnico = Nz(.Fields("ALIASTECNICO"), "")
+            strUbicacion = Nz(.Fields("Ubicacion"), "")
+            strFechaAlta = Nz(.Fields("FechaAlta"), "")
+            strHorasLaborables = Nz(.Fields("HorasLaborables"), "")
+            strHORASEXTRAS = Nz(.Fields("HorasExtras"), "")
+            strActividad = Nz(.Fields("Actividad"), "")
+            strIDEventoGenerado = Nz(.Fields("IDEVENTOGENERADO"), "")
+            strDESCRIPCION = Nz(.Fields("DESCRIPCION"), "")
+        End With
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+        Me.ComboTecnico.SetFocus
+        If strAliasTecnico <> "" Then
+            Me.ComboTecnico = strAliasTecnico
+        End If
+        If strUbicacion <> "" Then
+            Me.ComboUbicacion = strUbicacion
+        End If
+        If IsDate(strFechaAlta) Then
+            Me.FechaAlta = strFechaAlta
+        End If
+        If IsNumeric(strHorasLaborables) Then
+            Me.HorasLaborables = CDbl(strHorasLaborables)
+        End If
+        If IsNumeric(strHORASEXTRAS) Then
+            Me.HorasExtras = CDbl(strHORASEXTRAS)
+        End If
+        If strActividad <> "" Then
+            Me.ComboActividad = strActividad
+        End If
+        If strIDEventoGenerado <> "" Then
+            Me.IDEventoGenerado = strIDEventoGenerado
+        End If
+        If strDESCRIPCION <> "" Then
+            Me.Descripcion = strDESCRIPCION
+        End If
+    End If
+    If strIDEvento <> "" Then
+        Me.lblTitulo1.Caption = "ALTA DE ACTIVIDAD DE: " & strIDEvento
+    Else
+        Me.lblTitulo1.Caption = "ALTA DE ACTIVIDAD NO DEPENDIENTE DE EVENTO"
+        Me.FechaAlta = Format(Now(), "dd/mm/yyyy")
+    End If
+    Me.IDEVENTO = strIDEvento
+    EstablecerDatos = "Datos de la actividad establecidos correctamente"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método EstablecerDatos ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatos Is Nothing Then
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+    End If
+    EstablecerDatos = "#ERR" & "|" & strTextoError
+End Function
+Private Sub Form_Load()
+    Dim strTextoError As String, strArgumento As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    AjustarTamaño Me
+    'strArgumento=strIDEvento & "|" & strIDActividadOriginal & "|" & strEventoFacturado
+    'strArgumento=""
+    strArgumento = Nz(Me.OpenArgs(), "")
+    If strArgumento <> "" Then
+        If InStr(1, strArgumento, "|") = 0 Then
+            strTextoError = "No se ha abierto el formulario con datos suficientes"
+            Err.Raise 1000
+        End If
+        dato = Split(strArgumento, "|")
+        If UBound(dato) <> 2 Then
+            strTextoError = "No se ha abierto el formulario con datos suficientes"
+            Err.Raise 1000
+        End If
+        strIDEvento = Nz(dato(0), "")
+        strIDActividadOriginal = Nz(dato(1), "")
+        strEventoFacturado = Nz(dato(2), "")
+        If strIDEvento = "" Then
+            strTextoError = "No se ha abierto el formulario con datos suficientes"
+            Err.Raise 1000
+        End If
+        If strEventoFacturado <> "Sí" And strEventoFacturado <> "No" Then
+            strTextoError = "No se ha abierto el formulario con datos suficientes"
+            Err.Raise 1000
+        End If
+    End If
+    
+    flag = EstablecerDatos()
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método EstablecerDatos ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    RellenarComboTecnicos Me.ComboTecnico, EnumSino.No, EnumSino.Sí, strTextoError
+    If strTextoError <> "" Then
+        Err.Raise 1000
+    End If
+    
+    Me.lblTitulo2.Caption = Me.lblTitulo1.Caption
+    Me.Caption = Me.lblTitulo1.Caption
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar abrir el formulario se ha devuelto el error: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub

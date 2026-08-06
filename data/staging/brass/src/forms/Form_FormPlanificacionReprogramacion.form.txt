@@ -1,0 +1,1935 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-483857432
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =9538
+    DatasheetFontHeight =11
+    Top =600
+    Right =8430
+    Bottom =7995
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0x95e2ff408d8df44ab265ffd87b777c24
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000f6a0050118ec00000000000000000000 ,
+        0x010403069c000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc800020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00006547a80100001973df2785000000d0dbd86ba80100004d00000000000000 ,
+        0x0c000000000000000c000000000000000000ec1100000000dadbd86ba8010000 ,
+        0x01040306dc000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc8000200010041003400000000000000000000004d0000000100000000000000 ,
+        0x10040000000000000400000000000000d0dbd86ba80100000c00000000000000 ,
+        0x00006547a8010000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c00650000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =9041
+            Name ="Detalle"
+            GUID = Begin
+                0x947d9d1574bcab4b9458ff02e69d7906
+            End
+            AutoHeight =1
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =750
+                    Width =9538
+                    Height =7391
+                    BackColor =15790320
+                    BorderColor =0
+                    Name ="Cuadro69"
+                    GUID = Begin
+                        0x6ec3d05770d12a418d02131d705f3e13
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =750
+                    LayoutCachedWidth =9538
+                    LayoutCachedHeight =8141
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =223
+                    Width =9538
+                    Height =911
+                    BackColor =8811520
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0x69798a9a90baa8479b669ada23146483
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =9538
+                    LayoutCachedHeight =911
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =360
+                    Top =45
+                    Width =7950
+                    Height =840
+                    FontSize =28
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =16777215
+                    Name ="lblTitulo"
+                    Caption ="CIERRE DE PLANIFICACIÓN"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0xd32023d45963404a945bcb30082eb6f8
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =360
+                    LayoutCachedTop =45
+                    LayoutCachedWidth =8310
+                    LayoutCachedHeight =885
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =8175
+                    Width =9538
+                    Height =866
+                    BackColor =8811520
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0xb4a0f43048c3994fa5f69c29d83fe314
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =8175
+                    LayoutCachedWidth =9538
+                    LayoutCachedHeight =9041
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    OverlapFlags =215
+                    Left =7036
+                    Top =8460
+                    Width =1472
+                    Height =510
+                    FontSize =10
+                    FontWeight =700
+                    ForeColor =-2147483630
+                    Name ="ComandoReplanificar"
+                    Caption ="Replanificar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x1d183275bdab694d96f3b8bdf48102b6
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =7036
+                    LayoutCachedTop =8460
+                    LayoutCachedWidth =8508
+                    LayoutCachedHeight =8970
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                    Shape =0
+                    Gradient =0
+                    BackColor =16777215
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =0
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =8735
+                    Top =8244
+                    Width =726
+                    Height =726
+                    FontSize =8
+                    FontWeight =700
+                    TabIndex =1
+                    ForeColor =-2147483630
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Arial"
+                    ControlTipText ="Salir del formulario"
+                    GUID = Begin
+                        0x87c8c91b069f0e41af12fd7b64f04dee
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =8735
+                    LayoutCachedTop =8244
+                    LayoutCachedWidth =9461
+                    LayoutCachedHeight =8970
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                    Shape =0
+                    Gradient =0
+                    BackColor =16777215
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =0
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Image
+                    SizeMode =1
+                    Left =60
+                    Top =8685
+                    Width =240
+                    Height =240
+                    BorderColor =0
+                    Name ="Imagen116"
+                    Picture ="Asterisco.png"
+                    GUID = Begin
+                        0xd8374bb1bacd754dafa740bce480f4f0
+                    End
+                    GridlineColor =0
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000080000000800806000000c33e61 ,
+                        0xcb0000000473424954080808087c086488000000097048597300000b1300000b ,
+                        0x1301009a9c18000006e949444154789ced9d6b88555514c77fd751a726d42c87 ,
+                        0xa2b222453322f243442091653a9a24d998450f7a6792594614457d8b5e462599 ,
+                        0x3db0a2118328e9219584d98b282b2a52735294acd434b3a46c745e7d58733106 ,
+                        0xe7de7bf6d9af73cefac102fdb05d6beff5f79e73f6636d501445511445511445 ,
+                        0x511445510a412974008e1904cc042602a381c36a6cf737d00aac005eedf9bb92 ,
+                        0x214ac00dc02ea03ba5ed04ae25ffff5972437fe045d227beb72d06ea3cf64331 ,
+                        0xa0043c87fde4976d91bfae28265c8abbe497ed626fbd51123100d8827b016c42 ,
+                        0x1e334a644cc57df2cb36d1539f9cd32f740016199f535f4ec9930046e4d49753 ,
+                        0xf22480433cfa6af0e8cb2979128062800aa0e0a8000a8e0aa0e0a8000a8e0aa0 ,
+                        0xe0a8000a8e0aa0e0a8000a8ecb55ad0664e9f402602cd008ec0736022b819780 ,
+                        0xcd0efd678911c0d5c0b93d7f1e08ec00be019603af036da18233e10ae0372aaf ,
+                        0xa87500cf20c2b0c17b55fcd9b4e596623e0a781ee8ace26f1b7099259f4e2901 ,
+                        0x4f926c30ff04e621aa4f439604500fdc09ec49e8773e91ef4dbc1bf3416d45d6 ,
+                        0xf44d3b980501948069c863d0d4f73c43dfce1903b4937e705700a718f88f5d00 ,
+                        0xa702ef5bf0bd0f1865e0df29252471b606b80358001c9120865805300c5848f5 ,
+                        0xe7bc6b013ae542dc0cf42ee0166afb5a894d000380b9c06e47314cae21062fd4 ,
+                        0x93ee99568bada5fa3ebc98043019f8c1710cada47f71b6429a17bfa4f6367d3f ,
+                        0xff6210c0c9c03b1ee3b8a38f38bc712c726ece5787bb91c9a4f9c0905eb18414 ,
+                        0xc050e071ecbc0427b13dc0d104a4e52041f9b21dc08d1c38ae154200fd819b81 ,
+                        0xdf038ec30b15f2e394b36a0cd0b57d0b9c837f019c077c1f41ffbb81332aa7ca ,
+                        0x3efd80d51602b7696d39f5558b7d86e719c2290e3aa196ceceaf98b13e305d0e ,
+                        0xbed2b09de20ea39c980a609c613bc51d463931796ef443a63595b8e840661f13 ,
+                        0x61fa0bd06dd84e890c130174015b6d07a2a4e6679346a6bf009f1bb653dcf185 ,
+                        0x492353012c336ca7b8e3359346a693070391d5a8130ddb2b76d9886ca2694fda ,
+                        0xd0f417603f300b7d198c812e644d2471f26d309bf0336045b62ee0baaa5972cc ,
+                        0x5464db72e8c1289a6d059a6ac88f1706038f228f86d0039377db073cd433e6d1 ,
+                        0x310ad9b5137a90f26a6f00236bce46409a70bf27ae48b616c3d5be900c006e43 ,
+                        0x4efe841ec0acda6e600e0673fc31d1083c8bbcb1861ed0ac5827f03472a62037 ,
+                        0x9c0e7c44f8c18ddd3e004e331ce3e8290133809f083fd0b1d966603a911ffeb4 ,
+                        0xc5a1c07dc05ec20f7c68fb07b807bf954ea36138b094f04908652dc8d98ac233 ,
+                        0x0ef89af009f165ab916df5caffa8432e67aa565924cbb61d2905134d6da66802 ,
+                        0xe9a1082f4045e863628af608f8127d0400f212f80ae11312ca9600c7a51ec50c ,
+                        0xd200dc8f7e0676239f81f7229fc6b9a7045c824e041dcc3623751573fb8e3016 ,
+                        0xf898f0031dbbad226753c18dc86d9eba1854bb7522b794667a316820703bba1c ,
+                        0x9cc67603b792c1e5e026603de107302fb68e8c5c56390aa99e117ac0f26a6f12 ,
+                        0xe996b02148e126dd14eadef6030f13d1a6d069e47bfe3e56db8694e20fca5cc2 ,
+                        0x0f44d16d56d52c3942eb04c5615dc0842ab9ea13d359a77ae047e07853c78a55 ,
+                        0x3621554abd1d0e9d81263f264e022e3269682a80e986ed147718e5c45400671a ,
+                        0xb653dc619413d32a611d866d157778ad12a6e404d32a61bfd80e4449cd169346 ,
+                        0xa6bf009f1ab653dcf18949235301b418b653dcb1c4a7b312f1958bffd7a3afd8 ,
+                        0xf6327a2f170ff15c18f115b2addcf78511672377fb86ee7f17012e8c28f3720d ,
+                        0x01bab26dc0351c788c85b832a60eb89eb0aba18b2be4c739c7e0ffd2a87dc083 ,
+                        0xc0a05eb184bc346a30f008fef743fc855c401d94bbf0d7e165c8bcf7c188e1da ,
+                        0xb8914821275f7144718f703db001b71dfd0e185f258e1804506602b0c6710ceb ,
+                        0x89e4e2489062912e3ab913b8890357c355222601805c29371b7757ca45532412 ,
+                        0xe413e45dec75ae1d780c383c410cb109a0cc50e00964aede96ffb712f8f7c668 ,
+                        0xecbc042deff9b79212ab00ca8cc1ce7f923622dd190c7297ad69c7d6019352f8 ,
+                        0x8e5d0065a690eeccc49c14be9d53423e879274e80fec1443cc8a00c0bc88e603 ,
+                        0x6464197e26b26258a933edc053c091967c6649006586210521abbd1f6c019a2d ,
+                        0xf9f4463d7214bc05f924da89886215721e7eb8657f591440991390b2791f02bf ,
+                        0x221763af41665a9b89e8732f66b22c8060e88ea082a30228382a8082a3022838 ,
+                        0x2a8082a30228382a8082a30228382a8082932701b479f4b5d7a32fa7e449001b ,
+                        0x73eacb297912c0ca9cfa526aa43f5270d9f542d0066adba3a804a019f70298e6 ,
+                        0xad378a110b7197fc051efba11852875427b79dfc45e84f7f6628015761e7ccde ,
+                        0x76e072bfe1fb23131b0c53d080dcc23109d96adefb3c615fec015a915d46cb90 ,
+                        0xa3e78aa2288aa2288aa2288aa2288a925dfe03d479ce49eaa30f110000000049 ,
+                        0x454e44ae426082
+                    End
+
+                    LayoutCachedLeft =60
+                    LayoutCachedTop =8685
+                    LayoutCachedWidth =300
+                    LayoutCachedHeight =8925
+                    TabIndex =15
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =360
+                    Top =8655
+                    Width =1365
+                    Height =270
+                    FontSize =8
+                    BorderColor =0
+                    ForeColor =16777215
+                    Name ="Etiqueta117"
+                    Caption ="Campo obligatorio"
+                    FontName ="Impact"
+                    GUID = Begin
+                        0x0506f480b847c74dbdd246c75c69e0b5
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =360
+                    LayoutCachedTop =8655
+                    LayoutCachedWidth =1725
+                    LayoutCachedHeight =8925
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin OptionGroup
+                    OverlapFlags =223
+                    Left =120
+                    Top =3615
+                    Width =9297
+                    Height =956
+                    TabIndex =2
+                    BorderColor =0
+                    Name ="Marco175"
+                    GUID = Begin
+                        0xeb3aec8d6a819047bdb7269bfb5b07ee
+                    End
+
+                    LayoutCachedLeft =120
+                    LayoutCachedTop =3615
+                    LayoutCachedWidth =9417
+                    LayoutCachedHeight =4571
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin OptionGroup
+                    OverlapFlags =223
+                    Left =115
+                    Top =1393
+                    Width =9297
+                    Height =1527
+                    TabIndex =3
+                    BorderColor =0
+                    Name ="Marco189"
+                    GUID = Begin
+                        0xe79293e1815bdc4f91d10529826c4780
+                    End
+
+                    LayoutCachedLeft =115
+                    LayoutCachedTop =1393
+                    LayoutCachedWidth =9412
+                    LayoutCachedHeight =2920
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =345
+                    Top =945
+                    Width =3585
+                    Height =375
+                    FontSize =13
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =7758848
+                    Name ="Etiqueta190"
+                    Caption ="EQUIPO PARA LA PLANIFICACIÓN"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x774f7b9d0e58da4496eda256538b6e30
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =345
+                    LayoutCachedTop =945
+                    LayoutCachedWidth =3930
+                    LayoutCachedHeight =1320
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =235
+                    Top =1455
+                    Width =1515
+                    Height =360
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta191"
+                    Caption ="EQUIPO"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x77b592de529e724db22b6d8fc7888739
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =235
+                    LayoutCachedTop =1455
+                    LayoutCachedWidth =1750
+                    LayoutCachedHeight =1815
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =235
+                    Top =1933
+                    Width =1515
+                    Height =360
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta192"
+                    Caption ="SUBSIST."
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x850928417ac2c14b885b64c809bb3e13
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =235
+                    LayoutCachedTop =1933
+                    LayoutCachedWidth =1750
+                    LayoutCachedHeight =2293
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    BorderWidth =1
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =1863
+                    Top =1455
+                    Width =7386
+                    Height =360
+                    FontSize =12
+                    TabIndex =4
+                    BackColor =14737632
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="EQUIPO"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xb708f0462160e04680ecbf6e1869f6c4
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =1863
+                    LayoutCachedTop =1455
+                    LayoutCachedWidth =9249
+                    LayoutCachedHeight =1815
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =1863
+                    Top =1935
+                    Width =7386
+                    Height =360
+                    FontSize =12
+                    TabIndex =5
+                    BackColor =14737632
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="SUBSISTEMA"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x0c59b727e707e44f91f7fcbd2742282d
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =1863
+                    LayoutCachedTop =1935
+                    LayoutCachedWidth =9249
+                    LayoutCachedHeight =2295
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =235
+                    Top =2415
+                    Width =1515
+                    Height =360
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta197"
+                    Caption ="BUI"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0xefb7c7d858ed714ba769f428df2f5f9c
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =235
+                    LayoutCachedTop =2415
+                    LayoutCachedWidth =1750
+                    LayoutCachedHeight =2775
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Enabled = NotDefault
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =1863
+                    Top =2415
+                    Width =4206
+                    Height =360
+                    FontSize =12
+                    TabIndex =6
+                    BackColor =14737632
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="BUI"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xbda4a6d912f24a4aa24a0d681a43725a
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =1863
+                    LayoutCachedTop =2415
+                    LayoutCachedWidth =6069
+                    LayoutCachedHeight =2775
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =235
+                    Top =3900
+                    Width =840
+                    Height =390
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta242"
+                    Caption ="AÑO"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x9bec01deceaee6478e0d3de1e8994dd4
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =235
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =1075
+                    LayoutCachedHeight =4290
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =1200
+                    Top =3900
+                    Width =1251
+                    Height =390
+                    FontSize =12
+                    TabIndex =7
+                    BackColor =14737632
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="AÑO"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x255562e1fb17ea418bafff84a6ae189f
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =1200
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =2451
+                    LayoutCachedHeight =4290
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =2595
+                    Top =3900
+                    Width =870
+                    Height =390
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta245"
+                    Caption ="MES"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x898351613249d74694144bf9afcbb8c5
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =2595
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =3465
+                    LayoutCachedHeight =4290
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =4248
+                    Top =3900
+                    Width =900
+                    Height =390
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta249"
+                    Caption ="SEMANA"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x7054858fac532e44a4d8439f1f90337d
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =4248
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =5148
+                    LayoutCachedHeight =4290
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =345
+                    Top =3105
+                    Width =3525
+                    Height =375
+                    FontSize =13
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =7758848
+                    Name ="Etiqueta251"
+                    Caption ="FECHA DE PLANIFICACIÓN"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0xb67c4ebb9d0c764696ce5eea17dde7ec
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =345
+                    LayoutCachedTop =3105
+                    LayoutCachedWidth =3870
+                    LayoutCachedHeight =3480
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =3526
+                    Top =3900
+                    Width =621
+                    Height =390
+                    FontSize =12
+                    TabIndex =8
+                    BackColor =14737632
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Mes"
+                    Format ="General Number"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xcad1ce22bf983348add2aabbd97b7a91
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =3526
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =4147
+                    LayoutCachedHeight =4290
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    DecimalPlaces =0
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =5191
+                    Top =3900
+                    Width =621
+                    Height =390
+                    FontSize =12
+                    TabIndex =9
+                    BackColor =14737632
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Semana"
+                    Format ="General Number"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x96af69d38b59764aa53890c41478ab3a
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =5191
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =5812
+                    LayoutCachedHeight =4290
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =6030
+                    Top =3900
+                    Width =1605
+                    Height =390
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta258"
+                    Caption ="F.Prevista Cierre"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x3cb6d707d21f324a9f5c8ffddc7afaf3
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6030
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =7635
+                    LayoutCachedHeight =4290
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =7713
+                    Top =3900
+                    Width =1536
+                    Height =390
+                    FontSize =12
+                    TabIndex =10
+                    BackColor =14737632
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="FechaPrevistaCierre"
+                    Format ="Short Date"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x3ef7b9ad89060448a6510e068846fd63
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =7713
+                    LayoutCachedTop =3900
+                    LayoutCachedWidth =9249
+                    LayoutCachedHeight =4290
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =345
+                    Top =4695
+                    Width =6300
+                    Height =375
+                    FontSize =13
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =7758848
+                    Name ="Etiqueta260"
+                    Caption ="MOTIVO QUE CIERRA LA PLANIFICACIÓN"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x669c8df9f48f9a4499d7c7e5f27ef2b7
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =345
+                    LayoutCachedTop =4695
+                    LayoutCachedWidth =6645
+                    LayoutCachedHeight =5070
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    BorderWidth =1
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =288
+                    Top =5280
+                    Width =8961
+                    Height =1620
+                    FontSize =12
+                    TabIndex =11
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="MotivoReplanificacion"
+                    OnExit ="[Event Procedure]"
+                    FontName ="Arial"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xc5f5467d59934043a263e0598f427fa9
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =288
+                    LayoutCachedTop =5280
+                    LayoutCachedWidth =9249
+                    LayoutCachedHeight =6900
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =235
+                    Top =7515
+                    Width =840
+                    Height =390
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta277"
+                    Caption ="AÑO"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x2294780d1c59754eacfe057b25f1783b
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =235
+                    LayoutCachedTop =7515
+                    LayoutCachedWidth =1075
+                    LayoutCachedHeight =7905
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin TextBox
+                    BorderWidth =1
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =1200
+                    Top =7515
+                    Width =1251
+                    Height =390
+                    FontSize =12
+                    TabIndex =12
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="AñoNuevo"
+                    OnExit ="[Event Procedure]"
+                    FontName ="Arial"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x0ebda51c21505848bd4a4f16ff3fd4fc
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =1200
+                    LayoutCachedTop =7515
+                    LayoutCachedWidth =2451
+                    LayoutCachedHeight =7905
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =3192
+                    Top =7515
+                    Width =870
+                    Height =390
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta279"
+                    Caption ="MES"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x77a1e37f5aa7574e94b5858bcd283d31
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =3192
+                    LayoutCachedTop =7515
+                    LayoutCachedWidth =4062
+                    LayoutCachedHeight =7905
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    BorderWidth =1
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    ListRows =12
+                    ListWidth =1134
+                    Left =4230
+                    Top =7515
+                    Width =921
+                    Height =390
+                    FontSize =12
+                    TabIndex =13
+                    BorderColor =0
+                    ForeColor =0
+                    GUID = Begin
+                        0xf98cd94526c5e7419481d93b26333dbb
+                    End
+                    Name ="ComboMesNuevo"
+                    RowSourceType ="Value List"
+                    RowSource ="1;2;3;4;5;6;7;8;9;10;11;12"
+                    ColumnWidths ="1134"
+                    OnExit ="[Event Procedure]"
+                    FontName ="Arial"
+                    OnChange ="[Event Procedure]"
+                    Tag ="OBLIGATORIO"
+                    GridlineColor =0
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =4230
+                    LayoutCachedTop =7515
+                    LayoutCachedWidth =5151
+                    LayoutCachedHeight =7905
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ForeThemeColorIndex =-1
+                    ForeShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    BackStyle =1
+                    OldBorderStyle =1
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =6179
+                    Top =7515
+                    Width =900
+                    Height =390
+                    FontSize =12
+                    FontWeight =700
+                    BackColor =12961221
+                    BorderColor =0
+                    ForeColor =0
+                    Name ="Etiqueta280"
+                    Caption ="SEMANA"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0x563277d8422fc04cb5643a7b758828cb
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6179
+                    LayoutCachedTop =7515
+                    LayoutCachedWidth =7079
+                    LayoutCachedHeight =7905
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    BorderWidth =1
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    ListRows =12
+                    ListWidth =2835
+                    Left =7188
+                    Top =7515
+                    Width =2061
+                    Height =390
+                    FontSize =12
+                    TabIndex =14
+                    BorderColor =0
+                    ForeColor =0
+                    GUID = Begin
+                        0x0d2bc64e2060cc408a5cdd15a31bf925
+                    End
+                    Name ="ComboSemanaNueva"
+                    RowSourceType ="Value List"
+                    RowSource ="01 04/07/2014;02 11/07/2014;03 18/07/2014;04 25/07/2014"
+                    ColumnWidths ="2835"
+                    OnExit ="[Event Procedure]"
+                    FontName ="Arial"
+                    Tag ="OBLIGATORIO"
+                    GridlineColor =0
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =7188
+                    LayoutCachedTop =7515
+                    LayoutCachedWidth =9249
+                    LayoutCachedHeight =7905
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    ForeThemeColorIndex =-1
+                    ForeShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Image
+                    SizeMode =1
+                    Left =4030
+                    Top =7155
+                    Width =240
+                    Height =240
+                    BorderColor =0
+                    Name ="Imagen255"
+                    Picture ="Asterisco.png"
+                    GUID = Begin
+                        0x7ff7ba097f46f645ad31a903cb98a024
+                    End
+                    GridlineColor =0
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000080000000800806000000c33e61 ,
+                        0xcb0000000473424954080808087c086488000000097048597300000b1300000b ,
+                        0x1301009a9c18000006e949444154789ced9d6b88555514c77fd751a726d42c87 ,
+                        0xa2b222453322f243442091653a9a24d998450f7a6792594614457d8b5e462599 ,
+                        0x3db0a2118328e9219584d98b282b2a52735294acd434b3a46c745e7d58733106 ,
+                        0xe7de7bf6d9af73cefac102fdb05d6beff5f79e73f6636d501445511445511445 ,
+                        0x511445510a412974008e1904cc042602a381c36a6cf737d00aac005eedf9bb92 ,
+                        0x214ac00dc02ea03ba5ed04ae25ffff5972437fe045d227beb72d06ea3cf64331 ,
+                        0xa0043c87fde4976d91bfae28265c8abbe497ed626fbd51123100d8827b016c42 ,
+                        0x1e334a644cc57df2cb36d1539f9cd32f740016199f535f4ec9930046e4d49753 ,
+                        0xf22480433cfa6af0e8cb2979128062800aa0e0a8000a8e0aa0e0a8000a8e0aa0 ,
+                        0xe0a8000a8e0aa0e0a8000a8ecb55ad0664e9f402602cd008ec0736022b819780 ,
+                        0xcd0efd678911c0d5c0b93d7f1e08ec00be019603af036da18233e10ae0372aaf ,
+                        0xa87500cf20c2b0c17b55fcd9b4e596623e0a781ee8ace26f1b7099259f4e2901 ,
+                        0x4f926c30ff04e621aa4f439604500fdc09ec49e8773e91ef4dbc1bf3416d45d6 ,
+                        0xf44d3b980501948069c863d0d4f73c43dfce1903b4937e705700a718f88f5d00 ,
+                        0xa702ef5bf0bd0f1865e0df29252471b606b80358001c9120865805300c5848f5 ,
+                        0xe7bc6b013ae542dc0cf42ee0166afb5a894d000380b9c06e47314cae21062fd4 ,
+                        0x93ee99568bada5fa3ebc98043019f8c1710cada47f71b6429a17bfa4f6367d3f ,
+                        0xff6210c0c9c03b1ee3b8a38f38bc712c726ece5787bb91c9a4f9c0905eb18414 ,
+                        0xc050e071ecbc0427b13dc0d104a4e52041f9b21dc08d1c38ae154200fd819b81 ,
+                        0xdf038ec30b15f2e394b36a0cd0b57d0b9c837f019c077c1f41ffbb81332aa7ca ,
+                        0x3efd80d51602b7696d39f5558b7d86e719c2290e3aa196ceceaf98b13e305d0e ,
+                        0xbed2b09de20ea39c980a609c613bc51d463931796ef443a63595b8e840661f13 ,
+                        0x61fa0bd06dd84e890c130174015b6d07a2a4e6679346a6bf009f1bb653dcf185 ,
+                        0x492353012c336ca7b8e3359346a693070391d5a8130ddb2b76d9886ca2694fda ,
+                        0xd0f417603f300b7d198c812e644d2471f26d309bf0336045b62ee0baaa5972cc ,
+                        0x5464db72e8c1289a6d059a6ac88f1706038f228f86d0039377db073cd433e6d1 ,
+                        0x310ad9b5137a90f26a6f00236bce46409a70bf27ae48b616c3d5be900c006e43 ,
+                        0x4efe841ec0acda6e600e0673fc31d1083c8bbcb1861ed0ac5827f03472a62037 ,
+                        0x9c0e7c44f8c18ddd3e004e331ce3e8290133809f083fd0b1d966603a911ffeb4 ,
+                        0xc5a1c07dc05ec20f7c68fb07b807bf954ea36138b094f04908652dc8d98ac233 ,
+                        0x0ef89af009f165ab916df5caffa8432e67aa565924cbb61d2905134d6da66802 ,
+                        0xe9a1082f4045e863628af608f8127d0400f212f80ae11312ca9600c7a51ec50c ,
+                        0xd200dc8f7e0676239f81f7229fc6b9a7045c824e041dcc3623751573fb8e3016 ,
+                        0xf898f0031dbbad226753c18dc86d9eba1854bb7522b794667a316820703bba1c ,
+                        0x9cc67603b792c1e5e026603de107302fb68e8c5c56390aa99e117ac0f26a6f12 ,
+                        0xe996b02148e126dd14eadef6030f13d1a6d069e47bfe3e56db8694e20fca5cc2 ,
+                        0x0f44d16d56d52c3942eb04c5615dc0842ab9ea13d359a77ae047e07853c78a55 ,
+                        0x3621554abd1d0e9d81263f264e022e3269682a80e986ed147718e5c45400671a ,
+                        0xb653dc619413d32a611d866d157778ad12a6e404d32a61bfd80e4449cd169346 ,
+                        0xa6bf009f1ab653dcf18949235301b418b653dcb1c4a7b312f1958bffd7a3afd8 ,
+                        0xf6327a2f170ff15c18f115b2addcf78511672377fb86ee7f17012e8c28f3720d ,
+                        0x01bab26dc0351c788c85b832a60eb89eb0aba18b2be4c739c7e0ffd2a87dc083 ,
+                        0xc0a05eb184bc346a30f008fef743fc855c401d94bbf0d7e165c8bcf7c188e1da ,
+                        0xb8914821275f7144718f703db001b71dfd0e185f258e1804506602b0c6710ceb ,
+                        0x89e4e2489062912e3ab913b8890357c355222601805c29371b7757ca45532412 ,
+                        0xe413e45dec75ae1d780c383c410cb109a0cc50e00964aede96ffb712f8f7c668 ,
+                        0xecbc042deff9b79212ab00ca8cc1ce7f923622dd190c7297ad69c7d6019352f8 ,
+                        0x8e5d0065a690eeccc49c14be9d53423e879274e80fec1443cc8a00c0bc88e603 ,
+                        0x6464197e26b26258a933edc053c091967c6649006586210521abbd1f6c019a2d ,
+                        0xf9f4463d7214bc05f924da89886215721e7eb8657f591440991390b2791f02bf ,
+                        0x221763af41665a9b89e8732f66b22c8060e88ea082a30228382a8082a3022838 ,
+                        0x2a8082a30228382a8082a30228382a8082932701b479f4b5d7a32fa7e449001b ,
+                        0x73eacb297912c0ca9cfa526aa43f5270d9f542d0066adba3a804a019f70298e6 ,
+                        0xad378a110b7197fc051efba11852875427b79dfc45e84f7f6628015761e7ccde ,
+                        0x76e072bfe1fb23131b0c53d080dcc23109d96adefb3c615fec015a915d46cb90 ,
+                        0xa3e78aa2288aa2288aa2288aa2288a925dfe03d479ce49eaa30f110000000049 ,
+                        0x454e44ae426082
+                    End
+
+                    LayoutCachedLeft =4030
+                    LayoutCachedTop =7155
+                    LayoutCachedWidth =4270
+                    LayoutCachedHeight =7395
+                    TabIndex =16
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =345
+                    Top =7020
+                    Width =3630
+                    Height =375
+                    FontSize =13
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =7758848
+                    Name ="Etiqueta282"
+                    Caption ="NUEVA FECHA DE PLANIFICACIÓN"
+                    FontName ="Arial Narrow"
+                    GUID = Begin
+                        0xea628bff32961345976d0b2527f9e2f0
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =345
+                    LayoutCachedTop =7020
+                    LayoutCachedWidth =3975
+                    LayoutCachedHeight =7395
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Image
+                    SizeMode =1
+                    Left =6751
+                    Top =4830
+                    Width =240
+                    Height =240
+                    BorderColor =0
+                    Name ="Imagen283"
+                    Picture ="Asterisco.png"
+                    GUID = Begin
+                        0x6fb7ecca4bf20a42bedac1022682ddfc
+                    End
+                    GridlineColor =0
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000080000000800806000000c33e61 ,
+                        0xcb0000000473424954080808087c086488000000097048597300000b1300000b ,
+                        0x1301009a9c18000006e949444154789ced9d6b88555514c77fd751a726d42c87 ,
+                        0xa2b222453322f243442091653a9a24d998450f7a6792594614457d8b5e462599 ,
+                        0x3db0a2118328e9219584d98b282b2a52735294acd434b3a46c745e7d58733106 ,
+                        0xe7de7bf6d9af73cefac102fdb05d6beff5f79e73f6636d501445511445511445 ,
+                        0x511445510a412974008e1904cc042602a381c36a6cf737d00aac005eedf9bb92 ,
+                        0x214ac00dc02ea03ba5ed04ae25ffff5972437fe045d227beb72d06ea3cf64331 ,
+                        0xa0043c87fde4976d91bfae28265c8abbe497ed626fbd51123100d8827b016c42 ,
+                        0x1e334a644cc57df2cb36d1539f9cd32f740016199f535f4ec9930046e4d49753 ,
+                        0xf22480433cfa6af0e8cb2979128062800aa0e0a8000a8e0aa0e0a8000a8e0aa0 ,
+                        0xe0a8000a8e0aa0e0a8000a8ecb55ad0664e9f402602cd008ec0736022b819780 ,
+                        0xcd0efd678911c0d5c0b93d7f1e08ec00be019603af036da18233e10ae0372aaf ,
+                        0xa87500cf20c2b0c17b55fcd9b4e596623e0a781ee8ace26f1b7099259f4e2901 ,
+                        0x4f926c30ff04e621aa4f439604500fdc09ec49e8773e91ef4dbc1bf3416d45d6 ,
+                        0xf44d3b980501948069c863d0d4f73c43dfce1903b4937e705700a718f88f5d00 ,
+                        0xa702ef5bf0bd0f1865e0df29252471b606b80358001c9120865805300c5848f5 ,
+                        0xe7bc6b013ae542dc0cf42ee0166afb5a894d000380b9c06e47314cae21062fd4 ,
+                        0x93ee99568bada5fa3ebc98043019f8c1710cada47f71b6429a17bfa4f6367d3f ,
+                        0xff6210c0c9c03b1ee3b8a38f38bc712c726ece5787bb91c9a4f9c0905eb18414 ,
+                        0xc050e071ecbc0427b13dc0d104a4e52041f9b21dc08d1c38ae154200fd819b81 ,
+                        0xdf038ec30b15f2e394b36a0cd0b57d0b9c837f019c077c1f41ffbb81332aa7ca ,
+                        0x3efd80d51602b7696d39f5558b7d86e719c2290e3aa196ceceaf98b13e305d0e ,
+                        0xbed2b09de20ea39c980a609c613bc51d463931796ef443a63595b8e840661f13 ,
+                        0x61fa0bd06dd84e890c130174015b6d07a2a4e6679346a6bf009f1bb653dcf185 ,
+                        0x492353012c336ca7b8e3359346a693070391d5a8130ddb2b76d9886ca2694fda ,
+                        0xd0f417603f300b7d198c812e644d2471f26d309bf0336045b62ee0baaa5972cc ,
+                        0x5464db72e8c1289a6d059a6ac88f1706038f228f86d0039377db073cd433e6d1 ,
+                        0x310ad9b5137a90f26a6f00236bce46409a70bf27ae48b616c3d5be900c006e43 ,
+                        0x4efe841ec0acda6e600e0673fc31d1083c8bbcb1861ed0ac5827f03472a62037 ,
+                        0x9c0e7c44f8c18ddd3e004e331ce3e8290133809f083fd0b1d966603a911ffeb4 ,
+                        0xc5a1c07dc05ec20f7c68fb07b807bf954ea36138b094f04908652dc8d98ac233 ,
+                        0x0ef89af009f165ab916df5caffa8432e67aa565924cbb61d2905134d6da66802 ,
+                        0xe9a1082f4045e863628af608f8127d0400f212f80ae11312ca9600c7a51ec50c ,
+                        0xd200dc8f7e0676239f81f7229fc6b9a7045c824e041dcc3623751573fb8e3016 ,
+                        0xf898f0031dbbad226753c18dc86d9eba1854bb7522b794667a316820703bba1c ,
+                        0x9cc67603b792c1e5e026603de107302fb68e8c5c56390aa99e117ac0f26a6f12 ,
+                        0xe996b02148e126dd14eadef6030f13d1a6d069e47bfe3e56db8694e20fca5cc2 ,
+                        0x0f44d16d56d52c3942eb04c5615dc0842ab9ea13d359a77ae047e07853c78a55 ,
+                        0x3621554abd1d0e9d81263f264e022e3269682a80e986ed147718e5c45400671a ,
+                        0xb653dc619413d32a611d866d157778ad12a6e404d32a61bfd80e4449cd169346 ,
+                        0xa6bf009f1ab653dcf18949235301b418b653dcb1c4a7b312f1958bffd7a3afd8 ,
+                        0xf6327a2f170ff15c18f115b2addcf78511672377fb86ee7f17012e8c28f3720d ,
+                        0x01bab26dc0351c788c85b832a60eb89eb0aba18b2be4c739c7e0ffd2a87dc083 ,
+                        0xc0a05eb184bc346a30f008fef743fc855c401d94bbf0d7e165c8bcf7c188e1da ,
+                        0xb8914821275f7144718f703db001b71dfd0e185f258e1804506602b0c6710ceb ,
+                        0x89e4e2489062912e3ab913b8890357c355222601805c29371b7757ca45532412 ,
+                        0xe413e45dec75ae1d780c383c410cb109a0cc50e00964aede96ffb712f8f7c668 ,
+                        0xecbc042deff9b79212ab00ca8cc1ce7f923622dd190c7297ad69c7d6019352f8 ,
+                        0x8e5d0065a690eeccc49c14be9d53423e879274e80fec1443cc8a00c0bc88e603 ,
+                        0x6464197e26b26258a933edc053c091967c6649006586210521abbd1f6c019a2d ,
+                        0xf9f4463d7214bc05f924da89886215721e7eb8657f591440991390b2791f02bf ,
+                        0x221763af41665a9b89e8732f66b22c8060e88ea082a30228382a8082a3022838 ,
+                        0x2a8082a30228382a8082a30228382a8082932701b479f4b5d7a32fa7e449001b ,
+                        0x73eacb297912c0ca9cfa526aa43f5270d9f542d0066adba3a804a019f70298e6 ,
+                        0xad378a110b7197fc051efba11852875427b79dfc45e84f7f6628015761e7ccde ,
+                        0x76e072bfe1fb23131b0c53d080dcc23109d96adefb3c615fec015a915d46cb90 ,
+                        0xa3e78aa2288aa2288aa2288aa2288a925dfe03d479ce49eaa30f110000000049 ,
+                        0x454e44ae426082
+                    End
+
+                    LayoutCachedLeft =6751
+                    LayoutCachedTop =4830
+                    LayoutCachedWidth =6991
+                    LayoutCachedHeight =5070
+                    TabIndex =17
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Dim strIDPlanificacion As String
+Private Sub EstablecerBotonera()
+    Dim ctl As Control
+    On Error GoTo errores
+    For Each ctl In Me.Controls
+        If ctl.Tag = "OBLIGATORIO" Then
+            If Nz(ctl.Value, "") = "" Then
+                Me.ComandoReplanificar.Enabled = False
+                Exit Sub
+            End If
+        End If
+    Next
+    Me.ComandoReplanificar.Enabled = True
+    Exit Sub
+errores:
+    Me.ComandoReplanificar.Enabled = False
+    
+End Sub
+Public Sub EstablecerListaSemana()
+    Dim strAño As String, strMes As String, strCadenaSemana As String
+    Dim strTextoError As String
+    On Error GoTo errores
+    strAño = Nz(Me.AñoNuevo, "")
+    strMes = Nz(Me.ComboMesNuevo, "")
+    If Not IsNumeric(strAño) Or Not IsNumeric(strMes) Then
+        strCadenaSemana = "#ERR"
+    Else
+        '-------------------------------------------------------------------
+        '   -Devuelve:
+        '       FechaViernes =dteFechaViernesSemanax para intSemana=x <>0
+        '       FechaViernes =strCadenaFechas para intSemana=0
+        '       strCadenaFechas=01 & dteFechaViernesSemana1 & vbcrlf & _
+                                02 & dteFechaViernesSemana2 & vbcrlf & _
+        '                       ...
+        '                       intNumeroSemanas & dteFechaViernesSemanax
+        '       FechaViernes="#ERR" & "|" & strTextoError
+        '-------------------------------------------------------------------
+        flag = FechaViernes(CInt(strMes), CLng(strAño))
+        If InStr(1, flag, "|") <> 0 Then
+            dato = Split(flag, "|")
+            strTextoError = "El método FechaViernes ha devuelto el error: " & vbNewLine & dato(1)
+            Err.Raise 1000
+        End If
+        strCadenaSemana = flag
+        If strCadenaSemana = "-1" Then
+            strTextoError = "No se ha podido cartar el combo de las semanas del mes"
+            Err.Raise 1000
+        End If
+        strCadenaSemana = Replace(strCadenaSemana, vbCrLf, ";")
+    End If
+    Me.ComboSemanaNueva.RowSource = strCadenaSemana
+    Me.ComboSemanaNueva.Requery
+    Exit Sub
+    
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar cargar el combo de las semanas se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+   
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub AñoNuevo_Exit(Cancel As Integer)
+     On Error Resume Next
+     EstablecerListaSemana
+     EstablecerBotonera
+End Sub
+Private Sub ComandoReplanificar_Click()
+    Dim strMotivo As String, strAño As String, strMes As String, strSemana As String, strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    If Not IsNumeric(strIDPlanificacion) Then
+        strTextoError = "No se puede determinar la planificación que se pretende cerrar"
+        Err.Raise 1000
+    End If
+    strMotivo = Nz(Me.MotivoReplanificacion, "")
+    strAño = Nz(Me.AñoNuevo, "")
+    strMes = Nz(Me.ComboMesNuevo, "")
+    strSemana = Nz(Me.ComboSemanaNueva, "")
+    If Len(strSemana) < 3 Then
+         strTextoError = "No se ha introducido una válida"
+        Err.Raise 1000
+    End If
+    If Not IsNumeric(Left(strSemana, 2)) Then
+        strTextoError = "No se ha introducido una válida"
+        Err.Raise 1000
+    End If
+    strSemana = Left(strSemana, 2)
+    '-------------------------------------------------------------------
+    '   -Devuelve:
+    '       CerrarPlanificacionConTrabajos = Descriptivo
+    '       CerrarPlanificacionConTrabajos ="#ERR" & "|" & strTextoError
+    '-------------------------------------------------------------------
+    flag = CerrarPlanificacionSinTrabajos(strIDPlanificacion, strMotivo, CInt(strSemana), CInt(strMes), CLng(strAño))
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método CerrarPlanificacionConTrabajos ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    '-------------------------------------------------
+    '   -Devuelve
+    '       FormularioAbierto = true or false
+    '       FormularioAbierto =False-->Error
+    '-------------------------------------------------
+    If FormularioAbierto("FormPlanificacionesBusqueda") Then
+        Forms("FormPlanificacionesBusqueda").Controls("ListaFiltrados").Requery
+    End If
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar cerrar una planifiación se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub cmdSalir_Click()
+    On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Function EstablecerDatos() As String
+    
+    Dim rcdDatos As DAO.Recordset, strEquipo As String, strBUI As String, strSUBSISTEMA As String
+    Dim strMes As String, strSemana As String, strAño As String, strFechaCierre As String, strFechaPrevistaCierre As String, strTextoError As String
+    On Error GoTo errores
+    If Not IsNumeric(strIDPlanificacion) Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.BUI = strBUI
+    Me.SubSistema = strSUBSISTEMA
+    Me.Equipo = strEquipo
+    m_SQL = "SELECT TbEquipos.BUI, TbEquipos.SUBSISTEMA, TbEquipos.Equipo, TbPlanificacion.Anio, TbPlanificacion.Mes, " & _
+            "TbPlanificacion.Semana, TbPlanificacion.FechaCierre, TbPlanificacion.FechaPrevistaCierre, TbPlanificacion.IDEvento, " & _
+            "TbPlanificacion.IDNoEvento, TbPlanificacion.IDEquipo " & _
+            "FROM TbPlanificacion INNER JOIN TbEquipos ON TbPlanificacion.IDEquipo = TbEquipos.IDEquipo " & _
+            "WHERE (((TbPlanificacion.IDPlanificacion)=" & strIDPlanificacion & "));"
+    Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+    With rcdDatos
+        If .EOF Then
+            strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+            Err.Raise 1000
+        End If
+        strBUI = Nz(.Fields("BUI"), "")
+        strSUBSISTEMA = Nz(.Fields("SUBSISTEMA"), "")
+        strEquipo = Nz(.Fields("Equipo"), "")
+        strAño = Nz(.Fields("Anio"), "")
+        strMes = Nz(.Fields("Mes"), "")
+        strSemana = Nz(.Fields("Semana"), "")
+        strFechaCierre = Nz(.Fields("FechaCierre"), "")
+        strFechaPrevistaCierre = Nz(.Fields("FechaPrevistaCierre"), "")
+        strEquipo = Nz(.Fields("Equipo"), "")
+    End With
+    rcdDatos.Close
+    Set rcdDatos = Nothing
+     If strBUI = "" Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.BUI = strBUI
+    If strSUBSISTEMA = "" Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.SubSistema = strSUBSISTEMA
+    If strEquipo = "" Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.Equipo = strEquipo
+    If Not IsNumeric(strAño) Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.AÑO = strAño
+    If Not IsNumeric(strMes) Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.Mes = strMes
+    If Not IsNumeric(strSemana) Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    Me.Semana = strSemana
+    If IsDate(strFechaPrevistaCierre) Then
+        Me.FechaPrevistaCierre = Format(strFechaPrevistaCierre, "dd/mm/yyyy")
+    End If
+    Me.ComandoReplanificar.Enabled = False
+    EstablecerDatos = "Datos establecidos correctamente"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método EstablecerDatos ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatos Is Nothing Then
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+    End If
+    EstablecerDatos = "#ERR" & "|" & strTextoError
+End Function
+Private Sub ComboMesNuevo_Change()
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    EstablecerListaSemana
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub
+Private Sub ComboMesNuevo_Exit(Cancel As Integer)
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    EstablecerListaSemana
+    EstablecerBotonera
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub
+Private Sub ComboSemanaNueva_Exit(Cancel As Integer)
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    EstablecerBotonera
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub
+Private Sub Form_Load()
+    Dim strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+   AjustarTamaño Me
+    Me.Caption = Me.lblTitulo.Caption
+    'strArgumento=strIDPlanificacion
+    strIDPlanificacion = Nz(Me.OpenArgs(), "")
+    If Not IsNumeric(strIDPlanificacion) Then
+        strTextoError = "No se ha abierto el formulario con los parámetros adecuados"
+        Err.Raise 1000
+    End If
+    EstablecerDatos
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Sub MotivoReplanificacion_Exit(Cancel As Integer)
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    EstablecerBotonera
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub

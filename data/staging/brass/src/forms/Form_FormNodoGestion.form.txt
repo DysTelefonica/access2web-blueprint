@@ -1,0 +1,780 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =-878856103
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =4325
+    DatasheetFontHeight =11
+    Left =1185
+    Top =1890
+    Right =8760
+    Bottom =7305
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0xc1aa00e5d08f4d418573befcfb7cd68f
+    End
+    NameMap = Begin
+        0x0acc0e5500000000a60da596ed6ead42b9857d1ffc02473100000000e6f1170c ,
+        0x9a2be6400000000000000000540062004e006f0064006f007300000000000000 ,
+        0xc6174cc49ee1124ca36a015042d469af07000000a60da596ed6ead42b9857d1f ,
+        0xfc0247314e004f0044004f000000000000000000000000000000000000000000 ,
+        0x00000c000000050000000000000000000000000000000000
+    End
+    Caption ="GESTIÓN DE LOS NODOS"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000f6a0050118ec00000000000000000000 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000000000 ,
+        0x00
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00006547a80100001973df2785000000f0168e63a80100005d00000000000000 ,
+        0x1c000000000000001c000000000000000000460a00000000fa168e63a8010000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x58020200010041003400000000000000000000005d0000000100000000000000 ,
+        0x10040000000000000400000000000000f0168e63a80100001c00000000000000 ,
+        0x00006547a8010000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c006500000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =5338
+            Name ="Detalle"
+            GUID = Begin
+                0xb50e9ee15116f54a96008139bf14a918
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =686
+                    Width =4325
+                    Height =3966
+                    BorderColor =0
+                    Name ="CuadroFormulario"
+                    GUID = Begin
+                        0x32269a4cd41f5947998f9e2255ba62fd
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =686
+                    LayoutCachedWidth =4325
+                    LayoutCachedHeight =4652
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =95
+                    Width =4325
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0xb1b95738c2b8bc4f9d764028fb960d13
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =4325
+                    LayoutCachedHeight =686
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =95
+                    Top =4652
+                    Width =4325
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0x447809ba5326ef419bc556684d4b3695
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =4652
+                    LayoutCachedWidth =4325
+                    LayoutCachedHeight =5338
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin ListBox
+                    TabStop = NotDefault
+                    IMEHold = NotDefault
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    Left =297
+                    Top =984
+                    Width =3731
+                    Height =2848
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaNodos"
+                    RowSourceType ="Table/Query"
+                    RowSource ="SELECT TbNodos.NODO FROM TbNodos ORDER BY TbNodos.NODO; "
+                    ColumnWidths ="5670"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xb5f04b0383a72b40bd09ebe5ad85246c
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =984
+                    LayoutCachedWidth =4028
+                    LayoutCachedHeight =3832
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =223
+                    Left =297
+                    Top =3980
+                    Width =540
+                    Height =375
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =1
+                    ForeColor =-2147483630
+                    Name ="ComandoAlta"
+                    Caption ="Alta"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0xab631655feccd54b917343a566e15883
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =297
+                    LayoutCachedTop =3980
+                    LayoutCachedWidth =837
+                    LayoutCachedHeight =4355
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                    UseTheme =255
+                    Shape =0
+                    Gradient =0
+                    BackColor =16777215
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =0
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =3600
+                    Top =4710
+                    Width =577
+                    Height =577
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =2
+                    ForeColor =-2147483630
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Arial"
+                    ControlTipText ="Salir"
+                    GUID = Begin
+                        0x24227ff1ef70ef4dada04477d2701a60
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =3600
+                    LayoutCachedTop =4710
+                    LayoutCachedWidth =4177
+                    LayoutCachedHeight =5287
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                    Shape =0
+                    Gradient =0
+                    BackColor =16777215
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =0
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin OptionGroup
+                    SpecialEffect =0
+                    OverlapFlags =223
+                    Left =148
+                    Top =836
+                    Width =4028
+                    Height =3668
+                    TabIndex =3
+                    BorderColor =-2147483602
+                    Name ="Marco120"
+                    GUID = Begin
+                        0x9f6e2d856b8eee41b90a296a81269104
+                    End
+
+                    LayoutCachedLeft =148
+                    LayoutCachedTop =836
+                    LayoutCachedWidth =4176
+                    LayoutCachedHeight =4504
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =3068
+                    Top =3980
+                    Width =960
+                    Height =375
+                    FontSize =10
+                    FontWeight =700
+                    TabIndex =4
+                    ForeColor =3487637
+                    Name ="ComandoEliminar"
+                    Caption ="Eliminar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Arial"
+                    GUID = Begin
+                        0x555753976396fa4db9c3cf7ad1e4de3e
+                    End
+                    GridlineColor =0
+
+                    LayoutCachedLeft =3068
+                    LayoutCachedTop =3980
+                    LayoutCachedWidth =4028
+                    LayoutCachedHeight =4355
+                    ForeThemeColorIndex =5
+                    ForeTint =100.0
+                    ForeShade =75.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                    UseTheme =255
+                    Shape =0
+                    Gradient =0
+                    BackColor =16777215
+                    BackThemeColorIndex =-1
+                    BackTint =100.0
+                    BorderColor =0
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ThemeFontIndex =-1
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =223
+                    Left =270
+                    Top =180
+                    Width =3615
+                    Height =465
+                    FontSize =17
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="GESTIÓN DE LOS NODOS"
+                    GUID = Begin
+                        0xc52066b920af534c8cb8d3b6449b2b59
+                    End
+                    LayoutCachedLeft =270
+                    LayoutCachedTop =180
+                    LayoutCachedWidth =3885
+                    LayoutCachedHeight =645
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    Left =225
+                    Top =120
+                    Width =3615
+                    Height =465
+                    FontSize =17
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="GESTIÓN DE LOS NODOS"
+                    GUID = Begin
+                        0x10428d39247b1b4bac7f63df92ef9b79
+                    End
+                    LayoutCachedLeft =225
+                    LayoutCachedTop =120
+                    LayoutCachedWidth =3840
+                    LayoutCachedHeight =585
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Dim strNodoSeleccionado As String
+Private Sub ComandoAlta_Click()
+    Dim strNodo As String, strTextoError As String
+    On Error GoTo errores
+    strNodo = Nz(InputBox("Nombre del Nodo"), "")
+    If strNodo = "" Then
+       Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    '   -Devuelve:
+    '       Alta = strDescriptivo
+    '       Alta = "#ERR" & "|" & strTextoError
+    '-----------------------------------------------
+    flag = Alta(strNodo)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método Alta ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    Me.ListaNodos.Requery
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar dar de alta un nodo se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+Private Sub ComandoEliminar_Click()
+    Dim strTextoError As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    strNodoSeleccionado = Nz(Me.ListaNodos.Column(0), "")
+    If strNodoSeleccionado = "" Then
+        strTextoError = "Se ha de seleccionar el Nodo que desea eliminar"
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    pregunta = MsgBox("¿Desea realmente eliminar el Nodo: " & strNodoSeleccionado & " ?", _
+                    vbExclamation + vbYesNo + vbDefaultButton2, "Eliminación de Nodo")
+    If pregunta <> vbYes Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    '------------------------------------------------------
+    '   -Devuelve:
+    '       Eliminar = Descriptivo
+    '       Eliminar = "#ERR" & "|" & strTextoError
+    '------------------------------------------------------
+    flag = Eliminar(strNodoSeleccionado)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método Eliminar ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    Me.ComandoEliminar.Enabled = False
+    Me.ListaNodos.Requery
+    '-------------------------------------------------------------------
+    '   -Devuelve
+    '       FormularioAbierto = true or false
+    '       FormularioAbierto =False-->Error
+    '-------------------------------------------
+    If FormularioAbierto("FormNodoBUIGestion") Then
+        Forms("FormNodoBUIGestion").Controls("ListaNodos").Requery
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "Al intentar eliminar el nodo se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(strTextoError, vbCritical, "Error")
+End Sub
+
+
+Private Sub Form_Open(Canel As Integer)
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    AjustarTamaño Me
+    Me.Caption = Me.lblTitulo1.Caption
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub
+Private Sub cmdSalir_Click()
+   On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Sub ListaNodos_Click()
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    strNodoSeleccionado = Nz(Me.ListaNodos.Column(0), "")
+    If strNodoSeleccionado = "" Then
+        Me.ComandoEliminar.Enabled = False
+    Else
+        Me.ComandoEliminar.Enabled = True
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub
+Public Function Eliminar(strNodo As String) As String
+     '--------------------------------------------------------
+    ' Función creada por Andrés Román del Peral el día 28/12/13
+    '   -Modificaciones:
+   
+    '   -Funcionamiento:
+    '       -va a eliminar de la tabla TbNodos el nodo con Nodo=strNodo
+    '       -strNodo<>""
+    '       -strNodo Existente
+    '       -strNodo no ha de estar previamente en ningún evento-->me.EsteNodoEstaYaEnEvento="No"
+    '       -luego he de eliminar todos los registros de la tabla de unión entre NOdos y buis que tengan ese nodo
+    '   -llamada por:
+    '       -Form_FormNodoGestion.ComandoEliminar_Click
+    '   -Devuelve:
+    '       Eliminar = Descriptivo
+    '       Eliminar = "#ERR" & "|" & strTextoError
+    '-------------------------------------------------------------------
+    Dim strTextoError As String
+    On Error GoTo errores
+    If strNodo = "" Then
+        strTextoError = "No se ha indicado el nombre del nodo"
+        Err.Raise 1000
+    End If
+    '------------------------------------------------------
+    '   -Devuelve:
+    '       Dame = strValorObtenido
+    '       Dame = "#ERR" & "|" & strTextoError
+    '------------------------------------------------------
+    flag = Dame("TbEventos", "IDEvento", "NODO", strNodo)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        strTextoError = "El método Dame ha devuelto un error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    If flag <> "" Then
+        strTextoError = "El nodo se ha empleado al menos en un evento: " & vbNewLine & flag
+        Err.Raise 1000
+    End If
+    m_SQL = "DELETE TbNodos.NODO " & _
+                "FROM TbNodos " & _
+                "WHERE (((TbNodos.NODO)='" & strNodo & "'));"
+    DoCmd.SetWarnings False
+    DoCmd.RunSQL m_SQL
+    DoCmd.SetWarnings True
+    m_SQL = "DELETE TbNodoBUI.NODO " & _
+            "FROM TbNodoBUI " & _
+            "WHERE (((TbNodoBUI.NODO)='" & strNodo & "'));"
+    DoCmd.SetWarnings False
+    DoCmd.RunSQL m_SQL
+    DoCmd.SetWarnings True
+    Eliminar = "Nodo " & strNodo & " borrado correctamente"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método Nodo.Eliminar ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.SetWarnings True
+    Eliminar = "#ERR" & "|" & strTextoError
+End Function
+Public Function Alta(strNodo As String) As String
+    '--------------------------------------------------------
+    ' Función creada por Andrés Román del Peral el día 28/12/13
+    '   -Modificaciones:
+   
+    '   -Funcionamiento:
+    '       -va a dar de alta un registro en la tabla TbNodos
+    '       -strNodo<>""
+    '       -strNodo no ha de existir previamente
+    
+    '   -llamada por:
+    '       -Form_FormNodoGestion.ComandoAlta_Click
+    '   -Devuelve:
+    '       Alta = Descriptivo
+    '       Alta = "#ERR" & "|" & strTextoError
+    '-------------------------------------------------------------------
+    Dim rcdDatos As DAO.Recordset, strTextoError As String
+    On Error GoTo errores
+    If strNodo = "" Then
+        strTextoError = "No se ha indicado el nombre del nodo"
+        Err.Raise 1000
+    End If
+    m_SQL = "SELECT TbNodos.NODO " & _
+            "FROM TbNodos " & _
+            "WHERE (((TbNodos.NODO)='" & strNodo & "'));"
+    Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+    With rcdDatos
+        If Not .EOF Then
+            strTextoError = "Ya existe un nodo registrado con el nombre: " & strNodo
+            Err.Raise 1000
+        End If
+        .AddNew
+            .Fields("NODO") = strNodo
+        .Update
+    End With
+    rcdDatos.Close
+    Set rcdDatos = Nothing
+    Alta = "Se ha dado de alta correctamente el nodo llamado: " & strNodo
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        strTextoError = "El método Alta ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatos Is Nothing Then
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+    End If
+    Alta = "#ERR" & "|" & strTextoError
+End Function

@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Estado de planificacion Punto 04 parte 2 - 2026-07-09 (post-merge-staging)</title>
+  <style>
+    :root {
+      --color-brand: #0066CC;
+      --color-brand-dark: #003D7A;
+      --color-text-primary: #1A1A1A;
+      --color-text-secondary: #5C5C5C;
+      --color-background: #FFFFFF;
+      --color-surface: #F5F7FA;
+      --color-surface-strong: #E8EEF5;
+      --color-border: #D4DBE3;
+      --color-success: #2E7D32;
+      --color-warning: #ED6C02;
+      --color-danger: #C62828;
+      --color-info: #0277BD;
+      --radius-card: 12px;
+      --radius-chip: 24px;
+      --radius-input: 8px;
+      --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 1180px; margin: 0 auto; padding: var(--space-7) var(--space-5) var(--space-7); }
+    .hero {
+      background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+      color: #fff;
+      border-radius: var(--radius-card);
+      padding: var(--space-6) var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    .hero .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+      opacity: .85;
+      font-weight: 600;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.2;
+      margin: var(--space-3) 0 var(--space-3);
+      font-weight: 700;
+    }
+    .hero p.lead {
+      font-size: 16px;
+      opacity: .95;
+      max-width: 880px;
+      margin: 0;
+    }
+    section.card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    section.card h2 {
+      font-size: 18px;
+      margin: 0 0 var(--space-4);
+      color: var(--color-brand-dark);
+      font-weight: 700;
+    }
+    section.card h3 {
+      font-size: 15px;
+      margin: var(--space-4) 0 var(--space-3);
+      color: var(--color-text-primary);
+      font-weight: 700;
+    }
+    section.card p { margin: 0 0 var(--space-4); }
+    section.card p:last-child { margin-bottom: 0; }
+    section.card ul, section.card ol { padding-left: var(--space-5); margin: 0 0 var(--space-4); }
+    section.card li { margin-bottom: var(--space-2); }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      font-size: 13px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .rag-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-chip);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .rag-green  { background: #E8F5E9; color: var(--color-success); }
+    .rag-amber  { background: #FFF3E0; color: var(--color-warning); }
+    .rag-red    { background: #FFEBEE; color: var(--color-danger); }
+    .rag-grey   { background: var(--color-surface-strong); color: var(--color-text-secondary); }
+    .footer-note {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-5);
+      text-align: center;
+    }
+    .commit-sha {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: var(--color-surface-strong);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="hero" role="banner">
+      <div class="eyebrow">Estado de planificacion - 2026-07-09 - Punto 04 parte 2 (post-merge-staging)</div>
+      <h1>Feature cerrado: constraints cronologicas (a) y (b) para acciones de planes de mitigacion y contingencia</h1>
+      <p class="lead">
+        Actualizacion post-merge a staging (PR #97 cerrado en
+        <span class="commit-sha">c0b9606</span>). Helper puro
+        <code>modAccionFechasHelper.ValidarFechasAccion</code> con cache-first (1 query SQL
+        <code>MIN(FechaEdicion)</code> por form load). 8 atomos TDD verdes espejo de los
+        6 escenarios del acta Calidad 2026-06-25 + contrato staging 2026-06-22. Sin regresion
+        en Parte 1 (4 + 16 atomos verdes).
+      </p>
+    </header>
+
+    <section class="card" aria-labelledby="sec-resumen">
+      <h2 id="sec-resumen">1. Resumen ejecutivo</h2>
+      <p>
+        El feature <strong>Punto 04 parte 2</strong> (issue #90) esta cerrado y en
+        staging, listo para UAT sign-off con Natalia en la Fase D de agosto (batched).
+        Cubre las dos constraints cronologicas del acta Calidad:
+      </p>
+      <ul>
+        <li><strong>(a)</strong> <code>PMAccion.FechaFinPrevista &gt;= PMAccion.FechaInicio</code> (identico para <code>PCAccion</code>). Si igual, acepta. Si anterior, rechaza con mensaje claro en espanol.</li>
+        <li><strong>(b)</strong> <code>PMAccion.FechaInicio &gt;= MIN(FechaEdicion)</code> del proyecto, resuelto de <code>TbProyectosEdiciones</code> filtrado por <code>IDProyecto</code>. Sin constante global del sistema.</li>
+      </ul>
+      <p>
+        Implementacion limpia: helper puro sin DAO, cache-first respetado, sin tocar esquema
+        de BD ni nombres de campos VBA. Los dos forms concernidos
+        (<code>Form_FormPlanAcciones</code> y
+        <code>Form_FormRiesgosGestionPlanAcciones</code>) cablean la validacion en
+        <code>BeforeUpdate</code> con <code>Cancel = True</code> + <code>MsgBox</code> si falla.
+      </p>
+      <div class="legend" aria-label="Leyenda RAG">
+        <span><span class="rag-pill rag-green">Verde</span> on track o terminado</span>
+        <span><span class="rag-pill rag-amber">Ambar</span> 2-5 dias de retraso o riesgo identificado</span>
+        <span><span class="rag-pill rag-red">Rojo</span> &gt;5 dias o bloqueado</span>
+        <span><span class="rag-pill rag-grey">Gris</span> planificado, no iniciado</span>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="sec-fases">
+      <h2 id="sec-fases">2. Estado por fase</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 220px;">Fase</th>
+            <th style="width: 80px;">RAG</th>
+            <th>Estado</th>
+            <th style="width: 130px;">Proximo paso</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Punto 04 parte 2</strong><br><em>Helper puro + cache-first</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>modAccionFechasHelper.bas:ValidarFechasAccion(p_FechaInicio, p_FechaFinPrevista, p_FechaBaseProyecto, Optional p_Error)</code>
+              helper puro sin DAO. Recibe la fecha base pre-resuelta por el form. Documentacion
+              arquitectonica completa en cabecera (decision 2026-07-09: cache-first, sin tocar BD).
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Punto 01</strong><br><em>consultar &rarr; mostrar (terminologia)</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Cambio de terminologia visible en docs (sin codigo VBA ni esquema BD). 10 ediciones en 3 archivos del docs repo:
+              <ul style="margin: 0; padding-left: 18px;">
+                <li><code>changes/calidad-release-scope-2026-06-22/specs/calidad-acceptance/spec.md</code> — 2 MUST requirements + 2 Scenario titles</li>
+                <li><code>changes/e2e-form-by-form-2026-06-22/specs/e2e-form-acceptance/spec.md</code> — 2 MUST requirements + 2 Scenario titles</li>
+                <li><code>docs/uat/contrato-staging-2026-06-22.html</code> — 2 H4 escenario titles</li>
+              </ul>
+              Issue <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/98">#98</a> cerrada con evidencia. Commit docs repo: <span class="commit-sha">6d22062</span>.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Punto 02</strong><br><em>Eliminar seccion 'Riesgos retirados'</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Eliminada del contrato la seccion completa <code>&lt;section id="req-cal-02"&gt;</code> 'Riesgos retirados sin ninguna tarea pendiente' (no aplica al producto per la reunion del 25/06). 53 lineas borradas, 2 anadidas en 1 archivo:
+              <ul style="margin: 0; padding-left: 18px;">
+                <li>Fila 'Punto 02' removida de la tabla resumen de calidad</li>
+                <li>Seccion completa (H2 + meta + comportamiento esperado + 4 escenarios + evidencia grafica + nota desarrollo) eliminada</li>
+                <li>'Bloque 1' actualizado: 'Puntos 02 y 18' -> 'Punto 18'</li>
+              </ul>
+              Issue <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/99">#99</a> cerrada con evidencia. Commit docs repo: <span class="commit-sha">a1d93a7</span>. Sin UAT (cubierto por fix interno <code>89ea405</code>).
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Puntos 19-21</strong><br><em>Historico: orden inverso + columna NC</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Implementados los 2 elementos pendientes del scope refinado (orden inverso + columna NC) tras validacion 2026-07-09 que demostro que NO estaban cubiertos por la combinacion Punto 17 + B3. <strong>Fuera de scope</strong>: notas al historico (descartado por el usuario). 7 archivos, 372 inserciones / 173 eliminaciones:
+              <ul style="margin: 0; padding-left: 18px;">
+                <li><code>Funciones Generales.bas:getEstadosDiferentesHastaEdicion</code> — retorno Estado|Fecha|NC + sort descendente post-bucle</li>
+                <li><code>Form_FormRiesgosGestionRiesgo.{cls,form.txt}</code> — lstEstadosHistoricos: 3 columnas + wire-up + metadata repair</li>
+                <li><code>Test_FormRiesgosGestionRiesgo_Historico</code> — 4 actualizados + 2 nuevos (OrdenInverso_Descendente, NCColumn_Visible)</li>
+                <li><code>tests.vba.json</code> + <code>.dysflow/project.json</code> — manifest + allowlist</li>
+              </ul>
+              Issue <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/100">#100</a> cerrada con evidencia. PR <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/pull/101">#101</a> mergeado a staging en commit <span class="commit-sha">14a4044</span>. 6/6 atomos verdes + 4/4 regresion verde sin regresiones. UAT pendiente (Fase D batched).
+            </td>
+            <td>Cerrado (code). UAT pendiente.</td>
+          </tr>
+          <tr>
+            <td><strong>Issue #70</strong><br><em>Schema time-bomb: \`TbCorreosEnviados.IDEdicion\` Integer -> Long</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Audit de datos 2026-07-09: 35.363 filas, max IDEdicion = 231, 0 filas > 32.767. Ventana amplia hoy, time-bomb existe. Code side completo: modulo <code>MigracionCorreosEnviadosIDEdicionLong.bas</code> (197 lineas, idempotente) + 3 tests TDD (<code>Test_TbCorreosEnviados_IDEdicion</code>) ya existian. Faltan: allowlist de los 4 procedures (anadido en commit <span class="commit-sha">a380129</span>) + runbook operativo en docs repo (<code>docs/runbooks/tbcorreosenviados-idedicion-long-migration.md</code>, pusheado en commit <span class="commit-sha">c565f37</span>). <strong>Pendiente operacional</strong>: ejecutar ALTER TABLE contra backend de produccion (requiere ventana de mantenimiento + coordinacion con DBA). Audit de otras columnas Integer FK abierto como issue <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/103">#103</a>.
+            </td>
+            <td>Cerrado (code + docs). Deploy operacional pendiente.</td>
+          </tr>
+          <tr>
+            <td><strong>Issue #64 + #66 + #67 + #68</strong><br><em>Cluster correo rechazo publicacion</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Cluster de fixes mergeado via PR <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/pull/104">#104</a> en commit <span class="commit-sha">739d829</span> (5 commits atomic): fix(correo) #66 + feat(edicion) #68 + test(rechazo) + fix(test) Dim-colon + chore(dysflow) allowlist/.accdb. Archivos clave: <code>src/classes/Correo.cls</code> (sentinel NoOp: en EnviarCorreo + 6 callers), <code>src/modules/Funciones Generales.bas</code> (helper EsNoOpError), <code>src/classes/Edicion.cls</code> (EsCalidad guard en RechazoPropuestaParaPublicacion), <code>src/modules/Test_Issue64Cluster.bas</code> (NEW, 3 tests atomicos + RunAll). <strong>Resultado tests</strong>: 4/4 verde (RunAll pasa all_pass). Issues cerradas con evidencia. <strong>Fuera de scope</strong>: sweep de 14+ handlers con lying success MsgBox (issue <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/65">#65</a>).
+            </td>
+            <td>Cerrado. UAT pendiente.</td>
+          </tr>
+          <tr>
+            <td><strong>Issue #65</strong><br><em>Sweep lying success MsgBox (14+ handlers)</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Audit completo mergeado via PR <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/pull/108">#108</a> en commit <span class="commit-sha">bcc4cf8</span>: <code>docs/uat/audit-lying-success-msgbox-2026-07-09.md</code> cataloga los 14+ handlers en <code>Form_FormCalidad*</code> y <code>Form_FormRiesgoExterno*</code> con el patron template a aplicar (de fix #64: form member + EsXNotificado helper + form gate + test TDD). Cada handler arreglado en un PR separado (consolidado como issue <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/109">#109</a>).
+            </td>
+            <td>Audit cerrado. Fix por handler pendiente.</td>
+          </tr>
+          <tr>
+            <td><strong>Issue #103</strong><br><em>Audit columnas Integer FK restantes</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              Audit completo mergeado via PR <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/pull/105">#105</a> en commit <span class="commit-sha">7fb70ca</span>: <code>docs/uat/audit-integer-fk-columns-2026-07-09.md</code>. Resultado: 3 columnas Integer (type=3) en riesgo (TbRiesgos.Priorizacion, tbCambiosParaPublicacion.EdicionInicial + EdicionFinal). 11 tablas verificadas con FK numericos en Long (type=4). 2 issues follow-up abiertos: <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/106">#106</a> (TbRiesgos.Priorizacion), <a href="https://github.com/DysTelefonica/GESTION_RIESGOS/issues/107">#107</a> (tbCambiosParaPublicacion). Migraciones pendientes siguiendo el patron de #70.
+            </td>
+            <td>Audit cerrado. Migraciones pendientes.</td>
+          </tr>
+          <tr>
+            <td><strong>Resolver fecha base</strong><br><em>1 SQL por form load</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>modEdicionFechasPresenter.bas:ObtenerFechaBaseProyecto(p_IDProyecto, db, p_Error)</code>
+              con SQL <code>MIN(FechaEdicion)</code> filtrado por <code>IDProyecto</code> (1 sola query).
+              Cache: <code>m_FechaBaseProyecto</code> se resuelve UNA vez en <code>Form_Load</code> /
+              <code>EstablecerDatos</code>. Si el form se reabre, se re-resuelve. 0 N+1.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Forms cableados</strong><br><em>Alta + Edicion de accion</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <ul style="margin: 0; padding-left: 18px;">
+                <li><code>Form_FormPlanAcciones</code> (alta): validacion en <code>ComandoGrabar_Click</code> antes de <code>.Registrar</code> (Raise 1000 + MsgBox).</li>
+                <li><code>Form_FormRiesgosGestionPlanAcciones</code> (edicion): validacion en <code>FechaInicio_BeforeUpdate</code> y <code>FechaFinPrevista_BeforeUpdate</code> con <code>Cancel = True</code> + MsgBox.</li>
+              </ul>
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>TDD atoms</strong><br><em>8 atomos espejo del issue</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>Test_AccionFechasHelper.bas</code> con 8 atomos:
+              <code>Sad_ConstraintA_FechaPrevistaAnteriorAInicio</code>,
+              <code>Edge_ConstraintA_IgualdadAceptada</code>,
+              <code>Happy_ConstraintA_PosterioridadAceptada</code>,
+              <code>Sad_ConstraintB_FechaInicioAnteriorABaseProyecto</code>,
+              <code>Happy_ConstraintB_SatisfechaIgualdad</code>,
+              <code>Edge_SinFechaInicio_ConstraintANoAplica</code>,
+              <code>Adversarial_FechaBaseProyectoVacia_NoCrashea</code>,
+              <code>Adversarial_FechaFinPrevistaInvalida_NoCrashea</code>.
+              Manifest: <code>tests/tests.vba.accion-fechas-helper.json</code> (<code>validate_manifest</code> 8/8).
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Regresion Parte 1</strong><br><em>Sin tocar atoms previos</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>Test_RiesgoFechasHelper_*</code> 4/4 verde (helper <code>modRiesgoFechasHelper.ValidarFechaCampo</code>
+              intacto). <code>Test_RiesgoMaterializacion_*</code> 16/16 verde (delegacion de <code>FechaMaterializado</code>
+              preservada). Total: <strong>28/28 verde</strong> en suites afectadas.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Tooling</strong><br><em>Dysflow allowlist gate</em></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>
+              <code>.dysflow/project.json</code> actualizado: 8 <code>Test_AccionFechasHelper_*</code>
+              agregados al <code>capabilities.procedures.allow</code> (gate PR1b / #621 F1). Tambien
+              se backfillearon 20 atoms pre-existentes (<code>Test_RiesgoFechasHelper_*</code> y
+              <code>Test_RiesgoMaterializacion_*</code>) que nunca se habian agregado al gate.
+            </td>
+            <td>Cerrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Metadata repair</strong><br><em>Attribute VB_Name</em></td>
+            <td><span class="rag-pill rag-amber">Ambar</span></td>
+            <td>
+              Bug latente descubierto y reparado: ambos <code>.form.txt</code> tenian el bloque
+              <code>CodeBehindForm</code> sin la linea critica <code>Attribute VB_Name</code>.
+              Tambien se agrego la misma linea como linea 1 del <code>.cls</code> (gap conocido
+              de la skill <code>vba-form-metadata-repair</code>). El sub-agente
+              <code>sdd-apply</code> no detecto el drift de metadata al importar — anotado como
+              feedback para esa skill. Riesgo: revisar otros forms del proyecto por el mismo
+              patron (ver seccion 5).
+            </td>
+            <td>Auditar resto de forms.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" aria-labelledby="sec-decisiones">
+      <h2 id="sec-decisiones">3. Decisiones para Calidad</h2>
+      <h3>Lo que esta listo para UAT sign-off (acceptance web)</h3>
+      <ul>
+        <li><strong>Helper <code>ValidarFechasAccion</code></strong>: cubre los 6 escenarios del acta (4 SAD/HAPPY/EDGE de constraint a/b + 1 EDGE sin FechaInicio). Pure function, sin DAO, cache-first.</li>
+        <li><strong><code>ObtenerFechaBaseProyecto</code></strong>: SQL <code>MIN(FechaEdicion)</code> por <code>IDProyecto</code>, 1 query por form load. Documentado en cabecera del modulo.</li>
+        <li><strong>Forms cableados</strong>: <code>Form_FormPlanAcciones</code> y <code>Form_FormRiesgosGestionPlanAcciones</code> validan con mensajes en espanol. Cache <code>m_FechaBaseProyecto</code> en <code>Form_Load</code> / <code>EstablecerDatos</code>.</li>
+        <li><strong>TDD 28/28 verde</strong>: 8 nuevos <code>Test_AccionFechasHelper_*</code> + 20 de regresion sin tocar.</li>
+        <li><strong>Sin tocar esquema de BD</strong> ni nombres de campos VBA (per regla de scope del issue).</li>
+      </ul>
+      <h3>Lo que NO bloquea el merge a staging pero queda registrado</h3>
+      <ul>
+        <li><strong>Bug latente de metadata en otros forms</strong>: el patron <code>CodeBehindForm</code> sin <code>Attribute VB_Name</code> puede existir en otros forms del proyecto. Recomiendo una auditoria automatizada con <code>grep -L "Attribute VB_Name" src/forms/*.form.txt</code> antes de promover a main. Sin accion bloqueante.</li>
+        <li><strong>Sub-agente <code>sdd-apply</code> no detecta metadata drift</strong>: el agente reporto <code>status:ok truncated:false</code> pero el binary quedo desincronizado por la falla de metadata. Anotado como feedback para esa skill (memory obs 16335, 16336). No es regresion; es gap procedural.</li>
+        <li><strong>Filter de <code>dysflow.test_vba</code> con bug conocido</strong>: hay que pasar <code>proceduresJson</code> con la lista explicita (no usar <code>filter</code>). Memory obs 16346. Anotado feedback al maintainer del adapter.</li>
+        <li><strong>Pre-existing inconsistency lateral</strong>: <code>tests.vba.helpers-block1.json</code> referencia <code>Test_EdicionFechasPresenter_Edge_FechaCierreConPublicacion_RetornaPublicacionActual</code> pero el <code>.bas</code> es <code>_RetornaFechaEdicion</code> desde commit <span class="commit-sha">11c099c</span>. Manifest reporta 1/124 errores por eso. Fuera de scope del issue #90.</li>
+      </ul>
+      <h3>Como se prueba en staging</h3>
+      <ol>
+        <li>Abrir <code>Form_FormRiesgosGestion</code>, seleccionar una edicion con un riesgo que tenga plan de mitigacion o contingencia.</li>
+        <li>Escenario (a) violada: crear accion con <code>FechaFinPrevista</code> anterior a <code>FechaInicio</code>. Esperado: MsgBox + Cancel (edicion) o Raise 1000 (alta). El valor NO se persiste.</li>
+        <li>Escenario (a) igualdad: <code>FechaFinPrevista = FechaInicio</code>. Esperado: acepta sin error.</li>
+        <li>Escenario (b) violada: <code>FechaInicio</code> anterior a la fecha de creacion de la primera edicion del proyecto. Esperado: MsgBox + Cancel. El valor NO se persiste.</li>
+        <li>Escenario (b) satisfecha: <code>FechaInicio &gt;= MIN(FechaEdicion)</code> del proyecto. Esperado: acepta sin error.</li>
+        <li>Sin FechaInicio: dejar el campo vacio. Esperado: constraint (a) no aplica, no rechaza.</li>
+        <li>Regression: ejecutar <code>tests.vba.accion-fechas-helper.json</code> (8 atomos) + <code>Test_RiesgoFechasHelper</code> (4) + <code>Test_RiesgoMaterializacion</code> (16). Esperado: 28/28 verde.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="sec-next">
+      <h2 id="sec-next">4. Roadmap</h2>
+      <ol>
+        <li><del><strong>Merge a staging</strong>: la rama <code>feat/punto-04-parte-2-constraints-accion-fechas</code> se mergeo via PR #97 en <span class="commit-sha">c0b9606</span> (2026-07-09T11:13:02Z). Rama feature borrada (local + remote).</del></li>
+        <li><strong>Issue #90 cerrado</strong> con evidencia: SHA <span class="commit-sha">c0b9606</span> + test reference <code>Test_AccionFechasHelper_*</code> 8/8 verde + regression 20/20 verde.</li>
+        <li><strong>Acceptance web UAT</strong>: pendiente, generado via skill <code>feature-acceptance-uat</code>. Audiencia: Natalia (Calidad).</li>
+        <li><strong>UAT sign-off con Natalia</strong>: validar en staging los 6 escenarios del acta 25/06 + contrato 22/06 (Punto 04 — constraints cronologicas). Programado para Fase D (agosto, batched).</li>
+        <li><strong>Promover a main</strong> (solo tras UAT verde explicito del usuario): <code>git checkout main &amp;&amp; git merge --ff-only origin/staging &amp;&amp; git push origin main</code>. La regla <code>staging-acceptance-contract</code> requiere que los records de aceptacion esten cerrados antes de promover.</li>
+        <li><strong>Auditar resto de forms por metadata repair</strong>: ejecutar <code>grep -L "Attribute VB_Name" src/forms/*.form.txt</code> y reparar lo que encuentre antes de promover a main. Estimacion: 1 sesion.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="sec-riesgos">
+      <h2 id="sec-riesgos">5. Riesgos y notas</h2>
+      <ul>
+        <li><strong>Metadata repair aplicado solo a 2 forms</strong>: <code>Form_FormPlanAcciones</code> y <code>Form_FormRiesgosGestionPlanAcciones</code>. Auditoria recomendada para todo <code>src/forms/*.form.txt</code> antes de promover a main. Si otros forms tienen el mismo bug, sus imports tambien fallaron silenciosamente (y el sub-agente no lo detecto).</li>
+        <li><strong>Dysflow test_vba filter bug</strong>: el parametro <code>filter</code> del tool <code>dysflow.test_vba</code> no encuentra procedures que SI estan en el allowlist. Workaround actual: usar <code>proceduresJson</code> con lista explicita. Anotado feedback al maintainer del adapter v2.1.7.</li>
+        <li><strong>Dysflow test_vba allowlist gate (PR1b)</strong>: el gate es nuevo. Cualquier test nuevo creado sin agregar al <code>.dysflow/project.json</code> capabilities.procedures.allow</code> fallara con <code>PROCEDURE_NOT_ALLOWED</code>. Workflow post-creacion: agregar al allowlist antes de <code>test_vba</code>.</li>
+        <li><strong>Cache-first en Form_FormPlanAcciones (alta)</strong>: <code>m_FechaBaseProyecto</code> se resuelve en <code>Form_Load</code>. Si el usuario crea multiples acciones seguidas en el mismo form load, el cache es valido (mismo proyecto, misma primera edicion). Si reabre el form para otra accion de otro proyecto, se re-resuelve. Edge case raro pero documentado.</li>
+        <li><strong>UAT firma pendiente</strong>: el PR fue mergeado a staging pero la firma de Natalia es necesaria antes de promover a main (regla <code>staging-acceptance-contract</code>).</li>
+      </ul>
+    </section>
+
+    <p class="footer-note">
+      Estado de planificacion actualizado el 2026-07-09 post-merge a staging (PR #97 cerrado en
+      <span class="commit-sha">c0b9606</span>).
+      Constraints (a) y (b) del Punto 04 parte 2 implementadas con helper puro + cache-first.
+      Pendiente: UAT sign-off con Natalia + auditar resto de forms por metadata repair + promover a main tras UAT.
+    </p>
+  </div>
+</body>
+</html>

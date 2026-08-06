@@ -1,0 +1,877 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =975894274
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =9581
+    DatasheetFontHeight =11
+    ItemSuffix =4
+    Left =5535
+    Top =5055
+    Right =15120
+    Bottom =9495
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0x81474e5329f61b4ea4abb13df94743e0
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="EQUIPOS DE MEDIDA POR EVENTO"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000001800761418007614f446e1006916156018007614fcab430d486aec12 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x580202000100413400d17801ffffffff4f7ef7006598fe00eb68b7d02851e100 ,
+        0x7c4ae10000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220052000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000545330303100
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x6900720065006300630069006f006e00610064006f0029002000280000000000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e004e000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000054005300 ,
+        0x3000300031000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin FormHeader
+            Height =686
+            BackColor =8210719
+            Name ="EncabezadoDelFormulario"
+            GUID = Begin
+                0x36ad47473b3fe04e946829a7de00943a
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =2
+            Begin
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =45
+                    Top =60
+                    Width =9255
+                    Height =540
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="EQUIPOS DE MEDIDA POR EVENTO"
+                    GUID = Begin
+                        0xdf19873bd0f2f84f92c52dc10f39e287
+                    End
+                    LayoutCachedLeft =45
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =9300
+                    LayoutCachedHeight =600
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Width =9255
+                    Height =540
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="EQUIPOS DE MEDIDA POR EVENTO"
+                    GUID = Begin
+                        0xa2f30de17be43848a444b6a1456dfe16
+                    End
+                    LayoutCachedWidth =9255
+                    LayoutCachedHeight =540
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin Section
+            Height =3061
+            Name ="Detalle"
+            GUID = Begin
+                0xb4835ddabdbf994cbd938dfd58fc3b60
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    TabStop = NotDefault
+                    IMEHold = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    ColumnCount =3
+                    Left =335
+                    Top =867
+                    Width =8906
+                    Height =1604
+                    TabIndex =1
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaEqMedida"
+                    RowSourceType ="Value List"
+                    RowSource ="ID;Equipo Medida;Calibración"
+                    ColumnWidths ="0;6635;2268"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xaadba6c68d752c459dde59eaf509f2a2
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =335
+                    LayoutCachedTop =867
+                    LayoutCachedWidth =9241
+                    LayoutCachedHeight =2471
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =165
+                    Top =187
+                    Width =1125
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta13"
+                    Caption ="EQ. Medida"
+                    GUID = Begin
+                        0x62c59ae1523d2b4c98b3d7c08f1782c2
+                    End
+                    LayoutCachedLeft =165
+                    LayoutCachedTop =187
+                    LayoutCachedWidth =1290
+                    LayoutCachedHeight =484
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    ColumnHeads = NotDefault
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ColumnCount =3
+                    ListRows =100
+                    ListWidth =10206
+                    Left =1380
+                    Top =187
+                    Width =7410
+                    Height =285
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    GUID = Begin
+                        0x3bd2b414637b5e4685754367fa3b5188
+                    End
+                    Name ="ComboEquipoDeMedida"
+                    RowSourceType ="Value List"
+                    RowSource ="ID;Equipo Medida;Calibración;1;POWER METER 432B (2130A02773 );Fuera de Calibraci"
+                        "ón;2;FLUKE 175 TRUE RMS MULTIMETER  (37280504 );Calibrado;3;FLUKE 175 TRUE RMS M"
+                        "ULTIMETER  (57190084 );Calibrado;4;HANTEK OSCILOSCÓPIO DIGITAL (CN2145029016623 "
+                        ");Fuera de Calibración;5;ANALIZADOR DE ANTENAS ANRITSU SITE MASTER  (2136956 );F"
+                        "uera de Calibración;6;ANALIZADOR DE ESPECTRO ANRITSU MSTR,SPA, 3GHZ (2146045 );F"
+                        "uera de Calibración;7;Analizador de audio Rohde & Schwarz DC  110Khz UPL (100485"
+                        " );Fuera de Calibración;8;Vatímetro RF  88952-A     (1478 );Sin Calibraciones;9;"
+                        "TRANSMISION TEST SET 3552A (1806V01634 );Fuera de Calibración;10;TRANSMISION TES"
+                        "T SET 3552A (1806v01626 );Sin Calibraciones;11;BER Analizador de audio Rohde & S"
+                        "chwarz DC  110Khz UPL (100486 );Sin Calibraciones;12;BER Generador CW  HP 83712B"
+                        "    10Mhz -20Ghz     (US3710059 );Calibrado;13;BER Generador de señal Rohde & Sc"
+                        "hwarz  9Khz…1.1Ghz   (101076 );Sin Calibraciones;14;MULTÍMETRO PINZA AMPERIMÉTRI"
+                        "CA\015\012BSIDE MULTÍMETRO PINZA AMPERIMÉTRICA\011202107027632\011TELEFÓNICA\011"
+                        "ACM91 (202107025455 );Fuera de Calibración;15;MULTÍMETRO PINZA AMPERIMÉTRICA (20"
+                        "2107027632 );Fuera de Calibración"
+                    ColumnWidths ="0;7371;2268"
+                    AfterUpdate ="[Event Procedure]"
+                    Tag ="OBLIGATORIO"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =1380
+                    LayoutCachedTop =187
+                    LayoutCachedWidth =8790
+                    LayoutCachedHeight =472
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =8944
+                    Top =180
+                    Width =297
+                    Height =297
+                    FontWeight =700
+                    TabIndex =2
+                    Name ="ComandoAlta"
+                    Caption ="+"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x2c0f05f739644f49b63dba96fce2b443
+                    End
+
+                    LayoutCachedLeft =8944
+                    LayoutCachedTop =180
+                    LayoutCachedWidth =9241
+                    LayoutCachedHeight =477
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =8311
+                    Top =2568
+                    Width =930
+                    Height =405
+                    FontWeight =700
+                    TabIndex =3
+                    ForeColor =683236
+                    Name ="ComandoEliminar"
+                    Caption ="Eliminar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xde58c5e37dfd804bbdf72c85f31ec701
+                    End
+
+                    LayoutCachedLeft =8311
+                    LayoutCachedTop =2568
+                    LayoutCachedWidth =9241
+                    LayoutCachedHeight =2973
+                    ForeThemeColorIndex =9
+                    ForeTint =100.0
+                    ForeShade =75.0
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+            End
+        End
+        Begin FormFooter
+            Height =686
+            BackColor =8210719
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0xd8ba684bafb35b4293cd9ee280a468f0
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =2
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =8669
+                    Width =577
+                    Height =577
+                    FontWeight =700
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir del formulario"
+                    GUID = Begin
+                        0xed0495938e4f774e8351f65c53ddf15f
+                    End
+
+                    LayoutCachedLeft =8669
+                    LayoutCachedWidth =9246
+                    LayoutCachedHeight =577
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+
+Private m_EquipoEnCombo As EquipoMedida
+Private m_EquipoSeleccionado As EquipoMedida
+Private m_Error As String
+Public Event Alta()
+Public Event Eliminado()
+
+Private Sub cmdSalir_Click()
+    On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Sub ComandoAlta_Click()
+    
+    Dim m_EquipoEnCombo As EquipoMedida
+    Dim lst As ListBox
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    Set m_EquipoEnCombo = Constructor.getEquipoMedida(Nz(Me.ComboEquipoDeMedida.Column(0), ""), m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_EquipoEnCombo Is Nothing Then
+        m_Error = "Primero seleccione un equipo de medida"
+        Err.Raise 1000
+    End If
+    If m_ColEquiposMedidaPorEventoActivos Is Nothing Then
+        Set m_ColEquiposMedidaPorEventoActivos = New Scripting.Dictionary
+        m_ColEquiposMedidaPorEventoActivos.CompareMode = TextCompare
+    End If
+    If Not m_ColEquiposMedidaPorEventoActivos.Exists(m_EquipoEnCombo.IDEquipoMedida) Then
+        m_ColEquiposMedidaPorEventoActivos.Add m_EquipoEnCombo.IDEquipoMedida, m_EquipoEnCombo
+        RaiseEvent Alta
+    End If
+    Me.ComboEquipoDeMedida = Null
+    
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Me.SetFocus
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAlta_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoEliminar_Click()
+    
+    Dim m_EquipoEnLista As EquipoMedida
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    Set m_EquipoEnLista = Constructor.getEquipoMedida(Nz(Me.ListaEqMedida.Column(0), ""), m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_EquipoEnLista Is Nothing Then
+        m_Error = "Primero seleccione un equipo de medida"
+        Err.Raise 1000
+    End If
+    If Not m_ColEquiposMedidaPorEventoActivos Is Nothing Then
+        If m_ColEquiposMedidaPorEventoActivos.Exists(m_EquipoEnLista.IDEquipoMedida) Then
+            m_ColEquiposMedidaPorEventoActivos.Remove m_EquipoEnLista.IDEquipoMedida
+            If m_ColEquiposMedidaPorEventoActivos.count = 0 Then
+                Set m_ColEquiposMedidaPorEventoActivos = Nothing
+            End If
+            RaiseEvent Eliminado
+        End If
+    End If
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Set m_EquipoSeleccionado = Nothing
+    Me.ComandoEliminar.Enabled = False
+    Me.SetFocus
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEliminar_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComboEquipoDeMedida_AfterUpdate()
+    On Error GoTo errores
+    
+    m_Error = ""
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    If Nz(Me.ComboEquipoDeMedida, "") = "" Then
+        Set m_EquipoEnCombo = Nothing
+        Me.ComandoAlta.Enabled = False
+        VBA.DoEvents
+        DoCmd.Hourglass False
+        VBA.DoEvents
+        Exit Sub
+    End If
+    If m_EquipoEnCombo Is Nothing Then
+        Set m_EquipoEnCombo = Constructor.getEquipoMedida(Me.ComboEquipoDeMedida.Column(0))
+    Else
+        If m_EquipoEnCombo.IDEquipoMedida <> Me.ComboEquipoDeMedida.Column(0) Then
+            Set m_EquipoEnCombo = Constructor.getEquipoMedida(Me.ComboEquipoDeMedida.Column(0))
+        End If
+    End If
+    If m_EquipoEnCombo Is Nothing Then
+         Me.ComandoAlta.Enabled = False
+    Else
+        If m_ObjEventoActivo Is Nothing Then
+            Me.ComandoAlta.Enabled = True
+        Else
+            If m_ObjEventoActivo.FechaFacturado <> "" Or m_ObjEventoActivo.Franqueado = True Then
+                Me.ComandoAlta.Enabled = False
+            Else
+                Me.ComandoAlta.Enabled = True
+            End If
+        End If
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    If m_EquipoEnCombo.Calibrado = EnumSino.No Then
+        pregunta = MsgBox("Equipo fuera de calibración", vbExclamation, "Equipo fuera de calibración")
+    End If
+    If Me.ComandoAlta.Enabled = True Then
+    
+        ComandoAlta_Click
+    End If
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComboEquipoDeMedida_AfterUpdate se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+
+
+Private Sub Form_Load()
+    
+    Dim cmb As ComboBox
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    AjustarTamaño Me
+    Set m_ColEquiposMedidaPorEventoActivos = Nothing
+    
+    
+    RellenarListaEquiposMedida Me, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Me.Caption = Me.lblTitulo1.Caption
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Load se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+
+Private Function EstablecerDatos(Optional ByRef p_Error As String) As String
+    
+    Dim lst As ListBox
+   
+    Dim m_Col As Scripting.Dictionary
+    Dim m_Equipo As EquipoMedida
+    Dim m_ID As Variant
+    
+    On Error GoTo errores
+    
+    Me.ComandoEliminar.Enabled = False
+    Me.ComandoAlta.Enabled = False
+    Set lst = Me.ListaEqMedida
+    lst.RowSource = "ID;Equipo Medida;Calibración"
+    Set m_Col = m_ColEquiposMedidaPorEventoActivos
+    If m_Col Is Nothing Then
+        Exit Function
+    End If
+    For Each m_ID In m_Col
+        Set m_Equipo = m_Col(m_ID)
+        lst.AddItem m_Equipo.IDEquipoMedida & ";" & m_Equipo.NombreParaCombo & ";" & m_Equipo.EstadoCalibracion
+        Set m_Equipo = Nothing
+    Next
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerDatos ha devuelto el error: " & vbNewLine & Err.Description
+    End If
+End Function
+
+Private Sub ListaEqMedida_Click()
+    On Error GoTo errores
+    
+    m_Error = ""
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    If Nz(Me.ListaEqMedida, "") = "" Then
+        Set m_EquipoSeleccionado = Nothing
+        Me.ComandoEliminar.Enabled = False
+        VBA.DoEvents
+        DoCmd.Hourglass False
+        VBA.DoEvents
+        Exit Sub
+    End If
+    If m_EquipoSeleccionado Is Nothing Then
+        Set m_EquipoSeleccionado = Constructor.getEquipoMedida(Me.ListaEqMedida.Column(0))
+    Else
+        If m_EquipoSeleccionado.IDEquipoMedida <> Me.ListaEqMedida.Column(0) Then
+            Set m_EquipoSeleccionado = Constructor.getEquipoMedida(Me.ListaEqMedida.Column(0))
+        End If
+    End If
+    If m_EquipoSeleccionado Is Nothing Then
+         Me.ComandoEliminar.Enabled = False
+    Else
+        If m_ObjEventoActivo Is Nothing Then
+            Me.ComandoEliminar.Enabled = True
+        Else
+            If m_ObjEventoActivo.FechaFacturado <> "" Or m_ObjEventoActivo.Franqueado = True Then
+                Me.ComandoEliminar.Enabled = False
+            Else
+                Me.ComandoEliminar.Enabled = True
+            End If
+        End If
+    End If
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ListaEqMedida_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub

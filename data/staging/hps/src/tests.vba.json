@@ -1,0 +1,449 @@
+{
+  "": "https://json.schemastore.org/tests.vba.json",
+  "tests": [
+    {
+      "procedure": "Test_HATW_RejectsUnsafeUncRoots",
+      "tags": ["historico-adjuntos", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_RollsBackBeforeCommitAndKeepsAttachments",
+      "tags": ["historico-adjuntos", "rollback", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_RestoresAfterSourceDeleteFailure",
+      "tags": ["historico-adjuntos", "attachments", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_HistoricalToCurrent_PostCommitRefreshFailureLeavesMovedState",
+      "tags": ["historico-adjuntos", "post-commit", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_Service_CurrentToHistorical_SucceedsAndMovesAttachments",
+      "tags": ["historico-adjuntos", "service", "happy-path", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_Service_HistoricalToCurrent_SucceedsAndMovesAttachments",
+      "tags": ["historico-adjuntos", "service", "happy-path", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_Service_HistoricalToCurrent_RollsBackBeforeCommitAndKeepsAttachments",
+      "tags": ["historico-adjuntos", "service", "rollback", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_Service_CurrentToHistorical_FailureBeforeSourceDeleteLeavesOriginals",
+      "tags": ["historico-adjuntos", "service", "attachments", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_HpsDeleteWithRemaining_AlignsCaches",
+      "tags": ["cache-consistency", "hps", "delete", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_HpsDeleteLast_SourceEquivalentCaches",
+      "tags": ["cache-consistency", "hps", "delete", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_HpsEarlierMinDate_AlignsCaches",
+      "tags": ["cache-consistency", "hps", "min-date", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_HpsNullMinDate_AlignsCaches",
+      "tags": ["cache-consistency", "hps", "min-date", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_SicaDelete_RemovesLocalAndIndicatorCaches",
+      "tags": ["cache-consistency", "sica", "delete", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_SicaDelete_MissingLocalClearsIndicatorSafely",
+      "tags": ["cache-consistency", "sica", "delete", "edge", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_SicaCurrentToHistorical_RefreshesCaches",
+      "tags": ["cache-consistency", "sica", "link-change", "integration"]
+    },
+    {
+      "procedure": "Test_CCA_SicaHistoricalToCurrent_RefreshesCaches",
+      "tags": ["cache-consistency", "sica", "link-change", "integration"]
+    },
+    {
+      "procedure": "Test_SCI_DefaultPlan_UsesIncrementalDriftAwareStartup",
+      "tags": ["startup-cache", "orchestration", "unit"]
+    },
+    {
+      "procedure": "Test_SCI_DefaultPlan_IncludesHpsDerivedDriftInvalidator",
+      "tags": ["startup-cache", "hps", "orchestration", "unit"]
+    },
+    {
+      "procedure": "Test_SCI_FormInicialStartupPlan_ExcludesHistoricalFullRebuild",
+      "tags": ["startup-cache", "forms", "historical", "orchestration", "unit"]
+    },
+    {
+      "procedure": "Test_SCI_ManualFullPlan_UsesFullHpsRebuildBeforeSicaAndIndicators",
+      "tags": ["startup-cache", "manual", "orchestration", "unit"]
+    },
+    {
+      "procedure": "Test_SCI_ManualHistoricalRefreshPlan_IsExplicitOnly",
+      "tags": ["startup-cache", "manual", "historical", "orchestration", "unit"]
+    },
+    {
+      "procedure": "Test_SCI_PrincipalRefreshButton_UsesFastSyncAndCounterRefresh",
+      "tags": ["startup-cache", "forms", "orchestration", "unit"]
+    },
+    {
+      "procedure": "Test_SCI_IndicatorsRefreshButton_UsesFastSyncIndicatorsAndSafeRequery",
+      "tags": ["startup-cache", "indicators", "forms", "orchestration", "unit"]
+    },
+    {
+      "procedure": "Test_LRA_EntornoAllowlist_LoadsConfiguredUsersFromBackendTable",
+      "tags": ["local-read-access", "entorno", "unit"]
+    },
+    {
+      "procedure": "Test_LRA_EntornoAllowlist_IsCaseInsensitive",
+      "tags": ["local-read-access", "entorno", "unit"]
+    },
+    {
+      "procedure": "Test_LRA_EntornoAllowlist_CreatesAndSeedsBackendTableWhenMissing",
+      "tags": ["local-read-access", "entorno", "bootstrap", "unit"]
+    },
+    {
+      "procedure": "Test_LRA_EntornoAllowlist_BootstrapIsIdempotent",
+      "tags": ["local-read-access", "entorno", "idempotency", "unit"]
+    },
+    {
+      "procedure": "Test_LRA_EntornoAllowlist_PreservesExistingEmptyBackendTable",
+      "tags": ["local-read-access", "entorno", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_LRA_EntornoAllowlist_DoesNotReactivateDisabledLegacySeed",
+      "tags": ["local-read-access", "entorno", "bootstrap", "regression", "unit"]
+    },
+    {
+      "procedure": "Test_LRA_EntornoAllowlist_TreatsRowsActiveWhenActivoColumnMissing",
+      "tags": ["local-read-access", "entorno", "compatibility", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_Precheck1_DetectsDBConflicts",
+      "tags": ["historico-adjuntos", "precheck", "delta-pr1a", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_Precheck1_DetectsFolderConflicts",
+      "tags": ["historico-adjuntos", "precheck", "delta-pr1a", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_Precheck1_NoConflicts_DirectProceeds",
+      "tags": ["historico-adjuntos", "precheck", "happy-path", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_Precheck1_UserRejects_NoChanges",
+      "tags": ["historico-adjuntos", "precheck", "abort", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_HistoricalToCurrent_Precheck1_DetectsConflictsInCurrent",
+      "tags": ["historico-adjuntos", "precheck", "h2c", "delta-pr1a", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_Precheck_PropagatesDBError",
+      "tags": ["historico-adjuntos", "precheck", "error-propagation", "delta-pr1a", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_TOCTOU_DetectsNewConflictAfterCleanup",
+      "tags": ["historico-adjuntos", "toctou", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_HistoricalToCurrent_TOCTOU_DetectsNewConflict",
+      "tags": ["historico-adjuntos", "toctou", "h2c", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_Cleanup_DeletesBothDBAndFolder",
+      "tags": ["historico-adjuntos", "cleanup", "happy-path", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_HistoricalToCurrent_Cleanup_DeletesBothDBAndFolder",
+      "tags": ["historico-adjuntos", "cleanup", "h2c", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CleanupFailsAfterUserApprove_RollsBackBDConflicts",
+      "tags": ["historico-adjuntos", "cleanup", "rollback", "lock-contention", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_FolderDeleteInsideTransaction_FolderStaysDeletedIfCommitSucceeds",
+      "tags": ["historico-adjuntos", "cleanup", "folder", "delta-pr1a", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_InvalidStringUserId_RejectsBeforeResolvePaths",
+      "tags": ["historico-adjuntos", "safety", "id-validation", "delta-pr2", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_TargetConflictFolderRestoredOnLaterFailure",
+      "tags": ["historico-adjuntos", "cleanup", "folder", "rollback", "delta-pr2", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_HistoricalToCurrent_AnexosAlwaysNewIDAnexo_PlusEsHistorico",
+      "tags": ["historico-adjuntos", "id-management", "anexos", "h2c", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_User_PreservesIDWhenFreeInHistorical",
+      "tags": ["historico-adjuntos", "id-management", "user", "c2h", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_User_CalculatesNewIDWhenSourceIDTaken",
+      "tags": ["historico-adjuntos", "id-management", "user", "collision", "c2h", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_Anexos_AlwaysGetNewIDAnexoEvenWhenSourceFree",
+      "tags": ["historico-adjuntos", "id-management", "anexos", "c2h", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_Anexos_MultipleRows_NoIDAnexoCollision",
+      "tags": ["historico-adjuntos", "id-management", "anexos", "c2h", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_Anexos_RollbackDoesNotBurnIDs",
+      "tags": ["historico-adjuntos", "id-management", "anexos", "rollback", "c2h", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_Observaciones_PreservesFreeIDs",
+      "tags": ["historico-adjuntos", "id-management", "observaciones", "c2h", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_CurrentToHistorical_Observaciones_CalculatesWhenCollision",
+      "tags": ["historico-adjuntos", "id-management", "observaciones", "collision", "c2h", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_ErrorTranslator_DuplicateKey_MentionsTableAndID",
+      "tags": ["historico-adjuntos", "error-translator", "dao-3022", "delta-pr1a", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_ErrorTranslator_UnknownError_PreservesOriginalMessage",
+      "tags": ["historico-adjuntos", "error-translator", "passthrough", "delta-pr1a", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_PromptMessage_MentionsBothDBAndFolder",
+      "tags": ["historico-adjuntos", "prompt-message", "delta-pr1a", "unit"]
+    },
+    {
+      "procedure": "Test_HATW_AnexosCopy_PropagatesMaxLongError",
+      "tags": ["historico-adjuntos", "id-management", "anexos", "overflow", "delta-pr1b", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_C2H_RemovesFromSicaIndicatorsCache",
+      "tags": ["historico-adjuntos", "cache", "c2h", "sica-indicators", "delta-pr2", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_LifecyclePaths_AreAlwaysFlat",
+      "tags": ["historico-adjuntos", "attachments", "flat-paths", "regression", "delta-pr2", "integration"]
+    },
+    {
+      "procedure": "Test_AnexoUsuarioHPS_AnexosUrls_AreSiblingsUnderDNI",
+      "tags": ["anexos-subcarpetas", "per-anexo-move", "path-derivation", "regression", "siblings-not-nested", "unit"]
+    },
+    {
+      "procedure": "Test_PasarAnexo_FailsLoudlyWhenSourceMissing",
+      "tags": ["anexos-subcarpetas", "per-anexo-move", "fail-loud", "source-missing", "safety", "hotfix-prb", "integration"]
+    },
+    {
+      "procedure": "Test_C2H_PreservesEsHistorico",
+      "tags": ["c2h-h2c-subcarpetas", "reversibility", "anexos", "c2h", "integration"]
+    },
+    {
+      "procedure": "Test_H2C_RestoresToCorrectSubfolder",
+      "tags": ["c2h-h2c-subcarpetas", "reversibility", "anexos", "h2c", "integration"]
+    },
+    {
+      "procedure": "Test_H2C_IsIdempotent",
+      "tags": ["c2h-h2c-subcarpetas", "idempotencia", "anexos", "h2c", "integration"]
+    },
+    {
+      "procedure": "Test_C2H_Then_H2C_IsReversible",
+      "tags": ["c2h-h2c-subcarpetas", "reversibility", "idempotencia", "anexos", "integration"]
+    },
+    {
+      "procedure": "Test_H2C_BothSubcarpetasExistEvenWhenEmpty",
+      "tags": ["c2h-h2c-subcarpetas", "estructura-completa", "anexos", "h2c", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_C2H_FlattensAnexosFolder",
+      "tags": ["historico-adjuntos", "attachments", "flat-paths", "legacy-source", "delta-pr2", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_C2H_DuplicateFlatBasename_AbortsWithoutOverwrite",
+      "tags": ["historico-adjuntos", "attachments", "flat-paths", "collision", "safety", "delta-pr2", "integration"]
+    },
+    {
+      "procedure": "Test_HATW_HistoricalToCurrent_Observaciones_CalculatesWhenCollision",
+      "tags": ["historico-adjuntos", "id-management", "observaciones", "collision", "h2c", "delta-pr2", "integration"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_C2hUpdatesLateralCounters",
+      "tags": ["real-time-indicator-coherence", "lifecycle", "happy"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_H2cClearsUserFromCaducadosSubform",
+      "tags": ["real-time-indicator-coherence", "lifecycle", "happy"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_RollbackLeavesCountersUnchanged",
+      "tags": ["real-time-indicator-coherence", "lifecycle", "rollback"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_AnexosC2hNotifies",
+      "tags": ["real-time-indicator-coherence", "lifecycle", "anexos", "happy"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_AnexosH2cNotifies",
+      "tags": ["real-time-indicator-coherence", "lifecycle", "anexos", "happy"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_ListenerSilentWhenNoFormOpen",
+      "tags": ["real-time-indicator-coherence", "bus", "sad"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_HpsEditRaisesEdicionRegistro",
+      "tags": ["real-time-indicator-coherence", "hps-edit", "edicion-registro", "happy"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_FormActivateFallbackFiresOnFocusReturn",
+      "tags": ["real-time-indicator-coherence", "form-activate", "fallback", "edge"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_SicaEditFiresSicaListenerNotHps",
+      "tags": ["real-time-indicator-coherence", "sica-edit", "asymmetric", "edge"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_HistoricosSubformRequeriesOnActivate",
+      "tags": ["real-time-indicator-coherence", "historicos-subform", "requery", "edge"]
+    },
+    {
+      "procedure": "Test_RealTimeIndicatorCoherence_ListenerIsIdempotentUnderDuplicateRaises",
+      "tags": ["real-time-indicator-coherence", "idempotence", "duplicate-raises", "edge"]
+    },
+    {
+      "procedure": "Test_HPSConfig_PerfilLocal_InsertsAllExpectedKeys",
+      "tags": ["local-mode-config", "profile-local", "config", "unit"]
+    },
+    {
+      "procedure": "Test_HPSConfig_PerfilProduccion_InsertsAllExpectedKeys",
+      "tags": ["local-mode-config", "profile-produccion", "config", "unit"]
+    },
+    {
+      "procedure": "Test_HPSConfig_DispatcherHandlesUnknownProfile",
+      "tags": ["local-mode-config", "dispatcher", "error-handling", "unit"]
+    },
+    {
+      "procedure": "Test_HPSConfig_RemoteModeIgnoresLocalAnexosConfig",
+      "tags": ["local-mode-config", "vpn-read-mode", "anexos", "regression", "unit"]
+    },
+    {
+      "procedure": "Test_HPSConfig_LocalModeUsesLocalAnexosConfig",
+      "tags": ["local-mode-config", "local-explicit-mode", "anexos", "regression", "unit"]
+    },
+    {
+      "procedure": "Test_HPSConfig_PrepararProduccion_PopulatesAndRelinks",
+      "tags": ["local-mode-config", "workflow-preparar", "profile-produccion", "integration"]
+    },
+    {
+      "procedure": "Test_HPSConfig_PrepararLocal_PopulatesAndRelinks",
+      "tags": ["local-mode-config", "workflow-preparar", "profile-local", "integration"]
+    },
+    {
+      "procedure": "Test_HPSConfig_AplicarConfiguracionEnVinculos_RelinksWhenAllReachable",
+      "tags": ["local-mode-config", "aplicar-config", "reachability-check", "happy-path", "integration"]
+    },
+    {
+      "procedure": "Test_HPSConfig_AplicarConfiguracionEnVinculos_RaisesErrorWhenBackendMissing",
+      "tags": ["local-mode-config", "aplicar-config", "reachability-check", "error-handling", "safety", "integration"]
+    },
+    {
+      "procedure": "Test_HPSConfig_AplicarConfiguracionEnVinculos_RaisesErrorWhenConfigEmpty",
+      "tags": ["local-mode-config", "aplicar-config", "config-empty", "error-handling", "safety", "integration"]
+    },
+    {
+      "procedure": "Test_HPSConfig_PerfilRemotoPruebas_InsertsAllExpectedKeys",
+      "tags": ["local-mode-config", "profile-remoto-pruebas", "config", "unit"]
+    },
+    {
+      "procedure": "Test_HPSConfig_PrepararRemotoPruebas_PopulatesAndRelinks",
+      "tags": ["local-mode-config", "workflow-preparar", "profile-remoto-pruebas", "integration"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_CargarConfiguracion_ReadsAllKeys",
+      "tags": ["hps-config-entorno", "cache", "config", "unit"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_GetConfig_MissingKeyReturnsEmpty",
+      "tags": ["hps-config-entorno", "cache", "missing-key", "unit"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_GetConfig_BackwardCompatible",
+      "tags": ["hps-config-entorno", "cache", "backward-compatible", "unit"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_ApplyPerfil_LocalTriggersRelink",
+      "tags": ["hps-config-entorno", "profile-local", "relink", "integration"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_ApplyPerfil_ProduccionTriggersRelink",
+      "tags": ["hps-config-entorno", "profile-produccion", "relink", "integration"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_RelinkAllTables_SkipsMSysSystemTables",
+      "tags": ["hps-config-entorno", "relink", "system-tables", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_RelinkAllTables_BestEffortOnFailure",
+      "tags": ["hps-config-entorno", "relink", "best-effort", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_RelinkAllTables_UpdatesAllAttachedTableDefs",
+      "tags": ["hps-config-entorno", "relink", "happy-path", "integration"]
+    },
+    {
+      "procedure": "Test_HPSEntorno_RelinkAllTables_PreservesConnectTokens",
+      "tags": ["hps-config-entorno", "relink", "token-preservation", "integration"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_BatchMovesTwoAnexos",
+      "tags": ["anexos-batch-hotfix", "atomic-batch", "c2h", "happy-path", "integration"]
+    },
+    {
+      "procedure": "Test_ASTC_H2C_BatchMovesTwoAnexos",
+      "tags": ["anexos-batch-hotfix", "atomic-batch", "h2c", "happy-path", "integration"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RollsBackAfterCopyFails",
+      "tags": ["anexos-batch-hotfix", "rollback", "after-copy", "seam", "integration"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RollsBackAfterDbUpdateFails",
+      "tags": ["anexos-batch-hotfix", "rollback", "after-db-update", "seam", "integration"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RollsBackAfterSourceDeleteFails",
+      "tags": ["anexos-batch-hotfix", "rollback", "after-source-delete", "seam", "integration"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RollsBackBeforeCommitFails",
+      "tags": ["anexos-batch-hotfix", "rollback", "before-commit", "seam", "integration"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RejectsMissingSource",
+      "tags": ["anexos-batch-hotfix", "preflight", "missing-source", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RejectsExistingDestination",
+      "tags": ["anexos-batch-hotfix", "preflight", "existing-destination", "no-overwrite", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RejectsDuplicateIDAnexo",
+      "tags": ["anexos-batch-hotfix", "preflight", "duplicate-id", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RejectsMismatchedEsHistorico",
+      "tags": ["anexos-batch-hotfix", "preflight", "mismatched-estado", "safety", "unit"]
+    },
+    {
+      "procedure": "Test_ASTC_C2H_RejectsDuplicateDestinationPath",
+      "tags": ["anexos-batch-hotfix", "preflight", "duplicate-destination", "safety", "unit"]
+    }
+  ]
+}

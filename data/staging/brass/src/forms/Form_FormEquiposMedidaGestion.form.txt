@@ -1,0 +1,1346 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =409165566
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12075
+    DatasheetFontHeight =11
+    ItemSuffix =12
+    Left =1050
+    Top =1110
+    Right =13125
+    Bottom =7290
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0x0c0042e89d315d4e8104962ef3638b8f
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="GESTIÓN DE LOS EQUIPOS DE MEDIDA"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000f6a0050118ec00000000000000000000 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220054000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000545330303100000000000000 ,
+        0x0000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00006547a80100001973df2785000000d0ec156ba80100004900000000000000 ,
+        0x0800000000000000080000000000000000008d7900000000daec156ba8010000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000000000000000000000490000000100000000000000 ,
+        0x10040000000000000400000000000000d0ec156ba80100000800000000000000 ,
+        0x00006547a8010000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e0050000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x54005300300030003100000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Subform
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            BorderShade =65.0
+            ShowPageHeaderAndPageFooter =1
+        End
+        Begin FormHeader
+            Height =720
+            BackColor =8210719
+            Name ="EncabezadoDelFormulario"
+            GUID = Begin
+                0xab71c2cbf89fb341940ee87883f6e06a
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =2
+            Begin
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =210
+                    Top =60
+                    Width =11625
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="GESTIÓN DE LOS EQUIPOS DE MEDIDA"
+                    GUID = Begin
+                        0xfa1af5abf928704b93997f8a7b61f246
+                    End
+                    LayoutCachedLeft =210
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =11835
+                    LayoutCachedHeight =720
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =165
+                    Width =11625
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="GESTIÓN DE LOS EQUIPOS DE MEDIDA"
+                    GUID = Begin
+                        0x2c27b57ffe8e0445a6fa452f9f6f91e0
+                    End
+                    LayoutCachedLeft =165
+                    LayoutCachedWidth =11790
+                    LayoutCachedHeight =660
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin Section
+            Height =4818
+            Name ="Detalle"
+            GUID = Begin
+                0x14c6e91dcecbfa42bfe0c0cafece4679
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    TabStop = NotDefault
+                    IMEHold = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    ColumnCount =5
+                    Left =180
+                    Top =810
+                    Width =11591
+                    Height =3283
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaFiltrados"
+                    RowSourceType ="Value List"
+                    RowSource ="ID;Equipo;Marca;Modelo;NS;1;POWER METER 432B;HP;432B;2130A02773;2;FLUKE 175 TRUE"
+                        " RMS MULTIMETER;FLUKE;175;37280504;3;FLUKE 175 TRUE RMS MULTIMETER;FLUKE;175;571"
+                        "90084;4;HANTEK OSCILOSCÓPIO DIGITAL;HANTEK;DS02D15;CN2145029016623;5;ANALIZADOR "
+                        "DE ANTENAS ANRITSU SITE MASTER;ANRITSU;S331L;2136956;6;ANALIZADOR DE ESPECTRO AN"
+                        "RITSU MSTR,SPA, 3GHZ;ANRITSU;MS2711E;2146045;7;Analizador de audio Rohde & Schwa"
+                        "rz DC  110Khz UPL;Rohde & Schwarz;UPL;100485;8;Vatímetro RF  88952-A;COAXIAL DYN"
+                        "AMICS;88952-A;1478;9;TRANSMISION TEST SET 3552A;AGILENT;3552A;1806V01634;10;TRAN"
+                        "SMISION TEST SET 3552A;AGILENT;3552A;1806v01626;11;BER Analizador de audio Rohde"
+                        " & Schwarz DC  110Khz UPL;Rohde & Schwarz;UPL;100486;12;BER Generador CW  HP 837"
+                        "12B    10Mhz -20Ghz;HP;83712B;US3710059;13;BER Generador de señal Rohde & Schwar"
+                        "z  9Khz…1.1Ghz;Rohde & Schwarz;SML01;101076"
+                    ColumnWidths ="0;5103;2268;2268;1701"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x785bbf5fc6f47c44b64e8a27a752e3ab
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =180
+                    LayoutCachedTop =810
+                    LayoutCachedWidth =11771
+                    LayoutCachedHeight =4093
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =3543
+                    Top =4260
+                    Width =1440
+                    Height =405
+                    FontWeight =700
+                    TabIndex =1
+                    Name ="ComandoEditarEquipo"
+                    Caption ="Editar Equipo "
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x046d8d9a802a2f48bcb828ebc90db13f
+                    End
+
+                    LayoutCachedLeft =3543
+                    LayoutCachedTop =4260
+                    LayoutCachedWidth =4983
+                    LayoutCachedHeight =4665
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =180
+                    Top =4260
+                    Width =1230
+                    Height =405
+                    FontWeight =700
+                    TabIndex =2
+                    Name ="ComandoAltaEquipo"
+                    Caption ="Alta Equipo"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xd58697f564bb994bba00378928f68259
+                    End
+
+                    LayoutCachedLeft =180
+                    LayoutCachedTop =4260
+                    LayoutCachedWidth =1410
+                    LayoutCachedHeight =4665
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =6861
+                    Top =4260
+                    Width =1620
+                    Height =405
+                    FontWeight =700
+                    TabIndex =3
+                    ForeColor =683236
+                    Name ="ComandoEliminarEquipo"
+                    Caption ="Eliminar Equipo"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xc2751b836bb2d54a9f30c13f25c1036e
+                    End
+
+                    LayoutCachedLeft =6861
+                    LayoutCachedTop =4260
+                    LayoutCachedWidth =8481
+                    LayoutCachedHeight =4665
+                    ForeThemeColorIndex =9
+                    ForeTint =100.0
+                    ForeShade =75.0
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =10359
+                    Top =4260
+                    Width =1410
+                    Height =405
+                    FontWeight =700
+                    TabIndex =4
+                    Name ="ComandoCalibraciones"
+                    Caption ="Calibraciones"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xdfe35860398e224ba307b31d3cfed9ac
+                    End
+
+                    LayoutCachedLeft =10359
+                    LayoutCachedTop =4260
+                    LayoutCachedWidth =11769
+                    LayoutCachedHeight =4665
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =11474
+                    Top =285
+                    Width =297
+                    Height =297
+                    FontWeight =700
+                    TabIndex =5
+                    Name ="ComandoExportarExcel"
+                    Caption ="Comando227"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff002727272727272727727272727272727227ffffffffffff27 ,
+                        0x72fffffff727277227f2727272f2722772f727272f272f7227f27272f2727f27 ,
+                        0x72ff272f27272f7227fff2f2727fff2772ff2f272727ff7227f2f27272727f27 ,
+                        0x72f72727f7272f7227f2727fff727f2772ffffffffffff722727272727272727 ,
+                        0x7272727272727272
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x023d550e74007d48937eb61750e6e4f0
+                    End
+
+                    LayoutCachedLeft =11474
+                    LayoutCachedTop =285
+                    LayoutCachedWidth =11771
+                    LayoutCachedHeight =582
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =10995
+                    Top =285
+                    Width =297
+                    Height =297
+                    FontWeight =700
+                    TabIndex =6
+                    Name ="ComandoLimpiarNombre"
+                    Caption ="ComandoLimpiarEquipo"
+                    OnClick ="[Event Procedure]"
+                    Picture ="Cepillo.ico"
+                    GUID = Begin
+                        0x0569cddb0ef2f347b1336afb3910d1f8
+                    End
+                    ImageData = Begin
+                        0x0000010001001e230000010020001c11000016000000280000001e0000004600 ,
+                        0x00000100200000000000f4100000d70d0000d70d00000000000000000000ffff ,
+                        0xff00ffffff00ffffff00ffffff0000000001000000060000000b000000100000 ,
+                        0x0015000000190000001d00000021000000190000001b0000001b0000001c0000 ,
+                        0x00220000002a0000002d0000002c0000002b0000002900000027000000240000 ,
+                        0x00210000001d0000001900000015000000100000000bffffff00ffffff000000 ,
+                        0x0001000000060000000d00000012000000180000001d00000023000000280000 ,
+                        0x002d00000022006d877d029fc1c1028faeb100759590004d6568000d11450000 ,
+                        0x0034000000360000003d0000003c0000003900000036000000310000002d0000 ,
+                        0x0028000000230000001e00000018ffffff0000000001000000080000000f0000 ,
+                        0x00150000001b00000021000000280000002d000000340000002b00546d6f23ba ,
+                        0xd8ff7fe6f8ff53cfe8ff5ddaf0ff4bc7e0ff069dbfe70082a2b300485d770000 ,
+                        0x004a0000004000000046000000450000003f00000039000000340000002e0000 ,
+                        0x002800000021ffffff00000000060000000d000000140000001a000000210000 ,
+                        0x00270000002e000000350000003500212b4c10a4c5ee84e8f6ff2ab4d0ff18bf ,
+                        0xd8ff76e4efff4cc5dcff1cbad8ff77e4f7ff47c5dfff0091b4d80058748f0000 ,
+                        0x00510000004300000048000000430000003c000000350000002e00000027ffff ,
+                        0xff00000000070000000e000000150000001c0000002200000029000000300000 ,
+                        0x00370000002f0082a3b763e0f5ff50c9deff00aacaff3ad4e5ff40c4dbff00a4 ,
+                        0xc7ff1ac9deff73e1edff5dcfe2ff28bddcff51d0eaff119dbedb00576e820000 ,
+                        0x00400000003d0000003f000000370000003000000029ffffff00000000050000 ,
+                        0x000c000000130000001a00000021000000270000002e0000002a0042575f27b9 ,
+                        0xd6ff78e2efff09afceff07c0d9ff4ed3e4ff0ca9c9ff02bfd9ff42d5e6ff56d5 ,
+                        0xe5ff00a5c7ff30c9deff95ecf4ff43c9e3ff15b0d4ff008daec0002e3d520000 ,
+                        0x002b000000340000002f00000027ffffff0000000001000000070000000e0000 ,
+                        0x00150000001b00000021000000270000001e008cadb55edff4ff45cbdfff00b0 ,
+                        0xcfff25d0e3ff31bbd5ff00b4d3ff1bd0e6ff62dfeeff2bb8d3ff01b1cfff54db ,
+                        0xeaff2abdd6ff00a7c9ff46d4e6ff60def3ff13a9caee006a89740000001b0000 ,
+                        0x002400000022ffffff00ffffff0000000001000000060000000c000000120000 ,
+                        0x001800000016003248371eafcdf664e0eeff17bad4ff01bed8ff31d0e4ff13b0 ,
+                        0xd0ff0fcce5ff3bdaedff59d3e7ff00a7c9ff31d1e4ff45c9deff00a5c7ff00bf ,
+                        0xd8ff0ec6dcff7ae1edff94edf8ff1db7d8ff0081a7970000001100000011ffff ,
+                        0xff00ffffff00ffffff00ffffff0000000002000000060000000b000000010081 ,
+                        0xa77145d2ebff3ed1e3ff08b8d4ff12cee5ff22c2dcff11bedaff1fd8efff56e1 ,
+                        0xf2ff21b2d0ff0dbfdaff4cd4e6ff0aa7c9ff00bbd5ff08c5dcff50d6e7ff51d5 ,
+                        0xe6ff2cb9d3ff2ab8d4ff4dd1ecff0a9ebfad003d5e07ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00049ec2b357def1ff12c3 ,
+                        0xdbff0cc1dcff1fd6edff13bbd9ff21d2ebff34e2f7ff3fcae3ff00adceff3dda ,
+                        0xedff21b3d0ff00b4d1ff01c4dbff46d4e5ff4fd1e3ff0caacaff0eb0ceff65db ,
+                        0xe9ffb4f5fbff3ed6f6ff0096bd97ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff000065990919accbe655ddeeff07c1dcff1bcfe7ff23d4 ,
+                        0xedff19c2dfff31e2f9ff36dff5ff0eaccdff23d1e8ff34c6deff00afceff00c3 ,
+                        0xdbff38d1e3ff46cbe0ff00a8c9ff1ebdd7ff80e5f0ff8feaf8ff32b8d5fc00a0 ,
+                        0xc59100a1c225ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff000084af2f2fbad6ff4cdbedff0ec9e3ff2adcf2ff25d1ebff29d2ecff3fed ,
+                        0xffff1cc2e0ff12bedcff36d7edff0eb4d2ff00c2daff28cde1ff3dc7ddff00aa ,
+                        0xcaff28c7dcff95ecf4ff75e0f5ff11a8cbcb0086b436ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000090ba5444ce ,
+                        0xe8ff44dbeeff1cd3ecff34e3faff29d1ebff3fe3faff3be0f7ff14bad9ff30dd ,
+                        0xf4ff1bc0dcff07c4ddff1dcce0ff31c3daff00adcdff2ecce0ff9deef7ff55ce ,
+                        0xe8ff0099c293001e6d06ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff000095bb7153d9f1ff40dff3ff2ce0 ,
+                        0xf7ff3be3faff38d6efff52ebffff29c7e3ff2ed7f1ff26d2ecff13c6e0ff1cd0 ,
+                        0xe6ff24c1d9ff00b2cfff2fcee1ff9aedf9ff3abdd9fb008fba64ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff0000a7c6795de0f7ff42e4f8ff3ae6feff43dff6ff52e3 ,
+                        0xf8ff49dcf3ff32d0eaff3ae2faff1fcce7ff20d4ebff1bc4dcff00b5d1ff30ce ,
+                        0xe1ff8eeaf8ff28b3d3ef0085b544ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff0000005b0a0000 ,
+                        0x515a0073a2a567f0ffff4cf1ffff44e6fdff53e2f7ff60e7f9ff44d5edff4be6 ,
+                        0xfcff30d9f2ff26d8efff19cbe4ff00bbd6ff35d0e2ff7ee6f7ff1aaccfe2007f ,
+                        0xaf2fffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00000068a20000a1ff000882ff386b ,
+                        0xa0ff6ee5f1ff65fdffff67ecfdff60e1f4ff5ae6f9ff48e5fbff31def6ff21d5 ,
+                        0xedff07c6e0ff3ed4e5ff6ae0f4ff10a8ccd40078a521ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff0000004126000081ff0000d5ff0000c8ff000098ff1b1f81ff5c92 ,
+                        0xb7ff8cf4fbff77fbffff5bebfeff42e6fcff28def6ff1dd4ebff56ddedff54d9 ,
+                        0xf1ff04a2c8c3006d9d14ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000000 ,
+                        0x0004001279dc00008fff0000bdff1717e3ff2320d6ff170f9cff2f3789ff69b0 ,
+                        0xcbff66fbffff40f1ffff46e3f7ff6ee7f7ff42ceeaff009dc4a4005e7e07ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff000091b61b00a5ca9e1fc0d8f32b87 ,
+                        0xb2ff05197eff09009eff3330e8ff5454ffff423edfff17108eff2f5093ff67c9 ,
+                        0xdfff63e7faff22b5d4f10096bf6fffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff000098c13102a5cbf82ed4efff41daeaff31e5f3ff49d9ebff3372 ,
+                        0xa6ff0f1384ff342bc7ff5b5affff4342f4ff150cafff060a83ff006da4a5008b ,
+                        0xb120ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00009f ,
+                        0xbf1700a3c99215b2d1f63ed3e9ff62e4f4ff6df3ffff75ffffff62cde0ff2a52 ,
+                        0x94ff13118eff2a22c7ff2323e0ff050292ff00002133ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000096 ,
+                        0xc321008eb7d930c0ddff79e9f7ff8ef6ffff83fcffff82ffffff66b3cdff0f2c ,
+                        0x83ff08088dff00006aacffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00003c73360a6099f00777 ,
+                        0xadff0794bcff49cae1ff90f2fdff9afaffff9bffffff16accad5000048340000 ,
+                        0x2805ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00003b7810065e95e22581b9ff116ca9ff0a68a3ff0077 ,
+                        0xaaff119fc3ff64e0f4ff8df9ffff0aa7c9bdffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00005489ab2f8ac2ff1e7fbaff086fadff1a78b2ff1066a0ff004b8253009b ,
+                        0xc07214b8dbf604a3c7b1ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff0000457e662c83baff3793 ,
+                        0xccff0975b8ff1178b7ff2986c0ff065b91d0ffffff00ffffff00008cb227009d ,
+                        0xc32effffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff0000316f281c6fa3f652a4d7ff107ec2ff0978beff288a ,
+                        0xc7ff2681b9ff004b835effffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000000 ,
+                        0x00020a5c90cd60abd9ff2389c9ff0a79bfff107ec2ff429bd3ff0e6397e4001a ,
+                        0x5308ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00004b80684d9ccdff3c97 ,
+                        0xd0ff0074bbff0b7cc1ff2f90ccff4195c9ff004b827cffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00116598c857a4d4ff1a6fa4ff2071a2ff0572 ,
+                        0xb6ff59a9dbff1d6fa1f2002b6316ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff001b6c9fd43c8dbfff7aa4bfff9bb9ccff1773acff59a8d9ff004f ,
+                        0x8698ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff000657 ,
+                        0x8e8b4b9ed1ff3f88b5ff3881afff5ea8d7ff1a6ea3fc00397227ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00003b6d14086099cf3387 ,
+                        0xbbff3b8bbdff196ea3dd00477d4effffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff000037792d0037742d0000 ,
+                        0x0004ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffffff00ffff ,
+                        0xff00ffffff00f0000000c0000000800000008000000080000000800000008000 ,
+                        0x0000c0000000f0000000ff000000fe000000fe00000cfe00001cfe00007cfe00 ,
+                        0x00fcf80001fcf80003fcf00007fcf0000ffce0003ffcc0007ffcc000fffcf001 ,
+                        0xfffcf001fffce007fffce007fffcc067fffc807ffffc007ffffc00fffffc00ff ,
+                        0xfffc01fffffc01fffffc03fffffcc7fffffc
+                    End
+
+                    LayoutCachedLeft =10995
+                    LayoutCachedTop =285
+                    LayoutCachedWidth =11292
+                    LayoutCachedHeight =582
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =226
+                    Top =283
+                    Width =975
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta162"
+                    Caption ="EQUIPOS"
+                    GUID = Begin
+                        0xf1a33d2d15baf241ac149baa8ce1147c
+                    End
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =283
+                    LayoutCachedWidth =1201
+                    LayoutCachedHeight =580
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1312
+                    Top =283
+                    Width =9556
+                    Height =315
+                    TabIndex =7
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Nombre"
+                    OnExit ="[Event Procedure]"
+                    GUID = Begin
+                        0xf2fca6ca0419984887151fabb525d453
+                    End
+
+                    LayoutCachedLeft =1312
+                    LayoutCachedTop =283
+                    LayoutCachedWidth =10868
+                    LayoutCachedHeight =598
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin FormFooter
+            Height =621
+            BackColor =8210719
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0xd450694fa8967249b374152f2662207a
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =2
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =11325
+                    Top =45
+                    Width =576
+                    Height =576
+                    FontWeight =700
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Buscar siguiente"
+                    GUID = Begin
+                        0x572c450e1263a74daaacf7df5640cb91
+                    End
+
+                    LayoutCachedLeft =11325
+                    LayoutCachedTop =45
+                    LayoutCachedWidth =11901
+                    LayoutCachedHeight =621
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =8850
+                    Top =165
+                    Width =2265
+                    Height =405
+                    FontWeight =700
+                    TabIndex =1
+                    Name ="ComandoSeleccionarEquipo"
+                    Caption ="Seleccionar Equipo"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x621f71e37a88da48a596673f6a295ef5
+                    End
+
+                    LayoutCachedLeft =8850
+                    LayoutCachedTop =165
+                    LayoutCachedWidth =11115
+                    LayoutCachedHeight =570
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin Label
+                    BorderWidth =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =907
+                    Top =113
+                    Width =7155
+                    Height =480
+                    FontSize =14
+                    FontWeight =700
+                    BackColor =8210719
+                    BorderColor =0
+                    ForeColor =16777215
+                    Name ="lblEstadoCalibracion"
+                    Caption ="Calibrado"
+                    Tag ="Formulario de control de los pedidos"
+                    GUID = Begin
+                        0x02ae948551e6da4eb47fa09453303155
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =907
+                    LayoutCachedTop =113
+                    LayoutCachedWidth =8062
+                    LayoutCachedHeight =593
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private m_Error As String
+Private m_EquipoSeleccionado As EquipoMedida
+Private WithEvents m_FormEquipo As Form_FormEquipoMedida
+Attribute m_FormEquipo.VB_VarHelpID = -1
+Public Event EquipoSeleccionado(m_Equipo As EquipoMedida)
+
+Public Function Filtrar( _
+                        Optional ByRef p_Error As String _
+                        ) As String
+       
+       
+    Dim m_Col As Scripting.Dictionary
+    Dim m_ID As Variant
+    Dim m_ObjEquipo As EquipoMedida
+    Dim lst As ListBox
+    
+    On Error GoTo errores
+    
+    Set m_EquipoSeleccionado = Nothing
+    Me.ComandoAltaEquipo.Enabled = True
+    Me.ComandoEditarEquipo.Enabled = False
+    Me.ComandoEliminarEquipo.Enabled = False
+    Me.ComandoCalibraciones.Enabled = False
+    
+    Me.ComandoExportarExcel.Enabled = False
+    Set lst = Me.ListaFiltrados
+    lst.RowSource = "ID;Equipo;Marca;Modelo;NS"
+    Set m_Col = Constructor.getEquiposMedida(Nz(Me.Nombre, ""), p_Error)
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_Col Is Nothing Then
+        Exit Function
+    End If
+    For Each m_ID In m_Col
+        Set m_ObjEquipo = m_Col(m_ID)
+        With m_ObjEquipo
+            lst.AddItem .IDEquipoMedida & ";" & .Nombre & ";" & .Marca & ";" & .Modelo & ";" & .NS
+        End With
+        Set m_ObjEquipo = Nothing
+    Next
+    Me.ComandoExportarExcel.Enabled = True
+    If lst.ListCount = 2 Then
+        lst.Selected(1) = True
+        ListaFiltrados_Click
+        Exit Function
+    End If
+    
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método Filtrar ha producido el error nº: " & Err.Number & _
+        vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+End Function
+
+
+Private Sub cmdSalir_Click()
+    DoCmd.Close acForm, Me.Name
+End Sub
+
+Private Sub ComandoAltaEquipo_Click()
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    Set m_ObjEquipoMedidaActivo = Nothing
+    If FormularioAbierto("FormEquipoMedida") Then
+        DoCmd.Close acForm, "FormEquipoMedida", acSaveNo
+    End If
+    DoCmd.OpenForm "FormEquipoMedida"
+    Set m_FormEquipo = Forms("FormEquipoMedida")
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAltaEquipo_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoCalibraciones_Click()
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If m_EquipoSeleccionado Is Nothing Then
+        If Nz(Me.ListaFiltrados.Column(0), "") <> "" Then
+            Set m_EquipoSeleccionado = Constructor.getEquipo(Me.ListaFiltrados.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+        If m_EquipoSeleccionado Is Nothing Then
+            m_Error = "Se ha de seleccionar el equipo de la lista primero"
+            Err.Raise 1000
+        End If
+    End If
+    
+    Set m_ObjEquipoMedidaActivo = m_EquipoSeleccionado
+    If FormularioAbierto("FormEquipoMedidaCalibracionesGestion") Then
+        DoCmd.Close acForm, "FormEquipoMedidaCalibracionesGestion", acSaveNo
+    End If
+    DoCmd.OpenForm "FormEquipoMedidaCalibracionesGestion"
+   
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoCalibraciones_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoEditarEquipo_Click()
+
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If m_EquipoSeleccionado Is Nothing Then
+        If Nz(Me.ListaFiltrados.Column(0), "") <> "" Then
+            Set m_EquipoSeleccionado = Constructor.getEquipo(Me.ListaFiltrados.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+        If m_EquipoSeleccionado Is Nothing Then
+            m_Error = "Se ha de seleccionar el equipo de la lista primero"
+            Err.Raise 1000
+        End If
+    End If
+    
+    Set m_ObjEquipoMedidaActivo = m_EquipoSeleccionado
+    If FormularioAbierto("FormEquipoMedida") Then
+        DoCmd.Close acForm, "FormEquipoMedida", acSaveNo
+    End If
+    DoCmd.OpenForm "FormEquipoMedida"
+    Set m_FormEquipo = Forms("FormEquipoMedida")
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEditarEquipo_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoEliminarEquipo_Click()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If m_EquipoSeleccionado Is Nothing Then
+        If Nz(Me.ListaFiltrados.Column(0), "") <> "" Then
+            Set m_EquipoSeleccionado = Constructor.getEquipo(Me.ListaFiltrados.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+        If m_EquipoSeleccionado Is Nothing Then
+            m_Error = "Se ha de seleccionar el equipo de la lista primero"
+            Err.Raise 1000
+        End If
+    End If
+    m_EquipoSeleccionado.Eliminar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Set m_ObjEquipoMedidaActivo = Nothing
+    Set m_EquipoSeleccionado = Nothing
+    Filtrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEditarEquipo_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoExportarExcel_Click()
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    flag = GenerarConsultas("Lista de equipos de medida", Me.hWnd, , Me.ListaFiltrados, "No")
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        m_Error = "El método GenerarConsultas ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoExportarExcel_Click se ha devuelto el error: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoLimpiarNombre_Click()
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Me.Nombre = Empty
+    Filtrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoLimpiarNombre_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoSeleccionarEquipo_Click()
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    If m_EquipoSeleccionado Is Nothing Then
+        If Nz(Me.ListaFiltrados.Column(0), "") <> "" Then
+            Set m_EquipoSeleccionado = Constructor.getEquipo(Me.ListaFiltrados.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+        If m_EquipoSeleccionado Is Nothing Then
+            m_Error = "Se ha de seleccionar el equipo de la lista primero"
+            Err.Raise 1000
+        End If
+    End If
+    If m_EquipoSeleccionado.Calibrado = EnumSino.No Then
+        m_Error = m_EquipoSeleccionado.Error
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+        m_Error = "El equipo seleccionado no está activo. Ya sea porque tiene fecha de fin de uso o por estar fuera de calibración"
+        Err.Raise 1000
+    Else
+        m_Error = m_EquipoSeleccionado.Error
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    End If
+    RaiseEvent EquipoSeleccionado(m_EquipoSeleccionado)
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoSeleccionarEquipo_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub Form_Load()
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    AjustarTamaño Me
+    Me.Caption = Me.lblTitulo1.Caption
+    Filtrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Load se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name
+End Sub
+
+Private Sub ListaFiltrados_Click()
+    Dim m_EstadoCalibracion As String
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    Me.ComandoAltaEquipo.Enabled = True
+    Me.ComandoEditarEquipo.Enabled = False
+    Me.ComandoEliminarEquipo.Enabled = False
+    Me.ComandoCalibraciones.Enabled = False
+    
+    If Nz(Me.ListaFiltrados.Column(0), "") = "" Then
+        DoCmd.Hourglass False
+        Me.lblEstadoCalibracion.Visible = False
+        Exit Sub
+    End If
+    If m_EquipoSeleccionado Is Nothing Then
+        Set m_EquipoSeleccionado = Constructor.getEquipoMedida(Me.ListaFiltrados.Column(0), m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+        Me.lblEstadoCalibracion.Visible = True
+        Me.lblEstadoCalibracion.Caption = m_EquipoSeleccionado.EstadoCalibracion
+    Else
+        If Me.ListaFiltrados.Column(0) <> m_EquipoSeleccionado.IDEquipoMedida Then
+            Set m_EquipoSeleccionado = Constructor.getEquipoMedida(Me.ListaFiltrados.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+            Me.lblEstadoCalibracion.Visible = True
+            Me.lblEstadoCalibracion.Caption = m_EquipoSeleccionado.EstadoCalibracion
+        End If
+    End If
+    If m_EquipoSeleccionado Is Nothing Then
+        Me.lblEstadoCalibracion.Visible = False
+        DoCmd.Hourglass False
+        Exit Sub
+    End If
+    Me.ComandoEditarEquipo.Enabled = True
+    Me.ComandoEliminarEquipo.Enabled = True
+    Me.ComandoCalibraciones.Enabled = True
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ListaFiltrados_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub m_FormEquipo_EquipoAlta()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Filtrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_FormEquipo_EquipoAlta se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub m_FormEquipo_EquipoModificado()
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Filtrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_FormEquipo_EquipoModificado se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub Nombre_Exit(Cancel As Integer)
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Filtrar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Nombre_Exit se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description & vbNewLine & Err.Source
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub

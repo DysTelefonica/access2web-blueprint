@@ -1,0 +1,1608 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =916268250
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =12463
+    DatasheetFontHeight =11
+    ItemSuffix =90
+    Left =3645
+    Top =3555
+    Right =16110
+    Bottom =11250
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x9514a7b40f5ae540
+    End
+    GUID = Begin
+        0x8d42905e93f959488ef67ca35f97bed8
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="GENERADOR DE FACTURAS"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x0000000008b0d91608b0d9165452ee018e18465c08b0d916e16e0542c0a0e115 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x580202000100413400213a01ffffffff5a7db900be90c0000915f55b885cee01 ,
+        0xdc55ee0100000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0026000100000000000000000000000000000000000000000000000000 ,
+        0x000000000000433a5c50726f6772616d446174615c54656368536d6974685c53 ,
+        0x6e616769742032305c5072696e746572506f727446696c650000000000000000 ,
+        0x0000000000000000000000000000000000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00000000806501043e96e600fc0100006464bb007f00000090a1ef010c000000 ,
+        0x7f0000000900000044a1ef002c0300002c030000700291143f16911470029114 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000007877ef0101000000000091140100000086fdffff ,
+        0x86fdffff2de7c80057d925014779b90013da2501d538f45be45866100000e731 ,
+        0x0000000024880000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160022000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000043003a005c00500072006f006700720061006d004400610074006100 ,
+        0x5c00540065006300680053006d006900740068005c0053006e00610067006900 ,
+        0x74002000320030005c005000720069006e0074006500720050006f0072007400 ,
+        0x460069006c006500000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Line
+            BorderLineStyle =0
+            Width =1701
+            GridlineColor =10921638
+            BorderThemeColorIndex =0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Tab
+            TextFontFamily =18
+            Width =5103
+            Height =3402
+            FontSize =11
+            FontName ="Cambria"
+            GridlineColor =10921638
+            ThemeFontIndex =0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =3
+            BackColor =14277081
+            BackThemeColorIndex =1
+            BackShade =85.0
+            BorderLineStyle =0
+            BorderColor =13995605
+            BorderThemeColorIndex =2
+            BorderTint =60.0
+            HoverThemeColorIndex =1
+            PressedThemeColorIndex =1
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+            ForeColor =4210752
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+        End
+        Begin Page
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin FormHeader
+            Height =720
+            BackColor =8210719
+            Name ="EncabezadoDelFormulario"
+            GUID = Begin
+                0x1b3741503eda3f42822933b1c73140c1
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =2
+            Begin
+                Begin Label
+                    OverlapFlags =93
+                    TextAlign =2
+                    Left =45
+                    Top =60
+                    Width =11850
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="RESULTADO DE LA FACTURA"
+                    GUID = Begin
+                        0x49d1f4ee66bdc54aa119b4b4adae18ae
+                    End
+                    LayoutCachedLeft =45
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =11895
+                    LayoutCachedHeight =720
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Width =11850
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="RESULTADO DE LA FACTURA"
+                    GUID = Begin
+                        0xad8f7c4d9caeb740a3e9a4fbc1a965ba
+                    End
+                    LayoutCachedWidth =11850
+                    LayoutCachedHeight =660
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin Section
+            Height =6292
+            Name ="Detalle"
+            GUID = Begin
+                0x11e2c5a0e612ea4ebd07bb17ad25ff9d
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2268
+                    Top =105
+                    Width =1173
+                    Height =297
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="FechaFinalEventos"
+                    Format ="Short Date"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xe244c6310fa55a478416959462a792aa
+                    End
+
+                    LayoutCachedLeft =2268
+                    LayoutCachedTop =105
+                    LayoutCachedWidth =3441
+                    LayoutCachedHeight =402
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =242
+                    Top =5375
+                    Width =1995
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta52"
+                    Caption ="DIETAS Y GASTOS"
+                    GUID = Begin
+                        0x17ac1611696b7a4aadba1c86a4f32529
+                    End
+                    LayoutCachedLeft =242
+                    LayoutCachedTop =5375
+                    LayoutCachedWidth =2237
+                    LayoutCachedHeight =5690
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2447
+                    Top =5372
+                    Width =1804
+                    Height =297
+                    TabIndex =1
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioDietasYGastos"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xaee7e5ea786df346b690072968535041
+                    End
+
+                    LayoutCachedLeft =2447
+                    LayoutCachedTop =5372
+                    LayoutCachedWidth =4251
+                    LayoutCachedHeight =5669
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =242
+                    Top =4070
+                    Width =1995
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta58"
+                    Caption ="RECARGO SUM. %"
+                    GUID = Begin
+                        0x0992618609eb724dae170c0ab017a408
+                    End
+                    LayoutCachedLeft =242
+                    LayoutCachedTop =4070
+                    LayoutCachedWidth =2237
+                    LayoutCachedHeight =4367
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2447
+                    Top =4070
+                    Width =772
+                    Height =297
+                    TabIndex =2
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Recargo"
+                    Format ="General Number"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x4fc263ea22453149ade8b09712bcd4df
+                    End
+
+                    LayoutCachedLeft =2447
+                    LayoutCachedTop =4070
+                    LayoutCachedWidth =3219
+                    LayoutCachedHeight =4367
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =10608
+                    Top =105
+                    Width =1650
+                    Height =405
+                    FontWeight =700
+                    TabIndex =3
+                    Name ="ComandoGenerarExcel"
+                    Caption ="Generar Excel"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xb137bcc0ee59014ba4a0f238c0ca64bd
+                    End
+
+                    LayoutCachedLeft =10608
+                    LayoutCachedTop =105
+                    LayoutCachedWidth =12258
+                    LayoutCachedHeight =510
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =227
+                    Top =105
+                    Width =1830
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta69"
+                    Caption ="F. ÚLTIMO EVENTO"
+                    GUID = Begin
+                        0x4dd0b874017a4e498ba7161077836d67
+                    End
+                    LayoutCachedLeft =227
+                    LayoutCachedTop =105
+                    LayoutCachedWidth =2057
+                    LayoutCachedHeight =402
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =4981
+                    Top =105
+                    Width =1173
+                    Height =297
+                    TabIndex =4
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="FechaFactura"
+                    Format ="Short Date"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xda9931fdc51d7447985946d7cdb29e9b
+                    End
+
+                    LayoutCachedLeft =4981
+                    LayoutCachedTop =105
+                    LayoutCachedWidth =6154
+                    LayoutCachedHeight =402
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =3686
+                    Top =105
+                    Width =1155
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta71"
+                    Caption ="F. FACTURA"
+                    GUID = Begin
+                        0xb4906f52904f5d40830216693df0585f
+                    End
+                    LayoutCachedLeft =3686
+                    LayoutCachedTop =105
+                    LayoutCachedWidth =4841
+                    LayoutCachedHeight =402
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8402
+                    Top =4065
+                    Width =1860
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta72"
+                    Caption ="PRECIO INCURRIDO"
+                    GUID = Begin
+                        0xc7d023d3b7452046afff07f96c071245
+                    End
+                    LayoutCachedLeft =8402
+                    LayoutCachedTop =4065
+                    LayoutCachedWidth =10262
+                    LayoutCachedHeight =4380
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =10454
+                    Top =4070
+                    Width =1804
+                    Height =297
+                    TabIndex =5
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioIncurrido"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xd682283fcd48ca49be3ff1defc645c75
+                    End
+
+                    LayoutCachedLeft =10454
+                    LayoutCachedTop =4070
+                    LayoutCachedWidth =12258
+                    LayoutCachedHeight =4367
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8402
+                    Top =4518
+                    Width =1860
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta74"
+                    Caption ="BASE IMPONIBLE"
+                    GUID = Begin
+                        0xfdced2d5d0916545ba181411b3ae5dff
+                    End
+                    LayoutCachedLeft =8402
+                    LayoutCachedTop =4518
+                    LayoutCachedWidth =10262
+                    LayoutCachedHeight =4833
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =10454
+                    Top =4523
+                    Width =1804
+                    Height =297
+                    TabIndex =6
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioBaseImponible"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x5c976b7bf7133145a37c78da84b70cbc
+                    End
+
+                    LayoutCachedLeft =10454
+                    LayoutCachedTop =4523
+                    LayoutCachedWidth =12258
+                    LayoutCachedHeight =4820
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8402
+                    Top =4953
+                    Width =1860
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta76"
+                    Caption ="TIPO IMPONIBLE"
+                    GUID = Begin
+                        0x22b95481e3946140a3dcbdf8d01e3947
+                    End
+                    LayoutCachedLeft =8402
+                    LayoutCachedTop =4953
+                    LayoutCachedWidth =10262
+                    LayoutCachedHeight =5268
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =10454
+                    Top =4958
+                    Width =1804
+                    Height =297
+                    TabIndex =7
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="TipoImpositivo"
+                    Format ="Fixed"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x8e21326f075edc4cb263448742d16218
+                    End
+
+                    LayoutCachedLeft =10454
+                    LayoutCachedTop =4958
+                    LayoutCachedWidth =12258
+                    LayoutCachedHeight =5255
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8402
+                    Top =5370
+                    Width =1860
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta78"
+                    Caption ="IMPUESTOS"
+                    GUID = Begin
+                        0xd691d33daca4d84c85cedc241bee9932
+                    End
+                    LayoutCachedLeft =8402
+                    LayoutCachedTop =5370
+                    LayoutCachedWidth =10262
+                    LayoutCachedHeight =5685
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =10454
+                    Top =5375
+                    Width =1804
+                    Height =297
+                    TabIndex =8
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioImpuestos"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x3fe2dd910a1a5f419a19ca6c5ccc39c6
+                    End
+
+                    LayoutCachedLeft =10454
+                    LayoutCachedTop =5375
+                    LayoutCachedWidth =12258
+                    LayoutCachedHeight =5672
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =8012
+                    Top =5770
+                    Width =2280
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta80"
+                    Caption ="TRABAJOS A FACTURAR"
+                    GUID = Begin
+                        0xcf60b02f23402c4fbad563c4d9a953fc
+                    End
+                    LayoutCachedLeft =8012
+                    LayoutCachedTop =5770
+                    LayoutCachedWidth =10292
+                    LayoutCachedHeight =6085
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =10454
+                    Top =5775
+                    Width =1804
+                    Height =297
+                    TabIndex =9
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="ImporteAFacturar"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xd6f1af2339152f4c95335aefb9716ea3
+                    End
+
+                    LayoutCachedLeft =10454
+                    LayoutCachedTop =5775
+                    LayoutCachedWidth =12258
+                    LayoutCachedHeight =6072
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =242
+                    Top =4505
+                    Width =1995
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta82"
+                    Caption ="PRECIO SUMINISTRO"
+                    GUID = Begin
+                        0xc86107e15a8b184c908921c16c7718cb
+                    End
+                    LayoutCachedLeft =242
+                    LayoutCachedTop =4505
+                    LayoutCachedWidth =2237
+                    LayoutCachedHeight =4820
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2447
+                    Top =4520
+                    Width =1804
+                    Height =297
+                    TabIndex =10
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioSuministro"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x569c634248f2e241b4f0d9bec1ad5855
+                    End
+
+                    LayoutCachedLeft =2447
+                    LayoutCachedTop =4520
+                    LayoutCachedWidth =4251
+                    LayoutCachedHeight =4817
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =242
+                    Top =4940
+                    Width =1995
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta84"
+                    Caption ="PRECIO SUBCONT."
+                    GUID = Begin
+                        0xd2482a00ce154b44ab1df6d2e6c1204e
+                    End
+                    LayoutCachedLeft =242
+                    LayoutCachedTop =4940
+                    LayoutCachedWidth =2237
+                    LayoutCachedHeight =5255
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =2447
+                    Top =4955
+                    Width =1804
+                    Height =297
+                    TabIndex =11
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioSubcontrataciones"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x8389a82de956834983d441fc9967c451
+                    End
+
+                    LayoutCachedLeft =2447
+                    LayoutCachedTop =4955
+                    LayoutCachedWidth =4251
+                    LayoutCachedHeight =5252
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =4877
+                    Top =4520
+                    Width =1804
+                    Height =297
+                    TabIndex =12
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioSuministroConRecargo"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0xcdaabda8690b3f4c9f1888150331a93f
+                    End
+
+                    LayoutCachedLeft =4877
+                    LayoutCachedTop =4520
+                    LayoutCachedWidth =6681
+                    LayoutCachedHeight =4817
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    DecimalPlaces =2
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =4877
+                    Top =4955
+                    Width =1804
+                    Height =297
+                    TabIndex =13
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="PrecioSubcontratacionesConRecargo"
+                    Format ="#,##0.00 €;-#,##0.00 €"
+                    Tag ="OBLIGATORIO"
+                    GUID = Begin
+                        0x0941dc2a596f984e980bc42fc4c89d57
+                    End
+
+                    LayoutCachedLeft =4877
+                    LayoutCachedTop =4955
+                    LayoutCachedWidth =6681
+                    LayoutCachedHeight =5252
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    CurrencySymbol ="€"
+                End
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    TabStop = NotDefault
+                    IMEHold = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    ColumnCount =8
+                    Left =165
+                    Top =795
+                    Width =12093
+                    Height =2794
+                    TabIndex =14
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaPerfilFactura"
+                    RowSourceType ="Value List"
+                    RowSource ="Perfil;NHLab;€HLab;€Lab;NHExt;€HExt;€Ext;€Hora"
+                    ColumnWidths ="3125;851;851;1134;851;1134;1134;1134"
+                    GUID = Begin
+                        0x192bb27702e2424096209b9701daa813
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =165
+                    LayoutCachedTop =795
+                    LayoutCachedWidth =12258
+                    LayoutCachedHeight =3589
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin FormFooter
+            Height =686
+            BackColor =8210719
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0x090b1dbc9f94cb47b0f8719827a57ae4
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =2
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =11685
+                    Top =30
+                    Width =577
+                    Height =577
+                    FontWeight =700
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir del formulario"
+                    GUID = Begin
+                        0x127b1dbabd8a1e47b7f3e86f99fc48ef
+                    End
+
+                    LayoutCachedLeft =11685
+                    LayoutCachedTop =30
+                    LayoutCachedWidth =12262
+                    LayoutCachedHeight =607
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin Label
+                    Visible = NotDefault
+                    BorderWidth =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =165
+                    Top =120
+                    Width =8325
+                    Height =447
+                    FontWeight =700
+                    BackColor =8210719
+                    BorderColor =0
+                    ForeColor =16777215
+                    Name ="lblEstado"
+                    Caption ="#######################"
+                    Tag ="Formulario de control de los pedidos"
+                    GUID = Begin
+                        0x0478ea2f4ffd4d49a9d8ebef1ddaddb4
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =165
+                    LayoutCachedTop =120
+                    LayoutCachedWidth =8490
+                    LayoutCachedHeight =567
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    Visible = NotDefault
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =11070
+                    Top =195
+                    Width =315
+                    Height =405
+                    FontWeight =700
+                    TabIndex =1
+                    Name ="ComandoObtenerLI"
+                    Caption ="LI"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x2843ac21c9bdc846ba96a8acce583911
+                    End
+
+                    LayoutCachedLeft =11070
+                    LayoutCachedTop =195
+                    LayoutCachedWidth =11385
+                    LayoutCachedHeight =600
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+
+Private fso As New FileSystemObject
+Private m_Error As String
+
+
+Private Sub cmdSalir_Click()
+    On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+
+Public Function EstablecerDatos(Optional ByRef p_Error As String) As String
+    
+    Dim lst As ListBox
+    Dim m_FechaFinalEventos As String
+    Dim m_FechaFactura As String
+    Dim m_Recargo As String
+    Dim m_PrecioSuministro As String
+    Dim m_PrecioSuministroConRecargo As String
+    Dim m_PrecioSubcontrataciones As String
+    Dim m_PrecioSubcontratacionesConRecargo As String
+    Dim m_PrecioDietasYGastos As String
+    
+    
+    Dim m_PrecioIncurrido As String
+    Dim m_PrecioBaseImponible As String
+    Dim m_TipoImpositivo As String
+    Dim m_PrecioImpuestos As String
+    Dim m_ImporteAFacturar As String
+    
+    On Error GoTo errores
+    
+    If m_ObjFacturaActiva Is Nothing Then
+        m_Error = "No hay ninguna factura activa"
+        Err.Raise 1000
+    End If
+    
+    Me.ComandoObtenerLI.Visible = False
+    With m_ObjFacturaActiva
+        If .IDFactura = "" Then
+            
+            Me.ComandoObtenerLI.Visible = True
+           
+            Me.ComandoObtenerLI.Enabled = True
+        Else
+            
+            Me.ComandoObtenerLI.Visible = False
+        End If
+        m_FechaFinalEventos = .FechaFinalEventos
+        m_FechaFactura = .FechaFactura
+        m_Recargo = .Recargo
+        m_TipoImpositivo = .TipoImpositivo
+        If .ParaPorFacturar = 0 Then
+            .ParaPorFacturar = EnumSino.Sí
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioSuministro = .PrecioSuministroPorFacturar
+        Else
+            m_PrecioSuministro = .PrecioSuministroCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioSuministroConRecargo = .PrecioSuministroConRecargoPorFacturar
+        Else
+            m_PrecioSuministroConRecargo = .PrecioSuministroConRecargoCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioSubcontrataciones = .PrecioSubcontratacionesPorFacturar
+        Else
+            m_PrecioSubcontrataciones = .PrecioSubcontratacionesCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioSubcontratacionesConRecargo = .PrecioSubcontratacionesConRecargoForFacturar
+        Else
+            m_PrecioSubcontratacionesConRecargo = .PrecioSubcontratacionesConRecargoCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioDietasYGastos = .PrecioDietasYGastosPorFacturar
+        Else
+            m_PrecioDietasYGastos = .PrecioDietasYGastosCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioIncurrido = .PrecioIncurridoPorFacturar
+        Else
+            m_PrecioIncurrido = .PrecioIncurridoCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioBaseImponible = .PrecioBaseImponiblePorFacturar
+        Else
+            m_PrecioBaseImponible = .PrecioBaseImponibleCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_PrecioImpuestos = .PrecioImpuestosPorFacturar
+        Else
+            m_PrecioImpuestos = .PrecioImpuestosCalculado
+        End If
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_ImporteAFacturar = .ImporteAFacturarPorFacturar
+        Else
+            m_ImporteAFacturar = .ImporteAFacturarCalculado
+        End If
+    End With
+    If IsDate(m_FechaFinalEventos) Then
+        Me.FechaFinalEventos = Format(m_FechaFinalEventos, "dd/mm/yyyy")
+    End If
+    If IsDate(m_FechaFactura) Then
+        Me.FechaFactura = Format(m_FechaFactura, "dd/mm/yyyy")
+    End If
+    If IsNumeric(m_Recargo) Then
+        Me.Recargo = Format(m_Recargo, "#,##0.00")
+    End If
+    If IsNumeric(m_PrecioSuministro) Then
+        Me.PrecioSuministro = Format(m_PrecioSuministro, "#,##0.00 €")
+    End If
+    If IsNumeric(m_PrecioSuministroConRecargo) Then
+        Me.PrecioSuministroConRecargo = Format(m_PrecioSuministroConRecargo, "#,##0.00 €")
+    End If
+    If IsNumeric(m_PrecioSubcontrataciones) Then
+        Me.PrecioSubcontrataciones = Format(m_PrecioSubcontrataciones, "#,##0.00 €")
+    End If
+    If IsNumeric(m_PrecioSubcontratacionesConRecargo) Then
+        Me.PrecioSubcontratacionesConRecargo = Format(m_PrecioSubcontratacionesConRecargo, "#,##0.00 €")
+    End If
+    If IsNumeric(m_PrecioDietasYGastos) Then
+        Me.PrecioDietasYGastos = Format(m_PrecioDietasYGastos, "#,##0.00 €")
+    End If
+    If IsNumeric(m_PrecioIncurrido) Then
+        Me.PrecioIncurrido = Format(m_PrecioIncurrido, "#,##0.00 €")
+    End If
+    If IsNumeric(m_PrecioBaseImponible) Then
+        Me.PrecioBaseImponible = Format(m_PrecioBaseImponible, "#,##0.00 €")
+    End If
+    If IsNumeric(m_TipoImpositivo) Then
+        Me.TipoImpositivo = Format(m_TipoImpositivo, "#,##0.00")
+    End If
+    If IsNumeric(m_PrecioImpuestos) Then
+        Me.PrecioImpuestos = Format(m_PrecioImpuestos, "#,##0.00 €")
+    End If
+    If IsNumeric(m_ImporteAFacturar) Then
+        Me.ImporteAFacturar = Format(m_ImporteAFacturar, "#,##0.00 €")
+    End If
+    RellenarPerfiles p_Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Exit Function
+    
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método RellenarListaPerfiles ha devuelto el error: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+End Function
+
+Private Sub ComandoGenerarExcel_Click()
+    
+    Dim m_EsCalculado As EnumSino
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    Me.lblEstado.Visible = False
+    If m_ObjFacturaActiva Is Nothing Then
+        m_Error = "No hay ninguna factura activa"
+        Err.Raise 1000
+    End If
+    With m_ObjFacturaActiva
+        If .ParaPorFacturar = EnumSino.Sí Then
+            m_EsCalculado = EnumSino.No
+        Else
+            m_EsCalculado = EnumSino.Sí
+        End If
+         .SalidaAExcel m_EsCalculado, m_Error
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+        If fso.FileExists(.URLFactura) Then
+            Ejecutar Me.hWnd, "open", .URLFactura, "", "", 1
+        End If
+    End With
+    Me.lblEstado.Visible = False
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoGenerarExcel_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+
+
+Private Sub ComandoObtenerLI_Click()
+    Dim m_URLLI As String
+    
+    On Error GoTo errores
+    
+    m_Error = ""
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    If m_ObjFacturaActiva Is Nothing Then
+        m_Error = "No hay una factura activa"
+        Err.Raise 1000
+    End If
+    m_Linea = "Obteniendo la lista............"
+    Avance m_Linea
+    m_URLLI = m_ObjFacturaActiva.ObtenerLI(EnumSino.Sí, m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If Not fso.FileExists(m_URLLI) Then
+        m_Error = "El método ObtenerLI ha devuelto un resultado con formato desconocido"
+        Err.Raise 1000
+    End If
+    Ejecutar Me.hWnd, "open", m_URLLI, "", "", 1
+    
+    Me.lblEstado.Visible = False
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoObtenerLI_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+
+Private Sub Form_Load()
+    
+    Dim m_Titulo As String
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    AjustarTamaño Me
+    Me.lblEstado.Visible = False
+    
+    Me.Caption = Me.lblTitulo1.Caption
+    If m_ObjFacturaActiva Is Nothing Then
+        m_Error = "No hay ninguna factura activa"
+        Err.Raise 1000
+    End If
+    If m_ObjFacturaActiva.ParaPorFacturar = EnumSino.Sí Then
+        m_Titulo = "RESÚMEN DEL SIMULACRO DE LA FACTURA"
+    Else
+        m_Titulo = "RESÚMEN DE LA FACTURA " & m_ObjFacturaActiva.IDFactura
+    End If
+    Me.lblTitulo1.Caption = m_Titulo
+    Me.lblTitulo2.Caption = Me.lblTitulo1.Caption
+    Me.Caption = Me.lblTitulo1.Caption
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+         Err.Raise 1000
+    End If
+        
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Load se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Function RellenarPerfiles(Optional ByRef p_Error As String) As String
+    
+    Dim lst As ListBox
+    Dim m_Col As Scripting.Dictionary
+    Dim m_Perfil As FacturaPerfiles
+    Dim m_ID As Variant
+    Dim m_NHorasLab As String
+    Dim m_PrecioHoraLab As String
+    Dim m_ImporteHorasLab As String
+    Dim m_NHorasExt As String
+    Dim m_PrecioHoraExt As String
+    Dim m_ImporteHorasExt As String
+    Dim m_Importe As String
+    
+    On Error GoTo errores
+    Set lst = Me.ListaPerfilFactura
+    lst.RowSource = "Perfil;NHLab;€HLab;€Lab;NHExt;€HExt;€Ext;€Horas"
+    If m_ObjFacturaActiva Is Nothing Then
+        Exit Function
+    End If
+    If m_ObjFacturaActiva.ParaPorFacturar = EnumSino.Sí Then
+        Set m_Col = m_ObjFacturaActiva.ColPerfilesPorFacturar
+    Else
+        Set m_Col = m_ObjFacturaActiva.ColPerfilesEnFactura
+    End If
+    If m_Col Is Nothing Then
+        Exit Function
+    End If
+    For Each m_ID In m_Col
+        Set m_Perfil = m_Col(m_ID)
+        With m_Perfil
+            m_NHorasLab = Format(.NHorasLab, "#,##0.00")
+            m_PrecioHoraLab = Format(.PrecioHoraLab, "#,##0.00 €")
+            m_ImporteHorasLab = Format(.ImporteHorasLab, "#,##0.00 €")
+            m_NHorasExt = Format(.NHorasExt, "#,##0.00")
+            m_PrecioHoraExt = Format(.PrecioHoraExt, "#,##0.00 €")
+            m_ImporteHorasExt = Format(.ImporteHorasExt, "#,##0.00 €")
+            m_Importe = Format(.Importe, "#,##0.00 €")
+            lst.AddItem .Perfil & ";" & m_NHorasLab & ";" & m_PrecioHoraLab & ";" & m_ImporteHorasLab & ";" & m_NHorasExt & ";" & _
+                        m_PrecioHoraExt & ";" & m_ImporteHorasExt & ";" & m_Importe
+        End With
+        Set m_Perfil = Nothing
+    Next
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método RellenarPerfiles ha devuelto el error: " & vbNewLine & Err.Number
+    End If
+End Function

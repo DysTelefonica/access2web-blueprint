@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EXPEDIENTES — Validación de desarrollo forms-thin-coverage</title>
+  <style>
+    :root {
+      --tf-blue: #0066ff;
+      --tf-blue-70: #0356c9;
+      --tf-blue-10: #e5f0ff;
+      --tf-navy: #031a34;
+      --tf-white: #ffffff;
+      --tf-bg: #ffffff;
+      --tf-bg-alt: #f7f7ff;
+      --tf-text: #031a34;
+      --tf-muted: #58617a;
+      --tf-border: #d1d5e4;
+      --tf-green: #3a8340;
+      --tf-green-bg: #e9f5ea;
+      --tf-red: #843c34;
+      --tf-red-bg: #f9eeed;
+      --radius-card: 10px;
+      --radius-input: 8px;
+      --radius-pill: 32px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-8: 48px;
+      --shadow: 0 8px 24px rgba(3, 26, 52, .10), 0 2px 8px rgba(3, 26, 52, .06);
+      --font: "Telefonica Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --tf-blue: #227aff;
+        --tf-blue-70: #3d8fff;
+        --tf-blue-10: #00264d;
+        --tf-bg: #000522;
+        --tf-bg-alt: #00182f;
+        --tf-text: #ffffff;
+        --tf-muted: #b0b6ca;
+        --tf-border: #00264d;
+        --tf-green-bg: #10301a;
+        --tf-red-bg: #2e1513;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      color: var(--tf-muted);
+      background: var(--tf-bg-alt);
+      line-height: 1.6;
+    }
+    a { color: var(--tf-blue); font-weight: 650; }
+    .skip { position: absolute; left: -9999px; }
+    .skip:focus { left: 16px; top: 12px; z-index: 10; background: var(--tf-bg); padding: 8px 14px; border-radius: var(--radius-input); }
+    .container { width: min(100% - 32px, 1040px); margin: 0 auto; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: color-mix(in srgb, var(--tf-bg), transparent 4%);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--tf-border);
+    }
+    .header-inner { min-height: 84px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+    .brand { display: flex; align-items: center; gap: var(--space-3); color: var(--tf-blue); font-weight: 850; font-size: 1.25rem; letter-spacing: -.02em; }
+    .brand-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 14px; background: var(--tf-blue); color: #fff; font-weight: 900; }
+    .tag { border-radius: var(--radius-pill); padding: 6px 14px; background: var(--tf-blue-10); border: 1px solid var(--tf-blue); color: var(--tf-text); font-size: .85rem; font-weight: 700; }
+    main { padding: var(--space-8) 0; }
+    .hero {
+      background: linear-gradient(135deg, var(--tf-bg) 0%, var(--tf-bg) 56%, var(--tf-blue-10) 100%);
+      border: 1px solid var(--tf-border);
+      border-radius: 18px;
+      padding: clamp(24px, 5vw, 48px);
+      box-shadow: var(--shadow);
+    }
+    h1 { margin: 0 0 var(--space-3); color: var(--tf-text); font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1; font-weight: 520; }
+    h2 { margin: 0 0 var(--space-3); color: var(--tf-text); font-size: 1.25rem; }
+    h3 { margin: 0 0 var(--space-2); color: var(--tf-text); font-size: 1.05rem; }
+    .lead { max-width: 74ch; margin: 0; font-size: 1.08rem; }
+    .grid { display: grid; gap: var(--space-4); }
+    .meta-grid { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: var(--space-5); }
+    .meta, .case, .sign, .trace { background: var(--tf-bg); border: 1px solid var(--tf-border); border-radius: var(--radius-card); padding: var(--space-5); }
+    .meta strong, .trace strong { display: block; color: var(--tf-text); font-size: .82rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+    .notice { margin-top: var(--space-5); padding: var(--space-4); border-radius: var(--radius-card); border-left: 4px solid var(--tf-blue); background: var(--tf-blue-10); color: var(--tf-text); }
+    .progress { position: sticky; top: 85px; z-index: 4; background: var(--tf-bg-alt); border-bottom: 1px solid var(--tf-border); padding: var(--space-3) 0; color: var(--tf-text); }
+    .progress strong { color: var(--tf-blue); }
+    .cases { margin-top: var(--space-6); }
+    .case { border-left: 5px solid var(--tf-border); margin-bottom: var(--space-4); }
+    .case[data-state="pass"] { border-left-color: var(--tf-green); }
+    .case[data-state="fail"] { border-left-color: var(--tf-red); }
+    .case-id { color: var(--tf-blue); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; font-weight: 800; }
+    .steps { margin: var(--space-3) 0; padding: var(--space-3) var(--space-4) var(--space-3) var(--space-6); background: var(--tf-bg-alt); border-radius: var(--radius-input); }
+    .steps li { margin-bottom: 6px; }
+    .expected { background: var(--tf-bg-alt); border-radius: var(--radius-input); padding: var(--space-4); margin: var(--space-3) 0 var(--space-4); }
+    .expected b { color: var(--tf-text); }
+    fieldset { border: 0; margin: 0; padding: 0; }
+    legend, label.label { display: block; color: var(--tf-text); font-weight: 700; margin-bottom: var(--space-2); }
+    .choices { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-bottom: var(--space-4); }
+    .choice { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--tf-border); border-radius: var(--radius-pill); padding: 9px 18px; color: var(--tf-text); font-weight: 700; cursor: pointer; }
+    .choice:focus-within { outline: 3px solid color-mix(in srgb, var(--tf-blue), white 45%); outline-offset: 2px; }
+    .choice input { accent-color: var(--tf-blue); }
+    .choice.pass:has(input:checked) { border-color: var(--tf-green); background: var(--tf-green-bg); color: var(--tf-green); }
+    .choice.fail:has(input:checked) { border-color: var(--tf-red); background: var(--tf-red-bg); color: var(--tf-red); }
+    textarea, input[type="text"] { width: 100%; border: 1.5px solid var(--tf-border); border-radius: var(--radius-input); background: var(--tf-bg); color: var(--tf-text); font: inherit; padding: 11px 14px; }
+    textarea { min-height: 92px; resize: vertical; }
+    textarea:focus, input[type="text"]:focus { outline: 3px solid color-mix(in srgb, var(--tf-blue), white 70%); border-color: var(--tf-blue); }
+    .sign { margin-top: var(--space-6); }
+    .signer-row { display: flex; gap: var(--space-3); margin-bottom: var(--space-3); }
+    .icon-btn { flex: 0 0 auto; width: 46px; border: 1.5px solid var(--tf-border); border-radius: var(--radius-input); background: var(--tf-bg); color: var(--tf-muted); font-size: 1.25rem; cursor: pointer; }
+    .icon-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+    button.primary, button.secondary, button.ghost { min-height: 44px; border-radius: var(--radius-pill); font: inherit; font-weight: 750; padding: 10px 22px; cursor: pointer; }
+    button.primary { border: 2px solid var(--tf-blue); background: var(--tf-blue); color: #fff; }
+    button.primary:hover:not(:disabled) { background: var(--tf-blue-70); border-color: var(--tf-blue-70); }
+    button.secondary { border: 2px solid var(--tf-blue); background: transparent; color: var(--tf-blue); }
+    button.ghost { border: 0; background: transparent; color: var(--tf-blue); padding-inline: 4px; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .hint { font-size: .9rem; margin-top: var(--space-3); }
+    .trace { margin-top: var(--space-6); }
+    .trace table { width: 100%; border-collapse: collapse; margin-top: var(--space-3); }
+    .trace th, .trace td { border: 1px solid var(--tf-border); padding: 10px; text-align: left; vertical-align: top; }
+    .trace th { background: var(--tf-blue-10); color: var(--tf-text); }
+    footer { margin-top: var(--space-8); background: var(--tf-navy); color: #b0b6ca; padding: var(--space-6) 0; }
+    @media (max-width: 700px) { .header-inner, .signer-row { align-items: stretch; flex-direction: column; } .icon-btn { width: 100%; height: 44px; } .progress { top: 126px; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#contenido">Saltar al contenido</a>
+  <header>
+    <div class="container header-inner">
+      <div class="brand" aria-label="Telefónica"><span class="brand-mark">T</span><span>Telefónica</span></div>
+      <span class="tag">EXPEDIENTES · staging · validación de desarrollo</span>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <div class="container">
+      <section class="hero" aria-labelledby="titulo">
+        <h1 id="titulo">Validación técnica de forms-thin-coverage</h1>
+        <p class="lead">Usa esta web para registrar que el refactor del epic mantiene los formularios como cableado ligero, mueve la lógica a helpers de datos puros y deja cobertura atómica en el manifest de pruebas. Esta validación es para desarrollo: no sustituye la compilación manual de Access cuando el bloqueo de Dysflow siga abierto.</p>
+        <div class="grid meta-grid" aria-label="Resumen de la validación">
+          <div class="meta"><strong>Funcionalidad</strong>forms-thin-coverage</div>
+          <div class="meta"><strong>Versión de criterios</strong>2026-06-27-pr12 · checksum <code id="criteriaChecksum">—</code></div>
+          <div class="meta"><strong>Audiencia</strong>desarrollo</div>
+          <div class="meta"><strong>Alcance</strong>PR #40, PR #41 y PR #42 sobre <code>staging</code></div>
+        </div>
+        <div class="notice"><strong>Advertencia conocida:</strong> la compilación y resolución de procedimientos en runtime Access/Dysflow sigue bloqueada. Esta web valida la aceptación source/manifest y pide que el desarrollador importe en VBE, compile manualmente y registre el estado real.</div>
+      </section>
+    </div>
+
+    <div class="progress" role="status" aria-live="polite">
+      <div class="container">Progreso: <strong><span id="done">0</span>/<span id="total">0</span></strong> áreas respondidas</div>
+    </div>
+
+    <div class="container">
+      <form id="validationForm" novalidate>
+        <section class="cases" id="cases" aria-label="Áreas de validación"></section>
+
+        <section class="sign" aria-labelledby="firmantes">
+          <h2 id="firmantes">Firma de validación</h2>
+          <p>Indica al menos un nombre. Puedes añadir varios firmantes si la validación la revisa más de una persona.</p>
+          <div id="signers"></div>
+          <button type="button" class="ghost" id="addSigner">+ Agregar firmante</button>
+          <div class="actions">
+            <button type="button" class="primary" id="downloadBtn" disabled>Descargar registro firmado</button>
+            <button type="button" class="secondary" id="mailBtn" disabled>Preparar correo</button>
+          </div>
+          <p class="hint" id="hint">Responde todas las áreas y escribe al menos un nombre para habilitar la descarga. El correo solo abre tu gestor de correo: adjunta el registro descargado antes de enviarlo.</p>
+        </section>
+      </form>
+
+      <section class="trace" aria-labelledby="traza">
+        <h2 id="traza">Trazabilidad técnica</h2>
+        <p>La trazabilidad completa se incluye también en el registro descargado.</p>
+        <table>
+          <thead><tr><th>Referencia</th><th>Commit</th><th>Fase</th><th>Validación esperada</th></tr></thead>
+          <tbody>
+            <tr><td>PR #40</td><td><code>555b093</code></td><td>Phase 3.3</td><td>30 átomos <code>phase3.3</code> / <code>pr40</code>, source-only.</td></tr>
+            <tr><td>PR #41</td><td><code>ff870c1</code></td><td>Phase 3.4</td><td>24 átomos <code>phase3.4</code> / <code>pr41</code>, source-only.</td></tr>
+            <tr><td>PR #42</td><td><code>bded93a</code></td><td>Phase 3.5</td><td>24 átomos <code>phase3.5</code> / <code>pr42</code>, source-only.</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">Documento interno de validación. Los datos se procesan solo en el navegador hasta que descargas el registro o preparas el correo. © Telefónica.</div>
+  </footer>
+
+  <script>
+    const META = {
+      app: "EXPEDIENTES",
+      featureId: "forms-thin-coverage",
+      featureName: "forms-thin-coverage",
+      criteriaVersion: "2026-06-27-pr12",
+      recipient: "",
+      audience: "desarrollo"
+    };
+
+    const CASES = [
+      {
+        id: "DEV-01",
+        ref: "PR #40 555b093 · PR #41 ff870c1 · PR #42 bded93a · source-only",
+        title: "¿La cadena se integró sin incluir ACCDB en los diffs source-only?",
+        steps: [
+          "Revisa los cambios de PR #40, PR #41 y PR #42 frente a staging.",
+          "Confirma que los commits de merge 555b093, ff870c1 y bded93a no introducen Expedientes.accdb ni Expedientes_datos.accdb.",
+          "Registra en observaciones el comando o evidencia usada para comprobarlo."
+        ],
+        expected: "DADO el historial de PR #40, PR #41 y PR #42, CUANDO revisas los diffs mergeados en staging, ENTONCES solo ves fuente, tests, manifest y documentación; no aparece ningún ACCDB en el alcance aceptado."
+      },
+      {
+        id: "DEV-02",
+        ref: "helpers/tests pure-data · docs/audit/*-pure-data.md · tags pr40/pr41/pr42",
+        title: "¿Los helpers y sus tests siguen siendo de datos puros, sin referencias de interfaz?",
+        steps: [
+          "Revisa los helpers añadidos o tocados por las fases 3.3, 3.4 y 3.5.",
+          "Comprueba que la lógica testeable trabaja con parámetros, arrays, diccionarios o valores simples.",
+          "Busca referencias a Screen, Forms, controles de Access, MsgBox o automatización COM manual dentro de los nuevos helpers y tests.",
+          "Si hay alguna excepción intencionada, documenta el motivo y el módulo exacto."
+        ],
+        expected: "DADO los helpers y tests del epic, CUANDO inspeccionas su código fuente, ENTONCES la lógica validada no depende de formularios, controles, Screen ni automatización COM manual."
+      },
+      {
+        id: "DEV-03",
+        ref: "tests/tests.vba.json · phase3.3/pr40=30 · phase3.4/pr41=24 · phase3.5/pr42=24",
+        title: "¿El manifest conserva la cobertura atómica por fase y PR?",
+        steps: [
+          "Abre tests/tests.vba.json.",
+          "Cuenta las entradas con tags phase3.3 y pr40: deben ser 30.",
+          "Cuenta las entradas con tags phase3.4 y pr41: deben ser 24.",
+          "Cuenta las entradas con tags phase3.5 y pr42: deben ser 24.",
+          "Confirma que las entradas son atómicas y no simples agregadores RunAll."
+        ],
+        expected: "DADO el manifest de pruebas, CUANDO cuentas los tags de las tres fases, ENTONCES PR #40 aporta 30 átomos, PR #41 aporta 24 y PR #42 aporta 24, todos trazables a pure-data."
+      },
+      {
+        id: "DEV-04",
+        ref: "modTestingCoreHelper · TestingCore_BuildOk/TestingCore_BuildFail · test modules pr40/pr41/pr42",
+        title: "¿Los nuevos módulos de test usan el contrato JSON canónico?",
+        steps: [
+          "Revisa los módulos Test_*Helper.bas añadidos o modificados para PR #40, PR #41 y PR #42.",
+          "Comprueba que devuelven JSON con TestingCore_BuildOk o TestingCore_BuildFail.",
+          "Verifica que no dependen de Debug.Print, salida concatenada ad hoc ni mensajes manuales como resultado de prueba.",
+          "Registra cualquier módulo que no cumpla para bloquear la aceptación."
+        ],
+        expected: "DADO los módulos de test del epic, CUANDO revisas la forma de salida, ENTONCES todos los átomos nuevos siguen el contrato JSON de TestingCore y no usan Debug.Print ni salidas ad hoc como mecanismo de validación."
+      },
+      {
+        id: "DEV-05",
+        ref: "runtime manual gate · VBE import/compile · Expedientes.accdb fuera de PR source-only",
+        title: "¿La importación y compilación manual en Access queda registrada?",
+        steps: [
+          "Prepara una copia segura del ACCDB de staging.",
+          "Importa en VBE los helpers, módulos de test y cambios de formularios necesarios desde la fuente aceptada.",
+          "Ejecuta Debug > Compile en VBE.",
+          "Registra si compila, qué módulos se importaron y si hubo errores pendientes.",
+          "No marques PASA si no se ha hecho la compilación manual o si hay error no explicado."
+        ],
+        expected: "DADO una copia segura de Access en staging, CUANDO importas la fuente y compilas manualmente en VBE, ENTONCES el estado runtime queda documentado con resultado, módulos importados y errores si existen."
+      },
+      {
+        id: "DEV-06",
+        ref: "runtime blocker · Dysflow compile/procedure-resolution caveat · memories #14513/#14530/#14542/#14549",
+        title: "¿El bloqueo de compilación o resolución de procedimientos queda actualizado?",
+        steps: [
+          "Ejecuta la comprobación runtime disponible con Dysflow si el entorno ya permite compilar o resolver procedimientos.",
+          "Si sigue fallando, confirma que el fallo no procede de los cambios source-only de PR #40, PR #41 o PR #42.",
+          "Registra si el bloqueo está resuelto, sigue abierto o necesita investigación aparte.",
+          "Incluye el mensaje de error o la evidencia de compilación si la tienes."
+        ],
+        expected: "DADO el bloqueo conocido de Access/Dysflow, CUANDO revisas el estado actual, ENTONCES la aceptación distingue claramente entre source/manifest validado y runtime pendiente, o confirma que el bloqueo ya está resuelto."
+      },
+      {
+        id: "DEV-07",
+        ref: "staging reachability · PR #40 555b093 · PR #41 ff870c1 · PR #42 bded93a · Phase 3.3/3.4/3.5",
+        title: "¿Los commits de PR #40, PR #41 y PR #42 son alcanzables desde staging y mapean a sus fases?",
+        steps: [
+          "Comprueba que 555b093 es ancestro de staging y corresponde a PR #40 / Phase 3.3.",
+          "Comprueba que ff870c1 es ancestro de staging y corresponde a PR #41 / Phase 3.4.",
+          "Comprueba que bded93a es ancestro de staging y corresponde a PR #42 / Phase 3.5.",
+          "Registra los comandos o enlaces usados para confirmar la alcanzabilidad."
+        ],
+        expected: "DADO la rama staging, CUANDO verificas la alcanzabilidad de 555b093, ff870c1 y bded93a, ENTONCES los tres commits están presentes y cada uno se puede mapear a su fase de forms-thin-coverage."
+      },
+      {
+        id: "DEV-08",
+        ref: "regression safety · thin forms · pure-data helpers · atomic tests manifest",
+        title: "¿La arquitectura reduce el riesgo de regresión en formularios?",
+        steps: [
+          "Revisa una muestra de formularios de cada fase: 3.3, 3.4 y 3.5.",
+          "Confirma que los formularios quedan como lectura de controles, llamada a helper y renderizado de resultado.",
+          "Comprueba que las reglas de negocio movidas a helpers tienen átomos en tests/tests.vba.json.",
+          "Registra cualquier formulario que conserve lógica de negocio sin helper ni prueba atómica."
+        ],
+        expected: "DADO el refactor aceptado, CUANDO inspeccionas una muestra representativa, ENTONCES los formularios siguen siendo cableado de UI y la lógica relevante queda cubierta por helpers con átomos de prueba."
+      }
+    ];
+
+    const $ = (selector, scope = document) => scope.querySelector(selector);
+    const esc = (value) => String(value ?? "").replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[ch]));
+
+    function cyrb53(str, seed = 0) {
+      let h1 = 0xdeadbeef ^ seed;
+      let h2 = 0x41c6ce57 ^ seed;
+      for (let i = 0, ch; i < str.length; i++) {
+        ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, "0");
+    }
+
+    const criteriaChecksum = cyrb53(JSON.stringify(CASES.map((item) => [item.id, item.ref, item.title, item.steps, item.expected])));
+    $("#criteriaChecksum").textContent = criteriaChecksum;
+
+    const casesEl = $("#cases");
+    CASES.forEach((item, index) => {
+      const section = document.createElement("section");
+      section.className = "case";
+      section.dataset.index = String(index);
+      section.innerHTML = `
+        <div class="case-id">${esc(item.id)}</div>
+        <h2>${esc(item.title)}</h2>
+        <ol class="steps">${item.steps.map((step) => `<li>${esc(step)}</li>`).join("")}</ol>
+        <div class="expected"><b>Qué se espera:</b> ${esc(item.expected)}</div>
+        <fieldset>
+          <legend>Resultado</legend>
+          <div class="choices">
+            <label class="choice pass"><input type="radio" name="result-${index}" value="pass" required> PASA</label>
+            <label class="choice fail"><input type="radio" name="result-${index}" value="fail"> FALLA</label>
+          </div>
+        </fieldset>
+        <label class="label" for="obs-${index}">Observaciones y evidencia</label>
+        <textarea id="obs-${index}" name="obs-${index}" placeholder="Anota comandos, rutas, errores o evidencia revisada"></textarea>`;
+      casesEl.appendChild(section);
+    });
+    $("#total").textContent = String(CASES.length);
+
+    const signersEl = $("#signers");
+    function addSigner(focus = false) {
+      const row = document.createElement("div");
+      row.className = "signer-row";
+      row.innerHTML = `<input type="text" class="signer" autocomplete="name" placeholder="Nombre de quien valida" aria-label="Nombre de quien valida"><button type="button" class="icon-btn" aria-label="Quitar firmante" title="Quitar firmante">×</button>`;
+      signersEl.appendChild(row);
+      $("button", row).addEventListener("click", () => {
+        if (signersEl.children.length > 1) {
+          row.remove();
+          refresh();
+        }
+      });
+      if (focus) $("input", row).focus();
+      refresh();
+    }
+    $("#addSigner").addEventListener("click", () => addSigner(true));
+    addSigner(false);
+
+    function signerNames() {
+      return [...document.querySelectorAll(".signer")].map((input) => input.value.trim()).filter(Boolean);
+    }
+
+    function refresh() {
+      let done = 0;
+      CASES.forEach((_, index) => {
+        const selected = document.querySelector(`input[name="result-${index}"]:checked`);
+        const section = casesEl.children[index];
+        const value = selected ? selected.value : "";
+        if (value) done += 1;
+        section.dataset.state = value;
+      });
+      $("#done").textContent = String(done);
+      document.querySelectorAll(".icon-btn").forEach((button) => { button.disabled = signersEl.children.length <= 1; });
+      const ready = done === CASES.length && signerNames().length > 0;
+      $("#downloadBtn").disabled = !ready;
+      $("#mailBtn").disabled = !ready;
+    }
+    $("#validationForm").addEventListener("input", refresh);
+
+    function collect() {
+      return {
+        app: META.app,
+        featureId: META.featureId,
+        featureName: META.featureName,
+        audience: META.audience,
+        criteriaVersion: META.criteriaVersion,
+        criteriaChecksum,
+        timestamp: new Date().toISOString(),
+        signers: signerNames(),
+        results: CASES.map((item, index) => ({
+          id: item.id,
+          title: item.title,
+          ref: item.ref,
+          result: (document.querySelector(`input[name="result-${index}"]:checked`) || {}).value || "",
+          observations: $(`#obs-${index}`).value.trim()
+        }))
+      };
+    }
+
+    function recordHtml(data) {
+      const allPass = data.results.every((item) => item.result === "pass");
+      const rows = data.results.map((item) => `<tr><td>${esc(item.id)}</td><td>${esc(item.title)}</td><td>${item.result === "pass" ? "PASA" : "FALLA"}</td><td>${esc(item.observations) || "—"}</td><td>${esc(item.ref)}</td></tr>`).join("");
+      return `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Registro DEV — ${esc(data.featureName)}</title><style>body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#031a34;max-width:960px;margin:24px auto;padding:0 16px;line-height:1.5}h1{color:#0066ff}.verdict{display:inline-block;margin:12px 0;padding:8px 14px;border-radius:8px;font-weight:800;background:${allPass ? "#e9f5ea;color:#3a8340" : "#f9eeed;color:#843c34"}}table{width:100%;border-collapse:collapse;margin-top:16px}th,td{border:1px solid #d1d5e4;padding:8px;text-align:left;vertical-align:top;font-size:14px}th{background:#e5f0ff}</style></head><body><h1>Registro de validación de desarrollo</h1><p><b>Aplicación:</b> ${esc(data.app)}<br><b>Funcionalidad:</b> ${esc(data.featureName)} (${esc(data.featureId)})<br><b>Versión de criterios:</b> ${esc(data.criteriaVersion)} · checksum ${esc(data.criteriaChecksum)}<br><b>Firmantes:</b> ${esc(data.signers.join(", "))}<br><b>Fecha:</b> ${esc(data.timestamp)}</p><span class="verdict">${allPass ? "ACEPTADO — todas las áreas pasan" : "RECHAZADO — hay áreas fallidas"}</span><table><thead><tr><th>ID</th><th>Área</th><th>Resultado</th><th>Observaciones</th><th>Trazabilidad</th></tr></thead><tbody>${rows}</tbody></table><p style="font-size:12px;color:#58617a;margin-top:24px">El checksum fija la versión aceptada de los criterios. Si los criterios cambian, este registro no valida la nueva versión.</p></body></html>`;
+    }
+
+    $("#downloadBtn").addEventListener("click", () => {
+      const data = collect();
+      const blob = new Blob([recordHtml(data)], { type: "text/html" });
+      const link = document.createElement("a");
+      const signer = (data.signers[0] || "validador").replace(/\s+/g, "-").toLowerCase();
+      link.href = URL.createObjectURL(blob);
+      link.download = `DEV_${data.featureId}_${data.criteriaVersion}_${signer}.html`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+      $("#hint").textContent = "Registro descargado. Prepara el correo y adjunta ese archivo antes de enviarlo.";
+    });
+
+    $("#mailBtn").addEventListener("click", () => {
+      const data = collect();
+      const allPass = data.results.every((item) => item.result === "pass");
+      const subject = `VALIDACIÓN DEV ${allPass ? "ACEPTADA" : "RECHAZADA"} — ${data.featureName} (${data.criteriaVersion})`;
+      const body = [
+        `Aplicación: ${data.app}`,
+        `Funcionalidad: ${data.featureName} (${data.featureId})`,
+        `Versión de criterios: ${data.criteriaVersion}`,
+        `Checksum: ${data.criteriaChecksum}`,
+        `Firmantes: ${data.signers.join(", ")}`,
+        `Resultado global: ${allPass ? "ACEPTADO" : "RECHAZADO"}`,
+        "",
+        "Adjunta el registro HTML descargado antes de enviar este correo."
+      ].join("\n");
+      window.location.href = `mailto:${encodeURIComponent(META.recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    });
+
+    refresh();
+  </script>
+</body>
+</html>

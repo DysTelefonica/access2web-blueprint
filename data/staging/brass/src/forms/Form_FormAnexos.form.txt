@@ -1,0 +1,1771 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =274282859
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =8086
+    DatasheetFontHeight =11
+    ItemSuffix =20
+    Left =6360
+    Top =3855
+    Right =14445
+    Bottom =11070
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0x346918e68ee16b4595c78bb186c6e32f
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000000000c8420000c842eeece100e0b95c7a2702000090dc7981f97f0000 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0024000100000000000000000000000000000000000000000000000000 ,
+        0x00000000433a5c50726f6772616d446174615c54656368536d6974685c536e61 ,
+        0x6769742031315c5072696e746572506f727446696c65000000000000000000
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x0000fb5627020000593c91313d000000e052467a270200004200000000000000 ,
+        0x420000000000000042000000000000000000ff6600000000ea52467a27020000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000000000000000000000420000004000000000000000 ,
+        0x20040000000000000400000000000000e052467a270200000000000000000000 ,
+        0x0000fb5627020000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160020000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x43003a005c00500072006f006700720061006d0044006100740061005c005400 ,
+        0x65006300680053006d006900740068005c0053006e0061006700690074002000 ,
+        0x310031005c005000720069006e0074006500720050006f007200740046006900 ,
+        0x6c006500000000000000000000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =7181
+            Name ="Detalle"
+            GUID = Begin
+                0x0623cb9e6a010f48aa71448d43e8a760
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Width =8086
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0xb141431e9efaca438c5dd55514a34737
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =8086
+                    LayoutCachedHeight =686
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =6495
+                    Width =8086
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0x4bcfdc8874f7ce499d328a1a4327575d
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =6495
+                    LayoutCachedWidth =8086
+                    LayoutCachedHeight =7181
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin ListBox
+                    ColumnHeads = NotDefault
+                    TabStop = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =215
+                    IMESentenceMode =3
+                    ColumnCount =4
+                    Left =299
+                    Top =3599
+                    Width =6378
+                    Height =2550
+                    TabIndex =1
+                    BackColor =16047562
+                    ForeColor =8210719
+                    BorderColor =14136213
+                    Name ="ListaDocumentos"
+                    RowSourceType ="Value List"
+                    ColumnWidths ="0;6237;0;0"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xa596e83e7800344f8dc4363a670cc8a8
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =299
+                    LayoutCachedTop =3599
+                    LayoutCachedWidth =6677
+                    LayoutCachedHeight =6149
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin OptionGroup
+                    TabStop = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    Left =150
+                    Top =3420
+                    Width =7789
+                    Height =2876
+                    TabIndex =3
+                    BorderColor =-2147483602
+                    Name ="Marco103"
+                    GUID = Begin
+                        0x3467db141771f94db91d452ce27d9785
+                    End
+
+                    LayoutCachedLeft =150
+                    LayoutCachedTop =3420
+                    LayoutCachedWidth =7939
+                    LayoutCachedHeight =6296
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin OptionGroup
+                    TabStop = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    Left =150
+                    Top =2625
+                    Width =7789
+                    Height =684
+                    TabIndex =4
+                    BorderColor =-2147483602
+                    Name ="Marco104"
+                    GUID = Begin
+                        0xe3477b11b313b84a9cca8f67ab5eba22
+                    End
+
+                    LayoutCachedLeft =150
+                    LayoutCachedTop =2625
+                    LayoutCachedWidth =7939
+                    LayoutCachedHeight =3309
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1157
+                    Top =2775
+                    Width =6167
+                    Height =297
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="TituloDoc"
+                    StatusBarText ="Nombre descriptivo del documento que vamos a anexar"
+                    ControlTipText ="Nombre que va a tener el anexo"
+                    GUID = Begin
+                        0x5e57145f8e5e5942992302b6cd3a5573
+                    End
+
+                    LayoutCachedLeft =1157
+                    LayoutCachedTop =2775
+                    LayoutCachedWidth =7324
+                    LayoutCachedHeight =3072
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =6855
+                    Top =5743
+                    Width =930
+                    Height =405
+                    FontWeight =700
+                    TabIndex =5
+                    ForeColor =683236
+                    Name ="ComandoEliminarDocumento"
+                    Caption ="Eliminar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xadf5563853072745a2cacaebfbed254e
+                    End
+
+                    LayoutCachedLeft =6855
+                    LayoutCachedTop =5743
+                    LayoutCachedWidth =7785
+                    LayoutCachedHeight =6148
+                    ForeThemeColorIndex =9
+                    ForeTint =100.0
+                    ForeShade =75.0
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =7365
+                    Top =6544
+                    Width =578
+                    Height =578
+                    FontWeight =700
+                    TabIndex =2
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir"
+                    GUID = Begin
+                        0xf3a6d6a61b298247a4897659ccd3130f
+                    End
+
+                    LayoutCachedLeft =7365
+                    LayoutCachedTop =6544
+                    LayoutCachedWidth =7943
+                    LayoutCachedHeight =7122
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =299
+                    Top =2775
+                    Width =750
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta142"
+                    Caption ="TÍTULO"
+                    GUID = Begin
+                        0x4bf7b5a58f481549afc281a489e4f5fd
+                    End
+                    LayoutCachedLeft =299
+                    LayoutCachedTop =2775
+                    LayoutCachedWidth =1049
+                    LayoutCachedHeight =3072
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin OptionGroup
+                    TabStop = NotDefault
+                    SpecialEffect =0
+                    OverlapFlags =93
+                    Left =150
+                    Top =835
+                    Width =7789
+                    Height =1549
+                    TabIndex =6
+                    BorderColor =-2147483602
+                    Name ="Marco3"
+                    GUID = Begin
+                        0xe1b5427bd18dfb439b3940bb212c9c82
+                    End
+
+                    LayoutCachedLeft =150
+                    LayoutCachedTop =835
+                    LayoutCachedWidth =7939
+                    LayoutCachedHeight =2384
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =300
+                    Top =990
+                    Width =825
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta4"
+                    Caption ="EVENTO"
+                    GUID = Begin
+                        0x45772f01815bd14e9d8bed75a08e5645
+                    End
+                    LayoutCachedLeft =300
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =1125
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1157
+                    Top =983
+                    Width =1491
+                    Height =297
+                    TabIndex =7
+                    BackColor =15921906
+                    BorderColor =14136213
+                    ForeColor =10921638
+                    Name ="IDEVENTO"
+                    Tag ="FIJOS"
+                    ControlTipText ="Nombre que va a tener el anexo"
+                    GUID = Begin
+                        0x74db7ee8d26efe489971c789341c2077
+                    End
+
+                    LayoutCachedLeft =1157
+                    LayoutCachedTop =983
+                    LayoutCachedWidth =2648
+                    LayoutCachedHeight =1280
+                    BackShade =95.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    ForeShade =65.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =3960
+                    Top =990
+                    Width =1095
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta6"
+                    Caption ="ACTIVIDAD"
+                    GUID = Begin
+                        0x9ad457a46279134db538259cfdd39c59
+                    End
+                    LayoutCachedLeft =3960
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =5055
+                    LayoutCachedHeight =1287
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =5160
+                    Top =990
+                    Width =2629
+                    Height =297
+                    TabIndex =8
+                    BackColor =15921906
+                    BorderColor =14136213
+                    ForeColor =10921638
+                    Name ="IDActividad"
+                    Tag ="FIJOS"
+                    ControlTipText ="Nombre que va a tener el anexo"
+                    GUID = Begin
+                        0x165d1fef56bfa345a388683419b78c6d
+                    End
+
+                    LayoutCachedLeft =5160
+                    LayoutCachedTop =990
+                    LayoutCachedWidth =7789
+                    LayoutCachedHeight =1287
+                    BackShade =95.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    ForeShade =65.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =300
+                    Top =1407
+                    Width =1005
+                    Height =297
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta8"
+                    Caption ="MATERIAL"
+                    GUID = Begin
+                        0x4914044b07f57849a4bd89181c3cd28c
+                    End
+                    LayoutCachedLeft =300
+                    LayoutCachedTop =1407
+                    LayoutCachedWidth =1305
+                    LayoutCachedHeight =1704
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1395
+                    Top =1410
+                    Width =2781
+                    Height =297
+                    TabIndex =9
+                    BackColor =15921906
+                    BorderColor =14136213
+                    ForeColor =10921638
+                    Name ="IDMaterial"
+                    Tag ="FIJOS"
+                    ControlTipText ="Nombre que va a tener el anexo"
+                    GUID = Begin
+                        0x3990b94a8da9c349beb662e80e47c46a
+                    End
+
+                    LayoutCachedLeft =1395
+                    LayoutCachedTop =1410
+                    LayoutCachedWidth =4176
+                    LayoutCachedHeight =1707
+                    BackShade =95.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    ForeShade =65.0
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =345
+                    Top =60
+                    Width =6810
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="ANEXOS"
+                    GUID = Begin
+                        0xc7871e3abc975a4997cb769118ef4ecc
+                    End
+                    LayoutCachedLeft =345
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =7155
+                    LayoutCachedHeight =720
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =300
+                    Width =6810
+                    Height =660
+                    FontSize =25
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="ANEXOS"
+                    GUID = Begin
+                        0xf8765e0278ee9c45a4c870b00e56587e
+                    End
+                    LayoutCachedLeft =300
+                    LayoutCachedWidth =7110
+                    LayoutCachedHeight =660
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =6855
+                    Top =3599
+                    Width =930
+                    Height =405
+                    FontWeight =700
+                    TabIndex =10
+                    Name ="ComandoAnexo"
+                    Caption ="Anexo"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0xbb9d87593ac68f47bbf07a8380914ab2
+                    End
+
+                    LayoutCachedLeft =6855
+                    LayoutCachedTop =3599
+                    LayoutCachedWidth =7785
+                    LayoutCachedHeight =4004
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =6855
+                    Top =5115
+                    Width =930
+                    Height =405
+                    FontWeight =700
+                    TabIndex =11
+                    Name ="ComandoParte"
+                    Caption ="Parte"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x2a0fed9a643c764fad17ed8d560f118a
+                    End
+
+                    LayoutCachedLeft =6855
+                    LayoutCachedTop =5115
+                    LayoutCachedWidth =7785
+                    LayoutCachedHeight =5520
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =4320
+                    Top =1410
+                    Width =780
+                    Height =300
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta12"
+                    Caption ="SubCon"
+                    GUID = Begin
+                        0x38e31e580eb6f1469a6c82708feb28a6
+                    End
+                    LayoutCachedLeft =4320
+                    LayoutCachedTop =1410
+                    LayoutCachedWidth =5100
+                    LayoutCachedHeight =1710
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =5160
+                    Top =1407
+                    Width =2629
+                    Height =297
+                    TabIndex =12
+                    BackColor =15921906
+                    BorderColor =14136213
+                    ForeColor =10921638
+                    Name ="IDSubContratacion"
+                    Tag ="FIJOS"
+                    ControlTipText ="Nombre que va a tener el anexo"
+                    GUID = Begin
+                        0x89143fc8c329444d929fb1f897de9a74
+                    End
+
+                    LayoutCachedLeft =5160
+                    LayoutCachedTop =1407
+                    LayoutCachedWidth =7789
+                    LayoutCachedHeight =1704
+                    BackShade =95.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    ForeShade =65.0
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =7488
+                    Top =2775
+                    Width =297
+                    Height =297
+                    FontWeight =700
+                    TabIndex =13
+                    Name ="ComandoAnexar"
+                    Caption ="Adjuntar"
+                    OnClick ="[Event Procedure]"
+                    PictureData = Begin
+                        0x2800000010000000100000000100040000000000800000000000000000000000 ,
+                        0x0000000000000000000000000000800000800000008080008000000080008000 ,
+                        0x8080000080808000c0c0c0000000ff00c0c0c00000ffff00ff000000c0c0c000 ,
+                        0xffff0000ffffff00dadadadadadadadaadadadadadadadad00000000000adada ,
+                        0x003333333330adad0b03333333330ada0fb03333333330ad0bfb03333333330a ,
+                        0x0fbfb000000000000bfbfbfbfb0adada0fbfbfbfbf0dadad0bfb0000000adada ,
+                        0xa000adadadad000ddadadadadadad00aadadadad0dad0d0ddadadadad000dada ,
+                        0xadadadadadadadad
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x46c6443fab809e40bc62e95764ee84aa
+                    End
+
+                    LayoutCachedLeft =7488
+                    LayoutCachedTop =2775
+                    LayoutCachedWidth =7785
+                    LayoutCachedHeight =3072
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =300
+                    Top =1827
+                    Width =1425
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta15"
+                    Caption ="MATERIAL SEG"
+                    GUID = Begin
+                        0x19f99d129bb2ec4ba654260f62bd6c04
+                    End
+                    LayoutCachedLeft =300
+                    LayoutCachedTop =1827
+                    LayoutCachedWidth =1725
+                    LayoutCachedHeight =2142
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =1860
+                    Top =1830
+                    Width =3261
+                    Height =297
+                    TabIndex =14
+                    BackColor =15921906
+                    BorderColor =14136213
+                    ForeColor =10921638
+                    Name ="IDMaterialSeguimiento"
+                    Tag ="FIJOS"
+                    ControlTipText ="Nombre que va a tener el anexo"
+                    GUID = Begin
+                        0x7ac44369e4cca446a69104a02cee37c9
+                    End
+
+                    LayoutCachedLeft =1860
+                    LayoutCachedTop =1830
+                    LayoutCachedWidth =5121
+                    LayoutCachedHeight =2127
+                    BackShade =95.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    ForeShade =65.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =1
+                    Left =5805
+                    Top =1830
+                    Width =780
+                    Height =300
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta17"
+                    Caption ="Gasto"
+                    GUID = Begin
+                        0xf8fcc5c2a4f47a48a626a88a8168f839
+                    End
+                    LayoutCachedLeft =5805
+                    LayoutCachedTop =1830
+                    LayoutCachedWidth =6585
+                    LayoutCachedHeight =2130
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    Locked = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =6765
+                    Top =1830
+                    Width =1024
+                    Height =297
+                    TabIndex =15
+                    BackColor =15921906
+                    BorderColor =14136213
+                    ForeColor =10921638
+                    Name ="IDGasto"
+                    Tag ="FIJOS"
+                    ControlTipText ="Nombre que va a tener el anexo"
+                    GUID = Begin
+                        0x674d577c8dc2d04f9540456b82b85c36
+                    End
+
+                    LayoutCachedLeft =6765
+                    LayoutCachedTop =1830
+                    LayoutCachedWidth =7789
+                    LayoutCachedHeight =2127
+                    BackShade =95.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    ForeShade =65.0
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =215
+                    Left =6855
+                    Top =4124
+                    Width =930
+                    Height =405
+                    FontWeight =700
+                    TabIndex =16
+                    Name ="ComandoResubir"
+                    Caption ="Resubir"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x618bfe6fe0eafa4d8b42383fbf5ea8af
+                    End
+
+                    LayoutCachedLeft =6855
+                    LayoutCachedTop =4124
+                    LayoutCachedWidth =7785
+                    LayoutCachedHeight =4529
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private m_Error As String
+Private fso As New FileSystemObject
+Private m_TipoAnexo As EnumTipoAnexo
+Private m_ID As String
+Private m_URLAnexo As String
+Private m_URLParteEvento As String
+Private m_IDAnexoElegido As String
+
+Private lst As ListBox
+Private m_Escritura As String
+Private m_FormularioQueAbre As String
+Private m_ObjAnexo As Anexo
+Private m_ObjAnexoSeleccionado As Anexo
+
+
+Private Sub ComandoAnexar_Click()
+    
+    Dim m_URL As String
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    
+    If Nz(Me.TituloDoc, "") = "" Then
+        m_Error = "El título es obligatorio"
+        Err.Raise 1000
+    End If
+    Set m_ObjAnexo = New Anexo
+    AsignarTipoAnexo m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    m_ObjAnexo.Titulo = Nz(Me.TituloDoc, "")
+    Me.ComandoEliminarDocumento.Enabled = False
+    Me.ComandoAnexo.Enabled = False
+    Me.ComandoParte.Enabled = False
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    m_URL = Seleccionar(True, "Seleccione el archivo a anexar")
+    If Not fso.FileExists(m_URL) Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_ObjAnexo.Registrar m_URL, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    EstablecerLista EnumSino.Sí, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If FormularioAbierto("FormEventoGestion") Then
+        If m_ObjAnexo.TipoAnexo = EnumTipoAnexo.Evento Then
+            Form_FormEventoGestion.ListaEventos_Click
+        ElseIf m_ObjAnexo.TipoAnexo = EnumTipoAnexo.Actividad Then
+            Form_FormEventoGestion.ListaActividades_Click
+        ElseIf m_ObjAnexo.TipoAnexo = EnumTipoAnexo.Material Then
+            Form_FormEventoGestion.ListaMateriales_Click
+        End If
+    End If
+        
+    If FormularioAbierto("FormActividadGestion") Then
+        Form_FormActividadGestion.ListaFiltrados_Click
+    End If
+    Me.TituloDoc = Null
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAnexar_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+Private Sub cmdSalir_Click()
+   
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    If FormularioAbierto(m_FormularioQueAbre) Then
+        DoCmd.Close acForm, m_FormularioQueAbre, acSaveNo
+    End If
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub
+Private Sub ComandoAnexo_Click()
+    
+    Dim m_URL As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    If m_ObjAnexoSeleccionado Is Nothing Then
+        If Nz(Me.ListaDocumentos.Column(0), "") <> "" Then
+            Set m_ObjAnexoSeleccionado = Constructor.getAnexo(Me.ListaDocumentos.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+    End If
+    m_URL = m_ObjAnexoSeleccionado.URLAnexo
+    m_Error = m_ObjAnexoSeleccionado.Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If Not fso.FileExists(m_URL) Then
+        m_Error = "Parece que el archivo no se pudo subir en su momento. Tiene que resubirlo"
+        Err.Raise 1000
+    End If
+    flag = AbrirEnLocal(m_URL, Me.hWnd)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        m_Error = "El método AbrirEnLocal ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAnexo_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoEliminarDocumento_Click()
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    
+    m_Error = ""
+    If m_ObjAnexoSeleccionado Is Nothing Then
+        If Nz(Me.ListaDocumentos.Column(0), "") <> "" Then
+            Set m_ObjAnexoSeleccionado = Constructor.getAnexo(Me.ListaDocumentos.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+        If m_ObjAnexoSeleccionado Is Nothing Then
+            m_Error = "Seleccione un documento de la lista"
+            Err.Raise 1000
+        End If
+    End If
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    pregunta = MsgBox("¿Desea realmente eliminar el anexo llamado : " & m_ObjAnexoSeleccionado.NombreArchivo & _
+                        " definitivamente, tanto del disco duro como del registro de la base de datos?", _
+                        vbExclamation + vbYesNo + vbDefaultButton2, "Eliminación de anexo")
+    If pregunta <> vbYes Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_ObjAnexoSeleccionado.Eliminar m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Set m_ObjAnexoSeleccionado = Nothing
+    EstablecerLista EnumSino.Sí, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If FormularioAbierto("FormEventoGestion") Then
+        If m_ObjAnexo.TipoAnexo = EnumTipoAnexo.Evento Then
+            Form_FormEventoGestion.ListaEventos_Click
+        ElseIf m_ObjAnexo.TipoAnexo = EnumTipoAnexo.Actividad Then
+            Form_FormEventoGestion.ListaActividades_Click
+        ElseIf m_ObjAnexo.TipoAnexo = EnumTipoAnexo.Material Then
+            Form_FormEventoGestion.ListaMateriales_Click
+        End If
+    End If
+        
+    If FormularioAbierto("FormActividadGestion") Then
+        Form_FormActividadGestion.ListaFiltrados_Click
+    End If
+    Me.TituloDoc = Null
+    Me.ListaDocumentos.Requery
+    Me.ComandoAnexo.Enabled = False
+    Me.ComandoParte.Enabled = False
+    Me.ComandoEliminarDocumento.Enabled = False
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEliminarDocumento_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+Private Sub ComandoParte_Click()
+    
+    Dim m_Parte As Parte
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If Not TypeOf m_ObjEntidadParaAnexoActiva Is Evento Then
+        m_Error = "La entidad del anexo no es un evento"
+        Err.Raise 1000
+    End If
+    Set m_Parte = m_ObjEntidadParaAnexoActiva.Parte
+    m_Error = m_ObjEntidadParaAnexoActiva.Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_Parte Is Nothing Then
+        m_Error = "El evento no tiene parte registrado"
+        Err.Raise 1000
+    End If
+    
+    flag = AbrirEnLocal(m_Parte.URLParte, Me.hWnd)
+    If InStr(1, flag, "|") <> 0 Then
+        dato = Split(flag, "|")
+        m_Error = "El método AbrirEnLocal ha devuelto el error: " & vbNewLine & dato(1)
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoParte_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoResubir_Click()
+    Dim m_URL As String
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    If m_ObjAnexoSeleccionado Is Nothing Then
+        If Nz(Me.ListaDocumentos.Column(0), "") <> "" Then
+            Set m_ObjAnexoSeleccionado = Constructor.getAnexo(Me.ListaDocumentos.Column(0), m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    m_URL = Seleccionar(True, "Seleccione el archivo a Resubir")
+    If Not fso.FileExists(m_URL) Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_ObjAnexoSeleccionado.Resubir m_URL, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    EstablecerLista EnumSino.Sí, m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoResubir_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    
+    AjustarTamaño Me
+    m_Error = ""
+    
+    m_FormularioQueAbre = Nz(OpenArgs, "")
+    Me.Caption = Me.lblTitulo1.Caption
+    If m_ObjEntidadParaAnexoActiva Is Nothing Then
+        m_Error = "No se ha abierto el formulario con los datos necesarios"
+        Err.Raise 1000
+    End If
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Open se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Function EstablecerDatos(Optional ByRef p_Error As String) As String
+    
+    Dim m_Parte As Parte
+    On Error GoTo errores
+    
+    p_Error = ""
+    Me.ComandoAnexo.Enabled = False
+    Me.ComandoParte.Enabled = False
+    Me.ComandoEliminarDocumento.Enabled = False
+    Me.IDActividad.Enabled = True
+    Me.IDActividad.Locked = True
+    Me.IDEVENTO.Enabled = True
+    Me.IDEVENTO.Locked = True
+    Me.IDMaterial.Enabled = True
+    Me.IDMaterial.Locked = True
+    Me.IDSubContratacion.Enabled = True
+    Me.IDSubContratacion.Locked = True
+    Me.IDGasto.Enabled = True
+    Me.IDGasto.Locked = True
+    Me.IDMaterialSeguimiento.Enabled = True
+    Me.IDMaterialSeguimiento.Locked = True
+    
+    Set m_ObjAnexo = New Anexo
+    If TypeOf m_ObjEntidadParaAnexoActiva Is Evento Then
+        Me.IDEVENTO = m_ObjEntidadParaAnexoActiva.IDEVENTO
+        m_ObjAnexo.IDEVENTO = m_ObjEntidadParaAnexoActiva.IDEVENTO
+        Set m_ObjAnexo.Evento = m_ObjEntidadParaAnexoActiva
+        Set m_Parte = m_ObjEntidadParaAnexoActiva.Parte
+        p_Error = m_ObjEntidadParaAnexoActiva.Error
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+        If Not m_Parte Is Nothing Then
+            If m_Parte.URLParte <> "" Then
+                Me.ComandoParte.Enabled = True
+            End If
+        End If
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Actividad Then
+        Me.IDActividad = m_ObjEntidadParaAnexoActiva.IDActividad
+        m_ObjAnexo.IDActividad = m_ObjEntidadParaAnexoActiva.IDActividad
+        Set m_ObjAnexo.Actividad = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Material Then
+        Me.IDMaterial = m_ObjEntidadParaAnexoActiva.IDMaterial
+        m_ObjAnexo.IDMaterial = m_ObjEntidadParaAnexoActiva.IDMaterial
+        Set m_ObjAnexo.Material = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is MaterialSeguimiento Then
+        Me.IDMaterialSeguimiento = m_ObjEntidadParaAnexoActiva.IDMaterialSeguimiento
+        m_ObjAnexo.IDMaterialSeguimiento = m_ObjEntidadParaAnexoActiva.IDMaterialSeguimiento
+        Set m_ObjAnexo.MaterialSeg = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Subcontratacion Then
+        Me.IDSubContratacion = m_ObjEntidadParaAnexoActiva.IDSubContratacion
+        m_ObjAnexo.IDSubContratacion = m_ObjEntidadParaAnexoActiva.IDSubContratacion
+        Set m_ObjAnexo.Subcontratacion = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Gasto Then
+        Me.IDGasto = m_ObjEntidadParaAnexoActiva.IDGasto
+        m_ObjAnexo.IDGasto = m_ObjEntidadParaAnexoActiva.IDGasto
+        Set m_ObjAnexo.Gasto = m_ObjEntidadParaAnexoActiva
+    Else
+        p_Error = "Tipo de Anexo no reconocido"
+        Err.Raise 1000
+    End If
+    
+    
+    EstablecerLista EnumSino.No, p_Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    EstablecerDatos = "OK"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerDatos ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+End Function
+
+Private Function AsignarTipoAnexo(Optional ByRef p_Error As String) As String
+    
+    Dim m_Parte As Parte
+    On Error GoTo errores
+    
+    p_Error = ""
+   
+    
+    Set m_ObjAnexo = New Anexo
+    If TypeOf m_ObjEntidadParaAnexoActiva Is Evento Then
+        Me.IDEVENTO = m_ObjEntidadParaAnexoActiva.IDEVENTO
+        m_ObjAnexo.IDEVENTO = m_ObjEntidadParaAnexoActiva.IDEVENTO
+        Set m_ObjAnexo.Evento = m_ObjEntidadParaAnexoActiva
+        
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Actividad Then
+        Me.IDActividad = m_ObjEntidadParaAnexoActiva.IDActividad
+        m_ObjAnexo.IDActividad = m_ObjEntidadParaAnexoActiva.IDActividad
+        Set m_ObjAnexo.Actividad = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Material Then
+        Me.IDMaterial = m_ObjEntidadParaAnexoActiva.IDMaterial
+        m_ObjAnexo.IDMaterial = m_ObjEntidadParaAnexoActiva.IDMaterial
+        Set m_ObjAnexo.Material = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is MaterialSeguimiento Then
+        Me.IDMaterialSeguimiento = m_ObjEntidadParaAnexoActiva.IDMaterialSeguimiento
+        m_ObjAnexo.IDMaterialSeguimiento = m_ObjEntidadParaAnexoActiva.IDMaterialSeguimiento
+        Set m_ObjAnexo.MaterialSeg = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Subcontratacion Then
+        Me.IDSubContratacion = m_ObjEntidadParaAnexoActiva.IDSubContratacion
+        m_ObjAnexo.IDSubContratacion = m_ObjEntidadParaAnexoActiva.IDSubContratacion
+        Set m_ObjAnexo.Subcontratacion = m_ObjEntidadParaAnexoActiva
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Gasto Then
+        Me.IDGasto = m_ObjEntidadParaAnexoActiva.IDGasto
+        m_ObjAnexo.IDGasto = m_ObjEntidadParaAnexoActiva.IDGasto
+        Set m_ObjAnexo.Gasto = m_ObjEntidadParaAnexoActiva
+    Else
+        p_Error = "Tipo de Anexo no reconocido"
+        Err.Raise 1000
+    End If
+    
+    
+    AsignarTipoAnexo = "OK"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método AsignarTipoAnexo ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+End Function
+Private Sub ListaDocumentos_Click()
+    
+    Dim m_ID As String
+    On Error GoTo errores
+    
+    m_Error = ""
+    Me.ComandoResubir.Enabled = False
+    Me.ComandoEliminarDocumento.Enabled = False
+    Me.ComandoAnexo.Enabled = False
+    m_ID = Nz(Me.ListaDocumentos.Column(0), "")
+    If m_ID = "" Then
+        Set m_ObjAnexoSeleccionado = Nothing
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    If m_ObjAnexoSeleccionado Is Nothing Then
+        Set m_ObjAnexoSeleccionado = Constructor.getAnexo(m_ID, m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    Else
+        If m_ObjAnexoSeleccionado.IDAnexo <> m_ID Then
+            Set m_ObjAnexoSeleccionado = Constructor.getAnexo(m_ID, m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+        End If
+    End If
+    If m_ObjAnexoSeleccionado Is Nothing Then
+        Exit Sub
+    End If
+    Me.ComandoEliminarDocumento.Enabled = True
+    Me.ComandoAnexo.Enabled = True
+    If Not fso.FileExists(m_ObjAnexoSeleccionado.URLAnexo) Then
+        Me.ComandoResubir.Enabled = True
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ListaDocumentos_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Function ActualizarEntidad( _
+                                    Optional ByRef p_Error As String) As String
+    
+   
+    
+    On Error GoTo errores
+    
+   If TypeOf m_ObjEntidadParaAnexoActiva Is Evento Then
+        Set m_ObjEntidadParaAnexoActiva = Constructor.getEvento(m_ObjEntidadParaAnexoActiva.IDEVENTO, p_Error)
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Actividad Then
+        Set m_ObjEntidadParaAnexoActiva = Constructor.getActividad(m_ObjEntidadParaAnexoActiva.IDActividad, p_Error)
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Material Then
+        Set m_ObjEntidadParaAnexoActiva = Constructor.getMaterial(m_ObjEntidadParaAnexoActiva.IDMaterial, p_Error)
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is MaterialSeguimiento Then
+        Set m_ObjEntidadParaAnexoActiva = Constructor.getMaterialSeguimiento(m_ObjEntidadParaAnexoActiva.IDMaterialSeguimiento, p_Error)
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Subcontratacion Then
+        Set m_ObjEntidadParaAnexoActiva = Constructor.getSubContratacion(m_ObjEntidadParaAnexoActiva.IDSubContratacion, p_Error)
+    ElseIf TypeOf m_ObjEntidadParaAnexoActiva Is Gasto Then
+        Set m_ObjEntidadParaAnexoActiva = Constructor.getGasto(m_ObjEntidadParaAnexoActiva.IDGasto, p_Error)
+    End If
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método ActualizarEntidad se ha devuelto el error: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+    End If
+    
+End Function
+
+Private Function EstablecerLista( _
+                                    Optional p_Actualizando As EnumSino = EnumSino.No, _
+                                    Optional ByRef p_Error As String) As String
+    
+    Dim m_Col As Scripting.Dictionary
+    Dim m_ID As Variant
+    Dim lst As ListBox
+    Dim m_ObjAnexoEnLista As Anexo
+    
+    On Error GoTo errores
+    
+    p_Error = ""
+    If p_Actualizando = EnumSino.Sí Then
+        ActualizarEntidad p_Error
+        If p_Error <> "" Then
+            Err.Raise 1000
+        End If
+    End If
+    Set lst = Me.ListaDocumentos
+    lst.RowSource = "ID;IDAnexo;Título;Archivo"
+    Set m_Col = m_ObjEntidadParaAnexoActiva.ColAnexos
+    p_Error = m_ObjEntidadParaAnexoActiva.Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    If m_Col Is Nothing Then
+        Exit Function
+    End If
+    For Each m_ID In m_Col
+        Set m_ObjAnexoEnLista = m_Col(m_ID)
+        With m_ObjAnexoEnLista
+            lst.AddItem .IDAnexo & ";" & .Titulo & ";" & .NombreArchivo
+        End With
+        Set m_ObjAnexoEnLista = Nothing
+    Next
+    
+    If lst.ListCount = 2 Then
+        lst.Selected(1) = True
+        ListaDocumentos_Click
+    
+    End If
+    
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerLista se ha devuelto el error: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+    End If
+    
+End Function

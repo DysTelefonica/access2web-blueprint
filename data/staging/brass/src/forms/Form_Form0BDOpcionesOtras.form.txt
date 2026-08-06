@@ -1,0 +1,2073 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =1806033951
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =10256
+    DatasheetFontHeight =11
+    ItemSuffix =23
+    Left =1680
+    Right =11940
+    Bottom =8175
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0xdd9a30195bafde499992eb237c07e976
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="OTRAS OPCIONES"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000000000c8420000c842eeece100606fff272702000090dc7981f97f0000 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x08001a0024000100000000000000000000000000000000000000000000000000 ,
+        0x00000000433a5c50726f6772616d446174615c54656368536d6974685c536e61 ,
+        0x6769742031315c5072696e746572506f727446696c6500
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x0400160020000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x43003a005c00500072006f006700720061006d0044006100740061005c005400 ,
+        0x65006300680053006d006900740068005c0053006e0061006700690074002000 ,
+        0x310031005c005000720069006e0074006500720050006f007200740046006900 ,
+        0x6c0065000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Line
+            BorderLineStyle =0
+            Width =1701
+            GridlineColor =10921638
+            BorderThemeColorIndex =0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin UnboundObjectFrame
+            SpecialEffect =2
+            OldBorderStyle =1
+            Width =4536
+            Height =2835
+            BorderColor =10921638
+            ForeColor =4138256
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =5786
+            Name ="Detalle"
+            OnDblClick ="[Event Procedure]"
+            OnMouseMove ="[Event Procedure]"
+            GUID = Begin
+                0xe53b20ac3e9e394695726c4156c0f864
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =5100
+                    Width =10256
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro1"
+                    GUID = Begin
+                        0x34daf379d27e924381698fdf37f70d9a
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =5100
+                    LayoutCachedWidth =10256
+                    LayoutCachedHeight =5786
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =750
+                    Top =1020
+                    Width =1500
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionNodos"
+                    Caption ="Nodos"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los Nodos"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0xd1901e99718fb4429111236ff6f0fd60
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =1020
+                    LayoutCachedWidth =2250
+                    LayoutCachedHeight =1425
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =750
+                    Top =1590
+                    Width =1350
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionBUI"
+                    Caption ="BUI'S"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los BUIS"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0xe09e293a6662084bbe2cc455edfdd498
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =1590
+                    LayoutCachedWidth =2100
+                    LayoutCachedHeight =1995
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =750
+                    Top =2162
+                    Width =2235
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionSubSistemas"
+                    Caption ="SubSistemas"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los SubSistemas"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0xea4b15bf4be51a48b6edb3c9f560c151
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =2162
+                    LayoutCachedWidth =2985
+                    LayoutCachedHeight =2567
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =750
+                    Top =2732
+                    Width =1920
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionIDEquipos"
+                    Caption ="Equipos"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los IDEquipos"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0x5f7cbed52d5024408905cc5b3042c650
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =2732
+                    LayoutCachedWidth =2670
+                    LayoutCachedHeight =3137
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =750
+                    Top =3868
+                    Width =2280
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionOriginadores"
+                    Caption ="Originadores"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los Originadores"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0x9f0041fa09d6c348beab7f0e1c897a39
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =3868
+                    LayoutCachedWidth =3030
+                    LayoutCachedHeight =4273
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6496
+                    Top =1020
+                    Width =2250
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionTipoEventos"
+                    Caption ="Tipo Eventos"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los Originadores"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0xc21b81fe50db72429bb0a6986bd8e9cc
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6496
+                    LayoutCachedTop =1020
+                    LayoutCachedWidth =8746
+                    LayoutCachedHeight =1425
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6496
+                    Top =1590
+                    Width =2970
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblRelacionNodoBUI"
+                    Caption ="Relación Nodo-BUI"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los Originadores"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0x08d4d23642afee44912a6064a80d6e8a
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6496
+                    LayoutCachedTop =1590
+                    LayoutCachedWidth =9466
+                    LayoutCachedHeight =1995
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6496
+                    Top =2162
+                    Width =3210
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionUbicaciones"
+                    Caption ="Ubicaciones"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0x7b4ac99b9bb39842a032777a47f1eb1b
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6496
+                    LayoutCachedTop =2162
+                    LayoutCachedWidth =9706
+                    LayoutCachedHeight =2567
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6496
+                    Top =2732
+                    Width =2580
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblGestionTipoActividad"
+                    Caption ="Tipo Actividad"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los Originadores"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0x04ce60ee96dbbb42815d7c307f3af76a
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6496
+                    LayoutCachedTop =2732
+                    LayoutCachedWidth =9076
+                    LayoutCachedHeight =3137
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6496
+                    Top =3300
+                    Width =2475
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblCalibraciones"
+                    Caption ="Calibraciones"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los pedidos"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0x2a7ab0b9d2bd6d47a941ca5a71832368
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6496
+                    LayoutCachedTop =3300
+                    LayoutCachedWidth =8971
+                    LayoutCachedHeight =3705
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =9529
+                    Top =5139
+                    Width =578
+                    Height =578
+                    FontWeight =700
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir del formulario"
+                    GUID = Begin
+                        0x8084c3dade243141b96d0d4947662c33
+                    End
+
+                    LayoutCachedLeft =9529
+                    LayoutCachedTop =5139
+                    LayoutCachedWidth =10107
+                    LayoutCachedHeight =5717
+                    UseTheme =255
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Width =10256
+                    Height =686
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0x4fc3699ca0aef24196666213c9e50a10
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =10256
+                    LayoutCachedHeight =686
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =60
+                    Width =9750
+                    Height =615
+                    FontSize =23
+                    FontWeight =700
+                    LeftMargin =285
+                    BackColor =8210719
+                    BorderColor =13209
+                    ForeColor =16777215
+                    Name ="lbTitulo"
+                    Caption ="OTRAS OPCIONES"
+                    GUID = Begin
+                        0x8e9b6b96d271854b831e97c9da30e787
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =60
+                    LayoutCachedWidth =9810
+                    LayoutCachedHeight =615
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =226
+                    Top =1020
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente3"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f976d4cb4957d8a5b357d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xb4957dffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fb4957dffffff976d4c7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fb4957dffffff976d ,
+                        0x4c7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491fb4957dffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491fb4957dffffff976d4c7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fb4957dff ,
+                        0xffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb4957dffffff976d4c7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f83522a7d491f7d491fb4957dffffff976d4c7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491f7d491fb4957dd6c5b8976d4c ,
+                        0xb4957dffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f906440e0d4caffffffe0d4caffffff976d4c7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4ac99ffffffffffff976d ,
+                        0x4c7d491f7d491f7d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491fc4ac99ffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491fb4957d8a5b357d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x77682c3faf0cd040b1d6bc79b8bcf410
+                    End
+
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =1020
+                    LayoutCachedWidth =631
+                    LayoutCachedHeight =1425
+                    TabIndex =1
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =226
+                    Top =1590
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente5"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491fb4957db4957db4957db4957db4957db4957db4957db4957d ,
+                        0x976d4c7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491fe0d4caffffffffffffffffff ,
+                        0xffffffffffffffffffffffffb4957d7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0xac8b70ffffffcdb8a8b4957db4957db4957db4957db4957d976d4c7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491fe0d4caffffff9064407d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491f7d491f83522ae0d4 ,
+                        0xcaffffffac8b707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f83522acdb8a8ffffffc4ac997d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fac8b70ff ,
+                        0xffffe0d4ca7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa58164ffffffbba08a7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4ac99ffffff ,
+                        0x83522a7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491fa58164b4957d7d491f7d491f ,
+                        0x7d491f7d491f976d4cffffff976d4c7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0xb4957dffffff976d4c7d491f7d491f7d491fcdb8a8ffffff976d4c7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f8a5b35ffffffffffffc4ac99b4957dd6c5b8ffff ,
+                        0xffffffff7d491f7d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491fa58164ffff ,
+                        0xffffffffffffffffffffffffff9064407d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f8a5b35ac8b70b4957da5816483522a7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x6ea7a7659d77534e95a5dcca98d61a03
+                    End
+
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =1590
+                    LayoutCachedWidth =631
+                    LayoutCachedHeight =1995
+                    TabIndex =2
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =226
+                    Top =2162
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente6"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f8a5b35ac8b70b4957da5816483522a7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491fa58164ffffffffffff ,
+                        0xffffffffffffffffff9e77577d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x8a5b35ffffffffffffc4ac99b4957dcdb8a8ffffffffffff8a5b357d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fb4957dffffffac8b707d491f7d491f7d491fa581 ,
+                        0x64ffffffbba08a7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491fa58164b4957d7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fffffffd6c5b87d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f906440ffffffbba08a7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f976d4c976d4cac ,
+                        0x8b70ffffffffffff8a5b357d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491fb4957dffffffffffffe0d4ca9064407d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f906440b4957dece5deffffff9e7757 ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491fe0d4caece5de7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0x976d4cb4957d83522a7d491f7d491f7d491fe0d4caffffff7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f976d4cffffffece5debba08ab4957dd6c5b8ffff ,
+                        0xffd6c5b87d491f7d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491fac8b70ffff ,
+                        0xffffffffffffffffffffe0d4ca8a5b357d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f8a5b35ac8b70b4957d9e77577d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x93e9c53434c6b1468d69b5b62aaca9ef
+                    End
+
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =2162
+                    LayoutCachedWidth =631
+                    LayoutCachedHeight =2567
+                    TabIndex =3
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =226
+                    Top =2732
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente7"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f976d4cb4957d8a5b35 ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491fb4957dffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491fb4957dffffff976d4c7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fb4957db4957db4957db4957db4957dd6c5b8ffff ,
+                        0xffc4ac99a581647d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491fffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffd6c5b87d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491fffffffece5deb4957db4957db4957dd6c5b8ffffffc4ac99a581647d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f976d4cffffff9e77577d491f7d491fb4 ,
+                        0x957dffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f7d491fb4 ,
+                        0x957dffffff8a5b357d491fb4957dffffff976d4c7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491fe0d4cad6c5b87d491fb4957dffffff976d4c ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491f7d491f7d491f8a5b35ffffff ,
+                        0xb4957db4957dffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f9e7757ffffffd6c5b8ffffff976d4c7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fbba08affffffffff ,
+                        0xff976d4c7d491f7d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f83522ae0d4caffffff976d4c7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f906440b4957d8a5b357d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x3cc65f220a90a1468a6403b92cb41db0
+                    End
+
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =2732
+                    LayoutCachedWidth =631
+                    LayoutCachedHeight =3137
+                    TabIndex =4
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =226
+                    Top =3300
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente8"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f8a5b35ac8b70b4957da5816483522a7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491fa58164ffffffffffff ,
+                        0xffffffffffffffffff9064407d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x8a5b35ffffffffffffc4ac99b4957dd6c5b8ffffffffffff83522a7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fb4957dffffffa581647d491f7d491f7d491fac8b ,
+                        0x70ffffffac8b707d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491fa58164b4957d7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fffffffcdb8a87d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fffffffd6c5b87d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f906440b4957d9064407d491f7d491f7d ,
+                        0x491fac8b70ffffffb4957d7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f976d4cff ,
+                        0xffffffffffc4ac99b4957dc4ac99ffffffffffff8a5b357d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f83522affffffe0d4caffffffffffffffffffffffffa58164 ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491f7d491fece5debba08a8a5b35 ,
+                        0xb4957dac8b708a5b357d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491fcdb8a8d6c5b87d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f7d491fb4957dffffffb4957db4957db4957db495 ,
+                        0x7db4957d7d491f7d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491f9e7757ffff ,
+                        0xffffffffffffffffffffffffffffffff7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f8a5b35b4957db4957db4957db4957db4957db4957d7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x94ef12c75e2cd5439558a332bb72374b
+                    End
+
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =3300
+                    LayoutCachedWidth =631
+                    LayoutCachedHeight =3705
+                    TabIndex =5
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =226
+                    Top =3868
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente9"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f83522aa58164b4957dac8b708a5b357d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491f906440ffffffffffff ,
+                        0xffffffffffffffffffa581647d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x8a5b35ffffffffffffc4ac99b4957dc4ac99ffffffffffff8a5b357d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fbba08affffff9064407d491f7d491f7d491f976d ,
+                        0x4cffffffbba08a7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491fd6c5b8d6c5b87d49 ,
+                        0x1f7d491f7d491f7d491f7d491fffffffd6c5b87d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491fffffffffffff83522a7d491f7d491f7d491f976d4cffffffc4ac997d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491fffffffffffffffffffc4ac99b4957dc4 ,
+                        0xac99ffffffffffff976d4c7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491fffffffd6 ,
+                        0xc5b8c4ac99ffffffffffffffffffffffffa581647d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fe0d4cae0d4ca7d491f906440b4957dac8b708a5b357d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491fcdb8a8ffffff83522a7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0xa58164ffffffcdb8a87d491f7d491f7d491f906440b4957d9064407d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f83522aece5deffffffd6c5b8b4957dbba08affff ,
+                        0xffffffff8a5b357d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491f906440ece5 ,
+                        0xdeffffffffffffffffffffffffa581647d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f83522aa58164b4957dac8b708a5b357d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x7208b34189f5904fbd58d1d7ebeca83b
+                    End
+
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =3868
+                    LayoutCachedWidth =631
+                    LayoutCachedHeight =4273
+                    TabIndex =6
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =5952
+                    Top =1020
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente10"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491fa58164b4957d7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491f7d491fc4ac99ffffff ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491fb4957dffffff9064407d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f976d4cffffffa581647d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1fffffffcdb8a87d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fcdb8a8ffffff83522a7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f9e7757ffffffa5 ,
+                        0x81647d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fece5deece5de7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa58164ffffffa581647d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491fe0d4caffffff83522a7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f906440ffffffcdb8a87d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491fa58164b4957db4957db4957db4957db4957de0d4 ,
+                        0xcaffffffa581647d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491fd6c5b8ffffffffff ,
+                        0xffffffffffffffffffffffffffffffffd6c5b87d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491fa58164b4957db4957db4957db4957db4957db4957db4957da581647d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x763f175b930c4342a89f430025798dbc
+                    End
+
+                    LayoutCachedLeft =5952
+                    LayoutCachedTop =1020
+                    LayoutCachedWidth =6357
+                    LayoutCachedHeight =1425
+                    TabIndex =7
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =5952
+                    Top =1590
+                    Width =405
+                    Height =405
+                    Name ="Imagen14"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f8a5b35ac8b70b4957dac8b708a5b357d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491fa58164ffffffffffff ,
+                        0xffffffffffffffffffa581647d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x976d4cffffffffffffc4ac99b4957dc4ac99ffffffffffff8a5b357d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc4ac99ffffff976d4c7d491f7d491f7d491fa581 ,
+                        0x64ffffffb4957d7d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491fd6c5b8ffffff7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491fb4957dffffff976d4c7d491f7d491f7d491fa58164ffffffac8b707d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f83522affffffffffffc4ac99b4957dc4 ,
+                        0xac99ffffffe0d4ca83522a7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f7d491f83 ,
+                        0x522ae0d4caffffffffffffffffffe0d4ca83522a7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fc4ac99ffffffc4ac99b4957dcdb8a8ffffffc4ac99 ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491f906440ffffffbba08a7d491f ,
+                        0x7d491f7d491fbba08affffff8a5b357d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0x976d4cffffffbba08a7d491f7d491f7d491fbba08affffff9064407d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f7d491fffffffffffffc4ac99b4957dd6c5b8ffff ,
+                        0xffece5de7d491f7d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491f9e7757ffff ,
+                        0xffffffffffffffffffffffffff9064407d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f8a5b35ac8b70b4957da5816483522a7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0xb5be84cc52445b4f8b7f6a82ef26f46e
+                    End
+
+                    LayoutCachedLeft =5952
+                    LayoutCachedTop =1590
+                    LayoutCachedWidth =6357
+                    LayoutCachedHeight =1995
+                    TabIndex =8
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =5952
+                    Top =2162
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente12"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f906440b4957db4957d9e77577d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491fb4957dffffffffffff ,
+                        0xffffffffffffe0d4ca83522a7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x906440ffffffffffffbba08ab4957dece5deffffffcdb8a87d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f906440b4957d9064407d491f7d491f83522ae0d4 ,
+                        0xcaffffff8a5b357d491f7d491f7d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f9e7757ffffffac8b707d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f8a5b35b4957db4957d8a5b3583522affffffbba08a7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491fac8b70ffffffffffffffffffff ,
+                        0xffffac8b70ffffffd6c5b87d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f976d4cff ,
+                        0xffffffffffc4ac99b4957dc4ac99ffffffffffffd6c5b87d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fbba08affffff976d4c7d491f7d491f7d491f976d4cffffff ,
+                        0xcdb8a87d491f7d491f7d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f7d491f7d491fd6c5b8ffffff7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f7d491f ,
+                        0xbba08affffffa581647d491f7d491f7d491f976d4cffffff9e77577d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f976d4cffffffffffffcdb8a8b4957dc4ac99ffff ,
+                        0xffe0d4ca7d491f7d491f7d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491fa58164ffff ,
+                        0xffffffffffffffffffffece5de9064407d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f8a5b35ac8b70b4957d9e77577d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x523b2216b8c89e4f99bf8188e1264135
+                    End
+
+                    LayoutCachedLeft =5952
+                    LayoutCachedTop =2162
+                    LayoutCachedWidth =6357
+                    LayoutCachedHeight =2567
+                    TabIndex =9
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =5952
+                    Top =2732
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente13"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefbfbfbf2f2f2e3e3e3cecece ,
+                        0xb9b9b9a8a8a89b9b9a928c878a786a8a786a928c879b9b9aa8a8a8b9b9b9cece ,
+                        0xcee3e3e3f2f2f2fbfbfbfefefefffffffffffffffffffffffffffefefef9f9f9 ,
+                        0xeeeeeed9d9d9c0c0c0a4a4a3866c587d54307d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d5430866c58a4a4a3c0c0c0d9d9d9eeeeeef9f9f9fefefeffffffff ,
+                        0xfffffffffffffbfbfbeeeeeed5d5d5b6b6b6938b837d4e287d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4e28938b83b6b6b6d5 ,
+                        0xd5d5eeeeeefbfbfbfffffffffffffffdfdfdf2f2f2d9d9d9b5b5b48669527d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f866952b5b5b4d9d9d9f2f2f2fdfdfdfffffffff7f7f7e3e3 ,
+                        0xe3c0c0c0886b547d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f886b54c0c0c0e3e3e3 ,
+                        0xf7f7f7fffcfcfcedededcecece9e968e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f9e968ecececeedededfff8f8f8e1e1e1b8b8b77e4f297d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7e4f29b8b8b7e1e1e1fff3f3f3d6 ,
+                        0xd6d69379657d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f937965d6d6d6ffeeeeeecdcdcd8259357d491f7d491f7d491f7d491f7d491f ,
+                        0x976d4cffffff7d491f7d491f7d491f7d491fa58164ffffffffffffa581647d49 ,
+                        0x1f7d491f7d491f7d491f7d491f825935cdcdcdffeaeaeac4c4c37d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f976d4cffffff7d491f7d491f7d491f906440ffff ,
+                        0xff906440906440ffffff8a5b357d491f7d491f7d491f7d491f7d491fc4c4c3ff ,
+                        0xe7e7e7b9b3ae7d491f7d491f7d491f7d491f7d491f7d491f976d4cffffff7d49 ,
+                        0x1f7d491f7d491fb4957dd6c5b87d491f7d491fd6c5b8b4957d7d491f7d491f7d ,
+                        0x491f7d491f7d491fb9b3aeffe7e7e7a997897d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f976d4cffffff7d491f7d491f7d491fd6c5b8bba08a7d491f7d491fbb ,
+                        0xa08ad6c5b87d491f7d491f7d491f7d491f7d491fa99789ffeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f976d4cffffff7d491f7d491f7d491fd6 ,
+                        0xc5b8b4957d7d491f7d491fb4957dd6c5b87d491f7d491f7d491f7d491f7d491f ,
+                        0xab998bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f976d4cff ,
+                        0xffff7d491f7d491f7d491fd6c5b8b4957d7d491f7d491fb4957dd6c5b87d491f ,
+                        0x7d491f7d491f7d491f7d491fc3bdb8fff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f976d4c8a5b35976d4cffffff7d491f7d491f7d491fd6c5b8c4ac997d491f ,
+                        0x7d491fbba08ad6c5b87d491f7d491f7d491f7d491f7d491fd4d4d3fff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f9e7757ffffffc4ac99ffffff7d491f7d491f ,
+                        0x7d491fb4957dd6c5b87d491f7d491fd6c5b8b4957d7d491f7d491f7d491f7d49 ,
+                        0x1f875e3ae1e1e1fffcfcfcedededa68c787d491f7d491f7d491f7d491f906440 ,
+                        0xffffffffffff7d491f7d491f7d491f8a5b35ffffff906440906440ffffff8a5b ,
+                        0x357d491f7d491f7d491f7d491fa68c78edededfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f906440ffffff7d491f7d491f7d491f7d491fa581 ,
+                        0x64ffffffffffffa581647d491f7d491f7d491f7d491f83542ee1e1e0f7f7f7ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc9c1b9f2f2f2fdfdfdfffffffffffffffbfbfbeeeeeea3866f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491fa3866feeeeeefbfbfbfffffffffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491fa48770ececebf9f9f9fefefe ,
+                        0xfffffffffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f84552fd1c9c1 ,
+                        0xf2f2f2fbfbfbfefefefffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x8c633fb09682ebebeaf7f7f7fdfdfdffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c1afa1ddd7d2ececebf3f3f3f8f8f8fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0xb452adc1e48c0a4fbc31582fddf9a138
+                    End
+
+                    LayoutCachedLeft =5952
+                    LayoutCachedTop =2732
+                    LayoutCachedWidth =6357
+                    LayoutCachedHeight =3137
+                    TabIndex =13
+                End
+                Begin Image
+                    SizeMode =0
+                    Left =5952
+                    Top =3300
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente0"
+                    PictureData = Begin
+                        0x28000000190000001900000001001800000000006c070000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffefefefafafaecececd4d4d4afafaf ,
+                        0x8b8b8b6c6c6b5242354f341d5a34175a34174f2f144c2d135230145b35166544 ,
+                        0x2777604e9c9c9bbdbdbdd8d8d8eeeeeef9f9f9fffffffffffffffefefef9f9f9 ,
+                        0xeaeaeacbcbcba0a0a0767675674b3571431c7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f71431b613818512f145e37176a422289827ab2b2b2d4d4d4eeeeeeff ,
+                        0xfffffffffffffbfbfbecececcacaca9b9b9b6e665e77461f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f76451d53311459341668 ,
+                        0x3d1a7d624db2b2b1d9d9d9fffffffffdfdfdf2f2f2d2d2d2a1a1a07659427d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f653b1a5934166a3e1a816650bebebefffffffff7f7f7e0e0 ,
+                        0xe0b2b2b27c5f487d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f673c1a5e37176f411c ,
+                        0x99918afffcfcfcedededc8c8c88e867e7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f583416653b19754926fff8f8f8e1e1e1afafae7c4d277d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f77451d5b35166e401bfff3f3f3d5 ,
+                        0xd5d58d735f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f673b19693d1affeeeeeecbcbcb7f56327d491f7d491f7d491f7d491f7d491f ,
+                        0x976d4cffffff7d491f7d491f7d491f7d491f7d491f7d491fd6c5b8b4957d7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f73441c643b19ffeaeaeac2c2c17d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f976d4cffffff7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491fd6c5b8b4957d7d491f7d491f7d491f7d491f7d491f7d491f613818ff ,
+                        0xe7e7e7b7b1ac7d491f7d491f7d491f7d491f7d491f7d491f976d4cffffff7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491fd6c5b8b4957d7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f623918ffe7e7e7a795877d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f976d4cffffff7d491f7d491f7d491f7d491f7d491f7d491fd6c5b8b4 ,
+                        0x957d7d491f7d491f7d491f7d491f7d491f7d491f693d1affeaeaeaab998b7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f976d4cffffff7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491fd6c5b8b4957d7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x6a3d1bffeeeeeec3bdb87d491f7d491f7d491f7d491f7d491f7d491f976d4cff ,
+                        0xffff7d491f7d491f7d491f7d491f7d491f7d491fd6c5b8b4957d7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f673d1afff3f3f3d4d4d37d491f7d491f7d491f7d ,
+                        0x491f976d4c8a5b35976d4cffffff7d491f7d491f7d491f7d491fa581647d491f ,
+                        0xd6c5b8b4957d7d491f7d491f7d491f7d491f7d491f7d491f693d1afff8f8f8e1 ,
+                        0xe1e1875e3a7d491f7d491f7d491f9e7757ffffffc4ac99ffffff7d491f7d491f ,
+                        0x7d491f7d491fe0d4cae0d4cae0d4cab4957d7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f76461c6e401bfffcfcfcedededa68c787d491f7d491f7d491f7d491f906440 ,
+                        0xffffffffffff7d491f7d491f7d491f7d491f7d491fc4ac99ffffffb4957d7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f70411c7a4e2bfffffffff7f7f7e1e1e083542e ,
+                        0x7d491f7d491f7d491f7d491f906440ffffff7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491fcdb8a8b4957d7d491f7d491f7d491f7d491f79461d6f411cc3bbb3ff ,
+                        0xfffffffdfdfdf2f2f2c9c1b97d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f6d401b9b7f69ecececfffffffffffffffbfbfbeeeeeea2856e7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f73441d997e69e8e8e7f9f9f9fffffffffffffffefe ,
+                        0xfef9f9f9ececeba487707d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f774823c2bbb2ecececfafafa ,
+                        0xfefefefffffffffffffffffffffefefefbfbfbf2f2f2d1c9c184552f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7b4920977c65 ,
+                        0xdfdfdef3f3f3fcfcfcfffffffffffffffffffffffffffffffffffffffffffffd ,
+                        0xfdfdf7f7f7ebebeab096828c633f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x875d38a78d79e0e0dff0f0f0fafafaffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffffffcfcfcf8f8f8f3f3f3ececebddd7d2 ,
+                        0xc1afa1c0aea0dad4cfe9e9e8f1f1f1f7f7f7fcfcfcffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefefeffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x9c554f08cf4c7449ae0e911ed50e1975
+                    End
+
+                    LayoutCachedLeft =5952
+                    LayoutCachedTop =3300
+                    LayoutCachedWidth =6357
+                    LayoutCachedHeight =3705
+                    TabIndex =10
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =750
+                    Top =3300
+                    Width =2895
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblMtoProg"
+                    Caption ="MNTOS. PLANIFICADOS"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los pedidos"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0xeb0544f7e773f446aa333bd766f3eb12
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =3300
+                    LayoutCachedWidth =3645
+                    LayoutCachedHeight =3705
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =6496
+                    Top =3868
+                    Width =2475
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblEquiposMedida"
+                    Caption ="Equipos Medida"
+                    OnClick ="[Event Procedure]"
+                    OnMouseMove ="[Event Procedure]"
+                    Tag ="Formulario de control de los pedidos"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0xf974ae5a0dbabe4d99eedb83ac05909e
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =6496
+                    LayoutCachedTop =3868
+                    LayoutCachedWidth =8971
+                    LayoutCachedHeight =4273
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Image
+                    BackStyle =1
+                    SizeMode =0
+                    Left =5936
+                    Top =3852
+                    Width =421
+                    Height =421
+                    Name ="OLEIndependiente19"
+                    PictureData = Begin
+                        0x280000001a0000001a000000010018000000000020080000c40e0000c40e0000 ,
+                        0x0000000000000000f1f1f1e5e5e5d9d9d9cbcbcbbcbcbcaeaeaea2a2a2999999 ,
+                        0x9292928c8885887d7485766b85756884726485766b877c738b87849292929999 ,
+                        0x99a2a2a2aeaeaebbbbbbcacacad9d9d9e5e5e5f1f1f1a2ffeaeaeadcdcdccece ,
+                        0xcebebebeafafafa2a2a29797978e8680815e417d4d267d4a217d49207d491f7d ,
+                        0x491f7d49207d4a217d4d26815e418e8680979797a2a2a2aeaeaebebebececece ,
+                        0xdcdcdceaeaea97ffe3e3e3d3d3d3c2c2c2b2b2b2a2a2a2958e8983654b7d4c24 ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d4c ,
+                        0x2483654b958e89a2a2a2b2b2b2c2c2c2d3d3d3e3e3e34bffdcdcdccacacab8b8 ,
+                        0xb8a9a8a8948d878055327d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f805532948d87a9a8a8b8b8b8 ,
+                        0xcacacadcdcdc1fffd5d5d5c2c2c2afafaf9a938d7f512c7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7f512c9a938dafafafc2c2c2d5d5d51fffd0d0d0bcbcbca49d ,
+                        0x998257347d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f825734a49d99 ,
+                        0xbcbcbcd0d0d01fffcbcbcbb8b8b88c6e547d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f8c6e54b7b7b7cbcbcb1fffc9c9c9ada59f7f4e ,
+                        0x267d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7f4e26 ,
+                        0xaca49ec8c8c81fffc7c7c78d6a4d7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491fece5ded7c7ba7d491f7d491fd7c7baffffffffffffffffffffffffffff ,
+                        0xffffffff7d491f7d491f7d491f7d491f8d6a4dc7c7c7ffffc1bdb9804f287d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491fece5ded7c7ba7d491f7d491f7d ,
+                        0x491fffffffd7c7ba7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x804f28c1bdb91fffb8ada47e4b227d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491fece5ded7c7ba7d491f7d491f7d491f9c7555ffffffd7c7ba7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7e4b22b8ada41fffb5a79b7d49207d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491fece5ded7c7ba7d491f7d491f7d ,
+                        0x491f7d491f9c7555ffffffe2d7ce7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d4920b5a79b1fffb7a79a7d491f7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491fece5ded7c7ba7d491f7d491f7d491f7d491f7d491f7d491fffffffe2d7 ,
+                        0xce7d491f7d491f7d491f7d491f7d491f7d491fb4a3941fffbaaa9d7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491fece5ded7c7ba7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491fffffffc8b2a07d491f7d491f7d491f7d491f ,
+                        0x7d491fb7a697a0ffc2b4a87e4a217d491f7d491f7d491f7d491fb59880b59880 ,
+                        0x7d491fece5ded7c7ba7d491f7d491f7d491f7d491f7d491f7d491f7d491fd7c7 ,
+                        0xbaece5de7d491f7d491f7d491f7d491f7e4a21c2b4a8deffcdc2b97f4c237d49 ,
+                        0x1f7d491f7d491f7d491fb59880fffffff5f1eeece5ded7c7ba7d491f7d491fb5 ,
+                        0x9880f5f1ee7d491f7d491f7d491fc8b2a0f5f1ee7d491f7d491f7d491f7d491f ,
+                        0x7f4c23cdc2b9eeffe1ddd983522b7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xe2d7ceffffffd7c7ba7d491f7d491f7d491fffffffc8b2a07d491f7d491ff5f1 ,
+                        0xeee2d7ce7d491f7d491f7d491f7d491f83522be1ddd9cefff1f1f19d7a5d7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491fe2d7ced7c7ba7d491f7d491f7d ,
+                        0x491f9c7555ffffffffffffffffffece5de7d491f7d491f7d491f7d491f7d491f ,
+                        0x9d7a5df1f1f11ffff5f5f5ddd5cf83522a7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f83522addd5cff5f5f51ffffafafaf4f4f4aa8c ,
+                        0x727d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491faa8c72 ,
+                        0xf4f4f4fafafa1ffffcfcfcf8f8f8e6dfdb8f64417d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f8f6441e6dfdbf8f8f8fcfcfc1ffffefefefcfcfcfafa ,
+                        0xfae4ddd7895b367d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f895b36e3dcd6fafafa ,
+                        0xfcfcfcfefefe1ffffefefefdfdfdfcfcfcf9f8f8e4ddd79065427d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f906542e4ddd7f9f8f8fcfcfcfdfdfdfefefe1ffffffffffefefefefe ,
+                        0xfefdfdfdfcfcfcede6e1ae907683522a7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491f7d491f7d491f7d491f7d491f83522aae9076ece5e0fcfcfcfdfdfdfefefe ,
+                        0xfefefeffffff76fffffffffffffffefefefefefefdfdfdfcfcfcfbfbfbe8e0da ,
+                        0xa27f6284542d804d247e4a217d491f7d491f7e4a21804d2484542da27f62e8e0 ,
+                        0xdafafafafcfcfcfdfdfdfefefefefefefffffffffffffaffffffffffffffffff ,
+                        0xfffffffffffffffefefefefefefdfdfdfcfcfcf1edeae0d5ccd8c9bed4c4b7d4 ,
+                        0xc4b7d8c9bee0d5ccf1edeafcfcfcfdfdfdfefefefefefeffffffffffffffffff ,
+                        0xfffffffffffffeff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x8535aba9d1a4f246b544d7383392fd94
+                    End
+
+                    LayoutCachedLeft =5936
+                    LayoutCachedTop =3852
+                    LayoutCachedWidth =6357
+                    LayoutCachedHeight =4273
+                    TabIndex =11
+                End
+                Begin Label
+                    Visible = NotDefault
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =750
+                    Top =4393
+                    Width =2835
+                    Height =405
+                    FontSize =14
+                    FontWeight =700
+                    BorderColor =0
+                    ForeColor =8210719
+                    Name ="lblAnexosNoAlcanzables"
+                    Caption ="Anexos No Alcanzables"
+                    OnClick ="[Event Procedure]"
+                    Tag ="Formulario para resubir archivos no alcanzables"
+                    HyperlinkAddress ="#"
+                    GUID = Begin
+                        0xd7144612b3cae243b3358b8f2f199e60
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =750
+                    LayoutCachedTop =4393
+                    LayoutCachedWidth =3585
+                    LayoutCachedHeight =4798
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Image
+                    Visible = NotDefault
+                    SpecialEffect =2
+                    BackStyle =1
+                    SizeMode =0
+                    Left =226
+                    Top =4393
+                    Width =405
+                    Height =405
+                    Name ="OLEIndependiente22"
+                    PictureData = Begin
+                        0x280000001f0000001f0000000100180000000000a00b0000c40e0000c40e0000 ,
+                        0x0000000000000000fffffffffffffffffffffffffffffffffffffbfbfbf3f3f3 ,
+                        0xe6e6e6d5d5d5c3c3c3b2b2b2a4a4a496908b928c878e83798e8379928c879690 ,
+                        0x8ba4a4a4b2b2b2c3c3c3d5d5d5e6e6e6f3f3f3fbfbfbffffffffffffffffffff ,
+                        0xffffffffffe6e6fffffffffffffffffffffffffffefefef9f9f9edededdbdbdb ,
+                        0xc3c3c3ababab91867c8369557c4d277d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7c4d2783695591867cabababc3c3c3dbdbdbedededf9f9f9fefefeffffffff ,
+                        0xffffffffffc3c3fffffffffffffffffffffefefef8f8f8eaeaead2d2d2b6b6b6 ,
+                        0x96908b7e55317d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7e553196908bb6b6b6d2d2d2eaeaeaf8f8f8fefefeff ,
+                        0xffffffffff908bfffffffffffffffffffff9f9f9eaeaeacfcfcfadadac866c58 ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f866c58adadaccfcfcfeaeaeaf9f9f9ff ,
+                        0xffffffffff491ffffffffffffffffbfbfbedededd2d2d2adadac815b3d7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f815b3dadadacd2d2d2edededfb ,
+                        0xfbfbffffff491ffffffffffefefef3f3f3dbdbdbb5b5b4825c3e7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f825c3eb5b5b4dbdbdbf3 ,
+                        0xf3f3fefefe491ffffffffff9f9f9e6e6e6c3c3c38c725e7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f8c725ec3c3c3e6 ,
+                        0xe6e6f9f9f9491ffffefefef1f1f1d5d5d5a59f9a7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fa59f9ad5 ,
+                        0xd5d5f1f1f1491ffffbfbfbe7e7e7c3c3c38158347d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f815834c3 ,
+                        0xc3c3e7e7e7491ffff6f6f6dcdcdca69b917d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f976d4c8a5b357d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f976d4c976d4c83522a7d491f7d491f7d491f7d491f7d491f7d491f7d491fa6 ,
+                        0x9b91dcdcdc491ffff1f1f1d3d3d39177637d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491fa58164ffff ,
+                        0xffe0d4cae0d4caffffffbba08a7d491f7d491f7d491f7d491f7d491f7d491f91 ,
+                        0x7763d3d3d3491fffedededcbcbcb7f502a7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f9e7757ffffffa581 ,
+                        0x647d491f7d491f906440ffffffbba08a7d491f7d491f7d491f7d491f7d491f7f ,
+                        0x502acbcbcba08affeaeaeabdb7b27d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491fb4957dc4ac997d49 ,
+                        0x1f7d491f7d491f7d491fbba08affffff83522a7d491f7d491f7d491f7d491f7d ,
+                        0x491fbdb7b2ffffffe8e8e8bab4af7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491fb4957dffffff976d4c7d491f7d491f7d491f7d491f7d ,
+                        0x491fbab4afffffffe8e8e8b3a89e7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491fc4ac99ffffff83522a7d491f7d491f7d491f7d491f7d ,
+                        0x491fb3a89effffffeaeaeab5aaa07d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f8a5b3583522ab4957dffffffa581647d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fb5aaa08164ffedededc1bbb67d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1fbba08aece5deffffffac8b707d491f7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc1bbb6491ffff1f1f1c8c2bd7d491f7d491f7d491f7d491f7d491f7d491f ,
+                        0xb4957d83522a7d491fffffffb4957d7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491fb4957dffffff976d4c7d491f7d491f7d491f7d491f7d491f7d ,
+                        0x491fc8c2bd6d4cfff6f6f6dcdcdc81522c7d491f7d491f7d491f7d491f7d491f ,
+                        0xece5deffffffa58164ffffffb4957d7d491f7d491f7d491f8a5b35976d4c7d49 ,
+                        0x1f7d491f7d491f7d491fffffffb4957d7d491f7d491f7d491f7d491f7d491f81 ,
+                        0x522cdcdcdc957dfffbfbfbe7e7e7a086727d491f7d491f7d491f7d491f7d491f ,
+                        0x83522ab4957dffffffffffffb4957d7d491f7d491f7d491fa58164ffffff8a5b ,
+                        0x357d491f7d491f8a5b35ffffffac8b707d491f7d491f7d491f7d491f7d491fa0 ,
+                        0x8672e7e7e78b70fffefefef1f1f1c1b6ac7d491f7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491fa58164ffffffb4957d7d491f7d491f7d491f7d491fe0d4cae0d4 ,
+                        0xca9e77579e7757e0d4cae0d4ca83522a7d491f7d491f7d491f7d491f7d491fc1 ,
+                        0xb6acf1f1f1522afffffffff9f9f9e6e6e689603c7d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491fac8b70a581647d491f7d491f7d491f7d491f83522aac8b ,
+                        0x70d6c5b8d6c5b8ac8b7083522a7d491f7d491f7d491f7d491f7d491f89603ce6 ,
+                        0xe6e6f9f9f9491ffffffffffefefef3f3f3cfc9c47d491f7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fcfc9c4f3 ,
+                        0xf3f3fefefe491ffffffffffffffffbfbfbedededa88e7a7d491f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491fa88e7aedededfb ,
+                        0xfbfbffffff491ffffffffffffffffffffff9f9f9e8e8e7936d4f7d491f7d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f7d491f936d4fe8e8e7f9f9f9ff ,
+                        0xffffffffff491ffffffffffffffffffffffefefef8f8f8e8e8e7946e507d491f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491f7d491f946e50e8e8e7f8f8f8fefefeff ,
+                        0xffffffffff491ffffffffffffffffffffffffffffefefef9f9f9ebebeaad937f ,
+                        0x7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f7d491f7d491fad937febebeaf9f9f9fefefeffffffff ,
+                        0xffffffffff491ffffffffffffffffffffffffffffffffffffffffbfbfbf3f3f3 ,
+                        0xd9d3ce8c633f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f7d491f7d491f7d491f8c633fd9d3cef3f3f3fbfbfbffffffffffffffffffff ,
+                        0xffffffffffd3cefffffffffffffffffffffffffffffffffffffffffffffefefe ,
+                        0xf9f9f9f1f1f1cec3b9ad937f8556307d491f7d491f7d491f7d491f7d491f7d49 ,
+                        0x1f855630ad937fcec3b9f1f1f1f9f9f9fefefeffffffffffffffffffffffffff ,
+                        0xfffffffffff9f9ffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffefefefbfbfbf6f6f6f1f1f1dfd9d4ddd7d2cfc4bacfc4baddd7d2dfd9 ,
+                        0xd4f1f1f1f6f6f6fbfbfbfefefeffffffffffffffffffffffffffffffffffffff ,
+                        0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xfffffffffffffffffffffffffffffffefefefdfdfdfcfcfcfcfcfcfdfdfdfefe ,
+                        0xfeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff ,
+                        0xffffffffffffffff
+                    End
+                    ObjectPalette = Begin
+                        0x000301000000000000000000
+                    End
+                    GUID = Begin
+                        0x0f78fee2b7ccb9438ad807cd234e546e
+                    End
+
+                    LayoutCachedLeft =226
+                    LayoutCachedTop =4393
+                    LayoutCachedWidth =631
+                    LayoutCachedHeight =4798
+                    TabIndex =12
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private Sub cmdSalir_Click()
+    On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+Private Sub Detalle_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    DesactivaLabel Me
+End Sub
+
+Private Sub Detalle_DblClick(Cancel As Integer)
+    Application.Echo False
+    DoCmd.ShowToolbar "Ribbon", acToolbarYes
+    Application.Echo True
+End Sub
+
+Private Sub lblAnexosNoAlcanzables_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormAnexosNoAlcanzables"
+End Sub
+
+Private Sub lblEquiposMedida_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormEquiposMedidaGestion"
+End Sub
+
+Private Sub lblEquiposMedida_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblEquiposMedida.ForeColor <> longColorEtiquetaMenuPulsado Then lblEquiposMedida.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+
+Private Sub lblMtoProg_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormPlanificacionGestion"
+End Sub
+Private Sub lblMtoProg_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblMtoProg.ForeColor <> longColorEtiquetaMenuPulsado Then lblMtoProg.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+
+Private Sub lblCalibraciones_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormCalibracionEquipoGestion"
+End Sub
+Private Sub lblCalibraciones_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblCalibraciones.ForeColor <> longColorEtiquetaMenuPulsado Then lblCalibraciones.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+
+
+Private Sub Form_Open(Cancel As Integer)
+    On Error Resume Next
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+'    Me.InsideHeight = 6480
+'    Me.InsideWidth = 10260
+    AjustarTamaño Me
+    Me.Caption = Me.lbTitulo.Caption
+    
+    VBA.DoEvents
+    Me.Repaint
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+End Sub
+Private Sub lblGestionBUI_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormBUIGestion"
+End Sub
+Private Sub lblGestionBUI_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionBUI.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionBUI.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+Private Sub lblGestionIDEquipos_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormEquipoGestion"
+End Sub
+Private Sub lblGestionIDEquipos_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionIDEquipos.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionIDEquipos.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+Private Sub lblGestionNodos_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormNodoGestion"
+End Sub
+Private Sub lblGestionNodos_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionNodos.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionNodos.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+Private Sub lblGestionOriginadores_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormOriginadorGestion"
+End Sub
+Private Sub lblGestionOriginadores_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionOriginadores.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionOriginadores.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+Private Sub lblGestionSubSistemas_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormSubSistemaGestion"
+End Sub
+Private Sub lblGestionSubSistemas_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionSubSistemas.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionSubSistemas.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+
+Private Sub lblGestionTipoActividad_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormActividadTipoGestion"
+End Sub
+Private Sub lblGestionTipoActividad_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionTipoActividad.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionTipoActividad.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+Private Sub lblGestionTipoEventos_Click()
+     On Error Resume Next
+    DoCmd.OpenForm "FormEventoTipoGestion"
+End Sub
+Private Sub lblGestionTipoEventos_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionTipoEventos.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionTipoEventos.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+
+Private Sub lblGestionUbicaciones_Click()
+    On Error Resume Next
+    DoCmd.OpenForm "FormUbicacionGestion"
+End Sub
+Private Sub lblGestionUbicaciones_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+    On Error Resume Next
+    If lblGestionUbicaciones.ForeColor <> longColorEtiquetaMenuPulsado Then lblGestionUbicaciones.ForeColor = longColorEtiquetaMenuPulsado
+End Sub
+Private Sub lblRelacionNodoBUI_Click()
+     On Error Resume Next
+    DoCmd.OpenForm "FormNodoBUIGestion"
+End Sub
+Private Sub lblRelacionNodoBUI_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+     On Error Resume Next
+    If lblRelacionNodoBUI.ForeColor <> longColorEtiquetaMenuPulsado Then lblRelacionNodoBUI.ForeColor = longColorEtiquetaMenuPulsado
+End Sub

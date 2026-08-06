@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Para tratar en la reunión — Última edición y criterios de publicabilidad</title>
+  <style>
+    :root {
+      --color-brand: #0066CC;
+      --color-brand-dark: #003D7A;
+      --color-text-primary: #1A1A1A;
+      --color-text-secondary: #5C5C5C;
+      --color-background: #FFFFFF;
+      --color-surface: #F5F7FA;
+      --color-surface-strong: #E8EEF5;
+      --color-border: #D4DBE3;
+      --color-success: #2E7D32;
+      --color-warning: #ED6C02;
+      --color-danger: #C62828;
+      --radius-card: 12px;
+      --radius-chip: 24px;
+      --radius-input: 8px;
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 880px; margin: 0 auto; padding: var(--space-7) var(--space-5) var(--space-7); }
+    .hero {
+      background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+      color: #fff;
+      border-radius: var(--radius-card);
+      padding: var(--space-6) var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    .hero .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 600;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.2;
+      margin: var(--space-3) 0 var(--space-3);
+      font-weight: 700;
+    }
+    .hero p.lead {
+      font-size: 16px;
+      opacity: 0.95;
+      max-width: 680px;
+      margin: 0;
+    }
+    section.card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    section.card h2 {
+      font-size: 18px;
+      margin: 0 0 var(--space-4);
+      color: var(--color-brand-dark);
+      font-weight: 700;
+    }
+    section.card h3 {
+      font-size: 15px;
+      margin: var(--space-4) 0 var(--space-3);
+      color: var(--color-text-primary);
+      font-weight: 700;
+    }
+    section.card p { margin: 0 0 var(--space-4); }
+    section.card p:last-child { margin-bottom: 0; }
+    section.card ul, section.card ol { padding-left: var(--space-5); margin: 0 0 var(--space-4); }
+    section.card li { margin-bottom: var(--space-2); }
+    .verdict-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-chip);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .verdict-liberar     { background: #E8F5E9; color: var(--color-success); }
+    .verdict-mantener    { background: #FFEBEE; color: var(--color-danger); }
+    .verdict-discutir    { background: #FFF3E0; color: var(--color-warning); }
+    .verdict-ya-liberado { background: var(--color-surface-strong); color: var(--color-text-secondary); }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      font-size: 13px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin-top: var(--space-3);
+    }
+    th, td {
+      text-align: left;
+      padding: var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+    th {
+      background: var(--color-surface);
+      font-weight: 700;
+      color: var(--color-text-secondary);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    tr:last-child td { border-bottom: none; }
+    .notes-block {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-5);
+      margin-top: var(--space-3);
+    }
+    .footer-note {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-5);
+      text-align: center;
+    }
+    .section-index {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-4) var(--space-5);
+      margin-bottom: var(--space-5);
+    }
+    .section-index h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-secondary); margin: 0 0 var(--space-3); font-weight: 700; }
+    .section-index ol { margin: 0; padding-left: var(--space-5); font-size: 14px; }
+    .section-index li { margin-bottom: var(--space-1); }
+    .section-index a { color: var(--color-brand-dark); text-decoration: none; }
+    .section-index a:hover { text-decoration: underline; }
+    @media (max-width: 640px) {
+      .legend { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="hero" role="banner">
+      <div class="eyebrow">Para la reunión con Calidad</div>
+      <h1>Última edición de la gestión de riesgos: qué criterios relajar, dónde marcarlo, cómo cambia la UI</h1>
+      <p class="lead">
+        Cuando un proyecto se va a cerrar y se hace la última publicación, hay comprobaciones que hoy
+        bloquean sin sentido (planes sin acciones, decisiones pendientes, etc.). Esta página recoge
+        la propuesta completa del equipo técnico: los criterios que se liberarían, los que se
+        mantienen, dónde se marca la edición como última, y cómo cambia el botón de informe del
+        riesgo.
+      </p>
+    </header>
+
+    <nav class="section-index" aria-label="Índice de secciones">
+      <h2>En esta página</h2>
+      <ol>
+        <li><a href="#sec-contexto">De qué hablamos</a></li>
+        <li><a href="#sec-criterios">Criterios de publicabilidad, uno a uno</a></li>
+        <li><a href="#sec-ui">Dónde se marca y cómo se ve en la UI</a></li>
+        <li><a href="#sec-boton">Cómo cambia el botón de informe del riesgo</a></li>
+        <li><a href="#sec-modelo">Cambio en el modelo de datos</a></li>
+        <li><a href="#sec-cierre">Cierre automático de las acciones abiertas</a></li>
+        <li><a href="#sec-notas">Tus notas</a></li>
+      </ol>
+    </nav>
+
+    <!-- 1. Contexto -->
+    <section class="card" aria-labelledby="sec-contexto">
+      <h2 id="sec-contexto">1. De qué hablamos</h2>
+      <p>
+        Hoy, al publicar una edición, se evalúan una serie de criterios sobre los riesgos y sobre el
+        documento en general. Si alguno no se cumple, la publicación queda bloqueada. Esto tiene
+        sentido cuando el proyecto sigue abierto y se va a iterar, pero <strong>no cuando se está
+        cerrando el proyecto</strong>: en la última edición no se va a abrir otra para corregir lo
+        que falte.
+      </p>
+      <p>
+        La propuesta del equipo técnico es que, cuando el usuario marque que la edición es la última,
+        se <strong>relajen los criterios pensados para iterar</strong> y se <strong>mantengan los
+        criterios que son controles de proceso o de integridad del documento</strong>: el
+        visto bueno de Calidad (separación de roles) y los datos que el informe tiene que llevar
+        bien firmados.
+      </p>
+      <p>
+        Además, se ha detectado durante la revisión con Calidad que el sitio donde se marca la
+        edición como última (un combo en el formulario de "ejecutar publicación") es demasiado
+        tarde: el informe de comprobación de publicabilidad y el botón "ver si un riesgo es
+        publicable" no consultan ese combo. Por eso se propone un cambio adicional: marcar la
+        edición como última en un <strong>sitio prominente de la gestión de riesgos</strong>, con
+        un campo persistido, y reflejarlo en el botón de informe.
+      </p>
+    </section>
+
+    <!-- 2. Criterios -->
+    <section class="card" aria-labelledby="sec-criterios">
+      <h2 id="sec-criterios">2. Los criterios de publicabilidad, uno a uno</h2>
+
+      <p>
+        Hoy el evaluador aplica los siguientes criterios. La propuesta los clasifica en
+        <span class="verdict-pill verdict-mantener">Mantener</span>,
+        <span class="verdict-pill verdict-liberar">Liberar</span>,
+        <span class="verdict-pill verdict-discutir">A discutir</span>, o
+        <span class="verdict-pill verdict-ya-liberado">Ya no bloquea</span>.
+      </p>
+
+      <div class="legend" aria-label="Leyenda de colores">
+        <span><span class="verdict-pill verdict-mantener">Mantener</span> sigue bloqueando</span>
+        <span><span class="verdict-pill verdict-liberar">Liberar</span> ya no bloquea</span>
+        <span><span class="verdict-pill verdict-discutir">A discutir</span> depende de ti</span>
+        <span><span class="verdict-pill verdict-ya-liberado">Ya no bloquea</span> ya estaba liberado</span>
+      </div>
+
+      <h3>Lo que se mantendría (integridad del documento y controles de proceso)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Comprobación</th>
+            <th style="width: 130px;">Propuesta</th>
+            <th>Por qué</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Evidencia de acuerdo con la otra empresa (UTE)</td>
+            <td><span class="verdict-pill verdict-mantener">Mantener</span></td>
+            <td>Si falta la evidencia, el documento que se firma no es defendible. No depende de que haya más ediciones.</td>
+          </tr>
+          <tr>
+            <td>Evidencia de acuerdo con los suministradores</td>
+            <td><span class="verdict-pill verdict-mantener">Mantener</span></td>
+            <td>Igual que la anterior: integridad del informe.</td>
+          </tr>
+          <tr>
+            <td>Datos generales del riesgo cumplimentados</td>
+            <td><span class="verdict-pill verdict-mantener">Mantener</span></td>
+            <td>Un riesgo en estado "Incompleto" no debería aparecer firmado en un informe que se entrega.</td>
+          </tr>
+          <tr>
+            <td>Priorización del riesgo establecida</td>
+            <td><span class="verdict-pill verdict-mantener">Mantener</span></td>
+            <td>Sin priorización, el informe no se entiende. Es un dato, no algo que se pueda "cerrar en falso".</td>
+          </tr>
+          <tr>
+            <td>Riesgo retipificado (cuando se requiere)</td>
+            <td><span class="verdict-pill verdict-mantener">Mantener</span></td>
+            <td>Si requiere biblioteca y no se ha retipificado, el dato del informe es incorrecto.</td>
+          </tr>
+          <tr>
+            <td><strong>Aceptación aprobada por calidad</strong></td>
+            <td><span class="verdict-pill verdict-mantener">Mantener</span></td>
+            <td>Es un control de separación de roles: el técnico no puede dar por aceptado un riesgo unilateralmente. Aunque sea la última edición, ese visto bueno tiene que quedar registrado.</td>
+          </tr>
+          <tr>
+            <td><strong>Retirada aprobada por calidad</strong></td>
+            <td><span class="verdict-pill verdict-mantener">Mantener</span></td>
+            <td>Idem: la retirada la tiene que aprobar Calidad, no la puede firmar el técnico en solitario.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Lo que se relajaría (gestión de riesgos que ya no va a iterarse)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Comprobación</th>
+            <th style="width: 130px;">Propuesta</th>
+            <th>Por qué</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Plan de mitigación con acciones</td>
+            <td><span class="verdict-pill verdict-liberar">Liberar</span></td>
+            <td>El proyecto se cierra, ese plan no se va a actualizar.</td>
+          </tr>
+          <tr>
+            <td>Plan de contingencia con acciones</td>
+            <td><span class="verdict-pill verdict-liberar">Liberar</span></td>
+            <td>Idem, para planes de contingencia.</td>
+          </tr>
+          <tr>
+            <td>Ausencia de plan de contingencia justificada</td>
+            <td><span class="verdict-pill verdict-liberar">Liberar</span></td>
+            <td>El técnico no va a justificar nada más. Si la aceptación/retirada se mantienen como controles de proceso, la justificación del PC en la última edición pierde sentido.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Lo que tiene matices (no es governance puro, pero "informe firmado con X abierto" puede no ser defendible)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Comprobación</th>
+            <th style="width: 130px;">Propuesta</th>
+            <th>Por qué hay duda</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Plan de mitigación activo (riesgo materializado)</td>
+            <td><span class="verdict-pill verdict-discutir">A discutir</span></td>
+            <td>No es un control de proceso (técnico decide), pero un riesgo materializado sin PM activo es un hecho consumado sin plan de respuesta. Si el informe lo firma Calidad, ¿se firma un informe con un PM abierto? Tu criterio.</td>
+          </tr>
+          <tr>
+            <td>Plan de mitigación activo (riesgo alto o muy alto, no materializado)</td>
+            <td><span class="verdict-pill verdict-discutir">A discutir</span></td>
+            <td>Un riesgo Alto o Muy Alto sin plan de mitigación activo no debería firmarse ni siquiera en la última edición. Pero "se va a cerrar el proyecto" es un argumento en contra. Tu criterio.</td>
+          </tr>
+          <tr>
+            <td>Plan de contingencia definido (riesgo alto o muy alto, no materializado)</td>
+            <td><span class="verdict-pill verdict-discutir">A discutir</span></td>
+            <td>Idem, para planes de contingencia.</td>
+          </tr>
+          <tr>
+            <td>Plan de mitigación definido (riesgo bajo o medio, no materializado)</td>
+            <td><span class="verdict-pill verdict-discutir">A discutir</span></td>
+            <td>Idem, pero para riesgos de menor impacto. Aquí el argumento de "ya se cierra el proyecto" pesa más, pero conviene confirmarlo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Lo que se queda igual que hoy</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Comprobación</th>
+            <th style="width: 130px;">Estado</th>
+            <th>Por qué</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Plan de contingencia activo (riesgo materializado)</td>
+            <td><span class="verdict-pill verdict-ya-liberado">Ya no bloquea</span></td>
+            <td>Ya se decidió que el plan de contingencia es opcional. No bloquea hoy.</td>
+          </tr>
+          <tr>
+            <td>Decisiones de NC pendientes en materializaciones</td>
+            <td><span class="verdict-pill verdict-discutir">A discutir</span></td>
+            <td>Hoy no bloquea por este motivo, pero conviene confirmar: si hay materializaciones sin decisión de NC, ¿se asume la decisión por defecto o se avisa al técnico?</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3. UI -->
+    <section class="card" aria-labelledby="sec-ui">
+      <h2 id="sec-ui">3. Dónde se marca y cómo se ve en la UI</h2>
+
+      <p>
+        Hoy, la marca de "última edición" se hace en un combo del formulario de
+        <em>ejecutar publicación de Calidad</em>. Eso es demasiado tarde y se pierde: el informe
+        de comprobación de publicabilidad (que se genera antes) y el botón "ver si un riesgo es
+        publicable" no consultan ese combo.
+      </p>
+      <p>La propuesta revisada es:</p>
+      <ol>
+        <li>Añadir un campo grabable en la tabla de ediciones, <code>EsUltimaEdicion</code> (Sí/No, por defecto No), que el técnico o cualquier persona con permiso puede cambiar en cualquier momento de una edición activa.</li>
+        <li>En la pantalla principal de gestión de la edición (donde se trabaja la edición), un combo Sí/No "Esta es la última edición del proyecto", editable, que persiste al cambiar.</li>
+        <li>El sistema muestra un mensaje de confirmación al marcar ("¿Marcar como última edición? Esto cambia el comportamiento de los informes de publicabilidad").</li>
+        <li>En la pantalla de ejecutar publicación de Calidad, el combo editable actual se sustituye por un <strong>textbox informativo</strong> (solo lectura) que muestra el estado persistido. Sin "decidir dos veces lo mismo", sin parámetros muertos.</li>
+        <li>El informe de comprobación de publicabilidad lee el dato persistido directamente. Una sola fuente de verdad.</li>
+      </ol>
+    </section>
+
+    <!-- 4. Botón -->
+    <section class="card" aria-labelledby="sec-boton">
+      <h2 id="sec-boton">4. Cómo cambia el botón de informe del riesgo</h2>
+
+      <p>
+        Hoy, el botón "Informe del riesgo" del subformulario de gestión se pinta de un color u otro
+        según si el riesgo es publicable con los criterios estrictos. Si la edición está marcada
+        como última y los criterios se relajan, el botón debería reflejarlo visualmente para que
+        el usuario no se lleve la impresión equivocada.
+      </p>
+      <p>La propuesta es que el botón siga cuatro estados:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>¿Es última edición?</th>
+            <th>¿Es publicable con los criterios que se aplican?</th>
+            <th>Color del botón</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>No</td>
+            <td>Sí</td>
+            <td>Verde (publicable)</td>
+          </tr>
+          <tr>
+            <td>No</td>
+            <td>No</td>
+            <td>Rojo (bloquea)</td>
+          </tr>
+          <tr>
+            <td>Sí</td>
+            <td>Sí</td>
+            <td>Verde (publicable)</td>
+          </tr>
+          <tr>
+            <td>Sí</td>
+            <td>No, pero solo por criterios que se mantienen (evidencias, integridad)</td>
+            <td>Ámbar (publicable con observaciones)</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        La lógica de color va a un helper testeable, no inline en el formulario.
+      </p>
+    </section>
+
+    <!-- 5. Modelo -->
+    <section class="card" aria-labelledby="sec-modelo">
+      <h2 id="sec-modelo">5. Cambio en el modelo de datos</h2>
+
+      <p>
+        Hoy el sistema mira <code>Proyecto.FechaCierre &lt;&gt; ""</code> como sustituto de
+        "esta edición es la última". Eso no funciona: la fecha de cierre del proyecto se persiste
+        solo al publicar la edición como última, así que mientras la edición está activa (que es
+        cuando el técnico o Calidad tiene que marcarla), el sistema no la reconoce.
+      </p>
+      <p>
+        La propuesta es eliminar ese sustituto: el campo <code>EsUltimaEdicion</code> es el único
+        que dice si la edición es la última. El evaluador de publicabilidad, el validador de
+        eliminación de publicación, y todos los puntos donde hoy se mira
+        <code>EsUltimaEdicionCalculado</code> pasan a leer el campo persistido.
+      </p>
+      <p>
+        Una sola pasada de migración, con copia de seguridad, pondría
+        <code>EsUltimaEdicion = Sí</code> en las ediciones que ya tienen
+        <code>Proyecto.FechaCierre &lt;&gt; ""</code>, para no perder el estado de los proyectos
+        ya cerrados.
+      </p>
+    </section>
+
+    <!-- 6. Cierre acciones -->
+    <section class="card" aria-labelledby="sec-cierre">
+      <h2 id="sec-cierre">6. Cierre automático de las acciones abiertas</h2>
+      <p>
+        Además de relajar los criterios, en la última edición el sistema cierra automáticamente
+        las acciones de mitigación y contingencia que estén abiertas (activas o planificadas), con
+        un motivo automático del estilo <em>"Cierre por última edición del proyecto"</em>, para
+        que la gestión de riesgos no se quede con tareas a medias. Las acciones ya finalizadas o
+        canceladas no se tocan. Esta parte ya está en producción y no se discute en esta revisión.
+      </p>
+    </section>
+
+    <!-- 7. Notas -->
+    <section class="card" aria-labelledby="sec-notas">
+      <h2 id="sec-notas">7. Tus notas</h2>
+      <p>
+        Si hay algún criterio que ves distinto (quieres mantener algo que iba a relajarse, o quieres
+        relajar algo que iba a mantenerse), o un caso de borde que se nos escapa, anótalo aquí.
+        Si prefieres, lo hablamos directamente en la reunión.
+      </p>
+      <div class="notes-block" role="region" aria-label="Espacio para anotaciones de Calidad">
+        <p>—</p>
+        <p>—</p>
+        <p>—</p>
+        <p>—</p>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Documento informativo del equipo técnico para revisar con Calidad antes de la reunión.
+      No hay que firmar, validar ni devolver: se comenta en persona.
+    </p>
+
+  </div>
+</body>
+</html>

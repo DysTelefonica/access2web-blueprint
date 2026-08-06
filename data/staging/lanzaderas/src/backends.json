@@ -1,0 +1,13 @@
+{
+  "frontend": "Lanzadera.accdb",
+  "default": "backend_principal",
+  "deny_tables": [
+    "MSys*"
+  ],
+  "backends": {
+    "backend_principal": {
+      "path": "..\\Lanzadera_Datos.accdb",
+      "description": "Backend principal"
+    }
+  }
+}

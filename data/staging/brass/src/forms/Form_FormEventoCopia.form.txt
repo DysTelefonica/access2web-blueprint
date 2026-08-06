@@ -1,0 +1,1002 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =1816264893
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =7093
+    DatasheetFontHeight =11
+    ItemSuffix =3
+    Left =8325
+    Top =3975
+    Right =15420
+    Bottom =6255
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0xbaf41b66acc1e440
+    End
+    GUID = Begin
+        0xdacf3078df811446a400576f074953e4
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x00000000000000000000000000000000e2d2cdf09fd800000000000000000000 ,
+        0x010403069c000c0353ef8001010009009a0b3408640001000f00b00402000100 ,
+        0xb004030001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220052000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x00000000000000000000000000000000000054533030310000000000
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    FitToScreen =1
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x000058e1d70100006932176a72000000a0b9759ed70100004100000000000000 ,
+        0x41000000000000004100000000000000001a630000000000aab9759ed7010000 ,
+        0x01040306dc000c0353ef8001010009009a0b3408640001000f00b00402000100 ,
+        0xb004030001004100340000000000000000000000410000004000000000000000 ,
+        0x10040000000000000400000000000000a0b9759ed7010000b930176a72000000 ,
+        0x000058e1d7010000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e004e000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000054005300 ,
+        0x30003000310000000000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin OptionGroup
+            SpecialEffect =3
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ComboBox
+            AddColon = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4138256
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =2
+            ForeShade =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Section
+            Height =2247
+            Name ="Detalle"
+            GUID = Begin
+                0xf9e9ac0160bb1d4cb6fbcd1ef2f0937e
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Width =7093
+                    Height =612
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="CuadroSuperior"
+                    GUID = Begin
+                        0x3653a3bce96db246a1b647dec638be22
+                    End
+                    GridlineColor =0
+                    LayoutCachedWidth =7093
+                    LayoutCachedHeight =612
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin Rectangle
+                    SpecialEffect =0
+                    BackStyle =1
+                    BorderWidth =1
+                    OverlapFlags =93
+                    Top =1635
+                    Width =7093
+                    Height =612
+                    BackColor =8210719
+                    BorderColor =0
+                    Name ="Cuadro2"
+                    GUID = Begin
+                        0x6c53531a2ba5484794689b27a1ead671
+                    End
+                    GridlineColor =0
+                    LayoutCachedTop =1635
+                    LayoutCachedWidth =7093
+                    LayoutCachedHeight =2247
+                    BackThemeColorIndex =2
+                    BorderThemeColorIndex =-1
+                    BorderShade =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =6209
+                    Top =1770
+                    Width =645
+                    Height =405
+                    FontWeight =700
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir"
+                    GUID = Begin
+                        0x81607921c5106548bb3d00a3402db03c
+                    End
+
+                    LayoutCachedLeft =6209
+                    LayoutCachedTop =1770
+                    LayoutCachedWidth =6854
+                    LayoutCachedHeight =2175
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =105
+                    Top =930
+                    Width =405
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta210"
+                    Caption ="BUI"
+                    GUID = Begin
+                        0x04111e9d1f7690479c5ec0dcbcecd273
+                    End
+                    LayoutCachedLeft =105
+                    LayoutCachedTop =930
+                    LayoutCachedWidth =510
+                    LayoutCachedHeight =1245
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin ComboBox
+                    LimitToList = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    ListRows =100
+                    Left =630
+                    Top =930
+                    Width =2556
+                    Height =315
+                    TabIndex =1
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    GUID = Begin
+                        0x457f7aa7da9ddb48ac7ceecc0560c92b
+                    End
+                    Name ="BUI"
+                    RowSourceType ="Value List"
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =630
+                    LayoutCachedTop =930
+                    LayoutCachedWidth =3186
+                    LayoutCachedHeight =1245
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeShade =100.0
+                End
+                Begin CommandButton
+                    OverlapFlags =215
+                    Left =4755
+                    Top =1770
+                    Width =1335
+                    Height =405
+                    FontWeight =700
+                    TabIndex =2
+                    Name ="ComandoCopiar"
+                    Caption ="Copiar"
+                    OnClick ="[Event Procedure]"
+                    GUID = Begin
+                        0x602ae44a648fbd40a2f7839cd5f83a9a
+                    End
+
+                    LayoutCachedLeft =4755
+                    LayoutCachedTop =1770
+                    LayoutCachedWidth =6090
+                    LayoutCachedHeight =2175
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                    Overlaps =1
+                End
+                Begin Label
+                    OverlapFlags =223
+                    TextAlign =2
+                    Left =172
+                    Top =60
+                    Width =6855
+                    Height =540
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =4599040
+                    Name ="lblTitulo2"
+                    Caption ="COPIA DEL EVENTO #"
+                    GUID = Begin
+                        0x1fccd6fb701fd4438ddac4f64afcf80c
+                    End
+                    LayoutCachedLeft =172
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =7027
+                    LayoutCachedHeight =600
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =215
+                    TextAlign =2
+                    Left =127
+                    Width =6855
+                    Height =540
+                    FontSize =20
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="COPIA DEL EVENTO #"
+                    GUID = Begin
+                        0x327ce3caf0097748b005812651c1eea3
+                    End
+                    LayoutCachedLeft =127
+                    LayoutCachedWidth =6982
+                    LayoutCachedHeight =540
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+                Begin TextBox
+                    OverlapFlags =85
+                    TextAlign =1
+                    IMESentenceMode =3
+                    Left =5153
+                    Top =930
+                    Height =315
+                    TabIndex =3
+                    BackColor =16511723
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="FECHAALTA"
+                    GUID = Begin
+                        0xd80de3ae3507474083ea029203c041bf
+                    End
+
+                    LayoutCachedLeft =5153
+                    LayoutCachedTop =930
+                    LayoutCachedWidth =6854
+                    LayoutCachedHeight =1245
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =3810
+                    Top =930
+                    Width =1215
+                    Height =315
+                    FontWeight =700
+                    BackColor =14136213
+                    BorderColor =14136213
+                    ForeColor =8210719
+                    Name ="Etiqueta2"
+                    Caption ="FECHA ALTA"
+                    GUID = Begin
+                        0xba76a4ab08770041b8f4c16173464e5a
+                    End
+                    LayoutCachedLeft =3810
+                    LayoutCachedTop =930
+                    LayoutCachedWidth =5025
+                    LayoutCachedHeight =1245
+                    BackThemeColorIndex =4
+                    BackTint =60.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    ForeThemeColorIndex =2
+                    ForeTint =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Public Event AltaEvento(m_Evento As Evento)
+Private m_Error As String
+
+Private Sub cmdSalir_Click()
+     On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Sub ComandoCopiar_Click()
+    Dim m_EventoCopia As Evento
+    Dim m_IDEventoCopia As String
+    On Error GoTo errores
+    
+    m_Error = ""
+    pregunta = MsgBox("Se va a copiar el evento seleccionado junto con sus actividades,materiales asociados y seguimientos de los mismos" & vbNewLine & _
+                    "¿Desea continuar?", vbExclamation + vbYesNo + vbDefaultButton1, "Copiar Evento")
+    If pregunta <> vbYes Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_IDEventoCopia = CopiarEventoCompletoConActividadesYMateriales(m_ObjEventoActivo.IDEVENTO, Nz(Me.FechaAlta, ""), Nz(Me.BUI, ""), m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Set m_EventoCopia = Constructor.getEvento(p_IDEvento:=m_IDEventoCopia, p_Error:=m_Error)
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    RaiseEvent AltaEvento(m_EventoCopia)
+    DoCmd.Close acForm, Me.Name, acSaveNo
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoCopiar_Click se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    On Error GoTo errores
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    AjustarTamaño Me
+    
+    If m_ObjEventoActivo Is Nothing Then
+        m_Error = "No se conoce el evento a copiar"
+        Err.Raise 1000
+    End If
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Open se ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+
+Private Function EstablecerDatos(Optional ByRef p_Error As String) As String
+    Dim m_Centro As Variant
+    Dim cmb As ComboBox
+    On Error GoTo errores
+    Me.lblTitulo1.Caption = "COPIA DE EVENTO " & m_ObjEventoActivo.IDEVENTO
+    Me.lblTitulo2.Caption = Me.lblTitulo1.Caption
+    Me.Caption = Me.lblTitulo1.Caption
+    Set cmb = Me.BUI
+    cmb.RowSource = ""
+    If m_ObjEntorno.Centros Is Nothing Then
+        Exit Function
+    End If
+    For Each m_Centro In m_ObjEntorno.Centros
+        cmb.AddItem m_Centro
+    Next
+    Me.BUI = m_ObjEventoActivo.BUI
+    Me.FechaAlta = Format(m_ObjEventoActivo.FECHAALTAEVENTO, "dd/mm/yyyy")
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerDatos ha devuelto el error: " & vbNewLine & Err.Description
+    End If
+End Function
+
+
+
+
+Public Function CopiarEventoCompletoConActividadesYMateriales( _
+                                                                p_IDEventoACopiar As String, _
+                                                                Optional p_FechaAlta As String, _
+                                                                Optional p_BUI As String, _
+                                                                Optional ByRef p_Error As String _
+                                                                ) As String
+    
+    Dim rcdDatosOrigen As DAO.Recordset, rcdDatosDestino As DAO.Recordset, rcdMaterialesOrigen As DAO.Recordset, fld As DAO.Field, ColMateriales As New Collection, VarItem As Variant
+    Dim strIDEvento As String, strIDMaterial As String, strIDActividad As String, strIDActividadOriginal As String, strIDMaterialOriginal As String, _
+        strAliasTecnico As String
+    On Error GoTo errores
+    m_Error = ""
+    p_Error = ""
+    If Not IsDate(p_FechaAlta) Then
+        p_FechaAlta = Date
+    End If
+    
+    '------------------------
+    ' COPIA DE EVENTO
+    '------------------------
+        m_SQL = "TbEventos"
+        Set rcdDatosDestino = CurrentDb().OpenRecordset(m_SQL)
+        m_SQL = "SELECT TbEventos.* " & _
+                    "FROM TbEventos " & _
+                    "WHERE (((TbEventos.IDEvento)='" & p_IDEventoACopiar & "'));"
+        
+        Set rcdDatosOrigen = CurrentDb().OpenRecordset(m_SQL)
+        If rcdDatosOrigen.EOF Then
+            p_Error = "El Evento seleccionado no está registrado"
+            Err.Raise 1000
+        End If
+        If p_BUI = "" Then
+            p_BUI = Nz(rcdDatosOrigen("BUI"), "")
+        End If
+        
+        If p_BUI = "" Then
+            p_Error = "El Evento seleccionado no tieme BUI registrado"
+            Err.Raise 1000
+        End If
+        '-----------------------------------------------
+        '   -Devuelve:
+        '       DameIDEvento = strIDEvento
+        '       DameIDEvento = "#ERR" & "|" & p_Error
+        '-----------------------------------------------
+        flag = DameIDEvento(p_BUI, p_FechaAlta)
+        If InStr(1, flag, "|") <> 0 Then
+            dato = Split(flag, "|")
+            p_Error = "El método DameIDEvento ha devuelto el error: " & vbNewLine & dato(1)
+            Err.Raise 1000
+        End If
+        strIDEvento = flag
+        rcdDatosDestino.AddNew
+            For Each fld In rcdDatosDestino.Fields
+                If fld.Name = "IDEVENTO" Then
+                    rcdDatosDestino(fld.Name) = strIDEvento
+                ElseIf fld.Name = "FechaRegistroAlta" Then
+                    rcdDatosDestino(fld.Name) = p_FechaAlta
+                Else
+                    If fld.Name <> "HORAFINALEVENTO" And fld.Name <> "CAUSAFIN" And fld.Name <> "Franqueado" And fld.Name <> "IDExportacion" And fld.Name <> "CodImportacion" And _
+                        fld.Name <> "IDParte" Then
+                        rcdDatosDestino(fld.Name) = rcdDatosOrigen(fld.Name)
+                    End If
+                End If
+            Next
+        rcdDatosDestino.Update
+        If Not rcdDatosDestino Is Nothing Then
+            rcdDatosDestino.Close
+            Set rcdDatosDestino = Nothing
+        End If
+        If Not rcdDatosOrigen Is Nothing Then
+            rcdDatosOrigen.Close
+            Set rcdDatosOrigen = Nothing
+        End If
+    '------------------
+    ' ACTIVIDADES
+    '----------------------
+        m_SQL = "TbActividades"
+        Set rcdDatosDestino = CurrentDb().OpenRecordset(m_SQL)
+        m_SQL = "SELECT TbActividades.* " & _
+                "FROM TbEventos INNER JOIN TbActividades ON TbEventos.IDEvento = TbActividades.IDEvento " & _
+                "WHERE (((TbEventos.IDEvento)='" & p_IDEventoACopiar & "'));"
+        Set rcdDatosOrigen = CurrentDb().OpenRecordset(m_SQL)
+        If Not rcdDatosOrigen.EOF Then
+            rcdDatosOrigen.MoveFirst
+            Do While Not rcdDatosOrigen.EOF
+                strAliasTecnico = Nz(rcdDatosOrigen.Fields("ALIASTECNICO"), "")
+                p_FechaAlta = Nz(rcdDatosOrigen.Fields("FechaAlta"), "")
+                strIDActividadOriginal = Nz(rcdDatosOrigen.Fields("IDActividad"), "")
+                If strAliasTecnico = "" Then
+                    p_Error = "No se ha encontrado el Alias técnico de una de las actividades de origen"
+                    Err.Raise 1000
+                End If
+                If Not IsDate(p_FechaAlta) Then
+                    p_Error = "No se ha encontrado la Fecha de Alta de una de las actividades de origen"
+                    Err.Raise 1000
+                End If
+                
+                rcdDatosDestino.AddNew
+                    '-----------------------------------------------------------'
+                    '   -Devuelve:
+                    '       DameIDActividad = strIDActividad
+                    '       DameIDActividad = "ERR" & "|" & p_Error
+                    '-----------------------------------------------------------'
+                    flag = DameIDActividad(strAliasTecnico, p_FechaAlta)
+                    If InStr(1, flag, "|") <> 0 Then
+                        dato = Split(flag, "|")
+                        p_Error = "El método EVE ha devuelto el error: " & vbNewLine & dato(1)
+                        Err.Raise 1000
+                    End If
+                    strIDActividad = flag
+                    For Each fld In rcdDatosDestino.Fields
+                        If fld.Name = "IDActividad" Then
+                            rcdDatosDestino(fld.Name) = strIDActividad
+                        ElseIf fld.Name = "IDEvento" Then
+                            rcdDatosDestino(fld.Name) = strIDEvento
+                        Else
+                            If fld.Name <> "IDExportacion" And fld.Name <> "CodImportacion" And fld.Name <> "IDFacturacion" Then
+                                rcdDatosDestino(fld.Name) = rcdDatosOrigen(fld.Name)
+                            End If
+                        End If
+                    Next
+                rcdDatosDestino.Update
+                '------------
+                ' copiar todos los materiales de esta actividad
+                '-----------------------------------
+                m_SQL = "SELECT TbMaterial.* " & _
+                        "FROM TbMaterial " & _
+                        "WHERE (((TbMaterial.IDActividad)='" & strIDActividadOriginal & "'));"
+                Set rcdMaterialesOrigen = CurrentDb().OpenRecordset(m_SQL)
+                If Not rcdMaterialesOrigen.EOF Then
+                    rcdMaterialesOrigen.MoveFirst
+                    Do While Not rcdMaterialesOrigen.EOF
+                        strIDMaterialOriginal = Nz(rcdMaterialesOrigen.Fields("IDMaterial"), "")
+                        '-----------------------------------------------
+                        '   -Devuelve:
+                        '       MaterialDeActividadAlta = strIDMaterial
+                        '       MaterialDeActividadAlta = "#ERR" & "|" & p_Error
+                        '-----------------------------------------------
+                        flag = MaterialDeActividadAlta(strIDActividad, _
+                                                        Nz(rcdMaterialesOrigen.Fields("Material"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("COSTE"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("TipoAccion"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("PN"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("NS"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("ReparadoPor"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("Descripcion"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("FechaIncio"), ""), _
+                                                        Nz(rcdMaterialesOrigen.Fields("Garantia"), ""), _
+                                                        "Sí", _
+                                                        Nz(rcdMaterialesOrigen.Fields("FechaEntrega"), ""))
+                        If InStr(1, flag, "|") <> 0 Then
+                            dato = Split(flag, "|")
+                            p_Error = "El método MaterialDeActividadAlta ha devuelto un error: " & vbNewLine & dato(1)
+                            Err.Raise 1000
+                        End If
+                        strIDMaterial = flag
+                        ColMateriales.Add strIDMaterial
+                        
+                        CopiarAnexoMaterial strIDMaterialOriginal, strIDMaterial, p_Error
+                        If p_Error <> "" Then
+                            Err.Raise 1000
+                        End If
+                        CopiarSeguimientoMaterial strIDMaterialOriginal, strIDMaterial, p_Error
+                        If p_Error <> "" Then
+                            Err.Raise 1000
+                        End If
+                        
+                        
+                        rcdMaterialesOrigen.MoveNext
+                    Loop
+                End If
+                
+                rcdDatosOrigen.MoveNext
+            Loop
+        End If
+        If Not rcdDatosDestino Is Nothing Then
+            rcdDatosDestino.Close
+            Set rcdDatosDestino = Nothing
+        End If
+        If Not rcdDatosOrigen Is Nothing Then
+            rcdDatosOrigen.Close
+            Set rcdDatosOrigen = Nothing
+        End If
+        If Not rcdMaterialesOrigen Is Nothing Then
+            rcdMaterialesOrigen.Close
+            Set rcdMaterialesOrigen = Nothing
+        End If
+    CopiarEventoCompletoConActividadesYMateriales = strIDEvento
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método CopiarEventoCompletoConActividadesYMateriales ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatosDestino Is Nothing Then
+        rcdDatosDestino.Close
+        Set rcdDatosDestino = Nothing
+    End If
+    If Not rcdDatosOrigen Is Nothing Then
+        rcdDatosOrigen.Close
+        Set rcdDatosOrigen = Nothing
+    End If
+    On Error Resume Next
+    If strIDEvento <> "" Then
+        m_SQL = "DELETE TbEventos.* " & _
+                "FROM TbEventos " & _
+                "WHERE (((TbEventos.IDEvento)='" & strIDEvento & "'));"
+        DoCmd.SetWarnings False
+        DoCmd.RunSQL m_SQL
+        DoCmd.SetWarnings True
+        m_SQL = "DELETE TbActividades.* " & _
+                "FROM TbActividades " & _
+                "WHERE (((TbActividades.IDEvento)='" & strIDEvento & "'));"
+        DoCmd.SetWarnings False
+        DoCmd.RunSQL m_SQL
+        DoCmd.SetWarnings True
+        If ColMateriales.count > 0 Then
+            For Each VarItem In ColMateriales
+                m_SQL = "SELECT TbAnexos.IDMaterial " & _
+                        "FROM TbAnexos " & _
+                        "WHERE (((TbAnexos.IDMaterial)='" & VarItem & "'));"
+                DoCmd.SetWarnings False
+                DoCmd.RunSQL m_SQL
+                DoCmd.SetWarnings True
+                m_SQL = "DELETE TbMaterial.* " & _
+                        "FROM TbMaterial " & _
+                        "WHERE (((TbMaterial.IDMaterial)='" & CStr(VarItem) & "'));"
+                DoCmd.SetWarnings False
+                DoCmd.RunSQL m_SQL
+                DoCmd.SetWarnings True
+            Next
+        End If
+    End If
+    
+    
+    
+End Function
+Public Function CopiarAnexoMaterial( _
+                                        strIDMaterialOriginal As String, _
+                                        strIDMaterialDestino As String, _
+                                        Optional ByRef p_Error As String _
+                                        ) As String
+    
+    Dim rcdDatos As DAO.Recordset, rcdAnexo As DAO.Recordset, strIDAnexo As String, strNombreArchivo As String, strDESCRIPCION As String, strTitulo As String
+    On Error GoTo errores
+    m_Error = ""
+    p_Error = ""
+    m_SQL = "TbAnexos"
+    Set rcdAnexo = CurrentDb().OpenRecordset(m_SQL)
+    m_SQL = "SELECT TbAnexos.Titulo, TbAnexos.Descripcion, TbAnexos.NombreArchivo " & _
+            "FROM TbAnexos " & _
+            "WHERE (((TbAnexos.IDMaterial)='" & strIDMaterialOriginal & "'));"
+    Set rcdDatos = CurrentDb().OpenRecordset(m_SQL)
+    With rcdDatos
+        If Not .EOF Then
+            .MoveFirst
+            Do While Not .EOF
+                strTitulo = Nz(.Fields("Titulo"), "")
+                strDESCRIPCION = Nz(.Fields("Descripcion"), "")
+                strNombreArchivo = Nz(.Fields("NombreArchivo"), "")
+                If strNombreArchivo <> "" Then
+                    strIDAnexo = DameID("TbAnexos", "IDAnexo")
+                    
+                    rcdAnexo.AddNew
+                        rcdAnexo.Fields("IDAnexo") = strIDAnexo
+                        rcdAnexo.Fields("IDMaterial") = strIDMaterialDestino
+                        If strTitulo <> "" Then
+                            rcdAnexo.Fields("Titulo") = strTitulo
+                        End If
+                        If strDESCRIPCION <> "" Then
+                            rcdAnexo.Fields("Descripcion") = strDESCRIPCION
+                        End If
+                        rcdAnexo.Fields("NombreArchivo") = strNombreArchivo
+                    rcdAnexo.Update
+                End If
+                .MoveNext
+            Loop
+        End If
+    End With
+    rcdDatos.Close
+    Set rcdDatos = Nothing
+    If Not rcdAnexo Is Nothing Then
+        rcdAnexo.Close
+        Set rcdAnexo = Nothing
+    End If
+    CopiarAnexoMaterial = "Sí"
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método CopiarAnexoMaterial ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    If Not rcdDatos Is Nothing Then
+        rcdDatos.Close
+        Set rcdDatos = Nothing
+    End If
+    If Not rcdAnexo Is Nothing Then
+        rcdAnexo.Close
+        Set rcdAnexo = Nothing
+    End If
+    
+End Function
+Public Function CopiarSeguimientoMaterial( _
+                                            p_IDMaterialOrigen As String, _
+                                            p_IDMaterialDestino As String, _
+                                            Optional ByRef p_Error As String _
+                                            ) As String
+    
+    Dim rcdDatosDestino As DAO.Recordset
+    Dim rcdDatosOrigen As DAO.Recordset
+    
+    Dim strIDIntervencion As String
+   
+    On Error GoTo errores
+    m_Error = ""
+    p_Error = ""
+    m_SQL = "TbMaterialSeguimiento"
+    Set rcdDatosDestino = CurrentDb().OpenRecordset(m_SQL)
+    m_SQL = "SELECT TbMaterialSeguimiento.* " & _
+            "FROM TbMaterialSeguimiento " & _
+            "WHERE (((TbMaterialSeguimiento.IDMaterial)='" & p_IDMaterialOrigen & "'));"
+    Set rcdDatosOrigen = CurrentDb().OpenRecordset(m_SQL)
+    If rcdDatosOrigen.EOF Then
+        Exit Function
+    End If
+    rcdDatosOrigen.MoveFirst
+    Do While Not rcdDatosOrigen.EOF
+        rcdDatosDestino.AddNew
+            strIDIntervencion = DameIDIntervencion(p_IDMaterialDestino)
+            rcdDatosDestino.Fields("IDSeguimiento") = strIDIntervencion
+            rcdDatosDestino.Fields("IDMaterial") = p_IDMaterialDestino
+            rcdDatosDestino.Fields("FechaInicioIntervencion") = rcdDatosOrigen.Fields("FechaInicioIntervencion")
+            rcdDatosDestino.Fields("Destino") = rcdDatosOrigen.Fields("Destino")
+            rcdDatosDestino.Fields("Motivo") = rcdDatosOrigen.Fields("Motivo")
+            rcdDatosDestino.Fields("FechaFinIntervencion") = rcdDatosOrigen.Fields("FechaFinIntervencion")
+            rcdDatosDestino.Fields("Resultado") = rcdDatosOrigen.Fields("Resultado")
+            rcdDatosDestino.Fields("UltimaIntervencion") = rcdDatosOrigen.Fields("UltimaIntervencion")
+            
+        rcdDatosDestino.Update
+        rcdDatosOrigen.MoveNext
+    Loop
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método CopiarSeguimientoMaterial ha producido el error nº: " & Err.Number & vbCrLf & "Detalle: " & Err.Description
+    End If
+    
+End Function

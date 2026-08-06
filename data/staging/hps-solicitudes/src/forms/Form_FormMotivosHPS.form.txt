@@ -1,0 +1,862 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =430739764
+Begin Form
+    AutoResize = NotDefault
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    ViewsAllowed =1
+    BorderStyle =1
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =13833
+    DatasheetFontHeight =11
+    ItemSuffix =76
+    Left =3225
+    Top =3030
+    Right =17055
+    Bottom =9705
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x2509d6d00f1fe540
+    End
+    GUID = Begin
+        0x8ae8496b9348bc47a3aaf83fda1c5467
+    End
+    NameMap = Begin
+        0x0acc0e5500000000000000000000000000000000000000000c00000005000000 ,
+        0x0000000000000000000000000000
+    End
+    Caption ="MOTIVOS HPS"
+    OnOpen ="[Event Procedure]"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000000000c8420000c842eeece100604c99fdf201000040d80f90f97f0000 ,
+        0x010403069c000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220052000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000545330303100
+    End
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    AllowLayoutView =0
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x6900720065006300630069006f006e00610064006f0029002000280000000000 ,
+        0x01040306dc000c0303ff8403010009009a0b3408640001000700580202000100 ,
+        0x5802020001004100340000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000040000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e004e000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000054005300 ,
+        0x3000300031000000
+    End
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =8355711
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =50.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Rectangle
+            SpecialEffect =3
+            BackStyle =0
+            BorderLineStyle =0
+            Width =850
+            Height =850
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+        End
+        Begin TextBox
+            AddColon = NotDefault
+            FELineBreak = NotDefault
+            BorderLineStyle =0
+            Width =1701
+            LabelX =-1701
+            FontSize =11
+            BorderColor =10921638
+            ForeColor =4210752
+            FontName ="Calibri"
+            AsianLineBreak =1
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ThemeFontIndex =1
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin ListBox
+            BorderLineStyle =0
+            Width =1701
+            Height =1417
+            LabelX =-1701
+            FontSize =11
+            ForeColor =4210752
+            BorderColor =10921638
+            FontName ="Calibri"
+            GridlineColor =10921638
+            AllowValueListEdits =1
+            InheritValueList =1
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin FormHeader
+            Height =720
+            BackColor =16737792
+            Name ="EncabezadoDelFormulario"
+            GUID = Begin
+                0x403e1d50a29f8d4dadc9705c3b958958
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =2
+                    Width =12525
+                    Height =660
+                    FontSize =22
+                    FontWeight =700
+                    ForeColor =16777215
+                    Name ="lblTitulo1"
+                    Caption ="MOTIVOS HPS"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x7adc048205e6eb4f8a31ebb8ef275c4e
+                    End
+                    LayoutCachedWidth =12525
+                    LayoutCachedHeight =660
+                    ThemeFontIndex =-1
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                End
+            End
+        End
+        Begin Section
+            Height =5272
+            Name ="Detalle"
+            GUID = Begin
+                0x7212351a583344428c6db3bc363ecf9e
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin ListBox
+                    TabStop = NotDefault
+                    RowSourceTypeInt =1
+                    OverlapFlags =85
+                    IMESentenceMode =3
+                    Left =299
+                    Top =337
+                    Width =13200
+                    Height =4758
+                    BackColor =16446961
+                    BorderColor =14136213
+                    Name ="ListaFiltrados"
+                    RowSourceType ="Value List"
+                    ColumnWidths ="13200"
+                    OnDblClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Seleccione una opción de la lista"
+                    GUID = Begin
+                        0x353095bb78789b48b1c6a447272d2209
+                    End
+                    AllowValueListEdits =0
+                    InheritValueList =0
+
+                    LayoutCachedLeft =299
+                    LayoutCachedTop =337
+                    LayoutCachedWidth =13499
+                    LayoutCachedHeight =5095
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =4
+                    BackTint =8.0
+                    BorderThemeColorIndex =4
+                    BorderTint =60.0
+                    BorderShade =100.0
+                End
+            End
+        End
+        Begin FormFooter
+            Height =686
+            BackColor =16737792
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0x35a9064173faa646860f572dbfd5bc4b
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =12909
+                    Top =45
+                    Width =578
+                    Height =578
+                    FontWeight =700
+                    Name ="cmdSalir"
+                    Caption ="Salir"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir de la aplicación"
+                    Picture ="Salir1_32x32.png"
+                    GUID = Begin
+                        0x7ada9731c685bd4c9808159a8e27c9ca
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000020000000200806000000737a7a ,
+                        0xf4000000097048597300000ec400000ec401952b0e1b0000000774494d4507e8 ,
+                        0x0a140901370d7f44e70000057e4944415458859d976b6c545510c77f7376f76e ,
+                        0x77db422b0a253e1252d00f46a0e15115f1032f3184181f68a2418dd2d256904f ,
+                        0xfa8918633451e207a9b45b44938ac618014d7c40e25b836041a18d3581148dc4 ,
+                        0xc43e94a77dedeb8c1feebdedb677b7adfc939b3df7cc9e99ff9c336766ae3015 ,
+                        0x3c6d6762598c528d5085320f950a544b0110fa811e842e84768436a2729c57a5 ,
+                        0x7732d532a1f429bb0e433dca0a1c892140d67b2ca0395a0c10f27e01529ac4f0 ,
+                        0x35195a68361fff3f029bed5ca2341292bb1120e519cc8502514f43328f0e0344 ,
+                        0x3c795a3f67906dbc654e4d4ea0ceae25c27b3852ce5021deb8de66f44ba08f90 ,
+                        0x3c1c20988b1890d64ba4d8488bf9a43081cd7615510e2112263d8142f10864f5 ,
+                        0x469a4c170d7a8110656427581301542d69d6933007fd6933f2875abd9e88ec9b ,
+                        0xd0781828f21e03281150509591797fdbc7230d8818c2bc4fbdce0912086b3351 ,
+                        0xcaf21a0f79caadfec1b03631a4f5a4f40c50420d31e02cc3fa04433c4f568f13 ,
+                        0x069c02241c2945f50d7fcae5da60971395ef49311ad9301a68592ea2ba9dd7a5 ,
+                        0x09f1dc6bb0fb509a48d14194569acd3d23ebb6dad528afe04815c37988140143 ,
+                        0xba8684f9c227b09f98dc1f083a07c8e859b2ac25614eb1c95e4b9c1a94b5c012 ,
+                        0x5254d1279d54e8792274a37c87b2975de608cb35c402fd80a8dc17d0eb123848 ,
+                        0xc2ac139eb1250cd08d919231916c00d14186a9668fe9a4ced6e1b003474ac902 ,
+                        0x1920a3f3e9915fa9d03e623263244fa4f54d9a4c0df7aa61b61ec39145a4c6e9 ,
+                        0xb69a24c96cc3005544c719c7dbfa8cec608fe9a4de6ea4441220a50cc2883261 ,
+                        0x908fc4a228696008f79c8b6513f5f65d5726b558b56302d3024512c561b10116 ,
+                        0xe584e228c361fd1787d7d8624b116924e5790d6e6c1800b98306bb9410a5230e ,
+                        0x283000c4e511eaec1a12728214df0682520065a941991ff03e02580eb3532e61 ,
+                        0x7988386523c67d6400a115a40d241a085e05842ddecc81809359405868102a03 ,
+                        0x045cefda3caaabf366b9dc3aa079e4ee755ec27615447e74f3408edcd5596980 ,
+                        0x9979f33cfabb3bd63905d3acef693eb86baea1576751c459329a0a1010661994 ,
+                        0xe28012f78c2f7a1e96163432194212224c19e7e847c75d46977cb1410aa8578f ,
+                        0xaf5eb1799f8472950a9227418b6818e80f880440cabdb7cb93740df92180d50c ,
+                        0x96f30c310d875840aeda6f507a0311ea0a2bbdb7ae807c2a70d7f4d0227f1361 ,
+                        0x0e8e4402890ee931790db80172ab47e6d015ed4004507e0001c332c2e3e42100 ,
+                        0x3d6330740408b85766195bedd5f4cb0106b53b6f752b04c1bf053b01501e08f4 ,
+                        0x0a06b09c3464f93970cddc541927cdb3ec9524508b785e4d0603140343da48c2 ,
+                        0x1ca5dede8923b705cabc0221693314d1c1b05e70b7240749c0611b75b69a84f9 ,
+                        0x946136a0fa1771dc3a11c6ddc690377680386034433f2fd362b651a3310cbb03 ,
+                        0xc9ca4df503889ef0cb712b31792c5036234056fbb0aca7d91ca3418b09ebe358 ,
+                        0xee4299074c4731c000863f110ea3f20ebbe434353a8d22fd9088ac0cf4043160 ,
+                        0x50f793301b5c027576218e9c244bb02171704ba7f2224969648f5c9ef418b6d8 ,
+                        0x07819770646ec0b87f9449bd9d84393a1adff5f66d8ae55106f32834b8db9ed4 ,
+                        0x7f50bec27204e134ca390c592cd311e6202c465849446ec242def62e0e0cb8de ,
+                        0xfb7c5c3c69cb89d14e446ec8dbe7837bde7e205a46bf15fc2e19bc46a5c07ab7 ,
+                        0xc3eac1b08046d337960040832e20a4df1096f2822472e1af9e4ab28e0259ed27 ,
+                        0xc52a5a4c9b3f3d3603344b07695690d12ee2017a414c540d7349c6717bcb71c6 ,
+                        0x8304005a4c3b835493d4dd18b5c4207045a782108cac1da695344bc61bf7f915 ,
+                        0xc656bb10a845594f58ae2384ebb17ffee33f4e8d37ce0219ed46f80c61378de6 ,
+                        0xa74226a696e59fd30817f466a08a2cb72054021528252882d08fd00bfc86e117 ,
+                        0x2cedcc904e5e904923e93fbb2014d2251d42230000000049454e44ae426082
+                    End
+
+                    LayoutCachedLeft =12909
+                    LayoutCachedTop =45
+                    LayoutCachedWidth =13487
+                    LayoutCachedHeight =623
+                    UseTheme =1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =4210752
+                    HoverForeThemeColorIndex =0
+                    HoverForeTint =75.0
+                    PressedForeColor =4210752
+                    PressedForeThemeColorIndex =0
+                    PressedForeTint =75.0
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =10275
+                    Top =195
+                    Width =1125
+                    Height =435
+                    FontWeight =700
+                    TabIndex =1
+                    ForeColor =16737792
+                    Name ="ComandoEditar"
+                    Caption ="Editar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xbd3c860e83b860468edbc2c05973c466
+                    End
+
+                    LayoutCachedLeft =10275
+                    LayoutCachedTop =195
+                    LayoutCachedWidth =11400
+                    LayoutCachedHeight =630
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    UseTheme =1
+                    ThemeFontIndex =-1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =16737792
+                    PressedForeColor =16737792
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin CommandButton
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =11625
+                    Top =195
+                    Width =1125
+                    Height =435
+                    FontWeight =700
+                    TabIndex =2
+                    ForeColor =16737792
+                    Name ="ComandoAlta"
+                    Caption ="Alta"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xc02ac4cba504b343a37627ff075ca18e
+                    End
+
+                    LayoutCachedLeft =11625
+                    LayoutCachedTop =195
+                    LayoutCachedWidth =12750
+                    LayoutCachedHeight =630
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    UseTheme =1
+                    ThemeFontIndex =-1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =16737792
+                    PressedForeColor =16737792
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin CommandButton
+                    Enabled = NotDefault
+                    TabStop = NotDefault
+                    OverlapFlags =85
+                    Left =299
+                    Top =195
+                    Width =1125
+                    Height =435
+                    FontWeight =700
+                    TabIndex =3
+                    ForeColor =16737792
+                    Name ="ComandoEliminar"
+                    Caption ="Eliminar"
+                    OnClick ="[Event Procedure]"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x95dcfd118ae56242b0b943fca5177de1
+                    End
+
+                    LayoutCachedLeft =299
+                    LayoutCachedTop =195
+                    LayoutCachedWidth =1424
+                    LayoutCachedHeight =630
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    UseTheme =1
+                    ThemeFontIndex =-1
+                    HoverColor =15060409
+                    HoverThemeColorIndex =4
+                    HoverTint =40.0
+                    PressedColor =9592887
+                    PressedThemeColorIndex =4
+                    PressedShade =75.0
+                    HoverForeColor =16737792
+                    PressedForeColor =16737792
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+
+Private WithEvents m_Form As Form_FormMotivoHPS
+Attribute m_Form.VB_VarHelpID = -1
+Private m_MotivoSeleccionado As MotivoHPS
+Private m_Error As String
+
+Private Sub cmdSalir_Click()
+    
+    On Error Resume Next
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Function EstablecerLista(Optional ByRef p_Error As String) As String
+    
+    Dim lst As ListBox
+    Dim m_Col As Scripting.Dictionary
+    Dim m_ID As Variant
+    Dim m_Motivo As MotivoHPS
+    
+    On Error GoTo errores
+    Me.ComandoEditar.Enabled = True
+    Me.ComandoEliminar.Enabled = True
+    
+    Set lst = Me.ListaFiltrados
+    lst.RowSource = ""
+    Set m_Col = m_ObjEntorno.ColMotivos
+    p_Error = m_ObjEntorno.Error
+    If p_Error <> "" Then
+        Err.Raise 1000
+    End If
+    For Each m_ID In m_Col
+        Set m_Motivo = m_Col(m_ID)
+        
+        lst.AddItem m_Motivo.MotivoHPS
+        
+        Set m_Motivo = Nothing
+    Next
+    Exit Function
+    
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El método EstablecerLista ha devuelto el error: " & Err.Description
+    End If
+End Function
+
+
+
+Private Sub ComandoAlta_Click()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    If FormularioAbierto("FormMotivoHPS") Then
+        DoCmd.Close acForm, "FormMotivoHPS", acSaveNo
+    End If
+    Set m_ObjMotivoActivo = Nothing
+    DoCmd.OpenForm "FormMotivoHPS"
+    If FormularioAbierto("FormMotivoHPS") Then
+        Set m_Form = Forms("FormMotivoHPS")
+    End If
+   
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAlta_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoEditar_Click()
+    
+  
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    If m_MotivoSeleccionado Is Nothing Then
+        m_Error = "Seleccione una elemento de la lista"
+        Err.Raise 1000
+    End If
+    If FormularioAbierto("FormMotivoHPS") Then
+        DoCmd.Close acForm, "FormMotivoHPS", acSaveNo
+    End If
+    Set m_ObjMotivoActivo = m_MotivoSeleccionado
+    DoCmd.OpenForm "FormMotivoHPS"
+    If FormularioAbierto("FormMotivoHPS") Then
+        Set m_Form = Forms("FormMotivoHPS")
+    End If
+   
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEditar_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ComandoEliminar_Click()
+    On Error GoTo errores
+    
+    
+    m_Error = ""
+    If m_MotivoSeleccionado Is Nothing Then
+        m_Error = "Seleccione una elemento de la lista"
+        Err.Raise 1000
+    End If
+    If m_EnOficina = EnumSiNo.no Then
+        m_Error = "Sólo puede hacerse en la oficina"
+        Err.Raise 1000
+    End If
+    pregunta = MsgBox("¿Desea eliminar el motivo seleccionado?", vbExclamation + vbYesNo + vbDefaultButton2, "Eliminar motivo")
+    If pregunta <> vbYes Then
+        Exit Sub
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_MotivoSeleccionado.EliminarMotivo m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    pregunta = MsgBox("Motivo borrado correctamente", vbInformation, "Motivo eliminado")
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    Set m_ObjEntorno.ColMotivos = Nothing
+    EstablecerLista m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoEliminar_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+    End If
+    
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub Form_Open(Cancel As Integer)
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Ajustar Me
+    
+    Me.Caption = Me.lblTitulo1.Caption
+    
+    
+    
+    EstablecerLista m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+   
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Open se ha producido el error num " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        On Error Resume Next
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Sub ListaFiltrados_Click()
+    
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    
+    Me.ComandoEditar.Enabled = False
+    Me.ComandoEliminar.Enabled = False
+    If Nz(Me.ListaFiltrados, "") = "" Then
+        Set m_MotivoSeleccionado = Nothing
+        VBA.DoEvents
+        DoCmd.Hourglass False
+        VBA.DoEvents
+        Exit Sub
+    End If
+    If m_MotivoSeleccionado Is Nothing Then
+        Set m_MotivoSeleccionado = constructor.getMotivo(p_Motivo:=Me.ListaFiltrados.Column(0), p_Error:=m_Error)
+        If m_Error <> "" Then
+            Err.Raise 1000
+        End If
+    Else
+        If Me.ListaFiltrados.Column(0) <> m_MotivoSeleccionado.MotivoHPS Then
+            Set m_MotivoSeleccionado = constructor.getMotivo(p_Motivo:=Me.ListaFiltrados.Column(0), p_Error:=m_Error)
+            If m_Error <> "" Then
+                Err.Raise 1000
+            End If
+
+        End If
+    End If
+    
+    
+    If m_MotivoSeleccionado Is Nothing Then
+        VBA.DoEvents
+        DoCmd.Hourglass False
+        VBA.DoEvents
+        
+        Exit Sub
+    End If
+    Me.ComandoEditar.Enabled = True
+    Me.ComandoEliminar.Enabled = True
+    
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al ListaMotivos_Click se ha producido el error num " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        On Error Resume Next
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub ListaFiltrados_DblClick(Cancel As Integer)
+    
+    On Error Resume Next
+    Application.Echo False
+    If Me.ComandoEditar.Enabled = True Then
+        ComandoEditar_Click
+    End If
+    Application.Echo True
+End Sub
+
+Private Sub m_Form_Alta()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Set m_ObjEntorno.ColMotivos = Nothing
+    EstablecerLista m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_Form_Alta se ha producido el error num " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        On Error Resume Next
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub
+
+Private Sub m_Form_Editado()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+    Set m_ObjEntorno.ColMotivos = Nothing
+    EstablecerLista m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    If Err.Number <> 1000 Then
+        m_Error = "Al m_Form_Editado se ha producido el error num " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        On Error Resume Next
+        CorreoAlAdministrador m_Error
+    End If
+    DoCmd.Hourglass False
+    pregunta = MsgBox(m_Error, vbCritical, "Error")
+End Sub

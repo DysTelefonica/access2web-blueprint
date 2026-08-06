@@ -1,0 +1,992 @@
+Version =21
+VersionRequired =20
+PublishOption =1
+Checksum =1819848571
+Begin Form
+    RecordSelectors = NotDefault
+    MaxButton = NotDefault
+    MinButton = NotDefault
+    ControlBox = NotDefault
+    AutoCenter = NotDefault
+    NavigationButtons = NotDefault
+    CloseButton = NotDefault
+    DividingLines = NotDefault
+    AllowDesignChanges = NotDefault
+    DefaultView =0
+    ScrollBars =0
+    BorderStyle =1
+    PictureAlignment =2
+    DatasheetGridlinesBehavior =3
+    GridY =10
+    Width =13209
+    DatasheetFontHeight =11
+    ItemSuffix =24
+    Left =2685
+    Top =4095
+    Right =15900
+    Bottom =11280
+    DatasheetGridlinesColor =14806254
+    RecSrcDt = Begin
+        0x687fc8a23028e640
+    End
+    GUID = Begin
+        0x270a607db29cea42a098dbdc011c95c2
+    End
+    NameMap = Begin
+        0x0acc0e55000000008c9b0abc11199a44b5f4e40187d2fcd50100000097cd3015 ,
+        0x7b88e640000000000000000046006f0072006d005000750062006c0069006300 ,
+        0x6100630069006f006e00430061006c0069006400610064005000750062006c00 ,
+        0x6900630061007200000000000000519f2ddfff20934eb6e48a6b631fb4860100 ,
+        0x0000c31f44157b88e640000000000000000046006f0072006d00500075006200 ,
+        0x6c00690063006100630069006f006e004400610074006f007300470065006e00 ,
+        0x6500720061006c0065007300000000000000c7004bc305cc4c458d4d35ad6a43 ,
+        0x32fb01000000406959157b88e640000000000000000046006f0072006d005000 ,
+        0x750062006c00690063006100630069006f006e00550054004500000000000000 ,
+        0x193776637e6d6b40a8670ee783914bf8010000005cc149157b88e64000000000 ,
+        0x0000000046006f0072006d005000750062006c00690063006100630069006f00 ,
+        0x6e00530075006d0069006e006900730074007200610064006f00720065007300 ,
+        0x00000000000062a18367d3e33c4a897e8e5fbe19be40010000002e0929157b88 ,
+        0xe640000000000000000046006f0072006d005000750062006c00690063006100 ,
+        0x630069006f006e00430061006c0069006400610064004e006f00740061007300 ,
+        0x000000000000000000000000000000000000000000000c000000050000000000 ,
+        0x000000000000000000000000
+    End
+    Caption ="Usuario conectado: Beatriz Noval Gutiérrez ( Calidad )"
+    DatasheetFontName ="Calibri"
+    PrtMip = Begin
+        0x6801000068010000680100006801000000000000201c0000e010000001000000 ,
+        0x010000006801000000000000a10700000100000001000000
+    End
+    PrtDevMode = Begin
+        0x000000000000c8420000c842eeece100f0388f9e84010000c010daaefb7f0000 ,
+        0x010403069c000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc800020001004134000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNames = Begin
+        0x0800220052000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000005453303031000000000000000000 ,
+        0x0000000000000000
+    End
+    OnLoad ="[Event Procedure]"
+    AllowDatasheetView =0
+    FilterOnLoad =0
+    ShowPageMargins =0
+    DisplayOnSharePointSite =1
+    DatasheetAlternateBackColor =15921906
+    DatasheetGridlinesColor12 =0
+    DatasheetBackThemeColorIndex =1
+    BorderThemeColorIndex =3
+    ThemeFontIndex =1
+    ForeThemeColorIndex =0
+    AlternateBackThemeColorIndex =1
+    AlternateBackShade =95.0
+    PrtDevModeW = Begin
+        0x00007bd384010000693d6fc51e00000040a1b79c840100004400000000000000 ,
+        0x030000000000000003000000000000000000bcec000000004aa1b79c84010000 ,
+        0x01040306dc000c0343ef8005010009009a0b3408640001000f00c80002000100 ,
+        0xc80002000100410034000000000000000000000044000000010000001e000000 ,
+        0x1004000000000000eacccc2efc7f000040a1b79c840100000300000000000000 ,
+        0x3000000000000000000000000000000000000000010000000000000001000000 ,
+        0x0200000001000000ffffffff0000000000000000000000000000000044494e55 ,
+        0x2200b0000c030000c1951cfb0000000000000000000000000000000000000000 ,
+        0x0000000000000000060000000100000000000000020001000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000100000000000000000000000000000000000000 ,
+        0x000000000000000000000000000000000000000000000000b0000000534d544a ,
+        0x000000001000a000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    PrtDevNamesW = Begin
+        0x04001e004e000100000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000000000000000000000000000000000000000000054005300 ,
+        0x3000300031000000000000000000000000000000000000000000000000000000 ,
+        0x0000000000000000
+    End
+    NoSaveCTIWhenDisabled =1
+    NoSaveCTIWhenDisabled =1
+    Begin
+        Begin Label
+            BackStyle =0
+            FontSize =11
+            BorderColor =8355711
+            ForeColor =6710886
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ThemeFontIndex =1
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =0
+            BorderTint =50.0
+            ForeThemeColorIndex =0
+            ForeTint =60.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin Image
+            BackStyle =0
+            OldBorderStyle =0
+            BorderLineStyle =0
+            SizeMode =3
+            PictureAlignment =2
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            BorderShade =65.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin CommandButton
+            Width =1701
+            Height =283
+            FontSize =11
+            FontWeight =400
+            ForeColor =4210752
+            FontName ="Calibri"
+            GridlineColor =10921638
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            UseTheme =1
+            Shape =1
+            Gradient =12
+            BackColor =14136213
+            BackThemeColorIndex =4
+            BackTint =60.0
+            BorderLineStyle =0
+            BorderColor =14136213
+            BorderThemeColorIndex =4
+            BorderTint =60.0
+            ThemeFontIndex =1
+            HoverColor =15060409
+            HoverThemeColorIndex =4
+            HoverTint =40.0
+            PressedColor =9592887
+            PressedThemeColorIndex =4
+            PressedShade =75.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+        End
+        Begin Subform
+            BorderLineStyle =0
+            Width =1701
+            Height =1701
+            BorderColor =10921638
+            GridlineColor =10921638
+            BorderThemeColorIndex =1
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            BorderShade =65.0
+            ShowPageHeaderAndPageFooter =1
+        End
+        Begin EmptyCell
+            Height =240
+            GridlineColor =10921638
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin NavigationControl
+            BorderWidth =1
+            BorderLineStyle =0
+            BorderColor =16777215
+            ForeColor =4138256
+            BackThemeColorIndex =1
+            BorderThemeColorIndex =1
+            GridlineColor =10921638
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+        End
+        Begin NavigationButton
+            Width =283
+            Height =283
+            ForeColor =4210752
+            GridlineColor =10921638
+            GridlineThemeColorIndex =1
+            GridlineShade =65.0
+            HoverColor =15849926
+            HoverThemeColorIndex =2
+            HoverTint =20.0
+            PressedColor =13995605
+            PressedThemeColorIndex =2
+            PressedTint =60.0
+            HoverForeColor =4210752
+            HoverForeThemeColorIndex =0
+            HoverForeTint =75.0
+            PressedForeColor =4210752
+            PressedForeThemeColorIndex =0
+            PressedForeTint =75.0
+            BackThemeColorIndex =1
+            OldBorderStyle =0
+            BorderLineStyle =0
+            BorderColor =12835293
+            BorderThemeColorIndex =3
+            BorderShade =90.0
+            ThemeFontIndex =1
+            TextFontCharSet =177
+            TextFontFamily =0
+            FontName ="Calibri"
+            FontWeight =400
+            FontSize =11
+            ForeThemeColorIndex =0
+            ForeTint =75.0
+        End
+        Begin FormHeader
+            Height =547
+            BackColor =16737792
+            Name ="EncabezadoDelFormulario"
+            GUID = Begin
+                0x00438caec454554fa10800ccb000aa75
+            End
+            AutoHeight =1
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin Label
+                    OverlapFlags =85
+                    TextAlign =1
+                    Left =300
+                    Top =60
+                    Width =9720
+                    Height =465
+                    FontSize =18
+                    BorderColor =8210719
+                    ForeColor =16777215
+                    Name ="lblTitulo"
+                    Caption ="0502_22 Ed. 6 (Edición NO Activa)"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0xfff09b8a0866f7499d240c14753bc478
+                    End
+                    GroupTable =3
+                    LayoutCachedLeft =300
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =10020
+                    LayoutCachedHeight =525
+                    LayoutGroup =3
+                    ThemeFontIndex =-1
+                    BorderThemeColorIndex =2
+                    BorderTint =100.0
+                    ForeThemeColorIndex =-1
+                    ForeTint =100.0
+                    GroupTable =3
+                End
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =12345
+                    Top =60
+                    Width =391
+                    Height =390
+                    Name ="ComandoAyuda"
+                    Caption ="Comando47"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Actualizar"
+                    Picture ="AyudaRegular_16x16.png"
+                    GUID = Begin
+                        0x093a4d935e646d42a024f5c2c3bfe1b6
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d49484452000000100000001008060000001ff3ff ,
+                        0x61000000097048597300000b1300000b1301009a9c180000015249444154789c ,
+                        0x8d934d2b44511cc68f28c54e7c0161614148c9c294281249299652dc736724c9 ,
+                        0x5b4436d294c2c6462cc8c2d667b0f092224bb1430ae50b3c7e73dc9a193377ee ,
+                        0x9cfaf5bff7dcf33cf73cff73af3151c36a16be8dafaf2cfee68e22f52cba82ba ,
+                        0x10f38f6803ab1b935037f518866109c335ea00bc176710572bd5339e5aa88381 ,
+                        0x5153aec18cca71efe3c104b407112e31e8351b2a33f3aa64bed6115743768449 ,
+                        0x55b1f81e4e60cb097d1df0d621163e73bd407da4de06a47a93c86cd6262ca727 ,
+                        0x54c2fd35f99b83dcafd4bdf0acbecea1ebdfdc2e5b1d43d809672e4201837d97 ,
+                        0x3dbb8117100b17658e693562f21274bb9f9a743947555a9c416aa43aeb6bdb9d ,
+                        0xb9af3933a58ae2849e3a10ec047d4863750aeb1c6f4db8d86a041e108c3b23ab ,
+                        0xb60c62b0084feca63abf81af3bf2d717dca1d50aac863d7c8b8c68d5e33eb090 ,
+                        0x1d7ce6fcaab9fcc0613ef92f3f51eae50c538cc20000000049454e44ae426082
+                    End
+                    LayoutCachedLeft =12345
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =12736
+                    LayoutCachedHeight =450
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+            End
+        End
+        Begin Section
+            Height =6122
+            Name ="Detalle"
+            GUID = Begin
+                0xc9fe9987e6eadf4ab058a17d1172914a
+            End
+            AlternateBackColor =15921906
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            BackThemeColorIndex =1
+            Begin
+                Begin NavigationControl
+                    OldBorderStyle =0
+                    OverlapFlags =85
+                    Left =330
+                    Top =330
+                    Width =12480
+                    Height =405
+                    Name ="NavCtrl"
+                    GUID = Begin
+                        0xa0f8742fb01c7d4999eeba70661ad9fd
+                    End
+                    GroupTable =2
+                    LeftPadding =0
+                    TopPadding =0
+                    RightPadding =0
+                    GridlineStyleBottom =1
+                    GridlineWidthBottom =4
+                    LayoutCachedLeft =330
+                    LayoutCachedTop =330
+                    LayoutCachedWidth =12810
+                    LayoutCachedHeight =735
+                    LayoutGroup =2
+                    NavigationSubform ="FormDetalle"
+                    GridlineColor =12419407
+                    GridlineThemeColorIndex =4
+                    GridlineShade =100.0
+                    GroupTable =2
+                    Begin
+                        Begin NavigationButton
+                            OverlapFlags =87
+                            Left =330
+                            Top =330
+                            Width =2415
+                            Height =405
+                            Name ="NavPublicacion"
+                            Caption ="Publicación"
+                            OnClick ="[Event Procedure]"
+                            GUID = Begin
+                                0xc1fdcca86d75604b995bb354c4c4144a
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+                            LayoutCachedLeft =330
+                            LayoutCachedTop =330
+                            LayoutCachedWidth =2745
+                            LayoutCachedHeight =735
+                            LayoutGroup =1
+                            NavigationTargetName ="FormPublicacionCalidadPublicar"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            OverlapFlags =87
+                            Left =2775
+                            Top =330
+                            Width =1830
+                            Height =405
+                            TabIndex =1
+                            Name ="NavDatosGenerales"
+                            Caption ="Datos generales"
+                            GUID = Begin
+                                0x1337d0f250d3774cb84355e2f019bfb4
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+                            LayoutCachedLeft =2775
+                            LayoutCachedTop =330
+                            LayoutCachedWidth =4605
+                            LayoutCachedHeight =735
+                            ColumnStart =1
+                            ColumnEnd =1
+                            LayoutGroup =1
+                            NavigationTargetName ="FormPublicacionDatosGenerales"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            OverlapFlags =87
+                            Left =4635
+                            Top =330
+                            Width =1440
+                            Height =405
+                            TabIndex =2
+                            Name ="NavUTE"
+                            Caption ="Acuerdo UTE"
+                            GUID = Begin
+                                0x9f6eb9f2d5aa1b449162dd00a8fa6aea
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+                            LayoutCachedLeft =4635
+                            LayoutCachedTop =330
+                            LayoutCachedWidth =6075
+                            LayoutCachedHeight =735
+                            ColumnStart =2
+                            ColumnEnd =2
+                            LayoutGroup =1
+                            NavigationTargetName ="FormPublicacionUTE"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            Enabled = NotDefault
+                            OverlapFlags =87
+                            Left =6105
+                            Top =330
+                            Width =2745
+                            Height =405
+                            TabIndex =3
+                            Name ="NavAcuerdoSuministradores"
+                            Caption ="Suministradores"
+                            GUID = Begin
+                                0x70347e63985ca9449997325b0f01c7d1
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+                            LayoutCachedLeft =6105
+                            LayoutCachedTop =330
+                            LayoutCachedWidth =8850
+                            LayoutCachedHeight =735
+                            ColumnStart =3
+                            ColumnEnd =3
+                            LayoutGroup =1
+                            NavigationTargetName ="FormPublicacionSuministradores"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            OverlapFlags =87
+                            Left =8880
+                            Top =330
+                            Width =1830
+                            Height =405
+                            TabIndex =4
+                            Name ="NavNotasCalidad"
+                            Caption ="Notas Calidad"
+                            GUID = Begin
+                                0xa025205e078147439a8aa477eb1af8c7
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+                            LayoutCachedLeft =8880
+                            LayoutCachedTop =330
+                            LayoutCachedWidth =10710
+                            LayoutCachedHeight =735
+                            ColumnStart =4
+                            ColumnEnd =4
+                            LayoutGroup =1
+                            NavigationTargetName ="FormPublicacionCalidadNotas"
+                            NavigationTargetType =32768
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            ThemeFontIndex =-1
+                            GroupTable =1
+                            TextFontCharSet =0
+                            TextFontFamily =34
+                            FontName ="Segoe UI"
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                        Begin NavigationButton
+                            OverlapFlags =87
+                            Left =10740
+                            Top =330
+                            Width =1665
+                            Height =405
+                            TabIndex =5
+                            Name ="BotónDeNavegación1"
+                            Caption ="[Agregar nuevo]"
+                            ControlTipText ="Agregue un formulario o un informe colocándolo aquí"
+                            GUID = Begin
+                                0xb81f6a1c7f39944fb15ec4b8e32f4415
+                            End
+                            GroupTable =1
+                            LeftPadding =0
+                            TopPadding =0
+                            BottomPadding =0
+                            LayoutCachedLeft =10740
+                            LayoutCachedTop =330
+                            LayoutCachedWidth =12405
+                            LayoutCachedHeight =735
+                            ColumnStart =5
+                            ColumnEnd =5
+                            LayoutGroup =1
+                            DefaultInsertButton =1
+                            Shape =3
+                            HoverColor =12419407
+                            HoverThemeColorIndex =4
+                            HoverTint =100.0
+                            PressedColor =12419407
+                            PressedThemeColorIndex =4
+                            PressedTint =100.0
+                            HoverForeColor =16777215
+                            HoverForeThemeColorIndex =1
+                            HoverForeTint =100.0
+                            PressedForeColor =16777215
+                            PressedForeThemeColorIndex =1
+                            PressedForeTint =100.0
+                            BackColor =15060409
+                            BackThemeColorIndex =4
+                            BackTint =40.0
+                            BorderColor =12419407
+                            BorderThemeColorIndex =4
+                            BorderShade =100.0
+                            GroupTable =1
+                            WebImagePaddingRight =2
+                            Overlaps =1
+                        End
+                    End
+                End
+                Begin Subform
+                    OverlapFlags =85
+                    Left =330
+                    Top =795
+                    Width =12480
+                    Height =5115
+                    TabIndex =1
+                    Name ="FormDetalle"
+                    GUID = Begin
+                        0x533f5dc0072d4f45bed3a4a874c2fe1f
+                    End
+                    GroupTable =2
+                    LeftPadding =0
+                    TopPadding =0
+                    RightPadding =0
+                    LayoutCachedLeft =330
+                    LayoutCachedTop =795
+                    LayoutCachedWidth =12810
+                    LayoutCachedHeight =5910
+                    RowStart =1
+                    RowEnd =1
+                    LayoutGroup =2
+                    GroupTable =2
+                End
+            End
+        End
+        Begin FormFooter
+            Height =547
+            BackColor =16737792
+            Name ="PieDelFormulario"
+            GUID = Begin
+                0xd1c638b6313f7245b489a4b181e2aa89
+            End
+            AlternateBackThemeColorIndex =1
+            AlternateBackShade =95.0
+            Begin
+                Begin CommandButton
+                    OverlapFlags =85
+                    Left =12345
+                    Top =60
+                    Width =391
+                    Height =390
+                    Name ="ComandoSalir"
+                    Caption ="Comando47"
+                    OnClick ="[Event Procedure]"
+                    ControlTipText ="Salir"
+                    Picture ="Salir1_25x25.png"
+                    GUID = Begin
+                        0xc3939a447f77494bbaab7ad09b30ddbe
+                    End
+                    ImageData = Begin
+                        0x89504e470d0a1a0a0000000d4948445200000019000000190806000000c4e985 ,
+                        0x63000000097048597300000ec400000ec401952b0e1b0000000774494d4507e8 ,
+                        0x0a1507132534100f13000004a14944415448898d966b88555514c77f6b9d7bee ,
+                        0xb977ee0c3a8e398e1a3d4d198b420d1d7a88815090d14021f9aca6314c2a8bfc ,
+                        0xd097fa12f5252c4b3ff82841c55e42d293124224ca12fba0e00c2888e2e02832 ,
+                        0x33eaccdcd7397bf5e19e7be6ce385a0b361cd6defbbfd6faffd7defb0837b2b5 ,
+                        0xd6446073101ec2591bd04a440b9041280217f03889da1122fb8321ef04bbf4f2 ,
+                        0x7850729de70d6bc2ec45d49613ea03a4000784f1bc1f7f1b9002349ec71dc7e9 ,
+                        0x3e866c179fe9a51b0759677309dc8778ba18038a3198c52bc5aea19cc0d92c44 ,
+                        0x9b88aa7e200d7840d90e33cc4676e8df55584d02bc64f7e3bb3df8ba9822908f ,
+                        0xc1abd9d7034a37fd2cc5e430b91858e24a0af148cba3d4b187b56edee820ab6d ,
+                        0x0219db445a5b198e37499c5916c05dc3ec0c7095bdda87d187d969b08b046382 ,
+                        0x0d0169b987c03ea663a07124c8047b9e401ea350434f1a10cb13da16f2ae9d7e ,
+                        0x9e23a48bf5ae0571e7e867050596e2ec5d70e7096a681f06027d98baface4a90 ,
+                        0xd5fd1310566140142f4a03e62e10b19ccdf23a0dde30757492e2764a3280c974 ,
+                        0xb2f616f5cce0bc7cc0a02cc1ec4f823841170fd59574b846a531370b9379946a ,
+                        0x08142b90b70d283ff19afb1ce12039e90026b343f2408e9c3e8bf02533ec200d ,
+                        0x0c50660dcece26159500e43e82f05e85d402fc1a1d02c0d97eb67bdfe0f894ac ,
+                        0xaea124390a00385e7569048f22509034be2c02be45394bd96d41e344232a2dee ,
+                        0xa5da94d01e4c74f080d09509e5001b6d261eabc8c71bca80492b210710594429 ,
+                        0x4e6c18505948c40af2fa23919d2715571301912d5084d989161e80f432481779 ,
+                        0x9e2425d964ce01c64432f204222d950358d328668f335dba414ee3c5ac54ced1 ,
+                        0x6cc53125a10a40e8a32c1771dcc158ab1e50378e1f66f09e1865776994dfd1ac ,
+                        0xb10ad5006052a64c016799eb82dccc3c4dc7c0c3c92136402450349634719a8f ,
+                        0x4f06219f2cfe2f13c05915a7be8615c00a8ad18b52c32d4dd4975a1039f5bfab ,
+                        0x10c0ec1ceda6a4a43949ae72aff52a2a272b825315aa9994df8af23da11b4ce6 ,
+                        0x6e1600c0ec0726d91c3c66c64d42dc655d0a1c4d6e520778e2e3d3ce9677ce12 ,
+                        0xb1932c24dd32165c813a207487b8e87d451d4b51999a3c0b0a881c11d695e6e2 ,
+                        0x79471155c2183065458aae93d0fb823af7112a6b1069184503546e86b2fd4641 ,
+                        0x5723a5e964fc9f41a6518a711488ac2d8577f514daf81729da08e36a4c027cdd ,
+                        0x84678e1e7d935b6d1ba13d4d6477577297226a3df8f22b9fe821d6d95c32a9ed ,
+                        0x884c231f27100065fb87beabdd959cd6bb9749b395b278099f69c02c44d9433e ,
+                        0x3a40e41d67407ad82f65da4d996c5390a895b42ec1a303d55b28d6d014008568 ,
+                        0x035b539b2b4196bb0626d95eb2fa14c38c3c569a6454463983e3324611c1c763 ,
+                        0x22ce6ec3d306222a176255db1c50b05f18b8b28cdd8d5746e47c257f17a9602f ,
+                        0x812ca440e51dafce7a35e20b23ed5e7dfbab49a5804c4c539e956cd3ae5a0989 ,
+                        0x699b896fef23fa0ccac815325670c6f8aa151b10b9ef1892b7d9a92719675bc5 ,
+                        0x3a7bb2f8cdabc8e8324af60869f5473d445603acf177c945f8f23b215f33c86e ,
+                        0x76e9602de4f541aaf682ab27c79df8cc27b4f93866214cc5918dffbb7af1a41b ,
+                        0x8f639438463fa7d9a7d7c683fa1781d0dafb3c6cde5d0000000049454e44ae42 ,
+                        0x6082
+                    End
+                    LayoutCachedLeft =12345
+                    LayoutCachedTop =60
+                    LayoutCachedWidth =12736
+                    LayoutCachedHeight =450
+                    WebImagePaddingLeft =2
+                    WebImagePaddingTop =2
+                    WebImagePaddingRight =1
+                    WebImagePaddingBottom =1
+                End
+                Begin Label
+                    Visible = NotDefault
+                    OverlapFlags =85
+                    Left =150
+                    Top =90
+                    Width =11730
+                    Height =390
+                    FontSize =10
+                    BorderColor =0
+                    ForeColor =16777215
+                    Name ="lblEstado"
+                    Caption ="URLDirectorioAyuda"
+                    FontName ="Segoe UI"
+                    GUID = Begin
+                        0x12bac1d627066349a68fd00d40338d3a
+                    End
+                    GridlineColor =0
+                    LayoutCachedLeft =150
+                    LayoutCachedTop =90
+                    LayoutCachedWidth =11880
+                    LayoutCachedHeight =480
+                    ThemeFontIndex =-1
+                    BackThemeColorIndex =-1
+                    BorderThemeColorIndex =-1
+                    BorderTint =100.0
+                    ForeThemeColorIndex =1
+                    ForeTint =100.0
+                    GridlineThemeColorIndex =-1
+                    GridlineShade =100.0
+                End
+            End
+        End
+    End
+End
+CodeBehindForm
+Attribute VB_Name = "Form_FormPublicacionCalidad"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Compare Database
+Option Explicit
+Private m_Error As String
+
+
+
+Private Sub ComandoAyuda_Click()
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    
+    m_Error = ""
+    AbrirAyuda m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al ComandoAyuda_Click se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+End Sub
+
+Private Sub ComandoSalir_Click()
+    DoCmd.Close acForm, Me.Name
+End Sub
+
+Private Sub Form_Load()
+    
+    Dim m_EnUTE As String
+    Dim m_NecesitaEvidendiasSum As EnumSiNo
+    Dim m_Particula As String
+    On Error GoTo errores
+    
+    VBA.DoEvents
+    DoCmd.Hourglass True
+    VBA.DoEvents
+    m_Error = ""
+'    Debug.Print Me.InsideHeight
+'    Debug.Print Me.InsideWidth
+    Me.InsideHeight = 7185
+    Me.InsideWidth = 13215
+    Set m_ObjAnexoEvicenciaUTE = Nothing
+    blnPermitidoEscribir = False
+    m_URLInforme = ""
+    If m_ObjEdicionActiva Is Nothing Then
+        m_Error = "No hay ninguna edición activa"
+        Err.Raise 1000
+    End If
+    With m_ObjEdicionActiva
+        If .EsActivo = EnumSiNo.Sí Then
+            blnEdicionActiva = True
+            m_Particula = "(edición activa)"
+        Else
+            blnEdicionActiva = False
+            m_Particula = "(edición no activa)"
+        End If
+        Me.lblTitulo.Caption = .Proyecto.Proyecto & " Ed. " & .Edicion & " " & m_Particula
+        
+        If .EsActivo = EnumSiNo.No Then
+            blnPermitidoEscribir = False
+        Else
+            If .UsuarioConectadoAutorizado = EnumSiNo.Sí Then
+                blnPermitidoEscribir = True
+            Else
+                blnPermitidoEscribir = False
+            End If
+        End If
+        m_EnUTE = .Proyecto.EnUTE
+        'Set .ColSuministradores = Nothing
+        m_NecesitaEvidendiasSum = .EvidenciasSuministradoresRequeridas
+        If m_EnUTE = "Sí" Then
+            Me.NavUTE.Enabled = True
+            Set m_ObjAnexoEvicenciaUTE = .AnexoEvidenciaUTE
+        Else
+            Me.NavUTE.Enabled = False
+        End If
+        If m_NecesitaEvidendiasSum = EnumSiNo.Sí Then
+            Me.NavAcuerdoSuministradores.Enabled = True
+        Else
+            Me.NavAcuerdoSuministradores.Enabled = False
+        End If
+    
+    End With
+    EstablecerDatos m_Error
+    If m_Error <> "" Then
+        Err.Raise 1000
+    End If
+    Me.Caption = m_ObjEntorno.TituloUsuarioConectado
+    VBA.DoEvents
+    DoCmd.Hourglass False
+    VBA.DoEvents
+    Exit Sub
+errores:
+    DoCmd.Hourglass False
+    If Err.Number <> 1000 Then
+        m_Error = "Al Form_Load se ha producido el error n: " & Err.Number & vbNewLine & "Detalle: " & Err.Description
+        CorreoAlAdministrador m_Error
+        pregunta = MsgBox(m_Error, vbCritical, "Error")
+    Else
+        pregunta = MsgBox(m_Error, vbExclamation, "Advertencia")
+    End If
+    DoCmd.Close acForm, Me.Name, acSaveNo
+End Sub
+
+Private Function EstablecerDatos( _
+                                    Optional ByRef p_Error As String _
+                                    ) As String
+    
+    
+    
+    On Error GoTo errores
+    
+    
+        
+    Me.NavPublicacion.NavigationTargetName = "FormPublicacionCalidadPublicar"
+    Me.FormDetalle.SourceObject = "FormPublicacionCalidadPublicar"
+    
+    Exit Function
+errores:
+    If Err.Number <> 1000 Then
+        p_Error = "El metodo Establecer datos ha producido el error: " & vbNewLine & Err.Description
+    End If
+End Function
