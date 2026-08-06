@@ -62,10 +62,16 @@ analyze_form_ui({sourcePath:"<abs path al .form.txt>", outputMode:"full"})
 analyze_form_layout({sourcePath:"<abs path>"})
 ```
 
-- **NO acepta `outputMode`** según el schema — pasarlo causa
-  `result contract violation`. Si querés detalle, leé el response completo;
-  la tool ya devuelve `{findings, controls, sections}` sin filtros.
-- Devuelve findings tipados de overlap, alignment, off-section, tab-order.
+- **SÍ acepta `outputMode`** (`"summary" | "file" | "full"`) según el schema
+  actual. El prompt inicial decía lo contrario — estaba MAL.
+- **KNOWN BUG** (DysTelefonica/dysflow issue #1407, round-2, 2026-08-06): la
+  tool falla con `RESULT_CONTRACT_VIOLATION` opaco en TODAS las variantes
+  probadas (5 variantes × 3 forms distintos = 15/15 fallan). El envelope
+  de error NO emite `code`/`remediation`/`actualShape`/`expectedShape`.
+  Mientras el bug esté abierto, **SKIP este step** y registralo en el
+  output del form como `layout_status: "skipped_bug_1407"`.
+- Devuelve findings tipados de overlap, alignment, off-section, tab-order. **Cuando esté arreglado**, leer el response completo; la tool ya
+  devuelve `{findings, controls, sections}` sin filtros.
 
 ### 3. Perceive — handler REAL
 
