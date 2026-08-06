@@ -18,7 +18,7 @@
 | **Stack target** | Backend Python 3.12+ / FastAPI 0.119+ / SQLAlchemy 2.0.x / Alembic 1.13+ / asyncpg 0.30+ (D66) · Frontend HTMX 2.0.4 + Jinja2 3.1+ + Alpine.js 3.15+ (D67) |
 | **Estrategia de migración de BD** | Expand and Contract backward-compatible (D82) · PostgreSQL compartido con esquema por módulo (D14) |
 | **Forma destino** | Hexagonal global (D8) · módulo dentro del monolito modular (D68) · puerto de persistencia PostgreSQL + object storage S3-compatible (D16) + secret manager (D9-D10) |
-| **Auditoría de uso previa** | ❌ **no committed** (pendiente; engram obs #24084 marca HPS como pendiente del schema usage audit; lower bound del codegraph no incluye macros embebidas ni queries no exportadas) |
+| **Auditoría de uso previa** | ✅ **committed** (engram obs #24097, topic_key `hps/usage-audit-2026-08-06`): **12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE** de 22 tablas backend. Detalle en § 1.4 y § 2.1; hallazgo D92-HPS-AUDIT en § 3. Limitación declarada: lower bound del codegraph no incluye macros embebidas ni queries no exportadas; gap extractor en patrón `m_SQL='TableName'`. |
 
 ## Forma del documento
 
@@ -122,10 +122,35 @@ Si aparece algo que no está en los 7 docs de HPS, se marca como **no documentad
 
 - Volúmenes reales de producción (no staging): `HPST.accdb` en `C:\00repos\datos\` no fue inspeccionado en esta pasada.
 - Conteos de filas de los catálogos seed-only (`TbAuxCursos`, `TbHPSEquivalencia`, `TbHPSGrado`, `TbMotivoHPS`, `TbJuridicasContratacion`) — solo `TbUsuarios` y `TbObservaciones` principales auditadas.
-- Auditoría de uso `codegraph-vba` específica para HPS (no committed, sí hecha para Condor en obs #24085). Pendiente antes de marcar cada tabla como ACTIVE/ZOMBIE.
+- Auditoría de uso `codegraph-vba` específica para HPS (committed — engram obs #24097, topic_key `hps/usage-audit-2026-08-06`): 12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE. La auditoría equivalente de Condor sigue en obs #24085 como referencia del patrón.
 - `TbConsultas` contenido (queries SQL pre-armadas) — sensible a SQL injection si no se parametriza; decisión pendiente.
 - Inventario completo de queries exportadas y macros embebidas — codegraph no captura macros embebidas ni QueryDefs no exportados.
 - Plantillas de correo en `Correo.cls` — pueden contener datos sensibles (D92); revisión pendiente antes de portar.
+
+### 1.4 Fuera de scope (no-migrate — zombies confirmados)
+
+> 9 tablas de las 22 backend son zombies confirmados (audit obs #24097). No migran como features a la nueva plataforma. Tratamiento: ver § 6 Pendientes operacionales.
+
+**4× copias legacy "Copia de..."** (herencia de mass-change pre-consolidación; retención indefinida, sin endpoints, sin UI):
+
+- `Copia de TbExpedienteLugares`
+- `Copia de TbExpedientes`
+- `Copia de TbUsuarios`
+- `Copia de TbUsuariosEntidades`
+
+**Sentinel de errores**:
+
+- `Errores de pegado` — sentinel de errores en pegado masivo. Transformar en log estructurado canónico (D27) o preservar con retención limitada.
+
+**3 catálogos sin uso** (confirmar con negocio antes de descartar formalmente; ver § 6):
+
+- `TbHPSEquivalencia` — catálogo sin uso (0 callers en audit).
+- `TbAuxCursos` — catálogo sin uso (0 callers en audit).
+- `TbJuridicasContratacion` — catálogo sin uso (0 callers en audit).
+
+**Solapamiento con tabla activa**:
+
+- `TbUsuarioAnexos` — 0 callers; sospecha de solape con `TbAnexosUsuariosHPS`. Confirmar con negocio antes de descartar.
 
 ---
 
@@ -140,7 +165,7 @@ Si aparece algo que no está en los 7 docs de HPS, se marca como **no documentad
 | **Filas totales (backend, auditadas)** | **≈2197** (4 tablas principales: 345 + 242 + 1280 + 330) |
 | **Filas totales (frontend local)** | **≈579** (344 + 235 + catálogos auxiliares) — **NO migran como tales** |
 | **Schemas documentados** | **22/22** tablas backend en `data-model.md` (commits HPS del lote 4, ver obs #24084) — **esquema detallado completo de `TbUsuarios` (27 columnas) committed**; resto en nivel inventario |
-| **Uso (audit)** | ❌ **no committed** (HPS marcado como pendiente del schema usage audit en obs #24084); lower bound del codegraph no incluye macros ni queries no exportadas |
+| **Uso (audit)** | ✅ **committed** (engram obs #24097, topic_key `hps/usage-audit-2026-08-06`): **12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE** de 22 tablas backend. Desglose en § 1.4 (ZOMBIE) y § 2.1.1 (ACTIVE / UNCLEAR). Limitación: lower bound del codegraph no incluye macros embebidas ni queries no exportadas; gap extractor en patrón `m_SQL='TableName'` (afecta a `TbConsultas`, marcada UNCLEAR). |
 | **Subcategorías** | 6 dominio (usuarios, histórico, HPS, observaciones, anexos, indicadores) · 5 catálogos · 4 legacy copies · 1 sentinel · 4 anexos cross-source · 2 config |
 | **FKs físicas (backend)** | **6** desde `TbUsuarios` / `TbUsuariosHistoricos` / `TbUsuariosSICA` (3 con PK-to-PK genérico a corregir, ver D94) |
 | **FKs conceptuales (sin constraint)** | **5** — `IDExpediente`, `IDEmpresaUsuario`, `IDEmpresaHPS`, `IDJuridicaContrato`, `IDSolicitud` |
@@ -149,6 +174,56 @@ Si aparece algo que no está en los 7 docs de HPS, se marca como **no documentad
 | **Forms** | ~30 archivos `Form_*.cls` cada uno con su `.form.txt` compañero |
 | **Tests VBA** | 9 archivos `Test_*.bas` (cobertura significativa, confirma D87) |
 | **Duplicación frontend/backend** | `TbHPS` y `TbUsuariosHistoricos` existen en ambos `.accdb` (Dysflow emite `ACCESS_TABLE_AMBIGUOUS` al consultarlas sin `target`) |
+
+### 2.1.1 Veredicto del schema usage audit (obs #24097)
+
+> Audit ejecutado 2026-08-06 vía `codegraph-vba` sobre `00_HPS` READ-ONLY. Repo `00_HPS` no modificado. Veredicto sobre las **22 tablas backend** de `HPST.accdb`: **12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE**.
+
+**12 ACTIVE** (callers encontrados en `codegraph-vba`):
+
+| Tabla | Callers | Notas |
+|---|---|---|
+| `TbUsuarios` | 5 | PII D92, 27 columnas, FKs conceptuales; columna central del dominio usuarios HPS. |
+| `TbUsuariosHistoricos` | 5 | Histórico; FK PK-to-PK a corregir (D94). |
+| `TbUsuariosSICA` | 3 | Integración externa SICA (sistema fuera de scope). |
+| `TbUsuariosEntidades` | 5 | Relación usuario ↔ entidad N:N; consumida por caché y sync histórico. |
+| `TbHPS` | 5 | 1280 filas; duplicación frontend/backend (D92). |
+| `TbHPSGrado` | 1 | Catálogo lightweight — mantener. |
+| `TbMotivoHPS` | 1 | Catálogo lightweight — mantener. |
+| `TbObservaciones` | 5 | 330 filas; FK PK-to-PK a corregir (D94). |
+| `TbObservacionesHistoricas` | 5 | Histórico; FK PK-to-PK a corregir (D94). |
+| `TbAnexosUsuariosHPS` | 5 | Anexos de usuario HPS — external refs D16. |
+| `TbAnexosUsuariosSICA` | 2 | Anexos SICA — referencia externa. |
+| `TbAnexosUsuariosHistoricos` | 5 | Anexos histórico — external refs D16. |
+
+**1 UNCLEAR con gap del extractor**:
+
+| Tabla | Veredicto | Gap |
+|---|---|---|
+| `TbConsultas` | UNCLEAR | `codegraph-vba` no emite arista `vba-sql-table` para el patrón `m_SQL='TableName'`. Class-chain detectado via `Constructor.getConsultas:3192` → `Entorno.ColConsultas` pero sin blast a la tabla. **Gap del extractor a reportar al maintainer**; revisión humana pendiente antes de clasificar como ACTIVE o ZOMBIE. |
+
+**9 ZOMBIE** (0 callers en audit; detalle por subcategoría en § 1.4):
+
+| # | Tabla | Subcategoría |
+|---|---|---|
+| 1 | `Copia de TbExpedienteLugares` | Legacy copy pre-mass-change. |
+| 2 | `Copia de TbExpedientes` | Legacy copy pre-mass-change. |
+| 3 | `Copia de TbUsuarios` | Legacy copy pre-mass-change. |
+| 4 | `Copia de TbUsuariosEntidades` | Legacy copy pre-mass-change. |
+| 5 | `Errores de pegado` | Sentinel de errores en pegado masivo. |
+| 6 | `TbHPSEquivalencia` | Catálogo sin uso (0 callers). |
+| 7 | `TbAuxCursos` | Catálogo sin uso (0 callers). |
+| 8 | `TbJuridicasContratacion` | Catálogo sin uso (0 callers). |
+| 9 | `TbUsuarioAnexos` | Solapamiento presunto con `TbAnexosUsuariosHPS` (0 callers). |
+
+**Limitaciones declaradas del audit**:
+
+- Macros embebidos en `HPST.accdb` NO exportados → uso real puede ser mayor al lower bound.
+- `codegraph_explore` limita el blast radius visible a 5 entries por símbolo.
+- Forms sin `RecordSource`/`RowSource` exportados: app carga vía DAO + clases.
+- `TbDatosLocal` (344 filas PII) está en el FRONTEND (`HPS.accdb`), fuera del scope del audit backend.
+
+**Referencia canónica**: engram obs #24097, topic_key `hps/usage-audit-2026-08-06`, skill `codegraph-usage` + `vba-sql-impact`, 100% vía codegraph MCP (cero grep sobre `.bas`/`.cls`).
 
 ### 2.2 Hallazgos estructurales del inventario
 
@@ -182,7 +257,7 @@ Si aparece algo que no está en los 7 docs de HPS, se marca como **no documentad
 
 | Pendiente | Impacto | Iteración |
 |---|---|---|
-| Audit de uso específico para HPS (codegraph-vba + cruzar con `src/`) | Determinar ACTIVE/ZOMBIE/UNCLEAR de las 22 tablas backend | Antes de fase SDD (cierre del gap del obs #24084) |
+| Audit de uso específico para HPS (codegraph-vba + cruzar con `src/`) | Determinar ACTIVE/ZOMBIE/UNCLEAR de las 22 tablas backend | ✅ **cerrado** (engram obs #24097: 12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE). Revisión humana pendiente para `TbConsultas` (gap extractor `m_SQL='TableName'`) y `TbUsuarioAnexos` (solapamiento presunto con `TbAnexosUsuariosHPS`). |
 | Conteos reales de catálogos seed-only (`TbAuxCursos`, `TbHPSEquivalencia`, `TbHPSGrado`, `TbMotivoHPS`, `TbJuridicasContratacion`) | Ajustar criterios de aceptabilidad de migración de catálogos | Cuando se acceda al backend autoritativo |
 | Contenido de `TbConsultas` (queries SQL pre-armadas) | Evaluar SQL injection; decidir query builder vs deprecate | Próxima iteración |
 | Cadena de uso de las 4 "Copia de..." por saved queries / macros | Decidir archivo vs dominio | Inspección manual si negocio requiere |
@@ -260,6 +335,18 @@ Cada hallazgo: descripción corta + impacto + acción + referencia documental.
 - **Descripción**: HPS es la **única aplicación del ecosistema con caché en el frontend** (no presente en Lanzadera/Expedientes/Gestion_Riesgos/NoConformidades/Condor). El sistema de caché local completo (`TbDatosLocal` + 11 tablas auxiliares) es un patrón legacy que **NO debe reproducirse** en la nueva plataforma.
 - **Impacto**: la nueva plataforma usa caché server-side detrás del puerto (D70-D71). La eliminación del caché frontend es una mejora de seguridad (PII no se mueve con el cliente) y de coherencia (no hay datos obsoletos).
 - **Acción**: la regla "no caché en cliente" aplica a HPS como principio fundador. Migración traduce las 12 tablas a vistas materializadas o queries parametrizadas server-side.
+
+<a id="hallazgo-D92-hps-audit"></a>
+### H8 · D92-HPS-AUDIT — 9 tablas ZOMBIE confirmadas (audit obs #24097)
+
+- **Descripción**: el schema usage audit ejecutado vía `codegraph-vba` el 2026-08-06 (engram obs #24097, topic_key `hps/usage-audit-2026-08-06`) clasificó las 22 tablas backend de HPS como **12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE**. Las 9 ZOMBIE (0 callers en `codegraph_explore`) son: 4× "Copia de..." (`Copia de TbExpedienteLugares`, `Copia de TbExpedientes`, `Copia de TbUsuarios`, `Copia de TbUsuariosEntidades`), el sentinel `Errores de pegado`, los 3 catálogos `TbHPSEquivalencia` / `TbAuxCursos` / `TbJuridicasContratacion`, y `TbUsuarioAnexos` (solapamiento presunto con `TbAnexosUsuariosHPS`). Las 4 copias "Copia de..." son herencia de un mass-change que no se consolidó en su día.
+- **Impacto**: 9 de 22 tablas backend **no migran como features** a la nueva plataforma. Reducción significativa del scope de migración (≈41% del backend en superficie). Las 4 "Copia de..." arrastran origen cross-app (`TbExpedientes`/`TbExpedienteLugares` son de la app Expedientes — ver `migration-matrix.md` § 2); su retención indefinida en zona `legacy` del esquema PostgreSQL requiere coordinar con el equipo de Expedientes antes de consolidar el veredicto.
+- **Acción**:
+  - Cerrar el veredicto de las 9 ZOMBIE con **TK-HPS-27** (confirmación con Natalia / negocio: mantener histórico, transformar en log, o purgar — ver § 6 Pendientes operacionales).
+  - Documentar formalmente la disposición en `migration-matrix.md` como categoría "no-migrate".
+  - Resolver el UNCLEAR `TbConsultas` (gap del extractor `m_SQL='TableName'`) antes de fase SDD — pendiente de revisión humana.
+  - Mantener el patrón de audit previo a migrar (obs #24082) como gate para próximas aplicaciones del blueprint.
+- **Detalle completo**: engram obs #24097 (veredicto completo); § 1.4 (fuera de scope ZOMBIE); § 2.1.1 (veredicto); § 6 (pendiente operacional TK-HPS-27).
 
 ---
 
@@ -386,6 +473,7 @@ Lista verificable de qué define "épica de HPS cerrada".
 - [ ] HPS_Solicitudes (ID 22) **NO comparte tabla** con HPS (ID 17) — apps independientes (D83).
 - [ ] Migración de datos validada con backfill contra staging + conteos contra `HPST.accdb` autoritativo (~2197 filas principales).
 - [ ] Las 4 "Copia de..." residen en zona `legacy` del esquema; `Errores de pegado` evaluado (logs estructurados D27 o tabla de auditoría).
+- [ ] **CA-ZOMBIE-Nuevo**: las **9 tablas ZOMBIE** confirmadas en el audit (obs #24097) están formalmente descartadas para migración — no aparecen en el esquema PostgreSQL, no tienen endpoints, no tienen UI. Tratamiento documentado en `migration-matrix.md` con la categoría "no-migrate". Las 4 "Copia de..." y `Errores de pegado` siguen el lineamiento de § 1.4; los 3 catálogos sin uso (`TbHPSEquivalencia`, `TbAuxCursos`, `TbJuridicasContratacion`) y `TbUsuarioAnexos` requieren confirmación con negocio antes de descartar formalmente.
 
 ### Testing y calidad
 
@@ -411,8 +499,13 @@ Acciones manuales que el equipo debe ejecutar antes, durante o después de la mi
 - [ ] **Mover la contraseña a secret manager** (D9-D10). Actualizar manifests de despliegue y dotenv si aplica.
 - [ ] **Auditar git history de `00_HPS`** por commits que contengan `PasswordBackend`; documentar si fue commiteada. Si sí, **rotación obligatoria** + nota de incidente.
 - [ ] **Respaldar `HPST.accdb` de producción** antes de la migración de datos (snapshot inmutable).
-- [ ] **Ejecutar schema usage audit** de HPS (cierre del gap del obs #24084): cruzar 22 tablas backend con `src/` vía `codegraph_explore` para clasificar ACTIVE/ZOMBIE/UNCLEAR. Necesario antes de fase SDD.
-- [ ] **Auditar contenido de `TbConsultas`** y revisar políticas de SQL injection antes de migrar (TK-HPS-9).
+- [ ] ✅ Schema usage audit de HPS committed (obs #24097, topic_key `hps/usage-audit-2026-08-06`): 12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE de 22 tablas backend. Cierre del gap del obs #24084.
+- [ ] **Confirmar con Natalia** (negocio) la disposición de las **9 tablas ZOMBIE** (audit obs #24097):
+  - [ ] 4× "Copia de..." (`Copia de TbExpedientes`, `Copia de TbExpedienteLugares`, `Copia de TbUsuarios`, `Copia de TbUsuariosEntidades`) → retención indefinida como histórico o purga con auditoría. Coordinar con equipo de Expedientes para las dos copias que afectan tablas de esa app (`TbExpedientes`/`TbExpedienteLugares`).
+  - [ ] `Errores de pegado` (sentinel) → transformar en log estructurado canónico (D27) o purgar con retención limitada.
+  - [ ] 3 catálogos sin uso (`TbHPSEquivalencia`, `TbAuxCursos`, `TbJuridicasContratacion`) → confirmar con negocio si son histórico o se descartan formalmente.
+  - [ ] `TbUsuarioAnexos` → confirmar solapamiento con `TbAnexosUsuariosHPS` antes de descartar.
+- [ ] **Auditar contenido de `TbConsultas`** y revisar políticas de SQL injection antes de migrar (TK-HPS-9). Adicional: revisar el gap del extractor `m_SQL='TableName'` con el maintainer de `codegraph-vba` antes de clasificar `TbConsultas` como ACTIVE/ZOMBIE.
 - [ ] **Revisar plantillas en `Correo.cls`** con datos sensibles (D92) antes de portar al servicio unificado de notificaciones.
 
 ### Durante la migración
@@ -429,7 +522,7 @@ Acciones manuales que el equipo debe ejecutar antes, durante o después de la mi
 - [ ] Confirmar que las 12 tablas locales del frontend NO existen en artefactos web (D92 cerrado).
 - [ ] Confirmar que la papelera de adjuntos (D19) funciona end-to-end para las 4 fuentes de anexos.
 - [ ] Verificar que la impersonación (D44) solo la inicia el administrador global.
-- [ ] Cerrar el gap del audit: emitir observación engram con el resultado del schema usage audit de HPS (paridad con obs #24085 de Condor).
+- [ ] Cerrar el gap del audit: ✅ emitido obs #24097 con el veredicto (12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE). Paridad con obs #24085 de Condor lograda.
 - [ ] Evaluar encriptación en reposo para datos personales (D92 follow-up) — no bloqueante para v1.
 - [ ] Verificar que el patrón de transacciones atómicas (`AnexoSelectionTransactionCoordinator` + `UsuarioLifecycleTransactionCoordinator`) preserva rollback end-to-end en producción.
 
@@ -469,6 +562,7 @@ Acciones manuales que el equipo debe ejecutar antes, durante o después de la mi
 - [ ] **TK-HPS-20**: FKs conceptuales sin constraint formal (D94) — formalizar las 6 FKs intra-app (corregir las 2 PK-to-PK genéricas por `IDUsuario`/`IDUsuarioHistorico`); mantener las 5 FKs cross-app como referencia conceptual mediate adaptadores; HPS_Solicitudes (ID 22) **NO comparte tabla** (D83).
 - [ ] **TK-HPS-21**: Disposición de 4 "Copia de..." y sentinel "Errores de pegado" (D92 dispositions) — "Copia de..." a zona `legacy` del esquema con retención indefinida, sin endpoints; `Errores de pegado` evaluado caso a caso (logs estructurados D27 o tabla de auditoría).
 - [ ] **TK-HPS-22**: Suplantación solo por administrador global (D44 cross-cutting) — doble identidad visible + audit completa; integración con adaptador de identidad (D9-D10).
+- [ ] **TK-HPS-27**: Resolución de las 9 tablas ZOMBIE (audit obs #24097) — confirmar disposición con Natalia / negocio (mantener histórico, transformar en log, o purgar). Alcance: las 4 "Copia de..." (coordinación con equipo de Expedientes para `Copia de TbExpedientes` / `Copia de TbExpedienteLugares`), el sentinel `Errores de pegado`, los 3 catálogos sin uso (`TbHPSEquivalencia`, `TbAuxCursos`, `TbJuridicasContratacion`), y `TbUsuarioAnexos` (solapamiento presunto con `TbAnexosUsuariosHPS`). Documentar el veredicto en `migration-matrix.md` como categoría "no-migrate". Gate previo a fase SDD de HPS.
 
 ### Testing y calidad
 
@@ -520,7 +614,8 @@ Acciones manuales que el equipo debe ejecutar antes, durante o después de la mi
 | `docs/09-arquitectura-objetivo-y-principios.md` | Decisiones D66-D82 arquitectura consolidada |
 | engram obs #24084 | Consolidado del descubrimiento: D92 (HPS), D102 cross-cutting, HPS read-heavy, 22 tablas backend |
 | engram obs #24082 | Regla: audit de uso antes de migrar (cierre del gap pendiente en HPS) |
-| engram obs #24085 | Audit de uso de Condor (15 tablas) — referencia del patrón a aplicar a HPS |
+| engram obs #24085 | Audit de uso de Condor (15 tablas) — referencia del patrón aplicado a HPS |
+| engram obs #24097 | Audit de uso de las 22 tablas backend de HPS (12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE) — referencia canónica del veredicto (topic_key `hps/usage-audit-2026-08-06`) |
 
 ---
 
@@ -533,7 +628,9 @@ Acciones manuales que el equipo debe ejecutar antes, durante o después de la mi
 - [x] 12 tablas locales del frontend identificadas explícitamente con disposición (D92).
 - [x] 5 catálogos seed-only identificados.
 - [x] Criterios de aceptación verificables y agrupados por dimensión.
-- [x] Tickets cubren 16+ features + seguridad + testing (TK-HPS-1..26).
+- [x] Tickets cubren 16+ features + seguridad + testing (TK-HPS-1..27).
+- [x] Schema usage audit de HPS committed (obs #24097, topic_key `hps/usage-audit-2026-08-06`): 12 ACTIVE / 1 UNCLEAR / 9 ZOMBIE.
+- [x] Las 9 ZOMBIE listadas en § 1.4 y referenciadas desde § 2.1.1, § 3 (H8 D92-HPS-AUDIT), § 5 (CA-ZOMBIE-Nuevo), § 6 (pendiente con Natalia) y § 7 (TK-HPS-27).
 - [x] Tabla de decisiones referenciadas (D5-D102).
 - [x] Tabla de fuentes.
 - [x] Idioma: español técnico neutro. Identificadores y paths sin traducir.
@@ -541,4 +638,4 @@ Acciones manuales que el equipo debe ejecutar antes, durante o después de la mi
 
 ## Siguiente paso
 
-Revisión con el equipo. Una vez validada, ejecutar el **schema usage audit de HPS** (cierre del gap del obs #24084) antes de fase SDD — emitir observación engram con clasificación ACTIVE/ZOMBIE/UNCLEAR análoga a obs #24085 de Condor. Luego abrir SDD (`sdd-propose` + `sdd-spec` + `sdd-design` + `sdd-tasks`) para arrancar la implementación por ticket, comenzando por **TK-HPS-17** (limpieza operativa del caché frontend con PII en `00_HPS`) antes que cualquier otro cambio de código.
+Revisión con el equipo. El schema usage audit de HPS ya está cerrado (engram obs #24097, topic_key `hps/usage-audit-2026-08-06`). Próximo paso natural de la cadena: ejecutar **TK-HPS-27** (confirmar con Natalia / negocio la disposición de las 9 tablas ZOMBIE — 4× "Copia de...", `Errores de pegado`, los 3 catálogos sin uso y `TbUsuarioAnexos`) y resolver el UNCLEAR de `TbConsultas` (gap del extractor `m_SQL='TableName'`). Una vez cerrada esa disposición, abrir SDD (`sdd-propose` + `sdd-spec` + `sdd-design` + `sdd-tasks`) para arrancar la implementación por ticket, comenzando por **TK-HPS-17** (limpieza operativa del caché frontend con PII en `00_HPS`) antes que cualquier otro cambio de código.
