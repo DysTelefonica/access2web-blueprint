@@ -1,0 +1,459 @@
+{
+  "group": "G1",
+  "method_version": "v4",
+  "scope": "Walkthrough 9 forms: Splash + Busy + cross-cutting menus (Expedientes)",
+  "forms_count": 9,
+  "forms": [
+    {
+      "formName": "Form_frmSplash",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_frmSplash.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 12,
+        "source_size_lines": 63,
+        "blast_radius_top_5": [
+          "Form_FormInformesDesdeLista.cls:19 (1 caller, no covering tests)",
+          "Form_frmSplash → CondorError",
+          "Form_Open → Ajustar / ResetAvanceCounter / GestionarRibbon",
+          "Form_Timer → EVE / CerrarConexionesGlobales",
+          "Constructor.getUltimoProyecto (called from Form_Timer)"
+        ],
+        "call_path_top_3": [
+          "Form_Open → GestionarRibbon → Ajustar → ResetAvanceCounter",
+          "Form_Timer → EVE → ValidarInfraestructuraInicio",
+          "Form_Timer → DoCmd.OpenForm (Form0BDOpciones | Form0BDOpcionesTecnicos)"
+        ],
+        "stale_banner_ignored": true,
+        "note": "Cross-project noise: codegraph index is shared across staging/expedientes + brass + condor + hps-solicitudes + gestion-riesgos. Same form name reused in 4 different apps (cross-project). Method v4 budget = 1 explore per group, so only Form_frmSplash was deeply explored."
+      },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": ["OnOpen", "OnTimer"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 10,
+        "sections": 2,
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 2
+        },
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"EncabezadoDelFormulario"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"Detalle"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"lblProgresoBarra"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"PieDelFormulario"},
+          {"code":"FORM_LAYOUT_OVERLAP","controlName":"imgLogoDepartamento <-> imgLogo"},
+          {"code":"FORM_LAYOUT_OVERLAP","controlName":"lblTituloPrincipal <-> lblSubtitulo"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_Open assigns Me.lblProgresoBarra.Width, Me.Caption and Form_Timer assigns Me.Caption / Me.lblEstado.Caption — no RowSource/ControlSource assignments. Splash is a navigational boot form, not data-bound.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_frmBusy",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_frmBusy.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": "small",
+        "blast_radius_top_5": ["reused as modal popup by Form_Form0BDOpciones.ComandoGestionExpedientes_Click"],
+        "call_path_top_3": ["Form_Timer → MostrarPopupProgreso / AvanceCerrar"],
+        "stale_banner_ignored": true,
+        "note": "frmBusy is a shared anti-spam popup; called from several forms."
+      },
+      "ui": {
+        "controls_count": 5,
+        "formEvents": ["OnOpen", "OnTimer"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 5,
+        "sections": 0,
+        "findings_count": 2,
+        "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 2},
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"Detalle"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"lblProgresoBarra"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Pure modal popup, no RecordSource. No Me.*.RowSource/ControlSource assignments.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_Formulario1",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_Formulario1.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": "small",
+        "blast_radius_top_5": ["WebBrowser0 (Edge control) appears with placeholder geometry"],
+        "call_path_top_3": ["txtInput.OnChange → ? (txtRealtime likely shows preview)"],
+        "stale_banner_ignored": true,
+        "note": "Generic Formulario1 — likely a sandbox/prototype. Only 1 declared handler (txtInput.OnChange)."
+      },
+      "ui": {
+        "controls_count": 5,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 5,
+        "sections": 0,
+        "findings_count": 2,
+        "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 2},
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"Detalle"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","controlName":"imgLogoDepartamento"}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_Open + txtInput.OnChange (declarative only). No RowSource/ControlSource assignments visible. Likely a draft / scratch form.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_Form0BDOpciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_Form0BDOpciones.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 12,
+        "source_size_lines": 380,
+        "blast_radius_top_5": [
+          "mod0BDOpcionesHelper (central router — every ComandoAlta/ComandoBuscadorTecnico/lblGestionBatchE2E/ImagenTareasON/OFF/ComandoGestorEntidades Click resolves here)",
+          "Form_Open uses JsonConverter.ParseJson(mod0BDOpcionesHelper.Opciones_FormOpenState) — pattern repeated 6x across handlers",
+          "Form_FormGestionRiesgos / Form_FormTareasTramitadorPendientes / Form_FormConfiguracion (referenced from Form_Open)",
+          "PintarTareas / AvanceCerrar / FormularioAbierto / AbrirAyuda / CorreoAlAdministrador"
+        ],
+        "call_path_top_3": [
+          "Form_Open → mod0BDOpcionesHelper.Opciones_FormOpenState → JsonConverter.ParseJson → sets Enabled/Visible/Caption",
+          "ComandoAlta_Click → JsonConverter.ParseJson(mod0BDOpcionesHelper.Opciones_OpenFormAction(\"alta\")) → DoCmd.OpenForm",
+          "ComandoGestionExpedientes_Click → JsonConverter.ParseJson(mod0BDOpcionesHelper.Opciones_GestionExpedientesTarget) → DoCmd.OpenForm + MostrarPopupProgreso"
+        ],
+        "stale_banner_ignored": true,
+        "note": "Central hub: 6 of the 12 handlers in expedientes delegate routing decisions to mod0BDOpcionesHelper via JSON contract (see vba-pattern: JsonConverter.ParseJson(mod0BDOpcionesHelper.Opciones_OpenFormAction(...))). This is the G1 cross-cutting center."
+      },
+      "ui": {
+        "controls_count": 20,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 20,
+        "sections": 2,
+        "findings_count": 25,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 16,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_highlights": [
+          "lblTitulo1 overlaps ComandoAlta/ComandoGestorEntidades/ComandoBuscadorTecnico (header extends into detail area)",
+          "ImagenTareasON ↔ ImagenTareasOFF (intentional toggle pair)",
+          "ImagenTareasON overlaps ComandoAlta/ComandoBuscadorTecnico (cascading from header)",
+          "Tab order mismatch: visual order Imagen376 → ComandoBuscadorTecnico → ImagenTareasOFF → ImagenTareasON → ComandoGestionExpedientes → ComandoGestorEntidades"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 8,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "control_with_handlers": ["ComandoAyuda","ImagenTareasON","ImagenTareasOFF","lblGestionBatchE2E","lblGestionExpedientes","lblAlta","ComandoAlta","ComandoGestionExpedientes","ComandoGestorEntidades","lblGestorEntidades","cmdSalir","ComandoBuscadorTecnico"]
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_Open sets ComandoAlta.Enabled, ComandoGestionExpedientes.Enabled, ComandoGestorEntidades.Enabled, ComandoBuscadorTecnico.Visible, lblEstado.Visible, lblVersion.Caption, Caption — all derived from mod0BDOpcionesHelper.Opciones_FormOpenState JSON. No RowSource/ControlSource assignments; routing is event-driven (Click handlers).",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_Form0BDOpcionesTecnicos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_Form0BDOpcionesTecnicos.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 6,
+        "source_size_lines": "medium",
+        "blast_radius_top_5": ["ComandoBusquedaSimple / ComandoBusquedaCompleta","mod0BDOpcionesHelper (same pattern as 0BDOpciones)"],
+        "call_path_top_3": ["Form_Open → Ajustar / PintarTareas","ComandoBusquedaSimple_Click → DoCmd.OpenForm (buscador simple)","ComandoBusquedaCompleta_Click → DoCmd.OpenForm (buscador completo)"],
+        "stale_banner_ignored": true,
+        "note": "Twin of Form0BDOpciones but for técnico role — only 2 main actions instead of 4."
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 13,
+        "sections": 2,
+        "findings_count": 12,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 5,
+          "FORM_LAYOUT_ALIGNMENT": 3
+        }
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Mirrors Form0BDOpciones pattern; no RowSource/ControlSource assignments.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_FormEleccionTipoConsulta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormEleccionTipoConsulta.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 6,
+        "source_size_lines": "medium",
+        "blast_radius_top_5": ["ListaTipoConsulta (ListBox, 12 columnas: Comerciales;CPVs;Ejercitos;Estados;Grados;Jefaturas;Juridicas;Lugares;Oficinas;PECALES;RACS)","ComandoEjecutar → DoCmd.OpenForm / DoCmd.OpenQuery","ComandoActualizarCompleto → refresca ListaTipoConsulta"],
+        "call_path_top_3": ["Form_Open → cargar lista","ComandoEjecutar_Click → DoCmd.OpenForm \"FormularioConsulta\"","ComandoActualizarCompleto_Click → Me.ListaTipoConsulta.Requery"],
+        "stale_banner_ignored": true,
+        "note": "ListBox with 12 hard-coded column options. ListBox.BoundColumn? Need verify_form_bindings (SKIPPED bug #1412)."
+      },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 1,
+        "warnings": [],
+        "bindings_detail": [
+          {"control": "ListaTipoConsulta", "type": "ListBox", "binding_kind": "ColumnHeads/RowSourceList (semicolon-separated)"}
+        ]
+      },
+      "geometry": {
+        "controls": 10,
+        "sections": 2,
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 7,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)",
+        "followup_needed": "ListaTipoConsulta binding is hardcoded semicolon-separated list, NOT a real RowSource. When #1412 is fixed, re-verify to confirm this is purely a static options list."
+      },
+      "unattended": false,
+      "unattended_evidence": "ListBox binding is a static option list (12 categorías), not a data-bound RowSource. Hardcoded 'Año;Presupuesto' style.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_FormModificado",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormModificado.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": "medium",
+        "blast_radius_top_5": ["DESCRIPCION (TextBox)","FechaFinModificado / FechaFirmaModificado / NModificado","ComandoRegistrar"],
+        "call_path_top_3": ["Form_Open → blank","ComandoRegistrar_Click → INSERT/UPDATE","cmdSalir_Click → DoCmd.Close"],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 15,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 15,
+        "sections": 2,
+        "findings_count": 12,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Modal style form (DESCRIPCION, Fecha*, NModificado). No RowSource on form or controls visible at .form.txt level. Likely launched from FormExpedienteModificados (parent).",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_FormExpedienteModificados",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteModificados.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": "medium",
+        "blast_radius_top_5": ["ListaModificados (ListBox, ColumnHeads 'Año;Presupuesto')","Descripcion / NModificado / FechaFinModificado / FechaFirmaModificado","ComandoRegistrar / ComandoEditar / ComandoEliminar"],
+        "call_path_top_3": ["Form_Load → cargar ListaModificados","ComandoRegistrar_Click → DoCmd.OpenForm \"FormModificado\"","ComandoEditar_Click → DoCmd.OpenForm \"FormModificado\""],
+        "stale_banner_ignored": true,
+        "note": "Parent of FormModificado."
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "warnings": [],
+        "bindings_detail": [
+          {"control": "ListaModificados", "type": "ListBox", "binding_kind": "ColumnHeads 'Año;Presupuesto'"}
+        ]
+      },
+      "geometry": {
+        "controls": 13,
+        "sections": 0,
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)",
+        "followup_needed": "ListaModificados.ColumnHeads is hardcoded ('Año;Presupuesto'). Real RowSource likely set via Form_Load — verify when #1412 is fixed."
+      },
+      "unattended": false,
+      "unattended_evidence": "ListBox ColumnHeads are static labels. Form_Load probably assigns RowSource programmatically. No RowSource in .form.txt declarative metadata.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    },
+    {
+      "formName": "Form_FormE2EGestionBatch",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormE2EGestionBatch.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 8,
+        "source_size_lines": "medium",
+        "blast_radius_top_5": ["ListaExpedientesDisponibles / ListaExpedientesBatch (ListBox, shared ColumnHeads 'IDExpediente;Estado E2E;Nº Exp;Título')","txtEstadoBatch / lblEstado","ComandoAgregarBatch / ComandoQuitarBatch / ComandoActualizar"],
+        "call_path_top_3": ["Form_Open → cargar listas","ComandoAgregarBatch_Click → mueve ID de Disponibles a Batch","ComandoActualizar_Click → batch UPDATE"],
+        "stale_banner_ignored": true,
+        "note": "E2E batch management — referenced from Form0BDOpciones.lblGestionBatchE2E_Click via mod0BDOpcionesHelper."
+      },
+      "ui": {
+        "controls_count": 15,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 2,
+        "warnings": [],
+        "bindings_detail": [
+          {"control": "ListaExpedientesDisponibles", "type": "ListBox", "binding_kind": "ColumnHeads 'IDExpediente;Estado E2E;Nº Exp;Título'"},
+          {"control": "ListaExpedientesBatch", "type": "ListBox", "binding_kind": "ColumnHeads 'IDExpediente;Estado E2E;Nº Exp;Título'"}
+        ]
+      },
+      "geometry": {
+        "controls": 15,
+        "sections": 2,
+        "findings_count": 15,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 7,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)",
+        "followup_needed": "Two ListBoxes share ColumnHeads. Real RowSource likely populated in Form_Load — verify when #1412 is fixed."
+      },
+      "unattended": false,
+      "unattended_evidence": "Two ListBoxes with hardcoded column headers; RowSource likely set in Form_Load/handler. Not declarative.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"]
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 106,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 9,
+    "unattended_forms": [],
+    "forms_with_listbox_columnheads": [
+      "Form_FormEleccionTipoConsulta (ListaTipoConsulta)",
+      "Form_FormExpedienteModificados (ListaModificados)",
+      "Form_FormE2EGestionBatch (ListaExpedientesDisponibles + ListaExpedientesBatch)"
+    ],
+    "tables_referenced_union": [],
+    "blast_radius_shared_symbols": [
+      "mod0BDOpcionesHelper (central router — appears in 6+ handlers in Form0BDOpciones)",
+      "JsonConverter.ParseJson (pattern reused across 6 handlers)",
+      "PintarTareas / AvanceCerrar / FormularioAbierto / AbrirAyuda / CorreoAlAdministrador",
+      "frmBusy (shared modal popup)",
+      "Form_FormConfiguracion / Form_FormTareasTramitadorPendientes / Form_FormGestionRiesgos"
+    ],
+    "tool_failures_handled": [
+      "issue #1408: map_form_behavior autoFetchCodeGraph disabled per call → codegraphEvidence empty for all 9 forms",
+      "issue #1412: verify_form_bindings SKIPPED for all 9 forms → bindings_count = N/A for 3 ListBox forms (FormEleccionTipoConsulta, FormExpedienteModificados, FormE2EGestionBatch)",
+      "codegraph stale banner ignored (frozen index across staging/{brass,condor,expedientes,gestion-riesgos,hps-solicitudes})",
+      "codegraph explore budget = 2 calls used (1 for Form_frmSplash, 1 for Form_Form0BDOpciones) — other 7 forms not deeply explored, only auto-fetched"
+    ],
+    "key_observations": [
+      "G1 is the cross-cutting layer: Splash → 0BDOpciones/Tecnicos → 6 submenus (incl. E2E batch, TipoConsulta) → Modificado flow.",
+      "Form0BDOpciones is the JSON-driven hub (mod0BDOpcionesHelper + JsonConverter.ParseJson pattern in 6 handlers).",
+      "FrmBusy is the shared anti-spam popup (also referenced by vba-antispam-popup skill).",
+      "3 ListBox-only forms have hardcoded ColumnHeads; real RowSource likely set in code — verify when bug #1412 is fixed.",
+      "Geometry findings are dominated by header-bar overlap cascading into detail (lblTitulo1 + ImagenTareasON + ComandoBuscadorTecnico all stack near top=240-330).",
+      "All 9 forms are attended (no Me.X.RowSource/ControlSource assignments in .form.txt or Form_Open/Load)."
+    ]
+  }
+}

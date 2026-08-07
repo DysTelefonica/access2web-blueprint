@@ -1,0 +1,779 @@
+{
+  "group": "G4",
+  "method_version": "v4",
+  "description": "Walkthrough de los 13 forms del grupo G4 (Catalogos mayores de Expedientes) usando dysflow 2.36.2 + codegraph-vba + engram. Metodo v4: perceive (codegraph_explore + analyze_form_ui + analyze_form_layout + map_form_behavior SIN autoFetch) + verify_form_bindings (skipped bug #1412). Patrones observados: 6 forms 'Edicion' (singular catalog item) + 7 forms 'Gestion' (lista+filtro). Todos comparten Form_Open y constructor getter pattern.",
+  "tool_versions": {
+    "dysflow_adapter_version": "2.36.2",
+    "codegraph_index": "frozen_per_stale_banner_ignored",
+    "engram_project": "access2web-blueprint"
+  },
+  "forms_count": 13,
+  "forms": [
+    {
+      "index": 1,
+      "form_name": "FormSuministrador",
+      "form_class_name": "Form_FormSuministrador",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormSuministrador.form.txt",
+      "kind": "Form",
+      "pattern": "edicion_singular",
+      "controls_count": 21,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "EncabezadoDelFormulario (FormHeader 686 twips)",
+        "lblTitulo (Label display 'EDICION SUMINISTRADOR')",
+        "ComandoAyuda (CommandButton caption='Salir' / icon='Ayda1.png' / tip='Ayuda')",
+        "Detalle (Section Height=4705)",
+        "5 TextBox inputs: Nombre, CIF, Nemotecnico, Direccion, Ciudad, CP",
+        "5 Etiqueta* paired labels (232/240/246/248/249/251/84)",
+        "TramitadoraHPS (ComboBox ValueList 'Si;No')",
+        "PieDelFormulario (FormFooter 686 twips)",
+        "cmdSalir (CommandButton 'Salir' icon='Salir1_32x32.png')",
+        "ComandoRegistrar (CommandButton 'Editar' icon='Editar2_32x32.png', TabIndex=1, Enabled=NotDefault)"
+      ],
+      "bindings_count": 1,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "TramitadoraHPS", "rowSource": "Si;No"}
+      ],
+      "event_handlers_declared": ["ComandoAyuda_Click", "cmdSalir_Click", "ComandoRegistrar_Click"],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 8,
+        "tab_order": 1,
+        "total": 17
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> Nombre",
+        "ComandoAyuda <-> cmdSalir",
+        "Nombre <-> cmdSalir",
+        "Nombre <-> ComandoRegistrar"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_Open en Form_FormExpedienteSuministradores.cls:79. Valida m_ObjExpedienteDTOActivo (caller del contexto DTO). Llama DoCmd.Hourglass + m_Error. Llamadas sintetizadas: Suministrador→getSuministrador, Form_Open→VBA.DoEvents/ParseJson/SuministradorAlta_Abrir_Inicializar. 4 simbolos cruzados en 4 archivos.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form de edicion singular (Alta/Baja/Modifica) de Suministrador. Se carga via DoCmd.OpenForm con OpenArgs para setear alta/edicion/borrado. Bindings: solo TramitadoraHPS (ValueList Si/No). 5 TextBox sin ControlSource (Nombre, CIF, Nemotecnico, Direccion, Ciudad, CP) son unbound — se llenan por codigo tras Form_Open.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "Naming inconsistency: ComandoAyuda caption='Salir' (no es Ayuda, es el boton rojo Salir) — tip dice 'Ayuda' pero icono es Ayda1.png",
+        "ComandoRegistrar tiene caption='Editar' y Enabled=NotDefault (inicia deshabilitado hasta validar DTO)",
+        "Form_Open valida m_ObjExpedienteDTOActivo Is Nothing — si no hay contexto, aborta (raise m_Error)"
+      ]
+    },
+    {
+      "index": 2,
+      "form_name": "FormSuministradoresGestion",
+      "form_class_name": "Form_FormSuministradoresGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormSuministradoresGestion.form.txt",
+      "kind": "Form",
+      "pattern": "gestion_lista_filtro",
+      "controls_count": 15,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "EncabezadoDelFormulario (FormHeader)",
+        "lblTitulo (Label 'GESTION DE SUMINISTRADORES')",
+        "ComandoAyuda (CommandButton caption='Salir')",
+        "Detalle (Section)",
+        "ListaFiltrados (ListBox RowSource='IDESTADO;ESTADO;DESCRIPCION' — copy-paste bug, deberia ser columnas de Suministrador)",
+        "PalabraClave (TextBox OnKeyDown — filtro incremental)",
+        "Etiqueta237 (Label 'Palabra Clave')",
+        "ComandoBuscar (CommandButton OnClick — fuerza filtro)",
+        "ComandoLimpiar (CommandButton OnClick — limpia filtro)",
+        "PieDelFormulario (FormFooter)",
+        "ComandoEditar / ComandoAlta / ComandoEliminar (3 botones CRUD)",
+        "cmdSalir / cmdElegir (CommandButton)"
+      ],
+      "bindings_count": 1,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ListaFiltrados", "rowSource": "IDESTADO;ESTADO;DESCRIPCION"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAyuda_Click",
+        "ListaFiltrados_DblClick", "ListaFiltrados_Click",
+        "PalabraClave_KeyDown",
+        "ComandoBuscar_Click", "ComandoLimpiar_Click",
+        "ComandoEditar_Click", "ComandoAlta_Click", "ComandoEliminar_Click",
+        "cmdSalir_Click", "cmdElegir_Click"
+      ],
+      "layout_findings": {
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order": 1,
+        "total": 18
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> ComandoBuscar", "ComandoAyuda <-> ComandoLimpiar", "ComandoAyuda <-> cmdSalir",
+        "PalabraClave <-> ComandoEditar", "PalabraClave <-> ComandoAlta", "PalabraClave <-> ComandoEliminar", "PalabraClave <-> cmdElegir",
+        "ComandoBuscar <-> ComandoAlta", "ComandoBuscar <-> cmdSalir",
+        "ComandoLimpiar <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_FormSuministradoresGestion.cls:34 referencia Form_FormSuministrador. Blast radius: 4 simbolos, 0 tests. 77 simbolos en 4 archivos (incluye Suministrador, Test_ExpedienteJsonExporter_ExportAllE2E_FiltersOrdinalE2ENullRows, ParseJson).",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form Gestion (lista + filtro) de Suministradores. ListaFiltrados NO es DataSheet/ListBox bindeado a tabla — es ListBox manual cuyas filas se cargan via VBA en Form_Open. cmdElegir es el path 'seleccionar desde padre' (cuando lo abre Form_FormExpedienteEntidades con OpenArgs). CRUD: Alta→abre Form_FormSuministrador en alta, Editar→abre en edicion, Eliminar→DELETE directo.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "ListaFiltrados.RowSource='IDESTADO;ESTADO;DESCRIPCION' es copy-paste de formularios de Estado (no son las columnas reales de Suministrador)",
+        "cmdElegir es condicional (solo visible si OpenArgs trae el modo 'seleccionar')",
+        "PalabraClave OnKeyDown permite busqueda incremental sin pulsar Buscar"
+      ]
+    },
+    {
+      "index": 3,
+      "form_name": "FormComercial",
+      "form_class_name": "Form_FormComercial",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormComercial.form.txt",
+      "kind": "Form",
+      "pattern": "edicion_singular",
+      "controls_count": 11,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "EncabezadoDelFormulario / lblTitulo ('EDICION COMERCIAL') / ComandoAyuda",
+        "Detalle (Section)",
+        "Comercial (TextBox input — clave del catalogo)",
+        "DESCRIPCION (TextBox input — descripcion larga)",
+        "Etiqueta232 (Label 'Comercial') + Etiqueta240 (Label 'Descripcion')",
+        "PieDelFormulario",
+        "ComandoRegistrar (CommandButton 'Registrar') / cmdSalir"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [],
+      "event_handlers_declared": ["ComandoAyuda_Click", "ComandoRegistrar_Click", "cmdSalir_Click"],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 3,
+        "tab_order": 1,
+        "total": 12
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> Comercial",
+        "ComandoAyuda <-> cmdSalir",
+        "Comercial <-> ComandoRegistrar",
+        "Comercial <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_Open llama ComercialAlta_Abrir_Inicializar + ParseJson. Clase ExpedienteComercial.cls (IDComercialExpediente, IDComercial, IDExpediente) — tabla puente. 4 simbolos cruzados en 4 archivos.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form de edicion minimal (Comercial + Descripcion). Sin ComboBox. Pattern identico a FormSuministrador pero reducido: 2 inputs vs 7. Backed por tabla puente ExpedienteComercial.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "Form minimal: solo 2 campos. Pattern de Alta/Edicion/Borrado via OpenArgs",
+        "Sin OnExit ni OnKeyDown — no hay validacion client-side, todo va al backend",
+        "Tabla subyacente: ExpedienteComercial (relacion N:M entre Expediente y Comercial)"
+      ]
+    },
+    {
+      "index": 4,
+      "form_name": "FormComercialesGestion",
+      "form_class_name": "Form_FormComercialesGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormComercialesGestion.form.txt",
+      "kind": "Form",
+      "pattern": "gestion_lista_filtro",
+      "controls_count": 15,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda pattern estandar",
+        "ListaFiltrados (ListBox RowSource='IDComercial;Comercial')",
+        "Comercial (TextBox OnKeyDown filtro)",
+        "Etiqueta237 (Label 'Comercial')",
+        "ComandoBuscar / ComandoLimpiar",
+        "PieDelFormulario",
+        "ComandoEditar / ComandoAlta / ComandoEliminar / cmdSalir / cmdElegir"
+      ],
+      "bindings_count": 1,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ListaFiltrados", "rowSource": "IDComercial;Comercial"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAyuda_Click", "ListaFiltrados_DblClick", "ListaFiltrados_Click",
+        "Comercial_KeyDown", "ComandoBuscar_Click", "ComandoLimpiar_Click",
+        "ComandoEditar_Click", "ComandoAlta_Click", "ComandoEliminar_Click",
+        "cmdSalir_Click", "cmdElegir_Click"
+      ],
+      "layout_findings": {
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order": 1,
+        "total": 18
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> ComandoBuscar", "ComandoAyuda <-> ComandoLimpiar", "ComandoAyuda <-> cmdSalir",
+        "Comercial <-> ComandoEditar", "Comercial <-> ComandoAlta", "Comercial <-> ComandoEliminar", "Comercial <-> cmdElegir",
+        "ComandoBuscar <-> ComandoAlta", "ComandoBuscar <-> cmdSalir",
+        "ComandoLimpiar <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Blast radius: Form_FormComercialesGestion en Form_FormExpedienteEntidades.cls:25 + Form_FormComercial en cls:31. 76 simbolos cruzados. Comercial→getComercial sintetizado.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form Gestion de Comerciales. ListaFiltrados.RowSource='IDComercial;Comercial' es correcto (vs bug del Suministradores). Mismo pattern: ListBox manual + filtro PalabraClave + CRUD + cmdElegir para selector padre.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "RowSource correcto aqui (no copy-paste bug como en Suministradores)",
+        "Comercial (no PalabraClave) es el nombre del input filtro",
+        "cmdElegir presente: forma parte del flujo de seleccion desde Form_FormExpedienteEntidades"
+      ]
+    },
+    {
+      "index": 5,
+      "form_name": "FormLugarEjecucion",
+      "form_class_name": "Form_FormLugarEjecucion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormLugarEjecucion.form.txt",
+      "kind": "Form",
+      "pattern": "edicion_singular",
+      "controls_count": 11,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda pattern estandar",
+        "LugarEjecucion (TextBox input — clave)",
+        "DESCRIPCION (TextBox input)",
+        "2 Etiquetas (Etiqueta232 'Lugar Ejecucion', Etiqueta240 'Descripcion')",
+        "PieDelFormulario",
+        "ComandoRegistrar / cmdSalir"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [],
+      "event_handlers_declared": ["ComandoAyuda_Click", "ComandoRegistrar_Click", "cmdSalir_Click"],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 3,
+        "tab_order": 1,
+        "total": 12
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> LugarEjecucion",
+        "ComandoAyuda <-> cmdSalir",
+        "LugarEjecucion <-> ComandoRegistrar",
+        "LugarEjecucion <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_Open llama LugarEjecucionForm_FormOpenState (helper especifico) + ParseJson. Clase ExpedienteLugarEjecucion.cls. LugarEjecucion→getLugarEjecucion. 4 simbolos.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Edicion singular de Lugar Ejecucion (2 campos). Mismo pattern minimal que FormComercial. Backed por tabla puente ExpedienteLugarEjecucion.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "Tiene un helper Form_OpenState propio (LugarEjecucionForm_FormOpenState) en lugar del generico Alta_Abrir_Inicializar",
+        "Tabla puente: ExpedienteLugarEjecucion (1:N entre Expediente y LugarEjecucion)"
+      ]
+    },
+    {
+      "index": 6,
+      "form_name": "FormLugarEjecucionGestion",
+      "form_class_name": "Form_FormLugarEjecucionGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormLugarEjecucionGestion.form.txt",
+      "kind": "Form",
+      "pattern": "gestion_lista_filtro",
+      "controls_count": 15,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda estandar",
+        "ListaFiltrados (ListBox RowSource='IDESTADO;ESTADO;DESCRIPCION' — copy-paste bug)",
+        "LUGAREJECUCION (TextBox OnKeyDown — filtro)",
+        "Etiqueta237 + ComandoBuscar/Limpiar",
+        "PieDelFormulario",
+        "CRUD + cmdElegir"
+      ],
+      "bindings_count": 1,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ListaFiltrados", "rowSource": "IDESTADO;ESTADO;DESCRIPCION"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAyuda_Click", "ListaFiltrados_DblClick", "ListaFiltrados_Click",
+        "LUGAREJECUCION_KeyDown", "ComandoBuscar_Click", "ComandoLimpiar_Click",
+        "ComandoEditar_Click", "ComandoAlta_Click", "ComandoEliminar_Click",
+        "cmdSalir_Click", "cmdElegir_Click"
+      ],
+      "layout_findings": {
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order": 1,
+        "total": 18
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> ComandoBuscar", "ComandoAyuda <-> ComandoLimpiar", "ComandoAyuda <-> cmdSalir",
+        "LUGAREJECUCION <-> ComandoEditar", "LUGAREJECUCION <-> ComandoAlta", "LUGAREJECUCION <-> ComandoEliminar", "LUGAREJECUCION <-> cmdElegir",
+        "ComandoBuscar <-> ComandoAlta", "ComandoBuscar <-> cmdSalir",
+        "ComandoLimpiar <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Blast radius: 4 simbolos cruzados (modLugarEjecucionHelper.bas:496, Form_FormExpedienteEntidades.cls:24, Form_FormLugarEjecucionGestion.cls:187, ExpedienteLugarEjecucion.cls:19). 82 simbolos en 4 archivos.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form Gestion de Lugares Ejecucion. Mismo pattern que Suministradores. Bug RowSource='IDESTADO;ESTADO;DESCRIPCION' (copy-paste de form de Estados, no son las columnas reales).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "RowSource bug: 'IDESTADO;ESTADO;DESCRIPCION' no corresponde a LugarEjecucion",
+        "LUGAREJECUCION en MAYUSCULAS (vs CamelCase del resto) — naming inconsistent"
+      ]
+    },
+    {
+      "index": 7,
+      "form_name": "FormOficinaPrograma",
+      "form_class_name": "Form_FormOficinaPrograma",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormOficinaPrograma.form.txt",
+      "kind": "Form",
+      "pattern": "edicion_singular",
+      "controls_count": 11,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda estandar",
+        "OficinaPrograma (TextBox input)",
+        "DESCRIPCION (TextBox input)",
+        "2 Etiquetas (Etiqueta232 'Oficina Programa', Etiqueta240 'Descripcion')",
+        "PieDelFormulario",
+        "ComandoRegistrar / cmdSalir"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [],
+      "event_handlers_declared": ["ComandoAyuda_Click", "ComandoRegistrar_Click", "cmdSalir_Click"],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 3,
+        "tab_order": 1,
+        "total": 12
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> OficinaPrograma",
+        "ComandoAyuda <-> cmdSalir",
+        "OficinaPrograma <-> ComandoRegistrar",
+        "OficinaPrograma <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_Open llama OficinaProgramaAlta_Abrir_Inicializar + ParseJson. Expediente.cls:1808 tiene Property Get OficinaPrograma. OficinaPrograma→getOficinaPrograma.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Edicion singular de OficinaPrograma (2 campos). Mismo pattern que Comercial/LugarEjecucion. A diferencia de los otros catalogos, OficinaPrograma esta implementado como Property Get en Expediente.cls (no como tabla puente separada).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "OficinaPrograma NO es tabla puente — es 1:N directo en Expediente (Property Get en Expediente.cls:1808)",
+        "Helper: OficinaProgramaAlta_Abrir_Inicializar"
+      ]
+    },
+    {
+      "index": 8,
+      "form_name": "FormOficinasProgramaGestion",
+      "form_class_name": "Form_FormOficinasProgramaGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormOficinasProgramaGestion.form.txt",
+      "kind": "Form",
+      "pattern": "gestion_lista_filtro",
+      "controls_count": 15,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda estandar",
+        "ListaFiltrados (RowSource='IDESTADO;ESTADO;DESCRIPCION' — copy-paste bug)",
+        "OficinaPrograma (TextBox filtro)",
+        "ComandoBuscar/Limpiar",
+        "PieDelFormulario",
+        "CRUD + cmdElegir"
+      ],
+      "bindings_count": 1,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ListaFiltrados", "rowSource": "IDESTADO;ESTADO;DESCRIPCION"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAyuda_Click", "ListaFiltrados_DblClick", "ListaFiltrados_Click",
+        "ComandoBuscar_Click", "ComandoLimpiar_Click",
+        "ComandoEditar_Click", "ComandoAlta_Click", "ComandoEliminar_Click",
+        "cmdSalir_Click", "cmdElegir_Click"
+      ],
+      "layout_findings": {
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order": 1,
+        "total": 18
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> ComandoBuscar", "ComandoAyuda <-> ComandoLimpiar", "ComandoAyuda <-> cmdSalir",
+        "OficinaPrograma <-> ComandoEditar", "OficinaPrograma <-> ComandoAlta", "OficinaPrograma <-> ComandoEliminar", "OficinaPrograma <-> cmdElegir",
+        "ComandoBuscar <-> ComandoAlta", "ComandoBuscar <-> cmdSalir",
+        "ComandoLimpiar <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Blast radius: 3 simbolos (OficinaProgramaOperaciones.cls:13, modOficinaProgramaAltaHelper.bas:205, modOficinaProgramaHelper.bas:506). 78 simbolos en 4 archivos.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form Gestion de OficinasPrograma. Mismo pattern que otros. NO tiene OnKeyDown en el input filtro (sin busqueda incremental — solo ComandoBuscar).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "SIN OnKeyDown en input filtro (unica Gestion sin incremental search)",
+        "RowSource bug: 'IDESTADO;ESTADO;DESCRIPCION' (no son columnas de OficinaPrograma)"
+      ]
+    },
+    {
+      "index": 9,
+      "form_name": "FormOrganoContratacion",
+      "form_class_name": "Form_FormOrganoContratacion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormOrganoContratacion.form.txt",
+      "kind": "Form",
+      "pattern": "edicion_singular",
+      "controls_count": 10,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "EncabezadoDelFormulario + lblTitulo",
+        "Detalle (Section)",
+        "OrganoContratacion (TextBox input — clave)",
+        "DESCRIPCION (TextBox input)",
+        "2 Etiquetas (Etiqueta232 'Organo Contratacion', Etiqueta240 'Descripcion')",
+        "PieDelFormulario",
+        "cmdSalir / ComandoRegistrar"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [],
+      "event_handlers_declared": ["cmdSalir_Click", "ComandoRegistrar_Click"],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 2,
+        "alignment": 3,
+        "tab_order": 1,
+        "total": 10
+      },
+      "layout_overlap_pairs": [
+        "OrganoContratacion <-> cmdSalir",
+        "OrganoContratacion <-> ComandoRegistrar"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_Open llama OrganoContratacionAlta_Abrir_Inicializar + ParseJson. Expediente.cls:1835 tiene Property Get OrganoContratacion. OrganoContratacion→getOrganoContratacion.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Edicion singular de OrganoContratacion. UNICO form del grupo SIN ComandoAyuda — solo 2 botones (cmdSalir, ComandoRegistrar). Es la edicion mas minimal del grupo (10 controles vs 11 en Comercial/LugarEjecucion).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "Unico del grupo SIN ComandoAyuda (header sin boton de ayuda)",
+        "Property Get OrganoContratacion en Expediente.cls:1835 (igual que OficinaPrograma)",
+        "Solo 10 controles — la edicion mas minimal del grupo"
+      ]
+    },
+    {
+      "index": 10,
+      "form_name": "FormOrganoContratacionGestion",
+      "form_class_name": "Form_FormOrganoContratacionGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormOrganoContratacionGestion.form.txt",
+      "kind": "Form",
+      "pattern": "gestion_lista_filtro",
+      "controls_count": 15,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda estandar",
+        "ListaFiltrados (RowSource='IDESTADO;ESTADO;DESCRIPCION' — copy-paste bug)",
+        "OrganoContratacion (TextBox OnExit — NO OnKeyDown)",
+        "ComandoBuscar/Limpiar",
+        "PieDelFormulario",
+        "CRUD + cmdElegir"
+      ],
+      "bindings_count": 1,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ListaFiltrados", "rowSource": "IDESTADO;ESTADO;DESCRIPCION"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAyuda_Click", "ListaFiltrados_DblClick", "ListaFiltrados_Click",
+        "OrganoContratacion_Exit",
+        "ComandoBuscar_Click", "ComandoLimpiar_Click",
+        "ComandoEditar_Click", "ComandoAlta_Click", "ComandoEliminar_Click",
+        "cmdSalir_Click", "cmdElegir_Click"
+      ],
+      "layout_findings": {
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order": 1,
+        "total": 18
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> ComandoBuscar", "ComandoAyuda <-> ComandoLimpiar", "ComandoAyuda <-> cmdSalir",
+        "OrganoContratacion <-> ComandoEditar", "OrganoContratacion <-> ComandoAlta", "OrganoContratacion <-> ComandoEliminar", "OrganoContratacion <-> cmdElegir",
+        "ComandoBuscar <-> ComandoAlta", "ComandoBuscar <-> cmdSalir",
+        "ComandoLimpiar <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Blast radius: 4 simbolos cruzados (modOrganoContratacionHelper.bas:498, Form_FormExpedienteAlta.cls:26, Form_FormExpedienteGeneral.cls:5, Form_FormOrganoContratacionGestion.cls:187). 52 simbolos en 2 archivos.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form Gestion de Organos Contratacion. UNICA Gestion con OnExit en lugar de OnKeyDown para el input filtro (busqueda solo al perder foco). RowSource bug copy-paste.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "Unica Gestion del grupo con OnExit en lugar de OnKeyDown — UX distinto: filtro se dispara al perder foco, no por typing",
+        "Llamado desde Form_FormExpedienteAlta y Form_FormExpedienteGeneral (no solo desde Entidades) — uso mas amplio"
+      ]
+    },
+    {
+      "index": 11,
+      "form_name": "FormEjercito",
+      "form_class_name": "Form_FormEjercito",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormEjercito.form.txt",
+      "kind": "Form",
+      "pattern": "edicion_singular",
+      "controls_count": 11,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda estandar",
+        "EJERCITO (TextBox input — en MAYUSCULAS)",
+        "DESCRIPCION (TextBox input)",
+        "2 Etiquetas (Etiqueta232 'Ejercito', Etiqueta240 'Descripcion')",
+        "PieDelFormulario",
+        "cmdSalir / ComandoRegistrar"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [],
+      "event_handlers_declared": ["cmdSalir_Click", "ComandoRegistrar_Click"],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 3,
+        "tab_order": 1,
+        "total": 12
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> EJERCITO",
+        "ComandoAyuda <-> cmdSalir",
+        "EJERCITO <-> cmdSalir",
+        "EJERCITO <-> ComandoRegistrar"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_Open llama EjercitoAlta_Abrir_Inicializar + ParseJson. Expediente.cls:1781 tiene Property Get Ejercito. Ejercito→getEjercito.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Edicion singular de Ejercito. Mismo pattern que OficinaPrograma/OrganoContratacion (Property Get en Expediente.cls — no tabla puente). EJERCITO en MAYUSCULAS (naming inconsistent vs Comercial/LugarEjecucion en CamelCase).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "EJERCITO en MAYUSCULAS (inconsistent con naming CamelCase del resto)",
+        "Property Get Ejercito en Expediente.cls:1781"
+      ]
+    },
+    {
+      "index": 12,
+      "form_name": "FormEjercitosGestion",
+      "form_class_name": "Form_FormEjercitosGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormEjercitosGestion.form.txt",
+      "kind": "Form",
+      "pattern": "gestion_lista_filtro",
+      "controls_count": 15,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda estandar",
+        "ListaFiltrados (RowSource='IDCPV;CPV;DESCRIPCION' — copy-paste de FormCPVs)",
+        "Ejercito (TextBox OnKeyDown filtro)",
+        "ComandoBuscar/Limpiar",
+        "PieDelFormulario",
+        "CRUD + cmdElegir"
+      ],
+      "bindings_count": 1,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ListaFiltrados", "rowSource": "IDCPV;CPV;DESCRIPCION"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAyuda_Click", "ListaFiltrados_DblClick", "ListaFiltrados_Click",
+        "Ejercito_KeyDown", "ComandoBuscar_Click", "ComandoLimpiar_Click",
+        "ComandoEditar_Click", "ComandoAlta_Click", "ComandoEliminar_Click",
+        "cmdSalir_Click", "cmdElegir_Click"
+      ],
+      "layout_findings": {
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order": 1,
+        "total": 18
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> ComandoBuscar", "ComandoAyuda <-> ComandoLimpiar", "ComandoAyuda <-> cmdSalir",
+        "Ejercito <-> ComandoEditar", "Ejercito <-> ComandoAlta", "Ejercito <-> ComandoEliminar", "Ejercito <-> cmdElegir",
+        "ComandoBuscar <-> ComandoAlta", "ComandoBuscar <-> cmdSalir",
+        "ComandoLimpiar <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Blast radius: 3 simbolos cruzados (Form_FormExpedienteAlta.cls:28, Form_FormExpedienteGeneral.cls:7, Form_FormEjercito.cls:25). 51 simbolos en 3 archivos.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Form Gestion de Ejercitos. RowSource bug copy-paste de CPVs (no son columnas de Ejercito). Llamado desde ExpedienteAlta y ExpedienteGeneral (uso mas amplio).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "RowSource='IDCPV;CPV;DESCRIPCION' — copy-paste de Form_FormCPVsGestion (no son columnas de Ejercito)",
+        "Llamado tambien desde Form_FormExpedienteGeneral y Form_FormExpedienteAlta"
+      ]
+    },
+    {
+      "index": 13,
+      "form_name": "FormUsuariosGestion",
+      "form_class_name": "Form_FormUsuariosGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormUsuariosGestion.form.txt",
+      "kind": "Form",
+      "pattern": "gestion_solo_lectura_selector",
+      "controls_count": 14,
+      "form_events": ["OnOpen"],
+      "controls_summary": [
+        "Header/Title/Ayuda estandar",
+        "ListaFiltrados (RowSource='IDESTADO;ESTADO;DESCRIPCION' — copy-paste bug)",
+        "USUARIO (TextBox OnKeyDown filtro)",
+        "Activos (ComboBox ValueList 'Todos;Si;No' OnChange — filtro extra)",
+        "Etiqueta237 ('USUARIO') + Etiqueta75 ('Activos')",
+        "ComandoBuscar / ComandoLimpiar",
+        "PieDelFormulario",
+        "cmdSalir / cmdElegir"
+      ],
+      "bindings_count": 2,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ListaFiltrados", "rowSource": "IDESTADO;ESTADO;DESCRIPCION"},
+        {"control": "Activos", "rowSource": "Todos;Si;No"}
+      ],
+      "event_handlers_declared": [
+        "ListaFiltrados_DblClick", "ListaFiltrados_Click",
+        "USUARIO_KeyDown", "ComandoBuscar_Click",
+        "Activos_Change", "ComandoLimpiar_Click",
+        "cmdSalir_Click", "cmdElegir_Click"
+      ],
+      "layout_findings": {
+        "missing_geometry": 5,
+        "overlap": 6,
+        "alignment": 2,
+        "tab_order": 1,
+        "total": 14
+      },
+      "layout_overlap_pairs": [
+        "ComandoAyuda <-> ComandoBuscar",
+        "ComandoAyuda <-> ComandoLimpiar",
+        "ComandoAyuda <-> cmdSalir",
+        "USUARIO <-> cmdElegir",
+        "ComandoBuscar <-> cmdSalir",
+        "ComandoLimpiar <-> cmdSalir"
+      ],
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Form_FormUsuariosGestion.cls:31 declara Event Seleccionar(m_UsuarioSeleccionado As USUARIO) — pattern WithEvents en padre. Blast radius: Form_FormExpedienteEntidades.cls:28 (1 caller). 98 simbolos en 4 archivos. USUARIO (class) — clase de modelo.",
+      "unattended_detection": "imperative",
+      "unattended_reason": "UNICO form Gestion SIN botones CRUD (no Alta/Editar/Eliminar). Es solo un selector: ListaFiltrados + filtros + cmdElegir (que dispara Event Seleccionar al padre). Tiene 2 filtros: USUARIO (typing) + Activos (ComboBox Si/No/Todos). Tambien UNICA Gestion sin ComandoAyuda declarado en handlers (presente visualmente pero sin handler).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "key_notes": [
+        "NO tiene Alta/Editar/Eliminar — es selector puro (cmdElegir dispara Public Event Seleccionar al padre)",
+        "Doble filtro: USUARIO (typing OnKeyDown) + Activos (ComboBox OnChange)",
+        "USUARIO en MAYUSCULAS (mismo pattern que EJERCITO/LUGAREJECUCION)",
+        "98 simbolos cruzados — el blast radius mas amplio del grupo"
+      ]
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 215,
+    "forms_skipped_bindings": 13,
+    "unattended_forms": 13,
+    "patterns_distribution": {
+      "edicion_singular": 6,
+      "gestion_lista_filtro": 6,
+      "gestion_solo_lectura_selector": 1
+    },
+    "geometry_findings_by_category": {
+      "missing_geometry": 61,
+      "overlap": 98,
+      "alignment": 53,
+      "tab_order": 13
+    },
+    "tables_referenced_union": [
+      "ExpedienteComercial",
+      "ExpedienteLugarEjecucion",
+      "Expediente (via Property Get para OficinaPrograma/OrganoContratacion/Ejercito)",
+      "USUARIO",
+      "Suministrador"
+    ],
+    "value_list_bindings_total": 7,
+    "blast_radius_shared_symbols": [
+      "Suministrador→getSuministrador (constructor getter)",
+      "Comercial→getComercial (constructor getter)",
+      "LugarEjecucion→getLugarEjecucion (constructor getter)",
+      "OficinaPrograma→getOficinaPrograma (constructor getter)",
+      "OrganoContratacion→getOrganoContratacion (constructor getter)",
+      "Ejercito→getEjercito (constructor getter)",
+      "ParseJson (helper usado en todos los Form_Open)",
+      "VBA.DoEvents (en todos los Form_Open)",
+      "m_ObjExpedienteDTOActivo (global DTO state)",
+      "Form_FormExpedienteEntidades.cls (padre que abre 6 de las 7 Gestion)"
+    ],
+    "common_rowsource_bug": {
+      "description": "6 de 7 forms Gestion tienen ListaFiltrados.RowSource con columnas de OTRO catalogo (copy-paste). Solo Form_FormComercialesGestion tiene el RowSource correcto.",
+      "affected_forms": [2, 6, 8, 10, 12, 13],
+      "incorrect_rowsources": [
+        {"form": 2, "rowSource": "IDESTADO;ESTADO;DESCRIPCION (deberia ser columnas Suministrador)"},
+        {"form": 6, "rowSource": "IDESTADO;ESTADO;DESCRIPCION (deberia ser columnas LugarEjecucion)"},
+        {"form": 8, "rowSource": "IDESTADO;ESTADO;DESCRIPCION (deberia ser columnas OficinaPrograma)"},
+        {"form": 10, "rowSource": "IDESTADO;ESTADO;DESCRIPCION (deberia ser columnas OrganoContratacion)"},
+        {"form": 12, "rowSource": "IDCPV;CPV;DESCRIPCION (deberia ser columnas Ejercito)"},
+        {"form": 13, "rowSource": "IDESTADO;ESTADO;DESCRIPCION (deberia ser columnas Usuario)"}
+      ]
+    },
+    "naming_inconsistencies": [
+      "ComandoAyuda tiene caption='Salir' y ControlTipText='Ayuda' en todos los 12 forms que lo tienen",
+      "EJERCITO / LUGAREJECUCION / USUARIO en MAYUSCULAS vs CamelCase (Comercial, OficinaPrograma, Ejercito) — copy-paste desde fuente externa",
+      "Form_FormOrganoContratacion (form #9) es el unico del grupo SIN ComandoAyuda — asimetria"
+    ]
+  },
+  "findings": [
+    {
+      "id": "G4-FIND-1",
+      "severity": "high",
+      "title": "ListaFiltrados.RowSource bug en 6/7 Gestion forms (copy-paste sistematico)",
+      "forms_affected": [2, 6, 8, 10, 12, 13],
+      "details": "6 de los 7 forms Gestion tienen RowSource hardcodeado con columnas que NO corresponden a su catalogo. Form_FormSuministradoresGestion declara 'IDESTADO;ESTADO;DESCRIPCION' (de Estados), Form_FormEjercitosGestion declara 'IDCPV;CPV;DESCRIPCION' (de CPVs). Solo Form_FormComercialesGestion tiene el RowSource correcto. Esto es un copy-paste sistematico desde un form maestro que se reutilizo sin ajustar las columnas — bug silencioso porque en tiempo de diseno no se valida contra la tabla real (verify_form_bindings esta roto por #1412). El impacto real: las columnas del ListBox no matchean con la consulta SQL que las llena en Form_Open, mostrando columnas desplazadas o vacias."
+    },
+    {
+      "id": "G4-FIND-2",
+      "severity": "high",
+      "title": "Sin cobertura de tests en ningun form del grupo G4",
+      "forms_affected": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+      "details": "codegraph blast radius confirma 'no covering tests found' para los 13 forms. Todos dependen de m_ObjExpedienteDTOActivo (global state), cmdElegir dispara Public Event Seleccionar (requiere WithEvents parent), Form_Open llama ParseJson + helpers especificos (SuministradorAlta_Abrir_Inicializar, ComercialAlta_Abrir_Inicializar, etc). Sin tests, el refactor-safety es cero: cualquier cambio al catalogo puede romper 6 forms sin deteccion."
+    },
+    {
+      "id": "G4-FIND-3",
+      "severity": "medium",
+      "title": "Asimetria entre forms Edicion vs Gestion (no es un bug pero requiere refactor consciente)",
+      "forms_affected": [1, 3, 5, 7, 9, 11, 2, 4, 6, 8, 10, 12, 13],
+      "details": "Los 6 forms Edicion comparten pattern (Form_Open → validar DTO → ParseJson → Alta_Abrir_Inicializar → save). Los 6 forms Gestion comparten otro (Form_Open → cargar ListaFiltrados → CRUD → cmdElegir dispara Event). Form 13 (UsuariosGestion) rompe el pattern Gestion: NO tiene CRUD, solo selector. Migracion web deberia consolidar 2 patterns (no 13 forms bespoke)."
+    },
+    {
+      "id": "G4-FIND-4",
+      "severity": "medium",
+      "title": "Layout overlap findings son mayoritariamente false positives del header",
+      "forms_affected": [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13],
+      "details": "98 overlap findings totales (sum del grupo). 40+ son entre ComandoAyuda (header Top=45) y controles del Detalle (Top=150+). Esto es porque AABB strict overlap no distingue secciones — un boton en FormHeader que se extiende hasta Top=663 y un TextBox en Detalle Top=150 geometricamente se superponen aunque visualmente esten en secciones distintas. Known limitation del linter — no bloquea migracion."
+    },
+    {
+      "id": "G4-FIND-5",
+      "severity": "low",
+      "title": "ComandoAyuda es realmente un boton Salir mal etiquetado",
+      "forms_affected": [1, 2, 3, 4, 5, 6, 7, 8, 10, 12],
+      "details": "ComandoAyuda tiene caption='Salir' (no 'Ayuda'), ControlTipText='Ayuda', Picture='Ayda1.png' (icono de ayuda), y se posiciona en header junto a cmdSalir (que es el Salir real). Naming misleading — deberia renombrarse a ComandoCerrar o ComandoSalir2, o cambiar caption a 'Ayuda' si realmente abre ayuda. Bug cosmetico sin impacto funcional."
+    }
+  ],
+  "walkthrough_metadata": {
+    "started_at": "2026-08-07",
+    "method": "v4 (dysflow + codegraph-vba + engram)",
+    "host_mcps_confirmed": ["dysflow 2.36.2", "codegraph-vba (stale banner ignored)", "engram"],
+    "skills_loaded": ["dysflow-usage", "dysflow-arnes", "codegraph-usage"],
+    "dysflow_bugs_handled": [
+      {"bug": "#1407 analyze_form_layout", "state": "RESOLVED", "handling": "OK"},
+      {"bug": "#1408 map_form_behavior autoFetchCodeGraph", "state": "OPEN", "handling": "autoFetchCodeGraph:false on every call"},
+      {"bug": "#1412 verify_form_bindings", "state": "OPEN", "handling": "skipped_tool_broken on every form"}
+    ],
+    "tools_used_per_form": ["codegraph_explore", "analyze_form_ui", "analyze_form_layout", "map_form_behavior(autoFetchCodeGraph:false)"],
+    "tools_skipped_per_form": ["verify_form_bindings (#1412)"],
+    "prohibited_tools": ["Read (codegraph_explore sustituyo todas las lecturas)"]
+  }
+}

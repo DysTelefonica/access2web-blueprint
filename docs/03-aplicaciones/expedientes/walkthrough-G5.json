@@ -1,0 +1,430 @@
+{
+  "group": "G5",
+  "method_version": "v4",
+  "forms_count": 9,
+  "forms": [
+    {
+      "file": "Form_FormGradoClasificacion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormGradoClasificacion.form.txt",
+      "formName": "FormGradoClasificacion",
+      "controlCount": 11,
+      "formEvents": ["OnOpen"],
+      "bindings": [],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 12,
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 3,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> GradoClasificacion",
+          "ComandoAyuda <-> cmdSalir",
+          "GradoClasificacion <-> cmdSalir",
+          "GradoClasificacion <-> ComandoEditar"
+        ],
+        "tab_order_visual": ["ComandoEditar", "DESCRIPCION"],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormGradosClasificacionGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormGradosClasificacionGestion.form.txt",
+      "formName": "FormGradosClasificacionGestion",
+      "controlCount": 15,
+      "formEvents": ["OnOpen"],
+      "bindings": [
+        {
+          "name": "ListaFiltrados",
+          "type": "ListBox",
+          "bindings": ["IDCPV;CPV;DESCRIPCIÓN"]
+        }
+      ],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 18,
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> ComandoBuscar",
+          "ComandoAyuda <-> ComandoLimpiar",
+          "ComandoAyuda <-> cmdSalir",
+          "GradoClasificacion <-> ComandoEditar",
+          "GradoClasificacion <-> ComandoAlta",
+          "GradoClasificacion <-> ComandoEliminar",
+          "GradoClasificacion <-> cmdElegir",
+          "ComandoBuscar <-> ComandoAlta",
+          "ComandoBuscar <-> cmdSalir",
+          "ComandoLimpiar <-> cmdSalir"
+        ],
+        "tab_order_visual": [
+          "ComandoEliminar",
+          "ComandoAlta",
+          "cmdSalir",
+          "cmdElegir",
+          "ComandoLimpiar",
+          "ComandoBuscar",
+          "ListaFiltrados"
+        ],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "Etiqueta237",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormPECAL",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormPECAL.form.txt",
+      "formName": "FormPECAL",
+      "controlCount": 11,
+      "formEvents": ["OnOpen"],
+      "bindings": [],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 12,
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 3,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> PECAL",
+          "ComandoAyuda <-> cmdSalir",
+          "PECAL <-> cmdSalir",
+          "PECAL <-> ComandoRegistrar"
+        ],
+        "tab_order_visual": ["ComandoRegistrar", "DESCRIPCION"],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormPECALESGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormPECALESGestion.form.txt",
+      "formName": "FormPECALESGestion",
+      "controlCount": 15,
+      "formEvents": ["OnOpen"],
+      "bindings": [
+        {
+          "name": "ListaFiltrados",
+          "type": "ListBox",
+          "bindings": ["IDESTADO;ESTADO;DESCRIPCIÓN"]
+        }
+      ],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 16,
+        "missing_geometry": 6,
+        "overlap": 7,
+        "alignment": 2,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "PECAL <-> ComandoEditar",
+          "PECAL <-> ComandoAlta",
+          "PECAL <-> ComandoEliminar",
+          "PECAL <-> cmdElegir",
+          "ComandoBuscar <-> ComandoAlta",
+          "ComandoBuscar <-> cmdSalir",
+          "ComandoLimpiar <-> cmdSalir"
+        ],
+        "tab_order_visual": [
+          "ComandoEliminar",
+          "ComandoAlta",
+          "cmdSalir",
+          "cmdElegir",
+          "ComandoBuscar",
+          "ComandoLimpiar",
+          "ListaFiltrados"
+        ],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "ComandoAyuda",
+          "Detalle",
+          "Etiqueta237",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormCPV",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormCPV.form.txt",
+      "formName": "FormCPV",
+      "controlCount": 11,
+      "formEvents": ["OnOpen"],
+      "bindings": [],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 12,
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 3,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> CPV",
+          "ComandoAyuda <-> cmdSalir",
+          "CPV <-> cmdSalir",
+          "CPV <-> ComandoRegistrar"
+        ],
+        "tab_order_visual": ["ComandoRegistrar", "DESCRIPCION"],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormCPVsGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormCPVsGestion.form.txt",
+      "formName": "FormCPVsGestion",
+      "controlCount": 15,
+      "formEvents": ["OnOpen"],
+      "bindings": [
+        {
+          "name": "ListaFiltrados",
+          "type": "ListBox",
+          "bindings": ["IDCPV;CPV;DESCRIPCIÓN"]
+        }
+      ],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 18,
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> ComandoBuscar",
+          "ComandoAyuda <-> ComandoLimpiar",
+          "ComandoAyuda <-> cmdSalir",
+          "CPV <-> ComandoEditar",
+          "CPV <-> ComandoAlta",
+          "CPV <-> ComandoEliminar",
+          "CPV <-> cmdElegir",
+          "ComandoBuscar <-> ComandoAlta",
+          "ComandoBuscar <-> cmdSalir",
+          "ComandoLimpiar <-> cmdSalir"
+        ],
+        "tab_order_visual": [
+          "ComandoEliminar",
+          "ComandoAlta",
+          "cmdSalir",
+          "cmdElegir",
+          "ComandoBuscar",
+          "ComandoLimpiar",
+          "ListaFiltrados"
+        ],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "Etiqueta237",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormRAC",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormRAC.form.txt",
+      "formName": "FormRAC",
+      "controlCount": 13,
+      "formEvents": ["OnOpen"],
+      "bindings": [],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 13,
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 4,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> RAC",
+          "ComandoAyuda <-> cmdSalir",
+          "RAC <-> cmdSalir",
+          "RAC <-> ComandoRegistrar"
+        ],
+        "tab_order_visual": ["ComandoRegistrar", "CORREO", "DESCRIPCION"],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormRACSGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormRACSGestion.form.txt",
+      "formName": "FormRACSGestion",
+      "controlCount": 15,
+      "formEvents": ["OnOpen"],
+      "bindings": [
+        {
+          "name": "ListaFiltrados",
+          "type": "ListBox",
+          "bindings": ["IDESTADO;ESTADO;DESCRIPCIÓN"]
+        }
+      ],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 18,
+        "missing_geometry": 5,
+        "overlap": 10,
+        "alignment": 2,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> ComandoBuscar",
+          "ComandoAyuda <-> ComandoLimpiar",
+          "ComandoAyuda <-> cmdSalir",
+          "RAC <-> ComandoEditar",
+          "RAC <-> ComandoAlta",
+          "RAC <-> ComandoEliminar",
+          "RAC <-> cmdElegir",
+          "ComandoBuscar <-> ComandoAlta",
+          "ComandoBuscar <-> cmdSalir",
+          "ComandoLimpiar <-> cmdSalir"
+        ],
+        "tab_order_visual": [
+          "ComandoEliminar",
+          "ComandoAlta",
+          "cmdSalir",
+          "cmdElegir",
+          "ComandoBuscar",
+          "ComandoLimpiar",
+          "ListaFiltrados"
+        ],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "Etiqueta237",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    },
+    {
+      "file": "Form_FormTareas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormTareas.form.txt",
+      "formName": "FormTareas",
+      "controlCount": 15,
+      "formEvents": ["OnOpen"],
+      "bindings": [
+        {
+          "name": "ListaFiltrados",
+          "type": "ListBox",
+          "bindings": ["IDExpediente;Estado;Tipo;... (Value List literal)"]
+        },
+        {
+          "name": "ListaTipoTareas",
+          "type": "ListBox",
+          "bindings": ["1;Exp. Estado DESCONOCIDO (0);... (Value List literal)"]
+        }
+      ],
+      "bindings_skipped": true,
+      "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
+      "geometry_findings": {
+        "total": 14,
+        "missing_geometry": 5,
+        "overlap": 6,
+        "alignment": 2,
+        "tab_order_mismatch": 1,
+        "overlap_pairs": [
+          "ComandoAyuda <-> Explicacion",
+          "ComandoAyuda <-> cmdSalir",
+          "ListaTipoTareas <-> lblEstado",
+          "Explicacion <-> lblEstado",
+          "Explicacion <-> cmdSalir",
+          "ComandoActualizar <-> lblEstado"
+        ],
+        "tab_order_visual": [
+          "ListaTipoTareas",
+          "Explicacion",
+          "ComandoActualizar",
+          "ComandoVerInforme",
+          "ComandoDetalle"
+        ],
+        "missing_geometry_controls": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "Etiqueta237",
+          "PieDelFormulario"
+        ]
+      },
+      "unattended": false,
+      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 133,
+    "forms_skipped_bindings": 9,
+    "unattended_forms": 0,
+    "tables_referenced_union": ["CPV", "ESTADO", "Expediente"],
+    "blast_radius_shared_symbols": [
+      {
+        "symbol": "Opciones_OpenFormAction",
+        "module": "mod0BDOpcionesHelper.bas",
+        "consumers": "all 9 forms (parent form dispatcher)"
+      },
+      {
+        "symbol": "Opciones_FormOpenState",
+        "module": "mod0BDOpcionesHelper.bas",
+        "consumers": "all forms via parent dispatch"
+      },
+      {
+        "symbol": "GestorEntidades_OpenDecision",
+        "module": "mod0BDGestorEntidadesHelper.bas",
+        "consumers": "Form*Gestion x4 (Grados, PECALES, CPVs, RACSGestion)"
+      },
+      {
+        "symbol": "Form_FormEleccionTipoConsulta",
+        "module": "Form_FormEleccionTipoConsulta.cls:315",
+        "consumers": "DoCmd.OpenForm caller for all forms"
+      },
+      {
+        "symbol": "Form_FormExpediente",
+        "module": "Form_FormExpediente.cls:34",
+        "consumers": "DoCmd.OpenForm caller for catalog forms"
+      }
+    ]
+  }
+}
