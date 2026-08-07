@@ -40,7 +40,7 @@
 | **Forma destino** | Hexagonal global (D8) · módulo dentro del monolito modular (D68) · puerto de persistencia PostgreSQL + object storage S3-compatible (D16) + secret manager (D9-D10) |
 | **Auditoría de uso previa** | Walkthrough G1..G5 (28/28 forms, método v4) · Codegraph-VBA + Dysflow (2 bugs filed: #1408 OPEN, #1412 OPEN — #1407 cerrado) |
 | **Hallazgo dominante** | **D155** — walkthrough aplicado con método v4 tras fix de `analyze_form_layout` (#1407 cerrado en 2.36.2). Los 2 gaps restantes (#1408, #1412) documentados como `skipped_tool_broken` con workaround aplicado. |
-| **Cross-refs engram** | topic_key `lanzaderas/walkthrough-2026-08-07` (consolidado de 5 walkthroughs paralelos G1..G5) |
+| **Cross-refs engram** | topic_key `lanzadera/walkthrough-2026-08-07` (consolidado de 5 walkthroughs paralelos G1..G5) |
 
 ---
 
@@ -150,7 +150,7 @@
 ### 2.3 Ambient conditions del walkthrough
 
 - **codegraph-vba index FROZEN**: auto-sync DISABLED por file lock contention. Stale banner ignorado per protocol.
-- **codegraph-vba NO indexa lanzaderas** (D157): el subdir `data/staging/lanzaderas/src/forms/*` no está indexado. Como resultado, blast radius devuelve cross-project noise (forms de Brass/Condor repetidos en G3) y `Form_Formulario1` colisiona con el homónimo de Expedientes (devuelve Firebase demo). `codegraph call paths NO verificados` — sólo form-declared events.
+- **codegraph-vba NO indexa Lanzadera** (D157): el subdir `data/staging/lanzadera/src/forms/*` no está indexado. Como resultado, blast radius devuelve cross-project noise (forms de Brass/Condor repetidos en G3) y `Form_Formulario1` colisiona con el homónimo de Expedientes (devuelve Firebase demo). `codegraph call paths NO verificados` — sólo form-declared events.
 - **binarios .accdb NO staging en este repo** (D156): walkthrough se hizo sólo sobre source tree exportado. Queries exportadas y macros embebidas requieren pull desde R2 (TK-LZ-8).
 
 ### 2.4 Patrones estructurales detectados
@@ -172,9 +172,9 @@
   - `FormVideosGestionArbolAplicacion` ↔ `FormVideosGestionArbolVideoDatos` (mismo layout 21-control, init path diferente).
   - `FormVideosGestion` ↔ `FormVideosUsuarios` (mismo pattern 5-control navigator).
   - `FormVideosArbolVideo` ↔ `FormVideosGestionArbolVideo` (nombres similares distinguidos sólo por prefijo `Gestion`).
-- **Cross-app collision D167**:
-  - Lanzaderas `Form_Formulario1` y Expedientes `Form_Formulario1` (Firebase demo) comparten nombre en codegraph blast radius.
-  - Migración: renombrar a `LanzaderaFormulario1` / `ExpedientesFormulario1`.
+- **Cross-app collision D167 (RESUELTO en este refactor)**:
+  - Lanzadera `Form_Formulario1` y Expedientes `Form_Formulario1` (Firebase demo) comparten nombre en codegraph blast radius.
+  - Migración: renombrar a `LanzaderaFormulario1` / `ExpedientesFormulario1`. **DECIDIDO en este refactor** — el naming resuelve la ambigüedad cross-app.
 
 #### c) ActiveX legacy (D158) — bloqueante para migración web
 
@@ -201,7 +201,7 @@
 | H4 | [D160](#anexo--decisiones-referenciadas-d5-d167) | **Grandparent coupling** — `Me.Parent.Parent.Controls("Arbol")` | high | `Form_FormVideosGestionArbolVideoDatos` | (sección 2.4d) |
 | H5 | [D161](#anexo--decisiones-referenciadas-d5-d167) | **0 test coverage + global state** — refactor a DI antes de tests | medium | Todos los 13 forms G4 | codegraph blast radius: `'⚠️ no covering tests found'` |
 | H6 | [D163](#anexo--decisiones-referenciadas-d5-d167) | **WIP forms G5** — orphan event bindings + dead buttons | medium | `Form_FormObtenerContraseña`, `Form_Formulario1` | Orphan event bindings en G5; dead buttons |
-| H7 | [D167](#anexo--decisiones-referenciadas-d5-d167) | **Cross-app ambiguity** — `Form_Formulario1` colisión Lanzaderas/Expedientes | low | `Form_Formulario1` | (sección 2.4b) |
+| H7 | D167 | **Cross-app ambiguity** — `Form_Formulario1` colisión Lanzadera/Expedientes | low | `Form_Formulario1` (renombrar a `LanzaderaFormulario1`) | (sección 2.4b) |
 | H8 | [D156](#anexo--decisiones-referenciadas-d5-d167) | **Binarios NO staging** — `Lanzadera.accdb` + `Lanzadera_Datos.accdb` faltan del repo | medium | Walkthrough audit | Walkthrough hecho sobre source tree exportado; queries/macros no inspeccionadas |
 | H9 | [D157](#anexo--decisiones-referenciadas-d5-d167) | **codegraph no indexa lanzaderas** — subdir no indexado, cross-project noise | low | Walkthrough audit | `codegraph sync` post-deploy (TK-LZ-7) |
 | H10 | [D166](#anexo--decisiones-referenciadas-d5-d167) | **Global state** — `m_ObjVideoActivo`, `m_ObjAplicacionActivo` | medium | 7 forms G4 | Refactor a request-scoped services (TK-LZ-21) |
@@ -377,7 +377,7 @@
 ### Integración
 
 - **TK-LZ-10**: [INTEGRATION] API REST federada con HPS vía OAuth 2.0.
-- **TK-LZ-11**: [INTEGRATION] Identidad/permisos compartidos con NoConformidades via `getdbLanzaderas()`.
+- **TK-LZ-11**: [INTEGRATION] Identidad/permisos compartidos con NoConformidades via `getdbLanzadera()`.
 - **TK-LZ-12**: [INTEGRATION] API REST federada con Expedientes.
 
 ### Testing y validación
@@ -398,16 +398,16 @@
 
 | Fuente | Aporta |
 |---|---|
-| engram topic_key `lanzaderas/walkthrough-2026-08-07` | Consolidado de 5 walkthroughs paralelos G1..G5 |
+| engram topic_key `lanzadera/walkthrough-2026-08-07` | Consolidado de 5 walkthroughs paralelos G1..G5 |
 | [`walkthrough-G1.json`](walkthrough-G1.json) | 5 forms (Login + Menús + Cross-cutting) — método v4, 29020 bytes |
 | [`walkthrough-G2.json`](walkthrough-G2.json) | 7 forms (Aplicaciones) — método v4, 24484 bytes |
 | [`walkthrough-G3.json`](walkthrough-G3.json) | 6 forms (Usuarios) — método v4, 16603 bytes |
 | [`walkthrough-G4.json`](walkthrough-G4.json) | 7 forms (Videos) — método v4, 41444 bytes — 5 critical findings |
 | [`walkthrough-G5.json`](walkthrough-G5.json) | 9 forms (Cross-cutting) — método v4, 14628 bytes |
 | `docs/design/mockups/lanzadera-shell.html` | Mockup del shell con sidebar + dashboard + RBAC diferenciado |
-| `data/staging/lanzaderas/src/forms/` (28 .form.txt + 28 .cls) | Source tree exportado |
-| `data/staging/lanzaderas/src/classes/` | Clases de dominio (27) |
-| `data/staging/lanzaderas/src/modules/` | Módulos (89) |
+| `data/staging/lanzadera/src/forms/` (28 .form.txt + 28 .cls) | Source tree exportado |
+| `data/staging/lanzadera/src/classes/` | Clases de dominio (27) |
+| `data/staging/lanzadera/src/modules/` | Módulos (89) |
 | `C:\00repos\codigo\00_LANZADERA\staging` | Fuente READ-ONLY |
 | [DOCS](../../../DOCS.md) | Technical reference raíz del blueprint |
 | [CODEBASE-GUIDE](../../../CODEBASE-GUIDE.md) | Para mantenedores del blueprint |
@@ -441,7 +441,7 @@
 | **D164 (codegraph lanzaderas)** | **Sync post-fix #1408** |
 | **D165 (binarios staging)** | **Pull desde R2** |
 | **D166 (global state)** | **`m_ObjVideoActivo`, `m_ObjAplicacionActivo` — refactor a services** |
-| **D167 (cross-app ambiguity)** | **`Form_Formulario1` colisión Lanzaderas/Expedientes — renombrar** |
+| **D167 (cross-app ambiguity)** | **`Form_Formulario1` colisión Lanzadera/Expedientes — renombrar a `LanzaderaFormulario1` / `ExpedientesFormulario1`** |
 
 ## Checklist del documento
 
@@ -462,10 +462,15 @@
 - [x] D158-D162 particular: 5 critical findings G4 con acción concreta
 - [x] Sin emojis decorativos
 - [x] Cross-references a DOCS, CODEBASE-GUIDE, AGENTS
+- [x] **Naming Lanzadera (singular)** consistente en todo el doc — el nombre del producto es `Lanzadera`, no `Lanzaderas` (corregido en este refactor)
+- [x] **D167 resuelto** — `Form_Formulario1` renombrado a `LanzaderaFormulario1` en la migración; mismo fix para `ExpedientesFormulario1` en la epic de Expedientes
+- [x] **getdbLanzadera()** (singular) — la función del legacy; NO `getdbLanzaderas()`
+- [x] Path del repo staging: `data/staging/lanzadera/` (singular), NO `lanzaderas/`
+- [x] engram topic_key: `lanzadera/walkthrough-2026-08-07` (singular)
 
 ## Siguiente paso
 
-Aplicar las mismas reglas a las otras 7 épicas (HPS, HPS_Solicitudes, Brass, Gestion_Riesgos, NoConformidades, Lanzaderas, Expedientes, Condor) — reescribir cada `epic.md` con este formato. Pendiente tras cerrar el ciclo de revisión final del blueprint.
+Aplicar las mismas reglas a las otras 7 épicas (HPS, HPS_Solicitudes, Brass, Gestion_Riesgos, NoConformidades, Lanzadera, Expedientes, Condor) — reescribir cada `epic.md` con este formato. Pendiente tras cerrar el ciclo de revisión final del blueprint.
 
 ---
 
