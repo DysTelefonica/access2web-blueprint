@@ -1,11 +1,32 @@
+[← Back to Gestion_Riesgos README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
+
 # Épica — Gestion_Riesgos (migración a web)
 
-> **Estado:** DRAFT — pendiente revisión al final del ciclo (junto con Brass).
-> **Versión:** v0.1 (2026-08-06).
-> **App legacy:** Gestion_Riesgos (`C:\00repos\codigo\00_GESTION_RIESGOS`) · frontend `Gestion_Riesgos.accdb` (40 MB) + backend `Gestion_Riesgos_Datos.accdb` (17 MB).
-> **Lote de discovery:** Lote 6 — junto con Brass, HPS, HPS_Solicitudes, Condor, Expedientes ya documentados.
-> **Hallazgo dominante:** **D88** — `getdb()` con 372 call sites en toda la app (no 308 como decía el brief original — 64 nuevos desde el corte).
-> **Cross-refs:** engram topic_key `gestion-riesgos/deep-discovery-2026-08-06` (consolidado de 5 sub-agentes paralelos).
+> **Estado:** DRAFT v0.1 (2026-08-06) — pendiente revisión al final del ciclo de las 8 épicas.
+> **Lote:** 6 — junto con Brass, HPS, HPS_Solicitudes, Condor, Expedientes.
+> **App legacy:** `00_GESTION_RIESGOS` · frontend `Gestion_Riesgos.accdb` (40 MB) + backend `Gestion_Riesgos_Datos.accdb` (17 MB).
+> **Sentence that organizes**: **Gestion_Riesgos es la app de riesgos de calidad por edición: cada edición tiene N riesgos con planes de mitigación/contingencia, vulnerabilidad, mitigación (4 valores), y triángulo plazo/coste/calidad. State machine de 14 estados. Cuello de botella: 372 call sites a `getdb()`集中在 clases de dominio, no en UI (D88).**
+
+> **Scope del scope**: "Este repo es research + planning de la migración. Cada app tendrá su propio repo + docs cuando se construya."
+
+---
+
+## Quick Navigation
+
+| Section                                                       | What you'll find                                              |
+|---------------------------------------------------------------|---------------------------------------------------------------|
+| [Metadatos](#metadatos)                                       | Scope XL, D88 (372 getdb() callers), dependencias.              |
+| [1. Scope](#1-scope)                                          | 61 features F1-F61 en 5 dominios (G1-G5).                    |
+| [2. Estado del descubrimiento](#2-estado-del-descubrimiento)    | Inventario 62 forms, 65 clases, 139 módulos, 71 tablas, D88. |
+| [3. Hallazgos críticos](#3-hallazgos-críticos)                | D88 + D126-D145: state machine, AGEDO, anexos, tests.         |
+| [4. Decisiones aplicadas](#4-decisiones-aplicadas)              | UX por pantalla, hexagonal ports, seguridad.                  |
+| [5. Criterios de aceptación](#5-criterios-de-aceptación)      | Funcionalidad, Seguridad, Performance, Operacional.            |
+| [6. Pendientes operacionales](#6-pendientes-operacionales)    | Antes, durante, go-live.                                       |
+| [7. Tickets derivables](#7-tickets-derivables-preview)         | 40 tickets TK-GR-1..40.                                       |
+| [Anexo · Tabla de fuentes](#anexo--tabla-de-fuentes)         | Walkthrough + docs + source + engram.                          |
+| [Anexo · Decisiones referenciadas](#anexo--decisiones-referenciadas-d5-d145) | D5-D145.                                          |
+
+---
 
 ## Metadatos
 
@@ -16,28 +37,18 @@
 | **Scope size** | **XL** (62 forms, 65 clases, 139 módulos, 71 tablas, 372 getdb() callers) |
 | **Dependencias cross-app** | **Expedientes** (vía HTTP/JSON — único punto de acoplamiento crítico); **NoConformidades** (vía `TbRiesgosNC.IDNC` FK lógica); **Lanzadera** (identidad/permisos presumiblemente, vía `getdbLanzadera()` — patrón compartido con Gestion_Riesgos) |
 | **Riesgo dominante** | **D88** — `getdb()` con 372 callers. Los forms tienen 0-2 calls directos; el grueso está en las CLASES de dominio. **No es un problema de UI** — la optimización es de capa de datos, no de forms. |
-| **Stack target** | Backend Python 3.12+ / FastAPI 0.119+ / SQLAlchemy 2.0.x / Alembic 1.13+ / asyncpg 0.30+ (D66) · Frontend HTMX 2.0.4 + Jinja2 3.1+ + Alpine.js 3.15+ (D67) |
+| **Stack target** | Backend Python 3.12+ / FastAPI 0.119+ / SQLAlchemy 2.0.x / Alembic 1.13+ / asyncpg 0.30+ (D66) · Frontend HTMX 2.0.4 + Jinja2 3.1+ / Alpine.js 3.15+ (D67) |
 | **Estrategia de migración de BD** | Expand and Contract backward-compatible (D82) · PostgreSQL compartido con esquema por módulo (D14) |
 | **Forma destino** | Hexagonal global (D8) · módulo dentro del monolito modular (D68) · puerto de persistencia PostgreSQL + object storage S3-compatible (D16) + secret manager (D9-D10) |
-| **Auditoría de uso previa** | ✅ Codegraph-vba + Dysflow walkthrough (61/62 forms, **D88 medido: 372 getdb() callers en el proyecto entero**) |
-
-## Forma del documento
-
-1. Scope (en / fuera)
-2. Estado del descubrimiento
-3. Hallazgos críticos (D88 + D126-D145)
-4. Decisiones aplicadas
-5. Criterios de aceptación
-6. Pendientes operacionales
-7. Tickets derivables (preview)
+| **Auditoría de uso previa** | Codegraph-vba + Dysflow walkthrough (61/62 forms, **D88 medido: 372 getdb() callers en el proyecto entero**) |
 
 ---
 
 ## 1. Scope
 
-### 1.1 En scope (~61 features agrupadas en 5 dominios)
+### 1.1 En scope — 61 features agrupadas en 5 dominios
 
-#### G1 — Configuración + Maestros + Menús (~10 features)
+#### G1 — Configuración + Maestros + Menús (10 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -49,67 +60,67 @@
 | F6 | **Splash + autenticación dual** (Calidad/Técnico via EVE) | `frmSplash` |
 | F7 | **CRUD RiesgosBiblioteca** (Vista/Crear/Editar riesgos reutilizables) | `FormRiesgosBibliotecaGestion` |
 | F8 | **Patrón PUB/SUB de forms** (eventos AltaRiesgoBiblioteca para sincronizar) | implementado via WithEvents |
+| F9 | **Anexos polimórficos (compartidos con Brass)** | ver G5 F53 |
+| F10 | **Picker de usuarios autorizados** (read-only con correos) | `FormGestionRiesgosAutorizados` |
 
-#### G2 — Riesgos: definición, gestión, aceptación (~16 features)
-
-| # | Feature | Respaldo |
-|---|---|---|
-| F9 | **Alta/Edición directa de riesgo** (form shell con NavigationControl de 5 tabs) | `FormRiesgo` |
-| F10 | **Gestión de Riesgos** (alta/edición de cabecera del proyecto) | `FormGestionRiesgos` |
-| F11 | **Datos generales del riesgo** (subform de cabecera) | `FormGestionRiesgosDatosGenerales` |
-| F12 | **Riesgos autorizados** (read-only picker con correos) | `FormGestionRiesgosAutorizados` |
-| F13 | **Materialización del riesgo** (registrar fecha + plan contingencia elegible) | `FormRiesgoMaterializado` |
-| F14 | **Vulnerabilidad del riesgo** (singleton ListBox con 5 niveles) | `FormRiesgoVulnerabilidad` |
-| F15 | **Mitigación** (4 valores: Aceptar / Evitar / Reducir / Transferir) | `FormRiesgoMitigacion` |
-| F16 | **Triángulo plazo/coste/calidad** (3 columnas independientes con escala 5-niveles) | `FormRiesgoPlazoCosteCalidad` |
-| F17 | **Retirada** (con justificación + workflow de visado dual Calidad) | `FormRiesgoRetirado` |
-| F18 | **Vinculación cross-app con NoConformidades** (vía `TbRiesgosNC.IDNC`) | `FormRiesgoNC` |
-| F19 | **Riesgo Externo (Oferta)** (definición + traslado vs no traslado) | `FormRiesgoExternoDetalle` |
-| F20 | **Workflow de modificación** del riesgo aprobado (aceptación o retirada solicitada) | `FormRiesgoPosiblesModificacionesAceptarRetirar`, `FormRiesgoPosiblesModificacionesQuitarAceptar` |
-| F21 | **Estado del riesgo** (state machine de 14 estados con campo calculado) | `Riesgo.EstadoEnum` |
-| F22 | **Gestión principal de riesgos** (lista + treeview + 6 acciones) | `FormRiesgosGestion` |
-| F23 | **Establecer prioridades** (grid editable smallint) | `FormRiesgosEstablecerPrioridades` |
-| F24 | **Edición masiva de riesgos** (modo batch) | `FormRiesgosGestionEdicion` |
-| F25 | **Gestión de cambios de la aplicación** (auditoría CHANGELOG de versiones — D134) | `FormControlCambiosGestion` |
-
-#### G3 — Calidad + Planes (~13 features)
+#### G2 — Riesgos: definición, gestión, aceptación (16 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
-| F26 | **Dashboard Calidad** (TreeView 7 categorías + subform detalle intercambiable) | `FormCalidadTareas` |
-| F27 | **Detalle edición pendiente publicación** (read-only + 6 botones de acción) | `FormCalidadTareasDetalleEdicion` |
-| F28 | **Visado de aceptación/retiro** (modal con captions dinámicas) | `FormCalidadRiesgoAceptadoRetiradoVisado` |
-| F29 | **Gestión post-materialización** (vincular NC / no NC / revocar decisión) | `FormCalidadRiesgoMaterializaciones` |
-| F30 | **Explicación de categoría** (mini-form de 3 controles) | `FormCalidadTareaExplicacion` |
-| F31 | **Detalle riesgo aceptado/retirado pendiente visar** (read-only) | `FormCalidadTareaRiesgosAceptadosRetirados` |
-| F32 | **Detalle riesgo materializado a decidir** (read-only) | `FormCalidadTareaRiesgosMaterializadosPorDecidir` |
-| F33 | **Retipificación** (reasignar riesgo a código de biblioteca) | `FormCalidadTareaRiesgosRetipificacion` |
-| F34 | **Capturar plan contingencia** (modal con TempVars IPC) | `FormMaterializacionPlanContingencia` |
-| F35 | **Gestión riesgos de Oferta** (solo Calidad, primera edición) | `FormGestionRiesgosRiesgosOferta` |
-| F36 | **Sincronización de Suministradores** (push manual desde jerarquía) | `FormGestionRiesgosSuministradores` |
-| F37 | **Capturar estrategia de mitigación** (singleton ListBox + sub-form justificación) | `FormRiesgoMitigacion` |
-| F38 | **Capturar triángulo plazo/coste/calidad** (3 ListBox sincronizados) | `FormRiesgoPlazoCosteCalidad` |
+| F11 | **Alta/Edición directa de riesgo** (form shell con NavigationControl de 5 tabs) | `FormRiesgo` |
+| F12 | **Gestión de Riesgos** (alta/edición de cabecera del proyecto) | `FormGestionRiesgos` |
+| F13 | **Datos generales del riesgo** (subform de cabecera) | `FormGestionRiesgosDatosGenerales` |
+| F14 | **Riesgos autorizados** (read-only picker con correos) | `FormGestionRiesgosAutorizados` |
+| F15 | **Materialización del riesgo** (registrar fecha + plan contingencia elegible) | `FormRiesgoMaterializado` |
+| F16 | **Vulnerabilidad del riesgo** (singleton ListBox con 5 niveles) | `FormRiesgoVulnerabilidad` |
+| F17 | **Mitigación** (4 valores: Aceptar / Evitar / Reducir / Transferir) | `FormRiesgoMitigacion` |
+| F18 | **Triángulo plazo/coste/calidad** (3 columnas independientes con escala 5-niveles) | `FormRiesgoPlazoCosteCalidad` |
+| F19 | **Retirada** (con justificación + workflow de visado dual Calidad) | `FormRiesgoRetirado` |
+| F20 | **Vinculación cross-app con NoConformidades** (vía `TbRiesgosNC.IDNC`) | `FormRiesgoNC` |
+| F21 | **Riesgo Externo (Oferta)** (definición + traslado vs no traslado) | `FormRiesgoExternoDetalle` |
+| F22 | **Workflow de modificación** del riesgo aprobado (aceptación o retirada solicitada) | `FormRiesgoPosiblesModificacionesAceptarRetirar`, `FormRiesgoPosiblesModificacionesQuitarAceptar` |
+| F23 | **Estado del riesgo** (state machine de 14 estados con campo calculado) | `Riesgo.EstadoEnum` |
+| F24 | **Gestión principal de riesgos** (lista + treeview + 6 acciones) | `FormRiesgosGestion` |
+| F25 | **Establecer prioridades** (grid editable smallint) | `FormRiesgosEstablecerPrioridades` |
+| F26 | **Edición masiva de riesgos** (modo batch) | `FormRiesgosGestionEdicion` |
 
-#### G4 — Publicación (~11 features)
+#### G3 — Calidad + Planes (11 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
-| F39 | **Flujo Publicación Calidad** (NavigationControl 5 tabs) | `FormPublicacionCalidad` |
-| F40 | **Estado de publicación** (Presentation Layer con view state derivado) | `FormPublicacionCalidadPublicar` |
-| F41 | **Ejecutar publicación** (modal con todos los defaults + validaciones) | `FormPublicacionCalidadPublicarEjecutar` |
-| F42 | **Capturar motivo de rechazo** (modal con Event Motivado) | `FormPublicacionCalidadRechazoObservaciones` |
-| F43 | **Notas de Calidad para publicación** (TextBox libre) | `FormPublicacionCalidadNotas` |
-| F44 | **Datos generales del documento a publicar** (read-only) | `FormPublicacionDatosGenerales` |
-| F45 | **Evidencias de Suministradores** (lista + gestión de anexos) | `FormPublicacionSuministradores` |
-| F46 | **Sub-menú Técnico propuesta de publicación** (NavigationControl 3 tabs) | `FormPublicacionTecnico`, `FormPublicacionTecnicoPropuesta` |
-| F47 | **Evidencia de UTE** (anexo único por edición) | `FormPublicacionUTE` |
-| F48 | **Alta de Plan individual** (mitigación o contingencia) | `FormPlanPrincipal` |
-| F49 | **Integración con AGEDO** (registro jurídico TdE) | via `Edicion.RegistrarEnAGEDO` |
-| F50 | **Generación de informes de publicación** (HTML + PDF con tokens Mistica) | `Funciones Generales.GenerarInformePublicacion` |
-| F51 | **Servicio de refresco post-publicación** (qué riesgo refrescar) | `PublicacionCalidadExecutionService.ResolveRefreshRiskID` |
-| F52 | **Auditoría de publicaciones** (`TbLogPublicaciones` append-only) | implementado en `PublicacionLog.cls` |
+| F27 | **Dashboard Calidad** (TreeView 7 categorías + subform detalle intercambiable) | `FormCalidadTareas` |
+| F28 | **Detalle edición pendiente publicación** (read-only + 6 botones de acción) | `FormCalidadTareasDetalleEdicion` |
+| F29 | **Visado de aceptación/retiro** (modal con captions dinámicas) | `FormCalidadRiesgoAceptadoRetiradoVisado` |
+| F30 | **Gestión post-materialización** (vincular NC / no NC / revocar decisión) | `FormCalidadRiesgoMaterializaciones` |
+| F31 | **Explicación de categoría** (mini-form de 3 controles) | `FormCalidadTareaExplicacion` |
+| F32 | **Detalle riesgo aceptado/retirado pendiente visar** (read-only) | `FormCalidadTareaRiesgosAceptadosRetirados` |
+| F33 | **Detalle riesgo materializado a decidir** (read-only) | `FormCalidadTareaRiesgosMaterializadosPorDecidir` |
+| F34 | **Retipificación** (reasignar riesgo a código de biblioteca) | `FormCalidadTareaRiesgosRetipificacion` |
+| F35 | **Capturar plan contingencia** (modal con TempVars IPC) | `FormMaterializacionPlanContingencia` |
+| F36 | **Gestión riesgos de Oferta** (solo Calidad, primera edición) | `FormGestionRiesgosRiesgosOferta` |
+| F37 | **Sincronización de Suministradores** (push manual desde jerarquía) | `FormGestionRiesgosSuministradores` |
 
-#### G5 — Detalles + Técnico + Anexos (~11 features)
+#### G4 — Publicación (14 features)
+
+| # | Feature | Respaldo |
+|---|---|---|
+| F38 | **Flujo Publicación Calidad** (NavigationControl 5 tabs) | `FormPublicacionCalidad` |
+| F39 | **Estado de publicación** (Presentation Layer con view state derivado) | `FormPublicacionCalidadPublicar` |
+| F40 | **Ejecutar publicación** (modal con todos los defaults + validaciones) | `FormPublicacionCalidadPublicarEjecutar` |
+| F41 | **Capturar motivo de rechazo** (modal con Event Motivado) | `FormPublicacionCalidadRechazoObservaciones` |
+| F42 | **Notas de Calidad para publicación** (TextBox libre) | `FormPublicacionCalidadNotas` |
+| F43 | **Datos generales del documento a publicar** (read-only) | `FormPublicacionDatosGenerales` |
+| F44 | **Evidencias de Suministradores** (lista + gestión de anexos) | `FormPublicacionSuministradores` |
+| F45 | **Sub-menú Técnico propuesta de publicación** (NavigationControl 3 tabs) | `FormPublicacionTecnico`, `FormPublicacionTecnicoPropuesta` |
+| F46 | **Evidencia de UTE** (anexo único por edición) | `FormPublicacionUTE` |
+| F47 | **Alta de Plan individual** (mitigación o contingencia) | `FormPlanPrincipal` |
+| F48 | **Integración con AGEDO** (registro jurídico TdE) | via `Edicion.RegistrarEnAGEDO` |
+| F49 | **Generación de informes de publicación** (HTML + PDF con tokens Mistica) | `Funciones Generales.GenerarInformePublicacion` |
+| F50 | **Servicio de refresco post-publicación** (qué riesgo refrescar) | `PublicacionCalidadExecutionService.ResolveRefreshRiskID` |
+| F51 | **Auditoría de publicaciones** (`TbLogPublicaciones` append-only) | implementado en `PublicacionLog.cls` |
+| F52 | **Gestión de cambios de la aplicación** (auditoría CHANGELOG de versiones — D134) | `FormControlCambiosGestion` |
+
+#### G5 — Detalles + Técnico + Anexos (9 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -121,7 +132,7 @@
 | F58 | **Detalle de riesgo aceptado/retirado para Técnico** | `FormTecnicoTareaRiesgosAceptadosRetirados` |
 | F59 | **Explicación de nodo del TreeView** (mini-form 3 controles) | `FormTecnicoTareaExplicacion` |
 | F60 | **Sub-menú Técnico principal** (21 controles, separado de 0BDOpciones) | `Form0BDOpcionesTecnico` |
-| F61 | **Picker de usuarios autorizados** (read-only con correos) | `FormGestionRiesgosAutorizados` |
+| F61 | **Capturar estrategia de mitigación + triángulo plazo/coste/calidad** | `FormRiesgoMitigacion`, `FormRiesgoPlazoCosteCalidad` |
 
 ### 1.2 Fuera de scope (REPLACE)
 
@@ -200,162 +211,29 @@ Para la épica de migración a web, esto significa:
 
 ## 3. Hallazgos críticos
 
-### H1 (D88 — PERFORMANCE) — 372 getdb() callers
-
-**Síntoma**: `Variables Globales.bas:1069` define `getdb()` y tiene 372 call sites. El cuello NO está en los forms (que delegan en clases) sino en las clases de dominio (`Edicion`, `Anexo`, `Proyecto`, `Riesgo`, etc.).
-
-**Acciones** (TK-GR-1, TK-GR-2):
-- **NO** optimizar el form-level getdb — ya está en 0-2 calls.
-- Migración a web natural: el `getdb()` se reemplaza por `apiClient.get(...)` HTTP en cada método de clase. Signatura del método se mantiene; implementación cambia.
-- Beneficio: la concurrencia del backend (pool JDBC/HTTP) resuelve D88 estructuralmente.
-
-### H2 (D126 — STATE MACHINE) — Ciclo de vida del riesgo
-
-**Síntoma**: `EnumRiesgoEstado` tiene **14 estados** no triviales. El estado actual se **calcula desde fechas** en `Riesgo.EstadoEnum` (no persistido como columna).
-
-```
-Detectado(1) → Incompleto(14) → Activo(3)
-   ├─ AceptadoSinJustificar(5) → AceptadoSinVisar(6) → Aceptado(8) [terminal Aceptación]
-   │   └─ AceptadoRechazado(7)
-   └─ RetiradoSinJustificar(9) → RetiradoSinVisar(10) → Retirado(12) [terminal Retiro]
-       └─ RetiradoRechazado(11)
-Materializado(4) → TbRiesgosMaterializaciones (cross-link to NC)
-Cerrado(13) [terminal final]
-Planificado(2)
-```
-
-**Acción** (TK-GR-3): implementar state machine explícita en el backend con transiciones bien definidas. Columna `Estado` opcional para auditoría (persistir el último estado calculado).
-
-### H3 (D127 — TRIÁNGULO Plazo/Coste/Calidad) — 3 dimensiones independientes
-
-**Síntoma**: son 3 columnas ortogonales independientes con escala 5-niveles (`Plazo`, `Coste`, `Calidad`). NO son sub-formularios relacionados ni trade-offs. Cada dimensión tiene su propia escala semántica (hitos/presupuesto/requisitos).
-
-**Acción** (TK-GR-4): preservarlas como 3 columnas separadas en PostgreSQL. NO consolidarlas en una sola.
-
-### H4 (D128 — Publicación) — State machine dual TÉCNICO→CALIDAD
-
-**Síntoma**: campos persistidos en `TbProyectosEdiciones`:
-- `FechaPreparadaParaPublicar` (técnico propuso)
-- `PropuestaRechazadaPorCalidadFecha/Motivo` (calidad rechazó)
-- `UsuarioProponePublicar` / `UsuarioCalidadRechazaPropuesta` (auditoría dual)
-- `FechaPublicacion` (calidad publicó)
-
-**Acción** (TK-GR-5): el state machine debe ser declarativo con transiciones que disparen efectos colaterales (correo, AGEDO, log).
-
-### H5 (D129 — AGEDO) — Integración jurídica crítica
-
-**Síntoma**: si `TbProyectos.Juridica='TdE'`, la publicación se registra en AGEDO (sistema jurídico de Telefónica) vía `RegistrarEnAGEDO` → devuelve `IDDocumentoAGEDO` + `URLAdjunto`. Si no → copia HTML a `URLDirectorioDocumentacion`.
-
-**Acción** (TK-GR-6): definir contrato de AGEDO en la migración (¿API REST? ¿SFTP? ¿exportación manual?). Crítico para cumplimiento normativo.
-
-### H6 (D130 — Correo honesto) — No se envía en el thread
-
-**Síntoma**: refactor HR3e (issue #109) — antes decíamos "Correo enviado" en el thread; ahora "El correo se enviará al finalizar". El envío real es asíncrono.
-
-**Acción** (TK-GR-7): el sistema de notificaciones en web debe ser inherentemente asíncrono (queue + retry). El toast al usuario debe ser honesto: "Notificación enviada" cuando la queue confirma, no "Notificación en proceso".
-
-### H7 (D131 — Mitigación ≠ Item) — Es clasificación, no es acción
-
-**Síntoma**: `Mitigacion` es un campo enum (`Aceptar`/`Evitar`/`Reducir`/`Transferir`) del riesgo, NO un item accionable. "Aceptar" requiere justificación + visado dual.
-
-**Acción** (TK-GR-8): en web, exponer como selector en la cabecera del riesgo, no como módulo independiente.
-
-### H8 (D132 — XApp Expedientes) — HTTP/JSON handshake
-
-**Síntoma**: `FormExpedientesBusqueda` envía HTTP + parsea JSON. Único punto de acoplamiento cross-app con la app Expedientes. Sin mecanismo de autenticación documentado.
-
-**Acción** (TK-GR-9): migrar a API REST federada con OAuth/SSO. Contrato API bien definido (request/response schemas).
-
-### H9 (D133 — FormWeb) — Wrapper de IE
-
-**Síntoma**: `FormWeb` embebe un control ActiveX `Shell.Explorer.2` (Microsoft Web Browser) que navega con `Me.Navegador.Navigate m_URLHTMLActivo`.
-
-**Acción** (TK-GR-10): **eliminar el form completamente** en la migración. La funcionalidad es trivial en web (route directa + iframe si se quiere preservar embed).
-
-### H10 (D134 — FormControlCambiosGestion mal asignado) — No audita riesgos
-
-**Síntoma**: este form está en G2 solo por proximidad física. En realidad audita **versiones de la aplicación** (CCVersion + `tbCambios`), no riesgos.
-
-**Acción** (TK-GR-11): mover este form al módulo transversal "Auditoría de cambios". Para la épica de Gestion_Riesgos, presentarlo como dependencia + ticket de "mover a módulo transversal".
-
-### H11 (D135 — Bug conocido) — `FormRiesgoVulnerabilidad.EstablecerDatos:66-68`
-
-**Síntoma**: lógica de permisos:
-```vba
-If m_ObjProyectoActivo.EsAutorizado(True) Then
-    Me.AllowEdits = True
-Else
-    Me.AllowEdits = True   ' ← bug: siempre True
-End If
-```
-
-**Acción** (TK-GR-12): corregir bug. Migrar la lógica de permisos al backend (claims).
-
-### H12 (D136 — Bug potencial) — `FormPlanPrincipal:154-156`
-
-**Síntoma**: misma lógica — `If Edición.EsActivo=Sí + UsuarioAutorizado=No Then True`.
-
-**Acción** (TK-GR-13): aplicar misma corrección que H11.
-
-### H13 (D137 — Publicar no transaccional) — Riesgo de inconsistencia
-
-**Síntoma**: `Publicar()` ejecuta múltiples operaciones (UPDATE ediciones, INSERT log, copy file, send mail, register revision) sin transacción atómica. Si falla a mitad, queda estado inconsistente.
-
-**Acción** (TK-GR-14): en backend usar transacciones explícitas con rollback compensatorio (Saga pattern o compensating transactions).
-
-### H14 (D138 — WithEvents sobre-amplia) — 32 edges de coordinación
-
-**Síntoma**: `FormCalidadRiesgoAceptadoRetiradoVisado` define 8 `RaiseEvent`s (AceptacionAprobada, AceptacionRechazada, AceptacionAprobadaQuitado, AceptacionRechazadaQuitada, + 4 equivalentes Retiro). Los 4 forms padres (`FormCalidadTareaRiesgosAceptadosRetirados`) tienen los 4 `WithEvents` handlers.
-
-**Acción** (TK-GR-15): colapsar a un único evento tipado `OnDecision(payload)` en lugar de 8 strings. Web: state machine + reducer pattern.
-
-### H15 (D139 — `m_NodoSeleccionado` global) — TreeView state spilled
-
-**Síntoma**: variable global module-level en `FormTecnicoTareas` que es consumida por `FormTecnicoTareasDetalleEdicion` y `FormTecnicoTareaExplicacion`.
-
-**Acción** (TK-GR-16): en web, URL state (`?nodoId=xxx`) o Context Provider.
-
-### H16 (D140 — Concurrencia) — Sin locks
-
-**Síntoma**: `TbProyectosEdiciones` se modifica con UPDATE directo (`m_ObjEdicionActiva.SomeProperty = ... .Editar .Update`). Sin version check.
-
-**Acción** (TK-GR-17): implementar optimistic concurrency (`updated_at` token) en el backend.
-
-### H17 (D141 — `modAnexosListPresenter` no usado) — Duplicación
-
-**Síntoma**: existe el helper pero `FormAnexos1` no lo usa (4 copies inline de `EstablecerLista`).
-
-**Acción** (TK-GR-18): consolidar.
-
-### H18 (D142 — FormAnexos vs FormAnexos1) — NO polimorfismo
-
-**Síntoma**: son 2 implementaciones del mismo flujo. NO comparten interface ni factory.
-
-**Acción** (TK-GR-19): consolidar en 1 componente React `<AnexosManager>` con prop `ambito={Proyecto|Edicion|Riesgo}`.
-
-### H19 (D143 — RecSrcDt distintos) — Cada form su tabla
-
-**Síntoma**: 7 RecSrcDt únicos en G5. Cada form bindeado a una tabla distinta. NO comparten recordset.
-
-**Acción**: en web, cada componente es una página/ruta distinta con su propio endpoint. Reflejo natural del patrón legacy.
-
-### H20 (D144 — Discrepancia semántica) — "Propuesta económica" no está aquí
-
-**Síntoma**: `FormPublicacionTecnicoPropuesta` = propuesta de PUBLICACIÓN, no propuesta económica del técnico.
-
-**Acción**: documentar claramente. Si la propuesta económica está en otro flujo (Brass o licitaciones), referenciar.
-
-### H21 (Cross-cutting) — Bug tipográfico observado (replicar del audit)
-
-- `Form0BDOpciones.ComandoAyuda.Caption` = "Salir"
-- `ComandoEntrarComo.Caption` = "Salir"
-- `lblEstado.ControlTipText` = "Origen del Riesgo" (mismatch con el contenido real)
-- `lblEstado.Tag` = "Formulario de control de los pedidos" (mismatch)
-- `CombReparadoPor.ControlSource` = "Material.PN" (en otros forms)
-- "CerrarAplicacion" comentado en `CmdSalir_Click` (código muerto)
-- Hyperlinks `HyperlinkAddress='#'` en labels (lblTareasPendientes, etc.)
-
-**Acción** (TK-GR-20): limpieza de captions y lblEstado durante la migración.
+| # | ID | Título | Severidad | Componentes afectados | Detalle |
+|---|---|---|---|---|---|
+| H1 | D88 | **372 getdb() call sites en clases de dominio** | CRITICAL | `Edicion.cls`, `Constructor.bas`, `Funciones Generales.Publicar`, +50 clases | 64 nuevos desde el brief original. **El cuello NO está en la UI** — está en las clases. Migración a web: cada método DAO se reemplaza por HTTP call con la misma firma. La concurrencia del backend (pool JDBC/HTTP) resuelve D88 estructuralmente. |
+| H2 | D126 | **State machine de 14 estados en `EnumRiesgoEstado`** | high | `Riesgo.EstadoEnum` | Calculado desde fechas en runtime. Implementar state machine explícita con transiciones bien definidas + columna `Estado` para auditoría. |
+| H3 | D127 | **Triángulo plazo/coste/calidad = 3 columnas independientes** | medium | `FormRiesgoPlazoCosteCalidad` | No consolidar. Preservar como 3 columnas con escala 5-niveles. |
+| H4 | D128 | **Workflow de publicación dual TÉCNICO→CALIDAD** | high | `TbProyectosEdiciones` (campos `FechaPreparadaParaPublicar`, `PropuestaRechazadaPorCalidadFecha/Motivo`, `FechaPublicacion`) | State machine declarativo con transiciones que disparen efectos colaterales (correo, AGEDO, log). |
+| H5 | D129 | **Integración AGEDO** | high | `Edicion.RegistrarEnAGEDO` | Si `TbProyectos.Juridica='TdE'`, registro jurídico. **Decisión abierta**: API REST o SFTP o manual. |
+| H6 | D130 | **Correo honesto (no en thread)** | medium | HR3e-x (issue #109) | Sistema de notificaciones inherentemente asíncrono. UI dice "Notificación enviada" cuando la queue confirma, no "en proceso". |
+| H7 | D131 | **Mitigación = enum (no item accionable)** | medium | `TbValoresPosiblesMitigacion` | 4 valores: Aceptar/Evitar/Reducir/Transferir. Exponer como selector en cabecera, no como módulo independiente. |
+| H8 | D132 | **XApp Expedientes** | high | `FormExpedientesBusqueda` | HTTP/JSON handshake, sin auth documentado. Migrar a API REST federada con OAuth 2.0 / SSO. |
+| H9 | D133 | **`FormWeb` wrapper de Internet Explorer** | high | `FormWeb` | ActiveX `Shell.Explorer.2`. **Eliminar completamente** en migración. Funcionalidad trivial en web (route directa + iframe). |
+| H10 | D134 | **`FormControlCambiosGestion` mal asignado** | low | `FormControlCambiosGestion` | Audita versiones de la app (`CCVersion` + `tbCambios`), no riesgos. Mover a módulo transversal "Auditoría de cambios". |
+| H11 | D135 | **Bug en `FormRiesgoVulnerabilidad.EstablecerDatos:66-68`** | high | `FormRiesgoVulnerabilidad` | `Me.AllowEdits = True` SIEMPRE (independiente de `m_ObjProyectoActivo.EsAutorizado(True)`). Corregir + migrar permisos a backend. |
+| H12 | D136 | **Bug en `FormPlanPrincipal:154-156`** | high | `FormPlanPrincipal` | Misma lógica — `If Edición.EsActivo=Sí + UsuarioAutorizado=No Then True`. Misma corrección que H11. |
+| H13 | D137 | **Publicar no transaccional** | high | `Publicar()` | Múltiples operaciones (UPDATE ediciones, INSERT log, copy file, send mail, register revision) sin transacción atómica. Usar transacciones explícitas con rollback compensatorio (Saga pattern). |
+| H14 | D138 | **WithEvents sobre-amplia (32 edges)** | medium | `FormCalidadRiesgoAceptadoRetiradoVisado` | 8 `RaiseEvent`s + 4 `WithEvents` handlers. Colapsar a un único evento tipado `OnDecision(payload)`. |
+| H15 | D139 | **`m_NodoSeleccionado` global** | medium | `FormTecnicoTareas` + `FormTecnicoTareasDetalleEdicion` + `FormTecnicoTareaExplicacion` | TreeView state spilled entre forms. En web: URL state (`?nodoId=xxx`) o Context Provider. |
+| H16 | D140 | **Sin locks en concurrencia** | high | `TbProyectosEdiciones` (UPDATE directo) | Sin version check. Implementar optimistic concurrency con `updated_at` token. |
+| H17 | D141 | **`modAnexosListPresenter` no usado** | low | `FormAnexos1` | Helper existe pero `FormAnexos1` no lo usa (4 copies inline). Consolidar. |
+| H18 | D142 | **`FormAnexos` vs `FormAnexos1` — NO polimorfismo** | medium | 2 forms | Misma implementación, NO comparten interface. Consolidar en `<AnexosManager>` con prop `ambito={Proyecto|Edicion|Riesgo}`. |
+| H19 | D143 | **RecSrcDt distintos** | low | 7 RecSrcDt únicos en G5 | Cada form bindeado a una tabla distinta. En web: cada componente es una página/ruta distinta. |
+| H20 | D144 | **Discrepancia semántica** | low | `FormPublicacionTecnicoPropuesta` | "Propuesta económica" vs "Propuesta de publicación". Documentar claramente. |
+| H21 | D145 | **`tbCambios` (6725 rows auditing cambios)** | medium | `tbCambios` | Append-only. Structured log + table. `nombre_campo` discriminator (`'MotivoNoPublicable'`) → Discriminated union en TypeScript. |
 
 ---
 
@@ -365,19 +243,26 @@ End If
 
 | Pantalla | Decisión | Justificación |
 |---|---|---|
-| FormWeb (wrapper IE) | **Eliminar** | D133 — sin reemplazo, route directa en web. |
-| FormGestionRiesgosAutorizados | **Preservar** read-only | Trivial: array.map() en backend. |
-| FormTecnicoTareaExplicacion | **Mejorar**: pasar de acoplamiento global a URL state | D139 — fácil. |
-| FormAnexos + FormAnexos1 | **Nuevo paradigma**: consolidar en 1 `<AnexosManager>` | D142, D141 — duplicación clara. |
-| FormExpedientesBusqueda | **Preservar** flujo; **Mejorar**: API REST | D132 — handshake cross-app. |
-| FormProyectosGestion (4 filtros, 31 controles) | **Mejorar**: server-side pagination, chips para filtros | D88 — la lista carga TODO. |
-| FormIndicador (6 tiles) | **Mejorar**: charts interactivos con click→drilldown | Funcionalidad ya existe, mejorar UX. |
-| FormCalidadTareas (TreeView 7 categorías) | **Nuevo paradigma**: React-arborist + subform lazy-loaded | TreeView MSComctlLib no portable. |
-| FormRiesgo (NavigationControl 5 tabs) | **Mejorar**: stepper visual con persist de estado | 53 controles en 1 form es overload. |
-| FormPublicacionCalidad (5 tabs) | **Mejorar**: presentar como wizard steps con state guard | Patrón dual TÉCNICO/CALIDAD. |
-| FormMaterializacionPlanContingencia (TempVars) | **Mejorar**: callback/promise en lugar de TempVars | Trivial — patrón modal IPC. |
-| FormAnexos1.OpenArgs ("Proyecto/Edición/Riesgo") | **Mejorar**: URL path en lugar de string OpenArgs | Web path = /:ambito/:id/anexos. |
-| FormTecnicoTareas (TreeView) | **Preservar** jerarquía 7-cat, **Mejorar** virtualización | TreeView es esencial. |
+| `Form0BDOpciones` / `Form0BDOpcionesTecnico` | **Preservar** jerarquía de roles | Entry points diferenciados — estructura cognitiva aprendida |
+| `FormSuministrador`, `FormProyectosGestion` | **Preservar** CRUD simple | Forms no necesitan rediseño |
+| `FormIndicador` | **Mejorar**: charts interactivos con click→drilldown | Funcionalidad ya existe, mejorar UX |
+| `FormRiesgoBiblioteca` + Gestión | **Preservar** patrón con singleton ListBox | Funciona, no revolucionar |
+| `FormRiesgo` (NavigationControl 5 tabs) | **Mejorar**: stepper visual con persist de estado | 53 controles en 1 form es overload |
+| `FormGestionRiesgos` | **Preservar** Alta/Edición de cabecera | Flujo crítico |
+| `FormRiesgoVulnerabilidad` | **Mejorar**: migrar permisos a backend (D135) | Bug a corregir en refactor |
+| `FormRiesgoMaterializado`, `FormRiesgoRetirado` | **Preservar** workflow de visado dual | Crítico, no revolucionar |
+| `FormRiesgoNC` | **Preservar** vinculación cross-app | Crítico — FK lógica a NoConformidades |
+| `FormRiesgosGestion` (lista + treeview) | **Mejorar**: server-side pagination + virtualización | Necesita escala |
+| `FormCalidadTareas` (TreeView 7 categorías) | **Nuevo paradigma**: react-arborist + subform lazy-loaded | TreeView MSComctlLib no portable |
+| `FormCalidadRiesgoAceptadoRetiradoVisado` | **Mejorar**: modal con captions dinámicas | 8 RaiseEvents → colapsar a 1 (D138) |
+| `FormPublicacionCalidad` (5 tabs) | **Mejorar**: wizard steps con state guard | Patrón dual TÉCNICO/CALIDAD |
+| `FormMaterializacionPlanContingencia` (TempVars) | **Mejorar**: callback/promise en lugar de TempVars | Trivial — patrón modal IPC |
+| `FormAnexos1.OpenArgs` ("Proyecto/Edición/Riesgo") | **Mejorar**: URL path en lugar de string OpenArgs | Web path = `/recurso/:id/anexos` |
+| `FormTecnicoTareas` (TreeView) | **Preservar** jerarquía 7-cat, **Mejorar** virtualización | TreeView es esencial |
+| `FormExpedientesBusqueda` | **Preservar** flujo, **Mejorar** API REST | D132 — handshake cross-app |
+| `FormProyectosGestion` (4 filtros, 31 controles) | **Mejorar**: server-side pagination, chips para filtros | D88 — la lista carga TODO |
+| `FormWeb` (wrapper IE) | **Eliminar** | D133 — sin reemplazo, route directa en web |
+| `FormRiesgosGestion` (lista) | **Mejorar**: virtualización React | 1 form para N riesgos |
 
 ### 4.2 Arquitectura: hexagonal ports
 
@@ -385,12 +270,12 @@ End If
 |---|---|
 | `getdb()` (DAO.Database) | Puerto de persistencia PostgreSQL (D14) + HTTP client |
 | `Constructor.getXxx()` (factory con cache lazy) | Inyección de dependencias + repository pattern |
-| `m_ObjEntorno` (singleton global con ColXxx dictionaries) | Service registry / dependency injection |
+| `m_ObjEntorno` (singleton global) | Service registry / dependency injection |
 | `m_ObjProyectoActivo` / `m_ObjEdicionActiva` / `m_ObjRiesgoActivo` (singleton in scope) | Request-scoped services / Context API |
 | `modFormCoordinationHelper.Coord_*` | Navegación declarativa (router + outlet pattern) |
 | `PublicacionCalidadStatusPresenter` | ViewModel/Presenter pattern (Zustand, React Query, Redux) |
-| `WithEvents + RaiseEvent` | Pub/sub tipado, state machine |
-| `TempVars!Variable` IPC | Promise/callback en modal context |
+| `WithEvents` + `RaiseEvent` (D138) | Pub/sub tipado, state machine (1 evento colapsado) |
+| `TempVars!Variable` IPC (D134) | Promise/callback en modal context |
 | `fso.FileExists + ShellExecute('open', url)` | window.open(url) + blob URL |
 | `Application.FileDialog(3)` | `<input type="file">` + signed URL upload |
 | `AbrirEnLocal` (cliente Windows) | Endpoint REST con Content-Type application/octet-stream |
@@ -401,25 +286,20 @@ End If
 | `tbCambios` (6725 filas auditing cambios) | Structured log + table |
 | `AnexoAntiguo.cls` (legacy con `CodigoUnico`) | Deprecation — preservar en read-only si hay datos |
 
-### 4.3 D88 — Performance
+### 4.3 Decisiones de seguridad
 
-- **NO** tocar el form-level getdb (ya está en 0-2).
-- Optimización estructural: backend stateless, pool de conexiones JDBC/HTTP.
-- Las 65 clases de dominio son la superficie a portar: cada método DAO se reemplaza por HTTP call con la misma firma.
-
-### 4.4 Decisiones de seguridad
-
-- **Cross-app con Expedientes**: API REST federada con OAuth 2.0 / SSO. Sin mecanismo actual de auth documentado — oportunidad para diseño limpio.
-- **Concurrency (D140)**: optimistic locking con `updated_at` token.
-- **Publicar no transaccional (D137)**: transacciones explícitas con compensación.
+- **Cross-app con Expedientes** (vía HTTP/JSON): API REST federada con OAuth 2.0 / SSO. Sin mecanismo actual de auth documentado.
+- **Concurrencia** (D140): optimistic locking con `updated_at` token en cada edición.
+- **Publicar no transaccional** (D137): transacciones explícitas con compensación (Saga pattern).
 - **Bugs D135, D136**: corrección durante la migración con test coverage.
 
-### 4.5 Decisiones de datos
+### 4.4 Decisiones de datos
 
 - **Estado del riesgo**: columna `Estado` opcional para auditoría + state machine en backend que calcula desde fechas.
 - **Triángulo plazo/coste/calidad**: 3 columnas separadas (NO consolidar).
 - **Anexos**: polimórfica en el backend (1 tabla con CHECK constraint o 6 tablas + vista UNION, según volumen).
 - **AnexoAntiguo.cls**: deprecation limpia.
+- **`tbCambios`**: append-only en PostgreSQL o migrar a log estructurado.
 
 ---
 
@@ -434,15 +314,15 @@ End If
 - [ ] **CA-F5**: La integración AGEDO (D129) documenta el contrato API y se ejecuta solo si `TbProyectos.Juridica='TdE'`.
 - [ ] **CA-F6**: Las notificaciones son inherentemente asíncronas (queue + retry) y el toast al usuario es honesto (D130).
 - [ ] **CA-F7**: La API de Expedientes se migra a REST federada con OAuth (D132).
-- [ ] **CA-F8**: FormAnexos + FormAnexos1 se consolidan en un único `<AnexosManager>` parametrizable por ambito (D142).
-- [ ] **CA-F9**: FormWeb se elimina completamente, route directa a HTML (D133).
-- [ ] **CA-F10**: Publicar() transaccional con rollback compensatorio (D137).
+- [ ] **CA-F8**: `FormAnexos` + `FormAnexos1` se consolidan en un único `<AnexosManager>` parametrizable por ambito (D142).
+- [ ] **CA-F9**: `FormWeb` se elimina completamente, route directa a HTML (D133).
+- [ ] **CA-F10**: `Publicar()` transaccional con rollback compensatorio (D137).
 - [ ] **CA-F11**: El state machine del riesgo tiene optimistic locking (D140).
 - [ ] **CA-F12**: Las 22 RN específicas del grupo Publicación documentadas en `legacy.rules.ts`.
 
 ### 5.2 Seguridad
 
-- [ ] **CA-S1**: Cross-app API con OAuth 2.0 + scopes granulares.
+- [ ] **CA-S1**: Cross-app API con Expedientes vía OAuth 2.0 + scopes granulares.
 - [ ] **CA-S2**: `updated_at` token en cada edición para optimistic concurrency.
 - [ ] **CA-S3**: Transacciones explícitas con rollback compensatorio (Saga pattern).
 - [ ] **CA-S4**: Bugs D135, D136 corregidos con tests de regresión.
@@ -467,7 +347,7 @@ End If
 
 ### 6.1 Antes de empezar
 
-- [ ] **PO-1**: Confirmar el contrato de integración con **Expedientes** (autenticación, endpoint, schema). Sin este contrato, F7 (búsqueda) y F54 (XApp) no se pueden migrar.
+- [ ] **PO-1**: Confirmar el contrato de integración con **Expedientes** (autenticación, endpoint, schema). Sin este contrato, F54 (búsqueda) no se puede migrar.
 - [ ] **PO-2**: Confirmar el contrato de integración con **AGEDO** (D129). Si TdE es frecuente (~qué porcentaje de proyectos), merece inversión en API. Si no, mantener manual.
 - [ ] **PO-3**: Confirmar el formato del campo `Estado` del riesgo: ¿columna persistida o calculada siempre?
 - [ ] **PO-4**: Auditar `AnexoAntiguo.cls` para ver si hay datos legacy con `CodigoUnico` que necesiten migración.
@@ -483,7 +363,7 @@ End If
 
 ### 6.3 En el go-live
 
-- [ ] **PO-11**: Smoke test end-to-end: alta proyecto → riesgo → oferta → retirada → calidad visar → publicar → AGEDO.
+- [ ] **PO-11**: Smoke test E2E: alta proyecto → riesgo → oferta → retirada → calidad visar → publicar → AGEDO.
 - [ ] **PO-12**: Verificar las 60+ RN documentadas con datos de producción antes de switchover.
 - [ ] **PO-13**: Backfill de `TbAnexos` desde S3 (si hay anexos legacy en filesystem).
 - [ ] **PO-14**: Plan de deprecation de `AnexoAntiguo.cls` y forms duplicados (`FormRiesgoDefinicion` vs `FormRiesgoDefinicionNoBiblioteca`).
@@ -507,6 +387,9 @@ End If
 - **TK-GR-6**: [INTEGRATION] Contrato AGEDO para `RegistrarEnAGEDO` (D129).
 - **TK-GR-7**: [NOTIFICATIONS] Cola asíncrona de correos con retry (D130).
 - **TK-GR-8**: [DOMAIN] Mitigación como enum (NO como item independiente — D131).
+
+### Integración
+
 - **TK-GR-9**: [INTEGRATION] API REST con Expedientes + OAuth 2.0 (D132).
 - **TK-GR-10**: [CLEANUP] Eliminar FormWeb (D133) — route directa al HTML.
 
@@ -515,7 +398,7 @@ End If
 - **TK-GR-11**: [MIGRATION] Mover `FormControlCambiosGestion` al módulo transversal "Auditoría de cambios" (D134).
 - **TK-GR-12**: [BUGFIX] Corregir `FormRiesgoVulnerabilidad.EstablecerDatos:66-68` (D135).
 - **TK-GR-13**: [BUGFIX] Corregir `FormPlanPrincipal:154-156` (D136).
-- **TK-GR-14**: [STATE-MACHINE] Publicar() transaccional con rollback compensatorio (D137).
+- **TK-GR-14**: [STATE-MACHINE] `Publicar()` transaccional con rollback compensatorio (D137).
 - **TK-GR-15**: [REFACTOR] Colapsar 32 WithEvents/RaiseEvent en un único `OnDecision(payload)` tipado (D138).
 - **TK-GR-16**: [REFACTOR] Migrar `m_NodoSeleccionado` (D139) a URL state o Context.
 - **TK-GR-17**: [CONCURRENCY] Optimistic locking con `updated_at` (D140).
@@ -524,7 +407,7 @@ End If
 
 ### Calidad y limpieza
 
-- **TK-GR-20**: [CLEANUP] Corregir captions y tags mal asignados en G1 + G2 (sección H21).
+- **TK-GR-20**: [CLEANUP] Corregir captions y tags mal asignados.
 - **TK-GR-21**: [MIGRATION] Migrar 65 clases de dominio a servicios HTTP manteniendo firmas.
 - **TK-GR-22**: [DEPRECATION] Deprecar `AnexoAntiguo.cls` (legacy `CodigoUnico` model).
 - **TK-GR-23**: [MIGRATION] Consolidar duplicaciones `FormRiesgoDefinicion` vs `FormRiesgoDefinicionNoBiblioteca`.
@@ -538,19 +421,19 @@ End If
 - **TK-GR-28**: [TEST] Tests E2E para cross-app con Expedientes.
 - **TK-GR-29**: [TEST] Tests E2E para la integración con AGEDO (mock si no hay sandbox).
 - **TK-GR-30**: [TEST] Tests de regresión para los bugs D135, D136.
-- **TK-GR-31**: [PERFORMANCE] Benchmark de la migración de las 372 getdb() calls — antes/después.
-- **TK-GR-32**: [PERFORMANCE] Load test del state machine con 100+ usuarios simultáneos (D140).
 
 ### Datos y migración
 
-- **TK-GR-33**: [MIGRATION] Backfill de `Estado` columna para los 2924 riesgos actuales.
-- **TK-GR-34**: [MIGRATION] Backfill de `FechaPublicacion` para ediciones históricas.
-- **TK-GR-35**: [MIGRATION] Migrar 71 tablas a PostgreSQL con Expand and Contract (D82).
-- **TK-GR-36**: [MIGRATION] Reemplazar ~12 tablas sequencers (`TbIDXxx`) por IDENTITY/SERIAL.
-- **TK-GR-37**: [MIGRATION] Reemplazar 5 tablas `TbCache*` por Redis o similar server-side cache.
-- **TK-GR-38**: [MIGRATION] Reemplazar filesystem anexos (`URLDirectorioDocumentacion`) por S3-compatible.
-- **TK-GR-39**: [MIGRATION] Migrar `TbLogPublicaciones` (append-only) a log estructurado.
-- **TK-GR-40**: [MIGRATION] Migrar `tbCambios` (6725 filas) a log estructurado inmutable.
+- **TK-GR-31**: [MIGRATION] Backfill de `Estado` columna para los 2924 riesgos actuales.
+- **TK-GR-32**: [MIGRATION] Backfill de `FechaPublicacion` para ediciones históricas.
+- **TK-GR-33**: [MIGRATION] Migrar 71 tablas a PostgreSQL con Expand and Contract (D82).
+- **TK-GR-34**: [MIGRATION] Reemplazar ~12 tablas sequencers (`TbIDXxx`) por IDENTITY/SERIAL.
+- **TK-GR-35**: [MIGRATION] Reemplazar 5 tablas `TbCache*` por Redis o similar server-side cache.
+- **TK-GR-36**: [MIGRATION] Reemplazar filesystem anexos (`URLDirectorioDocumentacion`) por S3-compatible.
+- **TK-GR-37**: [MIGRATION] Migrar `TbLogPublicaciones` (append-only) a log estructurado.
+- **TK-GR-38**: [MIGRATION] Migrar `tbCambios` (6725 filas) a log estructurado inmutable.
+- **TK-GR-39**: [MIGRATION] Expand and Contract backward-compatibles (D82).
+- **TK-GR-40**: [REVIEW] Análisis de los 3 forms binarios densos después de abrir en Access IDE.
 
 ---
 
@@ -559,46 +442,65 @@ End If
 | Fuente | Aporta |
 |---|---|
 | engram topic_key `gestion-riesgos/deep-discovery-2026-08-06` | **Consolidado** de 5 sub-agentes walkthrough |
-| engram obs #24097 | Audit codegraph-vba previo (372 getdb() callers) |
-| engram topic_key `access2web-blueprint/methodology-2026-08-06` | Decisiones metodológicas |
-| `data/staging/gestion-riesgos/src/` (65 cls + 139 bas + 62 form .cls) | Source tree exportado |
-| `data/staging/gestion-riesgos/.codegraph-vba/` | Índice codegraph-vba regenerado |
-| `data/staging/gestion-riesgos/docs/` | Documentación preexistente (Lote 3) |
-| `docs/03-aplicaciones/gestion-riesgos/*.md` (7 archivos) | Documentos del estudio (capabilities, data-model, forms, etc.) |
-| `C:\00repos\codigo\00_GESTION_RIESGOS\staging` | Fuente READ-ONLY |
+| `docs/03-aplicaciones/gestion-riesgos/capabilities.md` | Inventario de features, ViewModels/Servicios/Repositorios, edge WebView |
+| `docs/03-aplicaciones/gestion-riesgos/data-model.md` | Tablas, FKs, hallazgos D88-D104 |
+| `docs/03-aplicaciones/gestion-riesgos/forms.md` | Navegación, call paths, formularios críticos |
+| `docs/03-aplicaciones/gestion-riesgos/integrations-automation.md` | Cross-app, Edge WebView, testing sandbox, flags |
+| `docs/03-aplicaciones/gestion-riesgos/migration-matrix.md` | D88-D104 detallados + decisión D-new logs web-native |
+| `docs/03-aplicaciones/gestion-riesgos/security-rules.md` | Autorización, D88-D95, riesgos de privacidad, XSS de WebView |
+| `docs/03-aplicaciones/gestion-riesgos/README.md` | Estado del lote, hallazgos críticos, checklist |
+| `data/staging/gestion-riesgos/src/classes/*.cls` | 65 clases de dominio |
+| `data/staging/gestion-riesgos/src/modules/*.bas` | 139 módulos (Constructor, Variables Globales, etc.) |
+| `data/staging/gestion-riesgos/src/forms/*.form.txt` | 62 forms con RecordSource/RowSource |
+| engram obs #24097 | Audit codegraph-vba |
+| engram obs #24086 | Corrección: `tbHistorialRechazos` es de NEGOCIO |
+| [DOCS](../../../DOCS.md) | Technical reference raíz del blueprint |
+| [CODEBASE-GUIDE](../../../CODEBASE-GUIDE.md) | Para mantenedores del blueprint |
 
-## Anexo · Decisiones referenciadas (D5-D140)
+## Anexo · Decisiones referenciadas (D5-D145)
 
 | Decisión | Aplicación a Gestion_Riesgos |
 |---|---|
 | D8 (hexagonal global) | Toda la migración |
-| D9-D10 (secret manager) | Acceso a `getdbLanzadera` (vía `URL` de la app Lanzadera) |
-| D14 (esquema por módulo) | Módulo `gestion-riesgos` en PostgreSQL |
+| D14 (esquema por módulo) | Módulo `gestion_riesgos` en PostgreSQL |
 | D16 (object storage S3-compatible) | Anexos (D142, D143) |
-| D27 (logs estructurados) | Reemplazar `tbCambios` + `TbLogPublicaciones` (D137, D139) |
-| D44-D46 (autorización + capabilities) | Roles Técnico/Calidad (D139 — permisos diferenciados por tab) |
+| D17-D20 (ports) | Repositorios + adaptadores de identidad |
+| D27 (logs estructurados canónicos) | Reemplazar logs VBA |
+| D44-D46 (autorización + capabilities) | Roles Técnico/Calidad |
 | D66-D67 (stack) | Backend Python + HTMX |
-| D68 (monolito modular) | Migration a módulo dedicado |
-| D82 (Expand and Contract) | Estado del riesgo backward-compatible (D126) |
-| D88 (308 → 372 getdb() callers) | **CRITICAL PERFORMANCE** — el cuello está en clases, no en forms |
-| D102 (booleanos Text(2)) | H21 — cleanup |
-| D93-D95 (gestión de secretos) | AGEDO (D129) + cross-app con Expedientes (D132) |
+| D68 (monolito modular) | Gestion_Riesgos como módulo |
+| D82 (Expand and Contract) | Estrategia de migración |
+| D92 (datos personales) | NO bloqueante para Gestion_Riesgos — no hay PII significativa |
+| D93 (password fallback) | APLICAR — eliminar fallback `dpddpd` |
+| D102 (booleanos `Text(2)`) | APLICAR — migrar a `BOOLEAN` |
+| D104 (secret manager) | APLICAR — mover a secret manager |
+| **D88 (372 getdb() callers)** | **CRITICAL — cuello en clases de dominio, no en UI** |
+| **D126-D145 (state machine + workflow + AGEDO + tests)** | **21 hallazgos específicos de Gestion_Riesgos** |
 
 ## Checklist del documento
 
-- [x] Scope con ~61 features detalladas por dominio (G1-G5)
-- [x] Auditoría de uso + D88 medido a nivel global (372 getdb callers)
-- [x] Hallazgos D126-D145 + H1-H21 con anchor links
+- [x] Scope con 61 features detalladas por dominio (G1-G5)
+- [x] Auditoría de uso (Dysflow + codegraph-vba) + 65 clases / 139 módulos
+- [x] Hallazgos D88 + D126-D145 con anchor links (21 hallazgos)
 - [x] Decisiones UX Preservar/Mejorar/Nuevo paradigma por pantalla
 - [x] Decisiones arquitectura hexagonal ports
 - [x] Criterios de aceptación verificables y agrupados por dimensión
 - [x] 14 pendientes operacionales antes, 10 durante, 4 en go-live
 - [x] 40 tickets derivables preview (TK-GR-1..40)
-- [x] Tabla de decisiones referenciadas (D5-D140)
+- [x] Tabla de decisiones referenciadas (D5-D145)
 - [x] Tabla de fuentes
 - [x] Idioma: español técnico neutro. Identificadores y paths sin traducir.
-- [x] D88 particular: optimizaciones estructural + UI; el grueso está en capa de clases
+- [x] "The sentence that organizes" presente
+- [x] "Scope del scope" presente
+- [x] Sin emojis decorativos
+- [x] Cross-references a DOCS, CODEBASE-GUIDE, AGENTS
+- [x] Quick Navigation table
+- [x] Hallazgos en tabla con severity
 
 ## Siguiente paso
 
-Revisión con el equipo. Esta épica se revisa junto con la de Brass y las de las otras apps (HPS, HPS_Solicitudes, Condor ya existentes). El siguiente lote es una de las 4 apps restantes (Gestion_Riesgos COMPLETO, NoConformidades, Lanzaderas, Expedientes).
+Aplicar las mismas reglas a las 3 épicas restantes: HPS, HPS_Solicitudes, NoConformidades. Tras cerrar el ciclo de revisión final del blueprint.
+
+---
+
+[← Back to Gestion_Riesgos README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
