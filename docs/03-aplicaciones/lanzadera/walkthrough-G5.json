@@ -1,0 +1,244 @@
+{
+  "group": "G5",
+  "method_version": "v4",
+  "forms_count": 3,
+  "forms": [
+    {
+      "name": "Form_FormEnConstruccion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormEnConstruccion.form.txt",
+      "cls_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormEnConstruccion.cls",
+      "cls_size_bytes": 67,
+      "controls_count": 2,
+      "sections_count": 0,
+      "bindings_count": 0,
+      "events_count": 0,
+      "formEvents_count": 0,
+      "analyze_form_ui": {
+        "kind": "Form",
+        "controls": [
+          {"name": "Detail", "type": "Section", "role": "container", "events": []},
+          {"name": "Imagen38", "type": "Image", "role": "display", "picture": "EnConstruccion.jpg"}
+        ],
+        "warnings": []
+      },
+      "analyze_form_layout": {
+        "findings_count": 2,
+        "findings": [
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detail"},
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Imagen38"}
+        ]
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraphIndexPath": null,
+        "warnings": ["No CodeGraph-VBA evidence was supplied."],
+        "all_controls_events_empty": true
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "issue": "#1412",
+        "envelope": "RESULT_CONTRACT_VIOLATION"
+      },
+      "unattended_detection": {
+        "is_unattended": true,
+        "kind": "strict_unattended",
+        "rationale": "Decorative placeholder form. Zero bindings, zero events wired, companion .cls is 67 bytes (just Option Compare/Explicit + private m_Error field). Intentional 'we are under construction' splash with single image (EnConstruccion.jpg). No functional logic to test."
+      },
+      "findings": [
+        "Pure decoration form: 1 Image + 1 Section. No event wirings, no code behind.",
+        "cls companion has only declarations (67 bytes) — no handlers, no logic.",
+        "Geometry missing on both controls (LayoutCachedWidth/Height set, but no Left/Top) — dysflow skipped overlap checks."
+      ]
+    },
+    {
+      "name": "Form_FormObtenerContrase\u00f1a",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormObtenerContrase\u00f1a.form.txt",
+      "cls_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormObtenerContrase\u00f1a.cls",
+      "cls_size_bytes": 2652,
+      "encoding_note": "filename uses single-byte 0xF1 (Windows-1252 \u00f1) instead of UTF-8 \u00f1; dysflow resolves the path internally",
+      "controls_count": 13,
+      "sections_count": 0,
+      "bindings_count": 0,
+      "events_count": 5,
+      "formEvents_count": 1,
+      "analyze_form_ui": {
+        "kind": "Form",
+        "controls_observed": [
+          {"name": "Detalle", "type": "Section", "role": "container"},
+          {"name": "Marco27", "type": "OptionGroup", "role": "unknown"},
+          {"name": "ImagenContrase\u00f1a", "type": "Image", "role": "display", "picture": "key_password_lock_800.png"},
+          {"name": "CuadroSuperior", "type": "Rectangle", "events_in_form_txt": ["OnDblClick"]},
+          {"name": "lblTitulo2", "type": "Label", "caption": "Obtener Contrase\u00f1a"},
+          {"name": "lblTitulo1", "type": "Label", "caption": "Obtener Contrase\u00f1a"},
+          {"name": "Cuadro77", "type": "Rectangle", "events_in_form_txt": ["OnDblClick"]}
+        ],
+        "warnings": []
+      },
+      "analyze_form_layout": {
+        "findings_count": 5,
+        "findings": [
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle"},
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Marco27"},
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "CuadroSuperior"},
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Cuadro77"},
+          {"code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "ImagenContrase\u00f1a <-> Marco71"},
+          {"code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "lblTitulo2 <-> lblTitulo1"},
+          {"code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "Marco71 <-> CorreoUsuario (truncated)"}
+        ]
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraphIndexPath": null,
+        "warnings": ["No CodeGraph-VBA evidence was supplied."],
+        "all_controls_events_empty": true,
+        "codegraph_note": "codegraph-vba returned unrelated BRASS forms (Form_FormInformesDesdeLista / PorFactura) — lanzaderas src/forms not indexed for this form name"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "issue": "#1412",
+        "envelope": "RESULT_CONTRACT_VIOLATION"
+      },
+      "drift_analysis_form_vs_cls": {
+        "events_in_form_txt": [
+          {"line": 35, "event": "OnOpen", "wiring": "[Event Procedure]", "owner": "Form"},
+          {"line": 1054, "event": "OnDblClick", "wiring": "[Procedimiento de evento]", "owner": "CuadroSuperior"},
+          {"line": 1124, "event": "OnDblClick", "wiring": "[Procedimiento de evento]", "owner": "Cuadro77"},
+          {"line": 1210, "event": "OnClick", "wiring": "[Event Procedure]", "owner": "ComandoObtener"},
+          {"line": 1239, "event": "OnClick", "wiring": "[Event Procedure]", "owner": "ComandoSalir"}
+        ],
+        "handlers_in_cls": [
+          "Form_Open",
+          "ComandoObtener_Click",
+          "ComandoSalir_Click"
+        ],
+        "orphan_event_bindings": [
+          "CuadroSuperior_DblClick (event wired in form, no handler in cls)",
+          "Cuadro77_DblClick (event wired in form, no handler in cls)"
+        ],
+        "cls_references_undeclared_controls": [
+          "Me.CorreoUsuario (used in ComandoObtener_Click and Form_Open — TextBox exists in form)"
+        ]
+      },
+      "unattended_detection": {
+        "is_unattended": false,
+        "kind": "imperative",
+        "rationale": "Functional password-recovery form. Wired to Constructor.getUsuario + usuario.ResetearPass. Companion .cls has 2652 bytes of real code. Active flows: Form_Open (initializes Me.CorreoUsuario from OpenArgs), ComandoObtener_Click (validates email, looks up user, resets password, sends email, navigates to Formlogin), ComandoSalir_Click (closes form). However, has 2 ORPHAN EVENT BINDINGS in form that don't exist in cls."
+      },
+      "findings": [
+        "ORPHAN EVENT BINDINGS BUG: CuadroSuperior and Cuadro77 have OnDblClick wired in .form.txt but no matching handler in .cls. Clicking these rectangles does nothing.",
+        "Layout overlap warnings: ImagenContrase\u00f1a overlaps Marco71; lblTitulo1/lblTitulo2 overlap (both display the same caption 'Obtener Contrase\u00f1a' at near-identical positions).",
+        "Four controls missing complete Left/Top geometry — layout checks skipped on them.",
+        "Filename encoding: Windows-1252 \u00f1 (0xF1) instead of UTF-8 — dysflow resolves internally; PowerShell host shows as \uFFFD replacement char.",
+        "Uses OpenArgs() to seed CorreoUsuario — clean contract for caller (likely Formlogin).",
+        "Codegraph-vba does NOT index this form (returned unrelated BRASS forms). Indexer coverage gap."
+      ]
+    },
+    {
+      "name": "Form_Formulario1",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_Formulario1.form.txt",
+      "cls_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_Formulario1.cls",
+      "cls_size_bytes": 131,
+      "controls_count": 5,
+      "sections_count": 0,
+      "bindings_count": 0,
+      "events_count": 1,
+      "formEvents_count": 1,
+      "analyze_form_ui": {
+        "kind": "Form",
+        "controls_observed": [
+          {"name": "Detalle", "type": "Section", "role": "container", "autoHeight": true},
+          {"name": "ComandoGrabar", "type": "CommandButton", "role": "action", "caption": "Grabar", "tip": "Guardar"},
+          {"name": "ComandoRiesgoEliminar", "type": "CommandButton", "role": "action", "caption": "Eliminar", "tip": "Eliminar Riesgo", "tabStop": "NotDefault"},
+          {"name": "Cuadro0", "type": "Rectangle", "role": "unknown"},
+          {"name": "ComandoSHPS", "type": "CommandButton", "role": "action", "caption": "Comando36", "tag": "22", "picture": "SHPS_C.png", "hyperlinkAddress": "#"}
+        ],
+        "warnings": []
+      },
+      "analyze_form_layout": {
+        "findings_count": 4,
+        "findings": [
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle"},
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "ComandoGrabar"},
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "ComandoRiesgoEliminar"},
+          {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "ComandoSHPS"}
+        ]
+      },
+      "map_form_behavior": {
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraphIndexPath": null,
+        "warnings": ["No CodeGraph-VBA evidence was supplied."],
+        "all_controls_events_empty": true,
+        "codegraph_note": "codegraph-vba returned a DIFFERENT Form_Formulario1.cls in data/staging/expedientes/src/forms/ — that one is the Firebase demo form (with WebBrowser0, txtInput, txtRealtime, InitializeFirebase, btnSend_Click, modFormulario1Helper). The LANZADERAS Form_Formulario1 is a SEPARATE, smaller form. Cross-backend name collision; indexer returned the wrong one."
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "issue": "#1412",
+        "envelope": "RESULT_CONTRACT_VIOLATION"
+      },
+      "drift_analysis_form_vs_cls": {
+        "events_in_form_txt": [
+          {"line": 30, "event": "OnOpen", "wiring": "[Event Procedure]", "owner": "Form"}
+        ],
+        "handlers_in_cls": [
+          "Form_Open (Debug.Print Me.Cuadro0.BackColor)"
+        ],
+        "unwired_buttons": [
+          "ComandoGrabar (caption='Grabar', tip='Guardar') — click does nothing",
+          "ComandoRiesgoEliminar (caption='Eliminar', tip='Eliminar Riesgo') — click does nothing",
+          "ComandoSHPS (caption='Comando36', tag='22', picture='SHPS_C.png', hyperlink='#') — click does nothing"
+        ]
+      },
+      "unattended_detection": {
+        "is_unattended": false,
+        "kind": "imperative_but_inert",
+        "rationale": "Form declares 3 actionable CommandButtons with real captions/tips/pictures, but the .cls only has a debug-only Form_Open. All buttons are no-ops. Likely a WIP shell awaiting ComandosSHPS integration (Tag='22', picture='SHPS_C.png' suggests SHPS system link) or copy-paste from a riesgo template that was never finished."
+      },
+      "findings": [
+        "DEAD BUTTONS: ComandoGrabar, ComandoRiesgoEliminar, ComandoSHPS have captions and ControlTipText but NO event wirings and NO cls handlers. Clicking them does nothing.",
+        "ComandoSHPS has hyperlinkAddress='#' — suggests it's a link button (image-link style), not a click handler.",
+        "ComandoSHPS has Tag='22' and Picture='SHPS_C.png' — likely an SHPS-system integration placeholder.",
+        "Cross-backend name collision: a DIFFERENT Form_Formulario1 exists in data/staging/expedientes/src/forms/ (Firebase demo). Codegraph-vba returned that one when queried. The lanzaderas Form_Formulario1 is unrelated.",
+        "cls Form_Open uses Debug.Print — invisible at runtime, only useful in VBE Immediate window.",
+        "All 5 controls missing Left/Top geometry — layout checks skipped."
+      ]
+    }
+  ],
+  "summary": {
+    "forms_total": 3,
+    "forms_with_orphan_event_bindings": 1,
+    "forms_with_dead_buttons": 1,
+    "forms_truly_decorative": 1,
+    "forms_with_data_bindings": 0,
+    "dysflow_2_36_2": {
+      "analyze_form_ui": "OK on all 3",
+      "analyze_form_layout": "OK on all 3 (issue #1407 resolved)",
+      "map_form_behavior": "OK with autoFetchCodeGraph:false on all 3 (issue #1408 still open — codegraph_evidence_status:empty)",
+      "verify_form_bindings": "BROKEN on all 3 — RESULT_CONTRACT_VIOLATION (issue #1412 still open) — skipped per protocol"
+    },
+    "codegraph_vba": {
+      "stale_banner": "DISABLED — ignored per instructions",
+      "lanzaderas_indexed": false,
+      "coverage_gap": "data/staging/lanzaderas/src/forms/* not indexed. Cross-backend name collision: Form_Formulario1 returns the EXPEDIENTES Firebase demo instead.",
+      "Form_FormEnConstruccion_indexed": false,
+      "Form_FormObtenerContrase\u00f1a_indexed": false,
+      "Form_Formulario1_indexed": "wrong one (expedientes Firebase)"
+    },
+    "filesystem_findings": [
+      "data/staging/lanzaderas/frontend/Lanzadera.accdb does NOT exist — lanzaderas is source-only in this repo",
+      "data/staging/lanzaderas/backend/Lanzadera_Datos.accdb does NOT exist either",
+      "Filename encoding: Form_FormObtenerContrase\u00f1a uses Windows-1252 \u00f1 (0xF1) instead of UTF-8 — dysflow resolves internally; PowerShell shows \uFFFD replacement",
+      "dysflow project context is on no-conformidades by default; lanzaderas is one of 8 backends in .dysflow/project.json but never the implicit target"
+    ],
+    "cross_cutting_findings": [
+      "0 of 3 G5 forms have data bindings — none are CRUD screens. G5 is genuinely cross-cutting (utility/decoration).",
+      "All 3 forms have zero ControlSource/RecordSource/RowSource — pure UI shells.",
+      "Two forms (FormObtenerContrase\u00f1a, Formulario1) are WIP shells with mismatched event wirings — candidates for either (a) completing the cls handlers, or (b) cleaning up the form declarations to match actual intent.",
+      "One form (FormEnConstruccion) is intentional decoration — leave as-is."
+    ],
+    "tool_warnings": [
+      "codegraph-vba auto-sync DISABLED banner — ignored per instructions, but lanzaderas index is empty for these forms so we have no behavior evidence",
+      "verify_form_bindings RESULT_CONTRACT_VIOLATION on all 3 calls (issue #1412) — no schema validation possible",
+      "map_form_behavior with autoFetchCodeGraph:false — emitted 'No CodeGraph-VBA evidence was supplied.' warning, but no failure"
+    ]
+  }
+}

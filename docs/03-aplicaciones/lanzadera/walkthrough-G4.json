@@ -1,0 +1,437 @@
+{
+  "group": "G4",
+  "method_version": "v4",
+  "description": "Walkthrough de los 7 forms del grupo G4 (Videos/Lanzaderas) usando dysflow 2.36.2 + codegraph-vba + engram. Método v4: perceive (codegraph_explore + analyze_form_ui + analyze_form_layout + map_form_behavior SIN autoFetch) + verify_form_bindings (skipped bug #1412).",
+  "tool_versions": {
+    "dysflow_adapter_version": "2.36.2",
+    "codegraph_index": "frozen_per_stale_banner_ignored",
+    "engram_project": "access2web-blueprint"
+  },
+  "forms_count": 7,
+  "forms": [
+    {
+      "index": 1,
+      "form_name": "FormVideoDetalle",
+      "form_class_name": "Form_FormVideoDetalle",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormVideoDetalle.form.txt",
+      "kind": "Form",
+      "controls_count": 7,
+      "form_events": ["OnLoad"],
+      "controls_summary": [
+        "Detail (Section)",
+        "Etiqueta43/44/45 (Labels 20x20px — layout artifacts)",
+        "lblTitulo (Label display 'TÍTULO DEL VIDEO')",
+        "lblExplicacion (Label display 'EXPLICACIÓN DEL APARTADO')",
+        "ComandoVerVideo (CommandButton action 'Ver Video')"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": 0,
+      "event_handlers_declared": ["ComandoVerVideo_Click"],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 0,
+        "alignment": 0,
+        "tab_order": 0,
+        "total": 4
+      },
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "1 caller in own .form.txt; Form_FormVideoDetalle is a stateless detail form. Video class referenced via global m_ObjVideoActivo. 6 other callers of Video class (Visionado, Form_FormVideosGestionArbolAplicacion, Form_FormVideosGestionArbolVideoDatos, Constructor.bas). No tests.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412)",
+      "unattended_detection": "imperative",
+      "unattended_reason": "No RecordSource/RowSource/ControlSource. Depends on global state m_ObjVideoActivo (Video class) populated by parent Form_FormVideosArbolVideo.MENU1_Click via FormDetalle.SourceObject='Form.FormVideoDetalle'. Stateful subform pattern, not a data-bound form.",
+      "key_notes": [
+        "Subform-style detail hosted by Form_FormVideosArbolVideo (form #2) via FormDetalle.SourceObject",
+        "1 action: ComandoVerVideo opens m_ObjVideoActivo.url via Ejecutar (ShellExecute) — fails gracefully if file missing",
+        "Empty Form_Load (only On Error handler)"
+      ]
+    },
+    {
+      "index": 2,
+      "form_name": "FormVideosArbolVideo",
+      "form_class_name": "Form_FormVideosArbolVideo",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormVideosArbolVideo.form.txt",
+      "kind": "Form",
+      "controls_count": 8,
+      "form_events": [],
+      "controls_summary": [
+        "EncabezadoDelFormulario (FormHeader)",
+        "MENU1 (Rectangle OnClick/OnMouseMove)",
+        "IND1 (Label underline indicator)",
+        "lblMenu1 (Label 'Video')",
+        "Imagen1 (Image 'DASHBOARD.gif')",
+        "Detail (Section)",
+        "FormDetalle (Subform SourceObject='Form.FormVideoDetalle')",
+        "PieDelFormulario (FormFooter Height=0)"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": 0,
+      "event_handlers_declared": [
+        "EncabezadoDelFormulario_MouseMove",
+        "MENU1_Click",
+        "lblMenu1_Click",
+        "MENU1_Mousemove",
+        "lblMenu1_Mousemove",
+        "IND1_Mousemove"
+      ],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 4,
+        "alignment": 1,
+        "tab_order": 0,
+        "total": 9
+      },
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "1 caller in own .form.txt. Wrapper for FormVideoDetalle. MENU1_Click sets Me.FormDetalle.SourceObject='FormVideoDetalle'. Uses m_ObjEntorno.ColorMenuActivado/Desactivado for visual state. Video class referenced.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412) — not called (deterministic bug, confirmed in form #1)",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Pure wrapper form — no data bindings. Hosts FormVideoDetalle as subform, switched via SourceObject. Visual hover/active state managed via m_ObjEntorno colors.",
+      "key_notes": [
+        "Wrapper form: 3 layers (parent Form_FormVideosGestion → this → Form_FormVideoDetalle)",
+        "Rectangle/labels mimic a tab-style menu but rely on manual hover/click handlers",
+        "No real data binding — pure navigation chrome"
+      ]
+    },
+    {
+      "index": 3,
+      "form_name": "FormVideosGestion",
+      "form_class_name": "Form_FormVideosGestion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormVideosGestion.form.txt",
+      "kind": "Form",
+      "controls_count": 6,
+      "form_events": ["OnLoad"],
+      "controls_summary": [
+        "Detail (Section)",
+        "Arbol (CustomControl MSComctlLib.TreeCtrl.2 — legacy ActiveX)",
+        "ListaImagenes (CustomControl MSComctlLib.ImageListCtrl.2 — legacy ActiveX)",
+        "Sep (Label used as draggable splitter)",
+        "FormDetalle (Subform — SourceObject set at runtime)",
+        "ComandoActualizarContador (CommandButton 'Contador')"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": 0,
+      "event_handlers_declared": [
+        "Arbol_NodeClick",
+        "ComandoActualizarContador_Click",
+        "Form_Load",
+        "Sep_MouseDown",
+        "Sep_MouseMove",
+        "Sep_MouseUp",
+        "EstablecerDatos"
+      ],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 1,
+        "alignment": 0,
+        "tab_order": 0,
+        "total": 5
+      },
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "1 caller in own .form.txt. Top-level form of the video editor. Arbol_NodeClick switches FormDetalle.SourceObject between FormVideosGestionArbolAplicacion (app-only node) and FormVideosGestionArbolVideo (video node). Calls getVideoByNode/getAplicacionByNode/CargarArbol. No tests.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412) — not called (deterministic bug)",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Pure navigator. Tree state held in ActiveX MSComctlLib.TreeCtrl. No RecordSource. Splitter handled manually via Sep label mouse handlers (custom drag, not built-in splitter). Calls CargarArbol + sets m_ObjVideoActivo/m_ObjAplicacionActiva global state.",
+      "key_notes": [
+        "Uses legacy ActiveX MSComctlLib.TreeCtrl/ImageListCtrl — pre-.NET era, can fail to load on systems without MSCOMCTL.OCX registered",
+        "Manual splitter implementation (3 mouse handlers on Sep label) — replace with built-in Split Form control in modern port",
+        "Top-level entry point: switches FormDetalle.SourceObject to navigate"
+      ]
+    },
+    {
+      "index": 4,
+      "form_name": "FormVideosGestionArbolAplicacion",
+      "form_class_name": "Form_FormVideosGestionArbolAplicacion",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormVideosGestionArbolAplicacion.form.txt",
+      "kind": "Form",
+      "controls_count": 21,
+      "form_events": ["OnLoad"],
+      "controls_summary": [
+        "Detail (Section)",
+        "Marco17 (OptionGroup container — overlap with child controls is expected)",
+        "ImagenAplicacion (Image 'AGEDO.png')",
+        "lblNombreAplicacion (Label 'AGEDYS TÉCNICO')",
+        "lblOperacion (Label 'ALTA DE VÍDEO')",
+        "Etiqueta18 (Label 'Datos Vídeo')",
+        "6 label/control pairs: Etiqueta66+URLLocalVideo, Etiqueta113+Titulo, Etiqueta42+Descripcion, Etiqueta44+Observaciones, Etiqueta115+ComboDirigidoA, Etiqueta47+ComboUso",
+        "ComandoAnadirVideo (button)",
+        "ComandoRegistrar (button 'Registrar')",
+        "ComandoEliminar (button 'Eliminar', initially hidden)"
+      ],
+      "bindings_count": 2,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ComboDirigidoA", "rowSource": "Para Todos;No Para Técnicos;No Para Calidad"},
+        {"control": "ComboUso", "rowSource": "Vídeo-Guía;Encuesta;Ambos"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAnadirVideo_Click",
+        "ComandoEliminar_Click",
+        "ComandoRegistrar_Click",
+        "Form_Load",
+        "CargarDatos",
+        "HaHabidoCambios",
+        "TransponerDatoUso",
+        "TransponerDirigidoA"
+      ],
+      "layout_findings": {
+        "missing_geometry": 1,
+        "overlap": 14,
+        "alignment": 6,
+        "tab_order": 1,
+        "total": 22
+      },
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Called from Form_FormVideosGestion.Arbol_NodeClick when app-only node selected (no Video yet). Establishes state for new Video under selected Aplicacion. Reads Constructor.getAplicacion/getVideo; writes via Video.Registrar. 6 callers of Video class globally.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412) — not called (deterministic bug)",
+      "unattended_detection": "imperative",
+      "unattended_reason": "No ControlSource on textboxes (Titulo, Descripcion, Observaciones, URLLocalVideo). 2 ComboBox RowSource are Value Lists (not table-backed). All state via m_ObjVideoActivo + m_ObjAplicacionActiva globals set by parent.",
+      "key_notes": [
+        "Marco17 (OptionGroup) overlap with all child controls is intentional — not a layout bug",
+        "Bindings are Value Lists only, not table-backed — verify_form_bindings would have nothing to validate",
+        "TransponerDatoUso/TransponerDirigidoA convert UI strings to enum/boolean flags for Video.Registrar"
+      ]
+    },
+    {
+      "index": 5,
+      "form_name": "FormVideosGestionArbolVideo",
+      "form_class_name": "Form_FormVideosGestionArbolVideo",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormVideosGestionArbolVideo.form.txt",
+      "kind": "Form",
+      "controls_count": 8,
+      "form_events": [],
+      "controls_summary": [
+        "EncabezadoDelFormulario (FormHeader)",
+        "MENU1 (Rectangle OnClick/OnMouseMove)",
+        "IND1 (Label — note: caption lost, declared as event handler)",
+        "lblMenu1 (Label 'Datos')",
+        "Imagen1 (Image 'DatosAplicacion-modified.png')",
+        "Detail (Section)",
+        "FormDetalle (Subform — SourceObject set at runtime via MENU1_Click)",
+        "PieDelFormulario (FormFooter Height=0)"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": 0,
+      "event_handlers_declared": [
+        "EncabezadoDelFormulario_MouseMove",
+        "MENU1_Click",
+        "lblMenu1_Click",
+        "MENU1_Mousemove",
+        "lblMenu1_Mousemove",
+        "IND1_Mousemove"
+      ],
+      "layout_findings": {
+        "missing_geometry": 6,
+        "overlap": 0,
+        "alignment": 1,
+        "tab_order": 0,
+        "total": 7
+      },
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "MENU1_Click sets Me.FormDetalle.SourceObject='FormVideosGestionArbolVideoDatos'. Called from Form_FormVideosGestion.Arbol_NodeClick when a Video node is selected.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412) — not called",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Wrapper form. FormDetalle has no SourceObject at design-time — set at runtime by MENU1_Click. No data bindings.",
+      "key_notes": [
+        "Indistinguishable name confusion: Form_FormVideosArbolVideo (form #2, hosts FormVideoDetalle) vs Form_FormVideosGestionArbolVideo (form #5, hosts FormVideosGestionArbolVideoDatos)",
+        "Note: FormDetalle in form #5 has NO SourceObject at design-time (vs form #2 which has SourceObject='Form.FormVideoDetalle')",
+        "IND1 has OnMouseMove='[Procedimiento de evento]' but no Caption — odd declaration; likely a translation artifact"
+      ]
+    },
+    {
+      "index": 6,
+      "form_name": "FormVideosGestionArbolVideoDatos",
+      "form_class_name": "Form_FormVideosGestionArbolVideoDatos",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormVideosGestionArbolVideoDatos.form.txt",
+      "kind": "Form",
+      "controls_count": 21,
+      "form_events": ["OnLoad"],
+      "controls_summary": [
+        "Same 21-control layout as form #4 (twin design)",
+        "Marco17 OptionGroup, ImagenAplicacion, lblNombreAplicacion, lblOperacion, Etiqueta18",
+        "URLLocalVideo/Titulo/Descripcion/Observaciones textboxes",
+        "ComboDirigidoA + ComboUso (value lists)",
+        "ComandoAnadirVideo, ComandoRegistrar, ComandoEliminar buttons"
+      ],
+      "bindings_count": 2,
+      "bindings_table_backed": 0,
+      "bindings_value_list": [
+        {"control": "ComboDirigidoA", "rowSource": "Para Todos;No Para Técnicos;No Para Calidad"},
+        {"control": "ComboUso", "rowSource": "Vídeo-Guía;Encuesta;Ambos"}
+      ],
+      "event_handlers_declared": [
+        "ComandoAnadirVideo_Click",
+        "ComandoEliminar_Click",
+        "ComandoRegistrar_Click",
+        "Form_Load",
+        "CargarDatos",
+        "HaHabidoCambios",
+        "TransponerDatoUso",
+        "TransponerDirigidoA"
+      ],
+      "layout_findings": {
+        "missing_geometry": 1,
+        "overlap": 14,
+        "alignment": 6,
+        "tab_order": 1,
+        "total": 22
+      },
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "CargarDatos reaches m_ObjAplicacionActiva (set by Form_FormVideosGestion.Arbol_NodeClick). Has 4 sub-handlers (Transponer*, HaHabidoCambios). ComandoEliminar calls Video.Eliminar + Form_FormVideosGestion.ComandoActualizarContador_Click to refresh tree. 1 caller in Form_FormVideosArbolVideo.cls (parent wrapper).",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412) — not called",
+      "unattended_detection": "imperative",
+      "unattended_reason": "No ControlSource. State from m_ObjVideoActivo + m_ObjAplicacionActiva globals. ComboBox RowSource are Value Lists, not table-backed.",
+      "key_notes": [
+        "ANTIPATTERN: Form_Load does `Set m_Arbol = Me.Parent.Parent.Controls(\"Arbol\").Object` — reaches 2 levels up to grab grandparent's TreeCtrl. Breaks if form is reparented.",
+        "CRUD complete: Registrar (Insert/Update), Eliminar (Delete), AnadirVideo (file picker), CargarDatos (Read)",
+        "Form_Load uses `On Error GoTo errores` without explicit Resume — if m_Arbol path is wrong, error handler runs (no Resume → silent failure).",
+        "Form_FormVideosArbolAplicacion (form #4) is structurally identical at .form.txt level — the .cls differs. Form #4 = new video path, form #6 = edit existing video path."
+      ]
+    },
+    {
+      "index": 7,
+      "form_name": "FormVideosUsuarios",
+      "form_class_name": "Form_FormVideosUsuarios",
+      "source_path": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormVideosUsuarios.form.txt",
+      "kind": "Form",
+      "controls_count": 5,
+      "form_events": ["OnLoad"],
+      "controls_summary": [
+        "Detail (Section)",
+        "Arbol (CustomControl MSComctlLib.TreeCtrl.2)",
+        "ListaImagenes (CustomControl MSComctlLib.ImageListCtrl.2)",
+        "Sep (Label used as draggable splitter)",
+        "FormDetalle (Subform SourceObject='Form.FormVideosArbolVideo')"
+      ],
+      "bindings_count": 0,
+      "bindings_table_backed": 0,
+      "bindings_value_list": 0,
+      "event_handlers_declared": [
+        "Arbol_NodeClick",
+        "Form_Load",
+        "Sep_MouseDown",
+        "Sep_MouseMove",
+        "Sep_MouseUp",
+        "EstablecerDatos"
+      ],
+      "layout_findings": {
+        "missing_geometry": 4,
+        "overlap": 0,
+        "alignment": 0,
+        "tab_order": 0,
+        "total": 4
+      },
+      "codegraph_evidence_status": "empty_skipped_bug_1408",
+      "codegraph_explore_summary": "Read-only twin of Form_FormVideosGestion. Arbol_NodeClick sets FormDetalle.SourceObject='FormVideosArbolVideo' (NOT the edit-version 'FormVideosGestionArbolVideo'). Form_FormVideoDetalle.EstablecerDatos is called directly to refresh. 1 caller in own .form.txt.",
+      "verify_form_bindings_status": "skipped_tool_broken",
+      "verify_form_bindings_error": "RESULT_CONTRACT_VIOLATION (#1412) — not called",
+      "unattended_detection": "imperative",
+      "unattended_reason": "Pure navigator (read-only user view). Tree state held in MSComctlLib.TreeCtrl ActiveX. No RecordSource. Splitter handled manually via Sep label mouse handlers.",
+      "key_notes": [
+        "Form #3 (FormVideosGestion) and form #7 (FormVideosUsuarios) are TWINS — same 5-control structure, same ActiveX. Difference: form #7 routes to FormVideosArbolVideo (read-only), form #3 routes to FormVideosGestionArbolVideo (edit).",
+        "No edit/CRUD UI exposed — only navigation + view. This is the END-USER entry point vs form #3 which is the EDITOR entry point.",
+        "Same ActiveX legacy concerns as form #3."
+      ]
+    }
+  ],
+  "summary": {
+    "forms_total": 7,
+    "forms_processed": 7,
+    "forms_with_bindings": 2,
+    "forms_with_table_backed_bindings": 0,
+    "forms_with_value_list_bindings": 2,
+    "forms_with_zero_bindings": 5,
+    "all_unattended_imperative": true,
+    "forms_with_subform_hosted": 4,
+    "forms_with_activex_legacy_treectrl": 3,
+    "forms_with_activex_legacy_imagelist": 3,
+    "forms_using_state_coupling_via_parent": 7,
+    "forms_with_crud_capability": 2,
+    "forms_with_read_only_role": 3,
+    "forms_with_navigation_only_role": 2,
+    "codegraph_evidence_empty_all": true,
+    "codegraph_evidence_reason": "autoFetchCodeGraph:false per #1408",
+    "verify_form_bindings_skipped_all": true,
+    "verify_form_bindings_reason": "RESULT_CONTRACT_VIOLATION (#1412) — confirmed on form #1, deterministic",
+    "total_event_handlers_declared": 47,
+    "total_layout_findings": 73,
+    "total_overlap_findings": 33,
+    "total_alignment_findings": 14,
+    "total_missing_geometry_findings": 25,
+    "total_tab_order_findings": 2,
+    "duplicated_twin_forms": [
+      {
+        "forms": [4, 6],
+        "names": ["FormVideosGestionArbolAplicacion", "FormVideosGestionArbolVideoDatos"],
+        "reason": "Same 21-control layout, similar event surface. The .cls differs in initialization path (one for new Video, one for existing Video)."
+      },
+      {
+        "forms": [3, 7],
+        "names": ["FormVideosGestion", "FormVideosUsuarios"],
+        "reason": "Same 5-control navigator pattern (Tree + ImageList + Splitter + Subform). One routes to edit subforms, the other to read-only subforms."
+      }
+    ],
+    "name_collisions_to_disambiguate": [
+      {
+        "form1": {"index": 2, "name": "Form_FormVideosArbolVideo", "role": "wrapper for FormVideoDetalle"},
+        "form2": {"index": 5, "name": "Form_FormVideosGestionArbolVideo", "role": "wrapper for FormVideosGestionArbolVideoDatos"}
+      }
+    ]
+  },
+  "findings_critical": [
+    {
+      "id": "G4-FIND-1",
+      "severity": "high",
+      "title": "ActiveX legacy dependencies in 3 forms",
+      "forms_affected": [3, 7],
+      "details": "Forms use MSComctlLib.TreeCtrl.2 + MSComctlLib.ImageListCtrl.2 (pre-.NET COMCTL32 OCX). On modern Windows without MSCOMCTL.OCX registered (or 64-bit Access), these fail to instantiate — silent tree empty. Modern port: use built-in TreeView/ImageList or migrate to web."
+    },
+    {
+      "id": "G4-FIND-2",
+      "severity": "high",
+      "title": "Reach-up-to-grandparent coupling",
+      "forms_affected": [6],
+      "details": "Form_FormVideosGestionArbolVideoDatos.Form_Load does `Set m_Arbol = Me.Parent.Parent.Controls(\"Arbol\").Object`. Hard-coded 2-level navigation up the form hierarchy to grab TreeCtrl. If parent form is reparented or stacked differently, this breaks silently. Also: uses On Error GoTo without Resume — failures are masked."
+    },
+    {
+      "id": "G4-FIND-3",
+      "severity": "high",
+      "title": "Twin forms with subtle routing divergence",
+      "forms_affected": [3, 7],
+      "details": "FormVideosGestion (editor) routes to FormVideosGestionArbolVideo → which routes to FormVideosGestionArbolVideoDatos (edit). FormVideosUsuarios (read-only) routes to FormVideosArbolVideo → which routes to FormVideoDetalle. The naming 'VideosArbolVideo' vs 'VideosGestionArbolVideo' is the disambiguator. Same ActiveX, same structure — easy to confuse in migration."
+    },
+    {
+      "id": "G4-FIND-4",
+      "severity": "medium",
+      "title": "No automated test coverage for any G4 form",
+      "forms_affected": [1, 2, 3, 4, 5, 6, 7],
+      "details": "codegraph blast radius shows '⚠️ no covering tests found' for every Form_Form* in the lanzaderas module. All forms rely on global state (m_ObjVideoActivo, m_ObjAplicacionActiva) — hard to test in isolation without refactoring to dependency injection."
+    },
+    {
+      "id": "G4-FIND-5",
+      "severity": "medium",
+      "title": "Marco17 OptionGroup overlap false positives",
+      "forms_affected": [4, 6],
+      "details": "Forms #4 and #6 report 14 overlap findings each because Marco17 (OptionGroup container) geometrically contains all child controls. analyze_form_layout reports this as overlap but it's intentional containment. Not a real bug — known limitation of strict AABB lint."
+    }
+  ],
+  "walkthrough_metadata": {
+    "started_at": "2026-08-07",
+    "method": "v4 (dysflow + codegraph-vba + engram)",
+    "host_mcps_confirmed": ["dysflow 2.36.2", "codegraph-vba (stale banner ignored)", "engram"],
+    "skills_loaded": ["dysflow-usage", "dysflow-arnes", "access-form-ui-builder"],
+    "dysflow_bugs_handled": [
+      {"bug": "#1407 analyze_form_layout", "state": "RESOLVED", "handling": "OK"},
+      {"bug": "#1408 map_form_behavior autoFetchCodeGraph", "state": "OPEN", "handling": "autoFetchCodeGraph:false on every call"},
+      {"bug": "#1412 verify_form_bindings", "state": "OPEN", "handling": "skipped_tool_broken on every form"}
+    ]
+  }
+}
