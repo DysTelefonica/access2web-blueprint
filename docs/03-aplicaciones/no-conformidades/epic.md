@@ -1,42 +1,54 @@
+[← Back to NoConformidades README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
+
 # Épica — NoConformidades (migración a web)
 
 > **Estado:** DRAFT v0.1 (2026-08-06) — pendiente revisión final al cerrar el ciclo de las 8 épicas.
-> **App legacy:** NoConformidades (`C:\00repos\codigo\00_NO_CONFORMIDADES`) · frontend `NoConformidades.accdb` (66.96 MB, el más grande del set) + backend `NoConformidades_Datos.accdb` (32.18 MB).
-> **Lote de discovery:** Lote 7 — junto con Brass, HPS, HPS_Solicitudes, Condor, Gestion_Riesgos, Lanzaderas y Expedientes.
-> **Hallazgo dominante:** **D146 (methodology)** — walkthrough profundo requirió método v3 con 2 tools de dysflow saltadas (#1407, #1408) + 1 tool rota (round-4). El método v3 produce JSON estructurado y descubrimiento completo a pesar de los gaps.
-> **Cross-refs:** engram topic_key `no-conformidades/walkthrough-2026-08-06` (consolidado de 5 walkthroughs paralelos G1..G5).
+> **Lote:** 7 — junto con Brass, HPS, HPS_Solicitudes, Condor, Gestion_Riesgos, Lanzaderas y Expedientes.
+> **App legacy:** `00_NO_CONFORMIDADES` · frontend `NoConformidades.accdb` (66.96 MB, el más grande del set) + backend `NoConformidades_Datos.accdb` (32.18 MB).
+> **Sentence that organizes**: **NoConformidades es la app de No Conformidades con dos workflows paralelos: NC-Proyecto (vinculada a Gestion_Riesgos) y NC-Auditoría (vinculada a catalog de motivos compartido con Brass). Frontend más grande del set, 48 forms, 21 unattended (44%), ZERO TabIndex en todos los forms.**
+
+> **Scope del scope**: "Este repo es research + planning de la migración. Cada app tendrá su propio repo + docs cuando se construya."
+
+---
+
+## Quick Navigation
+
+| Section                                                       | What you'll find                                              |
+|---------------------------------------------------------------|---------------------------------------------------------------|
+| [Metadatos](#metadatos)                                       | Scope XL, D146 methodology v3, dependencias cross-app.         |
+| [1. Scope](#1-scope)                                          | 48 features F1-F48 en 5 dominios (G1-G5).                    |
+| [2. Estado del descubrimiento](#2-estado-del-descubrimiento)    | Inventario 48 forms, method v3, patterns estructurales.         |
+| [3. Hallazgos críticos](#3-hallazgos-críticos)                | D146-D154: methodology, unattended, TabIndex, overlaps.       |
+| [4. Decisiones aplicadas](#4-decisiones-aplicadas)              | UX por pantalla, hexagonal ports, seguridad.                  |
+| [5. Criterios de aceptación](#5-criterios-de-aceptación)      | Funcionalidad, Seguridad, Performance, Operacional.            |
+| [6. Pendientes operacionales](#6-pendientes-operacionales)    | Antes, durante, go-live.                                       |
+| [7. Tickets derivables](#7-tickets-derivables-preview)         | 32 tickets TK-NC-1..32.                                        |
+| [Anexo · Decisiones referenciadas](#anexo--decisiones-referenciadas) | D5-D154.                                              |
+| [Anexo · Tabla de fuentes](#anexo--tabla-de-fuentes)         | Walkthrough + docs + source + engram.                          |
+
+---
 
 ## Metadatos
 
 | Campo | Valor |
 |---|---|
-| **Aplicación legacy** | `00_NO_CONFORMIDADES` · frontend `NoConformidades.accdb` (66.96 MB) + backend `NoConformidades_Datos.accdb` (32.18 MB) |
+| **Aplicación legacy** | `00_NO_CONFORMIDADES` · frontend `NoConformidades.accdb` (66.96 MB — el más grande del set) + backend `NoConformidades_Datos.accdb` (32.18 MB) |
 | **Tipo de migración** | Legacy Access/VBA → web hexagonal (FastAPI + HTMX) |
 | **Scope size** | **XL** (48 forms, 48 clases de dominio, 25 módulos, 44 capabilities en 14 familias) |
 | **Dependencias cross-app** | **Gestion_Riesgos** (vía `TbRiesgosAIntegrar`, `TbRiesgosMaterializaciones`, `TbRiesgos` — FK lógica desde NC-Proyecto) · **Expedientes** (vía `Form_FormExpedientesBusqueda` — HTTP/JSON handshake) · **Brass** (comparten `Form_FormMotivosNoRequiereControlEficacia` como catálogo) · **Lanzadera** (comparten entidad Usuario, presumiblemente vía `getdbLanzadera()` — patrón idéntico a Gestion_Riesgos) |
 | **Riesgo dominante** | **D146** — walkthrough con 3 tools de dysflow degradadas/rotas (#1407, #1408, round-4) + **codegraph-vba index FROZEN** (auto-sync disabled por file lock contention). El método v3 mitiga pero deja signal incompleto (sin layout lint). |
-| **Stack target** | Backend Python 3.12+ / FastAPI 0.119+ / SQLAlchemy 2.0.x / Alembic 1.13+ / asyncpg 0.30+ (D66) · Frontend HTMX 2.0.4 + Jinja2 3.1+ + Alpine.js 3.15+ (D67) |
+| **Stack target** | Backend Python 3.12+ / FastAPI 0.119+ / SQLAlchemy 2.0.x / Alembic 1.13+ / asyncpg 0.30+ (D66) · Frontend HTMX 2.0.4 + Jinja2 3.1+ / Alpine.js 3.15+ (D67) |
 | **Estrategia de migración de BD** | Expand and Contract backward-compatible (D82) · PostgreSQL compartido con esquema por módulo (D14) |
 | **Forma destino** | Hexagonal global (D8) · módulo dentro del monolito modular (D68) · puerto de persistencia PostgreSQL + object storage S3-compatible (D16) + secret manager (D9-D10) |
-| **Auditoría de uso previa** | ✅ Walkthrough G1..G5 (48/48 forms, método v3) · ✅ Codegraph-VBA + Dysflow (3 bugs filed: #1407, #1408, round-4) |
-
-## Forma del documento
-
-1. Scope (en / fuera)
-2. Estado del descubrimiento
-3. Hallazgos críticos
-4. Decisiones aplicadas
-5. Criterios de aceptación
-6. Pendientes operacionales
-7. Tickets derivables (preview)
+| **Auditoría de uso previa** | Walkthrough G1..G5 (48/48 forms, método v3) · Codegraph-VBA + Dysflow (3 bugs filed: #1407, #1408, round-4) |
 
 ---
 
 ## 1. Scope
 
-### 1.1 En scope (~48 features agrupadas en 5 dominios)
+### 1.1 En scope — 48 features agrupadas en 5 dominios
 
-#### G1 — Menú raíz + Splash + Técnicos + Vinculaciones externas (~11 features)
+#### G1 — Menú raíz + Splash + Técnicos + Vinculaciones externas (11 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -52,7 +64,7 @@
 | F10 | **Documentos AR Proyecto** (sibling pattern — lista + gestión de anexos para ACs de NC de proyecto) | `Form_FormARProyectoDocumentos` |
 | F11 | **Patrón "unattended forms"** (11/11 forms de G1 asignan bindings en `Form_Open` con `Me.X.Caption`/`Me.X = value` — patrón sistémico, sin `Me.X.RowSource` formal) | Todos los 11 forms de G1 |
 
-#### G2 — Auditoría workflow (~6 features)
+#### G2 — Auditoría workflow (6 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -63,7 +75,7 @@
 | F16 | **Listado de NCs de auditoría** (entry point al workflow NC-Aud) | `Form_FormNCAuditoria` |
 | F17 | **Gestión de NCs de auditoría** (alta/edición/eliminación batch) | `Form_FormNCAuditoriaGestion` |
 
-#### G3 — NC de Auditoría workflow (~13 features)
+#### G3 — NC de Auditoría workflow (13 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -81,7 +93,7 @@
 | F29 | **Seguimiento NC (subform)** (lista de NCs en seguimiento con estado) | `Form_FormNCAuditoriaSeguimientoNC` |
 | F30 | **Seguimiento Tareas (subform)** (lista de tareas derivadas con responsable + fechas) | `Form_FormNCAuditoriaSeguimientoTareas` |
 
-#### G4 — NC de Proyecto workflow (~16 features)
+#### G4 — NC de Proyecto workflow (16 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -102,7 +114,7 @@
 | F45 | **Seguimiento NC (subform) NC-Proyecto** | `Form_FormNCProyectoSeguimientoNC` |
 | F46 | **Seguimiento Tareas (subform) NC-Proyecto** | `Form_FormNCProyectoSeguimientoTareas` |
 
-#### G5 — Catálogos tipología NC Proyecto (~2 features)
+#### G5 — Catálogos tipología NC Proyecto (2 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -137,7 +149,7 @@
 | **Frontend** | `NoConformidades.accdb` (66.96 MB — el más grande del set) |
 | **Backend** | `NoConformidades_Datos.accdb` (32.18 MB) |
 | **Forms** | **48** (.form.txt + .cls par 1:1) — **48/48 walkthroughed** |
-| **Walkthroughs JSON** | `walkthrough-G1.json` (39463 bytes), `walkthrough-G2.json` (19846 bytes), `walkthrough-G3.json` (31657 bytes), `walkthrough-G4.json` (34681 bytes), `walkthrough-G5.json` (4179 bytes) |
+| **Walkthroughs JSON** | [`walkthrough-G1.json`](walkthrough-G1.json) (39463 bytes), [`walkthrough-G2.json`](walkthrough-G2.json) (19846 bytes), [`walkthrough-G3.json`](walkthrough-G3.json) (31657 bytes), [`walkthrough-G4.json`](walkthrough-G4.json) (34681 bytes), [`walkthrough-G5.json`](walkthrough-G5.json) (4179 bytes) |
 | **Total controls** | ~870 (415 en G4 + 199 en G3 + ~256 estimados en G1/G2/G5) |
 | **Total source bytes** | ~3.3 MB de .form.txt + .cls exportados |
 | **Largest form** | `Form_FormNCProyectoGestion` (384.050 bytes, 61 controles, 42 eventos, 10 bindings declarados) |
@@ -150,9 +162,11 @@
 
 | Bug | Issue | Tool afectada | Workaround v3 |
 |---|---|---|---|
-| `analyze_form_layout` RESULT_CONTRACT_VIOLATION opaco | DysTelefonica/dysflow#1407 (round-2) | layout lint | Reemplazado por `form_list_controls` + **lint manual** (overlap, alignment ±50 twips, missing geometry, tab-order mismatch) |
-| `map_form_behavior autoFetchCodeGraph` --json rechazado por CLI codegraph-vba fork | DysTelefonica/dysflow#1408 (round-3) | codegraph enrichment | `codegraph_explore` directo via MCP codegraph-vba; `codegraphEvidence[]` esperado vacío |
-| `verify_form_bindings` RESULT_CONTRACT_VIOLATION | round-4 (pendiente) | binding validation | Tool skipped con `status:"skipped_tool_broken"`; binding validation queda para iteración post-fix |
+| `analyze_form_layout` RESULT_CONTRACT_VIOLATION opaco | [#1407](https://github.com/DysTelefonica/dysflow/issues/1407) (round-2) | layout lint | Reemplazado por `form_list_controls` + **lint manual** (overlap, alignment ±50 twips, missing geometry, tab-order mismatch) |
+| `map_form_behavior autoFetchCodeGraph` --json rechazado por CLI codegraph-vba fork | [#1408](https://github.com/DysTelefonica/dysflow/issues/1408) (round-3) | codegraph enrichment | `codegraph_explore` directo via MCP codegraph-vba; `codegraphEvidence[]` esperado vacío |
+| `verify_form_bindings` RESULT_CONTRACT_VIOLATION | [#1412](https://github.com/DysTelefonica/dysflow/issues/1412) (round-4) | binding validation | Tool skipped con `status:"skipped_tool_broken"`; binding validation queda para iteración post-fix |
+
+> **Nota**: `analyze_form_layout` fue **resuelto en dysflow 2.36.2** (post-walkthrough de NC). Las épicas posteriores (Lanzaderas, Expedientes) usan **método v4** que aprovecha la fix.
 
 ### 2.3 Ambient conditions del walkthrough
 
@@ -202,65 +216,17 @@
 
 ## 3. Hallazgos críticos
 
-### H1 (D146 — METHODOLOGY) — Walkthrough requirió método v3 con 3 tools de dysflow degradadas/rotas
-
-**Síntoma**: el walkthrough planeado (4 tools en orden) no funciona out-of-the-box. `analyze_form_layout` falla con `RESULT_CONTRACT_VIOLATION` opaco (#1407). `map_form_behavior autoFetchCodeGraph:true` falla porque el adapter dysflow invoca `codegraph-vba.cmd explore --json` con flag `--json` que el CLI codegraph-vba fork rechaza (#1408). `verify_form_bindings` falla con `RESULT_CONTRACT_VIOLATION` (round-4 pendiente).
-
-**Acciones** (TK-NC-1, TK-NC-2, TK-NC-3 — issues ya filed):
-- ✅ Filed DysTelefonica/dysflow#1407 (round-2).
-- ✅ Filed DysTelefonica/dysflow#1408 (round-3).
-- ⏳ Round-4 (verify_form_bindings) pendiente de filear.
-- ✅ Método v3 implementado y aplicado a los 5 walkthroughs: `codegraph_explore` directo + `analyze_form_ui` + `form_list_controls` (reemplazo de analyze_form_layout) + **lint manual de geometry** (4 kinds) + `map_form_behavior` con `codegraphEvidence:[]` aceptado + `verify_form_bindings` skipped con `status:"skipped_tool_broken"`.
-
-### H2 (D147 — UNATTENDED PATTERN) — 21/48 forms son "unattended" por diseño
-
-**Síntoma**: 44% de los forms no declaran bindings en el `.form.txt` — los asignan en `Form_Open`/`Form_Load` del `.cls`. Patrón sistémico en G1 (11/11), parcial en G2 (1/6), 0 en G3 (los 6 con 0 bindings usan asignación imperativa `Me.X = value`, NO `Me.X.RowSource`), G4 (7/16 navigation hosts + detail subforms), G5 (2/2). 
-
-**Implicación**: la migración 1:1 a SPA debe preservar el patrón "atributos asignados en código al abrir el form". No es un anti-pattern — es diseño deliberado para forms que se configuran según el rol del usuario.
-
-**Acción** (TK-NC-4): documentar el patrón unattended como **decisión arquitectural** en backend (services que hidratan los componentes al mount).
-
-### H3 (D148 — TABINDEX ZERO) — TODOS los forms tienen ZERO TabIndex declarado
-
-**Síntoma**: confirmado explícitamente en G4 (16/16). Implícito en G1/G3/G5. Access usa default visual order (top→bottom, left→right). **Problema de accesibilidad WCAG 2.4.3 (focus order)**.
-
-**Acción** (TK-NC-5): setear TabIndex explícitamente en la migración web. Mantener el default visual en formularios simples; agregar TabIndex manual en NavigationControls y grids (Form_FormNCProyectoGestion con 42 eventos necesita orden explícito).
-
-### H4 (D149 — OVERLAP EN NAVIGATIONCONTROL HOSTS) — 8 OVERLAP en Form_FormNCAuditoriaSeguimiento
-
-**Síntoma**: el host NavigationControl con subforms (Form_FormNCAuditoriaSeguimiento, Form_FormNCProyectoSeguimiento) tiene subform regions que clip toolbar buttons. 8 OVERLAP findings (warning) — `ComandoActualizar`, `ControlDeNavegación0`, `FrmDetalle`, `cmdSalir` todos se solapan entre sí.
-
-**Acción** (TK-NC-6): en la migración web, los NavigationControls se convierten en **React Router nested routes** o tabs Material Design; el problema de overlap desaparece naturalmente.
-
-### H5 (D150 — OVERLAP SIBLING PATTERN EN AC/AR) — Form_FormNCAuditoriaAC y Form_FormNCAuditoriaAR con mismo bug
-
-**Síntoma**: los forms de AC y AR de NC-Auditoría tienen el mismo patrón — el campo principal (NoConformidad TextBox) se solapa con `cmdSalir`, `ComandoRegistrar`, `ComandoDocumentos`. Probable layout regression donde el TextBox es demasiado ancho.
-
-**Acción** (TK-NC-7): corregir en la migración — el patrón web (auto-layout flex/grid) elimina el problema.
-
-### H6 (D151 — MISSING_GEOMETRY SISTÉMICO) — lblTitulo en los 11 forms de G1 sin posición
-
-**Síntoma**: `lblTitulo` (control Label del header) tiene `left=null` y `top=null` en los 11 forms del grupo Menú. Patrón sistémico — probablemente porque Access los posiciona automáticamente al renderizar el FormHeader. Sin embargo, el sub-agente lo marca como MISSING_GEOMETRY (warning).
-
-**Acción** (TK-NC-8): en web, los títulos siempre tienen posición explícita (CSS). El walkthrough confirma que esto se va a corregir naturalmente en la migración.
-
-### H7 (D152 — CODEGRAPH-VBA INDEX FROZEN) — Auto-sync deshabilitado por file lock
-
-**Síntoma**: `codegraph_explore` retorna banner `⚠️ CodeGraph auto-sync is DISABLED` en TODAS las llamadas. El lock está held por otro writer (probablemente el propio agente que está corriendo o un sync en background).
-
-**Acción** (TK-NC-9): post-walkthrough, correr `codegraph sync` una vez para refrescar el índice. Documentar en skill `codegraph-usage` que el stale banner es informativo, no failure.
-
-### H8 (D153 — CATÁLOGO COMPARTIDO) — Form_FormMotivosNoRequiereControlEficacia es cross-domain
-
-**Síntoma**: este catálogo de motivos "no requiere CE" es llamado por **ambos** NC-Aud (`Form_FormNCAuditoriaGeneral`) y NC-Proy (`Form_FormNCProyectoGeneral`). Cross-domain por diseño.
-
-**Acción** (TK-NC-10): en web, este catálogo se convierte en un **shared component** (React/Vue) o endpoint `/motivos-no-ce` consumido por ambos dominios. Backend: tabla única en esquema `no_conformidades`, expuesta vía API a ambos workflows.
-
-### H9 (D154 — POSSIBLE ZOMBIE TABLE) — TipologiaNCProyectos table not found
-
-**Síntoma**: `query_execute` para `TipologiaNCProyectos` (en `Form_FormTipologiaNCProyecto`) retorna `table/query not found`. Posible ZOMBIE table — el form referencia una tabla que no existe en el backend.
-
-**Acción** (TK-NC-11): audit de uso completo de `TipologiaNCProyectos` en `data/staging/no-conformidades/src/classes/` para confirmar si es zombie o si el nombre correcto es `TbTiposNCProyectos` (que SÍ aparece en G4).
+| # | ID | Título | Severidad | Forms afectados | Detalle |
+|---|---|---|---|---|---|
+| H1 | D146 | **Methodology v3** — walkthrough con 3 tools de dysflow degradadas/rotas | — | Walkthrough | (sección 2.2) |
+| H2 | D147 | **Unattended pattern** — 21/48 forms son "unattended" por diseño (44%) | medium | G1 (11/11) + G2 (1/6) + G4 (7/16) + G5 (2/2) | Asignan bindings en `Form_Open`/`Form_Load` del `.cls`. Patrón sistémico, no anti-pattern. Documentar como decisión arquitectural en backend services. |
+| H3 | D148 | **TabIndex ZERO en todos los forms** | medium | Todos los 48 forms | Confirmado explícitamente en G4 (16/16). Implicación WCAG 2.4.3 — setear TabIndex explícitamente en la migración web. |
+| H4 | D149 | **OVERLAP en NavigationControl hosts** — 8 OVERLAP en `Form_FormNCAuditoriaSeguimiento` | medium | `Form_FormNCAuditoriaSeguimiento`, `Form_FormNCProyectoSeguimiento` | Subform regions clip toolbar buttons. En web: React Router nested routes / Material UI Tabs — el bug desaparece. |
+| H5 | D150 | **OVERLAP sibling pattern en AC/AR** | low | `Form_FormNCAuditoriaAC`, `Form_FormNCAuditoriaAR` | Mismo patrón — campo principal solapa con `cmdSalir`/`ComandoRegistrar`/`ComandoDocumentos`. Layout regression. Auto-layout flex/grid en web elimina. |
+| H6 | D151 | **MISSING_GEOMETRY sistémico** — lblTitulo en los 11 forms de G1 sin posición | low | G1 (11 forms) | `lblTitulo` con `left=null` y `top=null`. Probablemente Access posiciona automáticamente al renderizar el FormHeader. En web: posición explícita (CSS). |
+| H7 | D152 | **codegraph-vba index FROZEN** | low | Walkthrough audit | Auto-sync DISABLED por file lock. Post-deploy: `codegraph sync` (TK-NC-9). |
+| H8 | D153 | **Caché `TbCacheNCProyecto` con kill switch** | medium | Cache subsystem | Reemplazar por Redis con TTL configurable + feature flag server-side. Pre-requisito para tests (D161). |
+| H9 | D154 | **Patrón "unattended forms" + ZERO TabIndex** | high | 21/48 + 48/48 | Combinación de H2 + H3 — el patrón unattended asigna bindings EN CÓDIGO, lo que significa que la UI se "configura" en runtime, pero no hay TabIndex para keyboard nav. Migración web: setear bindings declarativos Y TabIndex explícito. |
 
 ---
 
@@ -270,22 +236,20 @@
 
 | Pantalla | Decisión | Justificación |
 |---|---|---|
-| `Form_Form0BDOpciones` (menú principal) | **Preservar** jerarquía dual NC-Proy/Aud | El usuario navega entre dominios — el menú dual es estructura cognitiva aprendida |
-| `Form_Form0BDOpcionesParteProyectos` (timer-driven indicadores) | **Mejorar**: server-side polling + cache | El `Form_Timer` con `PintarIndicadores` indica refresh periódico; en web usar SSE/WebSocket |
-| `Form_FormIndicadores` | **Mejorar**: charts interactivos | Funcionalidad ya existe, mejorar UX |
+| `Form_Form0BDOpciones` (menú principal) | **Preservar** estructura jerárquica dual | Múltiples roles (Calidad, Técnico) requieren entry points diferenciados |
+| `Form_Form0BDOpcionesTecnicos` | **Preservar** sub-menú con indicadores | Tareas del técnico son densas |
+| `Form_FormIndicadores` | **Mejorar**: server-side polling + cache | Timer-driven refresh, no polling invasivo en web |
 | `Form_FormCorreo` (modal) | **Preservar** flujo | Trivial: composer web |
-| `Form_FormMotivosNoRequiereControlEficacia` | **Nuevo paradigma**: shared component/API | D153 cross-domain — convertir en endpoint compartido |
+| `Form_FormMotivosNoRequiereControlEficacia` | **Nuevo paradigma**: shared component/API | D86 cross-domain — convertir en endpoint compartido |
 | `Form_formRiesgosSeleccion` | **Preservar** flujo, **Mejorar**: API REST federada | D132 — handshake con Gestion_Riesgos |
 | `Form_FormExpedientesBusqueda` | **Preservar** flujo, **Mejorar**: OAuth/SSO | D132 — handshake con Expedientes |
-| `Form_FormAuditoriaSeleccion` (unattended) | **Mejorar**: hidratar en backend | D147 — patrón unattended preservado en backend services |
-| `Form_FormAuditoria` (NavigationControl) | **Mejorar**: nested routes | Tabs web eliminan overlap (D149) |
-| `Form_FormNCAuditoriaGeneral` (alta/edición) | **Preservar** estructura 34 controles | Form denso pero funcional — preservar jerarquía visual |
-| `Form_FormNCAuditoriaAC` / `Form_FormNCAuditoriaAR` | **Mejorar**: flex layout | D150 — fix overlap AC/AR sibling pattern |
-| `Form_FormNCAuditoriaSeguimiento` (NavigationControl host) | **Nuevo paradigma**: nested routes | D149 — el subform clipping toolbar es bug de layout Access, no del modelo |
-| `Form_FormNCProyecto` (navigation host) | **Nuevo paradigma**: layout shell + outlet | NavigationControl no portable; usar shell con outlet pattern |
-| `Form_FormNCProyectoGestion` (grid 61 controles, 42 eventos) | **Mejorar**: server-side pagination + chips filtro | El grid carga TODO; en web paginar |
-| `Form_FormNCProyectoGeneral*` | **Preservar** estructura + **Mejorar** layout | Mismo patrón que NCAudGeneral — preservar + fix overlap |
-| `Form_FormNCProyectoTipologiaGestion` (unattended) | **Mejorar**: hidratar en backend | D147 |
+| `Form_FormAuditoriaSeleccion` | **Preservar** ComboBox EstablecerCombos en backend | D158 unattended estricto preservado |
+| `Form_FormAuditoria` (NavigationControl) | **Mejorar**: nested routes | Tabs Material Design |
+| `Form_FormNCAuditoria*` (13 forms workflow) | **Preservar** workflow de visado dual | Crítico, no revolucionar |
+| `Form_FormNCAuditoriaSeguimiento` (host) | **Nuevo paradigma**: nested routes | D149 NavigationControl eliminado |
+| `Form_FormNCProyecto*` (16 forms workflow) | **Preservar** workflow + **Mejorar** server-side pagination | F32 (61 controles) requiere paginación |
+| `Form_FormNCProyectoSeguimiento` (host) | **Nuevo paradigma**: nested routes | D149 |
+| `Form_FormNCProyectoTipologiaGestion` | **Preservar** CRUD simple | Trivial |
 
 ### 4.2 Arquitectura: hexagonal ports
 
@@ -293,34 +257,36 @@
 |---|---|
 | `getdb()` (DAO.Database) | Puerto de persistencia PostgreSQL (D14) + HTTP client |
 | `Constructor.getXxx()` (factory con cache lazy) | Inyección de dependencias + repository pattern |
-| `m_ObjEntorno` (singleton global con ColXxx dictionaries) | Service registry / dependency injection |
-| `m_ObjNCAuditoriaActiva` / `m_ObjNCProyectoActiva` (singleton in scope) | Request-scoped services / Context API |
-| Unattended form (21/48) — bindings asignados en `Form_Open` con `Me.X = value` | Backend service hidrata componentes al mount (D147 — preservar el patrón) |
-| NavigationControl host (Form_FormNCAuditoriaSeguimiento, Form_FormNCProyecto) | React Router nested routes / Material UI Tabs |
-| `Form_Timer` en `Form_Form0BDOpcionesParteProyectos` (refresh indicadores) | SSE / WebSocket server-push |
-| `Form_FormExpedientesBusqueda` HTTP/JSON handshake | API REST federada + OAuth 2.0 (D132) |
-| `Form_formRiesgosSeleccion` FK lógica a Gestion_Riesgos | API REST + cross-module FK en PostgreSQL |
-| `WithEvents + RaiseEvent` | Pub/sub tipado, state machine |
-| `TempVars!Variable` IPC | Promise/callback en modal context |
+| `m_ObjEntorno` (singleton global) | Service registry / dependency injection |
+| `m_ObjUsuarioConectado` / `m_ObjUsuarioConectadoLogin` (singleton in scope) | Request-scoped services / Context API |
+| `m_ObjNCAuditoriaActivo` / `m_ObjNCProyectoActivo` (singleton in scope) | Request-scoped services / Context API |
+| `m_TestingMode` + `m_BackendSandboxURL` (caché testing) | Adapter de testing equivalente con cache safety |
+| `NCProyectoOperaciones.Listar` (operación + cache) | Service `listar_nc_proyecto()` con invalidación por `updated_at` token |
+| `CacheNCProyecto` (cache local + invalidación por `CacheValida`) | Redis o server-side cache con TTL configurable |
+| `Anexo.TipoAnexo` enum (polimórfico) | Tabla única con CHECK constraint o 6 tablas + vista UNION |
+| `Form_Timer` en `Form_Form0BDOpcionesParteProyectos` (refresh indicadores) | SSE/WebSocket server-push |
 | `fso.FileExists + ShellExecute('open', url)` | window.open(url) + blob URL |
 | `Application.FileDialog(3)` | `<input type="file">` + signed URL upload |
-| `TbCacheNCProyecto` (lookup by `IDNoConformidad` con `CacheValida`/`HitsConsultas`/`TamanioBytes`) | Redis o similar server-side cache |
-| `Test_KillSwitch.bas → BuildJsonFail/BuildJsonOk` (activar/desactivar caché) | Feature flag server-side (LaunchDarkly / Unleash) |
-| `TbCacheNCProyecto` con `CacheValida`/`HitsConsultas`/`TamanioBytes` | Redis con TTL + métricas |
+| `WithEvents` + `RaiseEvent` | Pub/sub tipado, state machine |
+| `TempVars!Variable` IPC | Promise/callback en modal context |
+| `NavigationControl` host + subforms | React Router nested routes / Material UI Tabs |
+| `Tag='DATO'` reflection | Model binding declarativo (D123) |
+| Tabla `tbHistorialRechazos` (corrección obs #24086) | Mantener como tabla de NEGOCIO con CRUD |
 
 ### 4.3 Decisiones de seguridad
 
-- **Cross-app con Gestion_Riesgos y Expedientes**: API REST federada con OAuth 2.0 / SSO. Sin mecanismo actual de auth documentado — oportunidad para diseño limpio.
-- **Concurrencia**: optimistic locking con `updated_at` token en cada edición.
-- **Unattended forms en backend**: el service que hidrata los controles debe validar que el usuario tiene permisos antes de poblar datos sensibles (ej. `Form_FormNCAuditoriaGeneral` con datos de auditoría confidencial).
+- **Cross-app con Gestion_Riesgos** (vía `TbRiesgosNC.IDNC`): API REST federada con OAuth 2.0 / SSO. Sin mecanismo actual de auth documentado.
+- **Cross-app con Expedientes** (vía `Form_FormExpedientesBusqueda`): API REST federada con OAuth 2.0 / SSO.
+- **State coupling via globals**: el refactor a request-scoped services debe validar que el state no leakea entre requests.
+- **Permisos por rol**: NC-Proyecto vs NC-Auditoría tienen su propio modelo de capacidades. Consolidar en backend `PermissionService.can_edit(nc_type, user)`.
 
 ### 4.4 Decisiones de datos
 
 - **44 capabilities** distribuidas en 14 familias (CAP-NCP-LC, CAP-NCP-AF, CAP-NCA-LC, CAP-NCA-AF, CAP-CE, CAP-IND, CAP-CAT, CAP-DGE, CAP-EXP, CAP-CFG, CAP-UPN, CAP-XCUT, CAP-COM, CAP-REL).
-- **Tabla compartida `TbMotivosNoRequiereCE`**: backend único en esquema `no_conformidades`, consumido por ambos workflows NC-Aud y NC-Proy (D153).
+- **Tabla compartida `TbMotivosNoRequiereCE`**: backend único en esquema `no_conformidades`, consumido por ambos workflows NC-Aud y NC-Proy (D86).
 - **Caché**: `TbCacheNCProyecto` migra a Redis con TTL y métricas de hit/miss.
 - **Anexos**: filesystem → S3-compatible con versioning + virus scan.
-- **`TbTiposNCProyectos`**: confirmada como tabla activa (referenciada en G4 unattended forms). El `TipologiaNCProyectos` que falla en `query_execute` (G5) probablemente es **nombre mal escrito en el código** — TK-NC-11 audit.
+- **`TbTiposNCProyectos`**: confirmada como tabla activa (referenciada en G4 unattended forms). El `TipologiaNCProyectos` que falla en `query_execute` (G5) probablemente es **nombre mal escrito en código** — TK-NC-11 audit.
 
 ---
 
@@ -330,35 +296,32 @@
 
 - [ ] **CA-F1**: Las 48 features F1-F48 tienen paridad funcional con la versión Access.
 - [ ] **CA-F2**: Los 21 forms "unattended" (D147) hidratan sus bindings via backend service al mount, preservando el patrón de asignación imperativa.
-- [ ] **CA-F3**: El catálogo compartido `Form_FormMotivosNoRequiereControlEficacia` (D153) se expone via endpoint único `/motivos-no-ce` consumido por ambos workflows.
-- [ ] **CA-F4**: Los NavigationControl hosts (`Form_FormNCAuditoriaSeguimiento`, `Form_FormNCProyecto`, `Form_FormNCProyectoSeguimiento`) se migran a nested routes, eliminando el bug de overlap (D149).
-- [ ] **CA-F5**: Los OVERLAP en AC/AR forms (D150) se eliminan con flex/grid layout en web.
-- [ ] **CA-F6**: La integración cross-app con Gestion_Riesgos (vía `Form_formRiesgosSeleccion`) se migra a API REST federada con OAuth.
-- [ ] **CA-F7**: La integración cross-app con Expedientes (vía `Form_FormExpedientesBusqueda`) se migra a API REST federada con OAuth.
-- [ ] **CA-F8**: El cross-app catalog `Form_FormMotivosNoRequiereControlEficacia` (D153) se elimina como form duplicado y se consume via API.
-- [ ] **CA-F9**: `TbCacheNCProyecto` migra a Redis con TTL configurable y métricas de hit/miss (reemplaza kill switch legacy).
-- [ ] **CA-F10**: Las notificaciones / refresh de indicadores (D144 timer-driven) migran a SSE/WebSocket server-push.
+- [ ] **CA-F3**: El catálogo compartido `Form_FormMotivosNoRequiereControlEficacia` (D86) se expone via endpoint único `/motivos-no-ce` consumido por ambos workflows.
+- [ ] **CA-F4**: Los NavigationControl hosts (D149) se migran a nested routes, eliminando el bug de overlap.
+- [ ] **CA-F5**: Los OVERLAP en AC/AR sibling forms (D150) se eliminan con flex/grid layout.
+- [ ] **CA-F6**: Las notificaciones se migran a SSE/WebSocket server-push (no polling).
+- [ ] **CA-F7**: La API de Expedientes se migra a REST federada con OAuth (D132).
+- [ ] **CA-F8**: `Form_Formulario1` se elimina o completa.
+- [ ] **CA-F9**: NavigationControl hosts migran a React Router nested routes.
+- [ ] **CA-F10**: `Form_FormNCProyectoGestion` migra con server-side pagination (F32 — 61 controles).
+- [ ] **CA-F11**: Marco17 OptionGroup se reemplaza por radio button group nativo.
 
 ### 5.2 Seguridad
 
-- [ ] **CA-S1**: Cross-app APIs con OAuth 2.0 + scopes granulares (Gestion_Riesgos + Expedientes).
-- [ ] **CA-S2**: `updated_at` token en cada edición para optimistic concurrency en NC-Aud y NC-Proy.
-- [ ] **CA-S3**: Backend service que hidrata unattended forms valida permisos del usuario antes de poblar datos sensibles.
-- [ ] **CA-S4**: Las RN de seguridad documentadas en `legacy.rules.ts` cubren los 44 capabilities.
+- [ ] **CA-S1**: Cross-app API con HPS y Gestion_Riesgos vía OAuth 2.0 + scopes granulares.
+- [ ] **CA-S2**: Request-scoped services validan state no-leak entre requests.
+- [ ] **CA-S3**: Permisos por rol consolidados en `PermissionService`.
 
 ### 5.3 Performance
 
-- [ ] **CA-P1**: `Form_FormNCProyectoGestion` (61 controles, 42 eventos, 10 combos de filtro) con server-side pagination y chips para filtros.
-- [ ] **CA-P2**: `Form_FormIndicadores` con charts interactivos, carga sub-segundos incluso con 5 años de datos.
-- [ ] **CA-P3**: `TbCacheNCProyecto` reemplazado por Redis con TTL — hit rate > 90% en producción.
-- [ ] **CA-P4**: `codegraph-vba sync` se ejecuta post-deploy para refrescar el índice (mitiga H7 file lock contention).
+- [ ] **CA-P1**: `Form_FormNCProyectoGestion` con server-side pagination (61 controles reducidos).
+- [ ] **CA-P2**: `Form_FormIndicadores` con charts interactivos, carga sub-segundos.
 
 ### 5.4 Operacional
 
-- [ ] **CA-O1**: `Form_Form0BDOpcionesParteProyectos` timer-driven indicators migran a SSE/WebSocket.
-- [ ] **CA-O2**: `TbNCDocumentosAux` (anexos) migra a S3-compatible con versioning + virus scan.
-- [ ] **CA-O3**: Audit de `TipologiaNCProyectos` (H9 zombie table sospecha) completado — confirmar si es zombie o nombre mal escrito.
-- [ ] **CA-O4**: 3 bugs de dysflow tracked (issues #1407, #1408, round-4) con resolución o workaround documentado.
+- [ ] **CA-O1**: 815+ geometry findings se documentan o corrigen durante la migración.
+- [ ] **CA-O2**: Tests E2E para los 48 forms (pre-requisito: refactor a DI).
+- [ ] **CA-O3**: Cobertura de tests > 70% en módulo no-conformidades.
 
 ---
 
@@ -366,29 +329,30 @@
 
 ### 6.1 Antes de empezar
 
-- [ ] **PO-1**: Confirmar el contrato de integración con **Gestion_Riesgos** (autenticación, endpoint, schema) — `Form_formRiesgosSeleccion` y `TbRiesgosNC.IDNC`.
-- [ ] **PO-2**: Confirmar el contrato de integración con **Expedientes** — `Form_FormExpedientesBusqueda` HTTP/JSON handshake.
-- [ ] **PO-3**: Audit de `TipologiaNCProyectos` (H9) — confirmar si es zombie o nombre mal escrito en código.
-- [ ] **PO-4**: Esperar resolución de los 3 bugs de dysflow (round-2 #1407, round-3 #1408, round-4 pendiente) o aceptar método v3 como producción.
-- [ ] **PO-5**: Decidir estrategia para los 21 forms "unattended" (D147) — preservar el patrón en backend services vs. forzar bindings declarativos en web.
+- [ ] **PO-1**: Confirmar el contrato de integración con **Gestion_Riesgos** (autenticación, endpoint, schema). Sin este contrato, F7 (búsqueda) y F18/F33 (NC-Proyecto) no se pueden migrar.
+- [ ] **PO-2**: Confirmar el contrato de integración con **Expedientes** (autenticación, endpoint, schema).
+- [ ] **PO-3**: Decidir `Form_Formulario1` (WIP) — completar o eliminar.
+- [ ] **PO-4**: Esperar resolución de bug dysflow #1408 o aceptar método v3 como producción.
+- [ ] **PO-5**: Esperar resolución de bug dysflow #1412 o aceptar skipped como workaround.
+- [ ] **PO-6**: Pull de binarios `NoConformidades.accdb` + `NoConformidades_Datos.accdb` desde R2.
 
 ### 6.2 Durante el desarrollo
 
-- [ ] **PO-6**: Implementar backend service para hidratar unattended forms (preservar patrón D147).
-- [ ] **PO-7**: Implementar endpoint compartido `/motivos-no-ce` para consumo cross-domain (D153).
-- [ ] **PO-8**: Reemplazar NavigationControl hosts por nested routes / Material Tabs (D149).
-- [ ] **PO-9**: Fix layout overlap en AC/AR sibling forms (D150) — flex/grid layout.
-- [ ] **PO-10**: Setear TabIndex explícito en formularios migrados (D148 WCAG).
-- [ ] **PO-11**: Implementar Redis para reemplazar `TbCacheNCProyecto` con TTL + métricas.
-- [ ] **PO-12**: Los 92+ geometry findings (OVERLAP, MISSING_GEOMETRY) deben corregirse o documentarse en la migración.
+- [ ] **PO-7**: Implementar backend service para hidratar unattended forms (preservar patrón D147).
+- [ ] **PO-8**: Implementar endpoint compartido `/motivos-no-ce` para consumo cross-domain (D86).
+- [ ] **PO-9**: Reemplazar NavigationControl hosts por nested routes (D149).
+- [ ] **PO-10**: Corregir los 6 OVERLAP en AC/AR sibling forms (D150).
+- [ ] **PO-11**: Audit `TipologiaNCProyectos` — ¿es zombie table o nombre mal escrito en código? (D154).
+- [ ] **PO-12**: Reemplazar `m_ObjNCAuditoriaActivo` / `m_ObjNCProyectoActivo` global state por request-scoped services.
+- [ ] **PO-13**: `Form_FormIndicadores` migrar a SSE/WebSocket.
 
 ### 6.3 En el go-live
 
-- [ ] **PO-13**: Smoke test E2E: alta NC de Proyecto → AC → AR → Control Eficacia → Replanificación → Seguimiento.
-- [ ] **PO-14**: Smoke test E2E: alta NC de Auditoría → idem workflow.
-- [ ] **PO-15**: Verificar las RN documentadas con datos de producción antes de switchover.
-- [ ] **PO-16**: Backfill de `TbCacheNCProyecto` desde Redis (si hay datos legacy en tabla).
-- [ ] **PO-17**: Plan de deprecation de los 7 archivos `Test_*.bas` legacy y forms con bindings en código que se reescriben en backend.
+- [ ] **PO-14**: Smoke test E2E: alta NC de Proyecto → AC → AR → Control Eficacia → Replanificación → Seguimiento.
+- [ ] **PO-15**: Smoke test E2E: alta NC de Auditoría → idem workflow.
+- [ ] **PO-16**: Verificar las RN documentadas con datos de producción antes de switchover.
+- [ ] **PO-17**: Backfill de `TbCacheNCProyecto` desde Redis (si hay datos legacy en tabla).
+- [ ] **PO-18**: Plan de deprecation de los 7 archivos `Test_*.bas` legacy y forms con bindings en código que se reescriben en backend.
 
 ---
 
@@ -398,9 +362,9 @@
 
 ### Methodology (D146)
 
-- **TK-NC-1**: [METHODOLOGY] Aplicar método v3 a futuras migraciones (5 tools + lint manual + skip graceful).
+- **TK-NC-1**: [METHODOLOGY] Aplicar método v3 a futuras migraciones (4 tools + lint manual + skip graceful).
 - **TK-NC-2**: [METHODOLOGY] Documentar el patrón "unattended forms" (D147) en skill `dysflow-usage` o `access-form-ui-builder`.
-- **TK-NC-3**: [TOOLING] Filed DysTelefonica/dysflow#1407 (analyze_form_layout) — seguir fix.
+- **TK-NC-3**: [TOOLING] Filed DysTelefonica/dysflow#1407 (analyze_form_layout) — seguir fix. **RESUELTO en 2.36.2**.
 
 ### Pattern (D147, D148, D153)
 
@@ -409,96 +373,87 @@
 - **TK-NC-6**: [LAYOUT] Reemplazar NavigationControl hosts por nested routes (D149).
 - **TK-NC-7**: [LAYOUT] Fix overlap en AC/AR sibling forms (D150).
 - **TK-NC-8**: [LAYOUT] Corregir MISSING_GEOMETRY sistémico (lblTitulo, lblEstado) en migración (D151).
-- **TK-NC-10**: [INTEGRATION] Endpoint compartido `/motivos-no-ce` (D153).
+- **TK-NC-9**: [INFRA] `codegraph sync` post-deploy para refrescar índice (D152).
 
 ### Forms y migración
 
-- **TK-NC-11**: [AUDIT] Resolver sospecha zombie table `TipologiaNCProyectos` (D154).
-- **TK-NC-12**: [MIGRATION] Migrar 21 unattended forms preservando el patrón (D147).
-- **TK-NC-13**: [MIGRATION] Migrar los 4 NavigationControl hosts a nested routes (D149).
-- **TK-NC-14**: [MIGRATION] Consolidar `Form_FormARAuditoriaDocumentos` + `Form_FormARProyectoDocumentos` en componente compartido (sibling pattern detectado en G1).
-- **TK-NC-15**: [MIGRATION] Migrar 48 classes de dominio a services HTTP manteniendo firmas.
-- **TK-NC-16**: [MIGRATION] Reemplazar `TbCacheNCProyecto` por Redis con TTL configurable.
-- **TK-NC-17**: [MIGRATION] Reemplazar `Test_KillSwitch.bas` por feature flag server-side.
+- **TK-NC-10**: [MIGRATION] Migrar 48 classes de dominio a services HTTP manteniendo firmas.
+- **TK-NC-11**: [MIGRATION] Migrar los 16 forms de G4 a componentes con estado declarativo.
+- **TK-NC-12**: [MIGRATION] Migrar `TbCacheNCProyecto` por Redis con TTL configurable.
+- **TK-NC-13**: [MIGRATION] Reemplazar `Test_KillSwitch.bas` por feature flag server-side.
 
 ### Integración
 
-- **TK-NC-18**: [INTEGRATION] API REST federada con Gestion_Riesgos (D132) para `Form_formRiesgosSeleccion` y `TbRiesgosNC.IDNC`.
-- **TK-NC-19**: [INTEGRATION] API REST federada con Expedientes (D132) para `Form_FormExpedientesBusqueda`.
-- **TK-NC-20**: [INTEGRATION] API REST federada con Brass (D86) si comparten `Form_FormMotivosNoRequiereControlEficacia`.
-
-### Performance y operación
-
-- **TK-NC-21**: [PERFORMANCE] Server-side pagination para `Form_FormNCProyectoGestion` (61 controles).
-- **TK-NC-22**: [PERFORMANCE] Charts interactivos para `Form_FormIndicadores`.
-- **TK-NC-23**: [OPS] `codegraph sync` post-deploy para refrescar índice (H7).
-- **TK-NC-24**: [OPS] SSE/WebSocket para refresh de indicadores (timer-driven legacy).
+- **TK-NC-14**: [INTEGRATION] API REST federada con Gestion_Riesgos (D132) para `TbRiesgosNC.IDNC` y `Form_formRiesgosSeleccion`.
+- **TK-NC-15**: [INTEGRATION] API REST federada con Expedientes (D132) para `Form_FormExpedientesBusqueda`.
+- **TK-NC-16**: [INTEGRATION] API REST federada con HPS (D86) para `Form_FormMotivosNoRequiereControlEficacia`.
 
 ### Testing y validación
 
-- **TK-NC-25**: [TEST] Tests E2E para workflow completo NC de Proyecto (Alta → AC → AR → CE → Replanif → Seguimiento).
-- **TK-NC-26**: [TEST] Tests E2E para workflow completo NC de Auditoría.
-- **TK-NC-27**: [TEST] Tests para los 21 unattended forms (validar hidratación backend).
-- **TK-NC-28**: [TEST] Tests de regresión para los 3 bugs de dysflow (round-2, round-3, round-4).
+- **TK-NC-17**: [TESTING] Refactor de globals a request-scoped services (D161) — pre-requisito para tests.
+- **TK-NC-18**: [TESTING] Cobertura de tests > 70% en módulo no-conformidades.
+- **TK-NC-19**: [TESTING] E2E test del flujo NC de Proyecto (F33 → F35 → F36 → F37 → F43 → F44).
+- **TK-NC-20**: [TESTING] E2E test del flujo NC de Auditoría.
+- **TK-NC-21**: [TESTING] Tests para los 21 forms unattended (validar hidratación backend).
+- **TK-NC-22**: [TESTING] Tests de regresión para los 6 bugs de geometry críticos.
 
-### Datos y migración
+### Datos y operación
 
-- **TK-NC-29**: [MIGRATION] Backfill de datos desde `TbCacheNCProyecto` legacy a Redis.
-- **TK-NC-30**: [MIGRATION] Backfill de anexos desde filesystem a S3-compatible.
-- **TK-NC-31**: [MIGRATION] Expand and Contract para las 13 tablas referenciadas en G1 + 9 en G4 + cross-app.
-- **TK-NC-32**: [MIGRATION] Reemplazar IDs anti-patrón Access (sequences `TbID*`) por IDENTITY/SERIAL.
+- **TK-NC-23**: [DATA] Backfill de datos desde `TbCacheNCProyecto` legacy a Redis.
+- **TK-NC-24**: [DATA] Backfill de anexos desde filesystem a S3-compatible.
+- **TK-NC-25**: [DATA] Expand and Contract para las 13 tablas referenciadas en G1 + 9 en G4 + cross-app.
+- **TK-NC-26**: [DATA] Reemplazar IDs anti-patrón Access (sequences `TbID*`) por IDENTITY/SERIAL.
+- **TK-NC-27**: [DATA] Audit `TipologiaNCProyectos` (D154) — ¿zombie table o nombre mal escrito en código?
+- **TK-NC-28**: [DATA] Renombrar tablas `EJERCITO`/`LUGAREJECUCION`/`USUARIO` → snake_case (D174 cross-cutting).
+- **TK-NC-29**: [SECURITY] Refactor de `m_ObjNCAuditoriaActivo` / `m_ObjNCProyectoActivo` global state a request-scoped services.
+- **TK-NC-30**: [INTEGRATION] Implementar cache invalidation strategy para Redis (reemplazo de `TbCacheNCProyecto`).
+- **TK-NC-31**: [INTEGRATION] Implementar kill switch equivalente en feature flag server-side (reemplazo de `Test_KillSwitch.bas`).
+- **TK-NC-32**: [AUDIT] Validar manualmente que el patrón unattended (D147) NO está causando daño en producción.
 
 ---
+
+## Anexo · Decisiones referenciadas
+
+| Decisión | Aplicación a NoConformidades |
+|---|---|
+| D8 (hexagonal global) | Toda la migración |
+| D14 (esquema por módulo) | Módulo `no_conformidades` en PostgreSQL |
+| D16 (object storage S3-compatible) | Anexos (D147 — `TbNCDocumentosAux`) |
+| D27 (logs estructurados canónicos) | Reemplazar logs VBA |
+| D44-D46 (autorización + capabilities) | Roles Calidad/Técnico |
+| D66-D67 (stack) | Backend Python + HTMX |
+| D68 (monolito modular) | NoConformidades como módulo |
+| D82 (Expand and Contract) | Backward-compatible con backend legacy |
+| D86-D87 (cross-app con Lanzaderas) | Patrón compartido via `getdbLanzaderas()` |
+| D132 (XApp HTTP/JSON handshake) | Cross-app con HPS, Gestion_Riesgos, Expedientes |
+| D144 (timer-driven UX) | Splash con timer → skeleton web |
+| D174 (naming MAYUSCULAS cross-cutting) | `EJERCITO`/`LUGAREJECUCION`/`USUARIO` → snake_case |
+| **D146 (methodology v3)** | **Walkthrough con 3 tools degradadas/rotas aplicado** |
+| **D147 (unattended pattern)** | **21/48 forms unattended (44%) — preservar patrón en backend** |
+| **D148 (TabIndex ZERO)** | **Todos los forms sin TabIndex declarado — setear explícito en web (WCAG)** |
+| **D149 (NavigationControl overlap)** | **8 OVERLAP en `Form_FormNCAuditoriaSeguimiento` — nested routes** |
+| **D150 (AC/AR sibling overlap)** | **SAME pattern en AC y AR — flex/grid layout** |
+| **D151 (MISSING_GEOMETRY sistémico)** | **lblTitulo, lblEstado sin posición en G1 — fix natural en web** |
+| **D152 (codegraph-vba FROZEN)** | **Auto-sync DISABLED por file lock — `codegraph sync` post-deploy** |
+| **D153 (caché + kill switch)** | **Redis con TTL + feature flag server-side** |
+| **D154 (unattended + TabIndex)** | **Combinación de H2 + H3 — el patrón unattended asigna bindings EN CÓDIGO, lo que significa que la UI se "configura" en runtime, pero no hay TabIndex para keyboard nav** |
 
 ## Anexo · Tabla de fuentes
 
 | Fuente | Aporta |
 |---|---|
 | engram topic_key `no-conformidades/walkthrough-2026-08-06` | Consolidado de 5 walkthroughs paralelos G1..G5 |
-| `docs/03-aplicaciones/no-conformidades/walkthrough-G1.json` | 11 forms (Menú + cross-cutting) — método v3, 39463 bytes |
-| `docs/03-aplicaciones/no-conformidades/walkthrough-G2.json` | 6 forms (Auditoría workflow) — método v3, 19846 bytes |
-| `docs/03-aplicaciones/no-conformidades/walkthrough-G3.json` | 13 forms (NC de Auditoría workflow) — método v3, 31657 bytes |
-| `docs/03-aplicaciones/no-conformidades/walkthrough-G4.json` | 16 forms (NC de Proyecto workflow) — método v3, 34681 bytes |
-| `docs/03-aplicaciones/no-conformidades/walkthrough-G5.json` | 2 forms (Catálogos tipología) — método v3, 4179 bytes |
-| `docs/03-aplicaciones/no-conformidades/forms.md` | Árbol de navegación + call paths |
-| `docs/03-aplicaciones/no-conformidades/data-model.md` | Tablas y schema |
-| `docs/03-aplicaciones/no-conformidades/capabilities.md` | 14 familias de capabilities |
-| `docs/03-aplicaciones/no-conformidades/security-rules.md` | Reglas de seguridad (D89 `list_objects` diagnosticado) |
-| `docs/03-aplicaciones/no-conformidades/integrations-automation.md` | Integraciones cross-app |
-| `docs/03-aplicaciones/no-conformidades/migration-matrix.md` | Matriz de migración feature × capability |
-| `docs/03-aplicaciones/no-conformidades/README.md` | Overview del estudio |
-| `data/staging/no-conformidades/src/` (48 cls + 48 form .cls + 48 form.txt + 25 bas) | Source tree exportado |
-| `data/staging/no-conformidades/.codegraph-vba/` | Índice codegraph-vba (FROZEN al walkthrough) |
-| `data/staging/no-conformidades/docs/` | Documentación preexistente |
+| [`walkthrough-G1.json`](walkthrough-G1.json) | 11 forms (Menú + Cross-cutting) — método v3, 39463 bytes |
+| [`walkthrough-G2.json`](walkthrough-G2.json) | 6 forms (Auditoría workflow) — método v3, 19846 bytes |
+| [`walkthrough-G3.json`](walkthrough-G3.json) | 13 forms (NC de Auditoría workflow) — método v3, 31657 bytes |
+| [`walkthrough-G4.json`](walkthrough-G4.json) | 16 forms (NC de Proyecto workflow) — método v3, 34681 bytes — 5 critical findings |
+| [`walkthrough-G5.json`](walkthrough-G5.json) | 2 forms (Catálogos tipología) — método v3, 4179 bytes |
+| `data/staging/no-conformidades/src/forms/` (48 .form.txt + 48 .cls) | Source tree exportado |
+| `data/staging/no-conformidades/src/classes/` | Clases de dominio (48) |
+| `data/staging/no-conformidades/src/modules/` | Módulos (25) |
 | `C:\00repos\codigo\00_NO_CONFORMIDADES\staging` | Fuente READ-ONLY |
-
-## Anexo · Decisiones referenciadas (D5-D154)
-
-| Decisión | Aplicación a NoConformidades |
-|---|---|
-| D8 (hexagonal global) | Toda la migración |
-| D9-D10 (secret manager) | Acceso a `getdbLanzadera` (vía URL de Lanzadera) |
-| D14 (esquema por módulo) | Módulo `no_conformidades` en PostgreSQL |
-| D16 (object storage S3-compatible) | Anexos (D147 — `TbNCDocumentosAux`) |
-| D27 (logs estructurados) | Reemplazar `TbLogCambios` |
-| D44-D46 (autorización + capabilities) | Roles Calidad/Técnico |
-| D66-D67 (stack) | Backend Python + HTMX |
-| D68 (monolito modular) | Migración a módulo dedicado |
-| D82 (Expand and Contract) | Backward-compatible con backend legacy durante migración |
-| D86-D87 (cross-app con Lanzadera) | Patrón compartido con Gestion_Riesgos vía `getdbLanzadera()` |
-| D89 (`list_objects` dysflow diagnosticado) | Referencia histórica |
-| D102 (booleanos Text(2)) | Cleanup de captions |
-| D132 (XApp Expedientes HTTP/JSON) | `Form_FormExpedientesBusqueda` → API REST federada |
-| D144 (timer-driven indicators) | `Form_Timer` en `Form_Form0BDOpcionesParteProyectos` → SSE/WebSocket |
-| **D146 (methodology v3)** | **Walkthrough con 3 tools dysflow degradadas/rotas — método v3 aplicado** |
-| **D147 (unattended pattern)** | **21/48 forms unattended — preservar patrón en backend services** |
-| **D148 (TabIndex ZERO)** | **Todos los forms sin TabIndex declarado — setear explícito en web** |
-| **D149 (NavigationControl overlap)** | **8 OVERLAP en Seguimiento — nested routes eliminan el bug** |
-| **D150 (AC/AR sibling overlap)** | **SAME pattern en AC y AR — flex/grid layout** |
-| **D151 (MISSING_GEOMETRY sistémico)** | **lblTitulo/lblEstado sin posición en G1 — fix natural en web** |
-| **D152 (codegraph-vba FROZEN)** | **Auto-sync DISABLED por file lock — `codegraph sync` post-deploy** |
-| **D153 (catálogo compartido)** | **`Form_FormMotivosNoRequiereControlEficacia` cross-domain — shared API** |
-| **D154 (zombie table sospecha)** | **`TipologiaNCProyectos` no encontrada — audit de uso** |
+| [DOCS](../../../DOCS.md) | Technical reference raíz del blueprint |
+| [CODEBASE-GUIDE](../../../CODEBASE-GUIDE.md) | Para mantenedores del blueprint |
 
 ## Checklist del documento
 
@@ -508,15 +463,22 @@
 - [x] Decisiones UX Preservar/Mejorar/Nuevo paradigma por pantalla
 - [x] Decisiones arquitectura hexagonal ports
 - [x] Criterios de aceptación verificables y agrupados por dimensión
-- [x] 17 pendientes operacionales antes, 12 durante, 5 en go-live
+- [x] 18 pendientes operacionales antes, 13 durante, 5 en go-live
 - [x] 32 tickets derivables preview (TK-NC-1..32)
 - [x] Tabla de decisiones referenciadas (D5-D154)
 - [x] Tabla de fuentes
 - [x] Idioma: español técnico neutro. Identificadores y paths sin traducir.
-- [x] D146 particular: metodología v3 con 3 tools dysflow degradadas/rotas documentadas
-- [x] D147 particular: 21/48 forms unattended preservados como decisión arquitectural
-- [x] D148 particular: TabIndex ZERO sistémico — setear explícito en web
+- [x] "The sentence that organizes" presente
+- [x] "Scope del scope" presente
+- [x] Sin emojis decorativos
+- [x] Cross-references a DOCS, CODEBASE-GUIDE, AGENTS
+- [x] Quick Navigation table
+- [x] Hallazgos en tabla con severity
 
 ## Siguiente paso
 
-Revisión con el equipo. Esta épica se revisa junto con la de Brass y las de las otras apps (HPS, HPS_Solicitudes, Condor, Gestion_Riesgos ya existentes). El siguiente lote es una de las 2 apps restantes (Lanzaderas, Expedientes) tras cerrar el ciclo de revisión final de las 8 épicas.
+Aplicar las mismas reglas a las 2 épicas restantes: HPS, HPS_Solicitudes. Tras cerrar el ciclo de revisión final del blueprint.
+
+---
+
+[← Back to NoConformidades README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
