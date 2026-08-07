@@ -1,0 +1,260 @@
+{
+  "group": "G3",
+  "method_version": "v4",
+  "known_working_tools": ["analyze_form_ui", "analyze_form_layout (RESUELTO issue #1407 en 2.36.2)"],
+  "known_degraded_tools": ["map_form_behavior autoFetchCodeGraph (issue #1408 open) — autoFetchCodeGraph:false usado"],
+  "known_broken_tools": ["verify_form_bindings (issue #1412 open)"],
+  "generated_at": "2026-08-07T07:55:03.727Z",
+  "forms_count": 6,
+  "forms": [
+    {
+      "formName": "Form_FormUsuarioCambioPass",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormUsuarioCambioPass.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 4,
+        "source_size_lines": 112,
+        "blast_radius_top_5": [
+          "Form_FormUsuarioCambioPass (lanzaderas/Form_FormUsuarioCambioPass.cls:1) — 1 caller",
+          "Form (brass/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (brass/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (condor/Form_frmAltaSolicitud.cls:268) — 1 caller",
+          "Form (condor/Form_frmGestionSolicitud.cls:322) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click → m_ObjUsuarioConectadoLogin.CambioPass",
+          "ComandoRegistrar_Click → Constructor.getUsuario",
+          "Form_Open → Ajustar"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 19, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "geometry": {
+        "controls": 19, "sections": 0, "findings_count": 20,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 10, "FORM_LAYOUT_ALIGNMENT": 5, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "findings": [
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle", "message": "Control Detalle missing complete geometry; skipped from overlap/alignment/tab-order checks" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Marco27", "message": "Control Marco27 missing complete geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "CuadroSuperior", "message": "Control CuadroSuperior missing complete geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Cuadro77", "message": "Control Cuadro77 missing complete geometry" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "ImagenUsuario <-> Marco71", "message": "Overlapping bounding boxes (strict AABB)" }
+        ]
+      },
+      "behavior": { "controls_with_handler_evidence": 3, "tables_referenced": [], "codegraph_evidence_status": "empty_skipped_bug_1408" },
+      "verify_form_bindings": { "status": "skipped_tool_broken", "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)" },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open) — tables_referenced vacío, warnings=['No CodeGraph-VBA evidence was supplied.']"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormUsuarioDatosGenerales",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormUsuarioDatosGenerales.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 6,
+        "source_size_lines": 394,
+        "blast_radius_top_5": [
+          "Form_FormUsuarioDatosGenerales (lanzaderas/Form_FormUsuarioDatosGenerales.cls:1) — 1 caller",
+          "Form (brass/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (brass/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (condor/Form_frmAltaSolicitud.cls:268) — 1 caller",
+          "Form (condor/Form_frmGestionSolicitud.cls:322) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "EstablecerCombo → Constructor.getUsuarios",
+          "ComandoRegistrar_Click → usuario.Registrar",
+          "ComandoRegistrar_Click → HaHabidoCambios"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 38, "formEvents": ["OnOpen"], "bindings_count": 6, "warnings": [] },
+      "geometry": {
+        "controls": 38, "sections": 0, "findings_count": 42,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 34, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "findings": [
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle", "message": "Detail section missing geometry" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "Etiqueta66 <-> Marco17", "message": "Label overlaps container Marco17" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "Nombre <-> Marco17", "message": "Textbox overlaps container" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "Etiqueta85 <-> Marco17", "message": "Label overlaps container" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "Matricula <-> Marco17", "message": "Textbox overlaps container" }
+        ]
+      },
+      "behavior": { "controls_with_handler_evidence": 2, "tables_referenced": [], "codegraph_evidence_status": "empty_skipped_bug_1408" },
+      "verify_form_bindings": { "status": "skipped_tool_broken", "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)" },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormUsuarioGeneral",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormUsuarioGeneral.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 15,
+        "source_size_lines": 182,
+        "blast_radius_top_5": [
+          "Form_FormUsuarioGeneral (lanzaderas/Form_FormUsuarioGeneral.cls:1) — 1 caller",
+          "Form (brass/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (brass/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (condor/Form_frmAltaSolicitud.cls:268) — 1 caller",
+          "Form (condor/Form_frmGestionSolicitud.cls:322) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "Form_Load → AjustarTamaño",
+          "Form_Load → m_ObjEntorno.ColorMenuActivado",
+          "IND_Click → DoCmd.OpenForm (subform swap to FormUsuarios*)"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 17, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [] },
+      "geometry": {
+        "controls": 17, "sections": 2, "findings_count": 16,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_OVERLAP": 8, "FORM_LAYOUT_ALIGNMENT": 2 },
+        "findings": [
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "EncabezadoDelFormulario", "message": "FormHeader section missing complete geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "MENU1", "message": "Menu rectangle missing complete geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "IND1", "message": "Tab indicator missing geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detail", "message": "Detail section missing geometry" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "FormDetalle (subform container)", "message": "Subform container overlaps adjacent controls" }
+        ]
+      },
+      "behavior": { "controls_with_handler_evidence": 7, "tables_referenced": [], "codegraph_evidence_status": "empty_skipped_bug_1408" },
+      "verify_form_bindings": { "status": "skipped_tool_broken", "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)" },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormUsuarioPerfilAplicaciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormUsuarioPerfilAplicaciones.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 6,
+        "source_size_lines": 386,
+        "blast_radius_top_5": [
+          "Form_FormUsuarioPerfilAplicaciones (lanzaderas/Form_FormUsuarioPerfilAplicaciones.cls:1) — 1 caller",
+          "Form (brass/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (brass/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (condor/Form_frmAltaSolicitud.cls:268) — 1 caller",
+          "Form (condor/Form_frmGestionSolicitud.cls:322) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "Form_Open → RellenarChecks",
+          "Form_Open → Constructor.getUsuario",
+          "ComandoRegistrar_Click → usuario.Registrar"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 21, "formEvents": ["OnOpen"], "bindings_count": 2, "warnings": [] },
+      "geometry": {
+        "controls": 21, "sections": 0, "findings_count": 13,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 8, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "findings": [
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle", "message": "Detail section missing geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "EsUsuarioAdministrador", "message": "Checkbox missing geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "EsUsuarioCalidad", "message": "Checkbox missing geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "EsUsuarioEconomia", "message": "Checkbox missing geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "EsUsuarioSecretaria", "message": "Checkbox missing geometry" }
+        ]
+      },
+      "behavior": { "controls_with_handler_evidence": 3, "tables_referenced": [], "codegraph_evidence_status": "empty_skipped_bug_1408" },
+      "verify_form_bindings": { "status": "skipped_tool_broken", "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)" },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormUsuariosConectados",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormUsuariosConectados.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": 28,
+        "blast_radius_top_5": [
+          "Form_FormUsuariosConectados (lanzaderas/Form_FormUsuariosConectados.cls:1) — 1 caller",
+          "Form (brass/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (brass/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (condor/Form_frmAltaSolicitud.cls:268) — 1 caller",
+          "Form (condor/Form_frmGestionSolicitud.cls:322) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "Form_Open → Me.UsuariosConectados = Nz(Me.OpenArgs(), \"\")",
+          "(only handler in .cls)"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 2, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "geometry": {
+        "controls": 2, "sections": 0, "findings_count": 1,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1 },
+        "findings": [
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle", "message": "Detail section missing geometry" }
+        ]
+      },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_skipped_bug_1408" },
+      "verify_form_bindings": { "status": "skipped_tool_broken", "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)" },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormUsuariosGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormUsuariosGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 7,
+        "source_size_lines": 195,
+        "blast_radius_top_5": [
+          "Form_FormExpedienteEntidades (expedientes/Form_FormExpedienteEntidades.cls:28) — 1 caller",
+          "Form_FormUsuarioGeneral (lanzaderas/Form_FormUsuarioGeneral.cls:3) — 1 caller (cross-app call)",
+          "Form (brass/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "USUARIO class — referenced",
+          "Form_FormUsuariosGestion → Scripting.Dictionary"
+        ],
+        "call_path_top_3": [
+          "Form_Load → Me.ListaUsuarios.RowSource = 'ID;Correo;Nombre'",
+          "Nombre_AfterUpdate → CorreoAlAdministrador",
+          "ListaUsuarios_Click → Constructor (getUsuario)"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 11, "formEvents": ["OnLoad"], "bindings_count": 1, "warnings": [] },
+      "geometry": {
+        "controls": 11, "sections": 0, "findings_count": 13,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 9, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "findings": [
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle", "message": "Detail section missing geometry" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "ListaUsuarios <-> Marco17", "message": "ListBox overlaps container Marco17" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "Etiqueta0 <-> Marco17", "message": "Label overlaps container" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "ComandoLimpiarNombre <-> Marco17", "message": "Button overlaps container" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "Nombre <-> Marco17", "message": "Textbox overlaps container" }
+        ]
+      },
+      "behavior": { "controls_with_handler_evidence": 5, "tables_referenced": [], "codegraph_evidence_status": "empty_skipped_bug_1408" },
+      "verify_form_bindings": { "status": "skipped_tool_broken", "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)" },
+      "unattended": true,
+      "unattended_evidence": "Form_Load line 132: Me.ListaUsuarios.RowSource = \"ID;Correo;Nombre\" — found Me.X.RowSource= pattern in Form_Load (strict criterion: bindings_count==1 AND Me.X.RowSource found). This is an UNATTENDED form: it imperatively binds ListaUsuarios rowsource at load instead of using declarative RowSource property.",
+      "tool_warnings": ["map_form_behavior: autoFetchCodeGraph:false usado (issue #1408 open)"],
+      "method_version": "v4"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 105,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 6,
+    "unattended_forms": 1,
+    "tables_referenced_union": [],
+    "blast_radius_shared_symbols": [
+      "Form_FormInformesDesdeLista (brass) — appears in all 6 forms (likely stale index noise; same line 19 each time)",
+      "Form_FormInformesPorFactura (brass) — appears in all 6 forms (likely stale index noise; same line 15)",
+      "Form_frmAltaSolicitud (condor) — appears in 5/6 forms (cross-project noise)",
+      "Form_frmGestionSolicitud (condor) — appears in 5/6 forms (cross-project noise)",
+      "Form_FormUsuarioGeneral → Form_FormUsuariosGestion — real cross-form ref from G3 itself (subform host)"
+    ]
+  }
+}

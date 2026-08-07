@@ -1,0 +1,446 @@
+{
+  "group": "G1",
+  "method_version": "v4",
+  "generated_at": "2026-08-07T00:00:00Z",
+  "forms_count": 5,
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout (RESUELTO issue #1407 en 2.36.2)",
+    "codegraph-vba (con banner stale ignorado)"
+  ],
+  "known_degraded_tools": [
+    "map_form_behavior autoFetchCodeGraph (issue #1408 open) — autoFetchCodeGraph:false usado; codegraph_evidence:[] esperado en los 5 forms"
+  ],
+  "known_broken_tools": [
+    "verify_form_bindings (issue #1412 open) — RESULT_CONTRACT_VIOLATION confirmado en 2.36.2; los 5 forms marcados como skipped_tool_broken"
+  ],
+  "forms": [
+    {
+      "formName": "Form_FormLogin",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormLogin.form.txt",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "formEvents": ["OnLoad"],
+        "blast_radius_top_5": [],
+        "call_path_top_3": ["Form_Load -> Ajustar Me", "Form_Load -> getMenu(Me)", "Form_Load -> ActivarObjetoMenu"],
+        "stale_banner_ignored": true,
+        "source_size_lines": null,
+        "handlers_with_rowSource_or_controlSource": 0
+      },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 17,
+        "sections": 0,
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER": 1,
+          "FORM_LAYOUT_OFF_SECTION": 0
+        },
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"Detalle","message":"Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"CuadroSuperior","message":"Control \"CuadroSuperior\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"Cuadro67","message":"Control \"Cuadro67\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"lblEstado","message":"Control \"lblEstado\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"lblTitulo2 <-> lblTitulo1","message":"Controls \"lblTitulo2\" and \"lblTitulo1\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"lblTitulo1+ComandoAyudaFormulario","message":"Controls form a visual row within 50 twips (Top range 45-45)."},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"imagenUsuarioLogin+Etiqueta69","message":"Controls form a visual row within 50 twips (Top range 885-930)."},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"CorreoUsuario+lblOfertas","message":"Controls form a visual row within 50 twips (Top range 1397-1397)."},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"Pass+ComandoIniciarSesion+Etiqueta66","message":"Controls form a visual row within 50 twips (Top range 1972-1972)."},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"Etiqueta70+ComandoCambioDeContrasenia","message":"Controls form a visual row within 50 twips (Top range 2610-2610)."},
+          {"code":"FORM_LAYOUT_TAB_ORDER_MISMATCH","severity":"warning","controlName":"visualOrder","message":"Tab order does not match visual top-to-bottom order."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraph_unattended_check": {
+          "Me_X_RowSource_assignments": 0,
+          "Me_X_ControlSource_assignments": 0,
+          "is_unattended_estricto": false,
+          "uses_imperative_pattern": true
+        }
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow issue #1412, abierto en 2.36.2)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_FormLogin.cls Form_Load uses imperative Me.X = value assignments (Me.lblVer.Caption, Me.Caption, Me.lblUsuarioConectado.Caption). NO Me.X.RowSource = '...' or Me.X.ControlSource = '...' patterns detected. Per mission strict definition, not unattended estricto.",
+      "tool_warnings": [
+        "map_form_behavior: codegraph_evidence=[] because autoFetchCodeGraph=false (issue #1408)",
+        "verify_form_bindings: RESULT_CONTRACT_VIOLATION (issue #1412)",
+        "codegraph-vba: stale_banner ignored (auto-sync DISABLED but content returned)"
+      ],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormMenuPrincipalAdmin",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormMenuPrincipalAdmin.form.txt",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "formEvents": ["OnLoad"],
+        "blast_radius_top_5": [],
+        "call_path_top_3": ["Form_Load -> Ajustar Me", "Form_Load -> getMenu(Me)", "Form_Load -> ActivarObjetoMenu"],
+        "stale_banner_ignored": true,
+        "source_size_lines": null,
+        "handlers_with_rowSource_or_controlSource": 0
+      },
+      "ui": {
+        "controls_count": 30,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 30,
+        "sections": 2,
+        "findings_count": 19,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 15,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER": 1,
+          "FORM_LAYOUT_OFF_SECTION": 0
+        },
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"EncabezadoDelFormulario","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"Detalle","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"PANEL1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU2","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND2","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU3","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND3","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"SUBMENU1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"SUBMENU2","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"SUBMENU3","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"lblLanzadera","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"FormDetalle","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"PieDelFormulario","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"lblUsuarioConectado <-> Imagen36","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"ImagenSalir+ImagenLogout+Imagen36","message":"Top range 45-60"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"lblUsuarioConectado+lblUsuarioUbicacion","message":"Top range 195-195"},
+          {"code":"FORM_LAYOUT_TAB_ORDER_MISMATCH","severity":"warning","controlName":"visualOrder","message":"Tab order does not match visual top-to-bottom order."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraph_unattended_check": {
+          "Me_X_RowSource_assignments": 0,
+          "Me_X_ControlSource_assignments": 0,
+          "is_unattended_estricto": false,
+          "uses_imperative_pattern": true
+        }
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow issue #1412, abierto en 2.36.2)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_FormMenuPrincipalAdmin.cls Form_Load uses imperative Me.X = value assignments (Me.lblVer.Caption, Me.EncabezadoDelFormulario.BackColor, Me.lblUsuarioConectado.Caption). NO Me.X.RowSource = '...' or Me.X.ControlSource = '...' patterns detected. Per mission strict definition, not unattended estricto.",
+      "tool_warnings": [
+        "map_form_behavior: codegraph_evidence=[] because autoFetchCodeGraph=false (issue #1408)",
+        "verify_form_bindings: RESULT_CONTRACT_VIOLATION (issue #1412)",
+        "codegraph-vba: stale_banner ignored (auto-sync DISABLED but content returned)"
+      ],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormMenuPrincipalCalidad",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormMenuPrincipalCalidad.form.txt",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "formEvents": ["OnLoad"],
+        "blast_radius_top_5": [],
+        "call_path_top_3": ["Form_Load -> Ajustar Me", "Form_Load -> getMenu(Me)", "Form_Load -> ActivarObjetoMenu + MENU1_Click"],
+        "stale_banner_ignored": true,
+        "source_size_lines": null,
+        "handlers_with_rowSource_or_controlSource": 0
+      },
+      "ui": {
+        "controls_count": 30,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 30,
+        "sections": 2,
+        "findings_count": 20,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 17,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER": 1,
+          "FORM_LAYOUT_OFF_SECTION": 0
+        },
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"EncabezadoDelFormulario","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"ImagenSalir","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"ImagenLogout","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"Detalle","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"PANEL1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU2","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND2","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU3","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND3","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"lblLanzadera","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"FormDetalle","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU4","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND4","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"SUBMENU1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"PieDelFormulario","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"lblUsuarioConectado <-> Imagen36","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"lblUsuarioConectado+lblUsuarioUbicacion","message":"Top range 150-150"},
+          {"code":"FORM_LAYOUT_TAB_ORDER_MISMATCH","severity":"warning","controlName":"visualOrder","message":"Tab order does not match visual top-to-bottom order."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraph_unattended_check": {
+          "Me_X_RowSource_assignments": 0,
+          "Me_X_ControlSource_assignments": 0,
+          "is_unattended_estricto": false,
+          "uses_imperative_pattern": true
+        }
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow issue #1412, abierto en 2.36.2)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_FormMenuPrincipalCalidad.cls Form_Load uses imperative Me.X = value assignments (Me.lblVer.Caption, Me.EncabezadoDelFormulario.BackColor, Me.FormDetalle.SourceObject = ''). NO Me.X.RowSource = '...' or Me.X.ControlSource = '...' patterns detected. Per mission strict definition, not unattended estricto.",
+      "tool_warnings": [
+        "map_form_behavior: codegraph_evidence=[] because autoFetchCodeGraph=false (issue #1408)",
+        "verify_form_bindings: RESULT_CONTRACT_VIOLATION (issue #1412)",
+        "codegraph-vba: stale_banner ignored (auto-sync DISABLED but content returned)"
+      ],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormMenuPrincipalUsuario",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormMenuPrincipalUsuario.form.txt",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "formEvents": ["OnLoad"],
+        "blast_radius_top_5": [],
+        "call_path_top_3": ["Form_Load -> Ajustar Me", "Form_Load -> getMenu(Me)", "Form_Load -> ActivarObjetoMenu + MENU1_Click"],
+        "stale_banner_ignored": true,
+        "source_size_lines": null,
+        "handlers_with_rowSource_or_controlSource": 0
+      },
+      "ui": {
+        "controls_count": 24,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 24,
+        "sections": 2,
+        "findings_count": 17,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 14,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER": 1,
+          "FORM_LAYOUT_OFF_SECTION": 0
+        },
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"EncabezadoDelFormulario","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"ImagenSalir","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"ImagenLogout","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"Detalle","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"PANEL1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND1","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU2","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND2","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"MENU3","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"IND3","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"lblLanzadera","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"FormDetalle","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"PieDelFormulario","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"lblUsuarioConectado <-> Imagen36","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"lblUsuarioConectado+lblUsuarioUbicacion","message":"Top range 150-150"},
+          {"code":"FORM_LAYOUT_TAB_ORDER_MISMATCH","severity":"warning","controlName":"visualOrder","message":"Tab order does not match visual top-to-bottom order."}
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraph_unattended_check": {
+          "Me_X_RowSource_assignments": 0,
+          "Me_X_ControlSource_assignments": 0,
+          "is_unattended_estricto": false,
+          "uses_imperative_pattern": true
+        }
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow issue #1412, abierto en 2.36.2)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_FormMenuPrincipalUsuario.cls Form_Load uses imperative Me.X = value assignments (Me.lblVer.Caption, Me.EncabezadoDelFormulario.BackColor, Me.FormDetalle.SourceObject = ''). NO Me.X.RowSource = '...' or Me.X.ControlSource = '...' patterns detected. Per mission strict definition, not unattended estricto.",
+      "tool_warnings": [
+        "map_form_behavior: codegraph_evidence=[] because autoFetchCodeGraph=false (issue #1408)",
+        "verify_form_bindings: RESULT_CONTRACT_VIOLATION (issue #1412)",
+        "codegraph-vba: stale_banner ignored (auto-sync DISABLED but content returned)"
+      ],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormPerfil",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormPerfil.form.txt",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "formEvents": ["OnLoad"],
+        "blast_radius_top_5": [],
+        "call_path_top_3": ["Form_Load -> Ajustar Me", "Form_Load -> getMenu(Me)", "Form_Load -> ActivarObjetoMenu"],
+        "stale_banner_ignored": true,
+        "source_size_lines": null,
+        "handlers_with_rowSource_or_controlSource": 0
+      },
+      "ui": {
+        "controls_count": 30,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 30,
+        "sections": 0,
+        "findings_count": 32,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 27,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER": 1,
+          "FORM_LAYOUT_OFF_SECTION": 0
+        },
+        "findings": [
+          {"code":"FORM_LAYOUT_MISSING_GEOMETRY","severity":"warning","controlName":"Detalle","message":"missing complete geometry"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta66 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Nombre <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta85 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Matricula <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta87 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Telefono <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta89 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Movil <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta72 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"CorreoUsuario <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta113 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"FechaAlta <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta117 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"FechaBaja <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta120 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta123 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Etiqueta125 <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"UsuarioRed <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"ID <-> Marco17","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"ListaUsuarios <-> Marco19","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Marco17 <-> Etiqueta18","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Marco17 <-> MantenerLanzaderaAbierta","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Marco17 <-> TextoTiempoParaExpirarPass","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Marco17 <-> Etiqueta23","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Marco17 <-> Responsable","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_OVERLAP","severity":"warning","controlName":"Marco19 <-> Etiqueta20","message":"overlapping bounding boxes"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"row1","message":"Top range 1010-1012"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"row2","message":"Top range 1545-1550"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"row3","message":"Top range 2055-2079"},
+          {"code":"FORM_LAYOUT_ALIGNMENT","severity":"warning","controlName":"row4","message":"Top range 2595-2595"},
+          {"code":"FORM_LAYOUT_TAB_ORDER_MISMATCH","severity":"warning","controlName":"visualOrder","message":"Tab order does not match visual top-to-bottom order."}
+        ]
+        },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408",
+        "codegraph_unattended_check": {
+          "Me_X_RowSource_assignments": 0,
+          "Me_X_ControlSource_assignments": 0,
+          "is_unattended_estricto": false,
+          "uses_imperative_pattern": true
+        }
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "findings_count": null,
+        "findings_by_kind": null,
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (dysflow issue #1412, abierto en 2.36.2)"
+      },
+      "unattended": false,
+      "unattended_evidence": "Form_FormPerfil.cls scan: 0 Me.X.RowSource = '...' and 0 Me.X.ControlSource = '...' patterns. Uses imperative pattern. Per mission strict definition, not unattended estricto.",
+      "tool_warnings": [
+        "map_form_behavior: codegraph_evidence=[] because autoFetchCodeGraph=false (issue #1408)",
+        "verify_form_bindings: RESULT_CONTRACT_VIOLATION (issue #1412)",
+        "codegraph-vba: stale_banner ignored (auto-sync DISABLED but content returned)",
+        "geometry: 27 FORM_LAYOUT_OVERLAP findings all vs Marco17/Marco19 — el Marco es un Rectangle que actua como container y los controls internos se solapan con su AABB; tipico falso positivo de containers en layout linter. Considerar exclusion rule para Rectangle container overlap."
+      ],
+      "method_version": "v4"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 99,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 5,
+    "unattended_forms": 0,
+    "tables_referenced_union": [],
+    "blast_radius_shared_symbols": [
+      "Ajustar Me (called from Form_Load in all 5 forms)",
+      "getMenu(Me, m_Error) (called from Form_Load in 4 menu forms)",
+      "ActivarObjetoMenu (called from Form_Load in 4 menu forms)",
+      "MENU1_Click (called from Form_Load in 3 menu forms Calidad/Usuario/Admin)",
+      "m_ObjEntorno.VersionAplicacion (used for lblVer.Caption)",
+      "m_ObjUsuarioConectadoLogin.Nombre + Equipo (used for lblUsuarioConectado.Caption)"
+    ],
+    "geometry_findings_by_kind_total": {
+      "FORM_LAYOUT_MISSING_GEOMETRY": 51,
+      "FORM_LAYOUT_OVERLAP": 31,
+      "FORM_LAYOUT_ALIGNMENT": 13,
+      "FORM_LAYOUT_TAB_ORDER": 5,
+      "FORM_LAYOUT_OFF_SECTION": 0
+    },
+    "forms_by_section_count": {
+      "Form_FormLogin": 0,
+      "Form_FormMenuPrincipalAdmin": 2,
+      "Form_FormMenuPrincipalCalidad": 2,
+      "Form_FormMenuPrincipalUsuario": 2,
+      "Form_FormPerfil": 0
+    },
+    "tool_status_summary": {
+      "dysflow_version": "2.36.2",
+      "analyze_form_ui": "OK on 5/5",
+      "analyze_form_layout_RESUELTO_1407": "OK on 5/5",
+      "map_form_behavior_1408_DEGRADED": "OK with autoFetchCodeGraph:false on 5/5; codegraphEvidence=[] expected",
+      "verify_form_bindings_1412_BROKEN": "RESULT_CONTRACT_VIOLATION on all 5 attempts; marked as skipped_tool_broken",
+      "codegraph_vba_STALE_BANNER": "Banner ignored on all calls; content returned for all 5"
+    }
+  }
+}
