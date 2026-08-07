@@ -1,0 +1,645 @@
+{
+  "group": "G2",
+  "method_version": "v4",
+  "forms_count": 11,
+  "forms": [
+    {
+      "formName": "Form_FormExpediente",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpediente.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.Expediente_Form_Load_Init",
+          "NavegarAPestanaSiSolicitada",
+          "SetFormGeneralFromExpediente",
+          "EstablecerDTODeExpediente",
+          "LeeConfiguracionLocal"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal", "modExpedienteHelper.Expediente_Form_Load_Init"],
+          ["Form_Load", "EstablecerDatos"],
+          ["Form_Load", "NavegarAPestanaSiSolicitada"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 19,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 19,
+        "sections": 2,
+        "findings_count": 44,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 38,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "38 FORM_LAYOUT_OVERLAP (lblTitulo/NavigationButton overlap with tabs and footers — header/tabstrip stacked geometry)",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH on 10 controls"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteAlta.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteAlta_*",
+          "EstablecerControlesDatos",
+          "LeeConfiguracionLocal",
+          "constructor.getExpediente",
+          "RellenarCombo*"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal"],
+          ["Form_Unload", "CerrarConexion"],
+          ["AfterUpdate", "ComandoElegirOC_Click"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 75,
+        "formEvents": ["OnUnload", "OnLoad"],
+        "bindings_count": 8,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 75,
+        "sections": 2,
+        "findings_count": 34,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 16,
+          "FORM_LAYOUT_ALIGNMENT": 14,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "16 FORM_LAYOUT_OVERLAP (lblTitulo vs Etiqueta57/80/84, header vs data controls)",
+          "14 FORM_LAYOUT_ALIGNMENT across 13 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH on 37 controls"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteAltaParaHPS",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteAltaParaHPS.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteAltaParaHPS_*",
+          "RellenarListaLugaresEjecucion",
+          "RellenarListaContratistas",
+          "EstablecerSuministradores",
+          "ComandoAltaLugarEjecucion_Click"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal"],
+          ["LugaresEjecucion_AfterUpdate", "RefrescarListaLugares"],
+          ["Contratistas_AfterUpdate", "AltaContratista"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 36,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 6,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 36,
+        "sections": 2,
+        "findings_count": 25,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 10,
+          "FORM_LAYOUT_ALIGNMENT": 11,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "10 FORM_LAYOUT_OVERLAP (lblTitulo/Nemotecnico/header stacked)",
+          "11 FORM_LAYOUT_ALIGNMENT across 11 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH on 21 controls"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteAltaTipo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteAltaTipo.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteAltaTipo_*",
+          "EstablecerTipoExpediente",
+          "RellenarComboTipos",
+          "ComandoAceptar_Click",
+          "FormOpenValidation"
+        ],
+        "call_path_top_3": [
+          ["Form_Open", "LeeConfiguracionLocal"],
+          ["Form_Open", "RellenarComboTipos"],
+          ["ComandoAceptar_Click", "EstablecerTipoExpediente"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 8,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 8,
+        "sections": 2,
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "findings": [
+          "4 FORM_LAYOUT_MISSING_GEOMETRY on header/footer sections",
+          "4 FORM_LAYOUT_OVERLAP (small modal — header vs detail controls)"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteCambioTipo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteCambioTipo.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteCambioTipo_*",
+          "CambiarTipoExpediente",
+          "RellenarComboTipos",
+          "ComandoAceptar_Click",
+          "ValidarCambioPermitido"
+        ],
+        "call_path_top_3": [
+          ["Form_Open", "LeeConfiguracionLocal"],
+          ["Form_Open", "RellenarComboTipos"],
+          ["ComandoAceptar_Click", "CambiarTipoExpediente"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": ["OnOpen"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 14,
+        "sections": 2,
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "4 FORM_LAYOUT_ALIGNMENT on 4 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteDocumentacion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteDocumentacion.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteDocumentacion_*",
+          "RellenarListaDocumentacion",
+          "EstablecerControlesDatos",
+          "ComandoAnexar_Click",
+          "ComandoEliminarAnexo_Click"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal"],
+          ["Form_Load", "EstablecerControlesDatos"],
+          ["ComandoAnexar_Click", "AltaAnexo"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 5,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 5,
+        "sections": 0,
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH",
+          "FORM_LAYOUT_ALIGNMENT on 1 visual row"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)", "sections=0 suggests parse anomaly — subform-only layout"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteEntidades",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteEntidades.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteEntidades_*",
+          "RellenarEntidades",
+          "EstablecerControlesDatos",
+          "ComandoAltaEntidad_Click",
+          "ComandoEliminarEntidad_Click"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal"],
+          ["Form_Load", "EstablecerControlesDatos"],
+          ["Form_Load", "RellenarEntidades"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 50,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 9,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 50,
+        "sections": 0,
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 10,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "10 FORM_LAYOUT_ALIGNMENT across 10 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH on multiple controls"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)", "sections=0 suggests parse anomaly — subform-only layout"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteFechas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteFechas.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteFechas_*",
+          "RellenarFechasExpediente",
+          "EstablecerControlesDatos",
+          "ComandoCambiarFecha_Click",
+          "ValidarFechasConsistentes"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal"],
+          ["Form_Load", "EstablecerControlesDatos"],
+          ["Form_Unload", "GuardarCambios"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 34,
+        "formEvents": ["OnUnload", "OnLoad"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 34,
+        "sections": 0,
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "6 FORM_LAYOUT_ALIGNMENT across 6 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)", "sections=0 suggests parse anomaly — subform-only layout"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteGeneral",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteGeneral.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteGeneral_*",
+          "SetFormGeneralFromExpediente",
+          "EstablecerControlesDatos",
+          "ComandoEditarGeneral_Click",
+          "ValidarDatosObligatorios"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal"],
+          ["Form_Load", "SetFormGeneralFromExpediente"],
+          ["Form_Unload", "GuardarCambios"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 71,
+        "formEvents": ["OnUnload", "OnLoad"],
+        "bindings_count": 9,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 71,
+        "sections": 0,
+        "findings_count": 21,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 13,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "6 FORM_LAYOUT_OVERLAP",
+          "13 FORM_LAYOUT_ALIGNMENT across 13 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)", "sections=0 suggests parse anomaly — subform-only layout"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteHitos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteHitos.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "modExpedienteHelper.ExpedienteHitos_*",
+          "RellenarHitosExpediente",
+          "EstablecerControlesDatos",
+          "ComandoNuevoHito_Click",
+          "ComandoEliminarHito_Click"
+        ],
+        "call_path_top_3": [
+          ["Form_Load", "LeeConfiguracionLocal"],
+          ["Form_Load", "EstablecerControlesDatos"],
+          ["ComandoNuevoHito_Click", "AltaHito"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 12,
+        "formEvents": ["OnLoad"],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 12,
+        "sections": 0,
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "3 FORM_LAYOUT_ALIGNMENT across 3 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)", "sections=0 suggests parse anomaly — subform-only layout"],
+      "method_version": "v4"
+    },
+    {
+      "formName": "Form_FormExpedienteSuministradores",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormExpedienteSuministradores.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "ExpedienteSuministradorServicio",
+          "Helper_ExpedienteSuministradoresArbol",
+          "RellenarListaImagenes",
+          "RefrescarAArbol",
+          "CargarListaFuente"
+        ],
+        "call_path_top_3": [
+          ["Form_Open", "RellenarListaImagenes"],
+          ["Form_Open", "PrepararTreeView", "ConfigurarListView", "RefrescarAArbol"],
+          ["Form_Close", "Set m_Servicio = Nothing"]
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": ["OnOpen", "OnClose"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 13,
+        "sections": 0,
+        "findings_count": 12,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 5,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": [
+          "5 FORM_LAYOUT_OVERLAP",
+          "3 FORM_LAYOUT_ALIGNMENT across 3 visual rows",
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH"
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_skipped_bug_1408"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412 open)"
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": ["map_form_behavior: No CodeGraph-VBA evidence supplied (autoFetchCodeGraph:false per method v4)", "sections=0 suggests parse anomaly — subform-only layout"],
+      "method_version": "v4"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 215,
+    "forms_skipped_bindings": 11,
+    "unattended_forms": 0,
+    "tables_referenced_union": [],
+    "blast_radius_shared_symbols": [
+      "LeeConfiguracionLocal",
+      "modExpedienteHelper.Expediente_*",
+      "EstablecerControlesDatos",
+      "constructor.getExpediente",
+      "RellenarCombo*"
+    ],
+    "group_observations": [
+      "10/11 forms use Form_Load as primary init; 2 use Form_Open (AltaTipo, CambioTipo, Suministradores) — consistent with modals vs subforms",
+      "All 11 forms report empty codegraph_evidence due to issue #1408 (autoFetchCodeGraph:false per method v4)",
+      "All 11 forms skipped verify_form_bindings due to issue #1412",
+      "All 11 forms show FORM_LAYOUT_TAB_ORDER_MISMATCH — consistent navigation bug across G2",
+      "Form_FormExpediente has 38 FORM_LAYOUT_OVERLAP (worst in group) — header lblTitulo stacked with navigation tabs",
+      "Forms 6-11 (subforms: Documentacion, Entidades, Fechas, General, Hitos, Suministradores) all report sections=0 — parse anomaly likely due to NavigationControl subform pattern, not real bug",
+      "Bindings present only in static Value Lists (combos AGEDYS, Ordinal, Ambito, etc.) — no runtime Me.X.RowSource= assignments detected, so unattended=false everywhere"
+    ]
+  }
+}
