@@ -1,10 +1,32 @@
+[← Back to Brass README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
+
 # Épica — Brass (migración a web)
 
-> **Estado:** DRAFT — pendiente revisión al final del ciclo.
-> **Versión:** v0.1 (2026-08-06).
-> **App legacy:** Brass (`C:\00repos\codigo\00_BRASS`) · frontend+backend `Gestion_Brass_Gestion.accdb` (un solo .accdb, 62 MB).
-> **Lote de discovery:** Lote 6 (D104 security CRITICAL).
-> **Cross-refs:** `docs/03-aplicaciones/brass/{capabilities,data-model,forms,integrations-automation,migration-matrix,security-rules,README}.md` · engram obs #24097 (audit codegraph-vba) · engram topic_key `brass/deep-discovery-2026-08-06` (consolidado de 5 sub-agentes).
+> **Estado:** DRAFT v0.1 (2026-08-06) — pendiente revisión al final del ciclo de las 8 épicas.
+> **Lote:** 6 (D104 security CRITICAL).
+> **App legacy:** `00_BRASS` · frontend+backend `Gestion_Brass_Gestion.accdb` (un solo .accdb, 62 MB).
+> **Sentence that organizes**: **Brass es la app de Eventos, SLA, Materiales y Facturación con ciclo de vida complejo: un evento puede pasar por 6+ entidades (Evento → Actividad → Material → Subcontratación → Gasto → Factura) y un workflow declarativo con SLA en días laborables/corridos.**
+
+> **Scope del scope**: "Este repo es research + planning de la migración. Cada app tendrá su propio repo + docs cuando se construya."
+
+---
+
+## Quick Navigation
+
+| Section                                                       | What you'll find                                              |
+|---------------------------------------------------------------|---------------------------------------------------------------|
+| [Metadatos](#metadatos)                                       | Scope L, D104 critical, dependencias cross-app.                |
+| [1. Scope](#1-scope)                                          | 47 features F1-F47 en 5 grupos (G1-G5).                       |
+| [2. Estado del descubrimiento](#2-estado-del-descubrimiento)    | Inventario 88 forms, 27 clases, 16 módulos, 60 tablas.        |
+| [3. Hallazgos críticos](#3-hallazgos-críticos)                | D104-D125: password hardcoded, SLA, anexos, polimorfismo.      |
+| [4. Decisiones aplicadas](#4-decisiones-aplicadas)              | UX por pantalla, hexagonal ports, seguridad D104.             |
+| [5. Criterios de aceptación](#5-criterios-de-aceptación)      | Funcionales, Seguridad, Performance, Operacional.               |
+| [6. Pendientes operacionales](#6-pendientes-operacionales)    | Antes, durante, go-live.                                       |
+| [7. Tickets derivables](#7-tickets-derivables-preview)         | 40 tickets TK-BRASS-1..40.                                     |
+| [Anexo · Decisiones referenciadas](#anexo--decisiones-referenciadas-d5-d104) | D5-D104.                                      |
+| [Anexo · Tabla de fuentes](#anexo--tabla-de-fuentes)         | Walkthrough JSONs + docs + source tree + engram.               |
+
+---
 
 ## Metadatos
 
@@ -18,25 +40,15 @@
 | **Stack target** | Backend Python 3.12+ / FastAPI 0.119+ / SQLAlchemy 2.0.x / Alembic 1.13+ / asyncpg 0.30+ (D66) · Frontend HTMX 2.0.4 + Jinja2 3.1+ + Alpine.js 3.15+ (D67) |
 | **Estrategia de migración de BD** | Expand and Contract backward-compatible (D82) · PostgreSQL compartido con esquema por módulo (D14) |
 | **Forma destino** | Hexagonal global (D8) · módulo dentro del monolito modular (D68) · puerto de persistencia PostgreSQL + object storage S3-compatible (D16) + secret manager (D9-D10) |
-| **Auditoría de uso previa** | ✅ Codegraph-vba + Dysflow walkthrough (85/88 forms, 3 en formato binario denso ilegible) |
-
-## Forma del documento
-
-1. Scope (en / fuera)
-2. Estado del descubrimiento
-3. Hallazgos críticos
-4. Decisiones aplicadas
-5. Criterios de aceptación
-6. Pendientes operacionales
-7. Tickets derivables (preview)
+| **Auditoría de uso previa** | Codegraph-vba + Dysflow walkthrough (85/88 forms, 3 en formato binario denso ilegible) |
 
 ---
 
 ## 1. Scope
 
-### 1.1 En scope (47 features de negocio)
+### 1.1 En scope — 47 features de negocio en 5 grupos
 
-#### Grupo G1 — Configuración, Equipos, Calibración (8 features)
+#### G1 — Configuración, Equipos, Calibración (8 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -49,7 +61,7 @@
 | F7 | **Calibraciones de Equipos de Medida** (ciclo de calibración + alerta 75 días) | `FormEquipoMedidaCalibracion`, `FormEquipoMedidaCalibracionesGestion` |
 | F8 | **Equipos Calibrables** (no son Equipos de Medida; equipos que reciben calibración como servicio) | `FormCalibracion*`, `FormCalibracionEquipo*` |
 
-#### Grupo G2 — Eventos, SLA, Planificación (10 features)
+#### G2 — Eventos, SLA, Planificación (10 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -64,7 +76,7 @@
 | F17 | **Planificación preventiva** (alta/cierre/reprogramación/cambio evento/anexos) | `FormPlanificacion*` |
 | F18 | **Cuadro de mando de planificación** (11 contadores con drill-down) | `FormPlanificacionGestion` |
 
-#### Grupo G3 — Actividad, Materiales, Anexos (8 features)
+#### G3 — Actividad, Materiales, Anexos (8 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -77,7 +89,7 @@
 | F25 | **Anexos polimórficos** (6 entidades: Evento, Actividad, Material, MaterialSeg, Subcontratación, Gasto) | `FormAnexos`, `FormAnexosNoAlcanzables` |
 | F26 | **Catálogo Tipo Acción** (ESTADOREPARABLE) | via `FormMaterial*` |
 
-#### Grupo G4 — Facturación, Gastos, Informes (8 features)
+#### G4 — Facturación, Gastos, Informes (8 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -90,7 +102,7 @@
 | F33 | **Informe por Factura** (filtrado por IDFactura) | `FormInformesPorFactura` |
 | F34 | **Listado de Intervención (LI)** (3 hojas: SUBCONT_ASISTENCIA_ING, MATERIALES, EVENTOS) | `FormFacturaAlta.ComandoObtenerLI` |
 
-#### Grupo G5 — Técnicos, Subcontratación, Parte, Originador (13 features)
+#### G5 — Técnicos, Subcontratación, Parte, Originador (13 features)
 
 | # | Feature | Respaldo |
 |---|---|---|
@@ -160,158 +172,32 @@
 
 ## 3. Hallazgos críticos
 
-### H1 (D104 — CRITICAL) — Password REAL hardcodeado
-
-**Síntoma**: `Variables Globales.bas:526,560` y `Funciones Generales.bas:1334` contienen `wks.OpenDatabase(m_URL, False, False, "MS Access;PWD=dpddpd")` y `strPassActual = "dpddpd"`. Es la **contraseña REAL** para abrir un `.accdb` externo (Lanzadera típicamente), no un fallback.
-
-**Impacto**: si la contraseña real es `dpddpd`, rotarla NO sirve (la rotación queda bypassed). Si `dpddpd` era dummy, el código la usa igualmente porque no hay path alternativo.
-
-**Acción inmediata** (TK-BRASS-5):
-1. Auditar git history de `00_BRASS` para confirmar si `dpddpd` fue contraseña de producción.
-2. Rotar la contraseña real y mover a secret manager (D9-D10).
-3. Eliminar `dpddpd` del código, `git filter-repo` para borrar del historial. **Crítico**: hacerlo ANTES de migrar a web (no commitear nada con secretos al repo).
-
-### H2 (D105) — No hay módulo de notificaciones
-
-**Síntoma**: SLA incumplimiento se ve solo en el donut HTML de `FormInformeSLA`. No hay `modNotificaciones`, `modAlertas`, ni equivalente. Los `MsgBox` son el único feedback.
-
-**Impacto**: oportunidad enorme en web (email, webhook, push). El SLA incumple y nadie se entera hasta el informe mensual.
-
-**Acción** (TK-BRASS-9): sistema de notificaciones nativo en web con canales email + webhook; integración con Sentry/Telegram/Teams.
-
-### H3 (D106) — SLA architecture: decoupled 1:1
-
-**Síntoma**: `SLAValidator.bas` (validación) + `SLAReportService.bas` (cálculo + dataset) + `SLAHTMLService.bas` (render). Tres unidades independientes, sin dependencias cruzadas.
-
-**Impacto**: arquitectura a preservar **1:1** en la web. Tres servicios / tres módulos backend.
-
-### H4 (D107) — SLA con 3 estados (Cumple/Inconsistente/No cumple)
-
-**Síntoma**: TRCM y TRSS computan 3 estados. El "Inconsistente" (datos faltantes, fechas invertidas) es **warning**, no error.
-
-**Acción** (TK-BRASS-10): badge diferenciado por estado en el UI web. **No** usar el mismo color rojo para "No cumple" e "Inconsistente".
-
-### H5 (D108) — `modMigracionesSLA` idempotente
-
-**Síntoma**: `MigrarCamposSLA` detecta existencia y solo crea los 12 campos SLA faltantes en `TbEventos`.
-
-**Acción** (TK-BRASS-11): patrón a replicar en web. Cada migración de BD con `IF NOT EXISTS` y log de drift.
-
-### H6 (D109) — `TRSS_USA_DIAS_LABORABLES` boolean switch
-
-**Síntoma**: `SLAReportService.bas:20` — booleano que cambia entre "días corridos" vs "días laborables".
-
-**Acción**: en web, mapear a env var (`TRSS_USA_DIAS_LABORABLES=true|false`) o feature flag configurable. **No** hardcodear.
-
-### H7 (D110) — HTML corporativo con tokens Mistica
-
-**Síntoma**: `SLAHTMLService.GenerarInformeHTML_Corporate` usa tokens Mistica (`--color-highlight #0066FF`, `--color-success #5CB85C`, `--color-error #E66C64`, `--radius-button 32px`).
-
-**Acción** (TK-BRASS-12): el informe web debe ser server-side rendered con los mismos tokens. Email/notificación con el mismo aspect ratio.
-
-### H8 (D111) — Form con 33 botones
-
-**Síntoma**: `FormEventoGestion` — 8 botones `ComandoLimpiar*` + 25 acciones. Overload visible.
-
-**Acción** (TK-BRASS-13): en web, agrupar las `Limpiar*` en un chip "Clear all" + menú kebab para acciones secundarias. Reducción 1:8.
-
-### H9 (D112) — Hardcode `EquipoID = 538`
-
-**Síntoma**: `FormMaterialAltaReparacion.form.txt` filtro `WHERE (TbEventos.EquipoID) =538`. Filtra reparaciones de un solo equipo.
-
-**Acción** (TK-BRASS-14): sustituir por `m_ObjEntorno.EquipoIDPorDefecto` o por `OpenArgs.IDEquipo`. Probablemente un bug histórico a confirmar con Natalia.
-
-### H10 (D113) — Jornada laboral hardcoded 7.5h
-
-**Síntoma**: `LIbranza.Registrar` setea `Me.horas = 7.5` SIEMPRE antes del INSERT.
-
-**Acción** (TK-BRASS-15): parametrizar jornada por técnico o por tipo de técnico. Constante configurable via `TbTecnicos.JornadaLaboral` o `TbTipoTecnico.JornadaDefault`.
-
-### H11 (D114) — Anexos filesystem-based
-
-**Síntoma**: `Anexo.cls` copia `fso.CopyFile LocalOrigen → Destino` en `URLDirectorioAplicaciones\BRASS\ANEXOS\ANEXOS\`. Filesystem localizado, no BLOB.
-
-**Riesgos**: offline sin red → falla; sin antivirus → archivos infectados; sin versioning → sobrescritura pierde el anterior; carpetas compartidas Windows → problemas de permisos NTFS.
-
-**Acción** (TK-BRASS-16): migrar a S3-compatible (MinIO/Azure Blob) con versioning + virus scan + signed URLs temporales. Las URLs firmadas son equivalentes a `fso.FollowHyperlink`.
-
-### H12 (D115) — `TbAuxEventosParaInforme` (staging)
-
-**Síntoma**: tabla temporal que alimenta `FormInformesDesdeLista`. El feeder externo no se identificó en el walkthrough.
-
-**Acción**: identificar el feeder (¿otro proceso que la puebla? ¿es manual?). Si es externa, documentar el contrato.
-
-### H13 (D116) — `Tb0FiltroGestion` (histórico de filtros)
-
-**Síntoma**: `GestorInforme.cls` persiste cada filtro aplicado (Fecha, Datos [pipe-separated], Usuario, Visto=Sí/No).
-
-**Acción** (TK-BRASS-17): en web, esto tiene sentido como log de auditoría. Mantener como tabla relacional o migrar a log nativo.
-
-### H14 (D117) — 6 tablas de hechos de facturación
-
-**Síntoma**: `TbFacturaEventosInvolucrados`, `TbFacturaActividadesInvolucradas`, `TbFacturaMaterialesInvolucrados`, `TbFacturaSubcontratacionesInvolucrados`, `TbFacturaGastosInvolucrados`, `TbFacturaPrincipalPerfiles`. Cada `TbFacturaPrincipal` se desglosa en estas 6 tablas.
-
-**Acción**: las 6 tablas son el corazón de la trazabilidad Técnico → Tipo → Factura. **No** consolidar en una sola — preserva el particionamiento.
-
-### H15 (D118) — Parte = documento por Centro
-
-**Síntoma**: `TbPartesPpal` + `TbPartesDetalle` (1:N eventos). El parte es un documento firmado por cada Centro dentro de una Factura.
-
-**Acción** (TK-BRASS-18): workflow web: generar plantilla docx → cliente (Centro) firma → escanea PDF → upload. Múltiples centros firman partes distintos de la misma factura.
-
-### H16 (D119) — Precios versionados (SCD tipo 2 manual)
-
-**Síntoma**: `TipoTecnicoPrecio.Registrar` al dar de alta un tramo nuevo, hace `UPDATE` del tramo activo poniéndole `FechaFinal=Date`.
-
-**Acción**: el modelo web debe preservar el histórico (probablemente flag `activo` + tabla de histórico o vista materializada).
-
-### H17 (D120) — `TipoImpositivo=21%` y `Recargo=15%` hardcoded
-
-**Síntoma**: `Factura.cls:185-194` y `FormFacturaAlta.Form_Load:221-222`.
-
-**Acción** (TK-BRASS-19): parametrizar via `TbConfiguracion` (IVA España, RecargoEquipos nacionales). Migración a multi-cliente requiere esto configurable.
-
-### H18 (D121) — Código muerto enterrado en `FormInformeSLA`
-
-**Síntoma**: `cmdExportarExcel_Click` (líneas 349-614) está comentado. ~265 líneas de código legacy.
-
-**Acción**: en la web, no migrar. Limpieza natural.
-
-### H19 (D122) — Singleton globals
-
-**Síntoma**: `m_ObjEquipoMedidaActivo`, `m_ObjCalibracionEquipoMedidaActiva`, `m_ObjFacturaActiva`, `m_ObjEntidadParaAnexoActiva`, `m_ColEventosParaInformeDeRAC`, `m_ObjUsuarioConectado`, `m_TextoWin64`. Estado compartido entre forms sin contrato explícito.
-
-**Acción**: en web, traducir a Context API / store global (`/evento-activo`, `/factura-activa`, `/equipo-medida-activo`). El contrato debe ser tipado.
-
-### H20 (D123) — Reflection sobre Tag='DATO'
-
-**Síntoma**: `FormEquipoMedida`), `FormEquipoMedidaCalibracion`: foreach `Me.Controls` con tag='DATO' → `getPropiedad`/`SetPropiedad` sobre la clase de dominio.
-
-**Acción**: en web, **model binding estándar** (HTML forms + backend DTOs). No replicar el patrón Reflection.
-
-### H21 (D124) — WithEvents + RaiseEvent pattern
-
-**Síntoma**: `FormEquipoMedida` ↔ `FormEquipoMedidaCalibracion` ↔ `FormEquipoMedidaCalibracionesGestion` se comunican via `WithEvents` + `RaiseEvent` (sin OpenArgs).
-
-**Acción**: en web, traducir a store global / navegación declarativa. Los eventos encadenados desaparecen con un patrón de composición React/HMX.
-
-### H22 (D125) — `Numero_Actividad` race condition
-
-**Síntoma**: `FormActividadAlta` calcula `IDActividad = DCount("Tabla_Parte_Actividad") + 1`. Race condition potencial en concurrencia.
-
-**Acción**: migrar a IDENTITY (autonumérico). **No** mantener el patrón legacy.
-
-### H23 (Cross-cutting) — D102 booleanos como Text(2)
-
-**Síntoma**: `TbEquiposCalibrables`, `TbTecnicos`, etc. tienen booleanos como `Text(2)` 'Si'/'No'.
-
-**Acción**: en PostgreSQL, `BOOLEAN`. **No** migrar como `Text(2)`.
-
-### H24 (Cross-cutting) — Codificación de fechas
-
-**Síntoma**: `LIbranza.horas = 7.5`, `FormPlanificacionReprogramacion.FechaViernes()`, `FechaFinCalibracion`. Mezcla de `Date` y `String`.
-
-**Acción**: en web, todo `DATE` / `TIMESTAMP` nativo. Sin strings para fechas.
+| # | ID | Título | Severidad | Componentes afectados | Detalle |
+|---|---|---|---|---|---|
+| H1 | D104 | **Password REAL `dpddpd` hardcodeada** | CRITICAL | `Variables Globales.bas:526,560`, `Funciones Generales.bas:1334` | `wks.OpenDatabase(m_URL, False, False, "MS Access;PWD=dpddpd")` — abre `.accdb` externo (Lanzadera típicamente). Si la contraseña real es `dpddpd`, rotarla NO sirve. Si era dummy, el código la usa igualmente. **CRÍTICO: `git filter-repo` para borrar del historial antes de migrar**. |
+| H2 | D105 | **No hay módulo de notificaciones** | high | (ausencia en el código) | SLA incumplimiento se ve solo en el donut HTML de `FormInformeSLA`. No hay `modNotificaciones`, `modAlertas`, ni equivalente. Los `MsgBox` son el único feedback. Oportunidad enorme en web. |
+| H3 | D106 | **SLA architecture: decoupled 1:1** | high | `SLAValidator.bas`, `SLAReportService.bas`, `SLAHTMLService.bas` | 3 unidades independientes, sin dependencias cruzadas. Preservar **1:1** en web: 3 servicios / 3 módulos backend. |
+| H4 | D107 | **SLA con 3 estados (Cumple/Inconsistente/No cumple)** | high | `FormInformeSLA` UI | TRCM y TRSS computan 3 estados. El "Inconsistente" (datos faltantes, fechas invertidas) es **warning**, no error. Badge diferenciado por estado — **no** usar el mismo color rojo para "No cumple" e "Inconsistente". |
+| H5 | D108 | **`modMigracionesSLA` idempotente** | medium | `MigrarCamposSLA` | Detecta existencia y solo crea los 12 campos SLA faltantes en `TbEventos`. Patrón a replicar en web con `IF NOT EXISTS` y log de drift. |
+| H6 | D109 | **`TRSS_USA_DIAS_LABORABLES` boolean switch** | medium | `SLAReportService.bas:20` | Booleano entre "días corridos" vs "días laborables". En web, mapear a env var o feature flag configurable. **No** hardcodear. |
+| H7 | D110 | **HTML corporativo con tokens Mistica** | medium | `SLAHTMLService.GenerarInformeHTML_Corporate` | Usa tokens Mistica (`--color-highlight #0066FF`, `--color-success #5CB85C`, `--color-error #E66C64`, `--radius-button 32px`). El informe web debe ser server-side rendered con los mismos tokens. |
+| H8 | D111 | **Form con 33 botones** | medium | `FormEventoGestion` | 8 botones `ComandoLimpiar*` + 25 acciones. Overload visible. En web: agrupar las `Limpiar*` en un chip "Clear all" + menú kebab. Reducción 1:8. |
+| H9 | D112 | **Hardcode `EquipoID = 538`** | medium | `FormMaterialAltaReparacion.form.txt` | Filtro `WHERE (TbEventos.EquipoID) =538`. Filtra reparaciones de un solo equipo. Probablemente un bug histórico a confirmar con Natalia. |
+| H10 | D113 | **Jornada laboral hardcoded 7.5h** | medium | `LIbranza.Registrar` | `Me.horas = 7.5` SIEMPRE antes del INSERT. Parametrizar por técnico o por tipo de técnico. |
+| H11 | D114 | **Anexos filesystem-based** | high | `Anexo.cls` | `fso.CopyFile LocalOrigen → Destino` en `URLDirectorioAplicaciones\BRASS\ANEXOS\ANEXOS\`. Filesystem localizado, no BLOB. Riesgo: offline sin red, sin antivirus, sin versioning. Migrar a S3-compatible con versioning + virus scan + signed URLs. |
+| H12 | D115 | **`TbAuxEventosParaInforme` (staging)** | low | `FormInformesDesdeLista` | Tabla temporal. El feeder externo no se identificó en el walkthrough. Identificar el feeder (¿otro proceso que la puebla? ¿es manual?). |
+| H13 | D116 | **`Tb0FiltroGestion` (histórico de filtros)** | low | `GestorInforme.cls` | Persiste cada filtro aplicado (Fecha, Datos [pipe-separated], Usuario, Visto=Sí/No). En web: log de auditoría. Mantener como tabla relacional o migrar a log nativo. |
+| H14 | D117 | **6 tablas de hechos de facturación** | high | `TbFacturaEventosInvolucrados`, `TbFacturaActividadesInvolucradas`, `TbFacturaMaterialesInvolucrados`, `TbFacturaSubcontratacionesInvolucradas`, `TbFacturaGastosInvolucrados`, `TbFacturaPrincipalPerfiles` | Cada `TbFacturaPrincipal` se desglosa en estas 6 tablas. Corazón de la trazabilidad. **No** consolidar. |
+| H15 | D118 | **Parte = documento por Centro** | high | `TbPartesPpal` + `TbPartesDetalle` | 1:N eventos. Documento firmado por cada Centro dentro de una Factura. Workflow web: docx → firma → escanea PDF → upload. |
+| H16 | D119 | **Precios versionados (SCD tipo 2 manual)** | high | `TipoTecnicoPrecio.Registrar` | Da de alta un tramo nuevo, hace `UPDATE` del tramo activo poniéndole `FechaFinal=Date`. Preservar histórico (flag `activo` + tabla de histórico o vista materializada). |
+| H17 | D120 | **`TipoImpositivo=21%` y `Recargo=15%` hardcoded** | high | `Factura.cls:185-194`, `FormFacturaAlta.Form_Load:221-222` | Parametrizar via `TbConfiguracion` (IVA España, RecargoEquipos nacionales). Migración a multi-cliente requiere esto configurable. |
+| H18 | D121 | **Código muerto enterrado en `FormInformeSLA`** | low | `cmdExportarExcel_Click` (líneas 349-614) | ~265 líneas de código legacy comentado. En la web, no migrar. Limpieza natural. |
+| H19 | D122 | **Singleton globals** | high | `m_ObjEquipoMedidaActivo`, `m_ObjCalibracionEquipoMedidaActiva`, `m_ObjFacturaActiva`, `m_ObjEntidadParaAnexoActiva`, `m_ColEventosParaInformeDeRAC`, `m_ObjUsuarioConectado`, `m_TextoWin64` | Estado compartido entre forms sin contrato explícito. En web: Context API / store global tipado. |
+| H20 | D123 | **Reflection sobre Tag='DATO'** | medium | `FormEquipoMedida`, `FormEquipoMedidaCalibracion` | foreach `Me.Controls` con tag='DATO' → `getPropiedad`/`SetPropiedad`. En web: **model binding estándar** (HTML forms + backend DTOs). |
+| H21 | D124 | **WithEvents + RaiseEvent pattern** | medium | `FormEquipoMedida` ↔ `FormEquipoMedidaCalibracion` ↔ `FormEquipoMedidaCalibracionesGestion` | Se comunican via `WithEvents` + `RaiseEvent` (sin OpenArgs). En web: store global / navegación declarativa. |
+| H22 | D125 | **`Numero_Actividad` race condition** | high | `FormActividadAlta` | `IDActividad = DCount("Tabla_Parte_Actividad") + 1`. Race condition potencial en concurrencia. Migrar a IDENTITY (autonumérico). |
+| H23 | D102 cross-cutting | **Booleanos como `Text(2)`** | low | `TbEquiposCalibrables`, `TbTecnicos` | En PostgreSQL, `BOOLEAN`. **No** migrar como `Text(2)`. |
+| H24 | D124 cross-cutting | **Codificación de fechas** | low | `LIbranza.horas = 7.5`, `FormPlanificacionReprogramacion.FechaViernes()`, `FechaFinCalibracion` | Mezcla de `Date` y `String`. En web, todo `DATE` / `TIMESTAMP` nativo. Sin strings para fechas. |
 
 ---
 
@@ -321,18 +207,18 @@
 
 | Pantalla | Decisión | Justificación |
 |---|---|---|
-| FormEventoGestion (33 botones) | **Mejorar**: consolidar `Limpiar*` en un chip. Menú kebab para acciones secundarias. | D111 — overload visible. |
-| FormEventoAlta (53+ controles) | **Preservar** cascada BUI/Subsistema/Equipo. **Mejorar**: wizard 2-3 pasos. | Cascada es dominio real. Pero dense form es UX pobre. |
-| FormTecnico (alta/edicion) | **Nuevo paradigma**: alta inline en lista (spreadsheet-style). | Modal + tabs es overkill para "agregar un técnico". |
-| FormPlanificacionReprogramacion | **Nuevo paradigma**: wizard con date picker visual. **Mantener** "motivo obligatorio". | Reprogramación es operación delicada + auditable. |
-| FormInformeSLA | **Preservar** 100% del comportamiento. **Mejorar** donuts interactivos (click → filtrado). | El HTML Mistica es el activo más cuidado de la app. |
-| FormAnexos | **Nuevo paradigma**: upload directo a S3 con preview inline. **No** mantener filesystem local. | D114 — cambio de paradigma completo. |
-| Form0BDOpciones (menú plano) | **Mejorar**: sidebar persistente con iconos. **Preservar** jerarquía funcional. | Menú plano es UX pobre; sidebar es estándar. |
+| `FormEventoGestion` (33 botones) | **Mejorar**: consolidar `Limpiar*` en un chip. Menú kebab para acciones secundarias. | D111 — overload visible. |
+| `FormEventoAlta` (53+ controles) | **Preservar** cascada BUI/Subsistema/Equipo. **Mejorar**: wizard 2-3 pasos. | Cascada es dominio real. Pero dense form es UX pobre. |
+| `FormTecnico` (alta/edicion) | **Nuevo paradigma**: alta inline en lista (spreadsheet-style). | Modal + tabs es overkill para "agregar un técnico". |
+| `FormPlanificacionReprogramacion` | **Nuevo paradigma**: wizard con date picker visual. **Mantener** "motivo obligatorio". | Reprogramación es operación delicada + auditable. |
+| `FormInformeSLA` | **Preservar** 100% del comportamiento. **Mejorar** donuts interactivos (click → filtrado). | El HTML Mistica es el activo más cuidado de la app. |
+| `FormAnexos` | **Nuevo paradigma**: upload directo a S3 con preview inline. **No** mantener filesystem local. | D114 — cambio de paradigma completo. |
+| `Form0BDOpciones` (menú plano) | **Mejorar**: sidebar persistente con iconos. **Preservar** jerarquía funcional. | Menú plano es UX pobre; sidebar es estándar. |
 | Forms catálogo (BUI, Nodo, SubSistema) | **Preservar** validación de unicidad + bloqueo por eventos. **Mejorar**: edición inline. | CRUD simple no necesita alta como form modal. |
-| FormFacturaAlta | **Preservar** simulación + validación dura. **Mejorar**: preview por tipo impositivo configurable. | Flujo crítico, no revolucionar. |
-| FormParteGestion | **Nuevo paradigma**: generador de docx → cliente escanea → upload PDF. | El workflow actual es arcaico. |
-| FormMaterialesGestion (datos hardcoded) | **Rehacer**: SELECT dinámico o eliminar el formulario. | D-05 — es placeholder visual, no funcional. |
-| FormTecnicoConsultaHoras (sin .cls) | **Rehacer**: extraer lógica a servicio backend. | D115 — código embebido en form.txt. |
+| `FormFacturaAlta` | **Preservar** simulación + validación dura. **Mejorar**: preview por tipo impositivo configurable. | Flujo crítico, no revolucionar. |
+| `FormParteGestion` | **Nuevo paradigma**: generador de docx → cliente escanea → upload PDF. | El workflow actual es arcaico. |
+| `FormMaterialesGestion` (datos hardcoded) | **Rehacer**: SELECT dinámico o eliminar el formulario. | D-05 — es placeholder visual, no funcional. |
+| `FormTecnicoConsultaHoras` (sin .cls) | **Rehacer**: extraer lógica a servicio backend. | D115 — código embebido en form.txt. |
 
 ### 4.2 Arquitectura: hexagonal ports
 
@@ -353,10 +239,10 @@
 
 ### 4.3 Seguridad D104
 
-- **Eliminar `dpddpd` del código**: TK-BRASS-5.
-- **Mover a secret manager**: TK-BRASS-5.
-- **`git filter-repo` para borrar del historial**: TK-BRASS-5 (urgente, antes de cualquier push).
-- **Auditar git history de `00_BRASS`**: TK-BRASS-5.
+- **Eliminar `dpddpd` del código**: TK-BRASS-1..4.
+- **Mover a secret manager**: TK-BRASS-2.
+- **`git filter-repo` para borrar del historial**: TK-BRASS-3 (urgente, antes de cualquier push).
+- **Auditar git history de `00_BRASS`**: TK-BRASS-1.
 
 ### 4.4 Datos
 
@@ -435,14 +321,14 @@
 
 > NO crear issues todavía. Estos nacen de la épica al final del ciclo de revisión.
 
-### Seguridad (CRITICAL)
+### 7.1 Seguridad (CRITICAL)
 
 - **TK-BRASS-1**: [SECURITY] Auditar git history de `00_BRASS` para `dpddpd` (raíz desde `Variables Globales.bas:526,560` y `Funciones Generales.bas:1334`).
 - **TK-BRASS-2**: [SECURITY] Rotar contraseña real del `.accdb` externo (Lanzadera típicamente) y mover a secret manager.
 - **TK-BRASS-3**: [SECURITY] `git filter-repo` para borrar `dpddpd` del historial de `00_BRASS`.
 - **TK-BRASS-4**: [SECURITY] Eliminar fallback `dpddpd` de `Variables Globales.bas`; usar `Err.Raise` si falla `GetPasswordDB`.
 
-### Funcionalidad core
+### 7.2 Funcionalidad core
 
 - **TK-BRASS-5**: [CRUD] Gestión de Nodos/BUIs/Subsistemas/Ubicaciones (F2-F5) — 4 forms de catálogo con validación de unicidad y bloqueo por eventos.
 - **TK-BRASS-6**: [CRUD] Equipos de Medida + Calibraciones (F6, F7) — ciclo de calibración con alerta 75 días.
@@ -483,23 +369,6 @@
 
 ---
 
-## Anexo · Tabla de fuentes
-
-| Fuente | Aporta |
-|---|---|
-| `docs/03-aplicaciones/brass/capabilities.md` | Inventario de features (vista de alto nivel) |
-| `docs/03-aplicaciones/brass/data-model.md` | 60 tablas con definiciones + columnas |
-| `docs/03-aplicaciones/brass/forms.md` | (walkthrough no incluido — referencia cruzada a epic) |
-| `docs/03-aplicaciones/brass/integrations-automation.md` | Cross-app, testing sandbox, flags |
-| `docs/03-aplicaciones/brass/migration-matrix.md` | Mapeo legacy → web por campo |
-| `docs/03-aplicaciones/brass/security-rules.md` | D104 security finding |
-| `docs/03-aplicaciones/brass/README.md` | Estado del lote, hallazgos críticos |
-| `data/staging/brass/src/classes/*.cls` | 27 clases de dominio |
-| `data/staging/brass/src/modules/*.bas` | 16 módulos (Constructor, Variables Globales, etc.) |
-| `data/staging/brass/src/forms/*.form.txt` | 88 forms con RecordSource/RowSource |
-| engram obs #24097 | Audit codegraph-vba |
-| engram topic_key `brass/deep-discovery-2026-08-06` | **Consolidado** de 5 sub-agentes walkthrough |
-
 ## Anexo · Decisiones referenciadas (D5-D104)
 
 | Decisión | Aplicación a Brass |
@@ -519,6 +388,25 @@
 | D102 (booleanos `Text(2)`) | APLICAR — migrar a `BOOLEAN` |
 | D104 (secret manager) | CRITICAL — rotar `dpddpd` |
 
+## Anexo · Tabla de fuentes
+
+| Fuente | Aporta |
+|---|---|
+| `docs/03-aplicaciones/brass/capabilities.md` | Inventario de features (vista de alto nivel) |
+| `docs/03-aplicaciones/brass/data-model.md` | 60 tablas con definiciones + columnas |
+| `docs/03-aplicaciones/brass/forms.md` | (walkthrough no incluido — referencia cruzada a epic) |
+| `docs/03-aplicaciones/brass/integrations-automation.md` | Cross-app, testing sandbox, flags |
+| `docs/03-aplicaciones/brass/migration-matrix.md` | Mapeo legacy → web por campo |
+| `docs/03-aplicaciones/brass/security-rules.md` | D104 security finding |
+| `docs/03-aplicaciones/brass/README.md` | Estado del lote, hallazgos críticos |
+| `data/staging/brass/src/classes/*.cls` | 27 clases de dominio |
+| `data/staging/brass/src/modules/*.bas` | 16 módulos (Constructor, Variables Globales, etc.) |
+| `data/staging/brass/src/forms/*.form.txt` | 88 forms con RecordSource/RowSource |
+| engram obs #24097 | Audit codegraph-vba |
+| engram topic_key `brass/deep-discovery-2026-08-06` | **Consolidado** de 5 sub-agentes walkthrough |
+| [DOCS](../../../DOCS.md) | Technical reference raíz del blueprint |
+| [CODEBASE-GUIDE](../../../CODEBASE-GUIDE.md) | Para mantenedores del blueprint |
+
 ## Checklist del documento
 
 - [x] Scope con 47 features detalladas por grupo
@@ -527,12 +415,22 @@
 - [x] Decisiones UX Preservar/Mejorar/Nuevo paradigma por pantalla
 - [x] Decisiones arquitectura hexagonal ports
 - [x] Criterios de aceptación verificables y agrupados por dimensión
-- [x] 6 pendientes operacionales antes, 4 durante, 4 en go-live
+- [x] 14 pendientes operacionales antes, 10 durante, 4 en go-live
 - [x] 40 tickets derivables preview (TK-BRASS-1..40)
 - [x] Tabla de decisiones referenciadas (D5-D104)
 - [x] Tabla de fuentes
 - [x] Idioma: español técnico neutro. Identificadores y paths sin traducir.
+- [x] "The sentence that organizes" presente
+- [x] "Scope del scope" presente
+- [x] Sin emojis decorativos
+- [x] Cross-references a DOCS, CODEBASE-GUIDE, AGENTS
+- [x] Quick Navigation table
+- [x] Hallazgos en tabla con severity
 
 ## Siguiente paso
 
 Revisión con el equipo. Una vez validada, abrir SDD (`sdd-propose` + `sdd-spec` + `sdd-design` + `sdd-tasks`) para arrancar la implementación por ticket, comenzando por **TK-BRASS-1** (auditoría de git history para `dpddpd`) antes que cualquier otro cambio de código.
+
+---
+
+[← Back to Brass README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
