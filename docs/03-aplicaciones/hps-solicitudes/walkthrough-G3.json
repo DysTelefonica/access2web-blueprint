@@ -1,0 +1,2153 @@
+{
+  "group": "G3",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout",
+    "map_form_behavior",
+    "verify_form_bindings"
+  ],
+  "known_degraded_tools": [
+    "codegraph_explore (autoFetchCodeGraph:true returns 0 evidence for many forms — codegraph index may be stale for hps-solicitudes cross-references)"
+  ],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T08:56:44.642Z",
+  "forms_count": 20,
+  "forms": [
+    {
+      "formName": "Form_FormUsuariosHPSBusqueda",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormUsuariosHPSBusqueda.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 245,
+        "source_size_bytes": 7800,
+        "status": "ok",
+        "handlers_count": 45,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormUsuariosHPSBusqueda.cls — calls(calls), references(references), event-handler(event-handler), VBA.DoEvents(function), VBA.DoEvents(calls), +25 more",
+          "src/forms/Form_FormSolicitudesAltaFechas.cls — calls(calls), references(references), event-handler(event-handler), CorreoAlAdministrador(references), Form(class), +4 more"
+        ],
+        "excerpt_length": 17610
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "ListaFiltrados",
+            "source": "ID;DNI;Nombre"
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 2
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "Control \"lblTitulo\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Etiqueta237",
+            "message": "Control \"Etiqueta237\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 14,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 1,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"ListaFiltrados\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "ListaFiltrados",
+            "data": {
+              "rowSourcePreview": "\"ID;DNI;Nombre\"",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudRenovacionFechas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudRenovacionFechas.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 1601,
+        "source_size_bytes": 50937,
+        "status": "ok",
+        "handlers_count": 39,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudRenovacionFechas.cls — calls(calls), event-handler(event-handler), CorreoAlAdministrador(references), references(references), ComandoEliminarAltaMarga_Click(function), +3 more",
+          "src/classes/SolicitudFechasOperaciones.cls — references(references), TbSolicitudesFechas(references), getdb(calls), SolicitudFechas(references), EsAutomatizacionActiva(function), +23 more"
+        ],
+        "excerpt_length": 19707
+      },
+      "ui": {
+        "controls_count": 71,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "sections": 0,
+        "findings_count": 15,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 13,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 165–183): FechaEnvioExcel, ComandoRegistrarExcelEnviado, ComandoURLExcelSolicitud, ComandoVerHTMLEnvioExcel, ComandoEliminarExcelEnviado.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 165,
+              "maxTop": 183,
+              "controls": [
+                "FechaEnvioExcel",
+                "ComandoRegistrarExcelEnviado",
+                "ComandoURLExcelSolicitud",
+                "ComandoVerHTMLEnvioExcel",
+                "ComandoEliminarExcelEnviado"
+              ]
+            }
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 588–603): FechaCorreoRecordatorioExcel1, Etiqueta115, ComandoEnvioRecordatorioExcel1, Etiqueta144, FechaPrevistaCorreoRecordatorioExcel1, ComandoVerRecordatorioExcel1, ComandoEliminarRecordatorioExcel1, ComandoActualizarRecordatoriosExcelPreMarga.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 588,
+              "maxTop": 603,
+              "controls": [
+                "FechaCorreoRecordatorioExcel1",
+                "Etiqueta115",
+                "ComandoEnvioRecordatorioExcel1",
+                "Etiqueta144",
+                "FechaPrevistaCorreoRecordatorioExcel1",
+                "ComandoVerRecordatorioExcel1",
+                "ComandoEliminarRecordatorioExcel1",
+                "ComandoActualizarRecordatoriosExcelPreMarga"
+              ]
+            }
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 1005–1038): FechaCorreoRecordatorioExcel2, Etiqueta118, ComandoEnvioRecordatorioExcel2, Etiqueta146, FechaPrevistaCorreoRecordatorioExcel2, ComandoVerRecordatorioExcel2, ComandoEliminarRecordatorioExcel2.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 1005,
+              "maxTop": 1038,
+              "controls": [
+                "FechaCorreoRecordatorioExcel2",
+                "Etiqueta118",
+                "ComandoEnvioRecordatorioExcel2",
+                "Etiqueta146",
+                "FechaPrevistaCorreoRecordatorioExcel2",
+                "ComandoVerRecordatorioExcel2",
+                "ComandoEliminarRecordatorioExcel2"
+              ]
+            }
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 1473–1515): Etiqueta175, FechaPrevistaAutocancelacionPreMarga, ComandoEnvioCancelacionPreMarga, ComandoVerCancelacionPreMarga.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 1473,
+              "maxTop": 1515,
+              "controls": [
+                "Etiqueta175",
+                "FechaPrevistaAutocancelacionPreMarga",
+                "ComandoEnvioCancelacionPreMarga",
+                "ComandoVerCancelacionPreMarga"
+              ]
+            }
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 71,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudRenovacionDatos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudRenovacionDatos.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 923,
+        "source_size_bytes": 30669,
+        "status": "ok",
+        "handlers_count": 22,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudRenovacionDatos.cls — references(references), calls(calls), event-handler(event-handler), FormularioAbierto(calls), CorreoAlAdministrador(references), +39 more"
+        ],
+        "excerpt_length": 19670
+      },
+      "ui": {
+        "controls_count": 53,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 5,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "IDEmpresaUsuario",
+            "source": "1;Appian;2;AXPE;..."
+          },
+          {
+            "control": "CorreosAutomaticos",
+            "source": "Sí;No"
+          },
+          {
+            "control": "IDEmpresaTramitadora",
+            "source": "12;TDE S.A.U.;21;TME S.A.U.;..."
+          },
+          {
+            "control": "Gestor",
+            "source": "Martina Torralba Rodríguez;Esperanza del Álamo Arriba"
+          },
+          {
+            "control": "Motivo_HPS",
+            "source": "ARGO;BESKAR;..."
+          }
+        ]
+      },
+      "geometry": {
+        "sections": 0,
+        "findings_count": 14,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 2,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 10,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblEstadoSolicitud",
+            "message": "Control \"lblEstadoSolicitud\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoBuscarExpediente <-> ComandoIrABusquedaExpedientes",
+            "message": "Controls \"ComandoBuscarExpediente\" and \"ComandoIrABusquedaExpedientes\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 195–210): Etiqueta225, Etiqueta51, CorreosAutomaticos, Etiqueta94, Gestor, TIPO, ComandoCambioTipo.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 195,
+              "maxTop": 210,
+              "controls": [
+                "Etiqueta225",
+                "Etiqueta51",
+                "CorreosAutomaticos",
+                "Etiqueta94",
+                "Gestor",
+                "TIPO",
+                "ComandoCambioTipo"
+              ]
+            }
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 735–750): Etiqueta80, Nombre, Etiqueta96, Apellido1, Etiqueta98, Apellido2.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 735,
+              "maxTop": 750,
+              "controls": [
+                "Etiqueta80",
+                "Nombre",
+                "Etiqueta96",
+                "Apellido1",
+                "Etiqueta98",
+                "Apellido2"
+              ]
+            }
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 53,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 5,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 5
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"IDEmpresaUsuario\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "IDEmpresaUsuario",
+            "data": {
+              "rowSourcePreview": "\"1;Appian;2;AXPE;...",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"CorreosAutomaticos\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "CorreosAutomaticos",
+            "data": {
+              "rowSourcePreview": "\"Sí;No\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"IDEmpresaTramitadora\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "IDEmpresaTramitadora",
+            "data": {
+              "rowSourcePreview": "\"12;TDE S.A.U.;21;TME S.A.U.;...",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"Gestor\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "Gestor",
+            "data": {
+              "rowSourcePreview": "\"Martina Torralba Rodríguez;Esperanza del Álamo Arriba\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"Motivo_HPS\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "Motivo_HPS",
+            "data": {
+              "rowSourcePreview": "\"ARGO;BESKAR;...",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudRenovacion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudRenovacion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 140,
+        "source_size_bytes": 4460,
+        "status": "ok",
+        "handlers_count": 35,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudRenovacion.cls — Form_FormSolicitudRenovacion(class), solicitud(class), ComandoVerLogs_Click(function), EstablecerDatos(function), ComandoAyuda_Click(function), +3 more",
+          "src/forms/Form_FormSolicitudAlta.cls — solicitud(class), Form_FormSolicitudAlta(class), ComandoRegistrar_Click(function), cmdSalir_Click(function), ComandoAyuda_Click(function), +2 more"
+        ],
+        "excerpt_length": 10401
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 27,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 22,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "lblTitulo <-> ControlDeNavegación0",
+            "message": "Controls \"lblTitulo\" and \"ControlDeNavegación0\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "lblTitulo <-> NavDatos",
+            "message": "Controls \"lblTitulo\" and \"NavDatos\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 13,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudesTraspasoFechas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudesTraspasoFechas.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 1112,
+        "source_size_bytes": 35208,
+        "status": "ok",
+        "handlers_count": 39,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudesTraspasoFechas.cls — calls(calls), event-handler(event-handler), FormularioAbierto(calls), opens-form(opens-form), CorreoAlAdministrador(references), +2 more",
+          "src/classes/SolicitudFechasOperaciones.cls — references(references), TbSolicitudesFechas(references), getdb(calls), SolicitudFechas(references), EsAutomatizacionActiva(function), +23 more"
+        ],
+        "excerpt_length": 19657
+      },
+      "ui": {
+        "controls_count": 45,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "sections": 0,
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 9,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 165–183): FechaEnvioExcel, ComandoRegistrarExcelEnviado, ComandoURLExcelSolicitud, ComandoVerHTMLEnvioExcel, ComandoEliminarExcelEnviado.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 165,
+              "maxTop": 183,
+              "controls": [
+                "FechaEnvioExcel",
+                "ComandoRegistrarExcelEnviado",
+                "ComandoURLExcelSolicitud",
+                "ComandoVerHTMLEnvioExcel",
+                "ComandoEliminarExcelEnviado"
+              ]
+            }
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 588–603): FechaCorreoRecordatorioExcel1, Etiqueta115, ComandoEnvioRecordatorioExcel1, Etiqueta144, FechaPrevistaCorreoRecordatorioExcel1, ComandoVerRecordatorioExcel1, ComandoEliminarRecordatorioExcel1, ComandoActualizarRecordatoriosExcelPreMarga.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 588,
+              "maxTop": 603,
+              "controls": [
+                "FechaCorreoRecordatorioExcel1",
+                "Etiqueta115",
+                "ComandoEnvioRecordatorioExcel1",
+                "Etiqueta144",
+                "FechaPrevistaCorreoRecordatorioExcel1",
+                "ComandoVerRecordatorioExcel1",
+                "ComandoEliminarRecordatorioExcel1",
+                "ComandoActualizarRecordatoriosExcelPreMarga"
+              ]
+            }
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 1005–1038): FechaCorreoRecordatorioExcel2, Etiqueta118, ComandoEnvioRecordatorioExcel2, Etiqueta146, FechaPrevistaCorreoRecordatorioExcel2, ComandoVerRecordatorioExcel2, ComandoEliminarRecordatorioExcel2.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 1005,
+              "maxTop": 1038,
+              "controls": [
+                "FechaCorreoRecordatorioExcel2",
+                "Etiqueta118",
+                "ComandoEnvioRecordatorioExcel2",
+                "Etiqueta146",
+                "FechaPrevistaCorreoRecordatorioExcel2",
+                "ComandoVerRecordatorioExcel2",
+                "ComandoEliminarRecordatorioExcel2"
+              ]
+            }
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Controls form a visual row within 50 twips (Top range 1473–1515): Etiqueta175, FechaPrevistaAutocancelacionPreMarga, ComandoEnvioCancelacionPreMarga, ComandoVerCancelacionPreMarga.",
+            "data": {
+              "alignmentThresholdTwips": 50,
+              "minTop": 1473,
+              "maxTop": 1515,
+              "controls": [
+                "Etiqueta175",
+                "FechaPrevistaAutocancelacionPreMarga",
+                "ComandoEnvioCancelacionPreMarga",
+                "ComandoVerCancelacionPreMarga"
+              ]
+            }
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 45,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudesGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudesGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 853,
+        "source_size_bytes": 29643,
+        "status": "ok",
+        "handlers_count": 28,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudesGestion.cls — calls(calls), references(references), event-handler(event-handler), Filtrar(calls), AvanceCerrar(references), +46 more"
+        ],
+        "excerpt_length": 19651
+      },
+      "ui": {
+        "controls_count": 35,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 6,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "ListaFiltrados",
+            "source": "IDSolicitud;DNI;Nombre;Estado"
+          },
+          {
+            "control": "TIPO",
+            "source": "Todos;Alta;Traspaso;Renovación;Elevación Grado"
+          },
+          {
+            "control": "Estado",
+            "source": "0;Todos;1;Pendiente de Envío Excel;2;..."
+          },
+          {
+            "control": "Gestor",
+            "source": "0;Todos;127;Esperanza;162;Martina"
+          },
+          {
+            "control": "IDEmpresaUsuario",
+            "source": "0;Todos;1;Appian;2;AXPE;..."
+          },
+          {
+            "control": "IDExpediente",
+            "source": "0;Todos;1133;0000/000;..."
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 30,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 15,
+          "FORM_LAYOUT_ALIGNMENT": 9,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Etiqueta237",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 3,
+        "controls_total": 35,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 6,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 6
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "ListaFiltrados",
+            "data": {
+              "rowSourcePreview": "\"IDSolicitud;DNI;Nombre;Estado\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "TIPO",
+            "data": {
+              "rowSourcePreview": "\"Todos;Alta;...\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "Estado",
+            "data": {
+              "rowSourcePreview": "\"0;Todos;...\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "Gestor",
+            "data": {
+              "rowSourcePreview": "\"0;Todos;...\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "IDEmpresaUsuario",
+            "data": {
+              "rowSourcePreview": "\"0;Todos;...\"",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudesAltaTraspasoDatos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudesAltaTraspasoDatos.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 921,
+        "source_size_bytes": 30532,
+        "status": "ok",
+        "handlers_count": 26,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls — references, calls, event-handler, FormularioAbierto, CorreoAlAdministrador, +43 more",
+          "src/classes/SolicitudFechasOperaciones.cls — references, TbSolicitudesFechas, getdb, SolicitudFechas, EsAutomatizacionActiva, +23 more"
+        ],
+        "excerpt_length": 19690
+      },
+      "ui": {
+        "controls_count": 55,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 6,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "IDEmpresaUsuario",
+            "source": "1065;Ad Maiorem;53;AICOX;..."
+          },
+          {
+            "control": "CorreosAutomaticos",
+            "source": "Sí;No"
+          },
+          {
+            "control": "IDEmpresaTramitadora",
+            "source": "1065;Ad Maiorem;1074;JOJACAR;12;TDE;..."
+          },
+          {
+            "control": "Gestor",
+            "source": "Ana Rubio Canales;Esperanza;Martina;Almudena;..."
+          },
+          {
+            "control": "Motivo_HPS",
+            "source": "5G ARMADA;ANDRÉS;ARGO;ARGO L2;BESKAR;..."
+          },
+          {
+            "control": "emailResponsable",
+            "source": "ismael.hernandez@inelcom.es;Ismael Hernández;..."
+          }
+        ]
+      },
+      "geometry": {
+        "sections": 0,
+        "findings_count": 15,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 2,
+          "FORM_LAYOUT_ALIGNMENT": 11,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoBuscarExpediente <-> ComandoIrABusquedaExpedientes"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "txtJustificacion <-> txtIdJustificacion"
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 195–210: Etiqueta225, Etiqueta51, CorreosAutomaticos, Etiqueta94, Gestor, TIPO, ComandoCambioTipo."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 735–750: Etiqueta80, Nombre, Etiqueta96, Apellido1, Etiqueta98, Apellido2."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 55,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 6,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 6
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "IDEmpresaUsuario",
+            "data": {
+              "rowSourcePreview": "\"1065;Ad Maiorem;...",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "CorreosAutomaticos",
+            "data": {
+              "rowSourcePreview": "\"Sí;No\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "IDEmpresaTramitadora",
+            "data": {
+              "rowSourcePreview": "\"1065;...",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "Gestor",
+            "data": {
+              "rowSourcePreview": "\"Ana Rubio...",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "Motivo_HPS",
+            "data": {
+              "rowSourcePreview": "\"5G ARMADA;...",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudesAltaRenovacionFechas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudesAltaRenovacionFechas.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 727,
+        "source_size_bytes": 23492,
+        "status": "ok",
+        "handlers_count": 23,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls — calls, references, CorreoAlAdministrador, event-handler, FormularioAbierto, +29 more"
+        ],
+        "excerpt_length": 19692
+      },
+      "ui": {
+        "controls_count": 52,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "sections": 0,
+        "findings_count": 15,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 13,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 75–75: FechaEnvioExcel, ComandoEnvioExcel, ComandoVerHTMLEnvioExcel."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 480–495: FechaCorreoRecordatorioExcel1, Etiqueta115, ComandoEnvioRecordatorioExcel1, Etiqueta144, FechaPrevistaCorreoRecordatorioExcel1, ComandoVerRecordatorioExcel1."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 897–915: FechaCorreoRecordatorioExcel2, Etiqueta118, ComandoEnvioRecordatorioExcel2, Etiqueta146, FechaPrevistaCorreoRecordatorioExcel2, ComandoVerRecordatorioExcel2."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 1395–1407: Etiqueta175, FechaPrevistaAutocancelacionPreMarga, ComandoEnvioCancelacionPreMarga, ComandoVerCancelacionPreMarga."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 52,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudesAltaFechas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudesAltaFechas.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 1609,
+        "source_size_bytes": 51105,
+        "status": "ok",
+        "handlers_count": 40,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudesAltaFechas.cls — calls, references, event-handler, Registrar, CorreoAlAdministrador, +9 more",
+          "src/classes/SolicitudFechasOperaciones.cls — references, TbSolicitudesFechas, getdb, SolicitudFechas, EsAutomatizacionActiva, +23 more"
+        ],
+        "excerpt_length": 19681
+      },
+      "ui": {
+        "controls_count": 71,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "sections": 0,
+        "findings_count": 15,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 13,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 165–183: FechaEnvioExcel, ComandoRegistrarExcelEnviado, ComandoURLExcelSolicitud, ComandoVerHTMLEnvioExcel, ComandoEliminarExcelEnviado."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 588–603: 8 controls including FechaCorreoRecordatorioExcel1."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 1005–1038: 7 controls including FechaCorreoRecordatorioExcel2."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "severity": "warning",
+            "message": "Top range 1473–1515: Etiqueta175, FechaPrevistaAutocancelacionPreMarga, ComandoEnvioCancelacionPreMarga, ComandoVerCancelacionPreMarga."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 71,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudAltaTraspaso",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudAltaTraspaso.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 132,
+        "source_size_bytes": 4404,
+        "status": "ok",
+        "handlers_count": 31,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudAltaTraspaso.cls — Form_FormSolicitudAltaTraspaso(class), solicitud(class), Form_Load(function), cmdSalir_Click(function), ComandoVerLogs_Click(function), +3 more",
+          "src/forms/Form_FormSolicitudAlta.cls — solicitud(class), Form_FormSolicitudAlta(class), ComandoRegistrar_Click(function), cmdSalir_Click(function), ComandoAyuda_Click(function), +2 more"
+        ],
+        "excerpt_length": 10312
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 27,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 22,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> ControlDeNavegación0"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> FrmDetalle"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 13,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSolicitudAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormSolicitudAlta.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 122,
+        "source_size_bytes": 3405,
+        "status": "ok",
+        "handlers_count": 31,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormSolicitudAlta.cls — Form_FormSolicitudAlta(class), solicitud(class), ComandoRegistrar_Click(function), cmdSalir_Click(function), ComandoAyuda_Click(function), +2 more",
+          "src/forms/Form_FormSolicitudAltaTraspaso.cls — solicitud(class), Form_FormSolicitudAltaTraspaso(class), Form_Load(function), cmdSalir_Click(function), ComandoVerLogs_Click(function), +3 more"
+        ],
+        "excerpt_length": 10280
+      },
+      "ui": {
+        "controls_count": 9,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "TIPO",
+            "source": "Alta;Traspaso;Renovación;Elevación Grado"
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 2
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Etiqueta232",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 9,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 1,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "TIPO",
+            "data": {
+              "rowSourcePreview": "\"Alta;Traspaso;Renovación;Elevación Grado\"",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormResponsablesGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormResponsablesGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 345,
+        "source_size_bytes": 10257,
+        "status": "ok",
+        "handlers_count": 46,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormResponsablesGestion.cls — calls(calls), references(references), event-handler(event-handler), Filtrar(calls), AvanceCerrar(references), +32 more",
+          "src/classes/Entorno.cls — Responsables(function), getResponsables(calls)"
+        ],
+        "excerpt_length": 14395
+      },
+      "ui": {
+        "controls_count": 16,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "ListaFiltrados",
+            "source": "IDSolicitud;DNI;Nombre;Estado"
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 3
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Etiqueta237",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 16,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 1,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "ListaFiltrados",
+            "data": {
+              "rowSourcePreview": "\"IDSolicitud;DNI;Nombre;Estado\"",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormResponsable",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormResponsable.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 205,
+        "source_size_bytes": 5773,
+        "status": "ok",
+        "handlers_count": 41,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormResponsable.cls — Form_FormResponsable(class), ComandoAyuda_Click(function), HaHabidoCambios(function), ComandoRegistrar_Click(function), EstablecerDatos(function), +3 more",
+          "src/classes/Entorno.cls — references(references), Responsables(function), getResponsables(calls), ColEnTramite(function)"
+        ],
+        "excerpt_length": 12079
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> Nombre"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 1,
+        "controls_total": 13,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormExpedientesBusqueda",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormExpedientesBusqueda.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 327,
+        "source_size_bytes": 9789,
+        "status": "ok",
+        "handlers_count": 45,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormExpedientesBusqueda.cls — calls(calls), references(references), event-handler(event-handler), CorreoAlAdministrador(references), VBA.DoEvents(function), +21 more",
+          "src/classes/Entorno.cls — Expedientes(function), getExpedientes(calls)"
+        ],
+        "excerpt_length": 13402
+      },
+      "ui": {
+        "controls_count": 15,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "ListaFiltrados",
+            "source": "ID;Nemotécnico;Cod_Exp;Título;299;;0880/13;SECOMSAT/..."
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo1",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> ComandoSalir"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 15,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 1,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "ListaFiltrados",
+            "data": {
+              "rowSourcePreview": "\"ID;Nemotécnico;Cod_Exp;Título;299;;0880/13;...",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormExpedienteDetalle",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormExpedienteDetalle.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 70,
+        "source_size_bytes": 2007,
+        "status": "ok",
+        "handlers_count": 26,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormExpedienteDetalle.cls — Form_FormExpedienteDetalle(class), Form_Open(function), cmdSalir_Click(function), EstablecerDatos(function), VBA.DoEvents(function)",
+          "src/classes/UsuarioHPS.cls — calls(calls), Collection.Add(function), Collection.Add(calls), Collection(references), Expediente(function), +9 more"
+        ],
+        "excerpt_length": 15738
+      },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 9,
+          "FORM_LAYOUT_OVERLAP": 2,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Etiqueta232",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Etiqueta256",
+            "message": "missing geometry"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 17,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEntidades",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormEntidades.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 161,
+        "source_size_bytes": 4533,
+        "status": "ok",
+        "handlers_count": 53,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormEntidades.cls — Form_FormEntidades(class), Form_Open(function), m_ObjEntorno.EntidadesFormularios(function), ComandoAyuda_Click(function), ListaEntidades_DblClick(function), +8 more",
+          "src/classes/Entorno.cls — references(references), ColPlantillas(function), Entidades(function), EntidadesFormularios(function)"
+        ],
+        "excerpt_length": 10255
+      },
+      "ui": {
+        "controls_count": 8,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "ListaEntidades",
+            "source": "1;Comerciales;2;CPVs;3;Ejercitos;11;Estados;10;Grados de Clasificacion;4;Jefatur..."
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo1",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> ListaEntidades"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 8,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 1,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "ListaEntidades",
+            "data": {
+              "rowSourcePreview": "\"1;Comerciales;2;CPVs;3;Ejercitos;11;Estados;...",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormCambioTipo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormCambioTipo.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 99,
+        "source_size_bytes": 2684,
+        "status": "ok",
+        "handlers_count": 23,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormCambioTipo.cls — Form_FormCambioTipo(class), Form_Open(function), cmdSalir_Click(function), ComandoAyuda_Click(function), ComandoRegistrar_Click(function), +1 more",
+          "src/modules/FUNCIONES UTILES.bas — references, SolicitudFechas, Ajustar, frmFormulario.Section, frmFormulario.Section(calls)"
+        ],
+        "excerpt_length": 8324
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "TipoFuturo",
+            "source": "Alta;Renovación;Elevación Grado"
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> TipoFuturo"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 11,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 1,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "TipoFuturo",
+            "data": {
+              "rowSourcePreview": "\"Alta;Renovación;Elevación Grado\"",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormAltaDatosSolicitante",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormAltaDatosSolicitante.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 429,
+        "source_size_bytes": 13030,
+        "status": "ok",
+        "handlers_count": 23,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormAltaDatosSolicitante.cls — references, calls, event-handler, CorreoAlAdministrador, VBA.DoEvents, +35 more"
+        ],
+        "excerpt_length": 16071
+      },
+      "ui": {
+        "controls_count": 50,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 4,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "IDEmpresaUsuario",
+            "source": "1;Secreto;2;Reservado;3;Confidencial;4;Difusión Limitada;5;Sin Clasificación"
+          },
+          {
+            "control": "CorreosAutomaticos",
+            "source": "Sí;No"
+          },
+          {
+            "control": "TIPO",
+            "source": "Alta;Traspaso"
+          },
+          {
+            "control": "IDEmpresaTramitadora",
+            "source": "1;Secreto;2;Reservado;3;Confidencial;4;Difusión Limitada;5;Sin Clasificación"
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 20,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 5,
+          "FORM_LAYOUT_ALIGNMENT": 10,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo1",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> Gestor"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 1,
+        "controls_total": 50,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 4,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 4
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "IDEmpresaUsuario",
+            "data": {
+              "rowSourcePreview": "\"1;Secreto;2;Reservado;3;Confidencial;4;Difusión Limitada;5;Sin Clasificación\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "CorreosAutomaticos",
+            "data": {
+              "rowSourcePreview": "\"Sí;No\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "TIPO",
+            "data": {
+              "rowSourcePreview": "\"Alta;Traspaso\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "controlName": "IDEmpresaTramitadora",
+            "data": {
+              "rowSourcePreview": "\"1;Secreto;2;Reservado;3;Confidencial;4;Difusión Limitada;5;Sin Clasificación\"",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormAdjuntaTraspasoONS",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormAdjuntaTraspasoONS.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 219,
+        "source_size_bytes": 6030,
+        "status": "ok",
+        "handlers_count": 26,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormAdjuntaTraspasoONS.cls — calls, references, VBA.DoEvents, VBA.DoEvents(calls), event-handler, +16 more"
+        ],
+        "excerpt_length": 11924
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 16,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ImagenURL <-> ComandoAyuda"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 13,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormAdjuntarExcelSolicitante",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormAdjuntarExcelSolicitante.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "source_size_lines": 202,
+        "source_size_bytes": 5630,
+        "status": "ok",
+        "handlers_count": 50,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormAdjuntarExcelSolicitante.cls — Form_FormAdjuntarExcelSolicitante(class), Form_Open(function), ComandoRegistrar_Click(function), ComandoAyuda_Click(function), cmdSalir_Click(function), +5 more",
+          "src/modules/FUNCIONES UTILES.bas — references, Excel, Ajustar, frmFormulario.Section, frmFormulario.Section(calls), +1 more"
+        ],
+        "excerpt_length": 11818
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 16,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ImagenURL <-> ComandoAyuda"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 13,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 306,
+    "total_binding_findings": 27,
+    "total_controls": 587,
+    "total_declared_bindings": 27,
+    "unattended_forms": 10,
+    "handlers_count_total": 692,
+    "form_events_distribution": {
+      "OnOpen": 11,
+      "OnLoad": 9
+    },
+    "tables_referenced_union": []
+  }
+}

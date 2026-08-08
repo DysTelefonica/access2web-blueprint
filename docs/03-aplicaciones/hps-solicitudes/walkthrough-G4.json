@@ -1,0 +1,190 @@
+{
+  "group": "G4",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout",
+    "map_form_behavior",
+    "verify_form_bindings"
+  ],
+  "known_degraded_tools": [
+    "codegraph_explore (autoFetchCodeGraph:true returns 0 evidence for many forms — codegraph index may be stale for hps-solicitudes cross-references)"
+  ],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T08:56:44.642Z",
+  "forms_count": 2,
+  "forms": [
+    {
+      "formName": "Form_FormMotivoHPS",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormMotivoHPS.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "source_size_lines": 117,
+        "source_size_bytes": 3434,
+        "status": "ok",
+        "handlers_count": 34,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormMotivoHPS.cls — Form_FormMotivoHPS(class), EstablecerDatos(function), cmdSalir_Click(function), Form_Open(function), ComandoGrabar_Click(function), +1 more",
+          "src/classes/MotivoHPS.cls — getdb(calls), calls(calls), Scripting(references), TbMotivoHPS(references), Collection(references), +26 more"
+        ],
+        "excerpt_length": 16611
+      },
+      "ui": {
+        "controls_count": 8,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 7,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 2,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "MotivoHPS <-> cmdSalir"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 1,
+        "controls_total": 8,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormMotivosHPS",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormMotivosHPS.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "source_size_lines": 309,
+        "source_size_bytes": 8583,
+        "status": "ok",
+        "handlers_count": 21,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormMotivosHPS.cls — calls(calls), references(references), VBA.DoEvents(function), VBA.DoEvents(calls), CorreoAlAdministrador(references), +23 more"
+        ],
+        "excerpt_length": 11328
+      },
+      "ui": {
+        "controls_count": 9,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo1",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "missing geometry"
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ListaFiltrados <-> cmdSalir"
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 9,
+        "tables_referenced": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 17,
+    "total_binding_findings": 0,
+    "total_controls": 17,
+    "total_declared_bindings": 0,
+    "unattended_forms": 2,
+    "handlers_count_total": 55,
+    "form_events_distribution": {
+      "OnOpen": 2
+    },
+    "tables_referenced_union": []
+  }
+}

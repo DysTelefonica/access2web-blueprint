@@ -1,0 +1,115 @@
+{
+  "group": "G1",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout",
+    "map_form_behavior",
+    "verify_form_bindings"
+  ],
+  "known_degraded_tools": [
+    "codegraph_explore (autoFetchCodeGraph:true returns 0 evidence for many forms — codegraph index may be stale for hps-solicitudes cross-references)"
+  ],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T08:56:44.642Z",
+  "forms_count": 1,
+  "forms": [
+    {
+      "formName": "Form_frmSplash",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_frmSplash.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "source_size_lines": 59,
+        "source_size_bytes": 1885,
+        "status": "ok",
+        "handlers_count": "14 symbols across",
+        "blast_radius_top_5": [
+          "src/forms/Form_frmSplash.cls — Form_frmSplash(class), Form_Timer(function), Form_Open(function), m_ObjEntorno.CalcularTotalesPendientes(function)",
+          "src/modules/FUNCIONES UTILES.bas — references(references), SolicitudFechas(references), Ajustar(function), frmFormulario.Section(function), frmFormulario.Section(calls)"
+        ],
+        "call_path_top_3": [],
+        "excerpt_length": 7255
+      },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": [
+          "OnOpen",
+          "OnTimer"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 2
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblProgresoBarra",
+            "message": "Control \"lblProgresoBarra\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "imgLogoDepartamento <-> imgLogo",
+            "message": "Controls \"imgLogoDepartamento\" and \"imgLogo\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 10,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 6,
+    "total_binding_findings": 0,
+    "total_controls": 10,
+    "total_declared_bindings": 0,
+    "unattended_forms": 1,
+    "handlers_count_total": "014 symbols across",
+    "form_events_distribution": {
+      "OnOpen": 1,
+      "OnTimer": 1
+    },
+    "tables_referenced_union": []
+  }
+}
