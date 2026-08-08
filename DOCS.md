@@ -23,7 +23,7 @@ This is the complete technical reference for the blueprint. For getting started,
 | [Migración de binarios](#migracion-de-binarios)  | Cómo staging de binarios .accdb se hace vía R2 (data/staging/*).                |
 | [Bugs dysflow filed](#bugs-dysflow-filed)        | Issues abiertos a DysTelefonica/dysflow que afectan el walkthrough.               |
 | [Walkthrough patterns](#walkthrough-patterns)    | Método v3/v4 de walkthrough de forms + lint manual de geometry.                  |
-| [Diseño UI/UX](#disenó-uiux)                    | Mockups aprobados con Mistica design system + frontend-design skill.             |
+| [Diseño UI/UX](#dise%C3%B1o-uiux)                    | Mockups aprobados con Mistica design system + frontend-design skill.             |
 | [Skills de documentación](#skills-de-documentacion) | Patrones propios para escribir docs que sirvan a IAs + humanos.                |
 
 For other docs:
@@ -256,3 +256,5 @@ Las skills siguen el formato de Gentleman-Programming: frontmatter YAML, When to
 ## Reinforcement
 
 Si este `DOCS.md` no se entiende en 5 minutos por un humano nuevo, o si una IA no puede parsearlo para entender el estado del blueprint, **NO publiques**. Revisa primero. La calidad de la documentación define la velocidad del proyecto a 6 meses vista.
+
+[Next: CODEBASE-GUIDE → CODEBASE-GUIDE.md]

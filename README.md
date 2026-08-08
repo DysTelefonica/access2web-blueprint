@@ -53,7 +53,7 @@ access2web-blueprint/
 
 ## Smoke test
 
-```js
+```bash
 // runtime responde
 await tools.dysflow.get_capabilities({});
 // objetos del frontend default (Condor)
