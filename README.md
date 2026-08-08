@@ -53,7 +53,7 @@ access2web-blueprint/
 
 ## Smoke test
 
-```js
+```bash
 // runtime responde
 await tools.dysflow.get_capabilities({});
 // objetos del frontend default (Condor)
@@ -64,3 +64,5 @@ await tools.codegraph.codegraph_explore({
   projectPath: "C:/00repos/codigo/access2web-blueprint/data/staging/condor"
 });
 ```
+
+[Next: AGENTS.md →](AGENTS.md)

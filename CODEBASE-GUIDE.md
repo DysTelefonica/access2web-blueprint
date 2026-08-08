@@ -45,14 +45,14 @@ Legacy apps (Access/VBA)         Blueprint (este repo)             Target apps (
 
 | Step | Doc | Read this when... |
 |------|-----|---------------------|
-| 1    | [README](../README.md) | Necesitas entender el producto en 5 minutos |
-| 2    | [DOCS](../DOCS.md) | Necesitas el technical reference (endpoints, schemas, CLI) |
-| 3    | Esta guía | Eres mantenedor del repo oContributor nuevo |
-| 4    | [docs/AGENT-SETUP](../docs/AGENT-SETUP.md) | Estás configurando un agente (Claude, OpenCode) para trabajar aquí |
-| 5    | [docs/03-aplicaciones/<app>/epic.md](../docs/03-aplicaciones/) | Necesitas entender una app específica |
+| 1    | [README](../README.md) | Necesita entender el producto en 5 minutos |
+| 2    | [DOCS](../DOCS.md) | Necesita el technical reference (endpoints, schemas, CLI) |
+| 3    | Esta guía | Es usted mantenedor del repositorio o contribuidor nuevo |
+| 4    | [docs/AGENT-SETUP](../docs/AGENT-SETUP.md) | Está configurando un agente (Claude, OpenCode) para trabajar aquí |
+| 5    | [docs/03-aplicaciones/<app>/epic.md](../docs/03-aplicaciones/) | Necesita entender una app específica |
 | 6    | [CONTRIBUTING](../CONTRIBUTING.md) | Vas a hacer un PR o agregar un artefacto nuevo |
-| 7    | [docs/prompts/](../docs/prompts/) | Necesitas escribir un issue o prompt a un mantenedor de dysflow |
-| 8    | [openspec/](../openspec/) | Estás planeando una feature SDD o un cambio mayor |
+| 7    | [docs/prompts/](../docs/prompts/) | Necesita escribir un issue o prompt a un mantenedor de dysflow |
+| 8    | [openspec/](../openspec/) | Está planeando una feature SDD o un cambio mayor |
 
 ## Quick map: if you need X, read Y
 
