@@ -1,0 +1,1199 @@
+{
+  "group": "G3",
+  "method_version": "v5",
+  "generated_at": "2026-08-08T18:30:00Z",
+  "adapter_version": "2.36.3",
+  "project": "brass",
+  "project_root": "C:/00repos/codigo/access2web-blueprint",
+  "staging_root": "C:/00repos/codigo/access2web-blueprint/data/staging/brass",
+  "source_root": "data/staging/brass/src/forms",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout (issue #1407 RESUELTO en 2.36.2)",
+    "map_form_behavior autoFetchCodeGraph (issue #1408 RESUELTO en 2.36.3)",
+    "verify_form_bindings (issue #1412 RESUELTO en 2.36.3)",
+    "codegraph-vba.codegraph_explore"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "staging_issues": [
+    "brass backend (Gestion_Brass_Gestion.accdb) tiene 42 tablas pero TODAS son NoConformidades (TbNC*, TbAuditoria*); no contiene las brass tables reales (TbEventos, TbMaterial, etc.)",
+    "Esto significa que verify_form_bindings solo puede validar 4 brass aux tables (TbAux, TbActividadesLotes, TbAuxEventosParaInforme, TbAuxNombreCamposParaInforme) - el resto reporta FORM_BINDING_MISSING_TABLE",
+    "brass frontend tiene 57 linked tables apuntando a network path \\\\datoste\\Aplicaciones_dys\\Aplicaciones PpD\\BRASS\\Gestion_Brass_Gestion_Datos.accdb (no accesible en staging)"
+  ],
+  "classification_rationale": "G3 = CRUD lista principal (*Gestion); G4 = Detalle edicion/sub-form (*Edicion/*Alta/*Tipo); G5 = Informes / auxiliares (*SLA/*Franqueo/*Busqueda/*Calendarios/*Anexos). Formas listadas en este archivo son las que faltaban en los walkthrough-G3/G4/G5.json pre-existentes.",
+  "forms_count": 18,
+  "forms": [
+    {
+      "formName": "Form_FormEquipoGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEquipoGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 28,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 5,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 20,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 12,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 18,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 14,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1,
+          "FORM_BINDING_TYPE_MISMATCH": 3
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Main gestion form for Equipos: declarative RowSources (TbEquipos JOIN TbPlanificacionEquipos) drive ListaFiltrados; handlers reuse the standard menu triple (ComandoVerVideo/Arbol/CorreoAdmin) from m_ObjAyuda.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEventoGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 5,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Eventos",
+          "getEventosConEquipoMedida",
+          "RellenarDatosEvento"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 63,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 9,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 8,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 5,
+        "handlers": [
+          "Eventos",
+          "RellenarDatosEvento",
+          "EventosRAC",
+          "RellenarMateriales",
+          "ListaFiltrados_Click"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Eventos",
+          "getEventosConEquipoMedida",
+          "RellenarDatosEvento"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 52,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 47,
+          "FORM_BINDING_TYPE_MISMATCH": 4,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Main gestion form for Eventos. Largest form (63 controls). 9 declarative RowSource bindings; handler signature Eventos -> getEventosConEquipoMedida suggests data is fetched imperatively then bound.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEventoTipoGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoTipoGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 4,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Eventos",
+          "getEventosConEquipoMedida",
+          "ComandoVerVideo_Click"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 4,
+        "handlers": [
+          "Eventos",
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Eventos",
+          "getEventosConEquipoMedida",
+          "ComandoVerVideo_Click"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for TbTipoEvento. 1 binding (RowSource). Shares Eventos handler pattern.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormFacturacionGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormFacturacionGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 20,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 26,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 19,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 1,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Factura. 1 binding. 26 geometry findings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormGastoGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormGastoGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 26,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 3,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 19,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 18,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Gasto. 3 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormMaterialesGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormMaterialesGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 44,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 11,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 25,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 4,
+          "FORM_BINDING_MISSING_TABLE": 15,
+          "FORM_BINDING_TYPE_MISMATCH": 6
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Materiales. 11 declarative bindings (largest in G3-missing).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormNodoBUIGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormNodoBUIGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 18,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 3,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 29,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 20,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 10,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 8,
+          "FORM_BINDING_TYPE_MISMATCH": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for NodoBUI. 3 bindings. 29 geometry findings (largest in G3-missing).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormNodoGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormNodoGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Nodo. 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormOriginadorGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormOriginadorGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Originador. 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormParteGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormParteGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 4,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Eventos",
+          "getEventosConEquipoMedida",
+          "ComandoVerVideo_Click"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 20,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 4,
+        "handlers": [
+          "Eventos",
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Eventos",
+          "getEventosConEquipoMedida",
+          "ComandoVerVideo_Click"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "CRUD lista for Parte. 0 bindings - unattended form: bindings assigned imperatively in Form_Open; 4 handlers (Eventos + menu triple).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 5,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "RellenarDatosEvento",
+          "p_Evento.getPropiedad",
+          "EventosRAC"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 39,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 34,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 23,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 5,
+        "handlers": [
+          "RellenarDatosEvento",
+          "EventosRAC",
+          "RellenarMateriales",
+          "ListaFiltrados_Click",
+          "ComandoDetalleEvento_Click"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "RellenarDatosEvento",
+          "p_Evento.getPropiedad",
+          "EventosRAC"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Main gestion form for Planificacion. 0 bindings - unattended form; imperative data fetch via RellenarDatosEvento. 5 handlers including EventosRAC pattern (mirrors FormActividadGestion).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSubContratacionGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormSubContratacionGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 25,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 3,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 18,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 12,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 16,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 15,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for SubContratacion. 3 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSubSistemaGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormSubSistemaGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 17,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 6,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 4,
+          "FORM_BINDING_TYPE_MISMATCH": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for SubSistema. 2 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTecnicoAusenciasGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTecnicoAusenciasGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 1,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Ausencias (Tecnico). 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTecnicoFiestasGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTecnicoFiestasGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 1,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Fiestas (Tecnico). 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTecnicoGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTecnicoGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 5,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "RellenarDatosEvento",
+          "p_Evento.getPropiedad",
+          "EventosRAC"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 24,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 5,
+        "handlers": [
+          "RellenarDatosEvento",
+          "EventosRAC",
+          "RellenarMateriales",
+          "ListaFiltrados_Click",
+          "ComandoDetalleEvento_Click"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "RellenarDatosEvento",
+          "p_Evento.getPropiedad",
+          "EventosRAC"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 2,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Main gestion form for Tecnico. 2 bindings; mirrors the EventosRAC / RellenarDatosEvento pattern of PlanificacionGestion (likely same base class for entity list with activity/event context).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTipoTecnicoPreciosGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTipoTecnicoPreciosGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 7,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 2,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for TipoTecnicoPrecio. 2 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUbicacionGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormUbicacionGestion.form.txt",
+      "group": "G3",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 12,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "CRUD lista for Ubicacion. 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_forms_new": 18,
+    "forms_unattended": 2,
+    "total_geometry_findings": 258,
+    "total_binding_findings": 165,
+    "tables_referenced_union": []
+  }
+}

@@ -1,0 +1,478 @@
+{
+  "group": "G5",
+  "method_version": "v5",
+  "generated_at": "2026-08-08T18:30:00Z",
+  "adapter_version": "2.36.3",
+  "project": "brass",
+  "project_root": "C:/00repos/codigo/access2web-blueprint",
+  "staging_root": "C:/00repos/codigo/access2web-blueprint/data/staging/brass",
+  "source_root": "data/staging/brass/src/forms",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout (issue #1407 RESUELTO en 2.36.2)",
+    "map_form_behavior autoFetchCodeGraph (issue #1408 RESUELTO en 2.36.3)",
+    "verify_form_bindings (issue #1412 RESUELTO en 2.36.3)",
+    "codegraph-vba.codegraph_explore"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "staging_issues": [
+    "brass backend (Gestion_Brass_Gestion.accdb) tiene 42 tablas pero TODAS son NoConformidades (TbNC*, TbAuditoria*); no contiene las brass tables reales (TbEventos, TbMaterial, etc.)",
+    "Esto significa que verify_form_bindings solo puede validar 4 brass aux tables (TbAux, TbActividadesLotes, TbAuxEventosParaInforme, TbAuxNombreCamposParaInforme) - el resto reporta FORM_BINDING_MISSING_TABLE",
+    "brass frontend tiene 57 linked tables apuntando a network path \\\\datoste\\Aplicaciones_dys\\Aplicaciones PpD\\BRASS\\Gestion_Brass_Gestion_Datos.accdb (no accesible en staging)"
+  ],
+  "classification_rationale": "G3 = CRUD lista principal (*Gestion); G4 = Detalle edicion/sub-form (*Edicion/*Alta/*Tipo); G5 = Informes / auxiliares (*SLA/*Franqueo/*Busqueda/*Calendarios/*Anexos). Formas listadas en este archivo son las que faltaban en los walkthrough-G3/G4/G5.json pre-existentes.",
+  "forms_count": 7,
+  "forms": [
+    {
+      "formName": "Form_FormEventoFranqueo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoFranqueo.form.txt",
+      "group": "G5",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 7,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Reporte auxiliar: franqueo (envio/courier) de un evento. 0 bindings - unattended form: data fetched imperatively.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEventoSLA",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoSLA.form.txt",
+      "group": "G5",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Form_Open",
+          "VBA.DoEvents",
+          "EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 37,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 3,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 40,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 8,
+          "FORM_LAYOUT_OVERLAP": 22,
+          "FORM_LAYOUT_ALIGNMENT": 9,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "Form_Open",
+          "EstablecerDatos",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Form_Open",
+          "VBA.DoEvents",
+          "EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 3
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Reporte SLA de eventos (service-level agreement). 3 bindings. 40 geometry findings (largest in G5-missing).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormFacturaResultado",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormFacturaResultado.form.txt",
+      "group": "G5",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Form_Open",
+          "VBA.DoEvents",
+          "EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 34,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 25,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 14,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "Form_Open",
+          "EstablecerDatos",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Form_Open",
+          "VBA.DoEvents",
+          "EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 1,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Resultado de facturacion (informe). 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionAnexos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionAnexos.form.txt",
+      "group": "G5",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Documentos",
+          "getDocumentosCCCambio",
+          "getdb"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 16,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 15,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "Documentos",
+          "getDocumentosCCCambio",
+          "ColCampos"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Documentos",
+          "getDocumentosCCCambio",
+          "getdb"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Anexos attached to a planificacion (auxiliary view). 0 bindings - unattended form; Documentos handler delegates to getDocumentosCCCambio which calls getdb.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionCalendarios",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionCalendarios.form.txt",
+      "group": "G5",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Vista auxiliar: calendario de planificaciones. 0 bindings - unattended form.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionesBusqueda",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionesBusqueda.form.txt",
+      "group": "G5",
+      "codegraph_summary": {
+        "handlers_count": 5,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ListaFiltrados_Click",
+          "Nz",
+          "RellenarDatosEvento"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 42,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 6,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 40,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 29,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 5,
+        "handlers": [
+          "ListaFiltrados_Click",
+          "RellenarDatosEvento",
+          "EventosRAC",
+          "RellenarMateriales",
+          "ComandoDetalleEvento_Click"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ListaFiltrados_Click",
+          "Nz",
+          "RellenarDatosEvento"
+        ],
+        "codegraphEvidenceStatus": "fetched"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 33,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 29,
+          "FORM_BINDING_TYPE_MISMATCH": 3,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Busqueda de planificaciones (search/filter UI). 6 bindings (largest in G5-missing). 33 binding findings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionReprogramacion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionReprogramacion.form.txt",
+      "group": "G5",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 38,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 25,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 14,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "AltaIDEquipo",
+          "ComandoRegistrar_Click",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 2,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Reprogramacion de planificaciones (utility). 2 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_forms_new": 7,
+    "forms_unattended": 3,
+    "total_geometry_findings": 158,
+    "total_binding_findings": 39,
+    "tables_referenced_union": []
+  }
+}

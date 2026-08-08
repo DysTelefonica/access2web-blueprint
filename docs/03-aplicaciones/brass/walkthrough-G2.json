@@ -1,0 +1,149 @@
+{
+  "group": "G2",
+  "method_version": "v5",
+  "generated_at": "2026-08-08T18:00:00Z",
+  "adapter_version": "2.36.3",
+  "project": "brass",
+  "project_root": "C:/00repos/codigo/access2web-blueprint",
+  "staging_root": "C:/00repos/codigo/access2web-blueprint/data/staging/brass",
+  "paper_root": "C:/00repos/codigo/access2web-blueprint",
+  "source_root": "data/staging/brass/src/forms",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout (RESUELTO issue #1407 en 2.36.2)",
+    "map_form_behavior autoFetchCodeGraph (RESUELTO issue #1408 en 2.36.3)",
+    "verify_form_bindings (RESUELTO issue #1412 en 2.36.3)",
+    "codegraph-vba.codegraph_explore"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "staging_issues": [
+    "brass frontend (Gestion_Brass_Gestion.accdb) tiene 57 linked tables apuntando a network path \\\\datoste\\Aplicaciones_dys\\Aplicaciones PpD\\BRASS\\Gestion_Brass_Gestion_Datos.accdb (no accesible en staging)",
+    "brass backend (Gestion_Brass_Gestion.accdb) tiene 42 tablas pero TODAS son NoConformidades (TbNC*, TbAuditoria*); no contiene las brass tables reales (TbEventos, TbMaterial, etc.)",
+    "verify_form_bindings solo puede validar 4 brass aux tables (TbAux, TbActividadesLotes, TbAuxEventosParaInforme, TbAuxNombreCamposParaInforme) — el resto reporta FORM_BINDING_MISSING_TABLE"
+  ],
+  "classification_rationale": "G2 = Menú principal / dispatcher / opciones generales. En brass el dispatcher principal es Form_Form0BDOpciones (menú principal), Form_Form0BDOpcionesOtras (opciones secundarias), Form_Form0BDInformes (submenú de informes). Todos arrancan con Form_ en lugar de frmSplash — el dispatcher principal es el arranque visual.",
+  "forms_count": 3,
+  "forms": [
+    {
+      "formName": "Form_Form0BDOpciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_Form0BDOpciones.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_Form0BDOpciones (src/forms/Form_Form0BDOpciones.cls:1) — 1 caller in src/forms/Form_Form0BDOpciones",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 29, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "geometry": {
+        "controls": null, "sections": null, "findings_count": 32,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_OVERLAP": 20, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "findings": []
+      },
+      "behavior": {
+        "controlsWithHandlerEvidence": 0,
+        "handlersCount": 3,
+        "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"],
+        "tablesReferenced": [],
+        "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {}, "findings": [] },
+      "unattended": true,
+      "unattendedEvidence": "Menu/dispatcher form: 0 bindings (no data controls), 29 controls (mostly buttons for navigation). Bindings are imperative via menu items in Form_Open — no declarative RowSource/ControlSource. Reasonable design for a top-level menu.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_Form0BDOpcionesOtras",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_Form0BDOpcionesOtras.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_Form0BDOpcionesOtras (src/forms/Form_Form0BDOpcionesOtras.cls:1) — 1 caller in src/forms/Form_Form0BDOpcionesOtras",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 31, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "geometry": {
+        "controls": null, "sections": null, "findings_count": 12,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_ALIGNMENT": 7, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "findings": []
+      },
+      "behavior": {
+        "controlsWithHandlerEvidence": 0, "handlersCount": 3,
+        "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"],
+        "tablesReferenced": [],
+        "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {}, "findings": [] },
+      "unattended": true,
+      "unattendedEvidence": "Secondary menu (other options): 0 bindings, 31 controls (navigation buttons). Imperative navigation pattern, expected for menu/dispatcher forms.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_Form0BDInformes",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_Form0BDInformes.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_Form0BDInformes (src/forms/Form_Form0BDInformes.cls:1) — 1 caller in src/forms/Form_Form0BDInformes",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "stale_banner_ignored": true
+      },
+      "ui": { "controls_count": 14, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "geometry": {
+        "controls": null, "sections": null, "findings_count": 5,
+        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_ALIGNMENT": 1 },
+        "findings": []
+      },
+      "behavior": {
+        "controlsWithHandlerEvidence": 0, "handlersCount": 3,
+        "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"],
+        "tablesReferenced": [],
+        "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {}, "findings": [] },
+      "unattended": true,
+      "unattendedEvidence": "Reports submenu: 0 bindings, 14 controls (buttons for dispatching to Form_FormInformes*). Imperative navigation pattern.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 49,
+    "total_binding_findings": 0,
+    "forms_unattended": 3,
+    "tables_referenced_union": [],
+    "shared_dispatcher_pattern": "All 3 G2 forms share the same handler call path: ComandoVerVideo_Click / Arbol_NodeClick / CorreoAlAdministrador with VBA.DoEvents / fso.FileExists / EstablecerDatos. This indicates a common base class (likely m_ObjEntorno / m_ObjAyuda) reused across menu forms."
+  }
+}
