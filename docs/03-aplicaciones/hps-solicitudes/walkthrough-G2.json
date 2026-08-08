@@ -1,0 +1,244 @@
+{
+  "group": "G2",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout",
+    "map_form_behavior",
+    "verify_form_bindings"
+  ],
+  "known_degraded_tools": [
+    "codegraph_explore (autoFetchCodeGraph:true returns 0 evidence for many forms — codegraph index may be stale for hps-solicitudes cross-references)"
+  ],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T08:56:44.642Z",
+  "forms_count": 2,
+  "forms": [
+    {
+      "formName": "Form_FormConfiguracion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_FormConfiguracion.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "source_size_lines": 394,
+        "source_size_bytes": 13256,
+        "status": "ok",
+        "handlers_count": 50,
+        "blast_radius_top_5": [
+          "src/forms/Form_FormConfiguracion.cls — references(references), calls(calls), VBA.DoEvents(function), VBA.DoEvents(calls), event-handler(event-handler), +26 more",
+          "src/classes/Entorno.cls — Configuracion(function), BuzonSeguridad(function), getConfiguracion(calls)"
+        ],
+        "excerpt_length": 18047
+      },
+      "ui": {
+        "controls_count": 36,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 3,
+        "warnings": [],
+        "control_bindings": [
+          {
+            "control": "AutocancelacionPreMARGA",
+            "source": "Sí;No"
+          },
+          {
+            "control": "AutocancelacionMARGA",
+            "source": "Sí;No"
+          },
+          {
+            "control": "CorreosAutomaticos",
+            "source": "Sí;No"
+          }
+        ]
+      },
+      "geometry": {
+        "findings_count": 26,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 14,
+          "FORM_LAYOUT_ALIGNMENT": 8,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> BuzonSeguridad",
+            "message": "Controls \"ComandoAyuda\" and \"BuzonSeguridad\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> cmdSalir",
+            "message": "Controls \"ComandoAyuda\" and \"cmdSalir\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 36,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 3,
+        "by_code": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 3
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"AutocancelacionPreMARGA\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "AutocancelacionPreMARGA",
+            "data": {
+              "rowSourcePreview": "\"Sí;No\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"AutocancelacionMARGA\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "AutocancelacionMARGA",
+            "data": {
+              "rowSourcePreview": "\"Sí;No\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"CorreosAutomaticos\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "CorreosAutomaticos",
+            "data": {
+              "rowSourcePreview": "\"Sí;No\"",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_Form0BDOpciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps-solicitudes/src/forms/Form_Form0BDOpciones.form.txt",
+      "group": "G2",
+      "codegraph_summary": {
+        "source_size_lines": 371,
+        "source_size_bytes": 12170,
+        "status": "ok",
+        "handlers_count": 22,
+        "blast_radius_top_5": [
+          "src/forms/Form_Form0BDOpciones.cls — calls(calls), references(references), CorreoAlAdministrador(references), event-handler(event-handler), VBA.DoEvents(function), +22 more"
+        ],
+        "excerpt_length": 15024
+      },
+      "ui": {
+        "controls_count": 22,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "control_bindings": []
+      },
+      "geometry": {
+        "findings_count": 21,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 10,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_sample": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblEstado",
+            "message": "Control \"lblEstado\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "ComandoAyuda <-> cmdSalir",
+            "message": "Controls \"ComandoAyuda\" and \"cmdSalir\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "controls_total": 22,
+        "total_call_path_steps": 0,
+        "tables_referenced": [],
+        "handler_evidence_sample": [],
+        "warnings": []
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findings_count": 0,
+        "by_code": {},
+        "findings_sample": []
+      },
+      "unattended": true,
+      "unattended_evidence": "bindings_count==0 in .form.txt; bindings assigned in .cls Form_Open/Form_Load per HR-14",
+      "tool_warnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 47,
+    "total_binding_findings": 3,
+    "total_controls": 58,
+    "total_declared_bindings": 3,
+    "unattended_forms": 1,
+    "handlers_count_total": 72,
+    "form_events_distribution": {
+      "OnLoad": 1,
+      "OnOpen": 1
+    },
+    "tables_referenced_union": []
+  }
+}
