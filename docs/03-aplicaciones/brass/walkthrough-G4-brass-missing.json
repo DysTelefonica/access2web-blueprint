@@ -1,0 +1,1566 @@
+{
+  "group": "G4",
+  "method_version": "v5",
+  "generated_at": "2026-08-08T18:30:00Z",
+  "adapter_version": "2.36.3",
+  "project": "brass",
+  "project_root": "C:/00repos/codigo/access2web-blueprint",
+  "staging_root": "C:/00repos/codigo/access2web-blueprint/data/staging/brass",
+  "source_root": "data/staging/brass/src/forms",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout (issue #1407 RESUELTO en 2.36.2)",
+    "map_form_behavior autoFetchCodeGraph (issue #1408 RESUELTO en 2.36.3)",
+    "verify_form_bindings (issue #1412 RESUELTO en 2.36.3)",
+    "codegraph-vba.codegraph_explore"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "staging_issues": [
+    "brass backend (Gestion_Brass_Gestion.accdb) tiene 42 tablas pero TODAS son NoConformidades (TbNC*, TbAuditoria*); no contiene las brass tables reales (TbEventos, TbMaterial, etc.)",
+    "Esto significa que verify_form_bindings solo puede validar 4 brass aux tables (TbAux, TbActividadesLotes, TbAuxEventosParaInforme, TbAuxNombreCamposParaInforme) - el resto reporta FORM_BINDING_MISSING_TABLE",
+    "brass frontend tiene 57 linked tables apuntando a network path \\\\datoste\\Aplicaciones_dys\\Aplicaciones PpD\\BRASS\\Gestion_Brass_Gestion_Datos.accdb (no accesible en staging)"
+  ],
+  "classification_rationale": "G3 = CRUD lista principal (*Gestion); G4 = Detalle edicion/sub-form (*Edicion/*Alta/*Tipo); G5 = Informes / auxiliares (*SLA/*Franqueo/*Busqueda/*Calendarios/*Anexos). Formas listadas en este archivo son las que faltaban en los walkthrough-G3/G4/G5.json pre-existentes.",
+  "forms_count": 24,
+  "forms": [
+    {
+      "formName": "Form_FormActividadAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormActividadAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 30,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 16,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for Actividad. 1 binding (likely IDEvento ComboBox).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormActividadDeEventoPorLotes",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormActividadDeEventoPorLotes.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 22,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 6,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Sub-form: batch activity creation from a single event. 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormActividadEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormActividadEdicion.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 35,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 4,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 24,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 13,
+          "FORM_LAYOUT_ALIGNMENT": 7,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 9,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 8,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Edicion form for Actividad. 4 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEquipoAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEquipoAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 4,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click",
+          "AltaIDEquipo",
+          "VBA.DoEvents"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 22,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 4,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 16,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 4,
+        "handlers": [
+          "ComandoRegistrar_Click",
+          "Equipo",
+          "AltaIDEquipo",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click",
+          "AltaIDEquipo",
+          "VBA.DoEvents"
+        ],
+        "codegraphEvidenceStatus": "fetched"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 9,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 6,
+          "FORM_BINDING_TYPE_MISMATCH": 3
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for Equipo. 4 bindings; codegraph-resolved: ComandoRegistrar_Click -> AltaIDEquipo (real handler chain).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEquipoEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEquipoEdicion.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 4,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click",
+          "AltaIDEquipo",
+          "VBA.DoEvents"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 24,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 4,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 16,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 4,
+        "handlers": [
+          "ComandoRegistrar_Click",
+          "Equipo",
+          "AltaIDEquipo",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click",
+          "AltaIDEquipo",
+          "VBA.DoEvents"
+        ],
+        "codegraphEvidenceStatus": "fetched"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 9,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 6,
+          "FORM_BINDING_TYPE_MISMATCH": 3
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Edicion form for Equipo. 4 bindings; same Equipo class handler chain as Alta.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEventoEqMedida",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoEqMedida.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 2,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Sub-form: equipos de medida attached to an evento. 2 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEventoEqMedidaEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoEqMedidaEdicion.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 2,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Edicion sub-form for equipos de medida of an evento. 2 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormEventosAltaMasivaPorNS",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventosAltaMasivaPorNS.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 46,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 8,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 23,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 9,
+          "FORM_LAYOUT_ALIGNMENT": 9,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "AltaIDEquipo",
+          "ComandoRegistrar_Click",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 19,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 13,
+          "FORM_BINDING_TYPE_MISMATCH": 5,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta masiva de eventos por numero de serie. 8 bindings (largest in G4-missing).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormFacturaAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormFacturaAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 25,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 14,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 1,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for Factura. 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormGastoAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormGastoAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 25,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for Gasto. 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormMaterialIntervencionAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormMaterialIntervencionAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 6,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Material",
+          "getMaterial",
+          "CopiarSeguimientoMaterial"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 31,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 33,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 21,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 6,
+        "handlers": [
+          "Material",
+          "CopiarSeguimientoMaterial",
+          "CopiarEventoCompletoConActividadesYMateriales",
+          "CopiarAnexoMaterial",
+          "EstablecerDatos",
+          "Form_Open"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Material",
+          "getMaterial",
+          "CopiarSeguimientoMaterial"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 4,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for Material (intervencion type). 6 handlers - has a Material class with copy helpers (CopiarSeguimientoMaterial / CopiarEventoCompleto / CopiarAnexo).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormMaterialRepuestoAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormMaterialRepuestoAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click",
+          "AltaIDEquipo",
+          "VBA.DoEvents"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 49,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 4,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 57,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 44,
+          "FORM_LAYOUT_ALIGNMENT": 8,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoRegistrar_Click",
+          "AltaIDEquipo",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click",
+          "AltaIDEquipo",
+          "VBA.DoEvents"
+        ],
+        "codegraphEvidenceStatus": "fetched"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 12,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 9,
+          "FORM_BINDING_TYPE_MISMATCH": 2,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for Material (repuesto type). 4 bindings. 57 geometry findings (largest in G4-missing).",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 26,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 30,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 18,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "AltaIDEquipo",
+          "ComandoRegistrar_Click",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 2,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for Planificacion. 2 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionAltaEquipo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionAltaEquipo.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 13,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Sub-form: alta de un equipo dentro de una planificacion. 0 bindings - unattended form: bindings set imperatively from parent context.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionCambioIDEvento",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionCambioIDEvento.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 18,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 17,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 4,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 4
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Utility form: cambia el ID de evento de una planificacion. 1 binding.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormPlanificacionEquipos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionEquipos.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 30,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 5,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 30,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 20,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 17,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 13,
+          "FORM_BINDING_TYPE_MISMATCH": 3,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Detail form: gestion de equipos asignados a una planificacion. 5 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSubContratacionAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormSubContratacionAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 21,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for SubContratacion. 2 bindings.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSubSistemaAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormSubSistemaAlta.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 14,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "AltaIDEquipo",
+          "ComandoRegistrar_Click",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "AltaIDEquipo",
+          "DameID",
+          "ComandoRegistrar_Click"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "unattended": false,
+      "unattendedEvidence": "Alta form for SubSistema. 1 binding. Uses AltaIDEquipo + DameID pattern.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormSubSistemaEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormSubSistemaEdicion.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "Form_Load",
+          "VBA.DoEvents",
+          "Nz"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 14,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 2,
+        "handlers": [
+          "Form_Load",
+          "ComandoAlta_Click"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Form_Load",
+          "VBA.DoEvents",
+          "Nz"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Edicion form for SubSistema. 0 bindings - unattended form: bindings populated imperatively from OpenArgs.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTecnico",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTecnico.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click",
+          "TIPOTECNICO.Registrar",
+          "VBA.DoEvents"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 25,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 14,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 2,
+        "handlers": [
+          "ComandoRegistrar_Click",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click",
+          "TIPOTECNICO.Registrar",
+          "VBA.DoEvents"
+        ],
+        "codegraphEvidenceStatus": "fetched"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Detail form for a single Tecnico (data loaded via TIPOTECNICO.Registrar class). 0 bindings - unattended form: TIPOTECNICO class handles state.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTecnicoAusencias",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTecnicoAusencias.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 20,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 21,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 11,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Detail sub-form for Ausencias of a Tecnico. 0 bindings - unattended form.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTecnicoFiestas",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTecnicoFiestas.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Detail sub-form for Fiestas of a Tecnico. 0 bindings - unattended form.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTecnicoTipo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTecnicoTipo.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 2,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click",
+          "TIPOTECNICO.Registrar",
+          "VBA.DoEvents"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 16,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 2,
+        "handlers": [
+          "ComandoRegistrar_Click",
+          "Form_Load"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click",
+          "TIPOTECNICO.Registrar",
+          "VBA.DoEvents"
+        ],
+        "codegraphEvidenceStatus": "fetched"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Detail form for TecnicoTipo (sub-form under Tecnico). 0 bindings - unattended; TIPOTECNICO.Registrar handles state.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormTipoTecnicoPrecio",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormTipoTecnicoPrecio.form.txt",
+      "group": "G4",
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": 0
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click",
+          "VBA.DoEvents",
+          "fso.FileExists"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
+      "unattended": true,
+      "unattendedEvidence": "Detail form for TipoTecnicoPrecio. 0 bindings - unattended form.",
+      "toolWarnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_forms_new": 24,
+    "forms_unattended": 7,
+    "total_geometry_findings": 424,
+    "total_binding_findings": 99,
+    "tables_referenced_union": []
+  }
+}

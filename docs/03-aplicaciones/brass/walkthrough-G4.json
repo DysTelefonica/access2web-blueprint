@@ -1,0 +1,556 @@
+{
+  "method_version": "v5",
+  "generated_at": "2026-08-08T09:35:47.026Z",
+  "adapter_version": "2.36.3",
+  "project": "brass",
+  "project_root": "C:/00repos/codigo/access2web-blueprint",
+  "staging_root": "C:/00repos/codigo/access2web-blueprint/data/staging/brass",
+  "source_root": "data/staging/brass/src/forms",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout (RESUELTO issue #1407 en 2.36.2)",
+    "map_form_behavior autoFetchCodeGraph (RESUELTO issue #1408 en 2.36.3)",
+    "verify_form_bindings (RESUELTO issue #1412 en 2.36.3)",
+    "codegraph-vba.codegraph_explore"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "staging_issues": [
+    "brass frontend (Gestion_Brass_Gestion.accdb) tiene 57 linked tables apuntando a network path \\\\datoste\\Aplicaciones_dys\\Aplicaciones PpD\\BRASS\\Gestion_Brass_Gestion_Datos.accdb (no accesible en staging)",
+    "brass backend (Gestion_Brass_Gestion.accdb) tiene 42 tablas pero TODAS son NoConformidades (TbNC*, TbAuditoria*); no contiene las brass tables reales (TbEventos, TbMaterial, etc.)",
+    "verify_form_bindings solo puede validar 4 brass aux tables (TbAux, TbActividadesLotes, TbAuxEventosParaInforme, TbAuxNombreCamposParaInforme) — el resto reporta FORM_BINDING_MISSING_TABLE"
+  ],
+  "group": "G4",
+  "classification_rationale": "G4 = sub-formularios de edición (detail row editors) y catálogos detalle. En brass: Form_Form*Edicion (Material *Edicion × 3, Calibracion *Edicion × 2, PlanificacionEdicionEquipo, GastoEdicion, SubContratacionEdicion). 8 forms.",
+  "forms_count": 8,
+  "forms": [
+    {
+      "formName": "Form_FormMaterialRepuestoEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormMaterialRepuestoEdicion.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 54,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 4,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 62,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 46,
+          "FORM_LAYOUT_ALIGNMENT": 12,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 1,
+        "handlers": [
+          "ComandoRegistrar_Click"
+        ],
+        "tablesReferenced": [
+          "TbActividades",
+          "TbEventos",
+          "TbMaterial",
+          "TbTipoAccion"
+        ],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [
+        "TbActividades",
+        "TbEventos",
+        "TbMaterial",
+        "TbTipoAccion"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 12,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 9,
+          "FORM_BINDING_TYPE_MISMATCH": 2,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormMaterialRepuestoEdicion (src/forms/Form_FormMaterialRepuestoEdicion.cls:1) — 1 caller in src/forms/Form_FormMaterialRepuestoEdicion",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    },
+    {
+      "formName": "Form_FormMaterialIntervencionEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormMaterialIntervencionEdicion.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 33,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 34,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 21,
+          "FORM_LAYOUT_ALIGNMENT": 7,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 0,
+        "handlers": [],
+        "tablesReferenced": [
+          "TbMaterialSeguimiento"
+        ],
+        "callPathsTop3": [],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [
+        "TbMaterialSeguimiento"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 4,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormMaterialIntervencionEdicion (src/forms/Form_FormMaterialIntervencionEdicion.cls:1) — 1 caller in src/forms/Form_FormMaterialIntervencionEdicion",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "(no codegraph evidence resolved — see behavior.handlers)"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    },
+    {
+      "formName": "Form_FormMaterialReparacionEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormMaterialReparacionEdicion.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 52,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 5,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 55,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 8,
+          "FORM_LAYOUT_OVERLAP": 36,
+          "FORM_LAYOUT_ALIGNMENT": 10,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 1,
+        "handlers": [
+          "ComandoRegistrar_Click"
+        ],
+        "tablesReferenced": [
+          "TbMaterial",
+          "TbEquipos",
+          "TbTipoAccion"
+        ],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [
+        "TbMaterial",
+        "TbEquipos",
+        "TbTipoAccion"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 12,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 7,
+          "FORM_BINDING_TYPE_MISMATCH": 3,
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormMaterialReparacionEdicion (src/forms/Form_FormMaterialReparacionEdicion.cls:1) — 1 caller in src/forms/Form_FormMaterialReparacionEdicion",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    },
+    {
+      "formName": "Form_FormCalibracionEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormCalibracionEdicion.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 30,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 31,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 19,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 1,
+        "handlers": [
+          "ComandoRegistrar_Click"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {}
+      },
+      "unattended": true,
+      "unattendedEvidence": "Sub-form / detail-row editor (CalibracionEdicion): 0 bindings, 30 controls, 1 handlers. No declarative RowSource/ControlSource — bindings assigned imperatively in Form_Open/Form_Load or populated via DAO in event handlers.",
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormCalibracionEdicion (src/forms/Form_FormCalibracionEdicion.cls:1) — 1 caller in src/forms/Form_FormCalibracionEdicion",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    },
+    {
+      "formName": "Form_FormCalibracionEquipoEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormCalibracionEquipoEdicion.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 25,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 28,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 15,
+          "FORM_LAYOUT_ALIGNMENT": 7,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 1,
+        "handlers": [
+          "ComandoRegistrar_Click"
+        ],
+        "tablesReferenced": [
+          "TbBUI"
+        ],
+        "callPathsTop3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [
+        "TbBUI"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "codegraph_summary": {
+        "handlers_count": 1,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormCalibracionEquipoEdicion (src/forms/Form_FormCalibracionEquipoEdicion.cls:1) — 1 caller in src/forms/Form_FormCalibracionEquipoEdicion",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "ComandoRegistrar_Click -> AltaIDEquipo",
+          "ComandoRegistrar_Click -> VBA.DoEvents",
+          "ComandoRegistrar_Click -> FormularioAbierto"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    },
+    {
+      "formName": "Form_FormPlanificacionEdicionEquipo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormPlanificacionEdicionEquipo.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 14,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 0,
+        "handlers": [],
+        "tablesReferenced": [],
+        "callPathsTop3": [],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {}
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormPlanificacionEdicionEquipo (src/forms/Form_FormPlanificacionEdicionEquipo.cls:1) — 1 caller in src/forms/Form_FormPlanificacionEdicionEquipo",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "(no codegraph evidence resolved — see behavior.handlers)"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    },
+    {
+      "formName": "Form_FormGastoEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormGastoEdicion.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 27,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 14,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 0,
+        "handlers": [],
+        "tablesReferenced": [
+          "TbGastos"
+        ],
+        "callPathsTop3": [],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [
+        "TbGastos"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormGastoEdicion (src/forms/Form_FormGastoEdicion.cls:1) — 1 caller in src/forms/Form_FormGastoEdicion",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "(no codegraph evidence resolved — see behavior.handlers)"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    },
+    {
+      "formName": "Form_FormSubContratacionEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormSubContratacionEdicion.form.txt",
+      "group": "G4",
+      "method_version": "v5",
+      "ui": {
+        "controls_count": 23,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "findings_count": 12,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 0,
+        "handlers": [],
+        "tablesReferenced": [
+          "TbSubcontrataciones"
+        ],
+        "callPathsTop3": [],
+        "codegraphEvidenceStatus": "partial_evidence"
+      },
+      "tablesReferenced": [
+        "TbSubcontrataciones"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormSubContratacionEdicion (src/forms/Form_FormSubContratacionEdicion.cls:1) — 1 caller in src/forms/Form_FormSubContratacionEdicion",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller in src/forms/Form_FormInformesDesdeLista",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
+          "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
+        ],
+        "call_path_top_3": [
+          "(no codegraph evidence resolved — see behavior.handlers)"
+        ],
+        "stale_banner_ignored": true
+      },
+      "toolWarnings": []
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 245,
+    "total_binding_findings": 37,
+    "forms_unattended": 1,
+    "forms_attended": 7,
+    "tables_referenced_union": [
+      "TbActividades",
+      "TbBUI",
+      "TbEquipos",
+      "TbEventos",
+      "TbGastos",
+      "TbMaterial",
+      "TbMaterialSeguimiento",
+      "TbSubcontrataciones",
+      "TbTipoAccion"
+    ],
+    "category_pattern": "G4 = sub-formularios de edición (detail row editors). Material *Edicion × 3, Calibracion *Edicion × 2, Planificacion/Gasto/SubContratacion Edicion × 3. Imperative DAO populate pattern dominates."
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "group": "G1",
+  "method_version": "v5",
+  "generated_at": "2026-08-08T18:00:00Z",
+  "adapter_version": "2.36.3",
+  "project": "brass",
+  "paper_root": "C:/00repos/codigo/access2web-blueprint",
+  "staging_root": "C:/00repos/codigo/access2web-blueprint/data/staging/brass",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout (RESUELTO issue #1407 en 2.36.2)",
+    "map_form_behavior autoFetchCodeGraph (RESUELTO issue #1408 en 2.36.3)",
+    "verify_form_bindings (RESUELTO issue #1412 en 2.36.3)",
+    "codegraph-vba.codegraph_explore"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "forms_count": 0,
+  "forms": [],
+  "classification_rationale": "G1 = Auth/splash/login. En brass no hay forms G1 exportados (no Form_FormSplash, no Form_FormLogin). La aplicación arranca con Form_Form0BDOpciones (dispatcher), no con un splash/login dedicado. Por convención del blueprint, los login forms pertenecen a las apps compartidas (lanzaderas), no a brass. G1 vacío es la realidad del scope brass.",
+  "notes": "Forma del scope brass: 87 forms Form_*.form.txt. Distribución: G1=0, G2=3, G3=61, G4=8, G5=15."
+}
