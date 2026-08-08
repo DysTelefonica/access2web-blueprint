@@ -2,9 +2,13 @@
 
 > **Sentence that organizes the whole repo**: «Lanzadera es la madre: ahí nacen usuarios, aplicativos y permisos. Las otras siete apps son consumidoras.»
 
-Este documento centraliza la deuda técnica dispersa por el repositorio para que cualquier IA o humano pueda extraer **issues suficientemente pequeños** sin tener que parsear épicas, decisiones, bugs filed y changelogs por separado. Cada entrada tiene criterios de aceptación verificables, scope explícito y estimación de tamaño.
+Este documento centraliza la deuda técnica dispersa por el repositorio para que cualquier IA o humano pueda extraer **issues suficientemente pequeños**.
 
-> **Convención**: el archivo vive en `docs/backlog-deuda.md` (sin numeración al inicio) para cumplir con `documentation-alan-style §9`. Cuando se renombre la estructura de `docs/`, este archivo debe moverse al lugar que decida el usuario.
+No requiere parsear épicas, decisiones, bugs filed ni changelogs por separado. Cada entrada tiene criterios de aceptación verificables, scope explícito y estimación de tamaño.
+
+> **Convención**: el archivo vive en `docs/backlog-deuda.md` (sin numeración al inicio) para cumplir con `documentation-alan-style §9`.
+>
+> Cuando se renombre la estructura de `docs/`, este archivo debe moverse al lugar que decida el usuario.
 
 ---
 
@@ -497,7 +501,9 @@ Body:
   <S / M / L / XL>
 ```
 
-Si la IA detecta que un item tiene criterios de aceptación ambiguos o scope muy amplio, debe proponer **partirlo en varios issues** (uno por criterio de aceptación, idealmente) y reportar la partición.
+Si la IA detecta que un item tiene criterios de aceptación ambiguos o scope muy amplio, debe proponer **partirlo en varios issues**.
+
+Un issue por criterio de aceptación, idealmente. Reporte la partición.
 
 ## Reglas del backlog
 
