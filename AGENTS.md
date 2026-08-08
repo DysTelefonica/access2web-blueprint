@@ -30,6 +30,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | `maintainer-prompt-drafter` | Estructurar prompts para el mantenedor de dysflow u otro tool externo. | Gentleman-Programming |
 | `access-vba-tdd` | Tests TDD en Access/VBA. | Gentleman-Programming |
 | `access-form-ui-builder` | Perceive → act → verify loop para forms Access. | Gentleman-Programming |
+| `deterministic-quality-harness` | Wiring o auditoría de quality gates de plataforma (CI, lint, ratchet baseline, complexity, hexagonal layer gate, secret/dependency scan). Inspirada en `unclebob/swarm-forge` y validada por APAP_WEB. Vive en el repo central de skills (`C:\Proyectos\skills\skills\deterministic-quality-harness\`), symlinkeada desde `~/.config/opencode/skills/`. Trae `assets/` con la implementación de referencia ejecutable (CI, gates, indicadores). | skills |
 
 ## Refuerzo
 
