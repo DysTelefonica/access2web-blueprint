@@ -1,0 +1,304 @@
+{
+  "group": "G2",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout",
+    "map_form_behavior (autoFetchCodeGraph:true)",
+    "verify_form_bindings"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T08:51:12.894Z",
+  "forms_count": 3,
+  "forms": [
+    {
+      "group": "G2",
+      "formName": "Form_Form0BDOpciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_Form0BDOpciones.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "Form0BDOpciones",
+        "controls_count": 29,
+        "formEvents": [
+          "OnActivate",
+          "OnLoad"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "sections_count": 0,
+        "findings_count": 22,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 11,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_5": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Imagen376",
+            "message": "Control \"Imagen376\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "lblTitulo1 <-> ComandoBibliotecaRiesgos",
+            "message": "Controls \"lblTitulo1\" and \"ComandoBibliotecaRiesgos\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_count": 29,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 8,
+        "warnings": [],
+        "codegraphIndexPath": "C:\\00repos\\codigo\\access2web-blueprint\\.codegraph-vba"
+      },
+      "verify_form_bindings": {
+        "controls_count": 0,
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_5": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"EntrarComo\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "EntrarComo",
+            "data": {
+              "rowSourcePreview": "\"Aitor Solar Azcona;Alfonso Isidro Villaverde Garrido;Alfonso Ortiz Lozano;Álvar",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": []
+    },
+    {
+      "group": "G2",
+      "formName": "Form_Form0BDOpcionesTecnico",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_Form0BDOpcionesTecnico.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "Form0BDOpcionesTecnico",
+        "controls_count": 21,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "sections_count": 0,
+        "findings_count": 18,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 6,
+          "FORM_LAYOUT_OVERLAP": 7,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_5": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Imagen376",
+            "message": "Control \"Imagen376\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Imagen70",
+            "message": "Control \"Imagen70\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_count": 21,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7,
+        "warnings": [],
+        "codegraphIndexPath": "C:\\00repos\\codigo\\access2web-blueprint\\.codegraph-vba"
+      },
+      "verify_form_bindings": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_5": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": []
+    },
+    {
+      "group": "G2",
+      "formName": "Form_FormProyectosGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormProyectosGestion.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormProyectosGestion",
+        "controls_count": 31,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 4,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "sections_count": 0,
+        "findings_count": 31,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 20,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_5": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblEstado",
+            "message": "Control \"lblEstado\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_count": 31,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7,
+        "warnings": [],
+        "codegraphIndexPath": "C:\\00repos\\codigo\\access2web-blueprint\\.codegraph-vba"
+      },
+      "verify_form_bindings": {
+        "controls_count": 0,
+        "findings_count": 4,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 4
+        },
+        "findings_top_5": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"ListaFiltrados\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "ListaFiltrados",
+            "data": {
+              "rowSourcePreview": "\"ID;Nemotécnico;Nombre;Jurídica;Fecha Cierre;F Prevista Cierre;Prox Pub.;12;SACO",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"ComboJefeProyecto\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "ComboJefeProyecto",
+            "data": {
+              "rowSourcePreview": "\"asa;Aitor Solar Azcona;tf06117;Álvaro García Ramiro;ds00275;Antonio Sánchez Tej",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"comboActivos\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "comboActivos",
+            "data": {
+              "rowSourcePreview": "\"Sí;No;Todos\"",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control \"ComboResponsableCalidad\" has a RowSource that could not be parsed as SQL.",
+            "controlName": "ComboResponsableCalidad",
+            "data": {
+              "rowSourcePreview": "\"Ana Rubio Canales;Beatriz Noval Gutiérrez;Natalia Casán García;Sergio García Mo",
+              "binding": "RowSource"
+            }
+          }
+        ]
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": []
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 71,
+    "total_binding_findings": 5,
+    "unattended_forms": 0,
+    "tables_referenced_union": []
+  }
+}

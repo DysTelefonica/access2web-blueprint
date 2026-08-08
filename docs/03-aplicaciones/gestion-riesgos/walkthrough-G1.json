@@ -1,0 +1,97 @@
+{
+  "group": "G1",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui",
+    "analyze_form_layout",
+    "map_form_behavior (autoFetchCodeGraph:true)",
+    "verify_form_bindings"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T08:51:12.894Z",
+  "forms_count": 1,
+  "forms": [
+    {
+      "group": "G1",
+      "formName": "Form_frmSplash",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_frmSplash.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "frmSplash",
+        "controls_count": 10,
+        "formEvents": [
+          "OnOpen",
+          "OnTimer",
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "sections_count": 0,
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 2
+        },
+        "findings_top_5": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "lblProgresoBarra",
+            "message": "Control \"lblProgresoBarra\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "severity": "warning",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "severity": "warning",
+            "controlName": "imgLogoDepartamento <-> imgLogo",
+            "message": "Controls \"imgLogoDepartamento\" and \"imgLogo\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_count": 10,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7,
+        "warnings": [],
+        "codegraphIndexPath": "C:\\00repos\\codigo\\access2web-blueprint\\.codegraph-vba"
+      },
+      "verify_form_bindings": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_5": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": []
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 6,
+    "total_binding_findings": 0,
+    "unattended_forms": 0,
+    "tables_referenced_union": []
+  }
+}
