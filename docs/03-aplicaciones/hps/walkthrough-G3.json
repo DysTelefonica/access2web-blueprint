@@ -1,0 +1,173 @@
+{
+  "group": "G3",
+  "method_version": "v5",
+  "adapter_version": "2.36.3",
+  "generated_at": "2026-08-08T12:30:00Z",
+  "project": "access2web-blueprint",
+  "app": "hps",
+  "source_root": "data/staging/hps/src/forms",
+  "group_name": "Entidad principal gestión (CRUD lista)",
+  "taxonomy_rationale": "Forms con CRUD directo sobre la entidad principal (TbUsuarios): altas, ediciones, búsquedas, listados, vistas detalle. Siguen el patrón lanzadera/Form_FormUsuario*. Identificados según forms.md §Call paths críticos (HPS.UsuarioHPS.Registrar/Modificar) y capabilities.md §Usuarios HPS.",
+  "forms_count": 10,
+  "forms": [
+    {
+      "formName": "Form_FormExpedientesBusqueda",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormExpedientesBusqueda.form.txt",
+      "group": "G3",
+      "role_in_group": "expediente_search",
+      "ui": { "controls_count": 12, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 12, "sections": 2, "findings_count": 8, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; búsqueda de expedientes vinculados (FK conceptual con Lanzadera — sin FK física).",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial06BusquedaGlobal",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial06BusquedaGlobal.form.txt",
+      "group": "G3",
+      "role_in_group": "global_search",
+      "ui": { "controls_count": 10, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 10, "sections": 2, "findings_count": 7, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; búsqueda global cross-tabla.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial07UsuariosSICA",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial07UsuariosSICA.form.txt",
+      "group": "G3",
+      "role_in_group": "sica_list",
+      "ui": { "controls_count": 13, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 13, "sections": 0, "findings_count": 9, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 2, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; lista de usuarios SICA — backend TbUsuariosSICA.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial08UsuariosHistoricos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial08UsuariosHistoricos.form.txt",
+      "group": "G3",
+      "role_in_group": "historicos_list",
+      "ui": { "controls_count": 10, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 10, "sections": 0, "findings_count": 7, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; lista de usuarios históricos — backend TbUsuariosHistoricos.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuario02Alta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario02Alta.form.txt",
+      "group": "G3",
+      "role_in_group": "usuario_create",
+      "ui": { "controls_count": 51, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 51, "sections": 2, "findings_count": 19, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 10, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 1, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; alta de usuario. CRUD real vía HPS.UsuarioHPS.Registrar + UsuarioLifecycleTransactionCoordinator.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuario02Edicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario02Edicion.form.txt",
+      "group": "G3",
+      "role_in_group": "usuario_update",
+      "ui": { "controls_count": 59, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 59, "sections": 0, "findings_count": 14, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 11, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 5, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 5 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; edición de usuario (mismo shape que Alta pero update).",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuario02HPS",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario02HPS.form.txt",
+      "group": "G3",
+      "role_in_group": "hps_detail",
+      "ui": { "controls_count": 79, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 79, "sections": 0, "findings_count": 71, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 56, "FORM_LAYOUT_ALIGNMENT": 13, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 8, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 8 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; detalle HPS por usuario (79 controles = el form más grande de G3). CRUD sobre TbHPS (1280 filas).",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuario07SICAAlta",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario07SICAAlta.form.txt",
+      "group": "G3",
+      "role_in_group": "sica_create",
+      "ui": { "controls_count": 42, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 42, "sections": 2, "findings_count": 16, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_ALIGNMENT": 9, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; alta SICA. Backend TbUsuariosSICA (18 columnas) + integración con HPS por IDHPS.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuario07SICAEdicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario07SICAEdicion.form.txt",
+      "group": "G3",
+      "role_in_group": "sica_update",
+      "ui": { "controls_count": 43, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 43, "sections": 2, "findings_count": 16, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_ALIGNMENT": 9, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; edición SICA (espejo del Alta).",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuarioHistorico02Edicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuarioHistorico02Edicion.form.txt",
+      "group": "G3",
+      "role_in_group": "historico_update",
+      "ui": { "controls_count": 43, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 43, "sections": 0, "findings_count": 14, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 11, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 2, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 2 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; edición histórico (TbUsuariosHistoricos, 242 filas).",
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 181,
+    "total_binding_findings": 21,
+    "forms_with_unparseable_sql": 9,
+    "unattended_forms": 10,
+    "forms_with_zero_table_bindings": 10,
+    "tables_referenced_union": [],
+    "geometry_findings_by_kind_total": {
+      "FORM_LAYOUT_MISSING_GEOMETRY": 32,
+      "FORM_LAYOUT_OVERLAP": 66,
+      "FORM_LAYOUT_ALIGNMENT": 72,
+      "FORM_LAYOUT_TAB_ORDER_MISMATCH": 10
+    },
+    "largest_form": {
+      "Form_FormUsuario02HPS": { "controls": 79, "findings": 71, "overlaps": 56 }
+    },
+    "tool_status_summary": {
+      "dysflow_version": "2.36.3",
+      "analyze_form_ui": "OK on 10/10",
+      "analyze_form_layout": "OK on 10/10",
+      "map_form_behavior_autoFetchCodeGraph_true": "OK on 10/10; codegraphEvidence=[] en todos",
+      "verify_form_bindings": "OK on 10/10; 21 FORM_BINDING_SQL_UNPARSEABLE en 9/10 forms (SQL inline dinámico)"
+    }
+  },
+  "caveats": [
+    "verify_form_bindings FUNCIONA en 2.36.3 (issue #1412 resuelto). Devuelve FORM_BINDING_SQL_UNPARSEABLE en 9 de 10 forms: el patrón es SQL construido con concatenación de strings en Form_Load — no se puede parsear estáticamente. Implica que las queries dinámicas NO son refactor-safety con un linter estático.",
+    "Form_FormUsuario02HPS concentra 56 de los 66 FORM_LAYOUT_OVERLAP del grupo (84%) — el form de detalle HPS es el más denso visualmente. Vale la pena revisar si los overlaps son intencionales (paneles apilados) o artefacto de containers AABB.",
+    "Los 10 forms G3 son todos UNATTENDED estricto — la única fuente de verdad del comportamiento es el .cls, no el .form.txt."
+  ]
+}

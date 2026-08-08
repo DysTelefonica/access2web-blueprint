@@ -1,0 +1,105 @@
+{
+  "group": "G5",
+  "method_version": "v5",
+  "adapter_version": "2.36.3",
+  "generated_at": "2026-08-08T12:30:00Z",
+  "project": "access2web-blueprint",
+  "app": "hps",
+  "source_root": "data/staging/hps/src/forms",
+  "group_name": "Informes / sub-catálogos / auxiliares",
+  "taxonomy_rationale": "Forms auxiliares que no son CRUD directo ni navegación raíz: histórico de observaciones, indicadores en tiempo real, formulario1 (residual). Identificados según forms.md §Indicadores y capabilities.md §Indicadores en tiempo real (Indicador.cls, clsIndicadoresBus.cls, modIndicadores.bas).",
+  "forms_count": 5,
+  "forms": [
+    {
+      "formName": "Form_FormUsuario02DatosObservacionHistorico",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario02DatosObservacionHistorico.form.txt",
+      "group": "G5",
+      "role_in_group": "observacion_historico",
+      "ui": { "controls_count": 11, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 11, "sections": 2, "findings_count": 8, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; histórico de observaciones — backend TbObservacionesHistoricas. Espejo de Form_FormUsuario02DatosObservacion.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial09Indicadores",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial09Indicadores.form.txt",
+      "group": "G5",
+      "role_in_group": "indicadores_root",
+      "ui": { "controls_count": 17, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 17, "sections": 0, "findings_count": 6, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 4, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; entry del panel de indicadores en tiempo real. Backed por Indicador.cls + clsIndicadoresBus.cls + Mod_StartupCacheInitialization.bas. Test_RealTimeIndicatorCoherence.bas verifica coherencia.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial09IndicadoresDatosLocalDatos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial09IndicadoresDatosLocalDatos.form.txt",
+      "group": "G5",
+      "role_in_group": "indicadores_datos_local",
+      "ui": { "controls_count": 202, "formEvents": ["OnCurrent", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 202, "sections": 0, "findings_count": 202, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 198, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "warnings_only", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; detalle de indicadores locales — 202 controles (segundo form más grande del repo HPS). DatosLocal.cls es la clase de soporte.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial09IndicadoresUsuariosSICADatos",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial09IndicadoresUsuariosSICADatos.form.txt",
+      "group": "G5",
+      "role_in_group": "indicadores_sica",
+      "ui": { "controls_count": 35, "formEvents": ["OnCurrent", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 35, "sections": 0, "findings_count": 30, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 30 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; indicadores SICA — cruza TbUsuariosSICA con indicadores de negocio.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_Formulario1",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_Formulario1.form.txt",
+      "group": "G5",
+      "role_in_group": "residual",
+      "ui": { "controls_count": 17, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 17, "sections": 0, "findings_count": 9, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 4, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; nombre genérico 'Formulario1' — residual huérfano, probablemente vestigio de desarrollo o template no renombrado. Sin clase documentada en forms.md ni capabilities.md. Disposición recomendada: archivar o descartar en migración.",
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 255,
+    "total_binding_findings": 1,
+    "forms_with_unparseable_sql": 1,
+    "unattended_forms": 5,
+    "forms_with_zero_table_bindings": 5,
+    "tables_referenced_union": [],
+    "geometry_findings_by_kind_total": {
+      "FORM_LAYOUT_MISSING_GEOMETRY": 235,
+      "FORM_LAYOUT_OVERLAP": 7,
+      "FORM_LAYOUT_ALIGNMENT": 10,
+      "FORM_LAYOUT_TAB_ORDER_MISMATCH": 3
+    },
+    "tool_status_summary": {
+      "dysflow_version": "2.36.3",
+      "analyze_form_ui": "OK on 5/5",
+      "analyze_form_layout": "OK on 5/5",
+      "map_form_behavior_autoFetchCodeGraph_true": "OK on 5/5; codegraphEvidence=[] salvo 1 'warnings_only' (DatosLocalDatos)",
+      "verify_form_bindings": "OK on 5/5; 1 FORM_BINDING_SQL_UNPARSEABLE (Form_FormInicial09Indicadores)"
+    }
+  },
+  "caveats": [
+    "Form_FormInicial09IndicadoresDatosLocalDatos (202 controles) y Form_FormInicial03ConsultasDatos (G4, 206 controles) son los outliers por tamaño — concentran 401 de los 633 FORM_LAYOUT_MISSING_GEOMETRY totales del repo HPS (63%). Probable causa: layout exportado sin propiedades Left/Top/Width/Height digitalizadas, o son 'Continuous Forms' con muchos labels/controls en grid que no se exportan al .form.txt.",
+    "Form_Formulario1 es un residual sin documentación — el nombre genérico sugiere template no renombrado. Decisión de disposición: archivar/descartar en migración.",
+    "Los indicadores en tiempo real tienen kill switch atómico verificado por Test_RealTimeIndicatorCoherence.bas — preservable como referencia del puerto de observabilidad de la nueva plataforma (ver capabilities.md §Reglas de conservación)."
+  ]
+}

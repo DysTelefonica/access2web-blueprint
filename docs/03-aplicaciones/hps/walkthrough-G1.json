@@ -1,0 +1,43 @@
+{
+  "group": "G1",
+  "method_version": "v5",
+  "adapter_version": "2.36.3",
+  "generated_at": "2026-08-08T12:30:00Z",
+  "project": "access2web-blueprint",
+  "app": "hps",
+  "source_root": "data/staging/hps/src/forms",
+  "group_name": "Auth/splash/login",
+  "forms_count": 0,
+  "forms": [],
+  "scope_note": "G1 está VACÍO en el scope Form_*.form.txt de HPS. El splash de la app (frmSplash) está referenciado en forms.md §Navegación principal como punto de arranque, pero NO está exportado como Form_*.form.txt en data/staging/hps/src/forms/. El listado de docs.get_dysflow.list_objects() confirma 38 Form_* y ningún frmSplash (que suele vivir solo como .cls sin .form.txt).",
+  "splash_evidence_offscope": {
+    "form": "frmSplash",
+    "mentioned_in": "docs/03-aplicaciones/hps/forms.md §Navegación principal",
+    "call_path": "frmSplash.Form_Timer → EVE → Constructor.getUsuario → getdb()",
+    "documented_role": "splash screen — único punto de entrada; el resto de la navegación arranca desde aquí hacia Form_FormInicial",
+    "classe_destination": "src/modules/VariablesEntorno.bas (EVE), src/modules/Constructor.bas (getUsuario)",
+    "disposition": "fuera de scope de este walkthrough (no es Form_*.form.txt); debería cubrirse en un walkthrough dedicado de .cls-only forms o archivarse en docs/03-aplicaciones/hps/splash-walkthrough.md"
+  },
+  "absence_rationale": "El contrato del walkthrough v5 es 'todos los Form_*.form.txt'. frmSplash no cumple ese patrón (no tiene .form.txt porque no tiene layout exportable — es un form 100% procedural). Los 38 forms con .form.txt no incluyen splash.",
+  "alternative_evidence_paths": [
+    "codegraph.codegraph_explore sobre 'frmSplash' desde .codegraph-vba/index",
+    "Read directo de src/forms/frmSplash.cls (única fuente del comportamiento)",
+    "verify_form_bindings no aplica (splash sin bindings de datos)"
+  ],
+  "summary": {
+    "forms_in_scope": 0,
+    "forms_in_source_root": 0,
+    "scope_completeness": "G1 no aplica al scope Form_*.form.txt; el form de splash de HPS vive solo como .cls sin layout exportado",
+    "tool_status_summary": {
+      "dysflow_version": "2.36.3",
+      "analyze_form_ui": "n/a — sin forms en scope",
+      "analyze_form_layout": "n/a",
+      "map_form_behavior": "n/a — frmSplash podría procesarse via .cls-only si se agrega al scope",
+      "verify_form_bindings": "n/a — splash no tiene bindings de datos"
+    }
+  },
+  "caveats": [
+    "Si el orchestrator quiere walkthrough de frmSplash, debe ampliar el scope a .cls-only forms o crear un walkthrough separado.",
+    "El siguiente pase de walkthroughs (Expedientes, NoConformidades, GestionRiesgos) tendrá el mismo patrón si tampoco exportaron el splash como .form.txt."
+  ]
+}

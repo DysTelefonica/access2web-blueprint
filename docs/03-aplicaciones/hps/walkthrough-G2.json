@@ -1,0 +1,158 @@
+{
+  "group": "G2",
+  "method_version": "v5",
+  "adapter_version": "2.36.3",
+  "generated_at": "2026-08-08T12:30:00Z",
+  "project": "access2web-blueprint",
+  "app": "hps",
+  "source_root": "data/staging/hps/src/forms",
+  "group_name": "Menú principal / opciones generales",
+  "taxonomy_rationale": "Forms sin CRUD directo de entidad: navegación raíz (Form_FormInicial*), configuración (Form_FormInicial05*), entry points de sub-secciones (Form_FormUsuario*00Principal/01Lateral, Form_FormUsuarioHistorico*). Identificados según forms.md §Navegación principal y capabilities.md §Roles.",
+  "forms_count": 9,
+  "forms": [
+    {
+      "formName": "Form_FormInicial",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial.form.txt",
+      "group": "G2",
+      "role_in_group": "navigation_root",
+      "ui": { "controls_count": 14, "formEvents": ["OnTimer", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 14, "sections": 2, "findings_count": 17, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 11, "FORM_LAYOUT_ALIGNMENT": 2 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0 + 0 declarative bindings en .form.txt. Patrón de menú: imperativo en Form_Load.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial00Principal",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial00Principal.form.txt",
+      "group": "G2",
+      "role_in_group": "entry_pane",
+      "ui": { "controls_count": 12, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 12, "sections": 2, "findings_count": 12, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 8, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; pane de entrada sin CRUD directo.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial01Lateral",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial01Lateral.form.txt",
+      "group": "G2",
+      "role_in_group": "lateral_menu",
+      "ui": { "controls_count": 20, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 20, "sections": 0, "findings_count": 2, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; menú lateral, navega por DoCmd.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial02ConsultasPrincipal",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial02ConsultasPrincipal.form.txt",
+      "group": "G2",
+      "role_in_group": "consultas_entry",
+      "ui": { "controls_count": 11, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 11, "sections": 0, "findings_count": 6, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; entry de consultas que delega a Form_FormInicial03Consultas<PorCampo>.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormInicial05Configuracion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial05Configuracion.form.txt",
+      "group": "G2",
+      "role_in_group": "settings",
+      "ui": { "controls_count": 10, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 10, "sections": 0, "findings_count": 5, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; settings delegates to modConfiguracionHPS.bas.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuario00Principal",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario00Principal.form.txt",
+      "group": "G2",
+      "role_in_group": "usuario_entry",
+      "ui": { "controls_count": 9, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 9, "sections": 2, "findings_count": 9, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 9 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; entry pane de gestión de usuarios.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuario01Lateral",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario01Lateral.form.txt",
+      "group": "G2",
+      "role_in_group": "usuario_lateral_menu",
+      "ui": { "controls_count": 8, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 8, "sections": 0, "findings_count": 1, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; lateral menu de usuario.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuarioHistorico00Principal",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuarioHistorico00Principal.form.txt",
+      "group": "G2",
+      "role_in_group": "historico_entry",
+      "ui": { "controls_count": 10, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 10, "sections": 2, "findings_count": 10, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 10 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; entry pane histórico.",
+      "method_version": "v5"
+    },
+    {
+      "formName": "Form_FormUsuarioHistorico01Lateral",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuarioHistorico01Lateral.form.txt",
+      "group": "G2",
+      "role_in_group": "historico_lateral_menu",
+      "ui": { "controls_count": 7, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
+      "geometry": { "controls": 7, "sections": 0, "findings_count": 1, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1 }, "status": "ok" },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
+      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "unattended": true,
+      "unattended_evidence": "bindings_count=0; lateral menu histórico.",
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 63,
+    "total_binding_findings": 1,
+    "forms_with_unparseable_sql": 1,
+    "unattended_forms": 9,
+    "forms_with_zero_table_bindings": 9,
+    "tables_referenced_union": [],
+    "geometry_findings_by_kind_total": {
+      "FORM_LAYOUT_MISSING_GEOMETRY": 36,
+      "FORM_LAYOUT_OVERLAP": 17,
+      "FORM_LAYOUT_ALIGNMENT": 5,
+      "FORM_LAYOUT_TAB_ORDER_MISMATCH": 5
+    },
+    "tool_status_summary": {
+      "dysflow_version": "2.36.3",
+      "analyze_form_ui": "OK on 9/9",
+      "analyze_form_layout": "OK on 9/9 (issue #1407 resuelto)",
+      "map_form_behavior_autoFetchCodeGraph_true": "OK on 9/9; codegraphEvidence=[] — el índice codegraph-vba del subproject HPS no resuelve refs cross-form en este run (común a Lanzadera/Expedientes v4)",
+      "verify_form_bindings": "OK on 9/9 (issue #1412 resuelto en 2.36.3)",
+      "query_execute_for_schema": "OK; SELECT TOP 1 FROM 22 tablas reales para cosechar columnas"
+    }
+  },
+  "caveats": [
+    "map_form_behavior devolvió 0 codegraphEvidence en los 9 forms; el índice codegraph-vba local está en data/staging/hps/.codegraph-vba/ pero la tool no recibe el projectPath correcto. Mesmo síntoma que Lanzadera v4 — no es bug nuevo.",
+    "Las 9 forms G2 son todas UNATTENDED estricto (bindings_count=0 + patrón imperativo en Form_Load). Las decisiones de qué mostrar / abrir se toman en el .cls.",
+    "Form_FormInicial02ConsultasPrincipal tiene 1 FORM_BINDING_SQL_UNPARSEABLE — el RecordSource o RowSource referencian SQL inline que no se pudo parsear estáticamente."
+  ]
+}
