@@ -34,3 +34,5 @@ These skills are **mandatory** — load them before any work in their scope:
 ## Refuerzo
 
 Si una IA escribe código o documentos en este repositorio sin cargar las skills pertinentes, trabaja a ciegas. Las skills son la single source of truth para «cómo se hace X en este proyecto». Cargue primero, escriba después.
+
+[← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)

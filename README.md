@@ -64,3 +64,5 @@ await tools.codegraph.codegraph_explore({
   projectPath: "C:/00repos/codigo/access2web-blueprint/data/staging/condor"
 });
 ```
+
+[Next: AGENTS.md →](AGENTS.md)
