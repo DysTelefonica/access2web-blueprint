@@ -30,3 +30,7 @@ data/staging/**/.codegraph-vba/
 # Local logs (rclone, sync, etc.)
 logs/
 *.log
+
+# Python bytecode (the harness assets are Python)
+__pycache__/
+*.py[cod]
