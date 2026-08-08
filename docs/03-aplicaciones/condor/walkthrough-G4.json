@@ -1,0 +1,309 @@
+{
+  "group": "G4",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui (outputMode:full)",
+    "analyze_form_layout (issue #1407 RESUELTO en 2.36.2)",
+    "map_form_behavior (autoFetchCodeGraph:true)",
+    "verify_form_bindings (issue #1412 RESUELTO en 2.36.3)"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T10:30:00.000Z",
+  "forms_count": 28,
+  "forms": [
+    {
+      "formName": "Form_frmDatosPC", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmDatosPC.form.txt",
+      "role": "Host (Solicitud tipo PC)",
+      "codegraph_summary": { "handlers_count": 0, "blast_radius_top_5": [], "call_path_top_3": [], "stale_banner_ignored": true },
+      "ui": { "controls_count": 19, "formEvents": ["OnUnload", "OnLoad"], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 19, "sections": 2, "findings_count": 34, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 27, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 19, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_frmDatosCDCA", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmDatosCDCA.form.txt",
+      "role": "Host (Solicitud tipo CD_CA)",
+      "codegraph_summary": { "handlers_count": 0, "blast_radius_top_5": [], "call_path_top_3": [], "stale_banner_ignored": true },
+      "ui": { "controls_count": 19, "formEvents": ["OnUnload", "OnLoad"], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 19, "sections": 2, "findings_count": 34, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 27, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 19, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_frmDatosPCSUB", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmDatosPCSUB.form.txt",
+      "role": "Host (Solicitud tipo PC_SUB)",
+      "codegraph_summary": { "handlers_count": 0, "blast_radius_top_5": [], "call_path_top_3": [], "stale_banner_ignored": true },
+      "ui": { "controls_count": 19, "formEvents": ["OnUnload", "OnLoad"], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 19, "sections": 2, "findings_count": 34, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 27, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 19, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_frmDatosCDCASUB", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmDatosCDCASUB.form.txt",
+      "role": "Host (Solicitud tipo CD_CA_SUB)",
+      "codegraph_summary": { "handlers_count": 0, "blast_radius_top_5": [], "call_path_top_3": [], "stale_banner_ignored": true },
+      "ui": { "controls_count": 19, "formEvents": ["OnUnload", "OnLoad"], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 19, "sections": 2, "findings_count": 34, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 27, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 19, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCA_Generales", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCA_Generales.form.txt",
+      "role": "Subform (CD_CA / Generales)",
+      "ui": { "controls_count": 23, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 23, "sections": 0, "findings_count": 29, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 20, "FORM_LAYOUT_ALIGNMENT": 5, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 23, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCA_Propuesta", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCA_Propuesta.form.txt",
+      "role": "Subform (CD_CA / Propuesta)",
+      "ui": { "controls_count": 17, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 17, "sections": 0, "findings_count": 10, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 4, "FORM_LAYOUT_ALIGNMENT": 4, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 17, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCA_Impacto", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCA_Impacto.form.txt",
+      "role": "Subform (CD_CA / Impacto)",
+      "ui": { "controls_count": 51, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 51, "sections": 0, "findings_count": 63, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 18, "FORM_LAYOUT_OVERLAP": 37, "FORM_LAYOUT_ALIGNMENT": 7, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 51, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCA_DictamenRAC", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCA_DictamenRAC.form.txt",
+      "role": "Subform (CD_CA / Dictamen RAC)",
+      "ui": { "controls_count": 14, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 14, "sections": 0, "findings_count": 12, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 9, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 14, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCA_DecisionFinal", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCA_DecisionFinal.form.txt",
+      "role": "Subform (CD_CA / Decisión Final)",
+      "ui": { "controls_count": 15, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 15, "sections": 0, "findings_count": 18, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 12, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 15, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCA_AprobacionSuministrador", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCA_AprobacionSuministrador.form.txt",
+      "role": "Subform (CD_CA / Aprobación Suministrador)",
+      "ui": { "controls_count": 44, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 44, "sections": 0, "findings_count": 53, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 7, "FORM_LAYOUT_OVERLAP": 35, "FORM_LAYOUT_ALIGNMENT": 10, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 44, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCASUB_Generales", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCASUB_Generales.form.txt",
+      "role": "Subform (CD_CA_SUB / Generales)",
+      "ui": { "controls_count": 25, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 25, "sections": 0, "findings_count": 32, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 22, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 25, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCASUB_Propuesta", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCASUB_Propuesta.form.txt",
+      "role": "Subform (CD_CA_SUB / Propuesta)",
+      "ui": { "controls_count": 17, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 17, "sections": 0, "findings_count": 10, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 5, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 17, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCASUB_Impacto", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCASUB_Impacto.form.txt",
+      "role": "Subform (CD_CA_SUB / Impacto)",
+      "ui": { "controls_count": 51, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 51, "sections": 0, "findings_count": 64, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 18, "FORM_LAYOUT_OVERLAP": 37, "FORM_LAYOUT_ALIGNMENT": 8, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 51, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCASUB_DictamenRAC", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCASUB_DictamenRAC.form.txt",
+      "role": "Subform (CD_CA_SUB / Dictamen RAC)",
+      "ui": { "controls_count": 19, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 19, "sections": 0, "findings_count": 19, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 14, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 19, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCASUB_DecisionFinal", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCASUB_DecisionFinal.form.txt",
+      "role": "Subform (CD_CA_SUB / Decisión Final)",
+      "ui": { "controls_count": 15, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 15, "sections": 0, "findings_count": 18, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 12, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 15, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosCDCASUB_AprobacionSuministrador", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosCDCASUB_AprobacionSuministrador.form.txt",
+      "role": "Subform (CD_CA_SUB / Aprobación Suministrador)",
+      "ui": { "controls_count": 44, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 44, "sections": 0, "findings_count": 53, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 7, "FORM_LAYOUT_OVERLAP": 35, "FORM_LAYOUT_ALIGNMENT": 10, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 44, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPC_Generales", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPC_Generales.form.txt",
+      "role": "Subform (PC / Generales)",
+      "ui": { "controls_count": 20, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 20, "sections": 0, "findings_count": 23, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 15, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 20, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPC_Propuesta", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPC_Propuesta.form.txt",
+      "role": "Subform (PC / Propuesta)",
+      "ui": { "controls_count": 10, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 10, "sections": 0, "findings_count": 5, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 2 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 10, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPC_Impacto", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPC_Impacto.form.txt",
+      "role": "Subform (PC / Impacto)",
+      "ui": { "controls_count": 67, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 67, "sections": 0, "findings_count": 89, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 25, "FORM_LAYOUT_OVERLAP": 50, "FORM_LAYOUT_ALIGNMENT": 13, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 67, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPC_DictamenRAC", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPC_DictamenRAC.form.txt",
+      "role": "Subform (PC / Dictamen RAC)",
+      "ui": { "controls_count": 14, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 14, "sections": 0, "findings_count": 14, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 9, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 14, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPC_DecisionFinal", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPC_DecisionFinal.form.txt",
+      "role": "Subform (PC / Decisión Final)",
+      "ui": { "controls_count": 20, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 20, "sections": 0, "findings_count": 23, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 16, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 20, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPC_AprobacionSuministrador", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPC_AprobacionSuministrador.form.txt",
+      "role": "Subform (PC / Aprobación Suministrador)",
+      "ui": { "controls_count": 15, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 15, "sections": 0, "findings_count": 13, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 8, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 15, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPCSUB_Generales", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPCSUB_Generales.form.txt",
+      "role": "Subform (PC_SUB / Generales)",
+      "ui": { "controls_count": 20, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 20, "sections": 0, "findings_count": 23, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 15, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 20, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPCSUB_Propuesta", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPCSUB_Propuesta.form.txt",
+      "role": "Subform (PC_SUB / Propuesta)",
+      "ui": { "controls_count": 10, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 10, "sections": 0, "findings_count": 5, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 2 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 10, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPCSUB_Impacto", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPCSUB_Impacto.form.txt",
+      "role": "Subform (PC_SUB / Impacto)",
+      "ui": { "controls_count": 67, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 67, "sections": 0, "findings_count": 89, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 25, "FORM_LAYOUT_OVERLAP": 50, "FORM_LAYOUT_ALIGNMENT": 13, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 67, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPCSUB_DictamenRAC", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPCSUB_DictamenRAC.form.txt",
+      "role": "Subform (PC_SUB / Dictamen RAC)",
+      "ui": { "controls_count": 16, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 16, "sections": 0, "findings_count": 18, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 13, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 16, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPCSUB_DecisionFinal", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPCSUB_DecisionFinal.form.txt",
+      "role": "Subform (PC_SUB / Decisión Final)",
+      "ui": { "controls_count": 20, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 20, "sections": 0, "findings_count": 23, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 16, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 20, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    },
+    {
+      "formName": "Form_subfrmDatosPCSUB_AprobacionSuministrador", "group": "G4",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_subfrmDatosPCSUB_AprobacionSuministrador.form.txt",
+      "role": "Subform (PC_SUB / Aprobación Suministrador)",
+      "ui": { "controls_count": 15, "formEvents": [], "bindings_count": 0, "warnings": [] },
+      "geometry": { "controls": 15, "sections": 0, "findings_count": 13, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 8, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
+      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "verify_form_bindings": { "status": "ok", "controls": 15, "findings_count": 0, "findings": [] },
+      "unattended": false, "unattended_evidence": null, "tool_warnings": [], "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 1101,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 0,
+    "unattended_forms": 0,
+    "tables_referenced_union": ["tbDatosPC", "tbDatosCDCA", "tbDatosPCSUB", "tbDatosCDCASUB"],
+    "blast_radius_shared_symbols": ["All 4 hosts (Form_frmDatosPC/CDCA/PCSUB/CDCASUB) share identical geometry: 19 controls, 34 findings each — they are layout twins that swap the embedded sub-form control"],
+    "notes": "G4 = datos por tipo Solicitud (28 forms). Structure: 4 hosts (Form_frmDatosPC/CDCA/PCSUB/CDCASUB) + 24 sub-forms (6 each × 4 tipos: Generales, Propuesta, Impacto, DictamenRAC, DecisionFinal, AprobacionSuministrador). PC and PCSUB subforms are layout-twins (same control counts and finding counts for each section). CDCA and CDCASUB subforms are also layout-twins. Impacto forms are widest (51-67 controls, 63-89 findings each). All bindings=0 — declarative bindings absent; data flows through parent form_frmGestionSolicitud orchestration. codegraph-vba index returns 0 handlers across all 28 forms (likely index coverage gap for condor)."
+  }
+}

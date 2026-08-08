@@ -1,0 +1,75 @@
+{
+  "group": "G1",
+  "method_version": "v5",
+  "known_working_tools": [
+    "analyze_form_ui (outputMode:full)",
+    "analyze_form_layout (issue #1407 RESUELTO en 2.36.2)",
+    "map_form_behavior (autoFetchCodeGraph:true)",
+    "verify_form_bindings (issue #1412 RESUELTO en 2.36.3)"
+  ],
+  "known_degraded_tools": [],
+  "known_broken_tools": [],
+  "generated_at": "2026-08-08T10:30:00.000Z",
+  "forms_count": 1,
+  "forms": [
+    {
+      "formName": "Form_frmSplash",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmSplash.form.txt",
+      "group": "G1",
+      "codegraph_summary": {
+        "handlers_count": 0,
+        "source_size_lines": null,
+        "blast_radius_top_5": [],
+        "call_path_top_3": [],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": ["OnOpen", "OnTimer"],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 10,
+        "sections": 2,
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 1
+        },
+        "findings": [
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "EncabezadoDelFormulario", "message": "Control missing complete geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "Detalle", "message": "Control missing complete geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "lblProgresoBarra", "message": "Control missing complete geometry" },
+          { "code": "FORM_LAYOUT_MISSING_GEOMETRY", "severity": "warning", "controlName": "PieDelFormulario", "message": "Control missing complete geometry" },
+          { "code": "FORM_LAYOUT_OVERLAP", "severity": "warning", "controlName": "imgLogoDepartamento <-> imgLogoCondor", "message": "Controls have overlapping bounding boxes" }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited",
+        "note": "codegraph-vba index pre-existente for condor returns 0 handlers for Form_Open/Form_Timer; .cls handler dispatch not surfaced via map_form_behavior"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 10,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5"
+    }
+  ],
+  "summary": {
+    "total_geometry_findings": 5,
+    "total_binding_findings": 0,
+    "forms_skipped_bindings": 0,
+    "unattended_forms": 0,
+    "tables_referenced_union": [],
+    "blast_radius_shared_symbols": [],
+    "notes": "G1 = auth/splash. Form_frmSplash has OnTimer event that triggers EVE validation per docs/03-aplicaciones/condor/forms.md. codegraph-vba index does not surface handler evidence for this form."
+  }
+}
