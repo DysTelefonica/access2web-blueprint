@@ -171,7 +171,7 @@ Detectados durante `sdd-spec` y registrados en design.md §Decisiones pendientes
 | # | Gap | Origen | Estado | Cierre propuesto |
 |---|---|---|---|---|
 | G-1 | Política exacta de normalización del email (lowercase completo vs `local-part`+`domain`, IDN) | `users/spec.md` | **Cerrado** | DA-3 en `design.md`: lowercase completo en `users.email`. |
-| G-2 | Set canónico de capabilities por app para los 20 IDs en alcance | `profiles/spec.md` | ABIERTO | `sdd-tasks`: `platform/src/modules/lanzadera/domain/legacy_role_map.py` con `capabilities` mínimos por código. `profiles.capabilities` se siembra en 0003 con JSONB provisional. |
+| G-2 | Set canónico de capabilities por app para los 20 IDs en alcance | `profiles/spec.md` | ABIERTO | `sdd-tasks`: `app/src/modules/lanzadera/domain/legacy_role_map.py` con `capabilities` mínimos por código. `profiles.capabilities` se siembra en 0003 con JSONB provisional. |
 | G-3 | Tabla de campos legacy que NO migran (`Pass`, `Comando`, `URLDIrectorioIconoAplicacion`) | `apps/spec.md` | **Cerrado** | DA-7 en `design.md`: 0002 deja esos campos fuera del schema. |
 | G-4 | Severidad y notificación para intentos fallidos de crear admin global (SOC) | `auth-bootstrap/spec.md` | ABIERTO | Suficiente con WARN en log canónico de auditoría; severidad alta se reabre si la política cambia. |
 | G-5 | Canal exacto de notificación al usuario cuando se emite un token (P20) | `auth-reset/spec.md` | ABIERTO | Adapter v1 cubre MVP; SMTP corporativo real cuando se cierre P20. |

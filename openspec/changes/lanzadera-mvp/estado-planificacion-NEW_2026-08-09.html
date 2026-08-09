@@ -275,6 +275,13 @@
         PRs 3 y 6 spliteados en sub-PRs (3a/3b, 6a/6b). Total estimado 2.800-3.200 lineas en
         8 semanas (rango tentativo 2026-08-10 a 2026-10-04, ajustable).
       </p>
+      <br />
+      <p class="lead" style="font-size: 14px; opacity: .85; margin-top: var(--space-3);">
+        <strong>PR 1 cerrado 2026-08-09</strong>: 41 tests en verde, 90.91% de cobertura,
+        todos los quality gates pasan. La size:exception documentada quedo consumida dentro
+        del presupuesto; Gantt y per-PR table reflejan el cierre. Siguiente paso: PR 2
+        (Domain entities, 2026-08-10).
+      </p>
     </header>
 
     <section class="card" aria-labelledby="sec-resumen">
@@ -357,9 +364,9 @@
             <td><strong>Phase 0</strong></td>
             <td>14</td>
             <td>Foundation scaffold + CI gates + pytest plugin + hexagonal layer gate</td>
-            <td>Planificado</td>
-            <td><span class="rag-pill rag-grey">Planificado</span></td>
-            <td>PR 1 — listo para arrancar sdd-apply</td>
+            <td>Verde</td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>PR 1 cerrado 2026-08-09</td>
           </tr>
           <tr>
             <td><strong>Phase 1</strong></td>
@@ -367,7 +374,7 @@
             <td>Domain entities (User, App, Profile, Assignment, ResetToken, GlobalAdmin, AuditEvent, Session, legacy_role_map)</td>
             <td>Planificado</td>
             <td><span class="rag-pill rag-grey">Planificado</span></td>
-            <td>PR 2 — depende de PR 1 (paquete <code>platform.src.modules</code> creado)</td>
+            <td>PR 2 — depende de PR 1 (paquete <code>app.src.modules</code> creado)</td>
           </tr>
           <tr>
             <td><strong>Phase 2</strong></td>
@@ -447,10 +454,10 @@
             <td><code>main</code></td>
             <td>Phase 0: Foundation scaffold + CI gates + pytest plugin + hexagonal layer gate</td>
             <td>~400-500</td>
-            <td><span class="rag-pill rag-violet">size:exception</span></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
             <td>2026-08-10 (L)</td>
             <td>2026-08-14 (V)</td>
-            <td>Tracker <code>feat/lanzadera-mvp-tracker</code> se crea aqui</td>
+            <td>Cerrado 2026-08-09: 41 tests verde, 90.91% cobertura, todos los quality gates pasan (size:exception consumida)</td>
           </tr>
           <tr>
             <td><strong>PR 2</strong></td>
@@ -578,56 +585,59 @@
         <tbody>
           <tr>
             <td class="pr-label">PR 1 — Foundation</td>
-            <td class="bar-violet" title="size:exception">1</td>
-            <td class="bar-violet">2</td>
-            <td class="bar-violet">3</td>
-            <td class="bar-violet">4</td>
-            <td class="bar-violet">5</td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
-            <td class="bar-empty"></td>
+            <td class="bar-green">1</td>
+            <td class="bar-green">2</td>
+            <td class="bar-green">3</td>
+            <td class="bar-green">4</td>
+            <td class="bar-green">5</td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
           </tr>
           <tr>
             <td class="pr-label">PR 2 — Domain</td>
@@ -1220,8 +1230,8 @@
     <section class="card" aria-labelledby="sec-proximos">
       <h2 id="sec-proximos">7. Proximos pasos (concreto)</h2>
       <ol>
-        <li><strong>Sesion 2026-08-10 (L)</strong>: arrancar <code>sdd-apply</code> con PR 1 — Foundation scaffold + CI gates. Pasos del sub-agente: crear worktree <code>feat/lanzadera-mvp-tracker</code>, acquire del dispatcher (<code>gentle-ai sdd-attempt acquire</code>), crear paquete <code>platform/src/modules/lanzadera/</code>, escribir scripts de quality gates, configurar ruff/mypy/pytest, anadir el primer RED test del pin <code>test_ci_workflow.py</code>.</li>
-        <li><strong>Sesion 2026-08-14 (V)</strong>: cerrar PR 1; merge a tracker; refrescar este HTML como <code>estado-planificacion-NEW_2026-08-14.html</code> con RAG 🟢 y motivo del cierre.</li>
+        <li><strong>Sesion 2026-08-10 (L)</strong>: arrancar <code>sdd-apply</code> con PR 2 — Domain entities (Phase 1: User, App, Profile, Assignment, ResetToken, GlobalAdmin, AuditEvent, Session, legacy_role_map). Pasos del sub-agente: crear worktree <code>feat/lanzadera-mvp-tracker</code>, acquire del dispatcher (<code>gentle-ai sdd-attempt acquire</code>), branch <code>feat/pr-2-domain-entities</code> basada en PR 1 (ya mergeada al tracker).</li>
+        <li><strong>Sesion 2026-08-19 (X)</strong>: cerrar PR 2; merge a tracker; refrescar este HTML como <code>estado-planificacion-NEW_2026-08-19.html</code> con RAG 🟢 y motivo del cierre.</li>
         <li><strong>Antes de PR 3b (2026-08-26)</strong>: pedir a producto confirmacion de G-2 (capability set por app) o aceptacion explicita de sembrar <code>capabilities = {}</code> provisional.</li>
         <li><strong>Sesion 2026-09-25 (V)</strong>: cierre objetivo de PR 8; merge del tracker a <code>main</code> con el stack colapsado; transicionar a <code>sdd-verify</code> y luego <code>sdd-archive</code>.</li>
       </ol>
@@ -1243,6 +1253,8 @@
         <li><span class="commit-sha">8309f25</span> <code>docs: evolve blueprint repo to monorepo model with MVP Lanzadera platform</code></li>
         <li><span class="commit-sha">6f44481</span> <code>chore(openspec): evolve config to monorepo with strict-tdd and pytest gates</code></li>
         <li><span class="commit-sha">6249059</span> <code>docs(sdd): materialize PR plan for lanzadera-mvp tasks</code></li>
+        <li><span class="commit-sha">61b75fd</span> <code>feat(sdd): commit change artifacts for lanzadera-mvp (proposal, specs, design, planning)</code></li>
+        <li><span class="commit-sha">ee992ba</span> <code>docs(agents): register estado-planificacion-update as mandatory skill</code></li>
       </ul>
     </section>
 

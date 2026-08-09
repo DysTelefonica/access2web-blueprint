@@ -6,15 +6,15 @@
 
 ## Resumen ejecutivo
 
-Este diseño describe cómo se construye el primer slice del monolito modular `platform/` sobre PostgreSQL, partiendo del módulo `lanzadera` y de los nueve sub-specs ya producidos por `sdd-spec` (`users`, `apps`, `profiles`, `assignments`, `auth-core`, `auth-reset`, `auth-bootstrap`, `global_admins`, `audit`). Las decisiones arquitectónicas heredadas son D5 (plataforma modular permission-aware), D8 (hexagonal global), D36+D37 obsoletos, D66-D68 (stack cerrado y monolito modular), D70-D72 (caché selectiva), D77 (Docker desde día uno), D82 (Expand and Contract), D85 (catálogo de 20 aplicaciones), D88 (Argon2id vía `argon2-cffi==25.1.0`), D89 (sin columna `legacy_hash`, `password_hash = NULL` para los 156 usuarios), D90 (reset flow con tokens one-time de 24 h) y D91 (CLI exclusivo para el primer admin global). Los doce quality gates QC-1 a QC-11 aparecen wired en `.github/workflows/ci.yml`, pinned por `tests/test_ci_workflow.py` y commiteados antes del primer `git commit` de código de aplicación, conforme al plan de `docs/calidad-de-codigo-y-ci.md`. La entrega se reparte en cuatro fases de cero a dos semanas, con la fase de aplicación (Alembic 0001-0006, adapters de repos, delivery HTMX, CLI admin) ejecutada en strict TDD.
+Este diseño describe cómo se construye el primer slice del monolito modular `app/` sobre PostgreSQL, partiendo del módulo `lanzadera` y de los nueve sub-specs ya producidos por `sdd-spec` (`users`, `apps`, `profiles`, `assignments`, `auth-core`, `auth-reset`, `auth-bootstrap`, `global_admins`, `audit`). Las decisiones arquitectónicas heredadas son D5 (plataforma modular permission-aware), D8 (hexagonal global), D36+D37 obsoletos, D66-D68 (stack cerrado y monolito modular), D70-D72 (caché selectiva), D77 (Docker desde día uno), D82 (Expand and Contract), D85 (catálogo de 20 aplicaciones), D88 (Argon2id vía `argon2-cffi==25.1.0`), D89 (sin columna `legacy_hash`, `password_hash = NULL` para los 156 usuarios), D90 (reset flow con tokens one-time de 24 h) y D91 (CLI exclusivo para el primer admin global). Los doce quality gates QC-1 a QC-11 aparecen wired en `.github/workflows/ci.yml`, pinned por `tests/test_ci_workflow.py` y commiteados antes del primer `git commit` de código de aplicación, conforme al plan de `docs/calidad-de-codigo-y-ci.md`. La entrega se reparte en cuatro fases de cero a dos semanas, con la fase de aplicación (Alembic 0001-0006, adapters de repos, delivery HTMX, CLI admin) ejecutada en strict TDD.
 
 ## Estructura física del módulo
 
-La forma hexagonal del módulo sigue el monolito modular aprobado por D68 y los límites por paquete del gate `scripts/check_layers.py`. El root package para el gate es `platform.src.modules`; las capas viven como subpaquete directo bajo cada módulo y los ports cruzan el árbol solo por inyección en el composition root.
+La forma hexagonal del módulo sigue el monolito modular aprobado por D68 y los límites por paquete del gate `scripts/check_layers.py`. El root package para el gate es `app.src.modules`; las capas viven como subpaquete directo bajo cada módulo y los ports cruzan el árbol solo por inyección en el composition root.
 
 ```text
 access2web-blueprint/
-├── platform/                          # NUEVO — monolito modular hexagonal (D68)
+├── app/                          # NUEVO — monolito modular hexagonal (D68)
 │   ├── pyproject.toml                 # pins: ruff==0.15.21, mypy==1.13.0, argon2-cffi==25.1.0
 │   ├── Dockerfile                     # python:3.12-slim-bookworm@sha256:<digest>
 │   ├── docker-compose.yml             # postgres + minio + backend dev (D77)
@@ -139,7 +139,7 @@ access2web-blueprint/
 └── docs/                             # EXISTENTE
 ```
 
-El árbol se apega al gate `scripts/check_layers.py` con `ROOT_PACKAGE = "platform.src.modules"`, `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados en la sección §Decisiones arquitectónicas. Los archivos `domain/` no importan frameworks; los `adapters/` consumen drivers; el `delivery/` y `di/` actúan como composition root.
+El árbol se apega al gate `scripts/check_layers.py` con `ROOT_PACKAGE = "app.src.modules"`, `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados en la sección §Decisiones arquitectónicas. Los archivos `domain/` no importan frameworks; los `adapters/` consumen drivers; el `delivery/` y `di/` actúan como composition root.
 
 ## Decisiones arquitectónicas del design
 
@@ -147,7 +147,7 @@ Las decisiones DA-* numeran el contrato que este `change` concreta. Cada fila de
 
 | ID | Decisión | Rationale | Alternativa descartada | Heredada |
 |---|---|---|---|---|
-| DA-1 | Capas `domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/` con `ALLOWED_IMPORTS` estricto y `PURE_LAYERS = {"domain", "ports", "application"}`; `ROOT_PACKAGE = "platform.src.modules"` para `check_layers.py`; slicing vertical prohibido entre módulos salvo `shared` exento. | D8 exige hexagonal global; sin gate, la declaración queda en prosa y se viola sin huella (QC-9). | Sin gate: el hexagonal se «declara» y se viola silenciosamente (issue APAP_WEB #436). | D8, QC-2, QC-9 |
+| DA-1 | Capas `domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/` con `ALLOWED_IMPORTS` estricto y `PURE_LAYERS = {"domain", "ports", "application"}`; `ROOT_PACKAGE = "app.src.modules"` para `check_layers.py`; slicing vertical prohibido entre módulos salvo `shared` exento. | D8 exige hexagonal global; sin gate, la declaración queda en prosa y se viola sin huella (QC-9). | Sin gate: el hexagonal se «declara» y se viola silenciosamente (issue APAP_WEB #436). | D8, QC-2, QC-9 |
 | DA-2 | Auth con Argon2id vía `argon2-cffi==25.1.0`, perfil `RFC_9106_LOW_MEMORY` (Argon2id, 64 MiB, 3 iteraciones, 4 hilos). `hash_password` y `verify_password` declarados `CRITICAL_HELPERS` al 100 % de cobertura (QC-5). | OWASP 2024 sitúa Argon2id como primera opción (memory-hard, resistente a GPU/ASIC). SHA256 sin salt del legacy no cumple estándares modernos (H1, resuelto). | bcrypt (`bcrypt==4.x`) — menos resistente a GPU que Argon2id; scrypt — sin bindings mantenidos en Python 3.12. | D88, D9, QC-5 |
 | DA-3 | Schema `users.password_hash` NULL por defecto; `users.status` ENUM (`active`, `disabled`, `password_reset_required`, `locked`); **sin** columna `legacy_hash`, `password_legacy` ni `pass_hash_v1`. La columna `users.password_hash` se queda `NULL` para los 156 usuarios migrados; el flag `status='password_reset_required'` los bloquea hasta `consume_reset_token`. | D89 sustituye D36+D37 (obsoletos). Sin doble algoritmo, no hay superficie de ataque para un hash heredado sin sal. Migración 0004 no escribe hashes: el reset flow los crea (D88+D90). | Mantener `legacy_hash` + adapter de verificación legacy — rechazado por H1 (SHA256-hex sin sal no cumple OWASP 2024). | D89, D9 |
 | DA-4 | Reset flow con tabla `reset_tokens` (`id`, `user_id`, `token_hash`, `expires_at`, `consumed_at`, `superseded_at`); `issue_reset_token(user_id) -> str` y `consume_reset_token(token, new_password) -> bool` atómicos y single-use; expiración 24 h; supersession al re-emitir; emisión del token crudo vía `NotificationDeliveryPort`. Ambos helpers declarados `CRITICAL_HELPERS`. | D90 exige tokens one-time de 24 h. La atomicidad previene reuso (race condition entre SELECT y UPDATE). El supersession anula el token anterior cuando el usuario pide otro. | Tokens JWT firmados — sin caducidad server-side fiable; sesiones persistentes con token persistente — no son one-time. | D90, D25, QC-5 |
@@ -158,8 +158,8 @@ Las decisiones DA-* numeran el contrato que este `change` concreta. Cada fila de
 | DA-9 | `LocationPort` con implementación MVP `assume_in_office` (devuelve `True`). Refuerzo real cuando llegue el módulo HPS, que es la primera app office-only. | H12 (topología híbrida) marca el flag `apps.requires_office_presence` como no evaluado en el MVP. Implementar el adaptador real sin consumidor sería código especulativo (YAGNI). | Implementación con detección de IP corporativa — rechazado por ausencia de consumidor y por coupling a topología abierta (D75). | D53, H12 |
 | DA-10 | Adapter de notificación v1 con cola-por-tabla: persiste filas en `mail_outbox` (`to`, `subject`, `body`, `status`, `created_at`); un dispatcher externo (futuro, no en este scope) las consume cada cinco minutos aprox. (legacy D65). El `NotificationDeliveryPort` define la firma `send(to, subject, body) -> None` para que el reset flow emita tokens sin acoplarse al canal. | D11+D13+D65 normalizan la notificación; v1 solo email; SMTP corporativo real sigue ABIERTO (P20). | Integración SMTP directa — rechazado por secreto IT aún no decidido. | D11, D12, D13, D65, P20 |
 | DA-11 | Schema de auditoría sin columnas de telemetría (`ssid`, `bssid`, `coordinates`, `machine_name`, `ip_address`). El evento se persiste en la **misma transacción** que la mutación auth; si el insert de auditoría falla, la mutación hace rollback (DA-4 + audit/spec.md §Audit emission is mandatory). | D55 retira telemetría heredada. La atomicidad garantiza que un login sin audit es un login que no ocurrió. | Auditoría async (outbox + worker) — rechazado por ventana de inconsistencia entre mutación y evento. | D27, D28, D55, audit/spec.md |
-| DA-12 | Mapeo legacy → profiles mediante tabla inmutable en código (`platform/src/modules/lanzadera/domain/legacy_role_map.py`) que cubre los 7 flags del `TbUsuariosAplicacionesPermisos` (`Administrador`, `Calidad`, `CalidadAvisos`, `Técnico`, `Economía`, `Secretaría`, `SinAcceso`) más el rule `DEFAULT` para todas-NULL. Regla `SinAcceso` exclusivo implementada como cortocircuito: si el flag está activo, las demás filas se descartan. | D110 prohíbe el anti-patrón de campos dinámicos `F3..F9`. El mapping es declarativo, no inferido, y se testea con cardinalidad exhaustiva (H11). | Mapping por inferencia desde `TbUsuariosAplicaciones` — rechazado por anti-patrón de Password plano y por surface area de capacidades (D22). | D22, D45, D46, D110, H11 |
-| DA-13 | Pin test AST que rechaza los símbolos `legacy_hash`, `verify_legacy`, `sha256`, `old_password`, `migrate_password` en `platform/src/modules/lanzadera/auth/` y en todo `platform/src/`. El test falla con `pytest_sessionfinish` mutando `session.exitstatus` si encuentra coincidencias. | D88+D89 sustituyen D36+D37; sin pinning, una reincorporación inadvertida del legacy vuelve a entrar (DA-3). | Confiar en revisión humana — rechazado por APAP_WEB #381 (gate ausente, drift reintroducido). | D88, D89, D9, QC-5 |
+| DA-12 | Mapeo legacy → profiles mediante tabla inmutable en código (`app/src/modules/lanzadera/domain/legacy_role_map.py`) que cubre los 7 flags del `TbUsuariosAplicacionesPermisos` (`Administrador`, `Calidad`, `CalidadAvisos`, `Técnico`, `Economía`, `Secretaría`, `SinAcceso`) más el rule `DEFAULT` para todas-NULL. Regla `SinAcceso` exclusivo implementada como cortocircuito: si el flag está activo, las demás filas se descartan. | D110 prohíbe el anti-patrón de campos dinámicos `F3..F9`. El mapping es declarativo, no inferido, y se testea con cardinalidad exhaustiva (H11). | Mapping por inferencia desde `TbUsuariosAplicaciones` — rechazado por anti-patrón de Password plano y por surface area de capacidades (D22). | D22, D45, D46, D110, H11 |
+| DA-13 | Pin test AST que rechaza los símbolos `legacy_hash`, `verify_legacy`, `sha256`, `old_password`, `migrate_password` en `app/src/modules/lanzadera/auth/` y en todo `app/src/`. El test falla con `pytest_sessionfinish` mutando `session.exitstatus` si encuentra coincidencias. | D88+D89 sustituyen D36+D37; sin pinning, una reincorporación inadvertida del legacy vuelve a entrar (DA-3). | Confiar en revisión humana — rechazado por APAP_WEB #381 (gate ausente, drift reintroducido). | D88, D89, D9, QC-5 |
 
 ## Adaptadores y puertos concretos
 
@@ -289,25 +289,25 @@ Los doce gates del MVP se commitean antes del primer `git commit` de código de 
 | Gate | Mecanismo | Archivos | Decisiones |
 |---|---|---|---|
 | Lint base (`ruff check .`) | `pyproject.toml` `[tool.ruff]` con `select = ["E","F","W","I","UP","B"]`, pin exacto `ruff==0.15.21`. | `pyproject.toml`, `.github/workflows/ci.yml`. | QC-3 |
-| Typecheck (`mypy platform/src/`) | `pyproject.toml` `[tool.mypy]` con `python_version = "3.12"`, `enable_error_code = ["ignore-without-code"]`, `disallow_untyped_defs = true`. Pin `mypy==1.13.0`. | `pyproject.toml`. | QC-4 |
-| Tests + cobertura (`pytest --cov=platform --cov-fail-under=85`) | `pyproject.toml` `[tool.coverage]` + `scripts/pytest_plugin/coverage_gate.py`. CRITICAL_HELPERS al 100 % vía `pytest_sessionfinish` mutando `session.exitstatus`. | `pyproject.toml`, `scripts/pytest_plugin/coverage_gate.py`, `.github/workflows/ci.yml`. | QC-5 |
-| Hexagonal layer gate (`python platform/scripts/check_layers.py`) | AST walk; `ROOT_PACKAGE = "platform.src.modules"`; `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados en DA-1; slicing vertical prohibido entre módulos salvo `shared` exento. | `platform/scripts/check_layers.py`, `tests/lanzadera/test_layers_wiring.py`. | QC-2, QC-9, DA-1 |
-| Complexity ceiling (`python platform/scripts/check_complexity.py`) | AST + CC por función; **techo absoluto global `CC ≤ 15`** (QC-10). Nunca `top-N`. | `platform/scripts/check_complexity.py`, `tests/lanzadera/test_complexity_wiring.py`. | QC-1 derivado, QC-10 |
-| CRAP ceiling (`python platform/scripts/check_crap.py`) | `CC² · (1 − cobertura)³ + CC` por función, techo `≤ 6` (QC-11). Consume `coverage.json`; falla cerrado si no existe. | `platform/scripts/check_crap.py`. | QC-11 |
-| DRY detector (`python platform/scripts/check_dry.py`) | Clones type-1/type-2 sobre AST normalizado, 5+ sentencias, 0 tolerados. | `platform/scripts/check_dry.py`. | QC-11 |
-| Indicator aggregator (`python platform/scripts/quality_report.py`) | Ejecuta layers → complexity → CRAP → DRY en orden fijo; emite `quality-report.json`; publica tabla en el job summary. | `platform/scripts/quality_report.py`. | QC-11, regla 13 |
-| PR size gate (`python platform/scripts/check_pr_size.py`) | `git diff --stat` contra base; CRLF normalizado a LF; falla si `> 400`. Override `size:exception` exige justificación en cuerpo de PR. | `platform/scripts/check_pr_size.py`, `.github/workflows/pr-size.yml`. | QC-6 |
-| Branch-name gate (`python platform/scripts/check_branch_name.py`) | Regex `^(feat\|fix\|refactor\|docs\|ci\|test)/<n>-<slug>$`; `main` allowlisted. | `platform/scripts/check_branch_name.py`. | QC-6 |
+| Typecheck (`mypy app/src/`) | `pyproject.toml` `[tool.mypy]` con `python_version = "3.12"`, `enable_error_code = ["ignore-without-code"]`, `disallow_untyped_defs = true`. Pin `mypy==1.13.0`. | `pyproject.toml`. | QC-4 |
+| Tests + cobertura (`pytest --cov=app --cov-fail-under=85`) | `pyproject.toml` `[tool.coverage]` + `app/pytest_plugin/coverage_gate.py`. CRITICAL_HELPERS al 100 % vía `pytest_sessionfinish` mutando `session.exitstatus`. | `pyproject.toml`, `app/pytest_plugin/coverage_gate.py`, `.github/workflows/ci.yml`. | QC-5 |
+| Hexagonal layer gate (`python app/scripts/check_layers.py`) | AST walk; `ROOT_PACKAGE = "app.src.modules"`; `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados en DA-1; slicing vertical prohibido entre módulos salvo `shared` exento. | `app/scripts/check_layers.py`, `tests/lanzadera/test_layers_wiring.py`. | QC-2, QC-9, DA-1 |
+| Complexity ceiling (`python app/scripts/check_complexity.py`) | AST + CC por función; **techo absoluto global `CC ≤ 15`** (QC-10). Nunca `top-N`. | `app/scripts/check_complexity.py`, `tests/lanzadera/test_complexity_wiring.py`. | QC-1 derivado, QC-10 |
+| CRAP ceiling (`python app/scripts/check_crap.py`) | `CC² · (1 − cobertura)³ + CC` por función, techo `≤ 6` (QC-11). Consume `coverage.json`; falla cerrado si no existe. | `app/scripts/check_crap.py`. | QC-11 |
+| DRY detector (`python app/scripts/check_dry.py`) | Clones type-1/type-2 sobre AST normalizado, 5+ sentencias, 0 tolerados. | `app/scripts/check_dry.py`. | QC-11 |
+| Indicator aggregator (`python app/scripts/quality_report.py`) | Ejecuta layers → complexity → CRAP → DRY en orden fijo; emite `quality-report.json`; publica tabla en el job summary. | `app/scripts/quality_report.py`. | QC-11, regla 13 |
+| PR size gate (`python app/scripts/check_pr_size.py`) | `git diff --stat` contra base; CRLF normalizado a LF; falla si `> 400`. Override `size:exception` exige justificación en cuerpo de PR. | `app/scripts/check_pr_size.py`, `.github/workflows/pr-size.yml`. | QC-6 |
+| Branch-name gate (`python app/scripts/check_branch_name.py`) | Regex `^(feat\|fix\|refactor\|docs\|ci\|test)/<n>-<slug>$`; `main` allowlisted. | `app/scripts/check_branch_name.py`. | QC-6 |
 | Secret scan (`gitleaks dir`) | `docker run zricethezav/gitleaks@sha256:<digest> dir . --redact --no-banner --exit-code 1`. | `.github/workflows/security.yml`. | QC-7 |
 | Dependency scan (`pip-audit`) | Venv throwaway; `pip install -e .[dev]`; `pip-audit --skip-editable --strict`. | `.github/workflows/security.yml`. | QC-7 |
-| Dockerfile scan (`trivy config`) | `docker run aquasec/trivy@sha256:<digest> config platform/Dockerfile --severity HIGH,CRITICAL`. | `.github/workflows/security.yml`. | QC-7 |
-| Secret scan profundo + image scan | `gitleaks detect --source=.` con `fetch-depth: 0`; `trivy image` por digest declarado en `platform/Dockerfile`. | `.github/workflows/security-deep.yml`. | QC-7 |
+| Dockerfile scan (`trivy config`) | `docker run aquasec/trivy@sha256:<digest> config app/Dockerfile --severity HIGH,CRITICAL`. | `.github/workflows/security.yml`. | QC-7 |
+| Secret scan profundo + image scan | `gitleaks detect --source=.` con `fetch-depth: 0`; `trivy image` por digest declarado en `app/Dockerfile`. | `.github/workflows/security-deep.yml`. | QC-7 |
 
 Ningún step lleva `continue-on-error: true` ni `|| true` (Hard Rule 1 de `deterministic-quality-harness`). Las imágenes de los scanners van pinned por digest, nunca por tag (Hard Rule 6). El `Makefile` raíz expone `make lint`, `make typecheck`, `make test`, `make check-layers`, `make check-complexity`, `make check-crap`, `make check-dry`, `make check-pr-size`, `make check-branch-name`, `make security`, `make quality-report`.
 
 ## Tests y TDD
 
-La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`, `rules.apply.test_command: pytest --cov=platform --cov-fail-under=85`). El orden de adopción es el del plan por día de `docs/calidad-de-codigo-y-ci.md`. Los archivos siguientes son los que el MVP debe tener antes del primer `git commit` de código de `lanzadera.auth`.
+La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`, `rules.apply.test_command: pytest --cov=app --cov-fail-under=85`). El orden de adopción es el del plan por día de `docs/calidad-de-codigo-y-ci.md`. Los archivos siguientes son los que el MVP debe tener antes del primer `git commit` de código de `lanzadera.auth`.
 
 | Archivo de test | Verifica | Decisión / Spec |
 |---|---|---|
@@ -316,12 +316,12 @@ La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`, `rul
 | `tests/lanzadera/auth/test_verify_password.py` | `verify_password(plain, hash)` devuelve `True` para el par canónico y `False` ante cualquier perturbación; hash vacío o `None` lanzan `ValueError` (no se ejecuta Argon2id contra hash nulo). | D88, DA-2, QC-5. |
 | `tests/lanzadera/auth/test_issue_reset_token.py` | `issue_reset_token(user_id)` persiste `token_hash`, `expires_at = now + 24h`, `consumed_at = NULL`, `superseded_at = NULL`; invoca `NotificationDeliveryPort.send` exactamente una vez; rechaza con `no_global_admin` cuando `global_admins` está vacío (salvo para `set-password` ya ejecutado). | D90, DA-4, QC-5. |
 | `tests/lanzadera/auth/test_consume_reset_token.py` | `consume_reset_token(token, new_password)` actualiza `password_hash` y `status='active'` atómicamente; marca `consumed_at`; rechaza tokens desconocidos, expirados, superseded o ya consumidos; la transacción rollbackea si la auditoría falla. | D90, DA-4, DA-11, QC-5. |
-| `tests/lanzadera/auth/test_no_legacy_compat.py` | AST walk sobre `platform/src/modules/lanzadera/auth/` y `platform/src/`; falla si encuentra los símbolos `legacy_hash`, `verify_legacy`, `sha256`, `old_password`, `migrate_password`. Se ejecuta como test pytest normal; la presencia de cualquiera de esos nombres falla el suite. | D88, D89, DA-13. |
+| `tests/lanzadera/auth/test_no_legacy_compat.py` | AST walk sobre `app/src/modules/lanzadera/auth/` y `app/src/`; falla si encuentra los símbolos `legacy_hash`, `verify_legacy`, `sha256`, `old_password`, `migrate_password`. Se ejecuta como test pytest normal; la presencia de cualquiera de esos nombres falla el suite. | D88, D89, DA-13. |
 | `tests/lanzadera/assignments/test_sinacceso_exclusivity.py` | Aplica la matriz legacy → `user_app_assignments` para los 32 casos (2^5 combinaciones de flags Sí/No × `SinAcceso` Sí/No); verifica la regla exclusiva de `SinAcceso`; verifica que `DEFAULT` aparece cuando todas son No/NULL; verifica que el resultado de la 0005 coincide con la cardinalidad esperada (≈622 filas). | D85, D102, H11, DA-12, assignments/spec.md. |
 | `tests/lanzadera/audit/test_same_transaction_audit.py` | Mock del `AuditLogPort.append` que lanza `RuntimeError`; ejecuta el caso de uso `issue_reset_token`; verifica que `users.password_hash` y `reset_tokens.consumed_at` quedan sin mutar (rollback atómico). | D27, DA-11, audit/spec.md §Audit emission is mandatory. |
 | `tests/lanzadera/test_bootstrap_adapter.py` | `BootstrapAdapter.bootstrap_global_admins()` con `GLOBAL_ADMIN_EMAILS='[email protected];[email protected]'`: crea dos users con `status='password_reset_required'`, dos filas en `global_admins`, una entrada de auditoría; segunda invocación no muta; con variable unset retorna sin error y sin filas. | D21, D42, D48, D91, DA-6, global_admins/spec.md §Bootstrap from GLOBAL_ADMIN_EMAILS. |
-| `tests/lanzadera/test_layers_wiring.py` | Parsea `platform/scripts/check_layers.py` y assertea `ROOT_PACKAGE == "platform.src.modules"`; crea un fixture que viola `ALLOWED_IMPORTS` y assertea exit `1`; verifica `BASELINE` vacío. | QC-2, QC-9, DA-1. |
-| `tests/lanzadera/test_no_legacy_in_auth.py` | Wrapper del `test_no_legacy_compat.py` con scope global a `platform/src/` (defense-in-depth si se introduce un nuevo módulo con auth). | D88, DA-13. |
+| `tests/lanzadera/test_layers_wiring.py` | Parsea `app/scripts/check_layers.py` y assertea `ROOT_PACKAGE == "app.src.modules"`; crea un fixture que viola `ALLOWED_IMPORTS` y assertea exit `1`; verifica `BASELINE` vacío. | QC-2, QC-9, DA-1. |
+| `tests/lanzadera/test_no_legacy_in_auth.py` | Wrapper del `test_no_legacy_compat.py` con scope global a `app/src/` (defense-in-depth si se introduce un nuevo módulo con auth). | D88, DA-13. |
 | `tests/test_gate_smoke.py` | Cada script `check_*.py` se invoca con un fixture que viola su contrato; se assertea exit `1` y se valida el envelope JSON. | Hard Rule 18, Execution Step 5. |
 
 Los cuatro archivos `test_hash_password.py`, `test_verify_password.py`, `test_issue_reset_token.py`, `test_consume_reset_token.py` declaran `CRITICAL_HELPERS` y elevan la cobertura local al 100 % antes de admitir el helper en `coverage_gate.py` (QC-5). El orden de implementación sigue la curva RED → GREEN → REFACTOR; el refactor posterior nunca introduce duplicación detectable por `check_dry.py`.
@@ -356,20 +356,20 @@ Las cuatro fases corresponden al plan por día de `docs/calidad-de-codigo-y-ci.m
 
 Objetivo: dejar el repositorio listo para strict TDD sin código de aplicación todavía. Tickets: TK-LZ-MVP-1, TK-LZ-MVP-2, TK-LZ-MVP-3.
 
-- Día 0 (0,5 h). Crear árbol `platform/`, `pyproject.toml`, `Dockerfile`, `docker-compose.yml`, `.python-version`, `.dockerignore`, `.gitignore` adicional, `Makefile`.
+- Día 0 (0,5 h). Crear árbol `app/`, `pyproject.toml`, `Dockerfile`, `docker-compose.yml`, `.python-version`, `.dockerignore`, `.gitignore` adicional, `Makefile`.
 - Día 1 (4 h). Activar ruff + mypy + pytest + `coverage_gate` + PR size + branch name + build en `.github/workflows/ci.yml`. Pinear versiones. Wiring pins en `tests/test_ci_workflow.py`.
 - Día 2 (3 h). Activar security scanning (`pip-audit`, `gitleaks`, `trivy`) con imágenes pinned por digest. `.github/workflows/security.yml` + `.github/workflows/security-deep.yml`. `.gitleaksignore` vacío al inicio.
 
-Salida de fase: `make lint`, `make typecheck`, `make test`, `make security` ejecutan en CI y pasan sobre `platform/` vacío (smoke tests de los scripts).
+Salida de fase: `make lint`, `make typecheck`, `make test`, `make security` ejecutan en CI y pasan sobre `app/` vacío (smoke tests de los scripts).
 
 ### Fase 2 — Día 3 a 6: check_layers + check_complexity + primer módulo con TDD
 
 Objetivo: gates hexagonales activos y `lanzadera.auth` implementado con strict TDD. Tickets: TK-LZ-MVP-4, TK-LZ-MVP-5, TK-LZ-MVP-7.
 
-- Día 3 (8 h). Copia literal de `assets/scripts/check_layers.py` desde `deterministic-quality-harness`; ajustar `ROOT_PACKAGE = "platform.src.modules"`; declarar `ALLOWED_IMPORTS` y `PURE_LAYERS` (DA-1). Wiring en CI. `tests/lanzadera/test_layers_wiring.py`.
+- Día 3 (8 h). Copia literal de `assets/scripts/check_layers.py` desde `deterministic-quality-harness`; ajustar `ROOT_PACKAGE = "app.src.modules"`; declarar `ALLOWED_IMPORTS` y `PURE_LAYERS` (DA-1). Wiring en CI. `tests/lanzadera/test_layers_wiring.py`.
 - Día 4 (3 h). `check_complexity.py` con techo absoluto `CC ≤ 15`. Wiring. `tests/lanzadera/test_complexity_wiring.py`.
 - Día 5 (1 h). Convenciones operativas en `AGENTS.md` raíz (Conf-1 a Conf-8).
-- Día 6 (TDD). Primer módulo `platform.src.modules.lanzadera.auth` con strict TDD: RED → GREEN → REFACTOR para `hash_password`, `verify_password`, `issue_reset_token`, `consume_reset_token`. Cobertura CRITICAL_HELPERS al 100 %. `test_no_legacy_compat.py` pinea la ausencia de legacy.
+- Día 6 (TDD). Primer módulo `app.src.modules.lanzadera.auth` con strict TDD: RED → GREEN → REFACTOR para `hash_password`, `verify_password`, `issue_reset_token`, `consume_reset_token`. Cobertura CRITICAL_HELPERS al 100 %. `test_no_legacy_compat.py` pinea la ausencia de legacy.
 
 Salida de fase: `make quality-report` limpio; `coverage_gate` exige 100 % sobre los cuatro CRITICAL_HELPERS.
 
@@ -404,12 +404,12 @@ Este diseño cierra los huecos que le corresponden y deja abiertos los que `sdd-
 | # | Gap | Origen | Estado en este design |
 |---|---|---|---|
 | G-1 | Política exacta de normalización del email (lowercase completo vs `local-part` lower + `domain` lower, IDN de segundo nivel). | users/spec.md L84 (`##ABIERTO##`) | Cerrado en DA-3 con `email = lower(input.email)`; IDN queda como mejora futura (no se modela dominio IDN). |
-| G-2 | Set canónico de capabilities por app para los 20 IDs en alcance. | profiles/spec.md L83 (`##ABIERTO##`) | ABIERTO — `sdd-tasks` debe producir `platform/src/modules/lanzadera/domain/legacy_role_map.py` con `capabilities` mínimos por código (`ADMIN`, `CALIDAD`, etc.). El `profiles.capabilities` se siembra en 0003 con un JSONB vacío o con un shape provisional. |
+| G-2 | Set canónico de capabilities por app para los 20 IDs en alcance. | profiles/spec.md L83 (`##ABIERTO##`) | ABIERTO — `sdd-tasks` debe producir `app/src/modules/lanzadera/domain/legacy_role_map.py` con `capabilities` mínimos por código (`ADMIN`, `CALIDAD`, etc.). El `profiles.capabilities` se siembra en 0003 con un JSONB vacío o con un shape provisional. |
 | G-3 | Lista de campos de catálogo legacy que NO migran (`Pass`, `Comando`, `URLDIrectorioIconoAplicacion`, etc.). | apps/spec.md L82 (`##ABIERTO##`) | Cerrado en DA-7 (migración 0002): solo migran `id`, `name`, `short_code`, `deployment_topology`, `requires_office_presence`, `registration_status`. La lista completa de campos descartados se documenta en `docs/03-aplicaciones/lanzadera/data-model.md` durante `sdd-apply`. |
 | G-4 | Política de auditoría para intentos fallidos de crear admin global (severidad, notificación a SOC). | auth-bootstrap/spec.md L37 (`##ABIERTO##`) | ABIERTO — el MVP registra el evento en el log canónico con severidad `WARN`; el contrato exacto de notificación a SOC queda para cuando la organización defina su canal de seguridad (no bloqueante). |
 | G-5 | Política exacta del canal de notificación al usuario cuando se emite un token (P20, SMTP corporativo real). | auth-reset/spec.md L62 (`##ABIERTO##`) | ABIERTO — el MVP usa la cola por tabla como adapter v1 (DA-10); el contrato del `NotificationDeliveryPort` queda fijo (`send(to, subject, body) -> None`). La sustitución por SMTP corporativo se hace reemplazando el adapter sin tocar dominio. |
 | G-6 | Política de expiración de contraseña configurable (D41). | auth-core/spec.md L79 (`##ABIERTO##`) | ABIERTO — el MVP implementa `status='password_reset_required'` sin caducidad periódica (DA-3 + DA-4); el reset flow cubre la recuperación. La caducidad configurable se introduce en una release posterior cuando se defina la política de cumplimiento. |
-| G-7 | Peso de `SinAcceso` en la navegación del menú global. | assignments/spec.md L86 (ABIERTO) | ABIERTO — el menú global filtra apps según `effective_permissions`; el comportamiento exacto de `SIN_ACCESO` (mostrar app deshabilitada vs ocultar) se decide en la épica de UI de `sdd-apply`. El adapter de menú se declara en `platform/src/modules/lanzadera/application/` y queda stub. |
+| G-7 | Peso de `SinAcceso` en la navegación del menú global. | assignments/spec.md L86 (ABIERTO) | ABIERTO — el menú global filtra apps según `effective_permissions`; el comportamiento exacto de `SIN_ACCESO` (mostrar app deshabilitada vs ocultar) se decide en la épica de UI de `sdd-apply`. El adapter de menú se declara en `app/src/modules/lanzadera/application/` y queda stub. |
 | G-8 | Periodos definitivos de retención por cumplimiento normativo (P10). | audit/spec.md L85 (ABIERTO) | ABIERTO — el MVP aplica 90 días hot + 1 año total (D29 provisional). El puerto `AuditRetentionPort` permite cambiar la política sin tocar el dominio. |
 
 Gaps cerrados por este diseño: G-1 (DA-3), G-3 (DA-7). G-2, G-4, G-5, G-6, G-7, G-8 quedan abiertos para `sdd-tasks` o releases posteriores; ninguno bloquea la entrada a la fase de aplicación. Ningún gap abierto requiere nueva decisión D-* ni nueva regla QC-*: se resuelven con tareas acotadas que el sub-agente `sdd-tasks` debe planificar.
@@ -427,10 +427,10 @@ Si alguno de estos puntos falta, `sdd-tasks` debe marcarlo como `##ABIERTO##` en
 
 ## Contratos críticos (firma exacta de los `CRITICAL_HELPERS`)
 
-Los cuatro helpers declarados `CRITICAL_HELPERS` se escriben en `platform/src/modules/lanzadera/application/` como funciones puras o casos de uso. Las firmas siguen los contratos de los sub-specs. El coverage gate exige 100 % de líneas ejecutadas sobre cada uno (QC-5). El pin test `test_no_legacy_compat.py` rechaza cualquier import que reintroduzca SHA256 u `old_password` en el árbol.
+Los cuatro helpers declarados `CRITICAL_HELPERS` se escriben en `app/src/modules/lanzadera/application/` como funciones puras o casos de uso. Las firmas siguen los contratos de los sub-specs. El coverage gate exige 100 % de líneas ejecutadas sobre cada uno (QC-5). El pin test `test_no_legacy_compat.py` rechaza cualquier import que reintroduzca SHA256 u `old_password` en el árbol.
 
 ```python
-# platform/src/modules/lanzadera/ports/credential_hasher.py
+# app/src/modules/lanzadera/ports/credential_hasher.py
 from __future__ import annotations
 from typing import Protocol
 
@@ -443,7 +443,7 @@ class CredentialHasherPort(Protocol):
 ```
 
 ```python
-# platform/src/modules/lanzadera/application/issue_reset_token.py
+# app/src/modules/lanzadera/application/issue_reset_token.py
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import secrets
@@ -474,16 +474,16 @@ def verify_password(plain: str, hashed: str) -> bool:
 ```
 
 ```python
-# platform/src/modules/lanzadera/application/consume_reset_token.py
+# app/src/modules/lanzadera/application/consume_reset_token.py
 from __future__ import annotations
 import hashlib
 from datetime import datetime, timezone
 from uuid import UUID
 
-from platform.src.modules.lanzadera.ports.audit_log import AuditLogPort
-from platform.src.modules.lanzadera.ports.credential_hasher import hash_password
-from platform.src.modules.lanzadera.ports.reset_token_repository import ResetTokenRepositoryPort
-from platform.src.modules.lanzadera.ports.user_repository import UserRepositoryPort
+from app.src.modules.lanzadera.ports.audit_log import AuditLogPort
+from app.src.modules.lanzadera.ports.credential_hasher import hash_password
+from app.src.modules.lanzadera.ports.reset_token_repository import ResetTokenRepositoryPort
+from app.src.modules.lanzadera.ports.user_repository import UserRepositoryPort
 
 
 def _sha256(token: str) -> str:
@@ -539,9 +539,9 @@ La ejecución local y en CI sigue el mismo orden. Cada comando es idempotente en
 
 ```bash
 # 1. Generar fixtures desde el .accdb (sólo local con Dysflow; CI consume fixtures versionadas)
-python platform/scripts/migrate_from_access.py \
+python app/scripts/migrate_from_access.py \
     --accdb "C:/00repos/datos/Lanzadera_Datos.accdb" \
-    --out platform/tests/fixtures/ \
+    --out tests/fixtures/ \
     --expected-sha256 "<registrado en docs/03-aplicaciones/lanzadera/data-model.md>"
 
 # 2. Levantar Postgres + MinIO
@@ -551,13 +551,13 @@ docker compose up -d postgres
 alembic upgrade head
 
 # 4. Ejecutar suite
-pytest --cov=platform --cov-fail-under=85
+pytest --cov=app --cov-fail-under=85
 
 # 5. Smoke del gate hexagonal
-python platform/scripts/check_layers.py --root .
+python app/scripts/check_layers.py --root .
 
 # 6. Reporte de indicadores
-python platform/scripts/quality_report.py --root . --out quality-report.json
+python app/scripts/quality_report.py --root . --out quality-report.json
 ```
 
 El rollback completo (sólo MVP, sin release en producción) es:
@@ -595,11 +595,11 @@ Ninguna variable contiene secretos sin cifrar. `PLATFORM_SECRET_KEY` se inyecta 
 
 | Entry point | Tipo | Descripción |
 |---|---|---|
-| `platform.src.main:app` | HTTP | FastAPI app; expone `GET /`, `POST /login`, `POST /logout`, `POST /reset`, rutas admin bajo `/admin/...`. Sirve HTMX fragments con `Cache-Control` fingerprint. |
-| `platform.src.main:bootstrap` | lifecycle | Se ejecuta al arrancar el proceso; llama al `BootstrapAdapter` (DA-6) y al `MailQueueTableAdapter.purge_expired` en background. |
+| `app.src.main:app` | HTTP | FastAPI app; expone `GET /`, `POST /login`, `POST /logout`, `POST /reset`, rutas admin bajo `/admin/...`. Sirve HTMX fragments con `Cache-Control` fingerprint. |
+| `app.src.main:bootstrap` | lifecycle | Se ejecuta al arrancar el proceso; llama al `BootstrapAdapter` (DA-6) y al `MailQueueTableAdapter.purge_expired` en background. |
 | `gentle-ai platform user ...` | CLI | Subcomandos: `set-password`, `grant-global-admin`, `revoke-global-admin`, `list-apps`, `assign-profile`. Acceso restringido a global admin (D25); secretos vía variables de entorno (CA-S4). |
 | `alembic upgrade head` | migration | Aplica 0001-0006; cada migración en su propio down-grade explícito. |
-| `python platform/scripts/migrate_from_access.py` | one-shot | Genera fixtures JSON desde el `.accdb` con Dysflow read-only (R-2). |
+| `python app/scripts/migrate_from_access.py` | one-shot | Genera fixtures JSON desde el `.accdb` con Dysflow read-only (R-2). |
 
 ### Quick map inverso del módulo
 
@@ -627,7 +627,7 @@ Las ocho convenciones de `docs/calidad-de-codigo-y-ci.md` §Convenciones operati
 | Conf-5 | `from __future__ import annotations` en cada `.py`. | Cada archivo del módulo y de los tests empieza con esa línea; lo verifica `ruff format --check`. |
 | Conf-6 | PR ≤ 400 líneas; nombre de rama `^(feat\|fix\|refactor\|docs\|ci\|test)/<n>-<slug>$`. | `check_pr_size.py` mide `git diff --stat` con CRLF normalizado a LF; `check_branch_name.py` aplica la regex. Override `size:exception` exige justificación en el cuerpo de PR (Hard Rule 11 — segregación de roles). |
 | Conf-7 | Migraciones siempre backward-compatibles con estrategia Expand and Contract. | 0001-0006 son aditivas; ninguna tira columnas legacy. El Contract exige dos releases según D82. |
-| Conf-8 | `coverage_gate.py` marca los `CRITICAL_HELPERS` del módulo. | `CRITICAL_HELPERS = ["hash_password", "verify_password", "issue_reset_token", "consume_reset_token"]` declarados en `scripts/pytest_plugin/coverage_gate.py`. La función `pytest_sessionfinish` muta `session.exitstatus` (Hard Rule 8). |
+| Conf-8 | `coverage_gate.py` marca los `CRITICAL_HELPERS` del módulo. | `CRITICAL_HELPERS = ["hash_password", "verify_password", "issue_reset_token", "consume_reset_token"]` declarados en `app/pytest_plugin/coverage_gate.py`. La función `pytest_sessionfinish` muta `session.exitstatus` (Hard Rule 8). |
 
 ## Referencias
 
@@ -649,7 +649,7 @@ Las ocho convenciones de `docs/calidad-de-codigo-y-ci.md` §Convenciones operati
 - [ ] Los seis gaps del sub-agente `sdd-spec` (G-1, G-2, G-3, G-4, G-5, G-6) están clasificados como cerrados o abiertos con destino claro.
 - [ ] Los dos gaps adicionales detectados (G-7 peso de `SinAcceso` en menú, G-8 retención definitiva) están registrados.
 - [ ] Las seis migraciones Alembic 0001-0006 siguen Expand and Contract (D82); la 0004 deja `password_hash = NULL`; la 0006 omite SSID/ubicación/coordenadas.
-- [ ] El gate hexagonal `check_layers.py` está dimensionado con `ROOT_PACKAGE = "platform.src.modules"`, `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados.
+- [ ] El gate hexagonal `check_layers.py` está dimensionado con `ROOT_PACKAGE = "app.src.modules"`, `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados.
 - [ ] Los cuatro `CRITICAL_HELPERS` (`hash_password`, `verify_password`, `issue_reset_token`, `consume_reset_token`) están listados con cobertura al 100 % (QC-5).
 - [ ] Los doce quality gates aparecen wired en `ci.yml`, pinned por `tests/test_ci_workflow.py` y commiteados antes del primer `git commit` de código de aplicación.
 - [ ] El tono es Castellano peninsular formal en el cuerpo narrativo; inglés en nombres de archivo, código y secciones técnicas.

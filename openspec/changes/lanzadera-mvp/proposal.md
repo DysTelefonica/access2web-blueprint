@@ -16,7 +16,7 @@ Esta propuesta NO describe la migración de los otros siete módulos (Expediente
 
 ### Incluye
 
-- El módulo `lanzadera` dentro del monolito modular (`platform/src/modules/lanzadera/`).
+- El módulo `lanzadera` dentro del monolito modular (`app/src/modules/lanzadera/`).
 - Las migraciones 0001–0006 de Alembic: schema core, seed de apps, seed de profiles, migración de users con DNI cifrado, migración de assignments aplicando la regla de mapeo, seed de audit/histórico.
 - El script `scripts/migrate_from_access.py` (one-shot) que extrae del `.accdb` con Dysflow y produce fixtures JSON.
 - El `BootstrapAdapter` que siembra `global_admins` desde `GLOBAL_ADMIN_EMAILS` (idempotente al arranque del proceso).
@@ -58,7 +58,7 @@ Esta propuesta NO describe la migración de los otros siete módulos (Expediente
 ### Calidad de código y arquitectura
 
 - [ ] **CA-Q1** — `scripts/check_layers.py` corre en CI y falla ante cualquier violación de `ALLOWED_IMPORTS`, `PURE_LAYERS` o vertical slicing (QC-2, QC-9).
-- [ ] **CA-Q2** — `mypy` strict en `platform/` con `enable_error_code = ["ignore-without-code"]` (QC-4).
+- [ ] **CA-Q2** — `mypy` strict en `app/` con `enable_error_code = ["ignore-without-code"]` (QC-4).
 - [ ] **CA-Q3** — `ruff==0.15.21` con `select = E,F,W,I,UP,B` corre en CI (QC-3).
 - [ ] **CA-Q4** — Cobertura global ≥ 85 % y 100 % en `CRITICAL_HELPERS = ["hash_password", "verify_password", "issue_reset_token", "consume_reset_token"]` (QC-5, D88, D90).
 - [ ] **CA-Q5** — Las PRs ≤ 400 líneas; las excepciones `size:exception` justifican la razón en el cuerpo (QC-6).
@@ -83,7 +83,7 @@ Las decisiones D5–D87 y QC-1 a QC-9 son el contrato que este cambio materializ
 
 | # | Decisión | Razón | Aplicación en el MVP |
 |---|---|---|---|
-| D5 | Plataforma única modular permission-aware | Producto único, no microservicios prematuros | Módulo `lanzadera` dentro de `platform/` |
+| D5 | Plataforma única modular permission-aware | Producto único, no microservicios prematuros | Módulo `lanzadera` dentro de `app/` |
 | D6 | Navegación app-first anidada | El expediente no es punto de entrada | Menú global web con apps visibles según permisos |
 | D7 | Lanzadera = solo administración | Concentrar admin en un módulo | Scope de este `change` |
 | D8 | Hexagonal global | Capacidades detrás de puertos, no de mecanismos | `scripts/check_layers.py` enforce la pureza |
@@ -97,7 +97,7 @@ Las decisiones D5–D87 y QC-1 a QC-9 son el contrato que este cambio materializ
 | D89 | Migración descarta hashes legacy; todo usuario empieza con `password_hash=NULL` + `status='password_reset_required'` | Clean break de credenciales heredadas; sin doble algoritmo | `users.password_hash` NULL para los 156 usuarios; `users.status='password_reset_required'`; sin columna `legacy_hash` |
 | D90 | Reset flow con tokens one-time de 24 h vía adapter de notificación (cola por tabla) | Auto-servicio de密码 recovery sin SMTP corporativo real | `issue_reset_token(user_id) -> str`; `consume_reset_token(token, new_password)` atómico y single-use |
 | D91 | Primer global admin: `gentle-ai platform user set-password <email>` (CLI exclusivo admin global, D25) | Bootstrap inicial antes de que el sistema pueda emitir tokens por email | CLI subcomando con auditoría; solo accesible por admin global |
-| D38–D40 | Lockout configurable + notificación | Defense-in-depth contra fuerza bruta | Service de lockout en `platform/src/shared/` |
+| D38–D40 | Lockout configurable + notificación | Defense-in-depth contra fuerza bruta | Service de lockout en `app/src/shared/` |
 | D42 | Activación, baja y creación de roles: solo admin global | Separación de scopes | CLI solo accesible por admin global (D25) |
 | D51 | Retirar formación/vídeos/cuestionarios | Histórico archivado, no operativo | No migran al esquema `lanzadera` |
 | D52 | Retirar mecanismo de lanzamiento Access | Menú web permission-aware | No se incluyen `Shell`, `/cmd` ni UNC |
@@ -152,7 +152,7 @@ Tickets que se crearán al lanzar `sdd-apply`. La numeración es provisional y s
 
 | Ticket | Título | Fase |
 |---|---|---|
-| TK-LZ-MVP-1 | Crear estructura `platform/` con `pyproject.toml`, `Dockerfile`, `docker-compose.yml`, `Makefile`, `.python-version`, `.dockerignore` | Día 0 |
+| TK-LZ-MVP-1 | Crear estructura `app/` con `pyproject.toml`, `Dockerfile`, `docker-compose.yml`, `Makefile`, `.python-version`, `.dockerignore` | Día 0 |
 | TK-LZ-MVP-2 | Activar ruff + mypy + pytest + `coverage_gate` + PR size + branch-name en CI (QC-1, QC-3, QC-4, QC-5, QC-6) | Día 1 |
 | TK-LZ-MVP-3 | Activar security scanning (`pip-audit`, `gitleaks`, `trivy`) con imágenes pinned por digest (QC-7) | Día 2 |
 | TK-LZ-MVP-4 | Implementar `scripts/check_layers.py` con `ALLOWED_IMPORTS`, `PURE_LAYERS`, slicing (QC-2, QC-9) | Día 3 |
@@ -179,13 +179,13 @@ Tickets que se crearán al lanzar `sdd-apply`. La numeración es provisional y s
 
 ## Cómo se aplica a access2web
 
-Esta propuesta abre el flujo SDD sobre `platform/`. El árbol de directorios objetivo respeta el monolito modular aprobado en D68 y los límites por paquete del `check_layers.py`.
+Esta propuesta abre el flujo SDD sobre `app/`. El árbol de directorios objetivo respeta el monolito modular aprobado en D68 y los límites por paquete del `check_layers.py`.
 
 ### Estructura física objetivo
 
 ```
 access2web-blueprint/
-├── platform/                       # NUEVO — monolito modular hexagonal
+├── app/                       # NUEVO — monolito modular hexagonal
 │   ├── src/
 │   │   ├── shared/                 # cross-cutting (cache port, audit, auth base)
 │   │   ├── modules/
@@ -234,7 +234,7 @@ Lanzadera_Datos.accdb
 
 El MVP introduce schema nuevo en PostgreSQL, sin tocar el binario `.accdb` legacy. El rollback es directo:
 
-1. Detener `platform/`.
+1. Detener `app/`.
 2. `DROP SCHEMA lanzadera CASCADE;` — la base de datos PostgreSQL queda limpia.
 3. El `.accdb` legacy sigue intacto y operativo.
 

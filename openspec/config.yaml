@@ -4,7 +4,7 @@ context: |
   Project: access2web-blueprint, monorepo for the modern platform + blueprint of the legacy
   Microsoft Access + VBA ecosystem. As of 2026-08-08 the scope evolved from docs-only to
   monorepo: docs/ carries research, per-app documentation, decisions, quality gates doc and
-  audit; platform/ carries the Python 3.12+ / FastAPI 0.119+ / HTMX 2.0.4 / PostgreSQL /
+  audit; app/ carries the Python 3.12+ / FastAPI 0.119+ / HTMX 2.0.4 / PostgreSQL /
   Alembic code of the MVP (Lanzadera admin module). .opencode/skills/ hosts project-owned
   skills (deterministic-quality-harness).
 
@@ -22,14 +22,14 @@ strict_tdd: true
 testing:
   status: configured
   runner: pytest
-  command: pytest --cov=platform --cov-fail-under=85 -p platform.pytest_plugin.coverage_gate
+  command: pytest --cov=app --cov-fail-under=85 -p app.pytest_plugin.coverage_gate
   layers:
-    unit: pytest (platform/tests/)
+    unit: pytest (tests/)
     integration: pytest -m integration (gated on APAP_INTEGRATION_ENABLED, postgres real)
     e2e: pending UI
   coverage: "85% global, 100% CRITICAL_HELPERS"
   linter: ruff==0.15.21 (select=E,F,W,I,UP,B)
-  type_checker: mypy==1.13.0 (platform/src/ only, ignore-without-code enforced)
+  type_checker: mypy==1.13.0 (app/src/ only, ignore-without-code enforced)
   formatter: ruff format
 
 rules:
@@ -48,9 +48,9 @@ rules:
     - PR size budget: 400 lines (QC-6, see docs/calidad-de-codigo-y-ci.md).
   apply:
     tdd: true
-    test_command: pytest --cov=platform --cov-fail-under=85
+    test_command: pytest --cov=app --cov-fail-under=85
   verify:
-    test_command: pytest --cov=platform --cov-fail-under=85
+    test_command: pytest --cov=app --cov-fail-under=85
     build_command: python -m build
     coverage_threshold: 85
   archive:

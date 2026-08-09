@@ -6,7 +6,7 @@
 
 This is the complete technical reference for the blueprint. For getting started, see the [README](README.md). For per-agent setup, see [Agent Setup](docs/AGENT-SETUP.md).
 
-> **Scope**: Este repo es **monorepo de plataforma + blueprint del refactor**. Aloja la documentación de las 8 apps legadas (Access/VBA → web hexagonal) y, desde el MVP de Lanzadera (2026-08), el código de la plataforma (`platform/`: FastAPI + HTMX + Alembic + Docker). Las apps legadas viven en repos separados hasta el cut-over del ecosistema completo.
+> **Scope**: Este repo es **monorepo de plataforma + blueprint del refactor**. Aloja la documentación de las 8 apps legadas (Access/VBA → web hexagonal) y, desde el MVP de Lanzadera (2026-08), el código de la plataforma (`app/`: FastAPI + HTMX + Alembic + Docker). Las apps legadas viven en repos separados hasta el cut-over del ecosistema completo.
 
 > **Sentence that organizes the whole repo**: "Lanzadera es la madre: ahí nacen usuarios, aplicativos y permisos. Las otras 7 apps son consumidoras."
 
@@ -53,11 +53,11 @@ For other docs:
 |---|---|
 | Blueprint del refactor de las 8 apps legadas (Access/VBA → web hexagonal). | Réplica exacta de los binarios `.accdb` legados. |
 | Discovery del modelo de datos + forms + behavior + decisiones arquitectónicas. | Migración one-shot por app (la del MVP es Lanzadera). |
-| Walkthroughs de forms legados (JSON estructurado). | Tests E2E de cada app web (viven en `platform/tests/`). |
+| Walkthroughs de forms legados (JSON estructurado). | Tests E2E de cada app web (viven en `app/tests/`). |
 | Hallazgos + decisiones arquitectónicas (D1-D82, QC-1 a QC-9). | Disposición final del legacy (sigue corriendo hasta UAT del ecosistema). |
 | Especificación de cada épica de migración (`epic.md` por app). | Specs de producto post-cut-over (viven aquí mismo). |
-| Mockups UI base con Mistica design system para validar look & feel. | UI final de cada app (se construye aquí mismo en `platform/modules/<app>/ui/`). |
-| Código de la plataforma web hexagonal (desde MVP Lanzadera, en `platform/`). | Código de dysflow (es de Gentleman-Programming). |
+| Mockups UI base con Mistica design system para validar look & feel. | UI final de cada app (se construye aquí mismo en `app/modules/<app>/ui/`). |
+| Código de la plataforma web hexagonal (desde MVP Lanzadera, en `app/`). | Código de dysflow (es de Gentleman-Programming). |
 | Quality gates y CI del MVP (ver [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md)). | CI/CD de cada app legada. |
 | Mantenimiento de issues dysflow (#1407 cerrado, #1408/#1412 abiertos). | — |
 
@@ -65,7 +65,7 @@ For other docs:
 
 ```text
 1. Research + discovery  → vive en este repo (docs/03-aplicaciones/<app>/)
-2. Plataforma (MVP)      → vive en este repo (platform/src/modules/<app>/)
+2. Plataforma (MVP)      → vive en este repo (app/src/modules/<app>/)
 3. Migración por app     → cada app (Lanzadera, Expedientes, ...) se construye aquí mismo
 4. Cut-over              → el legacy .accdb queda como referencia histórica; el código web es la fuente de verdad
 ```
