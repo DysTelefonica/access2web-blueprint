@@ -17,7 +17,7 @@ These skills are **mandatory** — load them before any work in their scope:
 
 | Skill | Obligatorio para |
 |---|---|
-| **`branch-pr`** | Any commit, PR creation, or merge to `main`. Conventional commits, PR pequeño y reversible, `--squash --delete-branch` en merge. |
+| **`branch-pr`** | Any commit, PR creation, or merge to `main`. Conventional commits, PR pequeño y reversible. En el merge, **sin** `--delete-branch`: la rama remota se conserva; lo que se limpia es el worktree local (`git worktree remove <path>`). |
 
 ## Skills cross-cutting (provienen de otros repos)
 
