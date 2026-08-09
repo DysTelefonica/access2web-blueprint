@@ -6,7 +6,7 @@
 
 This is the complete technical reference for the blueprint. For getting started, see the [README](README.md). For per-agent setup, see [Agent Setup](docs/AGENT-SETUP.md).
 
-> **Scope**: Este repo es **research + planning de la migración**, no la implementación. Cada app tendrá su propio repo + docs cuando se construya.
+> **Scope**: Este repo es **monorepo de plataforma + blueprint del refactor**. Aloja la documentación de las 8 apps legadas (Access/VBA → web hexagonal) y, desde el MVP de Lanzadera (2026-08), el código de la plataforma (`platform/`: FastAPI + HTMX + Alembic + Docker). Las apps legadas viven en repos separados hasta el cut-over del ecosistema completo.
 
 > **Sentence that organizes the whole repo**: "Lanzadera es la madre: ahí nacen usuarios, aplicativos y permisos. Las otras 7 apps son consumidoras."
 
@@ -33,6 +33,7 @@ For other docs:
 | [README](README.md)                                         | Overview de 5 minutos: qué es esto, para quién, cómo empezar.                                               |
 | [Agent Setup](docs/AGENT-SETUP.md)                          | Configuración de agentes (Claude, OpenCode, Gemini, Codex) para trabajar en este repo.                      |
 | [Codebase Guide](CODEBASE-GUIDE.md)                          | Para mantenedores: 90-second mental model, ownership de artefactos, quick map inverso.                     |
+| [Calidad de código y CI](docs/calidad-de-codigo-y-ci.md)     | Quality gates del MVP de plataforma: hexagonal layer gate, ruff, mypy, security scanning, plan día 0-6.     |
 | [CONTRIBUTING](CONTRIBUTING.md)                             | Workflow de contribución, conventional commits, label system.                                                |
 | [CHANGELOG](CHANGELOG.md)                                   | Cambios por versión del blueprint (cierre de épicas, PRs merged, etc.).                                     |
 | [Lanzadera Epic](docs/03-aplicaciones/lanzadera/epic.md)    | Épica de Lanzadera — la madre (users + apps + permissions). 28 forms walkthroughed.                      |
@@ -50,23 +51,26 @@ For other docs:
 
 | Qué ES | Qué NO es |
 |---|---|
-| Research de los 8 legacy apps (Access/VBA) | Código de las apps web target |
-| Discovery del modelo de datos + forms + behavior | Implementación de la nueva arquitectura |
-| Walkthroughs de forms legacy (JSON estructurado) | Tests E2E de las apps web |
-| Hallazgos + decisiones (D1-D178) | CI/CD de cada app |
-| Especificación de cada épica de migración (epic.md) | Specs de producto (van en cada repo de app) |
-| Mockups UI base para validar look & feel | Implementación final de la UI (se construye en cada app) |
-| Mantenimiento de issues dysflow (#1407 cerrado, #1408/#1412 abiertos) | Código de dysflow (es de Gentleman-Programming) |
+| Blueprint del refactor de las 8 apps legadas (Access/VBA → web hexagonal). | Réplica exacta de los binarios `.accdb` legados. |
+| Discovery del modelo de datos + forms + behavior + decisiones arquitectónicas. | Migración one-shot por app (la del MVP es Lanzadera). |
+| Walkthroughs de forms legados (JSON estructurado). | Tests E2E de cada app web (viven en `platform/tests/`). |
+| Hallazgos + decisiones arquitectónicas (D1-D82, QC-1 a QC-9). | Disposición final del legacy (sigue corriendo hasta UAT del ecosistema). |
+| Especificación de cada épica de migración (`epic.md` por app). | Specs de producto post-cut-over (viven aquí mismo). |
+| Mockups UI base con Mistica design system para validar look & feel. | UI final de cada app (se construye aquí mismo en `platform/modules/<app>/ui/`). |
+| Código de la plataforma web hexagonal (desde MVP Lanzadera, en `platform/`). | Código de dysflow (es de Gentleman-Programming). |
+| Quality gates y CI del MVP (ver [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md)). | CI/CD de cada app legada. |
+| Mantenimiento de issues dysflow (#1407 cerrado, #1408/#1412 abiertos). | — |
 
-**Lifecycle típico** de un artefacto de este repo:
+**Lifecycle** de un artefacto de este monorepo:
 
 ```text
-1. Research          → vive en este repo (epic.md, walkthrough-*.json)
-2. Migración         → se traslada al repo de la app cuando se construye
-3. Implementación    → se descarta este repo (research obsoleto)
+1. Research + discovery  → vive en este repo (docs/03-aplicaciones/<app>/)
+2. Plataforma (MVP)      → vive en este repo (platform/src/modules/<app>/)
+3. Migración por app     → cada app (Lanzadera, Expedientes, ...) se construye aquí mismo
+4. Cut-over              → el legacy .accdb queda como referencia histórica; el código web es la fuente de verdad
 ```
 
-> **Para cada app, su repo de implementación tendrá: código, tests, CI/CD, docs de producto. Este repo solo es el blueprint hasta que se construya.**
+> **Este repo es monorepo desde el MVP de Lanzadera (2026-08). El blueprint describe la dirección; el código la ejecuta. Las apps legadas siguen en repos separados hasta el cut-over del ecosistema completo.**
 
 ---
 
