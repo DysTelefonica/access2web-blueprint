@@ -262,7 +262,7 @@
 
     <header class="hero" role="banner">
       <div class="eyebrow">Estado de planificacion - 2026-08-09 - Lanzadera MVP - tasks.md generados (79 tareas, 10 PRs, chain strategy feature-branch-chain)</div>
-      <h1>Lanzadera MVP: diseno y tareas listos, listo para arrancar sdd-apply con PR 1 (Foundation, size:exception)</h1>
+      <h1>Lanzadera MVP: PR 1 (Foundation) y PR 2 (Domain) cerrados verde, listo para PR 3a (Schema migrations)</h1>
       <p class="lead">
         Sesion 2026-08-09. El change OpenSpec <code>lanzadera-mvp</code> cierra la fase de planificacion:
         <strong>proposal</strong>, <strong>specs</strong> (7 caps: users, apps, profiles, assignments,
@@ -277,10 +277,10 @@
       </p>
       <br />
       <p class="lead" style="font-size: 14px; opacity: .85; margin-top: var(--space-3);">
-        <strong>PR 1 cerrado 2026-08-09</strong>: 41 tests en verde, 90.91% de cobertura,
-        todos los quality gates pasan. La size:exception documentada quedo consumida dentro
-        del presupuesto; Gantt y per-PR table reflejan el cierre. Siguiente paso: PR 2
-        (Domain entities, 2026-08-10).
+        Sesion 2026-08-09 PM: PR 1 (Foundation, 4224 lineas, size:exception aprobada) y
+        PR 2 (Domain entities, 1860 lineas, size:exception aprobada) cerrados verde en
+        <code>feat/lanzadera-mvp-tracker</code>. 6 commits en la cadena (Foundation +
+        Domain). Coverage del domain layer: 99.45%.
       </p>
     </header>
 
@@ -310,12 +310,17 @@
         <div class="stat-cell">
           <div class="label">Lineas estimadas</div>
           <div class="value">2.800-3.200</div>
-          <div class="sub">forecast del sub-agente sdd-tasks</div>
+          <div class="sub">(2 PRs: 6084 lineas reales)</div>
         </div>
         <div class="stat-cell">
           <div class="label">Chain strategy</div>
           <div class="value">feature-branch-chain</div>
           <div class="sub">tracker + 10 PRs stacked</div>
+        </div>
+        <div class="stat-cell">
+          <div class="label">PRs cerrados</div>
+          <div class="value">2 de 10</div>
+          <div class="sub">PR 1 Foundation + PR 2 Domain</div>
         </div>
       </div>
       <div class="callout">
@@ -372,9 +377,9 @@
             <td><strong>Phase 1</strong></td>
             <td>9</td>
             <td>Domain entities (User, App, Profile, Assignment, ResetToken, GlobalAdmin, AuditEvent, Session, legacy_role_map)</td>
-            <td>Planificado</td>
-            <td><span class="rag-pill rag-grey">Planificado</span></td>
-            <td>PR 2 — depende de PR 1 (paquete <code>app.src.modules</code> creado)</td>
+            <td>Verde</td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>PR 2 cerrado 2026-08-09 PM: 9 entidades puras (User/App/Profile/Assignment/ResetToken/GlobalAdmin/AuditEvent/Session) + legacy_role_map + LockoutPolicy; 283 tests verde; 99.45% cobertura sobre el domain layer</td>
           </tr>
           <tr>
             <td><strong>Phase 2</strong></td>
@@ -464,10 +469,10 @@
             <td><code>PR 1</code></td>
             <td>Phase 1: Domain entities (User, App, Profile, Assignment, ResetToken, GlobalAdmin, AuditEvent, Session, legacy_role_map)</td>
             <td>~250-300</td>
-            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
             <td>2026-08-17 (L)</td>
             <td>2026-08-19 (X)</td>
-            <td>Puro, sin frameworks</td>
+            <td>Cerrado 2026-08-09 PM: 9 entidades + 9 test suites + 1 fixture; 283 tests verde; 99.45% cobertura; size:exception aprobada (1860 vs 400)</td>
           </tr>
           <tr>
             <td><strong>PR 3a</strong></td>
@@ -648,9 +653,9 @@
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
-            <td class="bar-grey" title="planificado">P</td>
-            <td class="bar-grey">P</td>
-            <td class="bar-grey">P</td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
@@ -1213,6 +1218,7 @@
       <ul>
         <li><strong>PR 1 (Foundation, ~400-500 lineas)</strong> — indivisible: ruff/mypy/pytest plugin, coverage_gate, hexagonal layer gate, package layout y primer <code>pyproject.toml</code> comparten baseline comun. Split dejaria cada sub-PR con repo a medio configurar. size:exception aprobada 2026-08-09.</li>
         <li><strong>PR 8 (Verify E2E, ~400-500 lineas)</strong> — indivisible: integration suite sobre docker-compose, DA-13 final sweep y evidence bundle de quality gates forman un solo terminal. size:exception aprobada 2026-08-09.</li>
+        <li><strong>Pattern size:exception en PRs TDD-strict</strong>: PR 1 cerro con 4224 lineas (vs 550), PR 2 con 1860 (vs 400). El forecast original subestimo las pruebas. Forecast recalibrado: cada PR strict-TDD (entities + adapters + migrations + tests + fixtures) consume ~4-5x el budget inicial. Mantener size:exception preventiva para PR 3a..PR 8, o ajustar el budget del objective al rango real (1500-3000 lineas) antes de cada acquire. <em>Anotado 2026-08-09 PM tras cierre de PR 2</em>.</li>
       </ul>
       <h3>WARNING</h3>
       <ul>
@@ -1230,7 +1236,7 @@
     <section class="card" aria-labelledby="sec-proximos">
       <h2 id="sec-proximos">7. Proximos pasos (concreto)</h2>
       <ol>
-        <li><strong>Sesion 2026-08-10 (L)</strong>: arrancar <code>sdd-apply</code> con PR 2 — Domain entities (Phase 1: User, App, Profile, Assignment, ResetToken, GlobalAdmin, AuditEvent, Session, legacy_role_map). Pasos del sub-agente: crear worktree <code>feat/lanzadera-mvp-tracker</code>, acquire del dispatcher (<code>gentle-ai sdd-attempt acquire</code>), branch <code>feat/pr-2-domain-entities</code> basada en PR 1 (ya mergeada al tracker).</li>
+        <li><strong>Sesion 2026-08-10 (L) o continuar 2026-08-09 PM</strong>: arrancar PR 3a (Phase 2 schema, Alembic 0001 — users/apps/profiles/assignments/global_admins/sessions/audit/reset_tokens/mail_outbox). Forecast recalibrado: ~1500 lineas con tests TDD (vs 280 originales). size:exception preventiva solicitada para evitar bloqueo del dispatcher.</li>
         <li><strong>Sesion 2026-08-19 (X)</strong>: cerrar PR 2; merge a tracker; refrescar este HTML como <code>estado-planificacion-NEW_2026-08-19.html</code> con RAG 🟢 y motivo del cierre.</li>
         <li><strong>Antes de PR 3b (2026-08-26)</strong>: pedir a producto confirmacion de G-2 (capability set por app) o aceptacion explicita de sembrar <code>capabilities = {}</code> provisional.</li>
         <li><strong>Sesion 2026-09-25 (V)</strong>: cierre objetivo de PR 8; merge del tracker a <code>main</code> con el stack colapsado; transicionar a <code>sdd-verify</code> y luego <code>sdd-archive</code>.</li>
@@ -1249,12 +1255,22 @@
         <li>Engram topic: <code>sdd/lanzadera-mvp/delivery-plan</code> (decision id 24448)</li>
       </ul>
       <h3>Commits relevantes de esta sesion (2026-08-09)</h3>
+      <p class="commit-list">
+        Commits del worktree <code>feat/lanzadera-mvp-tracker</code> (no mergeados a main
+        todavia; chain strategy los acumula al final).
+      </p>
       <ul class="commit-list">
         <li><span class="commit-sha">8309f25</span> <code>docs: evolve blueprint repo to monorepo model with MVP Lanzadera platform</code></li>
         <li><span class="commit-sha">6f44481</span> <code>chore(openspec): evolve config to monorepo with strict-tdd and pytest gates</code></li>
         <li><span class="commit-sha">6249059</span> <code>docs(sdd): materialize PR plan for lanzadera-mvp tasks</code></li>
         <li><span class="commit-sha">61b75fd</span> <code>feat(sdd): commit change artifacts for lanzadera-mvp (proposal, specs, design, planning)</code></li>
         <li><span class="commit-sha">ee992ba</span> <code>docs(agents): register estado-planificacion-update as mandatory skill</code></li>
+        <li><span class="commit-sha">8164ce1</span> <code>chore(app): scaffold + pyproject + main + Dockerfile + compose + Makefile</code></li>
+        <li><span class="commit-sha">ce7d524</span> <code>chore(ci): wire quality gates + security scans</code></li>
+        <li><span class="commit-sha">65b4f14</span> <code>test(gates): wire hexagonal layer + CRITICAL_HELPERS + smoke tests</code></li>
+        <li><span class="commit-sha">0c900ce</span> <code>feat(domain): user + app + profile + assignment entities</code></li>
+        <li><span class="commit-sha">3253854</span> <code>feat(domain): reset_token + global_admin + audit_event + session entities</code></li>
+        <li><span class="commit-sha">3197762</span> <code>feat(domain): legacy_role_map + gate-cleanup (DA-12, H11)</code></li>
       </ul>
     </section>
 
