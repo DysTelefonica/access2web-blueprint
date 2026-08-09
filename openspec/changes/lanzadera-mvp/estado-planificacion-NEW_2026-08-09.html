@@ -262,7 +262,7 @@
 
     <header class="hero" role="banner">
       <div class="eyebrow">Estado de planificacion - 2026-08-09 - Lanzadera MVP - tasks.md generados (79 tareas, 10 PRs, chain strategy feature-branch-chain)</div>
-      <h1>Lanzadera MVP: PR 1 (Foundation) y PR 2 (Domain) cerrados verde, listo para PR 3a (Schema migrations)</h1>
+      <h1>Lanzadera MVP: PR 1+2+3a cerrados verde (Foundation + Domain + Schema), listo para PR 3b (Seeds 0002-0006)</h1>
       <p class="lead">
         Sesion 2026-08-09. El change OpenSpec <code>lanzadera-mvp</code> cierra la fase de planificacion:
         <strong>proposal</strong>, <strong>specs</strong> (7 caps: users, apps, profiles, assignments,
@@ -280,7 +280,7 @@
         Sesion 2026-08-09 PM: PR 1 (Foundation, 4224 lineas, size:exception aprobada) y
         PR 2 (Domain entities, 1860 lineas, size:exception aprobada) cerrados verde en
         <code>feat/lanzadera-mvp-tracker</code>. 6 commits en la cadena (Foundation +
-        Domain). Coverage del domain layer: 99.45%.
+        Domain). Coverage del domain layer: 99.45%. Sesion 2026-08-09 PM: PR 3a (Phase 2 schema, Alembic 0001 con 9 tablas + 3 ENUMs + 6 indexes, 12/12 integration tests verdes contra postgres dockerizado en WSL Ubuntu-22.04, 1782 lineas bajo budget 2000 preventivo) cerrado verde. Sin <code>legacy_hash</code> ni telemetry en <code>audit</code> (DA-3 + DA-11 pins). Total acumulado: 7866 lineas reales en 3 PRs.
       </p>
     </header>
 
@@ -310,7 +310,7 @@
         <div class="stat-cell">
           <div class="label">Lineas estimadas</div>
           <div class="value">2.800-3.200</div>
-          <div class="sub">(2 PRs: 6084 lineas reales)</div>
+          <div class="sub">(3 PRs: 7866 lineas reales)</div>
         </div>
         <div class="stat-cell">
           <div class="label">Chain strategy</div>
@@ -319,8 +319,8 @@
         </div>
         <div class="stat-cell">
           <div class="label">PRs cerrados</div>
-          <div class="value">2 de 10</div>
-          <div class="sub">PR 1 Foundation + PR 2 Domain</div>
+          <div class="value">3 de 10</div>
+          <div class="sub">PR 1 Foundation + PR 2 Domain + PR 3a Schema</div>
         </div>
       </div>
       <div class="callout">
@@ -385,9 +385,9 @@
             <td><strong>Phase 2</strong></td>
             <td>12</td>
             <td>Alembic 0001-0006 (schema base, seeds apps/users, reset_tokens, audit, retention)</td>
-            <td>Planificado</td>
-            <td><span class="rag-pill rag-grey">Planificado</span></td>
-            <td>PRs 3a + 3b — split por tamano</td>
+            <td>Verde</td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
+            <td>PR 3a cerrado 2026-08-09 PM (schema 0001): 9 tablas + 3 ENUMs + 6 indexes; 12/12 integration tests verdes contra WSL docker postgres; alembic upgrade/downgrade roundtrip; DA-3 no legacy_hash y DA-11 no telemetry pins activos. Pendiente PR 3b (seeds 0002-0006)</td>
           </tr>
           <tr>
             <td><strong>Phase 3</strong></td>
@@ -479,10 +479,10 @@
             <td><code>PR 2</code></td>
             <td>Phase 2 schema: Alembic 0001 schema base (users, apps, profiles, assignments, global_admins, sessions, audit, reset_tokens, mail_outbox)</td>
             <td>~280-320</td>
-            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td><span class="rag-pill rag-green">Verde</span></td>
             <td>2026-08-20 (J)</td>
             <td>2026-08-22 (V)</td>
-            <td>Split de PR 3 original — schema sin seeds</td>
+            <td>Cerrado 2026-08-09 PM: 9 tablas + 3 ENUMs + 6 indexes en <code>lanzadera</code> schema; 12/12 integration tests verdes en WSL Ubuntu-22.04 contra postgres dockerizado; alembic upgrade/downgrade roundtrip idempotente; DA-3+DA-11 pins activos; 1782 lineas bajo budget 2000 preventivo</td>
           </tr>
           <tr>
             <td><strong>PR 3b</strong></td>
@@ -709,9 +709,9 @@
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
-            <td class="bar-grey">P</td>
-            <td class="bar-grey">P</td>
-            <td class="bar-grey">P</td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
+            <td class="bar-green"></td>
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
             <td class="bar-empty"></td>
@@ -1218,10 +1218,11 @@
       <ul>
         <li><strong>PR 1 (Foundation, ~400-500 lineas)</strong> — indivisible: ruff/mypy/pytest plugin, coverage_gate, hexagonal layer gate, package layout y primer <code>pyproject.toml</code> comparten baseline comun. Split dejaria cada sub-PR con repo a medio configurar. size:exception aprobada 2026-08-09.</li>
         <li><strong>PR 8 (Verify E2E, ~400-500 lineas)</strong> — indivisible: integration suite sobre docker-compose, DA-13 final sweep y evidence bundle de quality gates forman un solo terminal. size:exception aprobada 2026-08-09.</li>
-        <li><strong>Pattern size:exception en PRs TDD-strict</strong>: PR 1 cerro con 4224 lineas (vs 550), PR 2 con 1860 (vs 400). El forecast original subestimo las pruebas. Forecast recalibrado: cada PR strict-TDD (entities + adapters + migrations + tests + fixtures) consume ~4-5x el budget inicial. Mantener size:exception preventiva para PR 3a..PR 8, o ajustar el budget del objective al rango real (1500-3000 lineas) antes de cada acquire. <em>Anotado 2026-08-09 PM tras cierre de PR 2</em>.</li>
+        <li><strong>Pattern size:exception preventivo</strong>: PR 1 cerro 4224 vs 550, PR 2 cerro 1860 vs 400, PR 3a cerro 1782 vs 2000 (preventivo). Forecast recalibrado: cada PR strict-TDD consume ~1500-2500 lineas reales (incluyendo migration fixtures, RED-then-GREEN integration tests, alembic bootstrap). Mantener preventive budget ~2500 lineas para PR 3b, 4, 5, 6a, 6b. PR 7 (solo tests) puede volver a ~1000. PR 8 (E2E verify) sigue size:exception porque integration suite + DA-13 sweep + evidence bundle son indivisibles.</li>
       </ul>
       <h3>WARNING</h3>
       <ul>
+        <li><strong>WSL Ubuntu-22.04 como runtime host obligatorio</strong>: PR 3a+ requiere postgres dockerizado en WSL Ubuntu-22.04. Sub-agentes deben ejecutar <code>docker compose</code>, <code>alembic</code>, <code>pytest</code> via <code>wsl -d Ubuntu-22.04 -- bash -c '...'</code>. NO instalar postgres en Windows nativo. NO usar Docker Desktop integration. Postgres container queda corriendo entre sesiones (se detiene con <code>wsl -d Ubuntu-22.04 -- bash -c 'cd .../lanzadera-mvp-tracker &amp;&amp; docker compose down'</code> cuando se quiera).</li>
         <li><strong>G-2 capability set</strong> — producto debe confirmar el set canonico de capabilities por app antes de la migracion 0003. Sin confirmacion, MVP siembra <code>capabilities = {}</code> provisional; canonicalizacion va a una release posterior.</li>
         <li><strong>G-5 SMTP real</strong> — adapter v1 cubre MVP con cola por tabla; SMTP corporativo real queda diferido a P20 (contrato de proveedor de email). Cuando IT cierre P20 se sustituye el adapter sin tocar dominio.</li>
         <li><strong>Forecast total 2.800-3.200 lineas</strong> — alta carga de revision; chain strategy <code>feature-branch-chain</code> mitiga con PRs stacked y review por unidad, pero cualquier PR > 500 lineas requiere discusion explicita del reviewer.</li>
@@ -1236,7 +1237,7 @@
     <section class="card" aria-labelledby="sec-proximos">
       <h2 id="sec-proximos">7. Proximos pasos (concreto)</h2>
       <ol>
-        <li><strong>Sesion 2026-08-10 (L) o continuar 2026-08-09 PM</strong>: arrancar PR 3a (Phase 2 schema, Alembic 0001 — users/apps/profiles/assignments/global_admins/sessions/audit/reset_tokens/mail_outbox). Forecast recalibrado: ~1500 lineas con tests TDD (vs 280 originales). size:exception preventiva solicitada para evitar bloqueo del dispatcher.</li>
+        <li><strong>Continuar 2026-08-09 PM o sesion 2026-08-10</strong>: arrancar PR 3b (Phase 2 seeds — Alembic 0002 seed apps 20 entradas excluyendo <code>Pass|Comando|URLDIrectorioIconoAplicacion</code> (DA-7); 0003 seed profiles con <code>capabilities = {}</code> provisional por G-2; 0004 seed 156 users con <code>password_hash=NULL</code> + <code>status='password_reset_required'</code> (D89, DA-3) sin <code>legacy_hash</code>; 0005 seed assignments con <code>SinAcceso</code> exclusivo cortocircuito + DEFAULT fallback (DA-12); 0006 seed audit desde <code>TbConexiones</code> + <code>TbAplicacionesAperturas</code> sin SSID/BS coordinates (D55)). Forecast ~2000 lineas con RED-then-GREEN integration tests; preventive budget 2500 aprobado.</li>
         <li><strong>Sesion 2026-08-19 (X)</strong>: cerrar PR 2; merge a tracker; refrescar este HTML como <code>estado-planificacion-NEW_2026-08-19.html</code> con RAG 🟢 y motivo del cierre.</li>
         <li><strong>Antes de PR 3b (2026-08-26)</strong>: pedir a producto confirmacion de G-2 (capability set por app) o aceptacion explicita de sembrar <code>capabilities = {}</code> provisional.</li>
         <li><strong>Sesion 2026-09-25 (V)</strong>: cierre objetivo de PR 8; merge del tracker a <code>main</code> con el stack colapsado; transicionar a <code>sdd-verify</code> y luego <code>sdd-archive</code>.</li>
@@ -1271,6 +1272,8 @@
         <li><span class="commit-sha">0c900ce</span> <code>feat(domain): user + app + profile + assignment entities</code></li>
         <li><span class="commit-sha">3253854</span> <code>feat(domain): reset_token + global_admin + audit_event + session entities</code></li>
         <li><span class="commit-sha">3197762</span> <code>feat(domain): legacy_role_map + gate-cleanup (DA-12, H11)</code></li>
+        <li><span class="commit-sha">4906324</span> <code>test(migrations): assert schema 0001 structure (RED first)</code></li>
+        <li><span class="commit-sha">10ebbaf</span> <code>feat(migrations): alembic 0001 schema base — 9 tables + 3 enums + 6 indexes</code></li>
       </ul>
     </section>
 
