@@ -1,0 +1,1257 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Estado de planificacion 2026-08-09 - Lanzadera MVP - tasks.md generados (79 tareas, 10 PRs), chain strategy feature-branch-chain, pendiente sdd-apply</title>
+  <style>
+    :root {
+      --color-brand: #0066CC;
+      --color-brand-dark: #003D7A;
+      --color-text-primary: #1A1A1A;
+      --color-text-secondary: #5C5C5C;
+      --color-background: #FFFFFF;
+      --color-surface: #F5F7FA;
+      --color-surface-strong: #E8EEF5;
+      --color-border: #D4DBE3;
+      --color-success: #2E7D32;
+      --color-warning: #ED6C02;
+      --color-danger: #C62828;
+      --color-info: #0277BD;
+      --color-violet: #6A1B9A;
+      --color-grey: #757575;
+      --radius-card: 12px;
+      --radius-chip: 24px;
+      --radius-input: 8px;
+      --shadow-card: 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04);
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--color-text-primary);
+      background: var(--color-surface);
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
+    .page { max-width: 1180px; margin: 0 auto; padding: var(--space-7) var(--space-5) var(--space-7); }
+    .hero {
+      background: linear-gradient(135deg, var(--color-brand) 0%, var(--color-brand-dark) 100%);
+      color: #fff;
+      border-radius: var(--radius-card);
+      padding: var(--space-6) var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    .hero .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+      opacity: .85;
+      font-weight: 600;
+    }
+    .hero h1 {
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.2;
+      margin: var(--space-3) 0 var(--space-3);
+      font-weight: 700;
+    }
+    .hero p.lead {
+      font-size: 16px;
+      opacity: .95;
+      max-width: 920px;
+      margin: 0;
+    }
+    section.card {
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      padding: var(--space-6);
+      margin-bottom: var(--space-5);
+      box-shadow: var(--shadow-card);
+    }
+    section.card h2 {
+      font-size: 18px;
+      margin: 0 0 var(--space-4);
+      color: var(--color-brand-dark);
+      font-weight: 700;
+    }
+    section.card h3 {
+      font-size: 15px;
+      margin: var(--space-4) 0 var(--space-3);
+      color: var(--color-text-primary);
+      font-weight: 700;
+    }
+    section.card p { margin: 0 0 var(--space-4); }
+    section.card p:last-child { margin-bottom: 0; }
+    section.card ul, section.card ol { padding-left: var(--space-5); margin: 0 0 var(--space-4); }
+    section.card li { margin-bottom: var(--space-2); }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      font-size: 13px;
+    }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .rag-pill {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: var(--radius-chip);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .rag-green  { background: #E8F5E9; color: var(--color-success); }
+    .rag-amber  { background: #FFF3E0; color: var(--color-warning); }
+    .rag-red    { background: #FFEBEE; color: var(--color-danger); }
+    .rag-grey   { background: var(--color-surface-strong); color: var(--color-text-secondary); }
+    .rag-violet { background: #F3E5F5; color: var(--color-violet); }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table th, .data-table td {
+      text-align: left;
+      padding: var(--space-2) var(--space-3);
+      border-bottom: 1px solid var(--color-border);
+      vertical-align: top;
+    }
+    .data-table th {
+      background: var(--color-surface);
+      color: var(--color-brand-dark);
+      font-weight: 700;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .data-table tbody tr:hover { background: var(--color-surface); }
+    .data-table code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: var(--color-surface-strong);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    /* Gantt grid: 10 PR rows x N day cells, plus a label column */
+    .gantt {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: var(--space-3);
+    }
+    .gantt th, .gantt td {
+      border: 1px solid var(--color-border);
+      padding: 2px 0;
+      text-align: center;
+      min-width: 16px;
+      height: 22px;
+    }
+    .gantt th.pr-label, .gantt td.pr-label {
+      text-align: left;
+      padding: 2px 8px;
+      min-width: 130px;
+      font-weight: 600;
+      font-size: 12px;
+      background: var(--color-surface);
+      color: var(--color-brand-dark);
+      position: sticky;
+      left: 0;
+      z-index: 1;
+    }
+    .gantt thead th {
+      background: var(--color-surface-strong);
+      color: var(--color-text-secondary);
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+    .gantt thead th.month-boundary {
+      background: var(--color-surface);
+      color: var(--color-brand-dark);
+      font-weight: 700;
+    }
+    .gantt td.bar-empty { background: #FAFAFA; }
+    .gantt td.bar-planned { background: var(--color-grey); color: #fff; font-weight: 600; }
+    .gantt td.bar-active { background: var(--color-brand); color: #fff; font-weight: 600; }
+    .gantt td.bar-green { background: var(--color-success); color: #fff; font-weight: 600; }
+    .gantt td.bar-amber { background: var(--color-warning); color: #fff; font-weight: 600; }
+    .gantt td.bar-red { background: var(--color-danger); color: #fff; font-weight: 600; }
+    .gantt td.bar-violet { background: var(--color-violet); color: #fff; font-weight: 600; }
+    .gantt td.partial-fill {
+      background: repeating-linear-gradient(45deg, transparent 0 4px, rgba(255,255,255,.35) 4px 8px);
+    }
+    .gantt-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-3);
+    }
+    .gantt-meta strong { color: var(--color-brand-dark); }
+    .footer-note {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      margin-top: var(--space-5);
+      text-align: center;
+    }
+    .commit-sha {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      background: var(--color-surface-strong);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .commit-list { font-size: 12px; color: var(--color-text-secondary); }
+    .callout {
+      border-left: 4px solid var(--color-info);
+      background: #E3F2FD;
+      padding: var(--space-3) var(--space-4);
+      border-radius: 6px;
+      font-size: 14px;
+      margin: var(--space-3) 0;
+    }
+    .callout.warn { border-color: var(--color-warning); background: #FFF8E1; }
+    .callout.danger { border-color: var(--color-danger); background: #FFEBEE; }
+    .callout.violet { border-color: var(--color-violet); background: #F3E5F5; }
+    .callout strong { color: var(--color-brand-dark); }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: var(--space-3);
+      margin: var(--space-3) 0 var(--space-4);
+    }
+    .stat-cell {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: var(--space-3) var(--space-4);
+    }
+    .stat-cell .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--color-text-secondary);
+      font-weight: 600;
+    }
+    .stat-cell .value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--color-brand-dark);
+      margin-top: 2px;
+    }
+    .stat-cell .sub {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      margin-top: 2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header class="hero" role="banner">
+      <div class="eyebrow">Estado de planificacion - 2026-08-09 - Lanzadera MVP - tasks.md generados (79 tareas, 10 PRs, chain strategy feature-branch-chain)</div>
+      <h1>Lanzadera MVP: diseno y tareas listos, listo para arrancar sdd-apply con PR 1 (Foundation, size:exception)</h1>
+      <p class="lead">
+        Sesion 2026-08-09. El change OpenSpec <code>lanzadera-mvp</code> cierra la fase de planificacion:
+        <strong>proposal</strong>, <strong>specs</strong> (7 caps: users, apps, profiles, assignments,
+        audit, auth-core, auth-reset, auth-bootstrap, global_admins) y <strong>design</strong>
+        (13 decisiones arquitectonicas DA-1..DA-13) producidos en sesiones previas;
+        <strong>tasks.md</strong> (79 tareas en 8 phases, TDD estricto) generado por el sub-agente
+        <code>sdd-tasks</code> y revisado por Andres. Plan de entrega fijado: 10 PRs secuenciales
+        con chain strategy <code>feature-branch-chain</code>, tracker branch
+        <code>feat/lanzadera-mvp-tracker</code>. PRs 1 y 8 con size:exception documentada;
+        PRs 3 y 6 spliteados en sub-PRs (3a/3b, 6a/6b). Total estimado 2.800-3.200 lineas en
+        8 semanas (rango tentativo 2026-08-10 a 2026-10-04, ajustable).
+      </p>
+    </header>
+
+    <section class="card" aria-labelledby="sec-resumen">
+      <h2 id="sec-resumen">1. Resumen ejecutivo</h2>
+      <div class="stat-grid">
+        <div class="stat-cell">
+          <div class="label">Change</div>
+          <div class="value">lanzadera-mvp</div>
+          <div class="sub">OpenSpec, hybrid (files + Engram)</div>
+        </div>
+        <div class="stat-cell">
+          <div class="label">Fases SDD</div>
+          <div class="value">3 de 4</div>
+          <div class="sub">proposal, specs, design, tasks</div>
+        </div>
+        <div class="stat-cell">
+          <div class="label">Tasks</div>
+          <div class="value">79</div>
+          <div class="sub">en 8 phases (0 Foundation a 7 Verify)</div>
+        </div>
+        <div class="stat-cell">
+          <div class="label">PRs</div>
+          <div class="value">10</div>
+          <div class="sub">PR 1, 8 con size:exception</div>
+        </div>
+        <div class="stat-cell">
+          <div class="label">Lineas estimadas</div>
+          <div class="value">2.800-3.200</div>
+          <div class="sub">forecast del sub-agente sdd-tasks</div>
+        </div>
+        <div class="stat-cell">
+          <div class="label">Chain strategy</div>
+          <div class="value">feature-branch-chain</div>
+          <div class="sub">tracker + 10 PRs stacked</div>
+        </div>
+      </div>
+      <div class="callout">
+        <strong>Siguiente paso acordado</strong>: arrancar <code>sdd-apply</code> con PR 1
+        (Phase 0 - Foundation scaffold + CI gates + pytest plugin + hexagonal layer gate;
+        size:exception ~400-500 lineas). Es fase runtime-bearing: requiere worktree
+        <code>feat/lanzadera-mvp-tracker</code>, acquire del dispatcher
+        (<code>gentle-ai sdd-attempt acquire</code>) y strict TDD.
+      </div>
+      <div class="callout warn">
+        <strong>Gap unico que requiere decision de producto antes de 0003</strong>: G-2
+        (set canonico de capabilities por app). El MVP sembrara
+        <code>capabilities = {}</code> provisional; cuando producto confirme el set
+        canonico se reabre como tarea acotada. Resto de gaps (G-4..G-8) con stubs y
+        owner nombrado; no bloquean el apply.
+      </div>
+      <div class="legend" aria-label="Leyenda RAG">
+        <span><span class="rag-pill rag-green">Verde</span> on track o terminado</span>
+        <span><span class="rag-pill rag-amber">Ambar</span> 2-5 dias de retraso o riesgo identificado</span>
+        <span><span class="rag-pill rag-red">Rojo</span> &gt;5 dias o bloqueado</span>
+        <span><span class="rag-pill rag-grey">Planificado</span> no iniciado</span>
+        <span><span class="rag-pill rag-violet">size:exception</span> PR indivisible aprobado</span>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="sec-phases">
+      <h2 id="sec-phases">2. Estado por Phase (8 phases)</h2>
+      <p>
+        Cada phase agrupa tasks de <code>openspec/changes/lanzadera-mvp/tasks.md</code>.
+        Estado inicial: 🟢 <strong>Planificado</strong> en todas. Cambiaran al
+        cerrar cada PR durante <code>sdd-apply</code>.
+      </p>
+      <table class="data-table" aria-label="Estado por phase">
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>Tasks</th>
+            <th>Foco</th>
+            <th>Estado</th>
+            <th>RAG</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Phase 0</strong></td>
+            <td>14</td>
+            <td>Foundation scaffold + CI gates + pytest plugin + hexagonal layer gate</td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>PR 1 — listo para arrancar sdd-apply</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 1</strong></td>
+            <td>9</td>
+            <td>Domain entities (User, App, Profile, Assignment, ResetToken, GlobalAdmin, AuditEvent, Session, legacy_role_map)</td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>PR 2 — depende de PR 1 (paquete <code>platform.src.modules</code> creado)</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 2</strong></td>
+            <td>12</td>
+            <td>Alembic 0001-0006 (schema base, seeds apps/users, reset_tokens, audit, retention)</td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>PRs 3a + 3b — split por tamano</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 3</strong></td>
+            <td>8</td>
+            <td>Application use cases + <code>CRITICAL_HELPERS</code> (hash_password, verify_password, issue_reset_token, consume_reset_token)</td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>PR 4 — depende de 3b (schema ya en sitio)</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 4</strong></td>
+            <td>13</td>
+            <td>Driven adapters (postgres, Argon2id crypto, notification queue, cache, location, bootstrap, secrets)</td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>PRs 6a + 6b — split por tamano</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 5</strong></td>
+            <td>6</td>
+            <td>Delivery — HTTP HTMX views + CLI <code>gentle-ai platform user ...</code></td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>PR 5 — depende de 4 (use cases disponibles)</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 6</strong></td>
+            <td>10</td>
+            <td>Tests + gates (DA-13 AST pin, lockout, audit transaction, mail queue contract)</td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>PR 7 — pin tests + coverage gate</td>
+          </tr>
+          <tr>
+            <td><strong>Phase 7</strong></td>
+            <td>7</td>
+            <td>E2E verify + integration suite on docker-compose + quality-gate evidence</td>
+            <td>Planificado</td>
+            <td><span class="rag-pill rag-violet">size:exception</span></td>
+            <td>PR 8 — indivisible: integration suite + DA-13 sweep + evidence bundle</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" aria-labelledby="sec-prs">
+      <h2 id="sec-prs">3. Estado por PR (10 PRs, chain strategy feature-branch-chain)</h2>
+      <p>
+        Cada PR mergea a <code>feat/lanzadera-mvp-tracker</code>. Solo el tracker mergea a
+        <code>main</code> al final del stack. PRs 1 y 8 llevan <code>size:exception</code>
+        documentada; PRs 3 y 6 spliteados.
+      </p>
+      <table class="data-table" aria-label="Estado por PR">
+        <thead>
+          <tr>
+            <th>PR</th>
+            <th>Base</th>
+            <th>Foco</th>
+            <th>Tamano</th>
+            <th>RAG</th>
+            <th>Inicio tentativo</th>
+            <th>Cierre objetivo</th>
+            <th>Notas</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>PR 1</strong></td>
+            <td><code>main</code></td>
+            <td>Phase 0: Foundation scaffold + CI gates + pytest plugin + hexagonal layer gate</td>
+            <td>~400-500</td>
+            <td><span class="rag-pill rag-violet">size:exception</span></td>
+            <td>2026-08-10 (L)</td>
+            <td>2026-08-14 (V)</td>
+            <td>Tracker <code>feat/lanzadera-mvp-tracker</code> se crea aqui</td>
+          </tr>
+          <tr>
+            <td><strong>PR 2</strong></td>
+            <td><code>PR 1</code></td>
+            <td>Phase 1: Domain entities (User, App, Profile, Assignment, ResetToken, GlobalAdmin, AuditEvent, Session, legacy_role_map)</td>
+            <td>~250-300</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-08-17 (L)</td>
+            <td>2026-08-19 (X)</td>
+            <td>Puro, sin frameworks</td>
+          </tr>
+          <tr>
+            <td><strong>PR 3a</strong></td>
+            <td><code>PR 2</code></td>
+            <td>Phase 2 schema: Alembic 0001 schema base (users, apps, profiles, assignments, global_admins, sessions, audit, reset_tokens, mail_outbox)</td>
+            <td>~280-320</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-08-20 (J)</td>
+            <td>2026-08-22 (V)</td>
+            <td>Split de PR 3 original — schema sin seeds</td>
+          </tr>
+          <tr>
+            <td><strong>PR 3b</strong></td>
+            <td><code>PR 3a</code></td>
+            <td>Phase 2 seeds: Alembic 0002-0006 (seeds apps/users, reset_tokens, audit, retention)</td>
+            <td>~320-360</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-08-24 (L)</td>
+            <td>2026-08-26 (X)</td>
+            <td>Split de PR 3 original — seeds + migrate_from_access.py</td>
+          </tr>
+          <tr>
+            <td><strong>PR 4</strong></td>
+            <td><code>PR 3b</code></td>
+            <td>Phase 3: Application use cases + <code>CRITICAL_HELPERS</code> (hash/verify_password, issue/consume_reset_token)</td>
+            <td>~250-320</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-08-27 (J)</td>
+            <td>2026-08-31 (L)</td>
+            <td>Atomic transaction, DA-11 rollback</td>
+          </tr>
+          <tr>
+            <td><strong>PR 5</strong></td>
+            <td><code>PR 4</code></td>
+            <td>Phase 5: Delivery HTTP HTMX views + CLI <code>gentle-ai platform user ...</code></td>
+            <td>~180-240</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-09-01 (M)</td>
+            <td>2026-09-03 (J)</td>
+            <td>Mistica tokens, Alpine.js, set-password bootstrap</td>
+          </tr>
+          <tr>
+            <td><strong>PR 6a</strong></td>
+            <td><code>PR 5</code></td>
+            <td>Phase 4 postgres+crypto: repos + Argon2id + NationalIdCipher</td>
+            <td>~280-320</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-09-04 (V)</td>
+            <td>2026-09-08 (M)</td>
+            <td>Split de PR 6 original — capa de datos y cripto</td>
+          </tr>
+          <tr>
+            <td><strong>PR 6b</strong></td>
+            <td><code>PR 6a</code></td>
+            <td>Phase 4 notification+cache+bootstrap: mail queue, ttl cache, location stub, env_admin_source, env_secret_manager, di container</td>
+            <td>~300-340</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-09-09 (X)</td>
+            <td>2026-09-14 (L)</td>
+            <td>Split de PR 6 original — resto de driven adapters</td>
+          </tr>
+          <tr>
+            <td><strong>PR 7</strong></td>
+            <td><code>PR 6b</code></td>
+            <td>Phase 6: Tests + gates (DA-13 AST pin, lockout, audit transaction, mail queue contract, secret manager contract, gate smoke)</td>
+            <td>~140-200</td>
+            <td><span class="rag-pill rag-grey">Planificado</span></td>
+            <td>2026-09-15 (M)</td>
+            <td>2026-09-17 (J)</td>
+            <td>Coverage gate CRITICAL_HELPERS 100%</td>
+          </tr>
+          <tr>
+            <td><strong>PR 8</strong></td>
+            <td><code>PR 7</code></td>
+            <td>Phase 7: E2E verify + integration suite on docker-compose + quality-gate evidence</td>
+            <td>~400-500</td>
+            <td><span class="rag-pill rag-violet">size:exception</span></td>
+            <td>2026-09-18 (V)</td>
+            <td>2026-09-25 (V)</td>
+            <td>Indivisible: integration suite + DA-13 sweep + evidence bundle</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="commit-list">
+        Stack final: <code>PR 8 → PR 7 → PR 6b → PR 6a → PR 5 → PR 4 → PR 3b → PR 3a → PR 2 → PR 1 → main</code>.
+        Solo <code>feat/lanzadera-mvp-tracker</code> acumula merges; el stack se colapsa al final
+        con un merge commit a <code>main</code>.
+      </p>
+    </section>
+
+    <section class="card" aria-labelledby="sec-gantt">
+      <h2 id="sec-gantt">4. Gantt visual — cumplimiento de plazos (8 semanas, 56 dias)</h2>
+      <div class="gantt-meta">
+        <span><strong>Inicio</strong>: 2026-08-10 (L)</span>
+        <span><strong>Cierre objetivo</strong>: 2026-09-25 (V)</span>
+        <span><strong>Total dias laborables</strong>: 56</span>
+        <span><strong>Margen</strong>: 5 dias (para PR 8 + correcciones)</span>
+      </div>
+      <table class="gantt" aria-label="Gantt por PR">
+        <thead>
+          <tr>
+            <th class="pr-label">PR</th>
+            <th colspan="3" class="month-boundary">Ago 2026</th>
+            <th colspan="21">sem 1-3</th>
+            <th colspan="22" class="month-boundary">Sep 2026</th>
+            <th colspan="10">sem 4-7</th>
+          </tr>
+          <tr>
+            <th class="pr-label">&nbsp;</th>
+            <th>10</th><th>11</th><th>12</th>
+            <th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th><th>21</th><th>22</th><th>23</th><th>24</th><th>25</th><th>26</th><th>27</th><th>28</th><th>29</th><th>30</th><th>31</th><th>32</th>
+            <th>01</th><th>02</th><th>03</th><th>04</th><th>05</th><th>06</th><th>07</th><th>08</th><th>09</th><th>10</th><th>11</th><th>12</th><th>13</th><th>14</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th><th>21</th><th>22</th><th>23</th><th>24</th><th>25</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="pr-label">PR 1 — Foundation</td>
+            <td class="bar-violet" title="size:exception">1</td>
+            <td class="bar-violet">2</td>
+            <td class="bar-violet">3</td>
+            <td class="bar-violet">4</td>
+            <td class="bar-violet">5</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 2 — Domain</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey" title="planificado">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 3a — Schema</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 3b — Seeds</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 4 — Application</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 5 — Delivery</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 6a — Data+Crypto</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 6b — Notif+Cache</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 7 — Tests+Gates</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+          </tr>
+          <tr>
+            <td class="pr-label">PR 8 — Verify E2E</td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-empty"></td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+            <td class="bar-grey">P</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="commit-list" style="margin-top: var(--space-3);">
+        <strong>Como leer el Gantt</strong>: cada celda es un dia laborable. Las celdas violetas
+        son PRs activos (size:exception documentada). Las grises con <code>P</code> son dias
+        planificados para ese PR. Celdas vacias = sin trabajo asignado. El Gantt se actualizara
+        en cada <code>estado-planificacion-NEW_YYYY-MM-DD.html</code> cuando se cierre cada PR.
+      </p>
+    </section>
+
+    <section class="card" aria-labelledby="sec-gaps">
+      <h2 id="sec-gaps">5. Gaps abiertos (no bloqueantes)</h2>
+      <table class="data-table" aria-label="Tabla de gaps">
+        <thead>
+          <tr>
+            <th>Gap</th>
+            <th>Descripcion</th>
+            <th>Status</th>
+            <th>Owner</th>
+            <th>Bloquea apply?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>G-1</strong></td>
+            <td>Email normalization (lowercase + IDN)</td>
+            <td><span class="rag-pill rag-green">Cerrado</span></td>
+            <td>—</td>
+            <td>No (DA-3)</td>
+          </tr>
+          <tr>
+            <td><strong>G-2</strong></td>
+            <td>Set canonico de capabilities por app</td>
+            <td><span class="rag-pill rag-amber">Abierto</span></td>
+            <td>Producto</td>
+            <td><strong>Si</strong> antes de 0003 seed; sembramos <code>capabilities = {}</code> provisional</td>
+          </tr>
+          <tr>
+            <td><strong>G-3</strong></td>
+            <td>Campos legacy excluidos (Pass, Comando, URL...)</td>
+            <td><span class="rag-pill rag-green">Cerrado</span></td>
+            <td>—</td>
+            <td>No (DA-7)</td>
+          </tr>
+          <tr>
+            <td><strong>G-4</strong></td>
+            <td>Audit SOC para admin creation fallida</td>
+            <td><span class="rag-pill rag-amber">Abierto</span></td>
+            <td>SOC team</td>
+            <td>No (stub WARN en log)</td>
+          </tr>
+          <tr>
+            <td><strong>G-5</strong></td>
+            <td>SMTP real para notificacion</td>
+            <td><span class="rag-pill rag-amber">Abierto</span></td>
+            <td>IT</td>
+            <td>No (MailQueueTableAdapter MVP; SMTP en P20)</td>
+          </tr>
+          <tr>
+            <td><strong>G-6</strong></td>
+            <td>Password expiry policy</td>
+            <td><span class="rag-pill rag-amber">Abierto</span></td>
+            <td>Producto</td>
+            <td>No (<code>password_reset_required</code> cubre recovery)</td>
+          </tr>
+          <tr>
+            <td><strong>G-7</strong></td>
+            <td><code>SinAcceso</code> semantica en menu global</td>
+            <td><span class="rag-pill rag-amber">Abierto</span></td>
+            <td>UI epic</td>
+            <td>No (stub menu filter)</td>
+          </tr>
+          <tr>
+            <td><strong>G-8</strong></td>
+            <td>Periodos retencion audit</td>
+            <td><span class="rag-pill rag-amber">Abierto</span></td>
+            <td>Compliance</td>
+            <td>No (90 d hot + 1 ano, D29 provisional)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" aria-labelledby="sec-riesgos">
+      <h2 id="sec-riesgos">6. Riesgos identificados</h2>
+      <h3>CRITICAL (bloqueantes o con size:exception aprobada)</h3>
+      <ul>
+        <li><strong>PR 1 (Foundation, ~400-500 lineas)</strong> — indivisible: ruff/mypy/pytest plugin, coverage_gate, hexagonal layer gate, package layout y primer <code>pyproject.toml</code> comparten baseline comun. Split dejaria cada sub-PR con repo a medio configurar. size:exception aprobada 2026-08-09.</li>
+        <li><strong>PR 8 (Verify E2E, ~400-500 lineas)</strong> — indivisible: integration suite sobre docker-compose, DA-13 final sweep y evidence bundle de quality gates forman un solo terminal. size:exception aprobada 2026-08-09.</li>
+      </ul>
+      <h3>WARNING</h3>
+      <ul>
+        <li><strong>G-2 capability set</strong> — producto debe confirmar el set canonico de capabilities por app antes de la migracion 0003. Sin confirmacion, MVP siembra <code>capabilities = {}</code> provisional; canonicalizacion va a una release posterior.</li>
+        <li><strong>G-5 SMTP real</strong> — adapter v1 cubre MVP con cola por tabla; SMTP corporativo real queda diferido a P20 (contrato de proveedor de email). Cuando IT cierre P20 se sustituye el adapter sin tocar dominio.</li>
+        <li><strong>Forecast total 2.800-3.200 lineas</strong> — alta carga de revision; chain strategy <code>feature-branch-chain</code> mitiga con PRs stacked y review por unidad, pero cualquier PR > 500 lineas requiere discusion explicita del reviewer.</li>
+      </ul>
+      <h3>SUGGESTION</h3>
+      <ul>
+        <li>Revisar el plan de plazos con Andres antes de arrancar sdd-apply; los dias marcados son estimativos y se ajustan a la primera sesion real de PR 1.</li>
+        <li>Cuando IT cierre P20 (proveedor de email corporativo), sustituir <code>MailQueueTableAdapter</code> por SMTP adapter sin tocar use cases ni dominio (gracias al puerto <code>NotificationDeliveryPort</code>).</li>
+      </ul>
+    </section>
+
+    <section class="card" aria-labelledby="sec-proximos">
+      <h2 id="sec-proximos">7. Proximos pasos (concreto)</h2>
+      <ol>
+        <li><strong>Sesion 2026-08-10 (L)</strong>: arrancar <code>sdd-apply</code> con PR 1 — Foundation scaffold + CI gates. Pasos del sub-agente: crear worktree <code>feat/lanzadera-mvp-tracker</code>, acquire del dispatcher (<code>gentle-ai sdd-attempt acquire</code>), crear paquete <code>platform/src/modules/lanzadera/</code>, escribir scripts de quality gates, configurar ruff/mypy/pytest, anadir el primer RED test del pin <code>test_ci_workflow.py</code>.</li>
+        <li><strong>Sesion 2026-08-14 (V)</strong>: cerrar PR 1; merge a tracker; refrescar este HTML como <code>estado-planificacion-NEW_2026-08-14.html</code> con RAG 🟢 y motivo del cierre.</li>
+        <li><strong>Antes de PR 3b (2026-08-26)</strong>: pedir a producto confirmacion de G-2 (capability set por app) o aceptacion explicita de sembrar <code>capabilities = {}</code> provisional.</li>
+        <li><strong>Sesion 2026-09-25 (V)</strong>: cierre objetivo de PR 8; merge del tracker a <code>main</code> con el stack colapsado; transicionar a <code>sdd-verify</code> y luego <code>sdd-archive</code>.</li>
+      </ol>
+    </section>
+
+    <section class="card" aria-labelledby="sec-referencias">
+      <h2 id="sec-referencias">8. Referencias canonicas del change</h2>
+      <ul>
+        <li>Proposal: <code>openspec/changes/lanzadera-mvp/proposal.md</code></li>
+        <li>Specs: <code>openspec/changes/lanzadera-mvp/specs/{users,apps,profiles,assignments,audit,auth-core,auth-reset,auth-bootstrap,global_admins}/spec.md</code></li>
+        <li>Design: <code>openspec/changes/lanzadera-mvp/design.md</code> (13 DA decisions)</li>
+        <li>Tasks: <code>openspec/changes/lanzadera-mvp/tasks.md</code> (79 tasks, 10 PR stack)</li>
+        <li>Config: <code>openspec/config.yaml</code> (strict_tdd=true, pytest 85% coverage, ruff 0.15.21, mypy 1.13.0)</li>
+        <li>Quality gates: <code>docs/calidad-de-codigo-y-ci.md</code></li>
+        <li>Engram topic: <code>sdd/lanzadera-mvp/delivery-plan</code> (decision id 24448)</li>
+      </ul>
+      <h3>Commits relevantes de esta sesion (2026-08-09)</h3>
+      <ul class="commit-list">
+        <li><span class="commit-sha">8309f25</span> <code>docs: evolve blueprint repo to monorepo model with MVP Lanzadera platform</code></li>
+        <li><span class="commit-sha">6f44481</span> <code>chore(openspec): evolve config to monorepo with strict-tdd and pytest gates</code></li>
+        <li><span class="commit-sha">6249059</span> <code>docs(sdd): materialize PR plan for lanzadera-mvp tasks</code></li>
+      </ul>
+    </section>
+
+    <p class="footer-note">
+      Estado de planificacion generado 2026-08-09 por el orquestador SDD. Convencion:
+      <code>estado-planificacion-NEW_YYYY-MM-DD.html</code> — nunca sobreescribe. Castellano
+      peninsular formal, estilo "estado-planificacion-update" skill.
+    </p>
+
+  </div>
+</body>
+</html>
