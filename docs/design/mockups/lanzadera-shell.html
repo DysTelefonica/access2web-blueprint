@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lanzadera · Mockup v2 (Mistica + frontend-design)</title>
+  <script defer src="./alpine.min.js"></script>
+  <style>
+    /* ============================================================
+       MISTICA DESIGN TOKENS — Telefónica skin
+       Mapped from @telefonica/mistica production token JSON
+       (Telefonica/mistica-design, branch production, telefonica.json)
+       Strategy: server-rendered via CSS variables, no React.
+       ============================================================ */
+    :root {
+      /* Mistica Telefónica brand palette */
+      --mistica-color-brand: #0066CC;
+      --mistica-color-brand-dark: #004C99;
+      --mistica-color-brand-light: #E5F0FB;
+      --mistica-color-brand-low: #F2F8FE;
+      --mistica-color-accent: #5B5BFF;
+      --mistica-color-success: #008562;
+      --mistica-color-success-low: #E8F6EF;
+      --mistica-color-warning: #F59C00;
+      --mistica-color-warning-low: #FEF6E5;
+      --mistica-color-danger: #D6432C;
+      --mistica-color-danger-low: #FCEAE5;
+      --mistica-color-info: #1976D2;
+
+      /* Neutrals (Mistica spectrum) */
+      --mistica-color-text-primary: #1A1A1A;
+      --mistica-color-text-secondary: #5C5C5C;
+      --mistica-color-text-tertiary: #8C8C8C;
+      --mistica-color-text-disabled: #B0B0B0;
+      --mistica-color-text-inverse: #FFFFFF;
+      --mistica-color-text-link: #0066CC;
+
+      --mistica-color-background: #FAFBFC;
+      --mistica-color-background-container: #FFFFFF;
+      --mistica-color-background-container-low: #F4F6F8;
+      --mistica-color-background-overlay: rgba(15, 23, 42, 0.55);
+      --mistica-color-border: #E8EBED;
+      --mistica-color-border-strong: #D5D9DD;
+      --mistica-color-border-subtle: #F0F2F4;
+
+      /* Signature accent: deep ink teal — distinctive, NOT the AI default */
+      --mistica-color-ink: #0A2540;
+      --mistica-color-ink-soft: #1E3A5F;
+
+      /* Spacing (8px base) */
+      --mistica-space-1: 4px;
+      --mistica-space-2: 8px;
+      --mistica-space-3: 12px;
+      --mistica-space-4: 16px;
+      --mistica-space-5: 24px;
+      --mistica-space-6: 32px;
+      --mistica-space-7: 48px;
+      --mistica-space-8: 64px;
+      --mistica-space-9: 96px;
+
+      /* Radii */
+      --mistica-radius-input: 8px;
+      --mistica-radius-button: 32px;       /* Mistica web */
+      --mistica-radius-container: 14px;
+      --mistica-radius-chip: 24px;
+
+      /* Typography: Mistica default is system stack, but we pair
+         a distinctive display weight for headings + readable body */
+      --mistica-font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --mistica-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --mistica-font-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+      /* Distinctive type scale (display uses tighter tracking, body uses generous line-height) */
+      --mistica-fs-text10: 0.6875rem;     /* 11px */
+      --mistica-fs-text9: 0.75rem;       /* 12px */
+      --mistica-fs-text8: 0.8125rem;     /* 13px */
+      --mistica-fs-text7: 0.875rem;      /* 14px */
+      --mistica-fs-text6: 0.9375rem;     /* 15px */
+      --mistica-fs-text5: 1rem;          /* 16px */
+      --mistica-fs-text4: 1.125rem;      /* 18px */
+      --mistica-fs-text3: 1.25rem;       /* 20px */
+      --mistica-fs-text2: 1.5rem;        /* 24px */
+      --mistica-fs-text1: 1.75rem;       /* 28px */
+      --mistica-fs-title4: 2rem;         /* 32px */
+      --mistica-fs-title3: 2.5rem;       /* 40px */
+      --mistica-fs-title2: 3rem;         /* 48px */
+      --mistica-fs-title1: clamp(2.5rem, 5vw, 4rem);
+
+      --mistica-tracking-tight: -0.025em;
+      --mistica-tracking-normal: 0;
+      --mistica-tracking-wide: 0.05em;
+
+      /* Shadows — softer than default, layered */
+      --mistica-shadow-1: 0 1px 2px rgba(10, 37, 64, 0.04), 0 1px 3px rgba(10, 37, 64, 0.06);
+      --mistica-shadow-2: 0 2px 4px rgba(10, 37, 64, 0.05), 0 4px 8px rgba(10, 37, 64, 0.08);
+      --mistica-shadow-3: 0 4px 8px rgba(10, 37, 64, 0.06), 0 12px 24px rgba(10, 37, 64, 0.10);
+      --mistica-shadow-4: 0 8px 16px rgba(10, 37, 64, 0.08), 0 20px 40px rgba(10, 37, 64, 0.12);
+
+      /* Transitions */
+      --mistica-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --mistica-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --mistica-trans-fast: 150ms var(--mistica-ease-out);
+      --mistica-trans-base: 250ms var(--mistica-ease-out);
+      --mistica-trans-slow: 400ms var(--mistica-ease-out);
+
+      /* Layout */
+      --mistica-sidebar-w: 248px;
+      --mistica-sidebar-w-collapsed: 68px;
+      --mistica-navbar-h: 60px;
+      --mistica-content-max-w: 1440px;
+
+      /* Glassmorphism (signature use) */
+      --glass-bg: rgba(255, 255, 255, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-blur: blur(16px) saturate(180%);
+    }
+
+    /* Dark mode */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --mistica-color-text-primary: #F2F4F7;
+        --mistica-color-text-secondary: #9DA6B2;
+        --mistica-color-text-tertiary: #6E7681;
+        --mistica-color-text-disabled: #4A525C;
+        --mistica-color-text-link: #5C9CFF;
+        --mistica-color-background: #0B1220;
+        --mistica-color-background-container: #131C2E;
+        --mistica-color-background-container-low: #1A2540;
+        --mistica-color-border: #1F2A44;
+        --mistica-color-border-strong: #2A3656;
+        --mistica-color-brand-light: #1A2744;
+        --mistica-color-ink: #F2F4F7;
+        --glass-bg: rgba(19, 28, 46, 0.65);
+        --glass-border: rgba(31, 42, 68, 0.85);
+        --mistica-shadow-1: 0 1px 2px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.4);
+        --mistica-shadow-2: 0 2px 4px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.4);
+        --mistica-shadow-3: 0 4px 8px rgba(0,0,0,0.4), 0 12px 24px rgba(0,0,0,0.5);
+      }
+    }
+
+    /* ============================================================
+       BASE
+       ============================================================ */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--mistica-font-body);
+      font-size: var(--mistica-fs-text5);
+      color: var(--mistica-color-text-primary);
+      background: var(--mistica-color-background);
+      font-feature-settings: 'cv11', 'ss01';
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      line-height: 1.5;
+    }
+    a { color: var(--mistica-color-text-link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    ::selection { background: var(--mistica-color-brand-light); color: var(--mistica-color-brand-dark); }
+
+    /* ============================================================
+       LOGIN — split hero with depth
+       Signature: gradient mesh + glass card form
+       ============================================================ */
+    .login {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+    }
+    .login__hero {
+      background:
+        radial-gradient(circle at 20% 30%, rgba(91, 91, 255, 0.45) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(0, 102, 204, 0.55) 0%, transparent 50%),
+        radial-gradient(circle at 50% 90%, rgba(0, 156, 166, 0.35) 0%, transparent 60%),
+        linear-gradient(135deg, var(--mistica-color-ink) 0%, var(--mistica-color-ink-soft) 100%);
+      color: white;
+      padding: var(--mistica-space-8);
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .login__hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 30% 40%, rgba(255,255,255,0.05) 1px, transparent 1px),
+        radial-gradient(circle at 70% 80%, rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 80px 80px, 120px 120px;
+      opacity: 0.5;
+    }
+    .login__hero-content { position: relative; z-index: 1; }
+    .login__hero-brand {
+      display: flex; align-items: center; gap: var(--mistica-space-3);
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-text4);
+      font-weight: 700;
+      letter-spacing: var(--mistica-tracking-tight);
+    }
+    .login__hero-brand-mark {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--mistica-color-brand), var(--mistica-color-accent));
+      border-radius: 12px;
+      display: grid; place-items: center;
+      box-shadow: 0 4px 12px rgba(91, 91, 255, 0.4);
+    }
+    .login__hero-brand-mark::after {
+      content: 'T';
+      font-size: 22px;
+      font-weight: 800;
+    }
+    .login__hero-title {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-title1);
+      font-weight: 700;
+      letter-spacing: var(--mistica-tracking-tight);
+      line-height: 1.05;
+      max-width: 560px;
+      margin: var(--mistica-space-8) 0 var(--mistica-space-5);
+    }
+    .login__hero-title strong {
+      background: linear-gradient(135deg, #8FD4FF, #B5C7FF);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 800;
+    }
+    .login__hero-subtitle {
+      font-size: var(--mistica-fs-text4);
+      opacity: 0.85;
+      line-height: 1.5;
+      max-width: 480px;
+    }
+    .login__hero-features {
+      display: flex; flex-direction: column;
+      gap: var(--mistica-space-3);
+      margin-top: var(--mistica-space-6);
+    }
+    .login__hero-feature {
+      display: flex; align-items: center; gap: var(--mistica-space-3);
+      font-size: var(--mistica-fs-text7);
+      opacity: 0.9;
+    }
+    .login__hero-feature::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8FD4FF, #B5C7FF);
+      flex-shrink: 0;
+    }
+    .login__hero-footer {
+      position: relative; z-index: 1;
+      font-size: var(--mistica-fs-text8);
+      opacity: 0.55;
+      display: flex; gap: var(--mistica-space-5);
+    }
+
+    /* Form panel — glass + clean */
+    .login__form {
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: var(--mistica-space-8);
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .login__form-title {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-title3);
+      font-weight: 700;
+      letter-spacing: var(--mistica-tracking-tight);
+      margin-bottom: var(--mistica-space-2);
+    }
+    .login__form-subtitle {
+      color: var(--mistica-color-text-secondary);
+      font-size: var(--mistica-fs-text6);
+      margin-bottom: var(--mistica-space-7);
+    }
+    .field { margin-bottom: var(--mistica-space-4); }
+    .field__label {
+      display: block;
+      font-size: var(--mistica-fs-text8);
+      font-weight: 500;
+      margin-bottom: var(--mistica-space-2);
+      color: var(--mistica-color-text-secondary);
+      letter-spacing: var(--mistica-tracking-wide);
+      text-transform: uppercase;
+    }
+    .field__input {
+      width: 100%;
+      padding: var(--mistica-space-4);
+      border: 1.5px solid var(--mistica-color-border);
+      border-radius: var(--mistica-radius-input);
+      background: var(--mistica-color-background-container);
+      color: var(--mistica-color-text-primary);
+      font-size: var(--mistica-fs-text5);
+      font-family: inherit;
+      transition: all var(--mistica-trans-fast);
+    }
+    .field__input:focus {
+      outline: none;
+      border-color: var(--mistica-color-brand);
+      box-shadow: 0 0 0 4px var(--mistica-color-brand-light);
+      background: var(--mistica-color-background-container);
+    }
+    .field__row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--mistica-space-5);
+    }
+    .field__checkbox {
+      display: inline-flex; align-items: center; gap: var(--mistica-space-2);
+      cursor: pointer;
+      font-size: var(--mistica-fs-text7);
+      color: var(--mistica-color-text-secondary);
+    }
+    .field__link {
+      color: var(--mistica-color-text-link);
+      font-size: var(--mistica-fs-text7);
+      font-weight: 500;
+    }
+
+    /* ============================================================
+       NAVBAR — sticky, glass on scroll
+       ============================================================ */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--mistica-navbar-h);
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--mistica-color-border);
+      display: flex; align-items: center;
+      padding: 0 var(--mistica-space-5);
+      gap: var(--mistica-space-4);
+    }
+    .navbar__logo {
+      display: flex; align-items: center; gap: var(--mistica-space-3);
+      font-family: var(--mistica-font-display);
+      font-weight: 700; font-size: var(--mistica-fs-text4);
+      letter-spacing: var(--mistica-tracking-tight);
+      color: var(--mistica-color-ink);
+      text-decoration: none;
+      padding-right: var(--mistica-space-4);
+      border-right: 1px solid var(--mistica-color-border);
+      height: 60px;
+      align-items: center;
+      display: flex;
+      margin-right: var(--mistica-space-4);
+    }
+    .navbar__logo:hover { text-decoration: none; }
+    .navbar__logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--mistica-color-brand), var(--mistica-color-accent));
+      border-radius: 9px;
+      display: grid; place-items: center;
+      color: white; font-weight: 800; font-size: 15px;
+      box-shadow: 0 2px 8px rgba(91, 91, 255, 0.3);
+    }
+    .navbar__breadcrumb {
+      display: flex; align-items: center; gap: var(--mistica-space-2);
+      color: var(--mistica-color-text-tertiary);
+      font-size: var(--mistica-fs-text7);
+    }
+    .navbar__breadcrumb__sep { color: var(--mistica-color-border-strong); }
+    .navbar__breadcrumb__current {
+      color: var(--mistica-color-text-primary);
+      font-weight: 600;
+    }
+    .navbar__spacer { flex: 1; }
+    .navbar__search {
+      display: flex; align-items: center; gap: var(--mistica-space-2);
+      background: var(--mistica-color-background-container-low);
+      border: 1.5px solid transparent;
+      border-radius: var(--mistica-radius-button);
+      padding: var(--mistica-space-2) var(--mistica-space-4);
+      width: 360px;
+      transition: all var(--mistica-trans-fast);
+    }
+    .navbar__search:focus-within {
+      border-color: var(--mistica-color-brand);
+      background: var(--mistica-color-background-container);
+      box-shadow: 0 0 0 4px var(--mistica-color-brand-light);
+    }
+    .navbar__search input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--mistica-color-text-primary);
+      font-size: var(--mistica-fs-text6);
+    }
+    .navbar__search__kbd {
+      font-family: var(--mistica-font-mono);
+      font-size: var(--mistica-fs-text10);
+      color: var(--mistica-color-text-tertiary);
+      background: var(--mistica-color-background-container);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--mistica-color-border);
+    }
+    .navbar__icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      color: var(--mistica-color-text-secondary);
+      transition: all var(--mistica-trans-fast);
+      position: relative;
+    }
+    .navbar__icon-btn:hover {
+      background: var(--mistica-color-background-container-low);
+      color: var(--mistica-color-text-primary);
+    }
+    .navbar__icon-btn--has-badge::after {
+      content: '';
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--mistica-color-danger);
+      box-shadow: 0 0 0 2px var(--mistica-color-background-container);
+    }
+    .navbar__avatar {
+      display: flex; align-items: center; gap: var(--mistica-space-2);
+      padding: 4px 8px 4px 4px;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background var(--mistica-trans-fast);
+    }
+    .navbar__avatar:hover { background: var(--mistica-color-background-container-low); }
+    .navbar__avatar__avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--mistica-color-brand), var(--mistica-color-accent));
+      color: white;
+      display: grid; place-items: center;
+      font-weight: 700; font-size: var(--mistica-fs-text7);
+    }
+    .navbar__avatar__name {
+      font-size: var(--mistica-fs-text7);
+      font-weight: 500;
+    }
+    .navbar__avatar__role {
+      font-size: var(--mistica-fs-text10);
+      color: var(--mistica-color-text-tertiary);
+    }
+
+    /* ============================================================
+       LAYOUT SHELL
+       ============================================================ */
+    .shell {
+      display: grid;
+      grid-template-columns: var(--mistica-sidebar-w) 1fr;
+      min-height: calc(100vh - var(--mistica-navbar-h));
+    }
+    .sidebar {
+      background: var(--mistica-color-background-container);
+      border-right: 1px solid var(--mistica-color-border);
+      padding: var(--mistica-space-5) var(--mistica-space-3);
+      position: sticky;
+      top: var(--mistica-navbar-h);
+      height: calc(100vh - var(--mistica-navbar-h));
+      overflow-y: auto;
+    }
+    .sidebar__section { margin-bottom: var(--mistica-space-6); }
+    .sidebar__section-title {
+      font-size: var(--mistica-fs-text10);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: var(--mistica-tracking-wide);
+      color: var(--mistica-color-text-tertiary);
+      padding: 0 var(--mistica-space-3);
+      margin-bottom: var(--mistica-space-3);
+    }
+    .sidebar__item {
+      display: flex; align-items: center; gap: var(--mistica-space-3);
+      padding: var(--mistica-space-3);
+      border-radius: var(--mistica-radius-input);
+      color: var(--mistica-color-text-secondary);
+      font-size: var(--mistica-fs-text6);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--mistica-trans-fast);
+      margin-bottom: 2px;
+      text-decoration: none;
+    }
+    .sidebar__item:hover {
+      background: var(--mistica-color-background-container-low);
+      color: var(--mistica-color-text-primary);
+      text-decoration: none;
+    }
+    .sidebar__item--active {
+      background: var(--mistica-color-brand-light);
+      color: var(--mistica-color-brand-dark);
+      font-weight: 600;
+    }
+    .sidebar__item--active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 3px;
+      height: 24px;
+      background: var(--mistica-color-brand);
+      border-radius: 0 2px 2px 0;
+    }
+    .sidebar__item { position: relative; }
+    .sidebar__icon {
+      width: 18px; height: 18px;
+      color: currentColor;
+      flex-shrink: 0;
+    }
+    .sidebar__badge {
+      margin-left: auto;
+      background: var(--mistica-color-danger);
+      color: white;
+      font-size: var(--mistica-fs-text10);
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+    .sidebar__badge--info { background: var(--mistica-color-info); }
+
+    /* ============================================================
+       MAIN
+       ============================================================ */
+    .main {
+      padding: var(--mistica-space-7);
+      max-width: var(--mistica-content-max-w);
+      margin: 0 auto;
+    }
+    .main__header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: var(--mistica-space-7);
+      gap: var(--mistica-space-5);
+      flex-wrap: wrap;
+    }
+    .main__greeting {
+      font-size: var(--mistica-fs-text7);
+      color: var(--mistica-color-text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: var(--mistica-tracking-wide);
+      font-weight: 600;
+      margin-bottom: var(--mistica-space-2);
+    }
+    .main__title {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-title3);
+      font-weight: 700;
+      letter-spacing: var(--mistica-tracking-tight);
+      line-height: 1.1;
+    }
+    .main__subtitle {
+      color: var(--mistica-color-text-secondary);
+      font-size: var(--mistica-fs-text5);
+      margin-top: var(--mistica-space-3);
+    }
+
+    /* ============================================================
+       STAT CARDS — glassmorphism
+       ============================================================ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--mistica-space-4);
+      margin-bottom: var(--mistica-space-7);
+    }
+    .stat-card {
+      background: var(--mistica-color-background-container);
+      border-radius: var(--mistica-radius-container);
+      padding: var(--mistica-space-5);
+      border: 1px solid var(--mistica-color-border);
+      transition: all var(--mistica-trans-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--mistica-color-brand);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--mistica-trans-base);
+    }
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--mistica-shadow-3);
+      border-color: var(--mistica-color-border-strong);
+    }
+    .stat-card:hover::before { transform: scaleX(1); }
+    .stat-card__icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: grid; place-items: center;
+      background: var(--mistica-color-brand-low);
+      color: var(--mistica-color-brand);
+      margin-bottom: var(--mistica-space-4);
+    }
+    .stat-card__icon--success { background: var(--mistica-color-success-low); color: var(--mistica-color-success); }
+    .stat-card__icon--warning { background: var(--mistica-color-warning-low); color: var(--mistica-color-warning); }
+    .stat-card__icon--accent { background: rgba(91, 91, 255, 0.1); color: var(--mistica-color-accent); }
+    .stat-card__label {
+      font-size: var(--mistica-fs-text7);
+      color: var(--mistica-color-text-secondary);
+      font-weight: 500;
+    }
+    .stat-card__value {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-title2);
+      font-weight: 700;
+      margin: var(--mistica-space-2) 0;
+      letter-spacing: var(--mistica-tracking-tight);
+      line-height: 1;
+    }
+    .stat-card__trend {
+      font-size: var(--mistica-fs-text8);
+      display: flex; align-items: center; gap: 4px;
+      font-weight: 500;
+    }
+    .stat-card__trend--up { color: var(--mistica-color-success); }
+    .stat-card__trend--down { color: var(--mistica-color-danger); }
+    .stat-card__trend--neutral { color: var(--mistica-color-text-tertiary); }
+    .stat-card__sparkline {
+      height: 32px;
+      margin-top: var(--mistica-space-3);
+      color: var(--mistica-color-brand);
+      opacity: 0.6;
+    }
+
+    /* ============================================================
+       SECTION HEADERS
+       ============================================================ */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: var(--mistica-space-4);
+      margin-top: var(--mistica-space-7);
+    }
+    .section-title {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-text2);
+      font-weight: 700;
+      letter-spacing: var(--mistica-tracking-tight);
+    }
+    .section-action {
+      color: var(--mistica-color-text-link);
+      font-size: var(--mistica-fs-text6);
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .section-action:hover { text-decoration: underline; }
+
+    /* ============================================================
+       TASK LIST
+       ============================================================ */
+    .task-list {
+      background: var(--mistica-color-background-container);
+      border-radius: var(--mistica-radius-container);
+      border: 1px solid var(--mistica-color-border);
+      overflow: hidden;
+    }
+    .task-item {
+      display: flex; align-items: center; gap: var(--mistica-space-4);
+      padding: var(--mistica-space-4) var(--mistica-space-5);
+      border-bottom: 1px solid var(--mistica-color-border-subtle);
+      cursor: pointer;
+      transition: background var(--mistica-trans-fast);
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-item:hover { background: var(--mistica-color-background-container-low); }
+    .task-item__priority {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .task-item__priority--high { background: var(--mistica-color-danger); box-shadow: 0 0 0 4px var(--mistica-color-danger-low); }
+    .task-item__priority--med { background: var(--mistica-color-warning); box-shadow: 0 0 0 4px var(--mistica-color-warning-low); }
+    .task-item__priority--low { background: var(--mistica-color-info); box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.15); }
+    .task-item__content { flex: 1; min-width: 0; }
+    .task-item__title {
+      font-weight: 500;
+      font-size: var(--mistica-fs-text6);
+      margin-bottom: 4px;
+      color: var(--mistica-color-text-primary);
+    }
+    .task-item__meta {
+      font-size: var(--mistica-fs-text8);
+      color: var(--mistica-color-text-tertiary);
+    }
+    .task-item__due {
+      font-size: var(--mistica-fs-text8);
+      color: var(--mistica-color-text-secondary);
+      flex-shrink: 0;
+      font-weight: 500;
+    }
+    .task-item__due--urgent { color: var(--mistica-color-danger); font-weight: 600; }
+    .task-item__action {
+      padding: 6px 14px;
+      border-radius: var(--mistica-radius-button);
+      font-size: var(--mistica-fs-text8);
+      font-weight: 600;
+      color: var(--mistica-color-brand);
+      background: transparent;
+      border: 1px solid var(--mistica-color-border);
+      transition: all var(--mistica-trans-fast);
+    }
+    .task-item__action:hover {
+      background: var(--mistica-color-brand-light);
+      border-color: var(--mistica-color-brand);
+    }
+
+    /* ============================================================
+       APP CARDS — signature element
+       Glass + gradient accent line + rich metadata
+       ============================================================ */
+    .apps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--mistica-space-4);
+    }
+    .app-card {
+      background: var(--mistica-color-background-container);
+      border-radius: var(--mistica-radius-container);
+      padding: var(--mistica-space-5);
+      border: 1px solid var(--mistica-color-border);
+      cursor: pointer;
+      transition: all var(--mistica-trans-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .app-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 80px;
+      background: linear-gradient(180deg, var(--mistica-color-brand-low), transparent);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .app-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--mistica-shadow-3);
+      border-color: var(--mistica-color-brand-light);
+    }
+    .app-card__icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--mistica-color-brand), var(--mistica-color-accent));
+      color: white;
+      display: grid; place-items: center;
+      margin-bottom: var(--mistica-space-4);
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 4px 12px rgba(91, 91, 255, 0.25);
+    }
+    .app-card__icon--accent { background: linear-gradient(135deg, var(--mistica-color-accent), #8B5BFF); }
+    .app-card__icon--success { background: linear-gradient(135deg, var(--mistica-color-success), #00B894); }
+    .app-card__icon--ink { background: linear-gradient(135deg, var(--mistica-color-ink), var(--mistica-color-ink-soft)); }
+    .app-card__title {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-text3);
+      font-weight: 700;
+      margin-bottom: var(--mistica-space-2);
+      letter-spacing: var(--mistica-tracking-tight);
+      position: relative; z-index: 1;
+    }
+    .app-card__desc {
+      font-size: var(--mistica-fs-text6);
+      color: var(--mistica-color-text-secondary);
+      line-height: 1.45;
+      margin-bottom: var(--mistica-space-4);
+      position: relative; z-index: 1;
+    }
+    .app-card__meta {
+      display: flex; gap: var(--mistica-space-3);
+      font-size: var(--mistica-fs-text8);
+      color: var(--mistica-color-text-tertiary);
+      padding-top: var(--mistica-space-3);
+      border-top: 1px solid var(--mistica-color-border-subtle);
+      position: relative; z-index: 1;
+    }
+    .app-card__meta-item {
+      display: flex; align-items: center; gap: 4px;
+    }
+    .app-card__pending {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px;
+      border-radius: var(--mistica-radius-chip);
+      background: var(--mistica-color-warning-low);
+      color: var(--mistica-color-warning);
+      font-size: var(--mistica-fs-text9);
+      font-weight: 600;
+    }
+
+    /* ============================================================
+       BUTTONS — Mistica radius 32px
+       ============================================================ */
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--mistica-space-2);
+      padding: var(--mistica-space-3) var(--mistica-space-5);
+      border-radius: var(--mistica-radius-button);
+      font-weight: 600;
+      font-size: var(--mistica-fs-text6);
+      transition: all var(--mistica-trans-fast);
+      white-space: nowrap;
+    }
+    .btn--primary {
+      background: var(--mistica-color-brand);
+      color: white;
+      box-shadow: 0 1px 2px rgba(0, 102, 204, 0.2);
+    }
+    .btn--primary:hover {
+      background: var(--mistica-color-brand-dark);
+      box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+      transform: translateY(-1px);
+    }
+    .btn--primary:active { transform: translateY(0); }
+    .btn--secondary {
+      background: transparent;
+      color: var(--mistica-color-brand);
+      border: 1.5px solid var(--mistica-color-border-strong);
+    }
+    .btn--secondary:hover {
+      background: var(--mistica-color-brand-light);
+      border-color: var(--mistica-color-brand);
+    }
+    .btn--ghost {
+      color: var(--mistica-color-text-secondary);
+    }
+    .btn--ghost:hover {
+      background: var(--mistica-color-background-container-low);
+      color: var(--mistica-color-text-primary);
+    }
+
+    /* ============================================================
+       CHIPS
+       ============================================================ */
+    .chip-group {
+      display: flex; gap: var(--mistica-space-2);
+      flex-wrap: wrap;
+      margin-bottom: var(--mistica-space-5);
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: var(--mistica-space-2);
+      padding: var(--mistica-space-2) var(--mistica-space-4);
+      border-radius: var(--mistica-radius-chip);
+      background: var(--mistica-color-background-container);
+      color: var(--mistica-color-text-secondary);
+      font-size: var(--mistica-fs-text7);
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--mistica-color-border);
+      transition: all var(--mistica-trans-fast);
+    }
+    .chip:hover {
+      border-color: var(--mistica-color-brand);
+      color: var(--mistica-color-brand);
+    }
+    .chip--active {
+      background: var(--mistica-color-brand);
+      color: white;
+      border-color: var(--mistica-color-brand);
+    }
+    .chip__count {
+      font-size: var(--mistica-fs-text10);
+      opacity: 0.7;
+    }
+
+    /* ============================================================
+       THEME TOGGLE (showcase Mistica on light + dark)
+       ============================================================ */
+    .theme-toggle {
+      position: fixed;
+      top: 80px; right: 24px;
+      z-index: 200;
+      background: var(--mistica-color-background-container);
+      border: 1px solid var(--mistica-color-border);
+      border-radius: var(--mistica-radius-button);
+      padding: var(--mistica-space-2) var(--mistica-space-4);
+      font-size: var(--mistica-fs-text7);
+      cursor: pointer;
+      box-shadow: var(--mistica-shadow-2);
+      font-weight: 500;
+      color: var(--mistica-color-text-primary);
+      transition: all var(--mistica-trans-fast);
+    }
+    .theme-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--mistica-shadow-3);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 1024px) {
+      .login { grid-template-columns: 1fr; }
+      .login__hero { display: none; }
+      .navbar__search { width: 240px; }
+      .navbar__avatar__name, .navbar__avatar__role { display: none; }
+    }
+    @media (max-width: 768px) {
+      .navbar { padding: 0 var(--mistica-space-3); gap: var(--mistica-space-2); }
+      .navbar__search, .navbar__breadcrumb { display: none; }
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main { padding: var(--mistica-space-4); }
+      .main__title { font-size: var(--mistica-fs-title4); }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: var(--mistica-space-3); }
+      .apps-grid { grid-template-columns: 1fr; }
+    }
+
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body x-data="{
+  screen: 'dashboard',
+  sidebarOpen: true,
+  theme: 'auto',
+  // RBAC: dos roles para preview. En producción viene del backend.
+  role: 'usuario', // 'usuario' | 'admin'
+  toggleRole() { this.role = this.role === 'admin' ? 'usuario' : 'admin' },
+  userName: this.role === 'admin' ? 'Carlos R.' : 'María R.',
+  userRole: this.role === 'admin' ? 'Admin Global' : 'Calidad',
+  isAdmin() { return this.role === 'admin' },
+  can(perm) {
+    const adminPerms = ['app.create', 'app.edit', 'app.delete', 'user.create', 'user.edit', 'user.assign_perms', 'audit.view', 'app.view_all', 'user.view_all'];
+    const userPerms = ['profile.view', 'profile.edit', 'app.view_assigned', 'task.view_own'];
+    if (this.role === 'admin') return adminPerms.includes(perm);
+    return userPerms.includes(perm) || adminPerms.includes(perm); // user ve su perfil + apps asignadas
+  },
+}">
+
+  <!-- Theme toggle (visible everywhere) -->
+  <button class="theme-toggle"
+          @click="theme = theme === 'dark' ? 'light' : (theme === 'light' ? 'auto' : 'dark')"
+          x-text="theme === 'dark' ? '☀️' : theme === 'light' ? '🌓' : '🌙'"
+          title="Cambiar tema"></button>
+
+  <!-- ============================================================
+       SCREEN 1: LOGIN
+       Signature: split layout with depth — radial gradients + glass form
+       ============================================================ -->
+  <section class="login" x-show="screen === 'login'" x-cloak>
+    <div class="login__hero">
+      <div class="login__hero-content">
+        <div class="login__hero-brand">
+          <div class="login__hero-brand-mark"></div>
+          <span>Telefónica</span>
+        </div>
+        <div>
+          <h1 class="login__hero-title">El <strong>punto de entrada</strong> a tu ecosistema de trabajo</h1>
+          <p class="login__hero-subtitle">Lanzadera centraliza las aplicaciones, usuarios y permisos del ecosistema corporativo. Una sola identidad, ocho apps conectadas.</p>
+          <div class="login__hero-features">
+            <div class="login__hero-feature">Aplicaciones, usuarios y permisos en un solo lugar</div>
+            <div class="login__hero-feature">Auditoría y trazabilidad automática</div>
+            <div class="login__hero-feature">Single Sign-On con el ecosistema</div>
+          </div>
+        </div>
+      </div>
+      <div class="login__hero-footer">
+        <span>© 2026 Telefónica</span>
+        <span>v1.0.0</span>
+      </div>
+    </div>
+
+    <form class="login__form" x-data="{ loading: false }" @submit.prevent="loading = true; setTimeout(() => loading = false, 1500)">
+      <h2 class="login__form-title">Iniciar sesión</h2>
+      <p class="login__form-subtitle">Usa tu credencial corporativa</p>
+
+      <div class="field">
+        <label class="field__label" for="user">Usuario</label>
+        <input class="field__input" id="user" type="text" placeholder="usuario.corporativo" autocomplete="username" required>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="pass">Contraseña</label>
+        <input class="field__input" id="pass" type="password" placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+
+      <div class="field__row">
+        <label class="field__checkbox">
+          <input type="checkbox"> Recordar sesión
+        </label>
+        <a class="field__link">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button class="btn btn--primary" style="width:100%; justify-content:center; padding: var(--mistica-space-4); font-size: var(--mistica-fs-text5);" type="submit" :aria-busy="loading" :disabled="loading">
+        <span x-show="!loading">Entrar</span>
+        <span x-show="loading">Conectando…</span>
+      </button>
+
+      <div style="text-align:center; margin-top: var(--mistica-space-5); font-size: var(--mistica-fs-text8); color: var(--mistica-color-text-tertiary);">
+        ¿Problemas para entrar? <a class="field__link">Contacta al administrador</a>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============================================================
+       SCREEN 2: MAIN SHELL (post-login)
+       ============================================================ -->
+  <div x-show="screen !== 'login'" x-cloak>
+    <nav class="navbar">
+      <a href="#" class="navbar__logo" @click.prevent="screen = 'dashboard'">
+        <div class="navbar__logo-mark">L</div>
+        <span>Lanzadera</span>
+      </a>
+
+      <div class="navbar__breadcrumb">
+        <span>Lanzadera</span>
+        <span class="navbar__breadcrumb__sep">/</span>
+        <span class="navbar__breadcrumb__current" x-text="{
+          dashboard: 'Inicio',
+          aplicaciones: 'Aplicaciones',
+          usuarios: 'Usuarios',
+          videos: 'Videos',
+          perfil: 'Mi perfil'
+        }[screen]">Inicio</span>
+      </div>
+
+      <div class="navbar__spacer"></div>
+
+      <div class="navbar__search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" placeholder="Buscar aplicaciones, usuarios, videos…">
+        <span class="navbar__search__kbd">⌘K</span>
+      </div>
+
+      <button class="navbar__icon-btn navbar__icon-btn--has-badge" aria-label="Notificaciones">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      </button>
+      <button class="navbar__icon-btn" aria-label="Ayuda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </button>
+      <div class="navbar__avatar" @click="screen = 'perfil'" title="Mi perfil">
+        <div class="navbar__avatar__avatar">MR</div>
+        <div>
+          <div class="navbar__avatar__name">María R.</div>
+          <div class="navbar__avatar__role">Calidad</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">General</div>
+          <a class="sidebar__item" :class="screen === 'dashboard' && 'sidebar__item--active'" @click.prevent="screen='dashboard'">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+            <span>Inicio</span>
+          </a>
+          <a class="sidebar__item">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Recientes</span>
+          </a>
+          <a class="sidebar__item">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 21-4.3-4.3"/><circle cx="11" cy="11" r="7"/></svg>
+            <span>Buscar</span>
+          </a>
+        </div>
+
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Aplicaciones</div>
+          <a class="sidebar__item" :class="screen === 'aplicaciones' && 'sidebar__item--active'" @click.prevent="screen='aplicaciones'">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+            <span>Gestión de aplicaciones</span>
+            <span class="sidebar__badge">12</span>
+          </a>
+          <a class="sidebar__item">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Usuarios y permisos</span>
+          </a>
+          <a class="sidebar__item">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.5 4.5-4.5 4.5"/><path d="M3 10h12v9"/></svg>
+            <span>Auditoría</span>
+            <span class="sidebar__badge sidebar__badge--info">3</span>
+          </a>
+        </div>
+
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Catálogos</div>
+          <a class="sidebar__item" :class="screen === 'videos' && 'sidebar__item--active'" @click.prevent="screen='videos'">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            <span>Videos</span>
+          </a>
+          <a class="sidebar__item">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+            <span>Integraciones</span>
+          </a>
+        </div>
+
+        <div class="sidebar__section">
+          <div class="sidebar__section-title">Yo</div>
+          <a class="sidebar__item" :class="screen === 'perfil' && 'sidebar__item--active'" @click.prevent="screen='perfil'">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Mi perfil</span>
+          </a>
+          <a class="sidebar__item">
+            <svg class="sidebar__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Configuración</span>
+          </a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <!-- ========== DASHBOARD PRINCIPAL ========== -->
+        <section x-show="screen === 'dashboard'" x-cloak>
+          <div class="main__header">
+            <div>
+              <div class="main__greeting">Buenos días</div>
+              <h1 class="main__title">María, tienes 4 tareas pendientes</h1>
+              <p class="main__subtitle">2 aplicaciones esperan revisión · 1 vencimiento hoy</p>
+            </div>
+            <button class="btn btn--primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nueva aplicación
+            </button>
+          </div>
+
+          <!-- Stats row — restrained, with subtle sparklines -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+              </div>
+              <div class="stat-card__label">Aplicaciones activas</div>
+              <div class="stat-card__value">12</div>
+              <div class="stat-card__trend stat-card__trend--up">↑ 2 esta semana</div>
+              <svg class="stat-card__sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                <polyline points="0,28 12,24 24,26 36,18 48,20 60,12 72,14 84,8 100,10" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon stat-card__icon--success">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="stat-card__label">Usuarios conectados</div>
+              <div class="stat-card__value">47</div>
+              <div class="stat-card__trend stat-card__trend--up">↑ 5 hoy</div>
+              <svg class="stat-card__sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                <polyline points="0,22 12,18 24,20 36,14 48,16 60,10 72,12 84,8 100,6" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon stat-card__icon--warning">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6"/><circle cx="12" cy="12" r="2"/></svg>
+              </div>
+              <div class="stat-card__label">Tareas pendientes</div>
+              <div class="stat-card__value">4</div>
+              <div class="stat-card__trend stat-card__trend--down">2 vencidas</div>
+              <svg class="stat-card__sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                <polyline points="0,12 12,14 24,18 36,22 48,20 60,24 72,22 84,26 100,28" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card__icon stat-card__icon--accent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+              </div>
+              <div class="stat-card__label">Videos tutoriales</div>
+              <div class="stat-card__value">23</div>
+              <div class="stat-card__trend stat-card__trend--neutral">3 nuevos</div>
+              <svg class="stat-card__sparkline" viewBox="0 0 100 32" preserveAspectRatio="none">
+                <polyline points="0,20 12,22 24,18 36,16 48,14 60,12 72,10 84,8 100,6" fill="none" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Pending tasks — actionable list -->
+          <div class="section-header">
+            <h2 class="section-title">Tus tareas pendientes</h2>
+            <a class="section-action">Ver todas →</a>
+          </div>
+          <div class="task-list">
+            <div class="task-item">
+              <div class="task-item__priority task-item__priority--high"></div>
+              <div class="task-item__content">
+                <div class="task-item__title">Aprobar permisos de María R. en Gestión de Riesgos</div>
+                <div class="task-item__meta">Solicitada hace 2 días · Calidad</div>
+              </div>
+              <div class="task-item__due task-item__due--urgent">Vence hoy</div>
+              <button class="task-item__action">Revisar</button>
+            </div>
+            <div class="task-item">
+              <div class="task-item__priority task-item__priority--high"></div>
+              <div class="task-item__content">
+                <div class="task-item__title">Revisar y publicar aplicación "HPS-Subida"</div>
+                <div class="task-item__meta">Asignada por Pedro G. · Aplicaciones</div>
+              </div>
+              <div class="task-item__due">Vence mañana</div>
+              <button class="task-item__action">Revisar</button>
+            </div>
+            <div class="task-item">
+              <div class="task-item__priority task-item__priority--med"></div>
+              <div class="task-item__content">
+                <div class="task-item__title">Actualizar contraseña (caduca en 14 días)</div>
+                <div class="task-item__meta">Seguridad · Perfil</div>
+              </div>
+              <div class="task-item__due">14 días</div>
+              <button class="task-item__action">Actualizar</button>
+            </div>
+            <div class="task-item">
+              <div class="task-item__priority task-item__priority--low"></div>
+              <div class="task-item__content">
+                <div class="task-item__title">Subir video tutorial de Lanzadera para usuarios nuevos</div>
+                <div class="task-item__meta">Videos · Formación</div>
+              </div>
+              <div class="task-item__due">Sin fecha</div>
+              <button class="task-item__action">Subir</button>
+            </div>
+          </div>
+
+          <!-- Aplicaciones -->
+          <div class="section-header">
+            <h2 class="section-title">Tus aplicaciones</h2>
+            <a class="section-action" @click.prevent="screen='aplicaciones'">Ver todas →</a>
+          </div>
+          <div class="apps-grid">
+            <article class="app-card" @click="screen='aplicaciones'">
+              <div class="app-card__icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <h3 class="app-card__title">NoConformidades</h3>
+              <p class="app-card__desc">Gestión de no conformidades con workflows NC-Proyecto y NC-Auditoría.</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item">
+                  <span class="app-card__pending">8 pendientes</span>
+                </span>
+                <span class="app-card__meta-item">v2.4.1</span>
+              </div>
+            </article>
+            <article class="app-card" @click="screen='aplicaciones'">
+              <div class="app-card__icon app-card__icon--accent">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              </div>
+              <h3 class="app-card__title">Gestión de Riesgos</h3>
+              <p class="app-card__desc">Riesgos por edición + planes de mitigación y contingencia.</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item">
+                  <span class="app-card__pending">3 pendientes</span>
+                </span>
+                <span class="app-card__meta-item">v3.1.0</span>
+              </div>
+            </article>
+            <article class="app-card" @click="screen='aplicaciones'">
+              <div class="app-card__icon app-card__icon--ink">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <h3 class="app-card__title">Expedientes</h3>
+              <p class="app-card__desc">Gestión de expedientes con catálogos de CPV, RAC, PECAL y entidades.</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item">
+                  <span class="app-card__pending">12 nuevos</span>
+                </span>
+                <span class="app-card__meta-item">v4.0.0</span>
+              </div>
+            </article>
+            <article class="app-card" @click="screen='aplicaciones'">
+              <div class="app-card__icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11"/></svg>
+              </div>
+              <h3 class="app-card__title">HPS</h3>
+              <p class="app-card__desc">Habilitación de Proveedores · seguimiento de solicitudes.</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item">
+                  <span class="app-card__pending">5 pendientes</span>
+                </span>
+                <span class="app-card__meta-item">v2.2.0</span>
+              </div>
+            </article>
+            <article class="app-card" @click="screen='aplicaciones'">
+              <div class="app-card__icon app-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+              </div>
+              <h3 class="app-card__title">Brass</h3>
+              <p class="app-card__desc">Gestión comercial con anexos, categorías y jerarquías.</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item">
+                  <span class="app-card__pending">1 pendiente</span>
+                </span>
+                <span class="app-card__meta-item">v1.8.0</span>
+              </div>
+            </article>
+            <article class="app-card" @click="screen='aplicaciones'">
+              <div class="app-card__icon app-card__icon--accent">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+              </div>
+              <h3 class="app-card__title">HPS-Solicitudes</h3>
+              <p class="app-card__desc">Solicitudes HPS con workflow de aprobación.</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item">
+                  <span class="app-card__pending">0 pendientes</span>
+                </span>
+                <span class="app-card__meta-item">v1.0.0</span>
+              </div>
+            </article>
+            <article class="app-card" @click="screen='aplicaciones'">
+              <div class="app-card__icon app-card__icon--ink">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="13 17 18 12 13 7"/><polyline points="6 17 11 12 6 7"/></svg>
+              </div>
+              <h3 class="app-card__title">Condor</h3>
+              <p class="app-card__desc">Solicitudes internas con catálogo de eventos y partes.</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item">
+                  <span class="app-card__pending">2 nuevas</span>
+                </span>
+                <span class="app-card__meta-item">v3.5.0</span>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ========== APLICACIONES (placeholder) ========== -->
+        <section x-show="screen === 'aplicaciones'" x-cloak>
+          <div class="main__header">
+            <div>
+              <div class="main__greeting">Catálogo</div>
+              <h1 class="main__title">Aplicaciones</h1>
+              <p class="main__subtitle">12 aplicaciones registradas · 3 con revisión pendiente</p>
+            </div>
+            <button class="btn btn--primary">+ Nueva aplicación</button>
+          </div>
+
+          <div class="chip-group">
+            <span class="chip chip--active">Todas <span class="chip__count">12</span></span>
+            <span class="chip">En oficina <span class="chip__count">8</span></span>
+            <span class="chip">Fuera de oficina <span class="chip__count">3</span></span>
+            <span class="chip">Prueba <span class="chip__count">1</span></span>
+            <span class="chip">Deshabilitadas</span>
+          </div>
+
+          <div class="apps-grid">
+            <article class="app-card">
+              <div class="app-card__icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+              </div>
+              <h3 class="app-card__title">NoConformidades</h3>
+              <p class="app-card__desc">Localizada en oficina · 48 forms walkthroughed</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item"><span class="app-card__pending">8 pendientes</span></span>
+                <span class="app-card__meta-item">v2.4.1</span>
+              </div>
+            </article>
+            <article class="app-card">
+              <div class="app-card__icon app-card__icon--accent">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/></svg>
+              </div>
+              <h3 class="app-card__title">Gestión de Riesgos</h3>
+              <p class="app-card__desc">Cross-app con NC y Expedientes · 61 forms</p>
+              <div class="app-card__meta">
+                <span class="app-card__meta-item"><span class="app-card__pending">3 pendientes</span></span>
+                <span class="app-card__meta-item">v3.1.0</span>
+              </div>
+            </article>
+            <!-- More cards placeholder -->
+          </div>
+        </section>
+
+        <!-- ========== PERFIL ========== -->
+        <section x-show="screen === 'perfil'" x-cloak>
+          <div class="main__header">
+            <div>
+              <div class="main__greeting">Tu cuenta</div>
+              <h1 class="main__title">Mi perfil</h1>
+              <p class="main__subtitle">Datos personales y aplicaciones autorizadas</p>
+            </div>
+            <button class="btn btn--secondary">Editar perfil</button>
+          </div>
+          <p style="color: var(--mistica-color-text-secondary); padding: var(--mistica-space-7); text-align: center;">
+            Pendiente de diseñar — form de datos + matriz de permisos por aplicación.
+          </p>
+        </section>
+
+        <!-- ========== VIDEOS (placeholder) ========== -->
+        <section x-show="screen === 'videos'" x-cloak>
+          <div class="main__header">
+            <div>
+              <div class="main__greeting">Catálogo</div>
+              <h1 class="main__title">Videos tutoriales</h1>
+              <p class="main__subtitle">23 videos · 4 categorías</p>
+            </div>
+            <button class="btn btn--primary">+ Subir video</button>
+          </div>
+          <p style="color: var(--mistica-color-text-secondary); padding: var(--mistica-space-7); text-align: center;">
+            Próximo: layout split con TreeView (jerarquía apps → categorías → videos) + preview del video a la derecha. Reemplazo de MSComctlLib.TreeCtrl + ImageListCtrl (D158).
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

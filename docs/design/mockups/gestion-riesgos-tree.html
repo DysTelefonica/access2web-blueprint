@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="auto">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Riesgos · Árbol de riesgos (Mockup)</title>
+  <script defer src="./alpine.min.js"></script>
+  <style>
+    /* Inherit Mistica tokens from parent mockup pattern */
+    :root {
+      --mistica-color-brand: #0066CC;
+      --mistica-color-brand-dark: #004C99;
+      --mistica-color-brand-light: #E5F0FB;
+      --mistica-color-brand-low: #F2F8FE;
+      --mistica-color-accent: #5B5BFF;
+      --mistica-color-success: #008562;
+      --mistica-color-success-low: #E8F6EF;
+      --mistica-color-warning: #F59C00;
+      --mistica-color-warning-low: #FEF6E5;
+      --mistica-color-danger: #D6432C;
+      --mistica-color-danger-low: #FCEAE5;
+      --mistica-color-info: #1976D2;
+      --mistica-color-info-low: #E3F2FD;
+
+      --mistica-color-text-primary: #1A1A1A;
+      --mistica-color-text-secondary: #5C5C5C;
+      --mistica-color-text-tertiary: #8C8C8C;
+      --mistica-color-text-disabled: #B0B0B0;
+      --mistica-color-background: #FAFBFC;
+      --mistica-color-background-container: #FFFFFF;
+      --mistica-color-background-container-low: #F4F6F8;
+      --mistica-color-border: #E8EBED;
+      --mistica-color-border-strong: #D5D9DD;
+      --mistica-color-border-subtle: #F0F2F4;
+      --mistica-color-ink: #0A2540;
+
+      --mistica-space-1: 4px;
+      --mistica-space-2: 8px;
+      --mistica-space-3: 12px;
+      --mistica-space-4: 16px;
+      --mistica-space-5: 24px;
+      --mistica-space-6: 32px;
+      --mistica-space-7: 48px;
+
+      --mistica-radius-input: 8px;
+      --mistica-radius-button: 32px;
+      --mistica-radius-container: 14px;
+      --mistica-radius-chip: 24px;
+
+      --mistica-font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --mistica-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --mistica-font-mono: 'JetBrains Mono', 'Menlo', monospace;
+
+      --mistica-fs-text7: 0.875rem;
+      --mistica-fs-text6: 0.9375rem;
+      --mistica-fs-text5: 1rem;
+      --mistica-fs-text4: 1.125rem;
+      --mistica-fs-text3: 1.25rem;
+      --mistica-fs-text2: 1.5rem;
+      --mistica-fs-title3: 2.5rem;
+
+      --mistica-shadow-1: 0 1px 2px rgba(10, 37, 64, 0.04), 0 1px 3px rgba(10, 37, 64, 0.06);
+      --mistica-shadow-2: 0 2px 4px rgba(10, 37, 64, 0.05), 0 4px 8px rgba(10, 37, 64, 0.08);
+      --mistica-shadow-3: 0 4px 8px rgba(10, 37, 64, 0.06), 0 12px 24px rgba(10, 37, 64, 0.10);
+      --mistica-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --mistica-trans-base: 250ms var(--mistica-ease-out);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --mistica-color-text-primary: #F2F4F7;
+        --mistica-color-text-secondary: #9DA6B2;
+        --mistica-color-text-tertiary: #6E7681;
+        --mistica-color-background: #0B1220;
+        --mistica-color-background-container: #131C2E;
+        --mistica-color-background-container-low: #1A2540;
+        --mistica-color-border: #1F2A44;
+        --mistica-color-border-strong: #2A3656;
+        --mistica-color-brand-light: #1A2744;
+        --mistica-color-ink: #F2F4F7;
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--mistica-font-body);
+      font-size: var(--mistica-fs-text5);
+      color: var(--mistica-color-text-primary);
+      background: var(--mistica-color-background);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+    a { color: var(--mistica-color-brand); text-decoration: none; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    ::selection { background: var(--mistica-color-brand-light); color: var(--mistica-color-brand-dark); }
+
+    /* Top bar — minimal navigation */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      height: 56px;
+      background: var(--mistica-color-background-container);
+      border-bottom: 1px solid var(--mistica-color-border);
+      display: flex; align-items: center;
+      padding: 0 var(--mistica-space-5);
+      gap: var(--mistica-space-4);
+    }
+    .topbar__logo {
+      display: flex; align-items: center; gap: var(--mistica-space-3);
+      font-family: var(--mistica-font-display);
+      font-weight: 700; font-size: var(--mistica-fs-text3);
+      letter-spacing: -0.02em;
+      color: var(--mistica-color-text-primary);
+      text-decoration: none;
+    }
+    .topbar__logo-mark {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--mistica-color-accent), #8B5BFF);
+      border-radius: 9px;
+      display: grid; place-items: center;
+      color: white; font-weight: 800; font-size: 14px;
+    }
+    .topbar__breadcrumb {
+      display: flex; align-items: center; gap: var(--mistica-space-2);
+      color: var(--mistica-color-text-tertiary);
+      font-size: var(--mistica-fs-text7);
+    }
+    .topbar__breadcrumb__sep { color: var(--mistica-color-border-strong); }
+    .topbar__breadcrumb__current { color: var(--mistica-color-text-primary); font-weight: 600; }
+    .topbar__spacer { flex: 1; }
+    .topbar__ed {
+      display: inline-flex; align-items: center; gap: var(--mistica-space-2);
+      padding: var(--mistica-space-2) var(--mistica-space-3);
+      background: var(--mistica-color-background-container-low);
+      border-radius: var(--mistica-radius-chip);
+      font-size: var(--mistica-fs-text8);
+      font-weight: 500;
+    }
+    .topbar__ed strong { color: var(--mistica-color-brand); font-family: var(--mistica-font-mono); }
+
+    /* Stats bar */
+    .stats {
+      display: flex; gap: var(--mistica-space-5);
+      padding: var(--mistica-space-5) var(--mistica-space-7);
+      background: var(--mistica-color-background-container);
+      border-bottom: 1px solid var(--mistica-color-border);
+      overflow-x: auto;
+    }
+    .stats__item {
+      display: flex; flex-direction: column;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .stats__label {
+      font-size: var(--mistica-fs-text7);
+      color: var(--mistica-color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .stats__value {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-text3);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .stats__legend {
+      display: inline-flex; align-items: center; gap: var(--mistica-space-2);
+      font-size: var(--mistica-fs-text8);
+      color: var(--mistica-color-text-tertiary);
+    }
+    .stats__legend-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Main split layout */
+    .main {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      height: calc(100vh - 56px - 73px); /* viewport - topbar - stats */
+    }
+    .tree {
+      background: var(--mistica-color-background-container);
+      border-right: 1px solid var(--mistica-color-border);
+      overflow-y: auto;
+      padding: var(--mistica-space-3) 0;
+    }
+    .tree__header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: var(--mistica-space-2) var(--mistica-space-5) var(--mistica-space-3);
+      border-bottom: 1px solid var(--mistica-color-border-subtle);
+      margin-bottom: var(--mistica-space-2);
+      position: sticky; top: 0;
+      background: var(--mistica-color-background-container);
+      z-index: 1;
+    }
+    .tree__title {
+      font-size: var(--mistica-fs-text7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--mistica-color-text-secondary);
+    }
+    .tree__search {
+      width: 100%;
+      padding: var(--mistica-space-2) var(--mistica-space-3);
+      border: 1px solid var(--mistica-color-border);
+      border-radius: var(--mistica-radius-input);
+      background: var(--mistica-color-background);
+      font-size: var(--mistica-fs-text7);
+    }
+
+    /* Tree nodes */
+    .node {
+      display: flex; align-items: center;
+      gap: var(--mistica-space-2);
+      padding: var(--mistica-space-2) var(--mistica-space-3);
+      cursor: pointer;
+      transition: background var(--mistica-ease-out);
+      position: relative;
+      font-size: var(--mistica-fs-text6);
+    }
+    .node:hover { background: var(--mistica-color-background-container-low); }
+    .node--selected {
+      background: var(--mistica-color-brand-light);
+      color: var(--mistica-color-brand-dark);
+    }
+    .node--selected::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--mistica-color-brand);
+    }
+    .node__caret {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--mistica-color-text-tertiary);
+      transition: transform var(--mistica-trans-base);
+    }
+    .node__caret--open { transform: rotate(90deg); }
+    .node__caret--leaf { visibility: hidden; }
+    .node__icon {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      color: var(--mistica-color-text-secondary);
+    }
+    .node--level-edicion .node__icon { color: var(--mistica-color-ink); }
+    .node--level-riesgo .node__icon { color: var(--mistica-color-danger); }
+    .node--level-plan-mitigacion .node__icon { color: var(--mistica-color-success); }
+    .node--level-plan-contingencia .node__icon { color: var(--mistica-color-warning); }
+    .node--level-accion .node__icon { color: var(--mistica-color-info); }
+    .node__label {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .node__badge {
+      font-size: 0.6875rem;
+      padding: 1px 6px;
+      border-radius: 8px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .node__badge--estado {
+      background: var(--mistica-color-warning-low);
+      color: var(--mistica-color-warning);
+    }
+    .node__badge--estado-Aceptado { background: var(--mistica-color-success-low); color: var(--mistica-color-success); }
+    .node__badge--estado-Retirado { background: var(--mistica-color-danger-low); color: var(--mistica-color-danger); }
+    .node__badge--estado-Materializado { background: var(--mistica-color-info-low); color: var(--mistica-color-info); }
+    .node__badge--tipo {
+      background: var(--mistica-color-background-container-low);
+      color: var(--mistica-color-text-secondary);
+    }
+    .node__meta {
+      font-size: var(--mistica-fs-text8);
+      color: var(--mistica-color-text-tertiary);
+      font-family: var(--mistica-font-mono);
+    }
+
+    /* Detail panel */
+    .detail {
+      overflow-y: auto;
+      padding: var(--mistica-space-7);
+    }
+    .detail__header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: var(--mistica-space-6);
+      gap: var(--mistica-space-4);
+    }
+    .detail__type {
+      font-size: var(--mistica-fs-text7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      color: var(--mistica-color-brand);
+      margin-bottom: var(--mistica-space-2);
+    }
+    .detail__title {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-title3);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .detail__desc {
+      color: var(--mistica-color-text-secondary);
+      font-size: var(--mistica-fs-text5);
+      margin-top: var(--mistica-space-3);
+      max-width: 720px;
+    }
+    .detail__status {
+      display: inline-flex; align-items: center; gap: var(--mistica-space-2);
+      padding: var(--mistica-space-2) var(--mistica-space-3);
+      border-radius: var(--mistica-radius-chip);
+      background: var(--mistica-color-warning-low);
+      color: var(--mistica-color-warning);
+      font-size: var(--mistica-fs-text7);
+      font-weight: 600;
+    }
+    .detail__status--Aceptado { background: var(--mistica-color-success-low); color: var(--mistica-color-success); }
+    .detail__status--Retirado { background: var(--mistica-color-danger-low); color: var(--mistica-color-danger); }
+    .detail__status--Materializado { background: var(--mistica-color-info-low); color: var(--mistica-color-info); }
+    .detail__status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Detail cards */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--mistica-space-4);
+      margin-bottom: var(--mistica-space-6);
+    }
+    .detail-card {
+      background: var(--mistica-color-background-container);
+      border: 1px solid var(--mistica-color-border);
+      border-radius: var(--mistica-radius-container);
+      padding: var(--mistica-space-5);
+    }
+    .detail-card__title {
+      font-size: var(--mistica-fs-text7);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      color: var(--mistica-color-text-secondary);
+      margin-bottom: var(--mistica-space-4);
+    }
+    .detail-card__row {
+      display: flex; justify-content: space-between;
+      padding: var(--mistica-space-2) 0;
+      font-size: var(--mistica-fs-text7);
+      border-bottom: 1px solid var(--mistica-color-border-subtle);
+    }
+    .detail-card__row:last-child { border-bottom: none; }
+    .detail-card__label { color: var(--mistica-color-text-secondary); }
+    .detail-card__value { font-weight: 500; color: var(--mistica-color-text-primary); }
+
+    /* Triangle */
+    .triangle {
+      display: flex; gap: var(--mistica-space-2);
+      height: 96px;
+    }
+    .triangle__axis {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: var(--mistica-space-2);
+    }
+    .triangle__bar {
+      width: 100%;
+      background: var(--mistica-color-brand);
+      border-radius: var(--mistica-radius-input) var(--mistica-radius-input) 0 0;
+      transition: height var(--mistica-trans-base);
+    }
+    .triangle__bar--plazo { background: var(--mistica-color-warning); }
+    .triangle__bar--coste { background: var(--mistica-color-info); }
+    .triangle__bar--calidad { background: var(--mistica-color-success); }
+    .triangle__label {
+      font-size: var(--mistica-fs-text8);
+      color: var(--mistica-color-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 600;
+    }
+    .triangle__value {
+      font-family: var(--mistica-font-display);
+      font-size: var(--mistica-fs-text4);
+      font-weight: 700;
+    }
+
+    /* Actions bar */
+    .actions {
+      display: flex; gap: var(--mistica-space-2);
+      flex-wrap: wrap;
+      padding: var(--mistica-space-4) 0;
+      border-top: 1px solid var(--mistica-color-border);
+      margin-top: var(--mistica-space-6);
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: var(--mistica-space-2);
+      padding: var(--mistica-space-2) var(--mistica-space-4);
+      border-radius: var(--mistica-radius-button);
+      font-weight: 600;
+      font-size: var(--mistica-fs-text7);
+      transition: all var(--mistica-trans-base);
+    }
+    .btn--primary { background: var(--mistica-color-brand); color: white; }
+    .btn--primary:hover { background: var(--mistica-color-brand-dark); transform: translateY(-1px); }
+    .btn--secondary { background: transparent; color: var(--mistica-color-brand); border: 1px solid var(--mistica-color-border-strong); }
+    .btn--secondary:hover { background: var(--mistica-color-brand-light); border-color: var(--mistica-color-brand); }
+    .btn--danger { background: transparent; color: var(--mistica-color-danger); border: 1px solid var(--mistica-color-danger-low); }
+    .btn--danger:hover { background: var(--mistica-color-danger-low); }
+    .btn--ghost { color: var(--mistica-color-text-secondary); }
+    .btn--ghost:hover { background: var(--mistica-color-background-container-low); color: var(--mistica-color-text-primary); }
+
+    /* Sub-accion list (when detail is a plan) */
+    .accions {
+      display: flex; flex-direction: column;
+      gap: var(--mistica-space-2);
+      margin-top: var(--mistica-space-4);
+    }
+    .accion {
+      display: flex; align-items: center; gap: var(--mistica-space-3);
+      padding: var(--mistica-space-3) var(--mistica-space-4);
+      background: var(--mistica-color-background-container);
+      border: 1px solid var(--mistica-color-border);
+      border-radius: var(--mistica-radius-input);
+      transition: all var(--mistica-trans-base);
+      cursor: pointer;
+    }
+    .accion:hover { border-color: var(--mistica-color-brand); }
+    .accion__checkbox {
+      width: 18px; height: 18px;
+      border: 2px solid var(--mistica-color-border-strong);
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .accion__checkbox--done {
+      background: var(--mistica-color-success);
+      border-color: var(--mistica-color-success);
+      display: grid; place-items: center;
+      color: white;
+    }
+    .accion__content { flex: 1; min-width: 0; }
+    .accion__title {
+      font-weight: 500;
+      font-size: var(--mistica-fs-text6);
+      color: var(--mistica-color-text-primary);
+    }
+    .accion__title--done {
+      text-decoration: line-through;
+      color: var(--mistica-color-text-tertiary);
+    }
+    .accion__meta {
+      font-size: var(--mistica-fs-text7);
+      color: var(--mistica-color-text-secondary);
+      margin-top: 2px;
+    }
+    .accion__due {
+      font-size: var(--mistica-fs-text7);
+      color: var(--mistica-color-text-secondary);
+      flex-shrink: 0;
+    }
+    .accion__due--overdue { color: var(--mistica-color-danger); font-weight: 600; }
+
+    /* Cross-app link */
+    .crosslink {
+      display: flex; align-items: center; gap: var(--mistica-space-3);
+      padding: var(--mistica-space-3) var(--mistica-space-4);
+      background: var(--mistica-color-brand-low);
+      border: 1px solid var(--mistica-color-brand-light);
+      border-radius: var(--mistica-radius-input);
+      margin-top: var(--mistica-space-4);
+    }
+    .crosslink__icon {
+      width: 36px; height: 36px;
+      border-radius: var(--mistica-radius-input);
+      background: var(--mistica-color-brand);
+      color: white;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .crosslink__text { flex: 1; }
+    .crosslink__title {
+      font-size: var(--mistica-fs-text7);
+      font-weight: 600;
+      color: var(--mistica-color-brand-dark);
+    }
+    .crosslink__desc {
+      font-size: var(--mistica-fs-text8);
+      color: var(--mistica-color-text-secondary);
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: fixed;
+      top: 16px; right: 16px;
+      z-index: 200;
+      background: var(--mistica-color-background-container);
+      border: 1px solid var(--mistica-color-border);
+      border-radius: var(--mistica-radius-button);
+      padding: var(--mistica-space-1) var(--mistica-space-3);
+      font-size: var(--mistica-fs-text7);
+      cursor: pointer;
+      box-shadow: var(--mistica-shadow-1);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .main { grid-template-columns: 280px 1fr; }
+    }
+    @media (max-width: 768px) {
+      .main { grid-template-columns: 1fr; height: auto; }
+      .tree { max-height: 320px; }
+      .stats { padding: var(--mistica-space-3); gap: var(--mistica-space-3); }
+      .detail { padding: var(--mistica-space-4); }
+    }
+  </style>
+</head>
+<body x-data="{
+  screen: 'tree',
+  selected: 'r1-plan-mitigacion',
+  open: {
+    'edicion': true,
+    'r1': true,
+    'r1-plan-mitigacion': true,
+    'r1-plan-mitigacion-a1': false,
+    'r1-plan-mitigacion-a2': false,
+    'r1-plan-contingencia': true,
+    'r2': true,
+    'r3': true,
+    'r4': true,
+    'r5': false,
+    'r6': false,
+    'r7': false,
+    'r8': false,
+    'r9': false,
+    'r10': false,
+    'r11': false,
+    'r12': false,
+  },
+  toggle(key) { this.open[key] = !this.open[key] },
+  select(key) { this.selected = key },
+}">
+  <button class="theme-toggle" @click="document.documentElement.style.filter = document.documentElement.style.filter === 'invert(1)' ? '' : 'invert(1)'">🌓</button>
+
+  <!-- TOP BAR -->
+  <nav class="topbar">
+    <a href="#" class="topbar__logo">
+      <div class="topbar__logo-mark">R</div>
+      <span>Gestión de Riesgos</span>
+    </a>
+    <div class="topbar__breadcrumb">
+      <span>Lanzaderas</span>
+      <span class="topbar__breadcrumb__sep">/</span>
+      <span>Gestión de Riesgos</span>
+      <span class="topbar__breadcrumb__sep">/</span>
+      <span class="topbar__breadcrumb__current">EPS-2024-001</span>
+    </div>
+    <div class="topbar__spacer"></div>
+    <div class="topbar__ed">
+      Edición: <strong>EPS-2024-001</strong> · Servicio Móvil 5G Andalucía
+    </div>
+  </nav>
+
+  <!-- STATS BAR -->
+  <div class="stats">
+    <div class="stats__item">
+      <span class="stats__label">Riesgos identificados</span>
+      <span class="stats__value">12</span>
+    </div>
+    <div class="stats__item">
+      <span class="stats__label">Planes totales</span>
+      <span class="stats__value">18</span>
+    </div>
+    <div class="stats__item">
+      <span class="stats__label">Acciones abiertas</span>
+      <span class="stats__value">47</span>
+    </div>
+    <div class="stats__item" style="margin-left: auto;">
+      <span class="stats__legend"><span class="stats__legend-dot" style="background: var(--mistica-color-warning);"></span>Activo</span>
+      <span class="stats__legend"><span class="stats__legend-dot" style="background: var(--mistica-color-success);"></span>Aceptado</span>
+      <span class="stats__legend"><span class="stats__legend-dot" style="background: var(--mistica-color-danger);"></span>Retirado</span>
+      <span class="stats__legend"><span class="stats__legend-dot" style="background: var(--mistica-color-info);"></span>Materializado</span>
+    </div>
+  </div>
+
+  <!-- MAIN SPLIT -->
+  <div class="main">
+    <!-- TREE -->
+    <aside class="tree">
+      <div class="tree__header">
+        <span class="tree__title">Jerarquía</span>
+      </div>
+      <input class="tree__search" style="margin: 0 var(--mistica-space-5) var(--mistica-space-3); width: calc(100% - var(--mistica-space-7));" placeholder="Filtrar…" />
+
+      <!-- EDICIÓN -->
+      <div class="node node--level-edicion" @click="select('edicion')">
+        <span class="node__caret" :class="open.edicion && 'node__caret--open'" @click.stop="toggle('edicion')">▸</span>
+        <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="node__label"><strong>EPS-2024-001</strong> · 12 riesgos</span>
+      </div>
+
+      <!-- RIESGOS -->
+      <div x-show="open.edicion" style="padding-left: var(--mistica-space-4);">
+
+        <!-- R1 - Activo -->
+        <div class="node node--level-riesgo" :class="selected === 'r1' && 'node--selected'" @click="select('r1')">
+          <span class="node__caret" :class="open.r1 && 'node__caret--open'" @click.stop="toggle('r1')">▸</span>
+          <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+          <span class="node__label">R1 · Retraso en hito de despliegue</span>
+          <span class="node__badge node__badge--estado">Activo</span>
+        </div>
+
+        <div x-show="open.r1" style="padding-left: var(--mistica-space-5);">
+          <!-- Plan Mitigación -->
+          <div class="node node--level-plan-mitigacion" :class="selected === 'r1-plan-mitigacion' && 'node--selected'" @click="select('r1-plan-mitigacion')">
+            <span class="node__caret" :class="open['r1-plan-mitigacion'] && 'node__caret--open'" @click.stop="toggle('r1-plan-mitigacion')">▸</span>
+            <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span class="node__label">Plan Mitigación</span>
+            <span class="node__badge node__badge--tipo">P</span>
+          </div>
+          <div x-show="open['r1-plan-mitigacion']" style="padding-left: var(--mistica-space-5);">
+            <div class="node node--level-accion" style="opacity: 0.7;">
+              <span class="node__caret node__caret--leaf">▸</span>
+              <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/></svg>
+              <span class="node__label">A1 · Aumentar cadencia de revisión</span>
+              <span class="node__badge node__badge--tipo">✓</span>
+            </div>
+            <div class="node node--level-accion">
+              <span class="node__caret node__caret--leaf">▸</span>
+              <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              <span class="node__label">A2 · Asignar responsable QA</span>
+              <span class="node__badge node__badge--tipo">A</span>
+            </div>
+          </div>
+
+          <!-- Plan Contingencia -->
+          <div class="node node--level-plan-contingencia" :class="selected === 'r1-plan-contingencia' && 'node--selected'" @click="select('r1-plan-contingencia')">
+            <span class="node__caret" :class="open['r1-plan-contingencia'] && 'node__caret--open'" @click.stop="toggle('r1-plan-contingencia')">▸</span>
+            <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span class="node__label">Plan Contingencia</span>
+            <span class="node__badge node__badge--tipo">C</span>
+          </div>
+          <div x-show="open['r1-plan-contingencia']" style="padding-left: var(--mistica-space-5);">
+            <div class="node node--level-accion">
+              <span class="node__caret node__caret--leaf">▸</span>
+              <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/></svg>
+              <span class="node__label">A1 · Buffer de tiempo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- R2 - Aceptado -->
+        <div class="node node--level-riesgo" :class="selected === 'r2' && 'node--selected'" @click="select('r2')">
+          <span class="node__caret" :class="open.r2 && 'node__caret--open'" @click.stop="toggle('r2')">▸</span>
+          <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          <span class="node__label">R2 · Sobrecosto proveedores chip</span>
+          <span class="node__badge node__badge--estado node__badge--estado-Aceptado">Aceptado</span>
+        </div>
+
+        <!-- R3 - Retirado -->
+        <div class="node node--level-riesgo" :class="selected === 'r3' && 'node--selected'" @click="select('r3')">
+          <span class="node__caret" :class="open.r3 && 'node__caret--open'" @click.stop="toggle('r3')">▸</span>
+          <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          <span class="node__label">R3 · Cambio regulación europea</span>
+          <span class="node__badge node__badge--estado node__badge--estado-Retirado">Retirado</span>
+        </div>
+
+        <!-- R4 - Materializado -->
+        <div class="node node--level-riesgo" :class="selected === 'r4' && 'node--selected'" @click="select('r4')">
+          <span class="node__caret" :class="open.r4 && 'node__caret--open'" @click.stop="toggle('r4')">▸</span>
+          <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          <span class="node__label">R4 · Fallo integración API tercers</span>
+          <span class="node__badge node__badge--estado node__badge--estado-Materializado">Materializado</span>
+        </div>
+
+        <!-- More riesgos (collapsed) -->
+        <div class="node node--level-riesgo" style="opacity: 0.7;">
+          <span class="node__caret node__caret--leaf">▸</span>
+          <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          <span class="node__label">R5 · Incumplimiento SLA proveedor antena</span>
+          <span class="node__badge node__badge--estado">Activo</span>
+        </div>
+        <div class="node node--level-riesgo" style="opacity: 0.7;">
+          <span class="node__caret node__caret--leaf">▸</span>
+          <svg class="node__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          <span class="node__label">… y 7 más riesgos</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- DETAIL -->
+    <main class="detail" x-data="{
+      selected: 'r1-plan-mitigacion',
+    }">
+      <!-- Detail: Plan Mitigación -->
+      <div x-show="selected === 'r1-plan-mitigacion'">
+        <div class="detail__header">
+          <div>
+            <div class="detail__type">Plan de Mitigación</div>
+            <h1 class="detail__title">Plan mitigación · R1 — Retraso en hito de despliegue</h1>
+            <p class="detail__desc">Plan principal para reducir la probabilidad e impacto del riesgo de retraso del hito de despliegue del servicio móvil 5G.</p>
+          </div>
+          <div class="detail__status detail__status--Aceptado">
+            <span class="detail__status-dot"></span>
+            Aceptado · Visado por Calidad
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-card__title">Información del plan</div>
+            <div class="detail-card__row">
+              <span class="detail-card__label">Responsable</span>
+              <span class="detail-card__value">Ana M. · Calidad</span>
+            </div>
+            <div class="detail-card__row">
+              <span class="detail-card__label">Fecha creación</span>
+              <span class="detail-card__value">15 / 03 / 2026</span>
+            </div>
+            <div class="detail-card__row">
+              <span class="detail-card__label">Fecha límite</span>
+              <span class="detail-card__value">15 / 09 / 2026</span>
+            </div>
+            <div class="detail-card__row">
+              <span class="detail-card__label">Mitigación</span>
+              <span class="detail-card__value">Reducir</span>
+            </div>
+            <div class="detail-card__row">
+              <span class="detail-card__label">Vulnerabilidad</span>
+              <span class="detail-card__value">Media (3/5)</span>
+            </div>
+          </div>
+
+          <div class="detail-card">
+            <div class="detail-card__title">Triángulo de impacto</div>
+            <div class="triangle">
+              <div class="triangle__axis">
+                <div class="triangle__value">4</div>
+                <div class="triangle__bar triangle__bar--plazo" style="height: 80%;"></div>
+                <div class="triangle__label">Plazo</div>
+              </div>
+              <div class="triangle__axis">
+                <div class="triangle__value">3</div>
+                <div class="triangle__bar triangle__bar--coste" style="height: 60%;"></div>
+                <div class="triangle__label">Coste</div>
+              </div>
+              <div class="triangle__axis">
+                <div class="triangle__value">5</div>
+                <div class="triangle__bar triangle__bar--calidad" style="height: 100%;"></div>
+                <div class="triangle__label">Calidad</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-card" style="grid-column: 1 / -1;">
+            <div class="detail-card__title">Acciones del plan</div>
+            <div class="accions">
+              <div class="accion">
+                <div class="accion__checkbox accion__checkbox--done">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="accion__content">
+                  <div class="accion__title accion__title--done">A1 · Aumentar cadencia de revisión de despliegue a semanal</div>
+                  <div class="accion__meta">Responsable: Pedro G. · Cerrada 02 / 05 / 2026</div>
+                </div>
+                <span class="accion__due">Cerrada</span>
+              </div>
+              <div class="accion">
+                <div class="accion__checkbox"></div>
+                <div class="accion__content">
+                  <div class="accion__title">A2 · Asignar responsable de QA dedicado al hito</div>
+                  <div class="accion__meta">Responsable: Ana M. · En curso</div>
+                </div>
+                <span class="accion__due">Vence 15 / 06</span>
+              </div>
+              <div class="accion">
+                <div class="accion__checkbox"></div>
+                <div class="accion__content">
+                  <div class="accion__title">A3 · Contratar auditor externo para validación pre-go-live</div>
+                  <div class="accion__meta">Responsable: Carlos R. · Pendiente</div>
+                </div>
+                <span class="accion__due accion__due--overdue">Vencida 28 / 05</span>
+              </div>
+              <div class="accion">
+                <div class="accion__checkbox"></div>
+                <div class="accion__content">
+                  <div class="accion__title">A4 · Reunión semanal con stakeholders para tracking del plan</div>
+                  <div class="accion__meta">Responsable: Ana M. · Recurrente</div>
+                </div>
+                <span class="accion__due">Semanal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cross-app link -->
+        <div class="crosslink">
+          <div class="crosslink__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+          </div>
+          <div class="crosslink__text">
+            <div class="crosslink__title">Vinculado a NC-2024-0142 (NoConformidades)</div>
+            <div class="crosslink__desc">Este riesgo se materializó en una NC de proyecto. Click para abrir en NoConformidades.</div>
+          </div>
+          <button class="btn btn--secondary">Abrir en NoConformidades →</button>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button class="btn btn--primary">✓ Aceptar plan</button>
+          <button class="btn btn--secondary">Solicitar modificación</button>
+          <button class="btn btn--ghost">Materializar</button>
+          <button class="btn btn--danger">Retirar</button>
+          <button class="btn btn--ghost">Ver auditoría</button>
+        </div>
+      </div>
+
+      <!-- Detail: Edición -->
+      <div x-show="selected === 'edicion'">
+        <div class="detail__header">
+          <div>
+            <div class="detail__type">Edición</div>
+            <h1 class="detail__title">EPS-2024-001 · Servicio Móvil 5G Andalucía</h1>
+            <p class="detail__desc">Edición del proyecto con 12 riesgos identificados, 18 planes y 47 acciones en seguimiento. Cliente: Junta de Andalucía. Plazo: 12 meses.</p>
+          </div>
+          <div class="detail__status">
+            <span class="detail__status-dot"></span>
+            En curso
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-card__title">Información general</div>
+            <div class="detail-card__row"><span class="detail-card__label">Edición</span><span class="detail-card__value">EPS-2024-001</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Proyecto</span><span class="detail-card__value">Servicio Móvil 5G</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Cliente</span><span class="detail-card__value">Junta de Andalucía</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Jurídica</span><span class="detail-card__value">TdE</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Inicio</span><span class="detail-card__value">01 / 03 / 2026</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Cierre</span><span class="detail-card__value">28 / 02 / 2027</span></div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn--primary">+ Añadir riesgo</button>
+          <button class="btn btn--secondary">Importar riesgos de oferta</button>
+          <button class="btn btn--ghost">Ver histórico</button>
+        </div>
+      </div>
+
+      <!-- Detail: R1 (resumen) -->
+      <div x-show="selected === 'r1' || selected === 'r1-plan-contingencia'">
+        <div class="detail__header">
+          <div>
+            <div class="detail__type">Riesgo</div>
+            <h1 class="detail__title">R1 · Retraso en hito de despliegue</h1>
+            <p class="detail__desc">Probabilidad: Alta. Impacto: Plazo +4 semanas. Origen: identificado durante la fase de planificación. Categoría: cronograma.</p>
+          </div>
+          <div class="detail__status">
+            <span class="detail__status-dot"></span>
+            Activo
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <div class="detail-card__title">Evaluación</div>
+            <div class="detail-card__row"><span class="detail-card__label">Probabilidad</span><span class="detail-card__value">Alta</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Impacto</span><span class="detail-card__value">Plazo +4 sem</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Vulnerabilidad</span><span class="detail-card__value">Media (3/5)</span></div>
+            <div class="detail-card__row"><span class="detail-card__label">Mitigación</span><span class="detail-card__value">Reducir</span></div>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn btn--primary">Editar riesgo</button>
+          <button class="btn btn--secondary">+ Plan mitigación</button>
+          <button class="btn btn--ghost">Ver grafo de riesgos</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
