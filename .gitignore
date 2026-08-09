@@ -10,6 +10,13 @@ Thumbs.db
 # Local AI/tool state (transient; runtime regenerates)
 .atl/
 .dysflow/runtime/
+.playwright-mcp/
+.scratch/
+
+# Walkthrough runtime progress (transient; canonical walkthrough-G*.json live in docs/03-aplicaciones/<app>/)
+data/staging/**/.walkthrough-*/
+data/staging/**/.walkthrough-*.json
+data/staging/**/walkthrough-*.json
 
 # Local-only raw evidence (sensitive - never version)
 inputs/automatizaciones-legacy/raw/
