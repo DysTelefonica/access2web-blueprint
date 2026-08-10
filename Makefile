@@ -42,12 +42,12 @@ format: ## Run ruff format --check (no write).
 	cd $(APP_DIR) && $(RUFF) format --check .
 
 .PHONY: typecheck
-typecheck: ## Run mypy (QC-4) over app/src/.
-	cd $(APP_DIR) && $(MYPY) src/
+typecheck: ## Run mypy (QC-4) over app/.
+	cd $(APP_DIR) && $(MYPY) app/
 
 .PHONY: test
-test: ## Run pytest with the coverage gate plugin (QC-5).
-	cd $(APP_DIR) && $(PYTEST)
+test: ## Run pytest with coverage.json (input to CRAP gate).
+	cd $(APP_DIR) && $(PYTEST) --cov --cov-report=json:coverage.json --cov-report=term
 
 .PHONY: test-no-cov
 test-no-cov: ## Run pytest without coverage (for fast local iteration).
@@ -114,6 +114,15 @@ migrate-fixtures: ## Phase 2 — Dysflow extract to JSON fixtures. Wired in PR 3
 
 .PHONY: all
 all: lint typecheck test check-layers check-complexity check-crap check-dry check-branch-name quality-report ## Run every gate Phase 0 owns.
+
+# Hard Rule 19: `make verify` is the one command that equals green. The CI parity test
+# (`tests/test_ci_workflow.py::test_make_verify_runs_every_local_gate`) walks this target's
+# dependency graph and asserts the recipes contain every gate from `REQUIRED_COMMANDS`
+# except the ones listed in `VERIFY_EXCLUSIONS` (which need merge-base, weekly cadence,
+# network, or a Docker daemon — out of scope for a developer workstation).
+.PHONY: verify
+verify: all ## Single entrypoint: equal to green CI for every gate a workstation can run.
+	@echo "verify: PASS"
 
 .PHONY: clean
 clean: ## Remove generated artefacts (coverage, quality report, caches).
