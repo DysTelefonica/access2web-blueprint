@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/check_branch_name.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_branch_name.py
 """Branch-name gate.
 
 A branch whose name does not carry its type and its issue number is unreadable two years later,
@@ -23,16 +23,10 @@ import sys
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
 
-# Standard rule: <type>/<issue-number>-<kebab-slug>.
 PATTERN = re.compile(r"^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$")
 
 #: Long-lived branches that predate or transcend the convention.
-#:
-#: ``feat/lanzadera-mvp-tracker`` is the feature-branch-chain tracker for the
-#: Lanzadera MVP stack (PR 1..PR 8). It does not carry an issue number because
-#: it aggregates multiple PRs; allowlist it explicitly per the chain strategy
-#: decided 2026-08-09.
-ALLOWLIST = frozenset({"main", "feat/lanzadera-mvp-tracker"})
+ALLOWLIST = frozenset({"main"})
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
