@@ -1,6 +1,6 @@
 {
   "files": {
-    "app/lanzadera/application/service.py": {
+    "app/src/modules/lanzadera/application/service.py": {
       "executed_lines": [
         2,
         5,
