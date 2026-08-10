@@ -15,7 +15,7 @@ Registro vivo de las decisiones tomadas durante el descubrimiento y de las pregu
 
 ## Decisiones de producto y arquitectura (consolidadas)
 
-Las decisiones **D5–D35** están consolidadas en `09-arquitectura-objetivo-y-principios.md` con su detalle, `topic_key` de Engram y separación entre `APROBADO`, `PROVISIONAL`, `FUTURO` y `ABIERTO`. La tabla resumen se mantiene aquí como índice operativo. Las decisiones **D36–D65** son las adoptadas tras el commit baseline `d521d7b` durante la pasada de Lanzadera (Lote 1) y siguientes; cada una enlaza con su `topic_key`. Las decisiones **D66–D82** cierran el estudio del prompt externo de arquitectura del 2026-08-05 (stack, polling, caché selectiva, despliegue, versionado y releases) tras revisión decisión por decisión con el usuario.
+Las decisiones **D5–D35** están consolidadas en `09-arquitectura-objetivo-y-principios.md` con su detalle, `topic_key` de Engram y separación entre `APROBADO`, `PROVISIONAL`, `FUTURO` y `ABIERTO`. La tabla resumen se mantiene aquí como índice operativo. Las decisiones **D36–D65** son las adoptadas tras el commit baseline `d521d7b` durante la pasada de Lanzadera (Lote 1) y siguientes; cada una enlaza con su `topic_key`. Las decisiones **D66–D82** cierran el estudio del prompt externo de arquitectura del 2026-08-05 (stack, polling, caché selectiva, despliegue, versionado y releases) tras revisión decisión por decisión con el usuario. Las decisiones **D83–D87** cierran el estudio `p1-p2-p5-resolved-aug2026`. Las decisiones **D88–D91** son las adoptadas en sesión 2026-08-08 al decidir descartar hashes heredados (D36+D37 obsoletos) y usar Argon2id con reset flow explícito.
 
 | # | Tema | Estado | Origen detallado |
 |---|---|---|---|
@@ -50,8 +50,12 @@ Las decisiones **D5–D35** están consolidadas en `09-arquitectura-objetivo-y-p
 | D33 | Destinatarios de anomalías configurables por aplicación | APROBADO | `architecture/application-operations-settings` |
 | D34 | Solo administrador global configura health-checks | APROBADO | `architecture/health-check-configuration-authorization` |
 | D35 | Resultado del estudio = roadmap global + roadmap y plan por herramienta | APROBADO | `product/modernization-principles` |
-| D36 | Preservar hashes heredados de Lanzadera en migración | APROBADO | `product/credential-migration` |
-| D37 | Rehash transparente al primer login exitoso | APROBADO | `architecture/opportunistic-password-rehash` |
+| D36 | Preservar hashes heredados de Lanzadera en migración | OBSOLETO 2026-08-08 | `product/credential-migration` |
+| D37 | Rehash transparente al primer login exitoso | OBSOLETO 2026-08-08 | `architecture/opportunistic-password-rehash` |
+| D88 | Auth usa Argon2id vía `argon2-cffi==25.1.0` con perfil `RFC_9106_LOW_MEMORY` (Argon2id, 64 MiB, 3 iteraciones, 4 hilos) | APROBADO | `product/lanzadera-auth-modern-crypto` |
+| D89 | Migración descarta hashes heredados; todo usuario migrado empieza con `password_hash=NULL` + `status='password_reset_required'`. Sin columna `legacy_hash` | APROBADO | `product/lanzadera-no-legacy-hash` |
+| D90 | Reset flow con tokens one-time de 24 h vía adapter de notificación con cola por tabla. `issue_reset_token` y `consume_reset_token` atómicos y single-use | APROBADO | `product/lanzadera-reset-flow` |
+| D91 | Primer global admin se aprovisiona con CLI `gentle-ai platform user set-password <email>` (D25) antes de que el sistema pueda emitir tokens por email | APROBADO | `product/lanzadera-bootstrap-cli` |
 | D38 | Umbral de lockout configurable, default cinco intentos | APROBADO | `architecture/login-lockout-policy` |
 | D39 | Bloqueo durante una hora por defecto; desbloqueo por admin global | APROBADO | `architecture/login-lockout-recovery` |
 | D40 | Notificación a administradores globales en cada lockout | APROBADO | `architecture/lockout-notification` |
@@ -150,7 +154,7 @@ Estas preguntas reflejan los puntos que `09-arquitectura-objetivo-y-principios.m
 | P9 | ¿Cómo se descompone la plataforma (monolito modular vs microservicios vs mixto)? | Diseño y boundaries | Depende de capacidades y equipos. |
 | P10 | ¿Cuáles son los periodos definitivos de retención por cumplimiento normativo o política de IT corporativa? | Política de auditoría | Sustituye al baseline provisional 90 días hot + 1 año total. Aplica también a artefactos de informe y evidencia de entrega. |
 | P11 | ¿Qué integraciones corporativas se confirman (correo, identidad, monitorización)? | Adaptadores driven | SiteMinder/OCP/JWT, proveedor de email corporativo, etc. |
-| P12 | ¿Los hashes de contraseña heredados se migran tal cual o se exige reset? | Adaptador de autenticación | **Resuelto por D36+D37**: preservar hashes + rehash transparente al primer login. Los campos con credenciales en claro no migran. |
+| P12 | ¿Los hashes de contraseña heredados se migran tal cual o se exige reset? | Adaptador de autenticación | **Resuelto por D88-D91 2026-08-08**: Argon2id vía `argon2-cffi==25.1.0`; D36+D37 marcados OBSOLETO. Reset forzado one-shot para los 156 usuarios; sin columna `legacy_hash`. SHA256 sin salt del legacy no cumple OWASP 2024. |
 | P13 | ¿Qué funciones exactas tendrá el "responsable de aplicación" más allá de la administración delegada? | Modelo de roles | Pendiente de descubrimiento por módulo. |
 | P14 | ¿Cuál es el catálogo definitivo de health-checks (métricas, umbrales, severidades)? | Operación | Se construye tras Lotes 1–9. |
 | P15 | ¿Cuál es la estrategia de migración de datos desde `.accdb` a PostgreSQL? | Migración de datos | No se aborda en esta fase de discovery. |
@@ -159,6 +163,21 @@ Estas preguntas reflejan los puntos que `09-arquitectura-objetivo-y-principios.m
 | P18 | ¿Cuál es la UX exacta del dashboard de operaciones de notificación (filtros, contenido sensible, umbrales, acciones operativas)? | Operación de notificaciones | Diseño posterior; la dirección está APROBADA (D64). |
 | P19 | ¿Cuál es el catálogo final de variantes de UI por módulo? | Diseño de módulos | Decidir durante cada discovery; Expedientes ya anticipa vistas especializadas. |
 | P20 | ¿Cuál es el contrato final del proveedor de email corporativo (host, remitente, entregabilidad)? | Adaptador de notificación | No se prefija; la cola por tabla es el adapter v1. |
+
+## Gaps abiertos en el SDD chain de Lanzadera MVP (2026-08-08)
+
+Detectados durante `sdd-spec` y registrados en design.md §Decisiones pendientes. Todos son **no bloqueantes** para `sdd-tasks`; cada uno se cierra dentro de una tarea acotada.
+
+| # | Gap | Origen | Estado | Cierre propuesto |
+|---|---|---|---|---|
+| G-1 | Política exacta de normalización del email (lowercase completo vs `local-part`+`domain`, IDN) | `users/spec.md` | **Cerrado** | DA-3 en `design.md`: lowercase completo en `users.email`. |
+| G-2 | Set canónico de capabilities por app para los 20 IDs en alcance | `profiles/spec.md` | ABIERTO | `sdd-tasks`: `platform/src/modules/lanzadera/domain/legacy_role_map.py` con `capabilities` mínimos por código. `profiles.capabilities` se siembra en 0003 con JSONB provisional. |
+| G-3 | Tabla de campos legacy que NO migran (`Pass`, `Comando`, `URLDIrectorioIconoAplicacion`) | `apps/spec.md` | **Cerrado** | DA-7 en `design.md`: 0002 deja esos campos fuera del schema. |
+| G-4 | Severidad y notificación para intentos fallidos de crear admin global (SOC) | `auth-bootstrap/spec.md` | ABIERTO | Suficiente con WARN en log canónico de auditoría; severidad alta se reabre si la política cambia. |
+| G-5 | Canal exacto de notificación al usuario cuando se emite un token (P20) | `auth-reset/spec.md` | ABIERTO | Adapter v1 cubre MVP; SMTP corporativo real cuando se cierre P20. |
+| G-6 | Política de expiración periódica de contraseña (D41) | `auth-core/spec.md` | ABIERTO | MVP implementa `status='password_reset_required'` sin caducidad periódica; el reset flow cubre la recuperación. |
+| G-7 | Peso semántico de `SinAcceso` en la navegación del menú global | `assignments/spec.md` | ABIERTO | Decisión de UI fuera del MVP Lanzadera; reabre con el módulo de menú web. |
+| G-8 | Periodos definitivos de retención (P10) | `audit/spec.md` | ABIERTO | Baseline provisional 90 días hot + 1 año total (D29 PROVISIONAL) hasta que IT o cumplimiento entreguen los definitivos. |
 
 ## Reglas del registro
 
