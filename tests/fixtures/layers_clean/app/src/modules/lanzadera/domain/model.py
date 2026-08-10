@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass
 
-from app.core.domain.identifiers import (
+from app.src.modules.core.domain.identifiers import (
     UserId,
 )  # cross-cutting module, allowed from any slice
 
