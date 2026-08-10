@@ -1,0 +1,47 @@
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — applies to lanzadera-mvp Phase 0.
+# Same exclusions as .gitignore, plus the docker-specific overlay.
+
+# Python bytecode and caches (lanzadera-mvp Phase 0)
+__pycache__/
+*.py[cod]
+*.pyo
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtualenvs and audit environments
+.venv/
+.venv-audit/
+venv/
+
+# Build / dist / egg-info (lanzadera-mvp)
+build/
+dist/
+*.egg-info/
+
+# Test artefacts that must NOT ship in the image
+.coverage
+coverage.json
+quality-report.json
+
+# Secrets (PLATFORM_SECRET_KEY never enters the image)
+secrets/
+
+# Editor / OS noise
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Bulk binaries and runtime state (regenerated, not part of the image)
+data/
+.codegraph-vba/
+.dysflow/
+inputs/
+*.accdb
