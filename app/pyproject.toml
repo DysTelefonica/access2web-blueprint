@@ -133,6 +133,13 @@ testpaths = [
     # Pytest resolves testpaths relative to rootdir (this directory).
     "../tests",
 ]
+# `--strict-markers` is on, which is correct: a typo in a marker name should fail
+# rather than silently select nothing. That makes declaring every marker part of
+# the contract, and `integration` was never declared — so two migration modules
+# failed at COLLECTION, before a single assertion ran.
+markers = [
+    "integration: touches a real database or another out-of-process dependency",
+]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
