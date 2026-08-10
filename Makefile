@@ -34,9 +34,10 @@ help: ## Show every target, one per line, with a short description.
 # ---------------------------------------------------------------------------
 
 .PHONY: lint
+# From the root, never scoped to app/: a linter scoped to a subdirectory silently
+# hides findings in scripts/ and tests/. --config because the ruff contract lives
+# in app/pyproject.toml and is not found from here without it.
 lint: ## Run ruff (QC-3) over the whole repository.
-# From the root, never scoped to app/. ci.yml says so in as many words: a linter
-# scoped to a subdirectory silently hides findings in scripts/ and tests/.
 	$(RUFF) check --config app/pyproject.toml .
 
 .PHONY: format
@@ -48,9 +49,9 @@ typecheck: ## Run mypy (QC-4) over app/.
 	$(MYPY) app/
 
 .PHONY: test
-test: ## Run pytest with the coverage gate plugin (QC-5).
 # The exact invocation ci.yml uses. Hard Rule 19: one definition per gate — a
 # local command that differs from the CI one is a green nobody earned.
+test: ## Run pytest with the coverage gate plugin (QC-5).
 	$(PYTEST) -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
 
 .PHONY: test-no-cov
