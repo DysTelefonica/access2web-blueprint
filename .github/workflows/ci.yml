@@ -102,7 +102,17 @@ jobs:
       - name: tests
         # coverage.json is an input to the CRAP gate, not a nicety. Without it that gate fails
         # closed, which is the correct behaviour and a useless CI run — so produce it here.
-        run: pytest --cov --cov-report=json:coverage.json --cov-report=term
+        #
+        # `-c app/pyproject.toml --rootdir=app` is load-bearing. The pytest contract
+        # lives in app/pyproject.toml and is written for rootdir=app: `pythonpath =
+        # [".."]` is what makes `from app.src...` resolve, `testpaths = ["../tests"]`
+        # is where the tests actually are, and addopts loads the coverage-gate plugin
+        # by its `app.` path. Invoked from the repository root with no -c, pytest finds
+        # no configuration at all and every test fails with ModuleNotFoundError: app.
+        #
+        # cwd stays at the repository root so coverage.json lands where the downstream
+        # gates look for it.
+        run: pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
 
       - name: quality gates and indicators
         # Runs layers -> complexity -> CRAP -> DRY in that fixed order, writes
