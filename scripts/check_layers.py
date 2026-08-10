@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/check_layers.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_layers.py
 """Hexagonal layer gate: dependency direction, vertical slicing, and layer purity.
 
 Stdlib only, so the gate runs before the project has installed anything. Walks the AST of every
@@ -8,11 +8,6 @@ any edge the architecture does not allow.
 
 Regex cannot do this job: it breaks on line continuations, comments, aliased imports, and relative
 imports. Hard Rule 9 requires the AST.
-
-The root package for the Lanzadera MVP is ``app.src.modules``. Each module lives as a direct
-sub-package (``app.src.modules.<module>``) and each layer as a sub-sub-package (``domain``,
-``ports``, ``application``, ``adapters``, ``shared``, ``di``, ``delivery``). The script walks
-``<root>/app/src/modules/<module>/<layer>/...`` and classifies every ``.py`` file.
 
 Exit codes:
     0  no violation outside BASELINE
@@ -34,24 +29,20 @@ from pathlib import Path
 # CONFIGURATION — adjust this block when instantiating. Everything below it is mechanism.
 # --------------------------------------------------------------------------------------------
 
-# Dotted path to the package root. The gate walks `<root>/app/src/modules/...`.
-ROOT_PACKAGE = "app.src.modules"
-ROOT_PACKAGE_PARTS = ROOT_PACKAGE.split(".")
+ROOT_PACKAGE = "app"
 
 #: Modules every other module may depend on. Keep this set as small as it can possibly be; each
 #: entry is a hole in the vertical slicing rule.
-CROSS_CUTTING_MODULES = frozenset({"shared"})
+CROSS_CUTTING_MODULES = frozenset({"core"})
 
 #: Which layers a given layer may import from. A layer absent from this table is not a layer.
 ALLOWED_IMPORTS: dict[str, frozenset[str]] = {
-    "domain": frozenset({"domain", "shared"}),
-    "ports": frozenset({"domain", "ports", "shared"}),
-    "application": frozenset({"domain", "ports", "application", "shared"}),
+    "domain": frozenset({"domain"}),
+    "ports": frozenset({"domain", "ports"}),
+    "application": frozenset({"domain", "ports", "application"}),
     "adapters": frozenset({"domain", "ports", "adapters", "shared"}),
     "shared": frozenset({"domain", "ports", "shared"}),
-    "delivery": frozenset(
-        {"domain", "ports", "application", "adapters", "shared", "delivery"}
-    ),
+    "delivery": frozenset({"domain", "ports", "application", "adapters", "shared", "delivery"}),
     "di": frozenset(
         {"domain", "ports", "application", "adapters", "shared", "delivery", "di"}
     ),
@@ -101,24 +92,11 @@ class Violation:
     line: int
 
 
-def _package_dir(root: Path) -> Path:
-    """Resolve ``<root>/<ROOT_PACKAGE>`` where ``ROOT_PACKAGE`` is a dotted path."""
-    return root.joinpath(*ROOT_PACKAGE_PARTS)
-
-
-#: Composition-root files outside the module/layer lattice. They sit above
-#: the hexagonal inversion; the gate intentionally does not classify them.
-#: Phase 0 ships exactly one such file (`app/src/main.py`); Phase 4 will hoist
-#: the FastAPI composition root into `app/src/modules/lanzadera/delivery/...`
-#: and remove this entry.
-COMPOSITION_ROOTS: tuple[str, ...] = ("app/src/main.py",)
-
-
 def _iter_source_files(root: Path) -> list[Path]:
-    package_root = _package_dir(root)
+    package_root = root / ROOT_PACKAGE
     if not package_root.is_dir():
         return []
-    files: list[Path] = []
+    files = []
     for path in sorted(package_root.rglob("*.py")):
         if EXCLUDED_PARTS.intersection(path.parts):
             continue
@@ -126,55 +104,15 @@ def _iter_source_files(root: Path) -> list[Path]:
     return files
 
 
-def _is_composition_root(path: Path, root: Path) -> bool:
-    """Composition-root files sit above the hexagonal inversion."""
-    try:
-        rel = path.relative_to(root).as_posix()
-    except ValueError:
-        return False
-    return rel in COMPOSITION_ROOTS
-
-
-# Sentinel returned by `classify_file` for files that are intentionally
-# outside the layered lattice (composition roots, empty `__init__.py`
-# markers, etc.). `collect_violations` filters these before recording any
-# "unclassified" violation.
-SKIP_SENTINEL = ("__skip__", "")
-
-
-def _should_skip(path: Path, root: Path) -> bool:
-    """True for files intentionally outside the module/layer lattice."""
-    if _is_composition_root(path, root):
-        return True
-    # Empty `__init__.py` files at any level are package markers, not code.
-    # They sit on the path but contribute zero statements to coverage, so the
-    # gate has nothing to enforce.
-    if path.name == "__init__.py":
-        return True
-    return False
-
-
 def classify_file(path: Path, root: Path) -> tuple[str, str] | None:
-    """Map a file to its ``(module, layer)``, or ``None`` when it is not layered code.
-
-    Returns ``SKIP_SENTINEL`` for files intentionally outside the lattice
-    (composition roots, empty `__init__.py` markers). The collector filters
-    those before reporting violations.
-    """
-    if _should_skip(path, root):
-        return SKIP_SENTINEL
+    """Map a file to its ``(module, layer)``, or ``None`` when it is not layered code."""
     try:
         parts = path.relative_to(root).parts
     except ValueError:
         return None
-    # `<root>/app/src/modules/<module>/<layer>/<file>.py` — at least 6 parts
-    # (`app`, `src`, `modules`, `<module>`, `<layer>`, `<file>.py`).
-    if len(parts) < 6:
+    if len(parts) < 4 or parts[0] != ROOT_PACKAGE:
         return None
-    if list(parts[: len(ROOT_PACKAGE_PARTS)]) != ROOT_PACKAGE_PARTS:
-        return None
-    module = parts[len(ROOT_PACKAGE_PARTS)]
-    layer = parts[len(ROOT_PACKAGE_PARTS) + 1]
+    module, layer = parts[1], parts[2]
     if layer not in ALLOWED_IMPORTS:
         return None
     return module, layer
@@ -183,23 +121,10 @@ def classify_file(path: Path, root: Path) -> tuple[str, str] | None:
 def classify_dotted(name: str) -> tuple[str, str] | None:
     """Map a dotted import target to its ``(module, layer)``, or ``None`` when it is external."""
     parts = name.split(".")
-    if len(parts) <= len(ROOT_PACKAGE_PARTS):
+    if len(parts) < 3 or parts[0] != ROOT_PACKAGE:
         return None
-    if parts[: len(ROOT_PACKAGE_PARTS)] != ROOT_PACKAGE_PARTS:
-        return None
-    # A target like `app.src.modules.lanzadera.domain.user`:
-    # module = lanzadera, layer = domain.
-    # A target like `app.src.shared.cache` has no layer — it is a cross-cutting utility,
-    # classified as belonging to `shared` so the direction rules still apply.
-    if len(parts) == len(ROOT_PACKAGE_PARTS) + 1:
-        # Exactly the module or `shared` — treat as cross-cutting.
-        return parts[len(ROOT_PACKAGE_PARTS)], "shared"
-    module = parts[len(ROOT_PACKAGE_PARTS)]
-    layer = parts[len(ROOT_PACKAGE_PARTS) + 1]
+    module, layer = parts[1], parts[2]
     if layer not in ALLOWED_IMPORTS:
-        # Allow `app.src.shared.<x>` as a `shared` import target.
-        if module == "shared":
-            return module, "shared"
         return None
     return module, layer
 
@@ -283,24 +208,11 @@ def _check_purity(
     )
 
 
-def collect_violations(root: Path) -> tuple[list[Violation], int]:
-    """Return ``(violations, skipped_count)``.
-
-    ``skipped_count`` is the number of files that were intentionally outside
-    the layered lattice (composition roots, empty `__init__.py` markers).
-    Hard Rule 18 still holds for files the gate cannot classify for an
-    unintentional reason — those are violations, not skips.
-    """
+def collect_violations(root: Path) -> list[Violation]:
     violations: list[Violation] = []
-    skipped = 0
     for path in _iter_source_files(root):
         display = str(path.relative_to(root)).replace("\\", "/")
         origin = classify_file(path, root)
-        if origin == SKIP_SENTINEL:
-            # Composition root or empty `__init__.py` — intentionally outside
-            # the module lattice. Silent skip, not a violation.
-            skipped += 1
-            continue
         if origin is None:
             # Hard Rule 18: a file this gate cannot classify is a file this gate did not check.
             # Skipping it silently reports "clean" for code nobody looked at — which is how a
@@ -340,7 +252,7 @@ def collect_violations(root: Path) -> tuple[list[Violation], int]:
             slicing = _check_slice(origin, target, display, line)
             if slicing:
                 violations.append(slicing)
-    return violations, skipped
+    return violations
 
 
 def evaluate(violations: list[Violation], today: date) -> tuple[int, list[str]]:
@@ -387,9 +299,7 @@ def evaluate(violations: list[Violation], today: date) -> tuple[int, list[str]]:
     return (1 if failed else 0), lines
 
 
-def build_report(
-    violations: list[Violation], status: str, files_seen: int = 0, skipped: int = 0
-) -> dict:
+def build_report(violations: list[Violation], status: str, files_seen: int = 0) -> dict:
     unclassified = sum(1 for violation in violations if violation.key == "unclassified")
     return {
         "gate": "layers",
@@ -398,9 +308,8 @@ def build_report(
             "violations": len(violations),
             "violation_classes": len({violation.key for violation in violations}),
             # Coverage of the gate itself: how much of the package it actually inspected.
-            "files_checked": files_seen - unclassified - skipped,
+            "files_checked": files_seen - unclassified,
             "files_unclassified": unclassified,
-            "files_skipped": skipped,
         },
         "ceilings": {"violations": 0, "violation_classes": 0, "files_unclassified": 0},
         "findings": [
@@ -437,22 +346,21 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
-    package_dir = _package_dir(root)
-    if not package_dir.is_dir():
-        message = f"root package '{ROOT_PACKAGE}' not found under {root} (looked in '{package_dir}')"
+    if not (root / ROOT_PACKAGE).is_dir():
+        message = f"root package '{ROOT_PACKAGE}' not found under {root}"
         if args.json:
             print(json.dumps({"gate": "layers", "status": "error", "detail": message}))
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
 
-    violations, skipped = collect_violations(root)
+    violations = collect_violations(root)
     files_seen = len(_iter_source_files(root))
     exit_code, lines = evaluate(violations, date.today())
 
     if args.json:
         status = "pass" if exit_code == 0 else "fail"
-        print(json.dumps(build_report(violations, status, files_seen, skipped), indent=2))
+        print(json.dumps(build_report(violations, status, files_seen), indent=2))
     else:
         for line in lines:
             print(line)
