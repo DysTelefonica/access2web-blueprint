@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/check_crap.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_crap.py
 """CRAP gate — Change Risk Anti-Patterns, per function.
 
     CRAP(f) = CC(f)^2 * (1 - coverage(f))^3 + CC(f)
@@ -39,10 +39,7 @@ from pathlib import Path
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
 
-#: The CRAP gate walks the whole `app/src/` tree (composition root +
-#: cross-cutting `shared/` + the layered modules). The narrower
-#: `app.src.modules` scope belongs to the layer gate only.
-ROOT_PACKAGE_PARTS = ["app", "src"]
+ROOT_PACKAGE = "app"
 
 #: Upstream ceiling. See the module docstring before raising it — this number is what makes the
 #: harness demand small functions rather than merely well-tested large ones.
@@ -53,26 +50,6 @@ MAX_CRAP = 6.0
 COVERAGE_JSON = "coverage.json"
 
 EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
-
-#: Files the CRAP gate does not measure. Mirrors ``[tool.coverage.run] omit``
-#: in ``app/pyproject.toml`` so a greenfield file (an empty ``__init__.py``
-#: marker, for example) does not fail the gate with "absent from coverage
-#: report". Keep this list in sync with pyproject.toml on every change.
-CRAP_OMIT: frozenset[str] = frozenset(
-    {
-        "app/src/__init__.py",
-        "app/src/shared/__init__.py",
-        "app/src/modules/__init__.py",
-        "app/src/modules/lanzadera/__init__.py",
-        "app/src/modules/lanzadera/domain/__init__.py",
-        "app/src/modules/lanzadera/ports/__init__.py",
-        "app/src/modules/lanzadera/application/__init__.py",
-        "app/src/modules/lanzadera/adapters/__init__.py",
-        "app/src/modules/lanzadera/di/__init__.py",
-        "app/src/modules/lanzadera/delivery/__init__.py",
-        "app/pytest_plugin/__init__.py",
-    }
-)
 
 
 @dataclass(frozen=True)
@@ -208,7 +185,7 @@ def _lookup(table: dict[str, tuple[set[int], set[int]]], display: str):
 
 def measure(root: Path, coverage_path: Path) -> tuple[list[Measurement], float]:
     """Measure every function plus the package-wide line coverage indicator."""
-    package_root = root.joinpath(*ROOT_PACKAGE_PARTS)
+    package_root = root / ROOT_PACKAGE
     if not package_root.is_dir():
         raise CoverageUnavailable(f"root package '{ROOT_PACKAGE}' not found under {root}")
 
@@ -221,8 +198,6 @@ def measure(root: Path, coverage_path: Path) -> tuple[list[Measurement], float]:
         if EXCLUDED_PARTS.intersection(path.parts):
             continue
         display = str(path.relative_to(root)).replace("\\", "/")
-        if display in CRAP_OMIT:
-            continue
         entry = _lookup(table, display)
         if entry is None:
             raise CoverageUnavailable(
