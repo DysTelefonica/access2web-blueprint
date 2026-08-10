@@ -30,3 +30,31 @@ data/staging/**/.codegraph-vba/
 # Local logs (rclone, sync, etc.)
 logs/
 *.log
+
+# Python bytecode (the harness assets are Python)
+__pycache__/
+*.py[cod]
+
+# --- Python quality-gate caches (Phase 0 / lanzadera-mvp) ---
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.json
+quality-report.json
+
+# --- Python virtualenvs (lanzadera-mvp) ---
+.venv/
+.venv-audit/
+venv/
+
+# --- Lanzadera secrets (PLATFORM_SECRET_KEY lives outside git; volume-mounted) ---
+secrets/
+platform/secrets/
+
+# --- Lanzadera build / dist ---
+platform/build/
+platform/dist/
+platform/*.egg-info/
