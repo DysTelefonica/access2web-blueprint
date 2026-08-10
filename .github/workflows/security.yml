@@ -1,0 +1,69 @@
+# Lanzadera MVP — security scanning (per PR).
+#
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — applies to lanzadera-mvp Phase 0.
+# Scanner images are pinned by SHA256 digest (Hard Rule 6). Tags mutate silently;
+# digests pin byte-for-byte content. Resolved at adoption (2026-08-09) via the
+# Docker Hub registry API; re-resolve when bumping gitleaks or trivy.
+
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main, feat/lanzadera-mvp-tracker]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks dir
+        # `gitleaks dir` scans the working tree. `--redact` replaces secrets with `***` in
+        # any output; `--no-banner` keeps CI logs clean; `--exit-code 1` is the gate —
+        # removing it is the APAP_WEB #393 antipattern (Hard Rule 1).
+        run: >
+          docker run --rm
+          -v "$PWD:/repo"
+          -w /repo
+          zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+          dir . --redact --no-banner --exit-code 1
+
+  trivy-config:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: trivy config (Dockerfile)
+        # `--severity HIGH,CRITICAL` filters below those levels — Phase 0 ships a clean
+        # image; tightening the filter is a follow-up decision when Medias begin to appear.
+        run: >
+          docker run --rm
+          -v "$PWD:/repo"
+          -w /repo
+          aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c
+          config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1
+
+  pip-audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12.11"
+
+      - name: dependency scan
+        # Throwaway venv: the runner's ambient site-packages drags in CVEs that are not ours.
+        # `--skip-editable` excludes the platform itself from the report.
+        run: |
+          python -m venv .venv-audit
+          .venv-audit/bin/python -m pip install --upgrade pip==24.2
+          .venv-audit/bin/python -m pip install --no-deps --editable app[dev]
+          .venv-audit/bin/pip-audit --skip-editable --strict
