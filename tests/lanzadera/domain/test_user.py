@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import dataclasses
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -28,7 +28,7 @@ EMAIL_MIXED: str = "AlIcE@enterprise.test"
 
 
 def _now() -> datetime:
-    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=timezone.utc)
+    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=UTC)
 
 
 def _new_user(
@@ -77,9 +77,7 @@ class TestUserStatusStrEnum:
         """DA-3 + Postgres ENUM: the wire value must equal the member name."""
         assert UserStatus("active") is UserStatus.ACTIVE
         assert UserStatus("disabled") is UserStatus.DISABLED
-        assert (
-            UserStatus("password_reset_required") is UserStatus.PASSWORD_RESET_REQUIRED
-        )
+        assert UserStatus("password_reset_required") is UserStatus.PASSWORD_RESET_REQUIRED
         assert UserStatus("locked") is UserStatus.LOCKED
 
     def test_wire_values_match_postgres_enum(self) -> None:

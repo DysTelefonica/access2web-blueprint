@@ -14,7 +14,6 @@ import pytest
 
 from app.src.modules.lanzadera.domain.global_admin import GlobalAdmin
 
-
 # ---------------------------------------------------------------------------
 # Construction
 # ---------------------------------------------------------------------------

@@ -9,8 +9,8 @@ import pytest
 from app.src.modules.lanzadera.domain.legacy_role_map import (
     DEFAULT_PROFILE_CODE,
     LEGACY_ROLE_MAP,
-    LegacyFlags,
     SIN_ACCESO_PROFILE_CODE,
+    LegacyFlags,
     resolve_legacy_roles,
 )
 
@@ -37,9 +37,7 @@ class TestLegacyRoleMapTable:
             (LegacyFlags.SECRETARIA, "SECRETARIA"),
         ],
     )
-    def test_each_flag_maps_to_its_profile_code(
-        self, flag: str, profile_code: str
-    ) -> None:
+    def test_each_flag_maps_to_its_profile_code(self, flag: str, profile_code: str) -> None:
         assert LEGACY_ROLE_MAP[flag] == profile_code
 
     def test_sin_acceso_is_not_in_the_map(self) -> None:
@@ -108,9 +106,7 @@ class TestSinAccesoExclusivity:
     """`SinAcceso = True` short-circuits every other flag."""
 
     def test_sin_acceso_only(self) -> None:
-        assert resolve_legacy_roles({LegacyFlags.SIN_ACCESO: True}) == (
-            SIN_ACCESO_PROFILE_CODE,
-        )
+        assert resolve_legacy_roles({LegacyFlags.SIN_ACCESO: True}) == (SIN_ACCESO_PROFILE_CODE,)
 
     def test_sin_acceso_with_admin_only_collapses(self) -> None:
         flags = {
@@ -199,9 +195,7 @@ class TestLegacyTextValues:
         assert resolve_legacy_roles({LegacyFlags.ADMINISTRADOR: "Sí"}) == ("ADMIN",)
 
     def test_no_string_is_not_set(self) -> None:
-        assert resolve_legacy_roles({LegacyFlags.ADMINISTRADOR: "No"}) == (
-            DEFAULT_PROFILE_CODE,
-        )
+        assert resolve_legacy_roles({LegacyFlags.ADMINISTRADOR: "No"}) == (DEFAULT_PROFILE_CODE,)
 
     def test_lowercase_si_string_is_set(self) -> None:
         assert resolve_legacy_roles({LegacyFlags.CALIDAD: "si"}) == ("CALIDAD",)

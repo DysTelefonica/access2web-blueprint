@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -19,7 +19,7 @@ from app.src.modules.lanzadera.domain.reset_token import ResetToken
 
 
 def _now() -> datetime:
-    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=timezone.utc)
+    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=UTC)
 
 
 def _new_token(

@@ -37,11 +37,11 @@ help: ## Show every target, one per line, with a short description.
 lint: ## Run ruff (QC-3) over the whole repository.
 # From the root, never scoped to app/. ci.yml says so in as many words: a linter
 # scoped to a subdirectory silently hides findings in scripts/ and tests/.
-	$(RUFF) check .
+	$(RUFF) check --config app/pyproject.toml .
 
 .PHONY: format
 format: ## Run ruff format --check over the whole repository (no write).
-	$(RUFF) format --check .
+	$(RUFF) format --check --config app/pyproject.toml .
 
 .PHONY: typecheck
 typecheck: ## Run mypy (QC-4) over app/.

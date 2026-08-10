@@ -140,9 +140,7 @@ def check_run_health(rows: list[dict[str, Any]]) -> tuple[list[str], dict[str, f
 
     pending = sum(1 for row in rows if not row["test_outcome"])
     if pending:
-        violations.append(
-            f"run incomplete: {pending} of {len(rows)} job(s) produced no result"
-        )
+        violations.append(f"run incomplete: {pending} of {len(rows)} job(s) produced no result")
 
     incompetent = sum(1 for row in rows if row["test_outcome"] == _INCOMPETENT)
     killed = sum(1 for row in rows if row["test_outcome"] == _KILLED)
@@ -155,9 +153,7 @@ def check_run_health(rows: list[dict[str, Any]]) -> tuple[list[str], dict[str, f
             f"(limit {MAX_INCOMPETENT_RATIO:.0%}); the runner is broken, not the code"
         )
     if killed == 0 and survived == 0:
-        violations.append(
-            "degenerate run: no mutant was killed or survived; nothing was measured"
-        )
+        violations.append("degenerate run: no mutant was killed or survived; nothing was measured")
 
     scored = killed + survived
     metrics = {
@@ -177,9 +173,7 @@ def measure_survivors(rows: list[dict[str, Any]]) -> dict[str, int]:
     return dict(sorted(survivors.items()))
 
 
-def check_ratchet(
-    survivors: dict[str, int], today: date
-) -> tuple[list[str], list[str]]:
+def check_ratchet(survivors: dict[str, int], today: date) -> tuple[list[str], list[str]]:
     violations: list[str] = []
     notices: list[str] = []
     for module in sorted(survivors):
@@ -188,9 +182,7 @@ def check_ratchet(
         if allowance is None:
             violations.append(f"{module}: {count} surviving mutant(s), not in BASELINE")
         elif isinstance(allowance, AwaitingAcquisition):
-            notices.append(
-                f"{module}: acquired {count} surviving mutant(s); record them now"
-            )
+            notices.append(f"{module}: acquired {count} surviving mutant(s); record them now")
         elif count > allowance.survivors:
             violations.append(
                 f"{module}: grew to {count} surviving mutant(s), BASELINE allows "
@@ -231,9 +223,7 @@ def check_pending_overdue(today: date) -> list[str]:
     return violations
 
 
-def render_baseline(
-    survivors: dict[str, int], today: date, horizon_days: int = 90
-) -> str:
+def render_baseline(survivors: dict[str, int], today: date, horizon_days: int = 90) -> str:
     target_date = date.fromordinal(today.toordinal() + horizon_days).isoformat()
     lines = ["BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {"]
     for module in sorted(survivors):
@@ -256,9 +246,7 @@ def build_report(metrics: dict[str, float], violations: list[str], status: str) 
             "mutants_measured": int(metrics.get("mutants_measured", 0)),
         },
         "ceilings": {"incompetent_ratio_pct": MAX_INCOMPETENT_RATIO * 100},
-        "findings": [
-            {"file": "<session>", "line": 0, "detail": item} for item in violations
-        ],
+        "findings": [{"file": "<session>", "line": 0, "detail": item} for item in violations],
     }
 
 
@@ -274,9 +262,7 @@ def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("session", type=Path, help="cosmic-ray session database")
-    parser.add_argument(
-        "--json", action="store_true", help="emit the indicator envelope"
-    )
+    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     parser.add_argument(
         "--emit-baseline",
         action="store_true",
@@ -287,9 +273,7 @@ def main(argv: list[str] | None = None) -> int:
     rows, errors = read_session(args.session)
     if errors:
         if args.json:
-            print(
-                json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]})
-            )
+            print(json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]}))
         else:
             for message in errors:
                 print(f"FAIL  {message}", file=sys.stderr)

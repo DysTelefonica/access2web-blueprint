@@ -23,9 +23,7 @@ import sys
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
 
-PATTERN = re.compile(
-    r"^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$"
-)
+PATTERN = re.compile(r"^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$")
 
 #: Long-lived branches that predate or transcend the convention.
 ALLOWLIST = frozenset({"main"})
@@ -69,12 +67,8 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--branch", default=None, help="branch name to check (default: detected)"
-    )
-    parser.add_argument(
-        "--json", action="store_true", help="emit the indicator envelope"
-    )
+    parser.add_argument("--branch", default=None, help="branch name to check (default: detected)")
+    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     args = parser.parse_args(argv)
 
     try:
@@ -82,11 +76,7 @@ def main(argv: list[str] | None = None) -> int:
     except RuntimeError as exc:
         message = f"could not determine the branch name: {exc}"
         if args.json:
-            print(
-                json.dumps(
-                    {"gate": "branch_name", "status": "error", "detail": message}
-                )
-            )
+            print(json.dumps({"gate": "branch_name", "status": "error", "detail": message}))
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
@@ -123,9 +113,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     print(f"FAIL  '{branch}' does not match {PATTERN.pattern}")
-    print(
-        "        expected <type>/<issue-number>-<kebab-slug>, e.g. feat/42-lanzadera-auth"
-    )
+    print("        expected <type>/<issue-number>-<kebab-slug>, e.g. feat/42-lanzadera-auth")
     return 1
 
 

@@ -47,9 +47,7 @@ MIN_STATEMENTS = 5
 #: refactoring heuristic, not a gate.
 MIN_OCCURRENCES = 2
 
-EXCLUDED_PARTS = frozenset(
-    {"__pycache__", ".venv", "venv", "build", "dist", "migrations"}
-)
+EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
 
 
 @dataclass(frozen=True)
@@ -156,9 +154,7 @@ def collect_groups(root: Path) -> list[CloneGroup]:
                     start_line=window[0].lineno,
                     end_line=getattr(window[-1], "end_lineno", window[-1].lineno),
                 )
-                buckets.setdefault(_digest(window), []).append(
-                    (occurrence, MIN_STATEMENTS)
-                )
+                buckets.setdefault(_digest(window), []).append((occurrence, MIN_STATEMENTS))
 
     # Stable ordering: most occurrences first, then digest. Never rely on dict insertion order
     # for a verdict.
@@ -186,9 +182,7 @@ def collect_groups(root: Path) -> list[CloneGroup]:
         # duplication dozens of times. A gate that reports 333 findings for 37 real clones gets
         # switched off inside a week, and a gate that is switched off protects nothing.
         fresh: list[Occurrence] = []
-        for occurrence, _ in sorted(
-            entries, key=lambda item: (item[0].file, item[0].start_line)
-        ):
+        for occurrence, _ in sorted(entries, key=lambda item: (item[0].file, item[0].start_line)):
             if _overlaps(occurrence):
                 continue
             fresh.append(occurrence)
@@ -283,9 +277,7 @@ def build_report(root: Path, groups: list[CloneGroup], status: str) -> dict:
         "indicators": {
             "duplicate_groups": len(groups),
             "duplicated_statements": duplicated,
-            "duplicated_ratio_pct": round(100 * duplicated / total, 2)
-            if total
-            else 0.0,
+            "duplicated_ratio_pct": round(100 * duplicated / total, 2) if total else 0.0,
         },
         "ceilings": {"duplicate_groups": 0},
         "findings": [
@@ -319,9 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
-    parser.add_argument(
-        "--json", action="store_true", help="emit the indicator envelope"
-    )
+    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     args = parser.parse_args(argv)
 
     root = args.root.resolve()

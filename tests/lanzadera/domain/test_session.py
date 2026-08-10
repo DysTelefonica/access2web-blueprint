@@ -7,13 +7,12 @@
 from __future__ import annotations
 
 import dataclasses
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
 
 from app.src.modules.lanzadera.domain.session import LockoutPolicy, Session
-
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -21,7 +20,7 @@ from app.src.modules.lanzadera.domain.session import LockoutPolicy, Session
 
 
 def _now() -> datetime:
-    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=timezone.utc)
+    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=UTC)
 
 
 def _new_session(
@@ -72,12 +71,8 @@ class TestSessionConstruction:
         user_id = uuid4()
         created = _now()
         expires = created + timedelta(hours=12)
-        a = Session(
-            id=session_id, user_id=user_id, created_at=created, expires_at=expires
-        )
-        b = Session(
-            id=session_id, user_id=user_id, created_at=created, expires_at=expires
-        )
+        a = Session(id=session_id, user_id=user_id, created_at=created, expires_at=expires)
+        b = Session(id=session_id, user_id=user_id, created_at=created, expires_at=expires)
         assert a == b
 
 

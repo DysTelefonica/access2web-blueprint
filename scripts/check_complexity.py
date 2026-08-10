@@ -34,9 +34,7 @@ ROOT_PACKAGE = "app"
 #: The ceiling. Absolute, global, applied to every function without exception.
 MAX_COMPLEXITY = 15
 
-EXCLUDED_PARTS = frozenset(
-    {"__pycache__", ".venv", "venv", "build", "dist", "migrations"}
-)
+EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
 
 
 @dataclass(frozen=True)
@@ -172,10 +170,7 @@ def evaluate(offenders: list[Measurement], today: date) -> tuple[int, list[str]]
                 f"FAIL  {location}  {offender.name} grew to {offender.complexity}, "
                 f"BASELINE allows {allowance.complexity}"
             )
-        elif (
-            today.isoformat() > allowance.target_date
-            and offender.complexity > allowance.target
-        ):
+        elif today.isoformat() > allowance.target_date and offender.complexity > allowance.target:
             failed = True
             lines.append(
                 f"FAIL  {location}  {offender.name} BASELINE expired on {allowance.target_date} "
@@ -202,9 +197,7 @@ def build_report(measurements: list[Measurement], status: str) -> dict:
         "gate": "complexity",
         "status": status,
         "indicators": {
-            "max_complexity": max(
-                (item.complexity for item in measurements), default=0
-            ),
+            "max_complexity": max((item.complexity for item in measurements), default=0),
             "functions_over_ceiling": len(offenders),
             "functions_measured": len(measurements),
         },
@@ -238,18 +231,14 @@ def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
-    parser.add_argument(
-        "--json", action="store_true", help="emit the indicator envelope"
-    )
+    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
     if not (root / ROOT_PACKAGE).is_dir():
         message = f"root package '{ROOT_PACKAGE}' not found under {root}"
         if args.json:
-            print(
-                json.dumps({"gate": "complexity", "status": "error", "detail": message})
-            )
+            print(json.dumps({"gate": "complexity", "status": "error", "detail": message}))
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1

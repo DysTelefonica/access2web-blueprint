@@ -89,12 +89,19 @@ jobs:
           python -m pip install --editable app[dev]
 
       - name: format
-        run: ruff format --check .
+        # --config is load-bearing, exactly as it is for pytest. The ruff contract —
+        # line-length 100, the select list, and the exclude for tests/fixtures — lives
+        # in app/pyproject.toml. Run from the repository root without it, ruff finds no
+        # configuration and silently uses its own defaults: a different line length, a
+        # narrower rule set, and no exclusion, so the negative fixtures get linted for
+        # being deliberately broken. The root invocation is still deliberate (a linter
+        # scoped to a subdirectory hides findings); what was missing is the config.
+        run: ruff format --check --config app/pyproject.toml .
 
       - name: lint
         # Hard Rule: custom and vendored linters are always invoked from the repository root,
         # never scoped to a subdirectory that silently hides findings.
-        run: ruff check .
+        run: ruff check --config app/pyproject.toml .
 
       - name: typecheck
         run: mypy app/
