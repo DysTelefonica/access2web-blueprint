@@ -28,12 +28,23 @@ jobs:
         # `gitleaks dir` scans the working tree. `--redact` replaces secrets with `***` in
         # any output; `--no-banner` keeps CI logs clean; `--exit-code 1` is the gate —
         # removing it is the APAP_WEB #393 antipattern (Hard Rule 1).
+        #
+        # `-v` is what makes the gate actionable (issue #106, Hard Rule 16). Without it
+        # the job ends at "leaks found: 2" and nothing else: two findings and no way to
+        # know what they are. A gate that reports a count with no subject does not
+        # produce a correction, it produces a retreat — the reasonable-looking next
+        # steps all become "simplify the workflow" or "revert", none of which touch the
+        # finding. With `-v` the same run names the file, line, rule and fingerprint,
+        # and the fingerprint is exactly what `.gitleaksignore` takes, so recording an
+        # exception never requires reproducing the scan locally.
+        #
+        # `--redact` stays: the values remain out of the logs either way.
         run: >
           docker run --rm
           -v "$PWD:/repo"
           -w /repo
           zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
-          dir . --redact --no-banner --exit-code 1
+          dir . --redact --no-banner -v --exit-code 1
 
   trivy-config:
     runs-on: ubuntu-24.04

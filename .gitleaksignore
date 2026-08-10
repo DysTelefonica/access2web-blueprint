@@ -1,0 +1,22 @@
+# Fingerprints gitleaks must not fail on, one line per finding.
+#
+# Hard Rule 7: every entry corresponds to an OPEN issue, and removing the entry is
+# the act that closes it. This file is shrink-only. Never add a line to make a job
+# green; add it to record a finding that someone is tracking.
+#
+# An entry here does NOT mean "false positive". It means "seen, and owned by an
+# issue". The distinction matters: the two below are a real Firebase web config
+# committed in staging fixture data, not noise.
+
+# issue #107 — Firebase web config (apiKey/authDomain/projectId/databaseURL) embedded
+# in a VBA-generated HTML block, in the expedientes staging fixtures.
+#
+# Firebase web API keys are designed to travel in client code; Google documents that
+# explicitly. Their security comes from the Realtime Database Security Rules and the
+# API key restrictions, neither of which lives in this repository. So the question
+# these two lines park is not "was a secret leaked" but "are those rules open" — and
+# that needs the Firebase console, which no CI job and no agent can reach.
+#
+# Removing these two lines closes #107. Until someone has actually looked, they stay.
+data/staging/expedientes/src/modules/modFormulario1Helper.bas:gcp-api-key:51
+data/staging/expedientes/src/forms/Form_Formulario1.form.txt:gcp-api-key:568
