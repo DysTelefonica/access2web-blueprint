@@ -43,6 +43,11 @@ __pycache__/
 .coverage.*
 htmlcov/
 coverage.json
+# ...except the CRAP fixtures. Their coverage.json IS the fixture: the gate scores
+# complexity against coverage, so a fixture without one cannot exercise it. Ignoring
+# them meant they existed on every developer's disk and in no clone — the smoke tests
+# passed locally and failed in CI with "coverage.json not found".
+!tests/fixtures/*/coverage.json
 quality-report.json
 
 # --- Python virtualenvs (lanzadera-mvp) ---
