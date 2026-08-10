@@ -75,19 +75,33 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: install
-        # Hard Rule 15: the lockfile is the dependency contract. `--require-hashes` makes a
-        # tampered or re-resolved wheel a hard failure instead of a silent substitution.
+        # The dev pins live in app/pyproject.toml and are exact (ruff==0.15.21,
+        # mypy==1.13.0, ...), so the tools that govern rules cannot drift (Hard Rule 2).
+        #
+        # This does NOT hash-pin the transitive graph. The previous version claimed it
+        # did — `--require-hashes --requirement requirements-dev.lock` — against a
+        # lockfile that does not exist in this repository, alongside `--editable .`
+        # against a root with no pyproject.toml. The step had never run on any branch,
+        # and the v1.5 workflow reached main red because of it (issue #109). The other
+        # half of Hard Rule 15 is tracked in #110 rather than promised here: a comment
+        # describing a guarantee the pipeline does not have is worse than no comment.
         run: |
-          python -m pip install --require-hashes --requirement requirements-dev.lock
-          python -m pip install --no-deps --editable .
+          python -m pip install --editable app[dev]
 
       - name: format
-        run: ruff format --check .
+        # --config is load-bearing, exactly as it is for pytest. The ruff contract —
+        # line-length 100, the select list, and the exclude for tests/fixtures — lives
+        # in app/pyproject.toml. Run from the repository root without it, ruff finds no
+        # configuration and silently uses its own defaults: a different line length, a
+        # narrower rule set, and no exclusion, so the negative fixtures get linted for
+        # being deliberately broken. The root invocation is still deliberate (a linter
+        # scoped to a subdirectory hides findings); what was missing is the config.
+        run: ruff format --check --config app/pyproject.toml .
 
       - name: lint
         # Hard Rule: custom and vendored linters are always invoked from the repository root,
         # never scoped to a subdirectory that silently hides findings.
-        run: ruff check .
+        run: ruff check --config app/pyproject.toml .
 
       - name: typecheck
         run: mypy app/
@@ -95,7 +109,17 @@ jobs:
       - name: tests
         # coverage.json is an input to the CRAP gate, not a nicety. Without it that gate fails
         # closed, which is the correct behaviour and a useless CI run — so produce it here.
-        run: pytest --cov --cov-report=json:coverage.json --cov-report=term
+        #
+        # `-c app/pyproject.toml --rootdir=app` is load-bearing. The pytest contract
+        # lives in app/pyproject.toml and is written for rootdir=app: `pythonpath =
+        # [".."]` is what makes `from app.src...` resolve, `testpaths = ["../tests"]`
+        # is where the tests actually are, and addopts loads the coverage-gate plugin
+        # by its `app.` path. Invoked from the repository root with no -c, pytest finds
+        # no configuration at all and every test fails with ModuleNotFoundError: app.
+        #
+        # cwd stays at the repository root so coverage.json lands where the downstream
+        # gates look for it.
+        run: pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
 
       - name: quality gates and indicators
         # Runs layers -> complexity -> CRAP -> DRY in that fixed order, writes
@@ -125,9 +149,9 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: install
+        # See the quality job's install step (#109, #110).
         run: |
-          python -m pip install --require-hashes --requirement requirements-dev.lock
-          python -m pip install --no-deps --editable .
+          python -m pip install --editable app[dev]
 
       - name: run mutants
         # The runner's own exit code is not the verdict: it reports success for a run in which
@@ -160,20 +184,41 @@ jobs:
         # Throwaway venv: the runner's ambient site-packages drags in CVEs that are not ours,
         # which trains everyone to ignore the report.
         run: |
+          set -euo pipefail
           python -m venv .venv-audit
-          .venv-audit/bin/python -m pip install --require-hashes --requirement requirements-dev.lock
-          .venv-audit/bin/python -m pip install --no-deps --editable .
-          .venv-audit/bin/pip-audit --skip-editable
+          # pip itself is a dependency the audit sees. The runner ships a version with
+          # open advisories, so leaving it alone makes the scan fail on the scanner's
+          # own toolchain rather than on this project (Hard Rule 2: an exact pin, and
+          # one that is not itself the finding).
+          .venv-audit/bin/python -m pip install --quiet --upgrade pip==26.2.1
+          .venv-audit/bin/python -m pip install --quiet "app[dev]"
+          .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
+
+          # Liveness before reporting (Hard Rule 18). pip-audit was never installed
+          # here either, and a venv without the dependency tree audits nothing while
+          # looking perfectly healthy. The count is checked before the verdict is
+          # trusted. Non-editable on purpose: with --strict, an editable dist that
+          # --skip-editable skips is itself a hard error, so the audit venv installs
+          # the project as a normal wheel and there is nothing to skip.
+          installed=$(.venv-audit/bin/python -m pip list --format=freeze | wc -l)
+          if [ "$installed" -lt 15 ]; then
+            echo "::error::dependency scan aborted: only $installed packages in the venv."
+            echo "That is not a clean audit, it is an audit with nothing to audit (Hard Rule 18)."
+            exit 1
+          fi
+          echo "dependency scan: auditing $installed installed packages"
+
+          .venv-audit/bin/pip-audit --strict
 
       - name: secret scan
         # Scanner images are pinned by digest, not tag. Tags mutate; digests do not.
         run: >
           docker run --rm -v "$PWD:/repo" -w /repo
-          zricethezav/gitleaks@sha256:REPLACE_WITH_DIGEST
+          zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
           dir . --redact --no-banner --exit-code 1
 
       - name: dockerfile scan
         run: >
           docker run --rm -v "$PWD:/repo" -w /repo
-          aquasec/trivy@sha256:REPLACE_WITH_DIGEST
-          config /repo/Dockerfile --severity HIGH,CRITICAL --exit-code 1
+          aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c
+          config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1

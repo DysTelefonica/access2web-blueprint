@@ -23,7 +23,7 @@ PYTEST := $(PYTHON) -m pytest
 
 .DEFAULT_GOAL := help
 
-.PHONY: help
+.PHONY: verify help
 help: ## Show every target, one per line, with a short description.
 	@awk 'BEGIN {FS = ":.*##"; printf "Targets:\n"} \
 		/^[a-zA-Z0-9_.-]+:.*##/ {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -34,20 +34,25 @@ help: ## Show every target, one per line, with a short description.
 # ---------------------------------------------------------------------------
 
 .PHONY: lint
-lint: ## Run ruff (QC-3) over the app package.
-	cd $(APP_DIR) && $(RUFF) check .
+# From the root, never scoped to app/: a linter scoped to a subdirectory silently
+# hides findings in scripts/ and tests/. --config because the ruff contract lives
+# in app/pyproject.toml and is not found from here without it.
+lint: ## Run ruff (QC-3) over the whole repository.
+	$(RUFF) check --config app/pyproject.toml .
 
 .PHONY: format
-format: ## Run ruff format --check (no write).
-	cd $(APP_DIR) && $(RUFF) format --check .
+format: ## Run ruff format --check over the whole repository (no write).
+	$(RUFF) format --check --config app/pyproject.toml .
 
 .PHONY: typecheck
-typecheck: ## Run mypy (QC-4) over app/src/.
-	cd $(APP_DIR) && $(MYPY) src/
+typecheck: ## Run mypy (QC-4) over app/.
+	$(MYPY) app/
 
 .PHONY: test
+# The exact invocation ci.yml uses. Hard Rule 19: one definition per gate — a
+# local command that differs from the CI one is a green nobody earned.
 test: ## Run pytest with the coverage gate plugin (QC-5).
-	cd $(APP_DIR) && $(PYTEST)
+	$(PYTEST) -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
 
 .PHONY: test-no-cov
 test-no-cov: ## Run pytest without coverage (for fast local iteration).
@@ -113,7 +118,12 @@ migrate-fixtures: ## Phase 2 — Dysflow extract to JSON fixtures. Wired in PR 3
 	@echo "migrate-fixtures: wired in PR 3b (Phase 2). Will read SHA256-pinned .accdb and emit TbAplicaciones.json, tbUsuarios.json, TbUsuariosAplicacionesPermisos.json, TbConexiones.json, TbAplicacionesAperturas.json."
 
 .PHONY: all
-all: lint typecheck test check-layers check-complexity check-crap check-dry check-branch-name quality-report ## Run every gate Phase 0 owns.
+# check-branch-name and check-pr-size are NOT here: they need the pull-request
+# payload, and tests/test_ci_workflow.py declares them in VERIFY_EXCLUSIONS.
+# Listing them anyway is the silent disagreement Hard Rule 19 exists to stop.
+verify: format lint typecheck test quality-report ## THE green-PR gate: every gate ci.yml runs on a pull request.
+
+all: verify ## Alias for `verify`, kept for muscle memory.
 
 .PHONY: clean
 clean: ## Remove generated artefacts (coverage, quality report, caches).

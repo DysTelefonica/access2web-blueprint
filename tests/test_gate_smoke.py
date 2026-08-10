@@ -132,7 +132,13 @@ def test_branch_name_gate_accepts_valid_names(branch: str) -> None:
 
 @pytest.mark.parametrize(
     "branch",
-    ["lanzadera-auth", "feat/lanzadera-auth", "feat/42_lanzadera_auth", "FEAT/42-auth", "develop"],
+    [
+        "lanzadera-auth",
+        "feat/lanzadera-auth",
+        "feat/42_lanzadera_auth",
+        "FEAT/42-auth",
+        "develop",
+    ],
 )
 def test_branch_name_gate_rejects_invalid_names(branch: str) -> None:
     assert _run("check_branch_name.py", "--branch", branch).returncode == 1
@@ -407,13 +413,15 @@ def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
 
 def test_quality_report_aggregates_indicators(tmp_path) -> None:
     out = tmp_path / "quality-report.json"
-    result = _run(
-        "quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(out)
-    )
+    result = _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(out))
     assert result.returncode == 0, result.stdout
     report = json.loads(out.read_text(encoding="utf-8"))
     assert report["status"] == "pass"
-    for indicator in ("layers.violations", "complexity.max_complexity", "crap.max_crap"):
+    for indicator in (
+        "layers.violations",
+        "complexity.max_complexity",
+        "crap.max_crap",
+    ):
         assert indicator in report["indicators"], report["indicators"].keys()
     assert report["indicators"]["crap.max_crap"]["ceiling"] == 6.0
 
@@ -421,7 +429,11 @@ def test_quality_report_aggregates_indicators(tmp_path) -> None:
 def test_quality_report_names_the_failing_gate(tmp_path) -> None:
     out = tmp_path / "quality-report.json"
     result = _run(
-        "quality_report.py", "--root", str(FIXTURES / "crap_violation"), "--out", str(out)
+        "quality_report.py",
+        "--root",
+        str(FIXTURES / "crap_violation"),
+        "--out",
+        str(out),
     )
     assert result.returncode == 1
     report = json.loads(out.read_text(encoding="utf-8"))
@@ -432,5 +444,11 @@ def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
     """Determinism pin: no wall-clock timestamp may leak into the report."""
     first, second = tmp_path / "a.json", tmp_path / "b.json"
     _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(first))
-    _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(second))
+    _run(
+        "quality_report.py",
+        "--root",
+        str(FIXTURES / "crap_clean"),
+        "--out",
+        str(second),
+    )
     assert first.read_bytes() == second.read_bytes()

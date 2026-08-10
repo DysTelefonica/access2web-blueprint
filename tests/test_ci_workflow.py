@@ -17,10 +17,10 @@ import yaml
 
 #: Every gate that must be wired, identified by the command it runs.
 REQUIRED_COMMANDS = (
-    "ruff format --check",
-    "ruff check .",
+    "ruff format --check --config app/pyproject.toml",
+    "ruff check --config app/pyproject.toml .",
     "mypy app/",
-    "pytest --cov --cov-report=json:coverage.json",
+    "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
     "python scripts/quality_report.py",
     "python scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
@@ -46,7 +46,16 @@ VERIFY_EXCLUSIONS = (
 
 #: The four code gates, in the order they must run. Deduplication moves code, which changes
 #: complexity, which changes CRAP — so the sequence is part of the contract, not a preference.
-REQUIRED_GATE_ORDER = ("layers", "complexity", "crap", "mutation_sites", "dry")
+REQUIRED_GATE_ORDER = (
+    "layers",
+    "complexity",
+    "crap",
+    "mutation_sites",
+    "dry",
+    # DA-13, last: a symbol walker, not a metric, so it neither consumes nor
+    # invalidates the numbers before it.
+    "legacy_hashes",
+)
 
 _SHA_PIN = re.compile(r"^[0-9a-f]{40}$")
 
@@ -250,7 +259,9 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     )
 
 
-def test_make_verify_excludes_what_a_workstation_cannot_run(verify_commands: str) -> None:
+def test_make_verify_excludes_what_a_workstation_cannot_run(
+    verify_commands: str,
+) -> None:
     """The exclusions are a design decision, so they are pinned like any other.
 
     Folding the weekly mutation session or the Docker scanners into ``verify``

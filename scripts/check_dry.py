@@ -67,7 +67,20 @@ class BaselineEntry:
 #: a brand-new one. A ratchet whose key moves with the thing it is ratcheting is not a ratchet.
 #: The digest changes only when the duplicated code itself changes structurally, which is
 #: precisely when the entry should be re-reviewed.
-BASELINE: dict[str, BaselineEntry] = {}
+# Measured on 2026-08-10, the first run in which this gate executed. Four clone groups,
+# 55 duplicated statements, 18.15% of the package. Each entry may only shrink, and each
+# carries the date by which it must be gone (Hard Rule 12: a ratchet with no destination
+# is a ramp to nowhere). check_dry.py has no --emit-baseline, so these were transcribed
+# from its own report rather than invented.
+BASELINE: dict[str, BaselineEntry] = {
+    # domain/app.py:44-53 <-> domain/user.py:40-52
+    "dup:110a87c35376": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+    # pytest_plugin/coverage_gate.py, twice within the same file
+    "dup:1aa7b9df3f16": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+    # the widest group: five blocks across the lanzadera domain entities
+    "dup:79d8c5976f0f": BaselineEntry(occurrences=5, target=0, target_date="2026-12-31"),
+    "dup:af8e0d12856d": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+}
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -182,9 +195,7 @@ def collect_groups(root: Path) -> list[CloneGroup]:
         # duplication dozens of times. A gate that reports 333 findings for 37 real clones gets
         # switched off inside a week, and a gate that is switched off protects nothing.
         fresh: list[Occurrence] = []
-        for occurrence, _ in sorted(
-            entries, key=lambda item: (item[0].file, item[0].start_line)
-        ):
+        for occurrence, _ in sorted(entries, key=lambda item: (item[0].file, item[0].start_line)):
             if _overlaps(occurrence):
                 continue
             fresh.append(occurrence)
@@ -329,7 +340,12 @@ def main(argv: list[str] | None = None) -> int:
     exit_code, lines = evaluate(groups, date.today())
 
     if args.json:
-        print(json.dumps(build_report(root, groups, "pass" if exit_code == 0 else "fail"), indent=2))
+        print(
+            json.dumps(
+                build_report(root, groups, "pass" if exit_code == 0 else "fail"),
+                indent=2,
+            )
+        )
     else:
         for line in lines:
             print(line)

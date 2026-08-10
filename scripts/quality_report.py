@@ -37,6 +37,11 @@ GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("crap", "check_crap.py", ()),
     ("mutation_sites", "check_mutation_sites.py", ()),
     ("dry", "check_dry.py", ()),
+    # DA-13. The Makefile's `quality-report` help text has always claimed this gate
+    # was aggregated here; it never was, so a security gate rejecting reintroduced
+    # legacy crypto symbols ran nowhere in CI. Last on purpose: it is a symbol
+    # walker, not a metric, so it neither consumes nor invalidates the numbers above.
+    ("legacy_hashes", "check_legacy_hashes.py", ()),
 )
 
 #: The mutation gate is not here on purpose: it consumes a session database produced by a real
@@ -65,7 +70,10 @@ INDICATOR_MEANINGS: dict[str, tuple[str, str]] = {
     "total_mutation_sites": ("mutation surface of the whole package", "lower"),
     "mutation_score_pct": ("mutants the suite killed", "higher"),
     "survivors_total": ("mutants no test noticed", "lower"),
-    "incompetent_ratio_pct": ("mutants that could not execute; high means a broken run", "lower"),
+    "incompetent_ratio_pct": (
+        "mutants that could not execute; high means a broken run",
+        "lower",
+    ),
     "mutants_measured": ("mutants the run actually evaluated", "higher"),
     "duplicate_groups": ("distinct duplicated blocks", "lower"),
     "duplicated_statements": ("statements inside a duplicated block", "lower"),
@@ -169,7 +177,9 @@ def render_markdown(report: dict) -> str:
         for envelope in failing:
             gate = envelope.get("gate", "unknown")
             detail = envelope.get("detail")
-            lines.append(f"**{gate}** — {envelope.get('status')}" + (f": {detail}" if detail else ""))
+            lines.append(
+                f"**{gate}** — {envelope.get('status')}" + (f": {detail}" if detail else "")
+            )
             for finding in envelope.get("findings", [])[:20]:
                 lines.append(f"- `{finding['file']}:{finding['line']}` {finding['detail']}")
             lines.append("")
@@ -201,7 +211,10 @@ def main(argv: list[str] | None = None) -> int:
         help="directory holding the gate scripts (default: alongside this file)",
     )
     parser.add_argument(
-        "--out", type=Path, default=None, help="report path (default: <root>/quality-report.json)"
+        "--out",
+        type=Path,
+        default=None,
+        help="report path (default: <root>/quality-report.json)",
     )
     parser.add_argument(
         "--include-pr-gates",

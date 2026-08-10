@@ -52,7 +52,13 @@ class BaselineEntry:
     target_date: str  # ISO-8601, YYYY-MM-DD
 
 
-BASELINE: dict[str, BaselineEntry] = {}
+# Measured on 2026-08-10, the first run in which this gate executed. Emitted by
+# `--emit-baseline`, not hand-written: a ratchet you typed is a ratchet you got wrong.
+BASELINE: dict[str, BaselineEntry] = {
+    "app/pytest_plugin/coverage_gate.py": BaselineEntry(
+        sites=118, target=100, target_date="2026-11-08"
+    ),
+}
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -223,7 +229,12 @@ def main(argv: list[str] | None = None) -> int:
 
     exit_code, lines = evaluate(offenders_of(measurements), date.today())
     if args.json:
-        print(json.dumps(build_report(measurements, "pass" if exit_code == 0 else "fail"), indent=2))
+        print(
+            json.dumps(
+                build_report(measurements, "pass" if exit_code == 0 else "fail"),
+                indent=2,
+            )
+        )
     else:
         for line in lines:
             print(line)

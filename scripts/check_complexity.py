@@ -247,7 +247,12 @@ def main(argv: list[str] | None = None) -> int:
     exit_code, lines = evaluate(offenders_of(measurements), date.today())
 
     if args.json:
-        print(json.dumps(build_report(measurements, "pass" if exit_code == 0 else "fail"), indent=2))
+        print(
+            json.dumps(
+                build_report(measurements, "pass" if exit_code == 0 else "fail"),
+                indent=2,
+            )
+        )
     else:
         for line in lines:
             print(line)

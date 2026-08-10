@@ -28,12 +28,23 @@ jobs:
         # `gitleaks dir` scans the working tree. `--redact` replaces secrets with `***` in
         # any output; `--no-banner` keeps CI logs clean; `--exit-code 1` is the gate —
         # removing it is the APAP_WEB #393 antipattern (Hard Rule 1).
+        #
+        # `-v` is what makes the gate actionable (issue #106, Hard Rule 16). Without it
+        # the job ends at "leaks found: 2" and nothing else: two findings and no way to
+        # know what they are. A gate that reports a count with no subject does not
+        # produce a correction, it produces a retreat — the reasonable-looking next
+        # steps all become "simplify the workflow" or "revert", none of which touch the
+        # finding. With `-v` the same run names the file, line, rule and fingerprint,
+        # and the fingerprint is exactly what `.gitleaksignore` takes, so recording an
+        # exception never requires reproducing the scan locally.
+        #
+        # `--redact` stays: the values remain out of the logs either way.
         run: >
           docker run --rm
           -v "$PWD:/repo"
           -w /repo
           zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
-          dir . --redact --no-banner --exit-code 1
+          dir . --redact --no-banner -v --exit-code 1
 
   trivy-config:
     runs-on: ubuntu-24.04
@@ -63,7 +74,28 @@ jobs:
         # Throwaway venv: the runner's ambient site-packages drags in CVEs that are not ours.
         # `--skip-editable` excludes the platform itself from the report.
         run: |
+          set -euo pipefail
           python -m venv .venv-audit
-          .venv-audit/bin/python -m pip install --upgrade pip==24.2
-          .venv-audit/bin/python -m pip install --no-deps --editable app[dev]
-          .venv-audit/bin/pip-audit --skip-editable --strict
+          .venv-audit/bin/python -m pip install --quiet --upgrade pip==26.2.1
+          .venv-audit/bin/python -m pip install --quiet "app[dev]"
+          .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
+
+          # Liveness before reporting (Hard Rule 18). Two defects made this job
+          # structurally unable to find anything: pip-audit was never installed
+          # (exit 127), and `--no-deps` meant the dependency tree it exists to
+          # audit was not in the venv. Installing the tool without dropping
+          # --no-deps would have been strictly worse than the crash — a job
+          # permanently green over an empty environment.
+          #
+          # So the count is checked before the verdict is trusted. A venv holding
+          # only pip and the project is not a clean scan, it is a scan that did
+          # not happen.
+          installed=$(.venv-audit/bin/python -m pip list --format=freeze | wc -l)
+          if [ "$installed" -lt 15 ]; then
+            echo "::error::dependency scan aborted: only $installed packages in the venv."
+            echo "That is not a clean audit, it is an audit with nothing to audit (Hard Rule 18)."
+            exit 1
+          fi
+          echo "dependency scan: auditing $installed installed packages"
+
+          .venv-audit/bin/pip-audit --strict

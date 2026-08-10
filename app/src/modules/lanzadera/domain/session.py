@@ -12,9 +12,9 @@ of the domain.
 
 from __future__ import annotations
 
-from uuid import UUID
 from dataclasses import dataclass
 from datetime import datetime
+from uuid import UUID
 
 
 @dataclass(frozen=True)
@@ -35,13 +35,10 @@ class LockoutPolicy:
 
     def __post_init__(self) -> None:
         if self.threshold < 1:
-            raise ValueError(
-                f"LockoutPolicy.threshold must be >= 1; got {self.threshold!r}"
-            )
+            raise ValueError(f"LockoutPolicy.threshold must be >= 1; got {self.threshold!r}")
         if self.duration_seconds < 1:
             raise ValueError(
-                f"LockoutPolicy.duration_seconds must be >= 1; "
-                f"got {self.duration_seconds!r}"
+                f"LockoutPolicy.duration_seconds must be >= 1; got {self.duration_seconds!r}"
             )
 
 

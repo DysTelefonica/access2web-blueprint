@@ -31,6 +31,13 @@ from pathlib import Path
 
 ROOT_PACKAGE = "app"
 
+#: Path segments between the root package and the module name. This repository lays modules out
+#: as `app/src/modules/<module>/<layer>/`, not `app/<module>/<layer>/`, so without this the
+#: classifier matched nothing: it reported 21 of 22 files unclassified and called each one a
+#: violation. A gate that cannot place the code it walks has no verdict to give (Hard Rule 18) —
+#: and 21 "violations" that are really 21 shrugs is the most misleading number it could print.
+MODULE_PREFIX: tuple[str, ...] = ("src", "modules")
+
 #: Modules every other module may depend on. Keep this set as small as it can possibly be; each
 #: entry is a hole in the vertical slicing rule.
 CROSS_CUTTING_MODULES = frozenset({"core"})
@@ -43,9 +50,7 @@ ALLOWED_IMPORTS: dict[str, frozenset[str]] = {
     "adapters": frozenset({"domain", "ports", "adapters", "shared"}),
     "shared": frozenset({"domain", "ports", "shared"}),
     "delivery": frozenset({"domain", "ports", "application", "adapters", "shared", "delivery"}),
-    "di": frozenset(
-        {"domain", "ports", "application", "adapters", "shared", "delivery", "di"}
-    ),
+    "di": frozenset({"domain", "ports", "application", "adapters", "shared", "delivery", "di"}),
 }
 
 #: Layers that must not touch a framework at all.
@@ -53,12 +58,33 @@ PURE_LAYERS = frozenset({"domain", "ports", "application"})
 
 #: Top-level distributions banned inside PURE_LAYERS.
 FORBIDDEN_IN_PURE_LAYERS = frozenset(
-    {"fastapi", "sqlalchemy", "alembic", "jinja2", "httpx", "asyncpg", "starlette", "pydantic_settings"}
+    {
+        "fastapi",
+        "sqlalchemy",
+        "alembic",
+        "jinja2",
+        "httpx",
+        "asyncpg",
+        "starlette",
+        "pydantic_settings",
+    }
 )
 
 #: Paths excluded from the walk. Hard Rule 14: this is the declared untestable/ungoverned
 #: boundary. Keep it thin and keep it honest — every entry here is code nobody is checking.
-EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
+EXCLUDED_PARTS = frozenset(
+    {"__pycache__", ".venv", "venv", "build", "dist", "migrations", "pytest_plugin"}
+)
+
+#: Files that sit outside the module/layer structure ON PURPOSE, each with the reason.
+#:
+#: Everything else that cannot be classified is reported as unclassified and fails, because
+#: "I could not place this file" and "this file is clean" must never share a verdict
+#: (Hard Rule 18). This list is what separates a deliberate exception from a blind spot, and
+#: it is deliberately short: every entry is a file the gate does not check.
+UNLAYERED_FILES: dict[str, str] = {
+    "app/src/main.py": "composition root — the one place allowed to wire every layer together",
+}
 
 
 @dataclass(frozen=True)
@@ -104,29 +130,49 @@ def _iter_source_files(root: Path) -> list[Path]:
     return files
 
 
+def _is_package_marker(path: Path, root: Path) -> bool:
+    """True for an ``__init__.py`` above the module level.
+
+    Such a file cannot carry a layer: there is no ``<module>/<layer>/`` prefix for it to sit
+    under. An ``__init__.py`` INSIDE a layer classifies normally and is checked like any other
+    file, so this exempts scaffolding without exempting code.
+    """
+    if path.name != "__init__.py":
+        return False
+    try:
+        parts = path.relative_to(root).parts
+    except ValueError:
+        return False
+    return len(parts) < len((ROOT_PACKAGE, *MODULE_PREFIX)) + 3
+
+
+def _classify_parts(parts: tuple[str, ...]) -> tuple[str, str] | None:
+    """Map path or dotted segments to ``(module, layer)``, or ``None`` when not layered code.
+
+    Shared by both classifiers on purpose: a file and the import that targets it must agree
+    on what layer they are in, and two copies of this arithmetic would eventually disagree.
+    """
+    head = (ROOT_PACKAGE, *MODULE_PREFIX)
+    if len(parts) < len(head) + 2 or parts[: len(head)] != head:
+        return None
+    module, layer = parts[len(head)], parts[len(head) + 1]
+    if layer not in ALLOWED_IMPORTS:
+        return None
+    return module, layer
+
+
 def classify_file(path: Path, root: Path) -> tuple[str, str] | None:
     """Map a file to its ``(module, layer)``, or ``None`` when it is not layered code."""
     try:
         parts = path.relative_to(root).parts
     except ValueError:
         return None
-    if len(parts) < 4 or parts[0] != ROOT_PACKAGE:
-        return None
-    module, layer = parts[1], parts[2]
-    if layer not in ALLOWED_IMPORTS:
-        return None
-    return module, layer
+    return _classify_parts(parts)
 
 
 def classify_dotted(name: str) -> tuple[str, str] | None:
     """Map a dotted import target to its ``(module, layer)``, or ``None`` when it is external."""
-    parts = name.split(".")
-    if len(parts) < 3 or parts[0] != ROOT_PACKAGE:
-        return None
-    module, layer = parts[1], parts[2]
-    if layer not in ALLOWED_IMPORTS:
-        return None
-    return module, layer
+    return _classify_parts(tuple(name.split(".")))
 
 
 def _absolute_target(node: ast.ImportFrom, path: Path, root: Path) -> str | None:
@@ -191,9 +237,7 @@ def _check_slice(
     )
 
 
-def _check_purity(
-    origin: tuple[str, str], imported: str, file: str, line: int
-) -> Violation | None:
+def _check_purity(origin: tuple[str, str], imported: str, file: str, line: int) -> Violation | None:
     _, origin_layer = origin
     if origin_layer not in PURE_LAYERS:
         return None
@@ -214,6 +258,12 @@ def collect_violations(root: Path) -> list[Violation]:
         display = str(path.relative_to(root)).replace("\\", "/")
         origin = classify_file(path, root)
         if origin is None:
+            if display in UNLAYERED_FILES or _is_package_marker(path, root):
+                # Declared as outside the layer structure, or a package marker that sits above
+                # the module level and therefore cannot carry a layer by construction. Both are
+                # exceptions someone wrote down, which is the difference between a decision and
+                # a blind spot.
+                continue
             # Hard Rule 18: a file this gate cannot classify is a file this gate did not check.
             # Skipping it silently reports "clean" for code nobody looked at — which is how a
             # layout mismatch turns a whole codebase invisible while CI stays green. Either

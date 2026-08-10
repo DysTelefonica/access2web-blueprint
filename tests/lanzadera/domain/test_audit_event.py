@@ -6,13 +6,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 import pytest
 
 from app.src.modules.lanzadera.domain.audit_event import AuditEvent
-
 
 # ---------------------------------------------------------------------------
 # Helpers / fixtures
@@ -20,7 +19,7 @@ from app.src.modules.lanzadera.domain.audit_event import AuditEvent
 
 
 def _now() -> datetime:
-    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=timezone.utc)
+    return datetime(2026, 8, 9, 12, 0, 0, tzinfo=UTC)
 
 
 def _new_event(
