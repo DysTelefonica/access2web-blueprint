@@ -90,11 +90,7 @@ def resolve_legacy_roles(flags: dict[str, bool | None]) -> tuple[str, ...]:
     if _flag_is_set(flags, LegacyFlags.SIN_ACCESO):
         return (SIN_ACCESO_PROFILE_CODE,)
 
-    active = tuple(
-        LEGACY_ROLE_MAP[flag]
-        for flag in LEGACY_ROLE_MAP
-        if _flag_is_set(flags, flag)
-    )
+    active = tuple(LEGACY_ROLE_MAP[flag] for flag in LEGACY_ROLE_MAP if _flag_is_set(flags, flag))
     if active:
         return active
 

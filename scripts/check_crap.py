@@ -49,7 +49,9 @@ MAX_CRAP = 6.0
 #: --cov-fail-under so that a single tool owns a single verdict.
 COVERAGE_JSON = "coverage.json"
 
-EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
+EXCLUDED_PARTS = frozenset(
+    {"__pycache__", ".venv", "venv", "build", "dist", "migrations"}
+)
 
 
 @dataclass(frozen=True)
@@ -143,7 +145,9 @@ def _own_lines(function: ast.AST) -> set[int]:
     return own
 
 
-def load_coverage(root: Path, coverage_path: Path) -> dict[str, tuple[set[int], set[int]]]:
+def load_coverage(
+    root: Path, coverage_path: Path
+) -> dict[str, tuple[set[int], set[int]]]:
     """Return ``{posix_relative_path: (executed_lines, missing_lines)}``."""
     if not coverage_path.is_file():
         raise CoverageUnavailable(
@@ -187,7 +191,9 @@ def measure(root: Path, coverage_path: Path) -> tuple[list[Measurement], float]:
     """Measure every function plus the package-wide line coverage indicator."""
     package_root = root / ROOT_PACKAGE
     if not package_root.is_dir():
-        raise CoverageUnavailable(f"root package '{ROOT_PACKAGE}' not found under {root}")
+        raise CoverageUnavailable(
+            f"root package '{ROOT_PACKAGE}' not found under {root}"
+        )
 
     table = load_coverage(root, coverage_path)
     measurements: list[Measurement] = []
@@ -228,8 +234,12 @@ def measure(root: Path, coverage_path: Path) -> tuple[list[Measurement], float]:
             )
 
     if not measurements:
-        raise CoverageUnavailable("no functions found to measure; refusing to report success")
-    line_coverage = 100.0 * executed_total / statements_total if statements_total else 0.0
+        raise CoverageUnavailable(
+            "no functions found to measure; refusing to report success"
+        )
+    line_coverage = (
+        100.0 * executed_total / statements_total if statements_total else 0.0
+    )
     return measurements, line_coverage
 
 
@@ -252,14 +262,19 @@ def evaluate(offenders: list[Measurement], today: date) -> tuple[int, list[str]]
         allowance = BASELINE.get(key)
         if allowance is None:
             failed = True
-            lines.append(f"FAIL  {location}  {offender.name}: {detail}, ceiling is {MAX_CRAP:.0f}")
+            lines.append(
+                f"FAIL  {location}  {offender.name}: {detail}, ceiling is {MAX_CRAP:.0f}"
+            )
             lines.append("        cover the branches, split the function, or both")
         elif offender.crap > allowance.crap:
             failed = True
             lines.append(
                 f"FAIL  {location}  {offender.name}: {detail}, BASELINE allows {allowance.crap:.1f}"
             )
-        elif today.isoformat() > allowance.target_date and offender.crap > allowance.target:
+        elif (
+            today.isoformat() > allowance.target_date
+            and offender.crap > allowance.target
+        ):
             failed = True
             lines.append(
                 f"FAIL  {location}  {offender.name}: BASELINE expired on {allowance.target_date} "
@@ -280,13 +295,17 @@ def evaluate(offenders: list[Measurement], today: date) -> tuple[int, list[str]]
     return (1 if failed else 0), lines
 
 
-def build_report(measurements: list[Measurement], line_coverage: float, status: str) -> dict:
+def build_report(
+    measurements: list[Measurement], line_coverage: float, status: str
+) -> dict:
     offenders = offenders_of(measurements)
     return {
         "gate": "crap",
         "status": status,
         "indicators": {
-            "max_crap": round(max((item.crap for item in measurements), default=0.0), 2),
+            "max_crap": round(
+                max((item.crap for item in measurements), default=0.0), 2
+            ),
             "functions_over_ceiling": len(offenders),
             "functions_measured": len(measurements),
             "line_coverage_pct": round(line_coverage, 2),
@@ -328,7 +347,9 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help=f"coverage report path (default: <root>/{COVERAGE_JSON})",
     )
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser.add_argument(
+        "--json", action="store_true", help="emit the indicator envelope"
+    )
     args = parser.parse_args(argv)
 
     root = args.root.resolve()

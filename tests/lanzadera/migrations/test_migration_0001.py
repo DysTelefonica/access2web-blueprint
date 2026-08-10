@@ -213,7 +213,9 @@ async def _drop_test_database(name: str) -> None:
         await conn.close()
 
 
-def _run_alembic(worktree_root: Path, alembic_ini: Path, db_name: str, *args: str) -> None:
+def _run_alembic(
+    worktree_root: Path, alembic_ini: Path, db_name: str, *args: str
+) -> None:
     """Invoke `alembic` against the test database.
 
     We prepend `PYTHONPATH` so `app/migrations/env.py` can import
@@ -423,6 +425,7 @@ async def _fetch_primary_key(db_name: str, table: str) -> list[str]:
 @pytest.mark.integration
 def test_schema_lanzadera_exists(migrated_db: str) -> None:
     """The migration creates the `lanzadera` schema; assert it is present."""
+
     async def _check() -> str | None:
         conn = await asyncpg.connect(
             host=PG_HOST,
@@ -440,7 +443,9 @@ def test_schema_lanzadera_exists(migrated_db: str) -> None:
             await conn.close()
         return row["schema_name"] if row else None
 
-    assert asyncio.run(_check()) == SCHEMA, "schema `lanzadera` missing after migration 0001"
+    assert asyncio.run(_check()) == SCHEMA, (
+        "schema `lanzadera` missing after migration 0001"
+    )
 
 
 @pytest.mark.integration
@@ -578,7 +583,9 @@ def test_user_app_assignments_revoked_at_is_nullable(migrated_db: str) -> None:
     a global admin revokes a profile. NOT NULL would force every assignment
     to carry a sentinel timestamp and break the "active" view.
     """
-    column = asyncio.run(_fetch_column(migrated_db, "user_app_assignments", "revoked_at"))
+    column = asyncio.run(
+        _fetch_column(migrated_db, "user_app_assignments", "revoked_at")
+    )
     assert column is not None, "user_app_assignments.revoked_at missing"
     assert column["is_nullable"] == "YES", (
         f"user_app_assignments.revoked_at must be nullable; "

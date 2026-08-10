@@ -47,7 +47,9 @@ from tests.lanzadera.migrations.test_migration_0001 import (
 )
 
 
-def _run_alembic(worktree_root: Path, alembic_ini: Path, db_name: str, *args: str) -> None:
+def _run_alembic(
+    worktree_root: Path, alembic_ini: Path, db_name: str, *args: str
+) -> None:
     """Invoke `alembic` against the test database."""
     database_url = (
         f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"

@@ -34,7 +34,9 @@ MAX_CHANGED_LINES = 400
 EXCLUDED_SUFFIXES = ("uv.lock", "poetry.lock", "package-lock.json", "pnpm-lock.yaml")
 
 OVERRIDE_MARKER = "size:exception"
-OVERRIDE_REASON = re.compile(r"^\s*size-exception-reason:\s*(?P<reason>\S.*)$", re.MULTILINE)
+OVERRIDE_REASON = re.compile(
+    r"^\s*size-exception-reason:\s*(?P<reason>\S.*)$", re.MULTILINE
+)
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -101,14 +103,18 @@ def main(argv: list[str] | None = None) -> int:
         default=os.environ.get("BASE_REF", "origin/main"),
         help="ref to diff against (default: $BASE_REF or origin/main)",
     )
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser.add_argument(
+        "--json", action="store_true", help="emit the indicator envelope"
+    )
     args = parser.parse_args(argv)
 
     try:
         total, per_file = changed_lines(args.base_ref)
     except RuntimeError as exc:
         if args.json:
-            print(json.dumps({"gate": "pr_size", "status": "error", "detail": str(exc)}))
+            print(
+                json.dumps({"gate": "pr_size", "status": "error", "detail": str(exc)})
+            )
         else:
             print(f"FAIL  {exc}", file=sys.stderr)
         return 1

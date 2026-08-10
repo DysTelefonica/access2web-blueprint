@@ -67,10 +67,7 @@ ALL_FLAG_NAMES: tuple[str, ...] = (
 
 
 def _bitmask_to_flags(bitmask: int) -> dict[str, bool]:
-    return {
-        name: bool(bitmask & (1 << idx))
-        for idx, name in enumerate(ALL_FLAG_NAMES)
-    }
+    return {name: bool(bitmask & (1 << idx)) for idx, name in enumerate(ALL_FLAG_NAMES)}
 
 
 def _expected_codes(flags: dict[str, bool], *, sin_acceso: bool) -> tuple[str, ...]:

@@ -72,8 +72,12 @@ class TestSessionConstruction:
         user_id = uuid4()
         created = _now()
         expires = created + timedelta(hours=12)
-        a = Session(id=session_id, user_id=user_id, created_at=created, expires_at=expires)
-        b = Session(id=session_id, user_id=user_id, created_at=created, expires_at=expires)
+        a = Session(
+            id=session_id, user_id=user_id, created_at=created, expires_at=expires
+        )
+        b = Session(
+            id=session_id, user_id=user_id, created_at=created, expires_at=expires
+        )
         assert a == b
 
 
