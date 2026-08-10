@@ -214,4 +214,4 @@ jobs:
         run: >
           docker run --rm -v "$PWD:/repo" -w /repo
           aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c
-          config /repo/Dockerfile --severity HIGH,CRITICAL --exit-code 1
+          config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1

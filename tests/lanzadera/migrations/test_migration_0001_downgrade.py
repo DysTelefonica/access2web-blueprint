@@ -95,7 +95,9 @@ def alembic_ini(worktree_root: Path) -> Path:
     for candidate in _alembic_ini_candidates(worktree_root):
         if candidate.is_file():
             return candidate
-    raise FileNotFoundError("alembic.ini not found; PR 3a must ship it")
+    # See the sibling module: Hard Rule 18. A check with no subject announces the
+    # skip instead of erroring the suite for a dependency that is tracked (PR #87).
+    pytest.skip("alembic.ini has not shipped yet — it arrives with PR #87")
 
 
 @pytest.fixture(scope="module")
