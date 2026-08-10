@@ -1,0 +1,177 @@
+# Lanzadera MVP — Python 3.12 platform package.
+#
+# HARNESS-PROVENANCE: derived from `deterministic-quality-harness v1.4` and the
+# orchestrator pre-resolved decisions for `lanzadera-mvp` PR 1 (Phase 0).
+#
+# Hard Rule 2: every tool that governs a rule is pinned to an EXACT version. A `>=`
+# constraint lets a minor release graduate or retire a rule, which changes the verdict
+# on unchanged code. Drift graduates rules; the gate enforces the version it was
+# designed against.
+# Hard Rule 15 extends the same logic to the transitive graph: these pins only hold
+# if the install path uses a hash-checked lockfile (`requirements-dev.lock` produced
+# by `pip-compile --generate-hashes`).
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "app-lanzadera-mvp"
+version = "0.0.0+phase0"
+description = "Lanzadera MVP — first slice of the hexagonal platform (Phase 0)."
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = { text = "Proprietary" }
+authors = [{ name = "access2web-blueprint maintainers" }]
+keywords = ["lanzadera", "hexagonal", "platform"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+# Exact runtime pins (orchestrator decision, 2026-08-09). Each line is required.
+dependencies = [
+    "argon2-cffi==25.1.0",         # DA-2: Argon2id PHC strings for password hashing.
+    "sqlalchemy==2.0.*",           # Core ORM for adapters (Phase 4).
+    "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
+    "asyncpg==0.30.*",             # Postgres driver for SQLAlchemy (Phase 4).
+    "fastapi==0.119.*",            # HTTP layer for delivery (Phase 5).
+    "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
+    "httpx==0.28.*",               # Test client + downstream HTTP.
+    "cachetools==5.*",             # TTLCache adapter (DA-8).
+    "python-multipart==0.0.*",     # FastAPI form parsing.
+    "uvicorn[standard]==0.30.*",   # ASGI server for delivery.
+]
+
+[project.optional-dependencies]
+# Dev pins — exact, per Hard Rule 2. Drift graduates rules; the gate enforces
+# the version it was designed against.
+dev = [
+    "ruff==0.15.21",               # QC-3 lint.
+    "mypy==1.13.0",                # QC-4 typecheck (platform/src/ only).
+    "pytest==8.4.2",               # Strict-TDD runner.
+    "pytest-cov==7.0.0",           # Coverage + gate plugin host.
+    "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
+    "pip-audit==2.9.0",            # Dependency scan (security.yml).
+]
+
+# ---------------------------------------------------------------------------
+# Tool sections — copied verbatim from `deterministic-quality-harness` assets
+# unless explicitly overridden by the orchestrator for this change.
+# ---------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    ".pytest_cache",
+    ".ruff_cache",
+    "__pycache__",
+    # Negative fixtures (tests/fixtures) are deliberately broken. Linting them
+    # would force "fixes" that destroy the only evidence the gates actually fail.
+    "tests/fixtures",
+    "app/migrations",
+]
+
+[tool.ruff.lint]
+# Base select only. Extended families (S, ERA, ARG, PLR, ...) are adopted one at
+# a time, each behind its own policy decision — never in bulk, and never with
+# known noise (Hard Rule 5 of deterministic-quality-harness).
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["B011"]
+
+[tool.ruff.lint.isort]
+# `app.src.modules` is the first-party surface the gate enforces.
+known-first-party = ["app", "tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+# A bare `# type: ignore` graduates silence into a permanent hole. Requiring
+# the error code keeps every suppression traceable to the check it disables.
+enable_error_code = ["ignore-without-code"]
+
+[[tool.mypy.overrides]]
+module = "tests.fixtures.*"
+ignore_errors = true
+
+[tool.pytest.ini_options]
+# `-p no:randomly` pins test execution order. Randomised order is a good way to
+# FIND order dependencies and a terrible property for a gate: the same commit
+# passes and fails depending on a seed nobody recorded.
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-p no:randomly",
+    # The coverage gate plugin is the canonical Phase 0 declaration site for
+    # CRITICAL_HELPERS. When the helpers do not exist yet, the plugin emits a
+    # WARNING, not a failure — see app/pytest_plugin/coverage_gate.py.
+    "-p app.pytest_plugin.coverage_gate",
+    # Coverage configuration matches what `pytest --cov=app --cov-fail-under=85`
+    # does at the CLI. Source = the `app` package rooted at this directory.
+    "--cov=app",
+    "--cov-fail-under=85",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=json:coverage.json",
+]
+# `pythonpath = [".."]` makes the worktree root importable from pytest's
+# sys.path. Without this, `app.pytest_plugin.coverage_gate` cannot be loaded
+# when pytest is invoked from `app/` (cwd would shadow the package).
+pythonpath = [".."]
+testpaths = [
+    # Phase 0 + Phase 6 tests live at the worktree root in `tests/`.
+    # Pytest resolves testpaths relative to rootdir (this directory).
+    "../tests",
+]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+# Source is the `app` package (cwd-relative). Branch coverage off for now
+# to keep the floor aligned with --cov-fail-under=85.
+source = ["app"]
+omit = [
+    # Hard Rule 14: the testable/untestable boundary is declared here, in
+    # version control, and nowhere else. Keep this list short and review it
+    # quarterly.
+    #
+    # Empty `__init__.py` markers carry no statements to test. Excluding them
+    # prevents check_crap.py from failing closed on package-boundary files.
+    "app/src/__init__.py",
+    "app/src/shared/__init__.py",
+    "app/src/modules/__init__.py",
+    "app/src/modules/lanzadera/__init__.py",
+    "app/src/modules/lanzadera/domain/__init__.py",
+    "app/src/modules/lanzadera/ports/__init__.py",
+    "app/src/modules/lanzadera/application/__init__.py",
+    "app/src/modules/lanzadera/adapters/__init__.py",
+    "app/src/modules/lanzadera/di/__init__.py",
+    "app/src/modules/lanzadera/delivery/__init__.py",
+    "app/pytest_plugin/__init__.py",
+]
+
+[tool.coverage.report]
+# `exclude_lines` keeps the standard no-cover idioms from inflating the
+# denominator: pragma markers, abstract methods, type-checking imports.
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "\\.\\.\\.",
+]
+
+[tool.hatch.build.targets.wheel]
+# Tests and fixtures never ship to production.
+only-include = ["src"]
