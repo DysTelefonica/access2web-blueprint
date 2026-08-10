@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/check_dry.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_dry.py
 """DRY gate — type-1 and type-2 duplicate block detection over the AST.
 
 Text-based clone detection reports formatting as duplication and misses everything that was
@@ -37,9 +37,7 @@ from pathlib import Path
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
 
-#: The DRY gate walks the whole `app/src/` tree. The narrower
-#: `app.src.modules` scope belongs to the layer gate only.
-ROOT_PACKAGE_PARTS = ["app", "src"]
+ROOT_PACKAGE = "app"
 
 #: Consecutive statements that must match before a block counts as duplication. Lower is
 #: stricter and noisier; 5 is the point where a match stops being a coincidence.
@@ -135,7 +133,7 @@ def _statement_bodies(tree: ast.AST):
 
 
 def collect_groups(root: Path) -> list[CloneGroup]:
-    package_root = root.joinpath(*ROOT_PACKAGE_PARTS)
+    package_root = root / ROOT_PACKAGE
     if not package_root.is_dir():
         return []
 
@@ -212,7 +210,7 @@ def _duplicated_statement_total(groups: list[CloneGroup]) -> int:
 
 
 def _total_statements(root: Path) -> int:
-    package_root = root.joinpath(*ROOT_PACKAGE_PARTS)
+    package_root = root / ROOT_PACKAGE
     if not package_root.is_dir():
         return 0
     total = 0
@@ -319,8 +317,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
-    package_root = root.joinpath(*ROOT_PACKAGE_PARTS)
-    if not package_root.is_dir():
+    if not (root / ROOT_PACKAGE).is_dir():
         message = f"root package '{ROOT_PACKAGE}' not found under {root}"
         if args.json:
             print(json.dumps({"gate": "dry", "status": "error", "detail": message}))
