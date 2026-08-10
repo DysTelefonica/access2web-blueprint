@@ -37,6 +37,11 @@ GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("crap", "check_crap.py", ()),
     ("mutation_sites", "check_mutation_sites.py", ()),
     ("dry", "check_dry.py", ()),
+    # DA-13. The Makefile's `quality-report` help text has always claimed this gate
+    # was aggregated here; it never was, so a security gate rejecting reintroduced
+    # legacy crypto symbols ran nowhere in CI. Last on purpose: it is a symbol
+    # walker, not a metric, so it neither consumes nor invalidates the numbers above.
+    ("legacy_hashes", "check_legacy_hashes.py", ()),
 )
 
 #: The mutation gate is not here on purpose: it consumes a session database produced by a real

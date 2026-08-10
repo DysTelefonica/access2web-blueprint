@@ -23,7 +23,7 @@ PYTEST := $(PYTHON) -m pytest
 
 .DEFAULT_GOAL := help
 
-.PHONY: help
+.PHONY: verify help
 help: ## Show every target, one per line, with a short description.
 	@awk 'BEGIN {FS = ":.*##"; printf "Targets:\n"} \
 		/^[a-zA-Z0-9_.-]+:.*##/ {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -113,7 +113,9 @@ migrate-fixtures: ## Phase 2 — Dysflow extract to JSON fixtures. Wired in PR 3
 	@echo "migrate-fixtures: wired in PR 3b (Phase 2). Will read SHA256-pinned .accdb and emit TbAplicaciones.json, tbUsuarios.json, TbUsuariosAplicacionesPermisos.json, TbConexiones.json, TbAplicacionesAperturas.json."
 
 .PHONY: all
-all: lint typecheck test check-layers check-complexity check-crap check-dry check-branch-name quality-report ## Run every gate Phase 0 owns.
+verify: format lint typecheck test quality-report check-branch-name check-pr-size ## THE green-PR gate: every gate ci.yml runs on a pull request.
+
+all: verify ## Alias for `verify`, kept for muscle memory.
 
 .PHONY: clean
 clean: ## Remove generated artefacts (coverage, quality report, caches).

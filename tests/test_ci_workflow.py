@@ -20,7 +20,7 @@ REQUIRED_COMMANDS = (
     "ruff format --check",
     "ruff check .",
     "mypy app/",
-    "pytest --cov --cov-report=json:coverage.json",
+    "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
     "python scripts/quality_report.py",
     "python scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
