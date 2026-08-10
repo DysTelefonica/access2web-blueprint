@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/quality_report.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/quality_report.py
 """Aggregate every gate's indicator envelope into one report.
 
 Gates answer pass/fail. Indicators answer "by how much, and which way is it moving" — which is
@@ -34,9 +34,9 @@ from pathlib import Path
 GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("layers", "check_layers.py", ()),
     ("complexity", "check_complexity.py", ()),
-    ("crap", "check_crap.py", ("--coverage-json", "app/coverage.json")),
+    ("crap", "check_crap.py", ()),
+    ("mutation_sites", "check_mutation_sites.py", ()),
     ("dry", "check_dry.py", ()),
-    ("legacy_hashes", "check_legacy_hashes.py", ()),
 )
 
 #: The mutation gate is not here on purpose: it consumes a session database produced by a real
@@ -60,6 +60,13 @@ INDICATOR_MEANINGS: dict[str, tuple[str, str]] = {
     "functions_measured": ("functions the gate could measure", "higher"),
     "max_crap": ("highest CRAP score of any function", "lower"),
     "line_coverage_pct": ("statements executed by the suite", "higher"),
+    "max_mutation_sites": ("largest mutation surface of any file", "lower"),
+    "files_over_ceiling": ("files above the gate ceiling", "lower"),
+    "total_mutation_sites": ("mutation surface of the whole package", "lower"),
+    "mutation_score_pct": ("mutants the suite killed", "higher"),
+    "survivors_total": ("mutants no test noticed", "lower"),
+    "incompetent_ratio_pct": ("mutants that could not execute; high means a broken run", "lower"),
+    "mutants_measured": ("mutants the run actually evaluated", "higher"),
     "duplicate_groups": ("distinct duplicated blocks", "lower"),
     "duplicated_statements": ("statements inside a duplicated block", "lower"),
     "duplicated_ratio_pct": ("duplicated share of all statements", "lower"),
@@ -86,17 +93,8 @@ def _commit(root: Path) -> str:
 
 
 def run_gate(scripts: Path, script: str, root: Path, extra: tuple[str, ...]) -> dict:
-    # PR-scoped gates (branch_name, pr_size) read from git/env and do not need
-    # a `--root` argument; the package gates do.
-    pkg_gates = {"check_layers.py", "check_complexity.py", "check_crap.py",
-                 "check_dry.py", "check_legacy_hashes.py"}
-    args: list[str]
-    if script in pkg_gates:
-        args = [sys.executable, str(scripts / script), "--root", str(root), "--json", *extra]
-    else:
-        args = [sys.executable, str(scripts / script), "--json", *extra]
     result = subprocess.run(
-        args,
+        [sys.executable, str(scripts / script), "--root", str(root), "--json", *extra],
         capture_output=True,
         text=True,
         check=False,
