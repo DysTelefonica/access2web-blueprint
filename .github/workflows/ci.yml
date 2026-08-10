@@ -92,8 +92,10 @@ jobs:
         # coverage.json is an input to the CRAP gate, not a nicety. Without it that gate fails
         # closed, which is the correct behaviour and a useless CI run — so produce it here.
         # The plugin is loaded by pyproject.toml so the CRITICAL_HELPERS gate fires too.
+        # `-m "not integration"` skips the migration RED tests (they need a real Postgres;
+        # devs run them locally with `pytest -m integration` after `docker compose up -d postgres`).
         run: |
-          cd app && python -m pytest --cov=app --cov-fail-under=85 --cov-report=json:coverage.json --cov-report=term
+          cd app && python -m pytest --cov=app --cov-fail-under=85 --cov-report=json:coverage.json --cov-report=term -m "not integration"
 
       - name: quality gates and indicators
         # Runs layers -> complexity -> CRAP -> DRY -> legacy_hashes in that fixed order,

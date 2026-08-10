@@ -115,8 +115,11 @@ addopts = [
     "-p no:randomly",
     # The coverage gate plugin is the canonical Phase 0 declaration site for
     # CRITICAL_HELPERS. When the helpers do not exist yet, the plugin emits a
-    # WARNING, not a failure — see app/pytest_plugin/coverage_gate.py.
+    # WARNING, not a failure - see app/pytest_plugin/coverage_gate.py.
     "-p app.pytest_plugin.coverage_gate",
+    # Skip integration tests by default - they require a real Postgres.
+    # Run them locally with `pytest -m integration` once docker compose is up.
+    "-m not integration",
     # Coverage configuration matches what `pytest --cov=app --cov-fail-under=85`
     # does at the CLI. Source = the `app` package rooted at this directory.
     "--cov=app",
@@ -136,6 +139,10 @@ testpaths = [
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+# `--strict-markers` requires every marker to be listed here or collection fails.
+markers = [
+    "integration: tests that require a real Postgres (run locally with `pytest -m integration`)",
+]
 
 [tool.coverage.run]
 # Source is the `app` package (cwd-relative). Branch coverage off for now
