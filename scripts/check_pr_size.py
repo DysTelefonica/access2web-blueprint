@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/check_pr_size.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_pr_size.py
 """PR size gate: a review budget, enforced.
 
 Counts semantic changed lines between the merge base and HEAD. Line-ending churn is not a change
@@ -34,7 +34,7 @@ MAX_CHANGED_LINES = 400
 EXCLUDED_SUFFIXES = ("uv.lock", "poetry.lock", "package-lock.json", "pnpm-lock.yaml")
 
 OVERRIDE_MARKER = "size:exception"
-OVERRIDE_RE = re.compile(r"^\s*size-exception-reason:\s*(?P<reason>\S.*)$", re.MULTILINE)
+OVERRIDE_REASON = re.compile(r"^\s*size-exception-reason:\s*(?P<reason>\S.*)$", re.MULTILINE)
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -75,7 +75,7 @@ def override_reason(pr_body: str) -> str | None:
     """Return the stated reason when a valid override is present, else ``None``."""
     if OVERRIDE_MARKER not in pr_body:
         return None
-    match = OVERRIDE_RE.search(pr_body)
+    match = OVERRIDE_REASON.search(pr_body)
     return match.group("reason").strip() if match else None
 
 
