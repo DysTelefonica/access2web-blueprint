@@ -46,7 +46,16 @@ VERIFY_EXCLUSIONS = (
 
 #: The four code gates, in the order they must run. Deduplication moves code, which changes
 #: complexity, which changes CRAP — so the sequence is part of the contract, not a preference.
-REQUIRED_GATE_ORDER = ("layers", "complexity", "crap", "mutation_sites", "dry")
+REQUIRED_GATE_ORDER = (
+    "layers",
+    "complexity",
+    "crap",
+    "mutation_sites",
+    "dry",
+    # DA-13, last: a symbol walker, not a metric, so it neither consumes nor
+    # invalidates the numbers before it.
+    "legacy_hashes",
+)
 
 _SHA_PIN = re.compile(r"^[0-9a-f]{40}$")
 
