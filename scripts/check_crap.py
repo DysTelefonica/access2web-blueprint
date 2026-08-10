@@ -185,6 +185,30 @@ def _lookup(table: dict[str, tuple[set[int], set[int]]], display: str):
     return None
 
 
+def _declared_boundary(root: Path) -> frozenset[str]:
+    """Read the untestable boundary from ``[tool.coverage.run] omit``.
+
+    Hard Rule 14 says the boundary is "declared here, in version control, and nowhere else".
+    This gate used to keep its own idea of what is untestable, so the moment coverage began
+    honouring its list the two disagreed and this gate failed closed on files the project had
+    already declared out of scope — one per run, forever.
+
+    Failing closed was right: "no coverage data" and "clean" must never share a verdict. Having
+    two boundaries was the defect. There is one now, and this reads it.
+    """
+    config = root / "app" / "pyproject.toml"
+    if not config.is_file():
+        return frozenset()
+    try:
+        import tomllib
+
+        data = tomllib.loads(config.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - an unreadable boundary must not silently widen the gate
+        return frozenset()
+    omit = data.get("tool", {}).get("coverage", {}).get("run", {}).get("omit", [])
+    return frozenset(str(entry).replace("\\", "/") for entry in omit)
+
+
 def measure(root: Path, coverage_path: Path) -> tuple[list[Measurement], float]:
     """Measure every function plus the package-wide line coverage indicator."""
     package_root = root / ROOT_PACKAGE
@@ -196,10 +220,14 @@ def measure(root: Path, coverage_path: Path) -> tuple[list[Measurement], float]:
     executed_total = 0
     statements_total = 0
 
+    boundary = _declared_boundary(root)
+
     for path in sorted(package_root.rglob("*.py")):
         if EXCLUDED_PARTS.intersection(path.parts):
             continue
         display = str(path.relative_to(root)).replace("\\", "/")
+        if display in boundary:
+            continue
         entry = _lookup(table, display)
         if entry is None:
             raise CoverageUnavailable(
