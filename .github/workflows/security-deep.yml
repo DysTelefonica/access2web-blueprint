@@ -1,0 +1,53 @@
+# Lanzadera MVP — deep security scan (weekly + manual).
+#
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — applies to lanzadera-mvp Phase 0.
+# Deep scans are deliberately NOT in the per-PR pipeline: they are too slow, too
+# noisy, or too expensive to run on every commit. The schedule keeps them
+# current; the manual trigger keeps them on demand.
+
+name: security-deep
+
+on:
+  schedule:
+    # Sunday 03:00 UTC, after the per-PR security job has had the week to run.
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks-history:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks full history
+        # `detect --source=.` with `fetch-depth: 0` walks every commit ever recorded.
+        run: >
+          docker run --rm
+          -v "$PWD:/repo"
+          -w /repo
+          zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
+          detect --source=. --redact --no-banner --exit-code 1
+
+  trivy-image:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      # `trivy image` requires Docker-in-Docker; we pin `docker/setup-buildx-action` by SHA
+      # alongside the trivy digest so the deep scan is reproducible.
+      - uses: docker/setup-buildx-action@988b5a0280414f521da01fcc63a27aeeb4b104db # v3
+        with:
+          driver-opts: image=moby/buildkit:v0.18.0
+
+      - name: trivy image scan (python:3.12-slim-bookworm)
+        run: >
+          docker run --rm
+          -v /var/run/docker.sock:/var/run/docker.sock
+          aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c
+          image python:3.12-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2
+          --severity HIGH,CRITICAL --exit-code 1 --no-progress
