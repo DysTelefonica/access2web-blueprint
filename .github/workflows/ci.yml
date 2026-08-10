@@ -167,9 +167,26 @@ jobs:
         # Throwaway venv: the runner's ambient site-packages drags in CVEs that are not ours,
         # which trains everyone to ignore the report.
         run: |
+          set -euo pipefail
           python -m venv .venv-audit
-          .venv-audit/bin/python -m pip install --editable app[dev]
-          .venv-audit/bin/pip-audit --skip-editable
+          .venv-audit/bin/python -m pip install --quiet "app[dev]"
+          .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
+
+          # Liveness before reporting (Hard Rule 18). pip-audit was never installed
+          # here either, and a venv without the dependency tree audits nothing while
+          # looking perfectly healthy. The count is checked before the verdict is
+          # trusted. Non-editable on purpose: with --strict, an editable dist that
+          # --skip-editable skips is itself a hard error, so the audit venv installs
+          # the project as a normal wheel and there is nothing to skip.
+          installed=$(.venv-audit/bin/python -m pip list --format=freeze | wc -l)
+          if [ "$installed" -lt 15 ]; then
+            echo "::error::dependency scan aborted: only $installed packages in the venv."
+            echo "That is not a clean audit, it is an audit with nothing to audit (Hard Rule 18)."
+            exit 1
+          fi
+          echo "dependency scan: auditing $installed installed packages"
+
+          .venv-audit/bin/pip-audit --strict
 
       - name: secret scan
         # Scanner images are pinned by digest, not tag. Tags mutate; digests do not.

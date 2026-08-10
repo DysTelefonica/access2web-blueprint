@@ -77,7 +77,7 @@ jobs:
           set -euo pipefail
           python -m venv .venv-audit
           .venv-audit/bin/python -m pip install --quiet --upgrade pip==24.2
-          .venv-audit/bin/python -m pip install --quiet --editable app[dev]
+          .venv-audit/bin/python -m pip install --quiet "app[dev]"
           .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
 
           # Liveness before reporting (Hard Rule 18). Two defects made this job
@@ -98,4 +98,4 @@ jobs:
           fi
           echo "dependency scan: auditing $installed installed packages"
 
-          .venv-audit/bin/pip-audit --skip-editable --strict
+          .venv-audit/bin/pip-audit --strict
