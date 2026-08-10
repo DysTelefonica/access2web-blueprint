@@ -83,7 +83,9 @@ def test_layers_gate_fails_on_files_it_could_not_classify() -> None:
 
 def test_layers_gate_publishes_how_much_it_actually_checked() -> None:
     envelope = json.loads(
-        _run("check_layers.py", "--root", str(FIXTURES / "layers_unclassified"), "--json").stdout
+        _run(
+            "check_layers.py", "--root", str(FIXTURES / "layers_unclassified"), "--json"
+        ).stdout
     )
     assert envelope["indicators"]["files_unclassified"] == 1
     assert envelope["indicators"]["files_checked"] == 1
@@ -101,7 +103,9 @@ def test_layers_gate_fails_when_the_package_is_missing() -> None:
 
 
 def test_complexity_gate_fails_above_the_ceiling() -> None:
-    result = _run("check_complexity.py", "--root", str(FIXTURES / "complexity_violation"))
+    result = _run(
+        "check_complexity.py", "--root", str(FIXTURES / "complexity_violation")
+    )
     assert result.returncode == 1, result.stdout
 
 
@@ -116,7 +120,9 @@ def test_complexity_ceiling_is_absolute_not_top_n() -> None:
     The violation fixture holds one offender next to many trivial functions. A ``top-N`` gate
     would rank the offender out of view; an absolute ceiling still reports it.
     """
-    result = _run("check_complexity.py", "--root", str(FIXTURES / "complexity_violation"))
+    result = _run(
+        "check_complexity.py", "--root", str(FIXTURES / "complexity_violation")
+    )
     assert "too_many_branches" in result.stdout, result.stdout
 
 
@@ -125,14 +131,22 @@ def test_complexity_ceiling_is_absolute_not_top_n() -> None:
 # ---------------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("branch", ["feat/42-lanzadera-auth", "fix/7-crlf-count", "main"])
+@pytest.mark.parametrize(
+    "branch", ["feat/42-lanzadera-auth", "fix/7-crlf-count", "main"]
+)
 def test_branch_name_gate_accepts_valid_names(branch: str) -> None:
     assert _run("check_branch_name.py", "--branch", branch).returncode == 0
 
 
 @pytest.mark.parametrize(
     "branch",
-    ["lanzadera-auth", "feat/lanzadera-auth", "feat/42_lanzadera_auth", "FEAT/42-auth", "develop"],
+    [
+        "lanzadera-auth",
+        "feat/lanzadera-auth",
+        "feat/42_lanzadera_auth",
+        "FEAT/42-auth",
+        "develop",
+    ],
 )
 def test_branch_name_gate_rejects_invalid_names(branch: str) -> None:
     assert _run("check_branch_name.py", "--branch", branch).returncode == 1
@@ -152,7 +166,9 @@ def test_pr_size_override_requires_a_reason() -> None:
     assert module.override_reason("size:exception") is None
     assert module.override_reason("") is None
     assert (
-        module.override_reason("size:exception\nsize-exception-reason: generated migration")
+        module.override_reason(
+            "size:exception\nsize-exception-reason: generated migration"
+        )
         == "generated migration"
     )
 
@@ -259,7 +275,9 @@ def test_dry_detection_is_stable_across_processes() -> None:
 
 
 def test_mutation_sites_gate_fails_on_a_large_surface() -> None:
-    result = _run("check_mutation_sites.py", "--root", str(FIXTURES / "mutation_sites_violation"))
+    result = _run(
+        "check_mutation_sites.py", "--root", str(FIXTURES / "mutation_sites_violation")
+    )
     assert result.returncode == 1, result.stdout
 
 
@@ -275,7 +293,9 @@ def test_mutation_sites_catches_what_complexity_and_crap_cannot() -> None:
 
 
 def test_mutation_sites_gate_passes_on_a_small_surface() -> None:
-    result = _run("check_mutation_sites.py", "--root", str(FIXTURES / "mutation_sites_clean"))
+    result = _run(
+        "check_mutation_sites.py", "--root", str(FIXTURES / "mutation_sites_clean")
+    )
     assert result.returncode == 0, result.stdout
 
 
@@ -376,7 +396,9 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
     module.BASELINE = {"app/fresh.py": module.AwaitingAcquisition(since="2026-08-05")}
     assert module.check_pending_overdue(today) == []
     module.BASELINE = {"app/stale.py": module.AwaitingAcquisition(since="2026-06-01")}
-    assert module.check_pending_overdue(today), "an overdue acquisition marker must fail the gate"
+    assert module.check_pending_overdue(today), (
+        "an overdue acquisition marker must fail the gate"
+    )
 
 
 # ---------------------------------------------------------------------------------------------
@@ -396,7 +418,11 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
 )
 def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
     root = FIXTURES / "crap_clean"
-    args = ["--branch", "main"] if gate_script == "check_branch_name.py" else ["--root", str(root)]
+    args = (
+        ["--branch", "main"]
+        if gate_script == "check_branch_name.py"
+        else ["--root", str(root)]
+    )
     result = _run(gate_script, *args, "--json")
     envelope = json.loads(result.stdout)
     assert envelope["gate"]
@@ -413,7 +439,11 @@ def test_quality_report_aggregates_indicators(tmp_path) -> None:
     assert result.returncode == 0, result.stdout
     report = json.loads(out.read_text(encoding="utf-8"))
     assert report["status"] == "pass"
-    for indicator in ("layers.violations", "complexity.max_complexity", "crap.max_crap"):
+    for indicator in (
+        "layers.violations",
+        "complexity.max_complexity",
+        "crap.max_crap",
+    ):
         assert indicator in report["indicators"], report["indicators"].keys()
     assert report["indicators"]["crap.max_crap"]["ceiling"] == 6.0
 
@@ -421,7 +451,11 @@ def test_quality_report_aggregates_indicators(tmp_path) -> None:
 def test_quality_report_names_the_failing_gate(tmp_path) -> None:
     out = tmp_path / "quality-report.json"
     result = _run(
-        "quality_report.py", "--root", str(FIXTURES / "crap_violation"), "--out", str(out)
+        "quality_report.py",
+        "--root",
+        str(FIXTURES / "crap_violation"),
+        "--out",
+        str(out),
     )
     assert result.returncode == 1
     report = json.loads(out.read_text(encoding="utf-8"))
@@ -431,6 +465,14 @@ def test_quality_report_names_the_failing_gate(tmp_path) -> None:
 def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
     """Determinism pin: no wall-clock timestamp may leak into the report."""
     first, second = tmp_path / "a.json", tmp_path / "b.json"
-    _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(first))
-    _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(second))
+    _run(
+        "quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(first)
+    )
+    _run(
+        "quality_report.py",
+        "--root",
+        str(FIXTURES / "crap_clean"),
+        "--out",
+        str(second),
+    )
     assert first.read_bytes() == second.read_bytes()

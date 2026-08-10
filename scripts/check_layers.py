@@ -42,7 +42,9 @@ ALLOWED_IMPORTS: dict[str, frozenset[str]] = {
     "application": frozenset({"domain", "ports", "application"}),
     "adapters": frozenset({"domain", "ports", "adapters", "shared"}),
     "shared": frozenset({"domain", "ports", "shared"}),
-    "delivery": frozenset({"domain", "ports", "application", "adapters", "shared", "delivery"}),
+    "delivery": frozenset(
+        {"domain", "ports", "application", "adapters", "shared", "delivery"}
+    ),
     "di": frozenset(
         {"domain", "ports", "application", "adapters", "shared", "delivery", "di"}
     ),
@@ -53,12 +55,23 @@ PURE_LAYERS = frozenset({"domain", "ports", "application"})
 
 #: Top-level distributions banned inside PURE_LAYERS.
 FORBIDDEN_IN_PURE_LAYERS = frozenset(
-    {"fastapi", "sqlalchemy", "alembic", "jinja2", "httpx", "asyncpg", "starlette", "pydantic_settings"}
+    {
+        "fastapi",
+        "sqlalchemy",
+        "alembic",
+        "jinja2",
+        "httpx",
+        "asyncpg",
+        "starlette",
+        "pydantic_settings",
+    }
 )
 
 #: Paths excluded from the walk. Hard Rule 14: this is the declared untestable/ungoverned
 #: boundary. Keep it thin and keep it honest — every entry here is code nobody is checking.
-EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
+EXCLUDED_PARTS = frozenset(
+    {"__pycache__", ".venv", "venv", "build", "dist", "migrations"}
+)
 
 
 @dataclass(frozen=True)
@@ -229,7 +242,9 @@ def collect_violations(root: Path) -> list[Violation]:
             continue
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        except SyntaxError as exc:  # a file that cannot be parsed is a failure, not a skip
+        except (
+            SyntaxError
+        ) as exc:  # a file that cannot be parsed is a failure, not a skip
             violations.append(
                 Violation(
                     key="unparseable",
@@ -275,7 +290,10 @@ def evaluate(violations: list[Violation], today: date) -> tuple[int, list[str]]:
             lines.append(
                 f"FAIL  {key}: {len(entries)} occurrence(s), BASELINE allows {allowance.count}"
             )
-        elif today.isoformat() > allowance.target_date and len(entries) > allowance.target:
+        elif (
+            today.isoformat() > allowance.target_date
+            and len(entries) > allowance.target
+        ):
             failed = True
             lines.append(
                 f"FAIL  {key}: BASELINE expired on {allowance.target_date} with "
@@ -314,7 +332,9 @@ def build_report(violations: list[Violation], status: str, files_seen: int = 0) 
         "ceilings": {"violations": 0, "violation_classes": 0, "files_unclassified": 0},
         "findings": [
             {"file": violation.file, "line": violation.line, "detail": violation.detail}
-            for violation in sorted(violations, key=lambda item: (item.file, item.line, item.key))
+            for violation in sorted(
+                violations, key=lambda item: (item.file, item.line, item.key)
+            )
         ],
     }
 
@@ -342,7 +362,9 @@ def main(argv: list[str] | None = None) -> int:
         default=Path.cwd(),
         help="repository root containing the package directory (default: cwd)",
     )
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser.add_argument(
+        "--json", action="store_true", help="emit the indicator envelope"
+    )
     args = parser.parse_args(argv)
 
     root = args.root.resolve()

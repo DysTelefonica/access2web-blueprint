@@ -32,6 +32,7 @@ regression gates.
 0001 is **schema only** — no seed data lands here. The 156 migrated users
 and the 20 apps arrive in 0002-0006 (PR 3b).
 """
+
 from __future__ import annotations
 
 from collections.abc import Sequence

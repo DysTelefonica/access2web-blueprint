@@ -86,7 +86,9 @@ class TestAppRegistrationStatusStrEnum:
             ("retired", AppRegistrationStatus.RETIRED),
         ],
     )
-    def test_wire_value_round_trips(self, wire: str, member: AppRegistrationStatus) -> None:
+    def test_wire_value_round_trips(
+        self, wire: str, member: AppRegistrationStatus
+    ) -> None:
         assert AppRegistrationStatus(wire) is member
 
 

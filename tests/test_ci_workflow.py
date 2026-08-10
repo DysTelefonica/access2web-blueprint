@@ -89,7 +89,9 @@ def test_gate_is_wired(run_blocks: list[str], command: str) -> None:
 
 def test_no_step_swallows_its_exit_code(steps: list[dict]) -> None:
     """Hard Rule 1: a gate that cannot fail is not a gate."""
-    offenders = [step.get("name", "<unnamed>") for step in steps if step.get("continue-on-error")]
+    offenders = [
+        step.get("name", "<unnamed>") for step in steps if step.get("continue-on-error")
+    ]
     assert not offenders, f"continue-on-error found on: {offenders}"
 
 
@@ -183,7 +185,12 @@ def _parse_makefile(path: Path) -> dict[str, tuple[list[str], list[str]]]:
             continue
         stripped = line.strip()
         head = stripped.partition(":")[0]
-        if not stripped or stripped.startswith(("#", ".")) or ":" not in stripped or " " in head:
+        if (
+            not stripped
+            or stripped.startswith(("#", "."))
+            or ":" not in stripped
+            or " " in head
+        ):
             current = None
             continue
         current = head.strip()
@@ -234,13 +241,16 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     VERIFY_EXCLUSIONS — an absence that is written down is a decision, and an
     absence that is not is a hole.
     """
-    expected = [command for command in REQUIRED_COMMANDS if command not in VERIFY_EXCLUSIONS]
+    expected = [
+        command for command in REQUIRED_COMMANDS if command not in VERIFY_EXCLUSIONS
+    ]
     # `ruff check .` reaches the recipe as `python -m ruff check .`; compare on
     # the invariant tail so the Makefile stays free to route through $(RUFF).
     missing = [
         command
         for command in expected
-        if command.removeprefix("python ") not in verify_commands.replace("python -m ", "")
+        if command.removeprefix("python ")
+        not in verify_commands.replace("python -m ", "")
         and command not in verify_commands
     ]
     assert not missing, (
@@ -250,7 +260,9 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     )
 
 
-def test_make_verify_excludes_what_a_workstation_cannot_run(verify_commands: str) -> None:
+def test_make_verify_excludes_what_a_workstation_cannot_run(
+    verify_commands: str,
+) -> None:
     """The exclusions are a design decision, so they are pinned like any other.
 
     Folding the weekly mutation session or the Docker scanners into ``verify``
@@ -287,7 +299,9 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
     if aggregator.is_file():
         wired += "\n" + aggregator.read_text(encoding="utf-8")
 
-    unwired = sorted(path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired)
+    unwired = sorted(
+        path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired
+    )
     assert not unwired, (
         f"these gate scripts exist but no CI step runs them: {unwired}. A gate that "
         "runs nowhere is a false guarantee — wire it into ci.yml or delete it "
