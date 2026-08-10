@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — scripts/check_complexity.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_complexity.py
 """Cyclomatic complexity gate with an absolute, global ceiling.
 
 Hard Rule 12: this gate is deliberately NOT a ``top-N`` check. Under ``top-10``, whether a given
@@ -29,14 +29,9 @@ from pathlib import Path
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
 
-#: The complexity gate walks the whole `app/src/` tree, not just the layered
-#: module lattice. The composition root (`app/src/main.py`) and the
-#: cross-cutting `app/src/shared/` directory both contribute functions that
-#: the ceiling must measure. The layer gate (check_layers.py) uses a narrower
-#: `app.src.modules` scope; the two scopes are deliberately different.
-ROOT_PACKAGE_PARTS = ["app", "src"]
+ROOT_PACKAGE = "app"
 
-#: The ceiling. Absolute, global, applied to every function without exception (QC-10).
+#: The ceiling. Absolute, global, applied to every function without exception.
 MAX_COMPLEXITY = 15
 
 EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
@@ -44,7 +39,7 @@ EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "mi
 
 @dataclass(frozen=True)
 class BaselineEntry:
-    """A tolerated over-ceiling function with a mandatory exit plan (Hard Rule 12)."""
+    """A tolerated over-ceiling function with a mandatory exit plan (see Hard Rule 12)."""
 
     complexity: int
     target: int
@@ -116,7 +111,7 @@ def _walk_functions(node: ast.AST, prefix: str = ""):
 
 def measure(root: Path) -> list[Measurement]:
     """Measure every function, not only the offenders — the indicators need the whole set."""
-    package_root = root.joinpath(*ROOT_PACKAGE_PARTS)
+    package_root = root / ROOT_PACKAGE
     if not package_root.is_dir():
         return []
     measurements: list[Measurement] = []
@@ -240,8 +235,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
-    package_root = root.joinpath(*ROOT_PACKAGE_PARTS)
-    if not package_root.is_dir():
+    if not (root / ROOT_PACKAGE).is_dir():
         message = f"root package '{ROOT_PACKAGE}' not found under {root}"
         if args.json:
             print(json.dumps({"gate": "complexity", "status": "error", "detail": message}))
