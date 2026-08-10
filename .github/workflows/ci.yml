@@ -75,11 +75,18 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: install
-        # Hard Rule 15: the lockfile is the dependency contract. `--require-hashes` makes a
-        # tampered or re-resolved wheel a hard failure instead of a silent substitution.
+        # The dev pins live in app/pyproject.toml and are exact (ruff==0.15.21,
+        # mypy==1.13.0, ...), so the tools that govern rules cannot drift (Hard Rule 2).
+        #
+        # This does NOT hash-pin the transitive graph. The previous version claimed it
+        # did — `--require-hashes --requirement requirements-dev.lock` — against a
+        # lockfile that does not exist in this repository, alongside `--editable .`
+        # against a root with no pyproject.toml. The step had never run on any branch,
+        # and the v1.5 workflow reached main red because of it (issue #109). The other
+        # half of Hard Rule 15 is tracked in #110 rather than promised here: a comment
+        # describing a guarantee the pipeline does not have is worse than no comment.
         run: |
-          python -m pip install --require-hashes --requirement requirements-dev.lock
-          python -m pip install --no-deps --editable .
+          python -m pip install --editable app[dev]
 
       - name: format
         run: ruff format --check .
@@ -125,9 +132,9 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: install
+        # See the quality job's install step (#109, #110).
         run: |
-          python -m pip install --require-hashes --requirement requirements-dev.lock
-          python -m pip install --no-deps --editable .
+          python -m pip install --editable app[dev]
 
       - name: run mutants
         # The runner's own exit code is not the verdict: it reports success for a run in which
@@ -161,8 +168,7 @@ jobs:
         # which trains everyone to ignore the report.
         run: |
           python -m venv .venv-audit
-          .venv-audit/bin/python -m pip install --require-hashes --requirement requirements-dev.lock
-          .venv-audit/bin/python -m pip install --no-deps --editable .
+          .venv-audit/bin/python -m pip install --editable app[dev]
           .venv-audit/bin/pip-audit --skip-editable
 
       - name: secret scan
