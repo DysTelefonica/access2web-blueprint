@@ -49,7 +49,9 @@ MAX_CRAP = 6.0
 #: --cov-fail-under so that a single tool owns a single verdict.
 COVERAGE_JSON = "coverage.json"
 
-EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
+EXCLUDED_PARTS = frozenset(
+    {"__pycache__", ".venv", "venv", "build", "dist", "migrations", "pytest_plugin"}
+)
 
 
 @dataclass(frozen=True)
