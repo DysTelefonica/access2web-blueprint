@@ -34,20 +34,24 @@ help: ## Show every target, one per line, with a short description.
 # ---------------------------------------------------------------------------
 
 .PHONY: lint
-lint: ## Run ruff (QC-3) over the app package.
-	cd $(APP_DIR) && $(RUFF) check .
+lint: ## Run ruff (QC-3) over the whole repository.
+# From the root, never scoped to app/. ci.yml says so in as many words: a linter
+# scoped to a subdirectory silently hides findings in scripts/ and tests/.
+	$(RUFF) check .
 
 .PHONY: format
-format: ## Run ruff format --check (no write).
-	cd $(APP_DIR) && $(RUFF) format --check .
+format: ## Run ruff format --check over the whole repository (no write).
+	$(RUFF) format --check .
 
 .PHONY: typecheck
-typecheck: ## Run mypy (QC-4) over app/src/.
-	cd $(APP_DIR) && $(MYPY) src/
+typecheck: ## Run mypy (QC-4) over app/.
+	$(MYPY) app/
 
 .PHONY: test
 test: ## Run pytest with the coverage gate plugin (QC-5).
-	cd $(APP_DIR) && $(PYTEST)
+# The exact invocation ci.yml uses. Hard Rule 19: one definition per gate — a
+# local command that differs from the CI one is a green nobody earned.
+	$(PYTEST) -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
 
 .PHONY: test-no-cov
 test-no-cov: ## Run pytest without coverage (for fast local iteration).
@@ -113,7 +117,10 @@ migrate-fixtures: ## Phase 2 — Dysflow extract to JSON fixtures. Wired in PR 3
 	@echo "migrate-fixtures: wired in PR 3b (Phase 2). Will read SHA256-pinned .accdb and emit TbAplicaciones.json, tbUsuarios.json, TbUsuariosAplicacionesPermisos.json, TbConexiones.json, TbAplicacionesAperturas.json."
 
 .PHONY: all
-verify: format lint typecheck test quality-report check-branch-name check-pr-size ## THE green-PR gate: every gate ci.yml runs on a pull request.
+# check-branch-name and check-pr-size are NOT here: they need the pull-request
+# payload, and tests/test_ci_workflow.py declares them in VERIFY_EXCLUSIONS.
+# Listing them anyway is the silent disagreement Hard Rule 19 exists to stop.
+verify: format lint typecheck test quality-report ## THE green-PR gate: every gate ci.yml runs on a pull request.
 
 all: verify ## Alias for `verify`, kept for muscle memory.
 
