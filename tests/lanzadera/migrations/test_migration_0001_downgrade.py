@@ -39,7 +39,6 @@ from tests.lanzadera.migrations.test_migration_0001 import (
     PG_PASSWORD,
     PG_PORT,
     PG_USER,
-    SCHEMA,
     _alembic_ini_candidates,
     _drop_test_database,
     _fetch_table_names,

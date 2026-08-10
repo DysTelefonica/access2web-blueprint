@@ -11,9 +11,9 @@ would let a consumed token come back from the dead.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
-from dataclasses import dataclass
 
 
 @dataclass(frozen=True)

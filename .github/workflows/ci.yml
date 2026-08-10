@@ -169,6 +169,11 @@ jobs:
         run: |
           set -euo pipefail
           python -m venv .venv-audit
+          # pip itself is a dependency the audit sees. The runner ships a version with
+          # open advisories, so leaving it alone makes the scan fail on the scanner's
+          # own toolchain rather than on this project (Hard Rule 2: an exact pin, and
+          # one that is not itself the finding).
+          .venv-audit/bin/python -m pip install --quiet --upgrade pip==26.2.1
           .venv-audit/bin/python -m pip install --quiet "app[dev]"
           .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
 
