@@ -1,0 +1,74 @@
+# Lanzadera MVP — local development stack.
+#
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — applies to lanzadera-mvp Phase 0.
+# The `secrets/` directory is bind-mounted from the host; it MUST exist on the
+# developer workstation (create it with `mkdir -p secrets && echo "PLATFORM_SECRET_KEY=$(python -c 'import secrets;print(secrets.token_urlsafe(64))')" > secrets/platform.env`).
+# `GLOBAL_ADMIN_EMAILS` is documented as a semicolon-separated env var read by
+# `BootstrapAdapter` (DA-6); it stays commented until the first run.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lanzadera-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: lanzadera
+      POSTGRES_USER: lanzadera
+      POSTGRES_PASSWORD: lanzadera-dev-only
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lanzadera -d lanzadera"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    # Local S3 stand-in. Production swaps to the corporate bucket; the
+    # NotificationDeliveryPort and any future blob adapters depend on this only
+    # for local smoke tests, never for production credentials.
+    image: minio/minio:RELEASE.2024-08-17T01-24-54Z
+    container_name: lanzadera-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: lanzadera
+      MINIO_ROOT_PASSWORD: lanzadera-dev-only
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: lanzadera-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql+asyncpg://lanzadera:lanzadera-dev-only@postgres:5432/lanzadera
+      # `env_file` reads PLATFORM_SECRET_KEY and any other secret from the
+      # `secrets/` directory on the host. The directory is bind-mounted, never
+      # baked into the image.
+      GLOBAL_ADMIN_EMAILS: ${GLOBAL_ADMIN_EMAILS:-}
+    env_file:
+      - secrets/platform.env
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres-data:
+  minio-data:
