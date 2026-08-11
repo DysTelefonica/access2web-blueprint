@@ -314,3 +314,32 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
         "runs nowhere is a false guarantee — wire it into ci.yml or delete it "
         "(Decision Gate: 'Gate runs locally but not in CI')."
     )
+
+
+def test_secret_scan_proves_it_scanned_something() -> None:
+    """Hard Rule 18: a zero-byte scan is not a clean tree.
+
+    gitleaks went green after inspecting 0 bytes when the workspace was not visible
+    to the host Docker daemon. trivy, given the identical broken mount, failed loudly
+    — because it looks for one named file, while gitleaks walks a tree and an empty
+    tree has no secrets in it.
+
+    That difference is not luck. Any gate that inspects a SET treats the empty set as
+    success unless someone teaches it otherwise, and a secret scanner is the worst
+    possible place to learn that lesson late.
+    """
+    workflows = _find_workflow().parent
+    security = (workflows / "security.yml").read_text(encoding="utf-8")
+    assert "GITLEAKS_MIN_BYTES" in security, (
+        "the gitleaks job must check how many bytes it inspected before accepting its "
+        "verdict (issue #115, Hard Rule 18)"
+    )
+    assert "scanned ~" in security, (
+        "the liveness proof must read gitleaks' own reported scan volume, not infer it"
+    )
+
+    deep = (workflows / "security-deep.yml").read_text(encoding="utf-8")
+    assert "rev-list --count" in deep, (
+        "the full-history scan must prove it had history to walk; a scan over zero "
+        "commits reports clean as convincingly as one over ten thousand"
+    )

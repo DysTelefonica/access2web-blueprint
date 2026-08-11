@@ -30,12 +30,30 @@ jobs:
 
       - name: gitleaks full history
         # `detect --source=.` with `fetch-depth: 0` walks every commit ever recorded.
-        run: >
-          docker run --rm
-          -v "$PWD:/repo"
-          -w /repo
-          zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
-          detect --source=. --redact --no-banner --exit-code 1
+        #
+        # Same liveness proof as the dir scan (issue #115), with the indicator that fits
+        # this mode: `detect` walks commits, so an empty history is what "did not run"
+        # looks like here. A history scan over zero commits reports clean just as
+        # convincingly as one over ten thousand.
+        run: |
+          set -euo pipefail
+
+          commits=$(git rev-list --count HEAD)
+          if [ "$commits" -lt 2 ]; then
+            echo "::error::only $commits commit(s) available; a full-history scan needs the history."
+            echo "checkout must run with fetch-depth: 0."
+            exit 1
+          fi
+
+          docker run --rm             -v "$PWD:/repo"             -w /repo             zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f             detect --source=. --redact --no-banner -v --exit-code 1 2>&1 | tee /tmp/gitleaks-history.log
+          status=${PIPESTATUS[0]}
+
+          if ! grep -qE 'scanned ~[0-9]+ bytes' /tmp/gitleaks-history.log; then
+            echo "::error::gitleaks did not report a scan volume over $commits commits; verdict not trusted."
+            exit 1
+          fi
+          echo "gitleaks: history scan over $commits commits"
+          exit "$status"
 
   trivy-image:
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
