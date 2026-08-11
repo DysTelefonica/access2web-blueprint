@@ -21,7 +21,7 @@ RUFF ?= $(PYTHON) -m ruff
 MYPY ?= $(PYTHON) -m mypy
 PYTEST ?= $(PYTHON) -m pytest
 
-.PHONY: help verify format lint typecheck test quality-report mutation clean
+.PHONY: help verify format lint typecheck test check-workflows quality-report mutation clean
 
 help:
 	@echo "verify           - THE green-PR gate: every gate ci.yml runs on a pull request"
@@ -61,6 +61,9 @@ typecheck:
 test:
 	$(PYTEST) -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term --cov-fail-under=69
 
+check-workflows:
+	$(PYTHON) scripts/check_workflows.py
+
 # quality_report.py runs layers -> complexity -> CRAP -> mutation_sites -> DRY
 # in one process because their order is pinned in code (GATES), not in YAML
 # where a reviewer can swap two steps without noticing.
@@ -77,7 +80,7 @@ quality-report:
 #
 # Adding a gate to ci.yml without adding it here fails the parity test. That is
 # the only reason the two lists will still match a year from now.
-verify: format lint typecheck test quality-report
+verify: format lint typecheck test check-workflows quality-report
 	@echo "verify: all CI pull-request gates passed."
 
 # Slow, scheduled, and Linux-only in most setups. Kept out of `verify` on
