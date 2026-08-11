@@ -26,7 +26,9 @@ import sys
 PATTERN = re.compile(r"^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$")
 
 #: Long-lived branches that predate or transcend the convention.
-ALLOWLIST = frozenset({"main"})
+#: `feat/lanzadera-mvp-tracker` is the chain-strategy aggregator branch (PR 1..PR 8);
+#: its name does not match PATTERN (no `<n>-` prefix) and it is exempt by allowlist.
+ALLOWLIST = frozenset({"main", "feat/lanzadera-mvp-tracker"})
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM

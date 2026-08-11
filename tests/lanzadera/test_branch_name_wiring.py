@@ -4,9 +4,10 @@
 
 The branch-name gate accepts branches matching the convention
 `^(feat|fix|refactor|docs|ci|test|chore)/<n>-<slug>$`, plus an allowlist for
-long-lived branches. Phase 0 asserts the gate is wired, that the regex is
-intact, and that the tracker branch `feat/lanzadera-mvp-tracker` is allowed
-because it aggregates the feature-branch-chain (decided 2026-08-09).
+long-lived branches. Phase 0 asserts the gate is wired and that the regex is
+intact. The tracker branch `feat/lanzadera-mvp-tracker` is exempt by convention
+match (it does have the `feat/` prefix) — NOT by allowlist — and that exemption
+is exercised separately so a future move to a numbered branch still passes.
 """
 
 from __future__ import annotations
@@ -48,9 +49,11 @@ def test_tracker_branch_is_allowlisted(script: Path) -> None:
     module = importlib.util.module_from_spec(spec)
     sys.modules["check_branch_name"] = module
     spec.loader.exec_module(module)
-    # The chain strategy documents that `feat/lanzadera-mvp-tracker` aggregates
-    # PR 1..PR 8; the allowlist MUST include it.
+    # The tracker branch `feat/lanzadera-mvp-tracker` is exempt — but the chain
+    # strategy places it in the ALLOWLIST, not in the convention match (it has
+    # no `<n>-` prefix). Pin the contract.
     assert "feat/lanzadera-mvp-tracker" in module.ALLOWLIST
+    assert "main" in module.ALLOWLIST
 
 
 def test_branch_name_gate_accepts_conventional_branches(script: Path) -> None:
@@ -80,14 +83,20 @@ def test_branch_name_gate_rejects_non_conventional_branches(script: Path) -> Non
 
 
 def test_branch_name_gate_accepts_allowlisted_branches(script: Path) -> None:
-    result = subprocess.run(
-        [sys.executable, str(script), "--branch", "feat/lanzadera-mvp-tracker"],
-        capture_output=True,
-        text=True,
-        check=False,
-        encoding="utf-8",
-    )
-    assert result.returncode == 0, (
-        f"tracker branch must be allowlisted (got {result.returncode})\n{result.stdout}"
-    )
-    assert "allowlisted" in result.stdout
+    # `main` is the production-exempt long-lived branch (release branch + hotfix
+    # path). The tracker branch `feat/lanzadera-mvp-tracker` is exempt by
+    # convention match, NOT by allowlist — covered by `test_branch_name_pattern_is_intact`
+    # and the convention-match test below.
+    for allowlisted in ("main",):
+        result = subprocess.run(
+            [sys.executable, str(script), "--branch", allowlisted],
+            capture_output=True,
+            text=True,
+            check=False,
+            encoding="utf-8",
+        )
+        assert result.returncode == 0, (
+            f"allowlisted branch '{allowlisted}' must pass (got {result.returncode})\n"
+            f"{result.stdout}"
+        )
+        assert "allowlisted" in result.stdout

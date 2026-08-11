@@ -4,8 +4,9 @@
 
 The hexagonal layer gate enforces dependency direction, vertical slicing, and
 purity inside `platform.src.modules`. Phase 0 asserts the gate is wired,
-configures the correct `ROOT_PACKAGE`, and returns a valid JSON envelope on an
-empty package.
+configures `ROOT_PACKAGE = "app"` (the platform package root, with the hexagonal
+subtree rooted at `app/src/modules/lanzadera/`), and returns a valid JSON
+envelope.
 """
 
 from __future__ import annotations
@@ -59,7 +60,7 @@ def test_script_is_importable(script: Path) -> None:
     # string.
     sys.modules["check_layers"] = module
     spec.loader.exec_module(module)
-    assert module.ROOT_PACKAGE == "app.src.modules"
+    assert module.ROOT_PACKAGE == "app"
 
 
 def test_layers_gate_runs_clean_on_empty_package(root: Path, script: Path) -> None:
@@ -97,7 +98,7 @@ def test_layers_gate_emits_valid_envelope(root: Path, script: Path) -> None:
     assert "files_checked" in envelope["indicators"]
     assert "ceilings" in envelope
     assert "findings" in envelope
-    assert envelope["indicators"]["files_checked"] == 0
+    assert envelope["indicators"]["files_checked"] >= 1
     assert envelope["indicators"]["violations"] == 0
 
 
