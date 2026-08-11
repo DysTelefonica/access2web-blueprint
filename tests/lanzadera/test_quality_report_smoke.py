@@ -69,7 +69,9 @@ def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, scrip
     # Skip rather than fail with a misleading assertion.
     coverage_json = root / "coverage.json"
     if not coverage_json.exists():
-        pytest.skip("coverage.json not on disk yet; CRAP gate cannot run from a subprocess mid-session")
+        pytest.skip(
+            "coverage.json not on disk yet; CRAP gate cannot run from a subprocess mid-session"
+        )
     out = tmp_path / "quality-report.json"
     result = subprocess.run(
         [
