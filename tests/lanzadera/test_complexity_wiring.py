@@ -1,4 +1,5 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp QC-10 — test_complexity_wiring.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp QC-10
+# — test_complexity_wiring.py
 """Wiring pin for `scripts/check_complexity.py` (QC-10).
 
 The complexity gate enforces an absolute, global ceiling of `CC <= 15` on every
