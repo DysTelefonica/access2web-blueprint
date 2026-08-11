@@ -63,8 +63,7 @@ def test_dry_gate_runs_clean_on_empty_package(root: Path, script: Path) -> None:
         encoding="utf-8",
     )
     assert result.returncode == 0, (
-        f"check_dry.py exited {result.returncode}\nSTDOUT: {result.stdout}\n"
-        f"STDERR: {result.stderr}"
+        f"check_dry.py exited {result.returncode}\nSTDOUT: {result.stdout}\nSTDERR: {result.stderr}"
     )
     assert "OK    no duplicated block of 5+ statements" in result.stdout
 
