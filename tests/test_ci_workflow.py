@@ -137,12 +137,22 @@ def test_gate_order_is_pinned_in_code() -> None:
 
 
 def test_no_job_runs_on_a_floating_runner(workflow: dict) -> None:
-    """Hard Rule 15: `ubuntu-latest` is a different machine from one month to the next."""
-    floating = [
-        f"{name}: {job['runs-on']}"
-        for name, job in workflow["jobs"].items()
-        if str(job.get("runs-on", "")).endswith("-latest")
-    ]
+    """Hard Rule 15: `ubuntu-latest` is a different machine from one month to the next.
+
+    Each label is checked on its own. `runs-on` is a scalar for a hosted runner and a
+    LIST for a self-hosted one, and the previous version stringified the whole value
+    and asked whether it ended in `-latest`. A list ends in `]`, so from the moment
+    this repository moved to self-hosted labels (#113) the check passed unconditionally
+    — including for `[self-hosted, ubuntu-latest]`. A gate that cannot fail is not a
+    gate, and this one stopped being able to fail the day it mattered most.
+    """
+    floating = []
+    for name, job in workflow["jobs"].items():
+        runs_on = job.get("runs-on", "")
+        labels = runs_on if isinstance(runs_on, list) else [runs_on]
+        for label in labels:
+            if str(label).endswith("-latest"):
+                floating.append(f"{name}: {label}")
     assert not floating, f"jobs on a floating runner label: {floating}"
 
 
