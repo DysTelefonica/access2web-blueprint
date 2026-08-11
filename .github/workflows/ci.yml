@@ -130,6 +130,14 @@ jobs:
       - name: typecheck
         run: mypy app/
 
+      - name: workflow gate
+        # Hardens the workflow files themselves (issue #135): no duplicate YAML
+        # keys (which GitHub rejects with `startup_failure` and the check then
+        # disappears from the PR rollup), every job declares `timeout-minutes`,
+        # no service container fixes a host port, every `uses:` is pinned by
+        # SHA. Matches the `check-workflows` Makefile target.
+        run: python scripts/check_workflows.py
+
       - name: tests
         # coverage.json is an input to the CRAP gate, not a nicety. Without it that gate fails
         # closed, which is the correct behaviour and a useless CI run — so produce it here.
@@ -144,6 +152,9 @@ jobs:
         # cwd stays at the repository root so coverage.json lands where the downstream
         # gates look for it.
         run: pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
+
+      - name: check workflows
+        run: python scripts/check_workflows.py
 
       - name: quality gates and indicators
         # Runs layers -> complexity -> CRAP -> DRY in that fixed order, writes
