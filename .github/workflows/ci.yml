@@ -41,7 +41,11 @@ env:
 jobs:
   review-budget:
     # Hard Rule 15: exact runner label. `ubuntu-latest` silently becomes a different machine.
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Hard Rule 15 asks for an exact runner, and these labels name one specific
+    # machine — the Oracle VPS, registered as a2w-oracle-vps. What that buys and what
+    # it costs is written down in #113: a hosted image is reproducible but rationed,
+    # a VPS is unrationed but accumulates state nobody declares.
     if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -66,7 +70,7 @@ jobs:
         run: python scripts/check_pr_size.py
 
   quality:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -140,7 +144,7 @@ jobs:
     # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
     # session needs the mutation runner on a real codebase. Verify it once on adoption.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -172,7 +176,7 @@ jobs:
           if-no-files-found: error
 
   security:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 

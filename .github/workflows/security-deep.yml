@@ -18,7 +18,11 @@ permissions:
 
 jobs:
   gitleaks-history:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Hard Rule 15 asks for an exact runner, and these labels name one specific
+    # machine — the Oracle VPS, registered as a2w-oracle-vps. What that buys and what
+    # it costs is written down in #113: a hosted image is reproducible but rationed,
+    # a VPS is unrationed but accumulates state nobody declares.
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -34,7 +38,7 @@ jobs:
           detect --source=. --redact --no-banner --exit-code 1
 
   trivy-image:
-    runs-on: ubuntu-24.04
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
