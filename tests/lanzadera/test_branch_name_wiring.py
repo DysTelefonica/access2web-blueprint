@@ -1,4 +1,5 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp QC-6 — test_branch_name_wiring.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp QC-6
+# — test_branch_name_wiring.py
 """Wiring pin for `scripts/check_branch_name.py` (QC-6).
 
 The branch-name gate accepts branches matching the convention

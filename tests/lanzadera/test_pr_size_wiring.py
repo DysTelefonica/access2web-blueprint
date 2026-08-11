@@ -1,4 +1,5 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp QC-6 — test_pr_size_wiring.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp QC-6
+# — test_pr_size_wiring.py
 """Wiring pin for `scripts/check_pr_size.py` (QC-6).
 
 The PR size gate counts changed lines against a base ref and fails above 400.
@@ -66,14 +67,8 @@ def test_pr_size_override_needs_reason() -> None:
     # Marker but no reason — None.
     assert module.override_reason("size:exception\nno reason line here\n") is None
     # Marker AND reason — the reason line wins.
-    body = (
-        "size:exception\n"
-        "size-exception-reason: PR 1 is the indivisible foundation scaffold.\n"
-    )
-    assert (
-        module.override_reason(body)
-        == "PR 1 is the indivisible foundation scaffold."
-    )
+    body = "size:exception\nsize-exception-reason: PR 1 is the indivisible foundation scaffold.\n"
+    assert module.override_reason(body) == "PR 1 is the indivisible foundation scaffold."
 
 
 def test_pr_size_gate_runs_against_head(root: Path, script: Path) -> None:

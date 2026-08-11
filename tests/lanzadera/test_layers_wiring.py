@@ -1,4 +1,5 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp DA-1 — test_layers_wiring.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp DA-1
+# — test_layers_wiring.py
 """Wiring pin for `scripts/check_layers.py` (QC-2 / QC-9, DA-1).
 
 The hexagonal layer gate enforces dependency direction, vertical slicing, and
@@ -100,9 +101,7 @@ def test_layers_gate_emits_valid_envelope(root: Path, script: Path) -> None:
     assert envelope["indicators"]["violations"] == 0
 
 
-def test_layers_gate_fails_closed_when_root_package_missing(
-    tmp_path: Path, script: Path
-) -> None:
+def test_layers_gate_fails_closed_when_root_package_missing(tmp_path: Path, script: Path) -> None:
     """Hard Rule 18: missing root package is an error, not a silent pass."""
     result = subprocess.run(
         [sys.executable, str(script), "--root", str(tmp_path), "--json"],
