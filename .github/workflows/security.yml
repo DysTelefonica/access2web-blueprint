@@ -18,11 +18,18 @@ permissions:
 
 jobs:
   gitleaks:
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
-    # Hard Rule 15 asks for an exact runner, and these labels name one specific
-    # machine — the Oracle VPS, registered as a2w-oracle-vps. What that buys and what
-    # it costs is written down in #113: a hosted image is reproducible but rationed,
-    # a VPS is unrationed but accumulates state nobody declares.
+    # Docker-based scan. Routes to GitHub-hosted so it does not contend for the
+    # single self-hosted runner with quality/mutation. Break the monopoly that
+    # blocked reviewability feedback during the #117 retro split (#127).
+    runs-on: ubuntu-24.04
+    # Per-gate FIFO on this runner. A slow docker daemon stalls one invocation;
+    # the next waits in submission order rather than racing.
+    concurrency:
+      group: gate-gitleaks
+      cancel-in-progress: false
+    # gitleaks normally finishes in <1 min on the 70 MB tree. The observed 17-min
+    # hang on the self-hosted runner was the case this timeout is meant to catch.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -55,8 +62,18 @@ jobs:
         # because it looks for one named file; gitleaks passed silently because it walks
         # a tree, and an empty tree has no secrets in it. Hard Rule 18: a measurement
         # that could not run must never score as a perfect one.
+        #
+        # The preflight `docker info` below (also from #127) catches the upstream
+        # symptom — daemon hung — and exits non-zero with a clear message instead
+        # of letting the job time out at 15 minutes with no diagnostic.
         run: |
           set -euo pipefail
+
+          if ! docker info > /dev/null 2>&1; then
+            echo "::error::docker daemon is not responding on the runner."
+            echo "A hung daemon turns this job into a 15-minute silent timeout; fail fast instead."
+            exit 1
+          fi
 
           docker run --rm             -v "$PWD:/repo"             -w /repo             zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f             dir . --redact --no-banner -v --exit-code 1 2>&1 | tee /tmp/gitleaks.log
           status=${PIPESTATUS[0]}
@@ -81,26 +98,48 @@ jobs:
           GITLEAKS_MIN_BYTES: "1000000"
 
   trivy-config:
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Docker-based scan. GitHub-hosted runners ship Docker; routing here breaks
+    # the monopoly #127.
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: gate-trivy-config
+      cancel-in-progress: false
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
       - name: trivy config (Dockerfile)
         # `--severity HIGH,CRITICAL` filters below those levels — Phase 0 ships a clean
         # image; tightening the filter is a follow-up decision when Medias begin to appear.
-        run: >
-          docker run --rm
-          -v "$PWD:/repo"
-          -w /repo
-          aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c
-          config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1
+        #
+        # Pre-flight docker daemon check (issue #127) so a hung daemon doesn't turn
+        # this into a silent 15-minute timeout.
+        run: |
+          set -euo pipefail
+
+          if ! docker info > /dev/null 2>&1; then
+            echo "::error::docker daemon is not responding on the runner."
+            echo "A hung daemon turns this job into a 15-minute silent timeout; fail fast instead."
+            exit 1
+          fi
+
+          docker run --rm             -v "$PWD:/repo"             -w /repo             aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c             config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1
 
   pip-audit:
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # venv install + advisory DB download — no Docker, no self-hosted infra needed.
+    # Routes to GitHub-hosted to free the VPS for quality/mutation.
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: gate-pip-audit
+      cancel-in-progress: false
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      # Hard Rule 15: same SHA as ci.yml (issue #127 — old v5 SHA emits Node 20
+      # deprecation warning on GitHub-hosted runners). Bumping keeps the pin
+      # contract while clearing the warning.
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12.11"
 
