@@ -1,4 +1,5 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp DA-13 — test_no_legacy_compat_smoke.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp DA-13
+# — test_no_legacy_compat_smoke.py
 """Smoke import for the DA-13 pin-test harness (lanzadera-mvp Phase 0).
 
 Phase 0 wires the AST walker (`scripts/check_legacy_hashes.py`) but does NOT
