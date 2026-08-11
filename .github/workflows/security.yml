@@ -43,12 +43,42 @@ jobs:
         # exception never requires reproducing the scan locally.
         #
         # `--redact` stays: the values remain out of the logs either way.
-        run: >
-          docker run --rm
-          -v "$PWD:/repo"
-          -w /repo
-          zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
-          dir . --redact --no-banner -v --exit-code 1
+        #
+        # The liveness proof below is not belt-and-braces (issue #115). On the first run
+        # against the self-hosted runner this job went green having inspected nothing:
+        #
+        #   INF scanned ~0 bytes (0) in 1.99ms
+        #   INF no leaks found
+        #
+        # The workspace was not visible to the host Docker daemon, so the bind mount
+        # resolved to an empty directory. trivy failed loudly on the same broken mount
+        # because it looks for one named file; gitleaks passed silently because it walks
+        # a tree, and an empty tree has no secrets in it. Hard Rule 18: a measurement
+        # that could not run must never score as a perfect one.
+        run: |
+          set -euo pipefail
+
+          docker run --rm             -v "$PWD:/repo"             -w /repo             zricethezav/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f             dir . --redact --no-banner -v --exit-code 1 2>&1 | tee /tmp/gitleaks.log
+          status=${PIPESTATUS[0]}
+
+          scanned=$(grep -oE 'scanned ~[0-9]+ bytes' /tmp/gitleaks.log | grep -oE '[0-9]+' | head -1)
+          if [ -z "${scanned:-}" ]; then
+            echo "::error::gitleaks did not report how many bytes it scanned; its verdict cannot be trusted."
+            exit 1
+          fi
+          if [ "$scanned" -lt "$GITLEAKS_MIN_BYTES" ]; then
+            echo "::error::gitleaks scanned $scanned bytes, below the $GITLEAKS_MIN_BYTES minimum."
+            echo "That is a scan that did not happen, not a clean tree. Check that the workspace"
+            echo "is visible to the Docker daemon (host path == container path)."
+            exit 1
+          fi
+          echo "gitleaks: $scanned bytes inspected"
+          exit "$status"
+        env:
+          # The tree is around 70 MB. The floor is deliberately far below that: it
+          # separates "scanned nothing" from "scanned", and does not police repository
+          # size, which grows and would turn the margin into noise.
+          GITLEAKS_MIN_BYTES: "1000000"
 
   trivy-config:
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
