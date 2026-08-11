@@ -40,13 +40,20 @@ env:
 
 jobs:
   review-budget:
-    # Hard Rule 15: exact runner label. `ubuntu-latest` silently becomes a different machine.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
-    # Hard Rule 15 asks for an exact runner, and these labels name one specific
-    # machine — the Oracle VPS, registered as a2w-oracle-vps. What that buys and what
-    # it costs is written down in #113: a hosted image is reproducible but rationed,
-    # a VPS is unrationed but accumulates state nobody declares.
+    # Cheap gate (PR-size + branch-name, both <1s) — runs on GitHub-hosted so it does
+    # not contend with quality/security for the single self-hosted runner. Routing
+    # these reads off the VPS is what stops a stuck quality job from also stalling
+    # reviewability feedback (umbrella #117).
+    runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
+    # Per-gate FIFO: if a `review-budget` is already in flight on the runner, the next
+    # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
+    # that skips its own check is not a gate). Different gates are not in this group.
+    concurrency:
+      group: gate-review-budget
+      cancel-in-progress: false
+    # Fail fast: branch-name + pr-size run in seconds; anything beyond 5 min is hung.
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -70,7 +77,20 @@ jobs:
         run: python scripts/check_pr_size.py
 
   quality:
+    # Heavy gate (ruff + mypy + pytest + 4 quality gates over the app/) — stays on
+    # the self-hosted VPS because the rest is just not worth re-pinning to a hosted
+    # image's moving target. Routing review-budget and security off the VPS is what
+    # stops this job from being the only thing the runner can run.
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Per-gate FIFO on the runner (umbrella #117). Different gates are not in this
+    # group — review-budget and security can still progress while quality is running.
+    concurrency:
+      group: gate-quality
+      cancel-in-progress: false
+    # Generous: ruff + mypy + pytest + layers + complexity + crap + dry on the full
+    # testable boundary. Below this the gate either hung (real failure) or the floor
+    # moved (deliberate change to be discussed in a PR, not in a hung runner).
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -145,6 +165,15 @@ jobs:
     # session needs the mutation runner on a real codebase. Verify it once on adoption.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
+    # succession serialize rather than racing cosmic-ray's sqlite (umbrella #117).
+    concurrency:
+      group: gate-mutation
+      cancel-in-progress: false
+    # cosmic-ray on the declared testable boundary is intentionally slow. The
+    # timeout is loose — Hard Rule 18 says the runner's exit code is not the
+    # verdict; check_mutation.py is.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -176,7 +205,20 @@ jobs:
           if-no-files-found: error
 
   security:
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Docker-based scans (gitleaks + trivy) and a python venv install — none of it
+    # needs the self-hosted VPS. `ubuntu-24.04` ships docker and the project's
+    # pinned Python. Routing this off the VPS is what broke the 17-minute runner
+    # monopoly observed in #117.
+    runs-on: ubuntu-24.04
+    # Per-gate FIFO: pip-audit pulls the advisory DB and gitleaks/trivy pull scanner
+    # images; if a slow docker daemon stalls one, the next wait in submission order
+    # rather than piling up on the runner.
+    concurrency:
+      group: gate-security
+      cancel-in-progress: false
+    # pip-audit + gitleaks + trivy normally finish in <2 min. The observed 17-min
+    # hang was the exact case this timeout is meant to catch.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
