@@ -23,6 +23,21 @@ jobs:
     # machine — the Oracle VPS, registered as a2w-oracle-vps. What that buys and what
     # it costs is written down in #113: a hosted image is reproducible but rationed,
     # a VPS is unrationed but accumulates state nobody declares.
+    #
+    # This workflow runs on the SELF-HOSTED runner (where the docker daemon is shared
+    # with Coolify/Engram/Vaultwarden/AdGuard) — unlike the per-PR `security.yml` which
+    # routes to ubuntu-24.04. The preflight below is therefore load-bearing here, not
+    # decorative; the same check in `security.yml` is defense-in-depth (#131).
+    # Per-gate FIFO matches the convention from #126: a slow daemon stalls this run;
+    # the next waits in submission order rather than racing.
+    concurrency:
+      group: gate-gitleaks-history
+      cancel-in-progress: false
+    # Full history scan over the whole repo. 60 min is loose — set with the
+    # observed p95 of the history scan in mind; below that, this would silence
+    # real failures. The default 360-min GitHub limit is exactly the failure
+    # mode #131 calls out, so we pin a tight ceiling here (#131, #126).
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
         with:
@@ -35,8 +50,17 @@ jobs:
         # this mode: `detect` walks commits, so an empty history is what "did not run"
         # looks like here. A history scan over zero commits reports clean just as
         # convincingly as one over ten thousand.
+        #
+        # Preflight `docker info` with `timeout 30` so a hung daemon fails fast
+        # (#131). Bare `docker info` would itself hang on the hung daemon — that's
+        # why the `timeout` wrapper is not optional.
         run: |
           set -euo pipefail
+
+          if ! timeout 30 docker info >/dev/null 2>&1; then
+            echo "::error::Docker daemon is not answering on this runner; failing fast instead of hanging." >&2
+            exit 1
+          fi
 
           commits=$(git rev-list --count HEAD)
           if [ "$commits" -lt 2 ]; then
@@ -57,6 +81,13 @@ jobs:
 
   trivy-image:
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Same self-hosted rationale as gitleaks-history above (#131).
+    concurrency:
+      group: gate-trivy-image
+      cancel-in-progress: false
+    # `trivy image` over python:3.12-slim-bookworm — depends on registry latency
+    # and image size. 30 min is loose; tighten once we have a measured p95.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
 
@@ -67,9 +98,15 @@ jobs:
           driver-opts: image=moby/buildkit:v0.18.0
 
       - name: trivy image scan (python:3.12-slim-bookworm)
-        run: >
-          docker run --rm
-          -v /var/run/docker.sock:/var/run/docker.sock
-          aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c
-          image python:3.12-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2
-          --severity HIGH,CRITICAL --exit-code 1 --no-progress
+        # Preflight `docker info` with `timeout 30` (#131). The `trivy image` itself
+        # pulls and inspects a ~150 MB image — a hung daemon is indistinguishable
+        # from a slow one without this check.
+        run: |
+          set -euo pipefail
+
+          if ! timeout 30 docker info >/dev/null 2>&1; then
+            echo "::error::Docker daemon is not answering on this runner; failing fast instead of hanging." >&2
+            exit 1
+          fi
+
+          docker run --rm             -v /var/run/docker.sock:/var/run/docker.sock             aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c             image python:3.12-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2             --severity HIGH,CRITICAL --exit-code 1 --no-progress
