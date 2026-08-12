@@ -101,8 +101,10 @@ class BaselineEntry:
     target_date: str  # ISO-8601, YYYY-MM-DD
 
 
-#: Shrink-only. Lowering a count is a lock-in and is allowed. Raising one requires editing this
-#: file in the same PR that raises it, which is the point.
+# Empty by design — see Hard Rule #12 of deterministic-quality-harness v1.6.
+# Hexagonal layer purity is enforced by ALLOWED_IMPORTS and FORBIDDEN_IN_PURE_LAYERS,
+# not by a ratchet. The first violation blocks the gate immediately.
+# See #112 for the broader BASELINE conversation that includes this gate.
 BASELINE: dict[str, BaselineEntry] = {}
 
 # --------------------------------------------------------------------------------------------
