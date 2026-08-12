@@ -352,13 +352,9 @@ def test_install_step_defends_against_missing_pyproject(run_blocks: list[str]) -
             f"install step #{i} does not harden its shell with set -euo pipefail: {block}"
         )
         # Hard Rule 1: no silent pass on a real failure.
-        assert "|| true" not in block, (
-            f"install step #{i} uses '|| true': {block}"
-        )
+        assert "|| true" not in block, f"install step #{i} uses '|| true': {block}"
         # The failure path must terminate the job, not let it limp along.
-        assert "exit 1" in block, (
-            f"install step #{i} does not exit non-zero on failure: {block}"
-        )
+        assert "exit 1" in block, f"install step #{i} does not exit non-zero on failure: {block}"
         # Diagnostic must point operators to the umbrella issue. The exact
         # spelling varies; the substring `#117` is the canonical anchor.
         assert "#117" in block, (
