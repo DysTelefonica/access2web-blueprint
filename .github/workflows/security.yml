@@ -31,7 +31,7 @@ jobs:
     # hang on the self-hosted runner was the case this timeout is meant to catch.
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -106,7 +106,7 @@ jobs:
       cancel-in-progress: false
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: trivy config (Dockerfile)
         # `--severity HIGH,CRITICAL` filters below those levels — Phase 0 ships a clean
@@ -134,7 +134,7 @@ jobs:
       cancel-in-progress: false
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Hard Rule 15: same SHA as ci.yml (issue #127 — old v5 SHA emits Node 20
       # deprecation warning on GitHub-hosted runners). Bumping keeps the pin
