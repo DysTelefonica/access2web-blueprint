@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_complexity.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 — assets/scripts/check_complexity.py
 """Cyclomatic complexity gate with an absolute, global ceiling.
 
 Hard Rule 12: this gate is deliberately NOT a ``top-N`` check. Under ``top-10``, whether a given
@@ -244,6 +244,21 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     measurements = measure(root)
+
+    if not measurements:
+        # Hard Rule 18: a measurement that could not run must never score as a
+        # perfect one. The subject set is empty, so every ceiling below is
+        # trivially satisfied — the healthiest possible number for the least
+        # healthy possible state. Guard the subject set, not just the path: the
+        # missing-package case was already covered above; this is the one that
+        # looks like success (harness v1.6).
+        message = f"{ROOT_PACKAGE} under {root} yielded no functions to measure"
+        if args.json:
+            print(json.dumps({"gate": "complexity", "status": "error", "detail": message}))
+        else:
+            print(f"FAIL  {message}", file=sys.stderr)
+        return 1
+
     exit_code, lines = evaluate(offenders_of(measurements), date.today())
 
     if args.json:
