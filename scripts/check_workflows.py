@@ -188,15 +188,26 @@ def _find_duplicate_keys(text: str) -> list[tuple[int, str]]:
                 expecting_continuation = True
                 continuation_min_indent = target_indent
 
-        keys.append((i + 1, target_indent, key_name, starts_mapping, is_list_item, dash_indent))
+        keys.append(
+            (i + 1, target_indent, key_name, starts_mapping, is_list_item, dash_indent)
+        )
 
     # ---- Pass 2: walk keys, build scope stack, find duplicates ----
     duplicates: list[tuple[int, str]] = []
     parent_stack: list[tuple[int, str]] = []
     current_list_item_id: int | None = None
     current_list_item_dash_indent: int | None = None
-    seen_per_scope: dict[tuple[tuple[str, ...], int | None], dict[str, int]] = {((), None): {}}
-    for line_no, target_indent, key_name, starts_mapping, is_list_item, dash_indent in keys:
+    seen_per_scope: dict[tuple[tuple[str, ...], int | None], dict[str, int]] = {
+        ((), None): {}
+    }
+    for (
+        line_no,
+        target_indent,
+        key_name,
+        starts_mapping,
+        is_list_item,
+        dash_indent,
+    ) in keys:
         if is_list_item:
             current_list_item_id = line_no
             current_list_item_dash_indent = dash_indent
@@ -319,9 +330,13 @@ def _check_docker_preflight(doc: dict[str, Any]) -> Iterator[Finding]:
         before: list[str] = []
         for step in steps:
             lines = (
-                _executable(str((step or {}).get("run") or "")) if isinstance(step, dict) else []
+                _executable(str((step or {}).get("run") or ""))
+                if isinstance(step, dict)
+                else []
             )
-            index = next((i for i, line in enumerate(lines) if "docker run" in line), None)
+            index = next(
+                (i for i, line in enumerate(lines) if "docker run" in line), None
+            )
             if index is None:
                 before.extend(lines)
                 continue
@@ -388,7 +403,10 @@ def _check_concurrency(doc: dict[str, Any]) -> Iterator[Finding]:
                 f"job `{job_name}` declares no concurrency group",
             )
             continue
-        if concurrency.get("cancel-in-progress") is True and job_name not in _CANCEL_SAFE_JOBS:
+        if (
+            concurrency.get("cancel-in-progress") is True
+            and job_name not in _CANCEL_SAFE_JOBS
+        ):
             yield (
                 "warn",
                 f"jobs.{job_name}",
@@ -586,7 +604,9 @@ def _check_python_version_consistency(
 # --------------------------------------------------------------------------------------------
 
 
-def _format_finding(path: Path, severity: str, check_name: str, location: str, message: str) -> str:
+def _format_finding(
+    path: Path, severity: str, check_name: str, location: str, message: str
+) -> str:
     """Render one finding to the on-disk `path:line: CHECK-NAME: location: message` shape.
 
     WARN findings add a `WARN: ` prefix so the existing error-line tests
@@ -608,22 +628,45 @@ def _check_one(path: Path, doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
     file — see `_check_one_with_parse`).
     """
     for severity, location, message in _check_timeout_minutes(doc):
-        yield severity, _format_finding(path, severity, "timeout-minutes", location, message)
+        yield (
+            severity,
+            _format_finding(path, severity, "timeout-minutes", location, message),
+        )
     for severity, location, message in _check_service_ports(doc):
-        yield severity, _format_finding(path, severity, "host-port-fix", location, message)
+        yield (
+            severity,
+            _format_finding(path, severity, "host-port-fix", location, message),
+        )
     for severity, location, message in _check_uses_pinned(doc):
-        yield severity, _format_finding(path, severity, "uses-not-pinned", location, message)
+        yield (
+            severity,
+            _format_finding(path, severity, "uses-not-pinned", location, message),
+        )
     for severity, location, message in _check_docker_preflight(doc):
-        yield severity, _format_finding(path, severity, "docker-preflight", location, message)
+        yield (
+            severity,
+            _format_finding(path, severity, "docker-preflight", location, message),
+        )
     for severity, location, message in _check_concurrency(doc):
-        yield severity, _format_finding(path, severity, "concurrency", location, message)
+        yield (
+            severity,
+            _format_finding(path, severity, "concurrency", location, message),
+        )
     for severity, location, message in _check_permissions(doc):
-        yield severity, _format_finding(path, severity, "permissions", location, message)
+        yield (
+            severity,
+            _format_finding(path, severity, "permissions", location, message),
+        )
     for severity, location, message in _check_concurrency_group_uniqueness(doc):
-        yield severity, _format_finding(path, severity, "concurrency-group", location, message)
+        yield (
+            severity,
+            _format_finding(path, severity, "concurrency-group", location, message),
+        )
 
 
-def _check_one_with_parse(path: Path) -> tuple[dict[str, Any] | None, list[tuple[str, str]]]:
+def _check_one_with_parse(
+    path: Path,
+) -> tuple[dict[str, Any] | None, list[tuple[str, str]]]:
     """Read `path`, run parse-time checks, return `(doc, findings)`.
 
     `doc` is the parsed workflow, or None if the file failed to parse or
@@ -670,7 +713,12 @@ def _check_one_with_parse(path: Path) -> tuple[dict[str, Any] | None, list[tuple
         return None, findings
 
     if not isinstance(doc, dict):
-        findings.append(("error", f"{path}:0: shape-error: top-level YAML must be a mapping (GitHub Actions workflow)"))
+        findings.append(
+            (
+                "error",
+                f"{path}:0: shape-error: top-level YAML must be a mapping (GitHub Actions workflow)",
+            )
+        )
         return None, findings
 
     return doc, findings
@@ -731,7 +779,9 @@ def main(argv: list[str] | None = None) -> int:
             # cross-workflow finding). Use the first parsed path as
             # the anchor.
             anchor = parsed[0][0]
-            line = _format_finding(anchor, severity, "python-version-consistency", location, message)
+            line = _format_finding(
+                anchor, severity, "python-version-consistency", location, message
+            )
             print(line, file=sys.stderr)
             if severity == "warn":
                 warnings += 1
