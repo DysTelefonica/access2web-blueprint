@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_mutation_sites.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 — assets/scripts/check_mutation_sites.py
 """Static mutation-site density gate.
 
 Counts AST-level mutation targets per file without running a single mutant. It is the cheap
@@ -222,6 +222,20 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     measurements = measure(root)
+
+    if not measurements:
+        # Hard Rule 18: a measurement that could not run must never score as a
+        # perfect one. The subject set is empty, so every ceiling below is
+        # trivially satisfied — the healthiest possible number for the least
+        # healthy possible state. Guard the subject set, not just the path: the
+        # missing-package case was already covered above; this is the one that
+        # looks like success (harness v1.6).
+        message = f"{list(SCAN_DIRS)} under {root} yielded no files to measure"
+        if args.json:
+            print(json.dumps({"gate": "mutation_sites", "status": "error", "detail": message}))
+        else:
+            print(f"FAIL  {message}", file=sys.stderr)
+        return 1
 
     if args.emit_baseline:
         print(render_baseline(offenders_of(measurements), date.today()))

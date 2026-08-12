@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_layers.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 — assets/scripts/check_layers.py
 """Hexagonal layer gate: dependency direction, vertical slicing, and layer purity.
 
 Stdlib only, so the gate runs before the project has installed anything. Walks the AST of every
@@ -406,6 +406,20 @@ def main(argv: list[str] | None = None) -> int:
 
     violations = collect_violations(root)
     files_seen = len(_iter_source_files(root))
+
+    if not files_seen:
+        # Hard Rule 18: a measurement that could not run must never score as a
+        # perfect one. The subject set is empty, so every ceiling below is
+        # trivially satisfied — the healthiest possible number for the least
+        # healthy possible state. Guard the subject set, not just the path: the
+        # missing-package case was already covered above; this is the one that
+        # looks like success (harness v1.6).
+        message = f"{ROOT_PACKAGE} under {root} yielded no source files to inspect"
+        if args.json:
+            print(json.dumps({"gate": "layers", "status": "error", "detail": message}))
+        else:
+            print(f"FAIL  {message}", file=sys.stderr)
+        return 1
     exit_code, lines = evaluate(violations, date.today())
 
     if args.json:

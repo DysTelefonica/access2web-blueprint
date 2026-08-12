@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_dry.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 — assets/scripts/check_dry.py
 """DRY gate — type-1 and type-2 duplicate block detection over the AST.
 
 Text-based clone detection reports formatting as duplication and misses everything that was
@@ -143,6 +143,23 @@ def _statement_bodies(tree: ast.AST):
             if isinstance(body, list) and len(body) >= MIN_STATEMENTS:
                 if all(isinstance(item, ast.stmt) for item in body):
                     yield body
+
+
+def _iter_source_files(root: Path) -> list[Path]:
+    """Every file this gate would inspect.
+
+    Zero clone groups is a legitimate result on clean code, so the group count
+    cannot prove the gate ran. The file count can, and Hard Rule 18 wants the
+    liveness proof to be independent of the verdict (harness v1.6).
+    """
+    package_root = root / ROOT_PACKAGE
+    if not package_root.is_dir():
+        return []
+    return [
+        path
+        for path in sorted(package_root.rglob("*.py"))
+        if not EXCLUDED_PARTS.intersection(path.parts)
+    ]
 
 
 def collect_groups(root: Path) -> list[CloneGroup]:
@@ -330,6 +347,21 @@ def main(argv: list[str] | None = None) -> int:
     root = args.root.resolve()
     if not (root / ROOT_PACKAGE).is_dir():
         message = f"root package '{ROOT_PACKAGE}' not found under {root}"
+        if args.json:
+            print(json.dumps({"gate": "dry", "status": "error", "detail": message}))
+        else:
+            print(f"FAIL  {message}", file=sys.stderr)
+        return 1
+
+    files_seen = len(_iter_source_files(root))
+    if not files_seen:
+        # Hard Rule 18: a measurement that could not run must never score as a
+        # perfect one. The subject set is empty, so every ceiling below is
+        # trivially satisfied — the healthiest possible number for the least
+        # healthy possible state. Guard the subject set, not just the path: the
+        # missing-package case was already covered above; this is the one that
+        # looks like success (harness v1.6).
+        message = f"{ROOT_PACKAGE} under {root} yielded no source files to inspect"
         if args.json:
             print(json.dumps({"gate": "dry", "status": "error", "detail": message}))
         else:
