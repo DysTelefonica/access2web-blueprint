@@ -34,6 +34,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   # Hard Rule 15: the interpreter is part of the gate. A patch bump is a different verdict.
   PYTHON_VERSION: "3.12.11"
