@@ -63,6 +63,9 @@ def test_duplicate_keys_positive(tmp_path: Path) -> None:
     body = """\
 name: ok
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 permissions: { contents: read }
 jobs:
   build:
@@ -110,6 +113,9 @@ def test_duplicate_keys_skips_remaining_checks(tmp_path: Path) -> None:
     body = """\
 name: dup-and-bad
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -137,6 +143,9 @@ def test_timeout_minutes_positive(tmp_path: Path) -> None:
     body = """\
 name: ok
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -154,6 +163,9 @@ def test_timeout_minutes_negative(tmp_path: Path) -> None:
     body = """\
 name: bad
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -177,6 +189,9 @@ def test_service_ports_positive(tmp_path: Path) -> None:
     body = """\
 name: ok
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -199,6 +214,9 @@ def test_service_ports_negative_host_container(tmp_path: Path) -> None:
     body = """\
 name: bad
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   test:
     runs-on: ubuntu-24.04
@@ -228,6 +246,9 @@ def test_uses_pinned_positive(tmp_path: Path) -> None:
     body = """\
 name: ok
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -246,6 +267,9 @@ def test_uses_pinned_negative_tag(tmp_path: Path) -> None:
     body = """\
 name: bad
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -264,6 +288,9 @@ def test_uses_pinned_negative_branch(tmp_path: Path) -> None:
     body = """\
 name: bad
 on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -289,4 +316,180 @@ def test_gate_passes_on_repo_workflows() -> None:
     """
     repo_root = Path(__file__).resolve().parent.parent
     rc, stderr = _capture(check_workflows, repo_root / ".github" / "workflows")
+    assert rc == 0, stderr
+
+
+# --------------------------------------------------------------------------------------------
+# CHECK 5 — docker preflight (issue #141)
+# --------------------------------------------------------------------------------------------
+_COMPLIANT_HEADER = """\
+name: ok
+on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+"""
+
+
+def test_docker_preflight_positive_same_step(tmp_path: Path) -> None:
+    """The guard may live earlier in the SAME step — the shape this repo uses."""
+    body = (
+        _COMPLIANT_HEADER
+        + """\
+      - name: scan
+        run: |
+          if ! timeout 30 docker info >/dev/null 2>&1; then exit 1; fi
+          docker run --rm scanner
+"""
+    )
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "ok.yml", body).parent)
+    assert rc == 0, stderr
+
+
+def test_docker_preflight_positive_earlier_step(tmp_path: Path) -> None:
+    body = (
+        _COMPLIANT_HEADER
+        + """\
+      - name: preflight
+        run: timeout 30 docker info >/dev/null
+      - name: scan
+        run: docker run --rm scanner
+"""
+    )
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "ok.yml", body).parent)
+    assert rc == 0, stderr
+
+
+def test_docker_preflight_negative_absent(tmp_path: Path) -> None:
+    body = (
+        _COMPLIANT_HEADER
+        + """\
+      - name: scan
+        run: docker run --rm scanner
+"""
+    )
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
+    assert rc == 1
+    assert "docker-preflight" in stderr
+    assert "no `docker info` check" in stderr
+
+
+def test_docker_preflight_negative_unwrapped(tmp_path: Path) -> None:
+    """A bare `docker info` hangs exactly when the daemon is wedged."""
+    body = (
+        _COMPLIANT_HEADER
+        + """\
+      - name: scan
+        run: |
+          docker info >/dev/null
+          docker run --rm scanner
+"""
+    )
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
+    assert rc == 1
+    assert "not under `timeout`" in stderr
+
+
+def test_docker_preflight_word_timeout_in_prose_does_not_count(tmp_path: Path) -> None:
+    """`timeout-minutes` and the word "timeout" in a message are not a guard.
+
+    This exact false negative shipped in the first draft of the check: the repo's
+    own preflight message says "silent 15-minute timeout", so a substring test
+    reported two unwrapped guards as wrapped.
+    """
+    body = (
+        _COMPLIANT_HEADER
+        + """\
+      - name: scan
+        run: |
+          echo "a hung daemon turns this into a silent 15-minute timeout"
+          docker info >/dev/null
+          docker run --rm scanner
+"""
+    )
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
+    assert rc == 1
+    assert "not under `timeout`" in stderr
+
+
+def test_docker_preflight_ignores_comment_lines(tmp_path: Path) -> None:
+    """A comment naming the guard is not the guard.
+
+    The mirror of the rule above: files document what they do, and a scanner that
+    reads comments would accept a documented-but-absent guard.
+    """
+    body = (
+        _COMPLIANT_HEADER
+        + """\
+      - name: scan
+        run: |
+          # we used to run: timeout 30 docker info
+          docker run --rm scanner
+"""
+    )
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
+    assert rc == 1
+    assert "no `docker info` check" in stderr
+
+
+# --------------------------------------------------------------------------------------------
+# CHECK 6 — FIFO concurrency (issue #141)
+# --------------------------------------------------------------------------------------------
+def test_concurrency_negative_missing(tmp_path: Path) -> None:
+    body = """\
+name: bad
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - run: echo ok
+"""
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
+    assert rc == 1
+    assert "declares no concurrency group" in stderr
+
+
+def test_concurrency_negative_cancels_in_progress(tmp_path: Path) -> None:
+    """Cancelling discards work that already consumed one of two runners."""
+    body = """\
+name: bad
+on: [push]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - run: echo ok
+"""
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
+    assert rc == 1
+    assert "cancel-in-progress: false" in stderr
+
+
+def test_concurrency_positive_per_job_overrides_absent_top_level(tmp_path: Path) -> None:
+    """This repo declares it per gate, not top-level; both must be accepted."""
+    body = """\
+name: ok
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    concurrency:
+      group: gate-build
+      cancel-in-progress: false
+    steps:
+      - run: echo ok
+"""
+    rc, stderr = _capture(check_workflows, _write(tmp_path, "ok.yml", body).parent)
     assert rc == 0, stderr
