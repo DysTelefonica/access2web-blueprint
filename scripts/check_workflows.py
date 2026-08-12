@@ -188,18 +188,14 @@ def _find_duplicate_keys(text: str) -> list[tuple[int, str]]:
                 expecting_continuation = True
                 continuation_min_indent = target_indent
 
-        keys.append(
-            (i + 1, target_indent, key_name, starts_mapping, is_list_item, dash_indent)
-        )
+        keys.append((i + 1, target_indent, key_name, starts_mapping, is_list_item, dash_indent))
 
     # ---- Pass 2: walk keys, build scope stack, find duplicates ----
     duplicates: list[tuple[int, str]] = []
     parent_stack: list[tuple[int, str]] = []
     current_list_item_id: int | None = None
     current_list_item_dash_indent: int | None = None
-    seen_per_scope: dict[tuple[tuple[str, ...], int | None], dict[str, int]] = {
-        ((), None): {}
-    }
+    seen_per_scope: dict[tuple[tuple[str, ...], int | None], dict[str, int]] = {((), None): {}}
     for (
         line_no,
         target_indent,
@@ -330,13 +326,9 @@ def _check_docker_preflight(doc: dict[str, Any]) -> Iterator[Finding]:
         before: list[str] = []
         for step in steps:
             lines = (
-                _executable(str((step or {}).get("run") or ""))
-                if isinstance(step, dict)
-                else []
+                _executable(str((step or {}).get("run") or "")) if isinstance(step, dict) else []
             )
-            index = next(
-                (i for i, line in enumerate(lines) if "docker run" in line), None
-            )
+            index = next((i for i, line in enumerate(lines) if "docker run" in line), None)
             if index is None:
                 before.extend(lines)
                 continue
@@ -403,10 +395,7 @@ def _check_concurrency(doc: dict[str, Any]) -> Iterator[Finding]:
                 f"job `{job_name}` declares no concurrency group",
             )
             continue
-        if (
-            concurrency.get("cancel-in-progress") is True
-            and job_name not in _CANCEL_SAFE_JOBS
-        ):
+        if concurrency.get("cancel-in-progress") is True and job_name not in _CANCEL_SAFE_JOBS:
             yield (
                 "warn",
                 f"jobs.{job_name}",
@@ -587,9 +576,7 @@ def _check_python_version_consistency(
         # One finding that names every (workflow, value) pair so a
         # reviewer can fix the disagreement without rerunning the gate.
         pairs = ", ".join(
-            f"`{p.name}` declares `{v!r}`"
-            for v, paths in sorted(by_value.items())
-            for p in paths
+            f"`{p.name}` declares `{v!r}`" for v, paths in sorted(by_value.items()) for p in paths
         )
         first_path = declared[0][0]
         yield (
@@ -604,9 +591,7 @@ def _check_python_version_consistency(
 # --------------------------------------------------------------------------------------------
 
 
-def _format_finding(
-    path: Path, severity: str, check_name: str, location: str, message: str
-) -> str:
+def _format_finding(path: Path, severity: str, check_name: str, location: str, message: str) -> str:
     """Render one finding to the on-disk `path:line: CHECK-NAME: location: message` shape.
 
     WARN findings add a `WARN: ` prefix so the existing error-line tests
