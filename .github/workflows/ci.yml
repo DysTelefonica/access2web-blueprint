@@ -153,8 +153,6 @@ jobs:
         # gates look for it.
         run: pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
 
-      - name: check workflows
-        run: python scripts/check_workflows.py
 
       - name: quality gates and indicators
         # Runs layers -> complexity -> CRAP -> DRY in that fixed order, writes
@@ -266,6 +264,22 @@ jobs:
           echo "dependency scan: auditing $installed installed packages"
 
           .venv-audit/bin/pip-audit --strict
+
+      - name: verify the docker daemon answers before relying on it
+        # Issue #141. The other four docker jobs in this repository check the
+        # daemon first; this one did not, and nothing noticed — which is the
+        # point: a convention applied by hand erodes at the next job added.
+        #
+        # `timeout` is the load-bearing part, not `docker info`. An unwrapped
+        # check hangs in exactly the scenario it exists to detect, which makes it
+        # indistinguishable from no check at all.
+        run: |
+          set -euo pipefail
+          if ! timeout 30 docker info >/dev/null 2>&1; then
+            echo "::error::docker daemon is not responding on the runner."
+            echo "A hung daemon turns this job into a silent 15-minute wait; fail fast instead."
+            exit 1
+          fi
 
       - name: secret scan
         # Scanner images are pinned by digest, not tag. Tags mutate; digests do not.

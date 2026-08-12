@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""CI gate on .github/workflows/*.yml — issue #135.
+"""CI gate on .github/workflows/*.yml — issues #135, #141.
 
-Four checks, all from PRs #126/#129 applied by hand and never re-verified:
+Six checks, all from PRs #126/#129 applied by hand and never re-verified:
 1. No duplicate YAML keys (GitHub rejects them with startup_failure that
    silently disappears from the rollup).
 2. Every job declares timeout-minutes (GitHub default is 360 minutes — the
@@ -10,6 +10,11 @@ Four checks, all from PRs #126/#129 applied by hand and never re-verified:
    shares a DB between runners; vacuous today, future-proofs the next
    person who adds a service).
 4. Every uses: pinned by a 40-hex SHA (blinds against future tag drift).
+5. Every job invoking `docker run` checks the daemon first, wrapped in
+   `timeout` (a bare `docker info` hangs in the very scenario it exists to
+   detect). ci.yml::security had already slipped through without it.
+6. Every job declares a `concurrency` group with cancel-in-progress: false
+   (applied by hand to all nine jobs; nothing kept it true).
 
 Hard Rule 1: no || true, no continue-on-error. Exit 0 = clean, exit 1 = any
 violation.
@@ -41,6 +46,12 @@ _TIMEOUT_RECOMMENDED = {
 
 #: GitHub Actions SHA — 40 lowercase hex characters.
 _SHA_PIN = re.compile(r"^[0-9a-f]{40}$")
+
+#: An actual `timeout` INVOCATION, not the word. The preflight messages in this
+#: repo say "15-minute silent timeout", so a substring test for `timeout` passes
+#: on the prose and reports an unwrapped guard as wrapped — the same class of
+#: false negative these checks exist to prevent.
+_TIMEOUT_CALL = re.compile(r"(?:^|[|&;(`$]|\s)timeout\s+\d")
 
 #: `ports:` value that fixes the host side, e.g. `5432:5432`. A bare
 #: number or `number:` (empty host) does not.
@@ -240,6 +251,89 @@ def _check_service_ports(doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
                     )
 
 
+def _executable(script: str) -> list[str]:
+    """`script` split into lines, comment-only lines dropped.
+
+    These workflows document the commands they stopped using, so a scan that
+    reads comments reports the explanation as the offence — which teaches people
+    to delete explanations.
+    """
+    return [line for line in script.splitlines() if not line.strip().startswith("#")]
+
+
+def _check_docker_preflight(doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
+    """Yield `(location, message)` for every job reaching `docker run` unguarded.
+
+    A wedged daemon makes `docker run` block rather than fail, so the job goes
+    silent until its timeout. The guard must be wrapped in `timeout`: a bare
+    `docker info` hangs in exactly the scenario it exists to detect, which makes
+    it indistinguishable from no guard at all.
+
+    The guard may sit in an earlier step OR earlier in the same step — this repo
+    uses the latter — so both are accepted, and only text before the first
+    `docker run` counts.
+    """
+    jobs = doc.get("jobs") or {}
+    if not isinstance(jobs, dict):
+        return
+    for job_name, job_def in jobs.items():
+        if not isinstance(job_def, dict):
+            continue
+        steps = job_def.get("steps")
+        if not isinstance(steps, list):
+            continue
+        before: list[str] = []
+        for step in steps:
+            lines = (
+                _executable(str((step or {}).get("run") or "")) if isinstance(step, dict) else []
+            )
+            index = next((i for i, line in enumerate(lines) if "docker run" in line), None)
+            if index is None:
+                before.extend(lines)
+                continue
+            guard = "\n".join([*before, *lines[:index]])
+            if "docker info" not in guard:
+                yield (
+                    f"jobs.{job_name}",
+                    f"job `{job_name}` reaches `docker run` with no `docker info` check",
+                )
+            elif not _TIMEOUT_CALL.search(guard):
+                yield (
+                    f"jobs.{job_name}",
+                    f"job `{job_name}` checks `docker info` but not under `timeout`; "
+                    f"an unwrapped check hangs exactly when the daemon is wedged",
+                )
+            break
+
+
+def _check_concurrency(doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
+    """Yield `(location, message)` for jobs without a FIFO concurrency group.
+
+    Cancelling discards work that already consumed a runner from a small pool,
+    so `cancel-in-progress: false` is the shape this repository chose for all
+    nine jobs. Nothing kept that true until now.
+    """
+    jobs = doc.get("jobs") or {}
+    if not isinstance(jobs, dict):
+        return
+    top_level = doc.get("concurrency")
+    for job_name, job_def in jobs.items():
+        if not isinstance(job_def, dict):
+            continue
+        concurrency = job_def.get("concurrency") or top_level
+        if not isinstance(concurrency, dict) or not concurrency.get("group"):
+            yield (
+                f"jobs.{job_name}",
+                f"job `{job_name}` declares no concurrency group",
+            )
+        elif concurrency.get("cancel-in-progress") is not False:
+            yield (
+                f"jobs.{job_name}",
+                f"job `{job_name}` must set `cancel-in-progress: false`; cancelling "
+                f"discards work that already consumed one of two runners",
+            )
+
+
 def _check_uses_pinned(doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
     """Yield `(location, message)` for every `uses:` not pinned by 40-hex SHA."""
     jobs = doc.get("jobs") or {}
@@ -308,14 +402,6 @@ def _check_one(path: Path) -> Iterator[str]:
         yield f"{path}:0: parse-error: {exc}"
         return
 
-    # For checks 2 / 3 / 4 we need a dict. safe_load dedupes (which is fine —
-    # the file has no duplicates at this point) and resolves aliases/merges.
-    try:
-        doc = yaml.safe_load(text)
-    except yaml.YAMLError as exc:
-        yield f"{path}:0: parse-error: {exc}"
-        return
-
     if not isinstance(doc, dict):
         yield (f"{path}:0: shape-error: top-level YAML must be a mapping (GitHub Actions workflow)")
         return
@@ -326,6 +412,10 @@ def _check_one(path: Path) -> Iterator[str]:
         yield f"{path}:1: host-port-fix: {location}: {message}"
     for location, message in _check_uses_pinned(doc):
         yield f"{path}:1: uses-not-pinned: {location}: {message}"
+    for location, message in _check_docker_preflight(doc):
+        yield f"{path}:1: docker-preflight: {location}: {message}"
+    for location, message in _check_concurrency(doc):
+        yield f"{path}:1: concurrency: {location}: {message}"
 
 
 def _iter_workflows(root: Path) -> Iterator[Path]:

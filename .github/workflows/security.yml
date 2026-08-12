@@ -69,7 +69,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          if ! docker info > /dev/null 2>&1; then
+          if ! timeout 30 docker info > /dev/null 2>&1; then
             echo "::error::docker daemon is not responding on the runner."
             echo "A hung daemon turns this job into a 15-minute silent timeout; fail fast instead."
             exit 1
@@ -117,7 +117,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          if ! docker info > /dev/null 2>&1; then
+          if ! timeout 30 docker info > /dev/null 2>&1; then
             echo "::error::docker daemon is not responding on the runner."
             echo "A hung daemon turns this job into a 15-minute silent timeout; fail fast instead."
             exit 1
