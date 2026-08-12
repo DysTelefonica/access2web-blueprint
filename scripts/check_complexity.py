@@ -46,7 +46,9 @@ class BaselineEntry:
     target_date: str  # ISO-8601, YYYY-MM-DD
 
 
-#: Keyed by ``path::qualified_name``. Shrink-only.
+# Empty by design — see Hard Rule #12 of deterministic-quality-harness v1.6.
+# No offenders exist today (CC <= 15 in every function in the repo). The first
+# time an offender appears, the gate will block it without a ratchet.
 BASELINE: dict[str, BaselineEntry] = {}
 
 # --------------------------------------------------------------------------------------------

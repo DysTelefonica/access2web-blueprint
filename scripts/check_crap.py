@@ -63,7 +63,9 @@ class BaselineEntry:
     target_date: str  # ISO-8601, YYYY-MM-DD
 
 
-#: Keyed by ``path::qualified_name``. Shrink-only.
+# Empty by design — see Hard Rule #12 of deterministic-quality-harness v1.6.
+# CRAP <= 6 is the absolute ceiling. No offenders exist today; the gate blocks
+# any new offender without a ratchet.
 BASELINE: dict[str, BaselineEntry] = {}
 
 # --------------------------------------------------------------------------------------------

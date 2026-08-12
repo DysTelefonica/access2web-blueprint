@@ -74,7 +74,10 @@ class AwaitingAcquisition:
     since: str  # ISO-8601, the date it landed on the default branch
 
 
-#: Keyed by module path. Shrink-only.
+# Empty by design — see Hard Rule #12 of deterministic-quality-harness v1.6.
+# The mutation gate runs only on schedule/workflow_dispatch, not per PR, so its
+# indicators reach quality-report.json on a different cadence. When the first
+# survivor appears, the gate will block without a ratchet.
 BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {}
 
 # --------------------------------------------------------------------------------------------
