@@ -578,7 +578,6 @@ def _check_python_version_consistency(
         pairs = ", ".join(
             f"`{p.name}` declares `{v!r}`" for v, paths in sorted(by_value.items()) for p in paths
         )
-        first_path = declared[0][0]
         yield (
             "error",
             "env.PYTHON_VERSION",
@@ -701,7 +700,8 @@ def _check_one_with_parse(
         findings.append(
             (
                 "error",
-                f"{path}:0: shape-error: top-level YAML must be a mapping (GitHub Actions workflow)",
+                f"{path}:0: shape-error: top-level YAML must be a mapping "
+                f"(GitHub Actions workflow)",
             )
         )
         return None, findings
