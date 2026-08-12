@@ -318,6 +318,77 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
     )
 
 
+def _install_blocks(run_blocks: list[str]) -> list[str]:
+    """Run blocks that target the platform project for `pip install`.
+
+    An install block is any run block that combines `pip install` with the
+    `app[dev]` editable target — this is what every quality, mutation, and
+    security job calls when wiring the project into the runner's venv.
+    """
+    return [block for block in run_blocks if "pip install" in block and "app[dev]" in block]
+
+
+def test_install_step_defends_against_missing_pyproject(run_blocks: list[str]) -> None:
+    """F2 of #117: a chain that ships pyproject.fragment.toml without
+    app/pyproject.toml must NOT fail with a cryptic pip error.
+
+    Every install step targeting `app[dev]` MUST guard the install with a
+    file existence check, harden the shell with `set -euo pipefail`, exit
+    non-zero on the failure path, and reference issue #117 in the diagnostic
+    so an operator staring at a red job can recognise the chain-hole shape.
+    """
+    installs = _install_blocks(run_blocks)
+    assert installs, "no run block installs app[dev] — this test is stale"
+
+    for i, block in enumerate(installs, start=1):
+        # Defensive guard: prove the project exists before pip sees it.
+        assert "app/pyproject.toml" in block, (
+            f"install step #{i} does not check for app/pyproject.toml: {block}"
+        )
+        # Hardening: without `set -euo pipefail` the guard's `exit 1` can be
+        # masked by a subsequent command, and the install step stops being
+        # able to fail (Hard Rule 1).
+        assert "set -euo pipefail" in block, (
+            f"install step #{i} does not harden its shell with set -euo pipefail: {block}"
+        )
+        # Hard Rule 1: no silent pass on a real failure.
+        assert "|| true" not in block, f"install step #{i} uses '|| true': {block}"
+        # The failure path must terminate the job, not let it limp along.
+        assert "exit 1" in block, f"install step #{i} does not exit non-zero on failure: {block}"
+        # Diagnostic must point operators to the umbrella issue. The exact
+        # spelling varies; the substring `#117` is the canonical anchor.
+        assert "#117" in block, (
+            f"install step #{i} does not reference issue #117 in its failure path: {block}"
+        )
+
+
+def test_install_step_reports_chain_hole_when_fragment_only(run_blocks: list[str]) -> None:
+    """The fragment-only branch must produce a diagnostic naming F2.
+
+    When `app/pyproject.toml` is missing but `pyproject.fragment.toml` is
+    present at the repo root, the install step MUST name that file in the
+    failure message. Otherwise an operator has no way to recognise the
+    chain-hole shape and link the failure back to the umbrella issue.
+    """
+    installs = _install_blocks(run_blocks)
+    assert installs, "no run block installs app[dev] — this test is stale"
+    for i, block in enumerate(installs, start=1):
+        assert "pyproject.fragment.toml" in block, (
+            f"install step #{i} does not mention pyproject.fragment.toml: {block}"
+        )
+
+
+def test_install_step_python_pin_unchanged(workflow: dict) -> None:
+    """Hard Rule 15: the interpreter is part of the gate.
+
+    Any patch to the Python pin is a different verdict on unchanged code, so
+    a fix for the install step must not drift the pin (Hard Rule 15).
+    """
+    assert workflow["env"]["PYTHON_VERSION"] == "3.12.11", (
+        f"PYTHON_VERSION drifted from 3.12.11 to {workflow['env']['PYTHON_VERSION']!r}"
+    )
+
+
 def test_secret_scan_proves_it_scanned_something() -> None:
     """Hard Rule 18: a zero-byte scan is not a clean tree.
 
