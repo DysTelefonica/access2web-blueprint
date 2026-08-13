@@ -29,8 +29,11 @@ Consecuencias operativas:
    crearla antes que el issue obliga a rehacerla.
 2. **Presupueste el tamaño antes de escribir.** Si el cambio no cabe en 400
    líneas, decida el corte al principio, no al final.
-3. **No use `size:exception` por comodidad.** Existe para diffs generados o
-   inevitables. Usarla para ahorrarse un corte deja el gate sin sentido.
+3. **Si no cabe en 400 líneas, hay tres salidas y `size:exception` es la
+   última.** Primero partir por unidad de trabajo; si las partes dependen entre
+   sí, encadenar PRs (cada rama parte de la anterior); y sólo para diffs
+   inevitables, `size:exception` con su `size-exception-reason:`. El orden y el
+   motivo están en `CONTRIBUTING.md`.
 4. **Al integrar, conserve la rama remota.** Se integra con `--squash` y se
    limpia el worktree local con `git worktree remove <ruta>`. El motivo está en
    `CONTRIBUTING.md`.

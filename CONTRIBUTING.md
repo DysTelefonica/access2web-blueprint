@@ -33,6 +33,32 @@ Consulte esta guía antes de abrir un issue o un PR. Mantenga cada cambio centra
 | `🔍 research` | `#7057ff` | Investigación y evidencia |
 | `⚙️ chore` | `#e4e669` | Mantenimiento técnico |
 
+## Tamaño de los PRs
+
+El presupuesto es de **400 líneas** (`additions + deletions`), comprobado por
+`scripts/check_pr_size.py`. No es una cifra arbitraria: es el límite a partir
+del cual una revisión deja de ser atenta y pasa a ser un vistazo.
+
+Cuando el cambio no cabe, el orden de preferencia es este:
+
+1. **Partir por unidad de trabajo.** Si el cambio contiene dos ideas
+   separables, son dos PRs. Es la opción por defecto y casi siempre la correcta.
+2. **PRs encadenados.** Cuando las partes dependen unas de otras y no pueden
+   entrar por separado, cada rama parte de la anterior en lugar de `main`, y
+   cada PR apunta a la rama que le precede. Se integran en orden. Así cada
+   revisión ve una porción entendible en lugar del muro entero.
+3. **`size:exception`.** Último recurso, y sólo cuando el diff grande es
+   inevitable: código generado, dependencias, migraciones. Requiere añadir al
+   cuerpo del PR una línea `size-exception-reason: <motivo>`.
+
+Los commits por unidad de trabajo son los ladrillos; los PRs encadenados son los
+tramos de muro. Un cambio grande se trocea al planificarlo, no al final, cuando
+el gate ya ha rebotado.
+
+Usar `size:exception` para ahorrarse un corte deja el gate sin sentido. Si se
+recurre a ella con frecuencia, el problema no es el presupuesto: es que el
+trabajo se está planificando en piezas demasiado grandes.
+
 ## Reglas específicas de este repositorio
 
 - Mantenga los PRs pequeños y centrados en una única idea.
