@@ -42,7 +42,7 @@ class FakeUserRepository:
 class FakeResetTokenRepository:
     by_hash: dict = field(default_factory=dict)
 
-    def add(self, token: "ResetToken") -> None:
+    def add(self, token: ResetToken) -> None:
         self.by_hash[token.token_hash] = token
 
     def find_unused(self, token_hash: str, now):
@@ -61,7 +61,7 @@ class FakeResetTokenRepository:
             if row.user_id == user_id and not row.consumed_at and not row.superseded_at:
                 self.by_hash[h] = dataclasses.replace(row, superseded_at=at)
 
-    def insert(self, token: "ResetToken") -> None:
+    def insert(self, token: ResetToken) -> None:
         self.by_hash[token.token_hash] = token
 
 
@@ -86,7 +86,7 @@ class FakeAuditLog:
     entries: list = field(default_factory=list)
     next_raises: BaseException | None = None
 
-    def append(self, event: "AuditLogEntry") -> None:
+    def append(self, event: AuditLogEntry) -> None:
         if self.next_raises is not None:
             exc, self.next_raises = self.next_raises, None
             raise exc

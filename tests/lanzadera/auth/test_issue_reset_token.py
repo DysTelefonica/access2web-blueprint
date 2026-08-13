@@ -120,9 +120,7 @@ def test_supersession_does_not_cross_users():
     )
     bob_first = _issue(alice_deps, "bob@enterprise.test")
     _issue(alice_deps)
-    assert (
-        alice_deps["reset_tokens"].by_hash[bob_first.token_hash].superseded_at is None
-    )
+    assert alice_deps["reset_tokens"].by_hash[bob_first.token_hash].superseded_at is None
 
 
 # -- Guards ------------------------------------------------------------------
