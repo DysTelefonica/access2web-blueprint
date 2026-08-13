@@ -32,6 +32,7 @@ def _setup(email: str = "alice@enterprise.test", *, has_admin: bool = True):
         FakeResetTokenRepository,
         FakeUserRepository,
     )
+
     user = User(
         id=uuid4(),
         email=email,
@@ -105,15 +106,23 @@ def test_supersession_does_not_cross_users():
     _setup("bob@enterprise.test")
     alice_deps["users"].add(
         User(
-            id=uuid4(), email="bob@enterprise.test", name="Bob",
-            dni_encrypted=b"\x00", password_hash=None,
-            status=UserStatus.PASSWORD_RESET_REQUIRED, failed_attempts=0,
-            last_login_at=None, created_at=_now(), updated_at=_now(),
+            id=uuid4(),
+            email="bob@enterprise.test",
+            name="Bob",
+            dni_encrypted=b"\x00",
+            password_hash=None,
+            status=UserStatus.PASSWORD_RESET_REQUIRED,
+            failed_attempts=0,
+            last_login_at=None,
+            created_at=_now(),
+            updated_at=_now(),
         )
     )
     bob_first = _issue(alice_deps, "bob@enterprise.test")
     _issue(alice_deps)
-    assert alice_deps["reset_tokens"].by_hash[bob_first.token_hash].superseded_at is None
+    assert (
+        alice_deps["reset_tokens"].by_hash[bob_first.token_hash].superseded_at is None
+    )
 
 
 # -- Guards ------------------------------------------------------------------

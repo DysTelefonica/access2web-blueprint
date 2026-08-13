@@ -56,6 +56,7 @@ def _seed(
         FakeResetTokenRepository,
         FakeUserRepository,
     )
+
     user = _user()
     created = created_at or _now()
     token = ResetToken(
@@ -77,8 +78,13 @@ def _seed(
 def _consume(deps, *, raw: str = "raw-token-abc", password: str = "new-passphrase"):
     _, users, tokens, audit, hasher = deps
     return consume_reset_token(
-        raw, password, now=_now(),
-        hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
+        raw,
+        password,
+        now=_now(),
+        hasher=hasher,
+        users=users,
+        reset_tokens=tokens,
+        audit=audit,
     )
 
 
@@ -186,9 +192,13 @@ def test_naive_now_is_rejected():
     deps = _seed()
     with pytest.raises(ValueError):
         consume_reset_token(
-            "raw-token-abc", "new-pass",
+            "raw-token-abc",
+            "new-pass",
             now=datetime(2026, 8, 13, 12, 0, 0),  # noqa: DTZ001
-            hasher=deps[4], users=deps[1], reset_tokens=deps[2], audit=deps[3],
+            hasher=deps[4],
+            users=deps[1],
+            reset_tokens=deps[2],
+            audit=deps[3],
         )
 
 

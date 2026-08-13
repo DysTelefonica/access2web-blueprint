@@ -52,9 +52,7 @@ def _classify_invalid(row: ResetToken | None, now: datetime) -> Exception:
             f"reset token was superseded at {row.superseded_at.isoformat()}"
         )
     if row.expires_at <= now:
-        return ExpiredResetTokenError(
-            f"reset token expired at {row.expires_at.isoformat()}"
-        )
+        return ExpiredResetTokenError(f"reset token expired at {row.expires_at.isoformat()}")
     return InvalidResetTokenError("reset token is unusable")
 
 
