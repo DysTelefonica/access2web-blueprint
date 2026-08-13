@@ -37,51 +37,50 @@ Orden obligatorio: 1 antes que 2 y 3 (con CRAP vivo el techo efectivo es 6; en o
 
 Traza: DG-11, spec "Complexity ceiling lowered with review date".
 
-- [x] 1.1 `scripts/check_complexity.py`: `MAX_COMPLEXITY = 10`, fecha de revisión `2027-02-13` junto a la constante.
-- [x] 1.2 `tests/lanzadera/test_complexity_wiring.py`: pinear `MAX_COMPLEXITY == 10` y presencia de `2027-02-13` en el módulo.
-- [x] 1.3 Verificar: `python scripts/check_complexity.py --root .` sale 0 sin tocar código de `app/`.
-- [x] 1.4 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
+- [ ] 1.1 `scripts/check_complexity.py`: `MAX_COMPLEXITY = 10`, fecha de revisión `2027-02-13` junto a la constante.
+- [ ] 1.2 `tests/lanzadera/test_complexity_wiring.py`: pinear `MAX_COMPLEXITY == 10` y presencia de `2027-02-13` en el módulo.
+- [ ] 1.3 Verificar: `python scripts/check_complexity.py --root .` sale 0 sin tocar código de `app/`.
+- [ ] 1.4 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
 
 ## Phase 2: Descableado de CRAP — PR 2 (`feat/266-crap-unwire` → `feat/266-complexity-ceiling`)
 
 Traza: DG-12, spec "CRAP gate removal" (paso 1 de 2).
 
-- [x] 2.1 `scripts/quality_report.py`: quitar `("crap", "check_crap.py", ())` de `GATES`.
-- [x] 2.2 `Makefile`, `.github/workflows/ci.yml`, `app/pyproject.toml`, `app/README.md`, `.gitignore`: quitar referencias a `crap`.
-- [x] 2.3 Docstrings de `check_complexity.py` y `check_mutation.py`: quitar mención a CRAP como "binding constraint".
-- [x] 2.4 `tests/test_ci_workflow.py`: quitar `"crap"` de `REQUIRED_GATE_ORDER`.
-- [x] 2.5 `tests/test_gate_smoke.py`: quitar `"check_crap.py"` del parametrize de `test_every_gate_emits_a_well_formed_envelope`; retargetear `test_quality_report_aggregates_indicators`/`test_quality_report_names_the_failing_gate`/`test_quality_report_is_byte_identical_for_the_same_commit` fuera de `crap_clean`/`crap_violation` y de la aserción `crap.max_crap`.
-- [x] 2.6 Verificar límite de rebanada: `python scripts/quality_report.py` sin `crap` en el envelope, `python -m pytest -q` en verde (script y fixtures de CRAP siguen en disco, solo descableados).
-- [x] 2.7 `tests/lanzadera/test_quality_report_smoke.py::test_gate_order_includes_legacy_hashes`: quitar `"crap"` de la tupla esperada (queda `("layers", "complexity", "mutation_sites", "dry", "legacy_hashes")`); el assert documenta la ratchet del gate retired, no la presencia de CRAP. Esta tarea existía como pre-existente esperando el slice; el sub-agente la agrega porque 2.1 rompe el assert.
+- [ ] 2.1 `scripts/quality_report.py`: quitar `("crap", "check_crap.py", ())` de `GATES`.
+- [ ] 2.2 `Makefile`, `.github/workflows/ci.yml`, `app/pyproject.toml`, `app/README.md`, `.gitignore`: quitar referencias a `crap`.
+- [ ] 2.3 Docstrings de `check_complexity.py` y `check_mutation.py`: quitar mención a CRAP como "binding constraint".
+- [ ] 2.4 `tests/test_ci_workflow.py`: quitar `"crap"` de `REQUIRED_GATE_ORDER`.
+- [ ] 2.5 `tests/test_gate_smoke.py`: quitar `"check_crap.py"` del parametrize de `test_every_gate_emits_a_well_formed_envelope`; retargetear `test_quality_report_aggregates_indicators`/`test_quality_report_names_the_failing_gate`/`test_quality_report_is_byte_identical_for_the_same_commit` fuera de `crap_clean`/`crap_violation` y de la aserción `crap.max_crap`.
+- [ ] 2.6 Verificar límite de rebanada: `python scripts/quality_report.py` sin `crap` en el envelope, `python -m pytest -q` en verde (script y fixtures de CRAP siguen en disco, solo descableados).
 
 ## Phase 3: Borrado de CRAP — PR 3, `size:exception` (`feat/266-crap-delete` → `feat/266-crap-unwire`)
 
 Traza: DG-12, spec "CRAP gate removal" (paso 2 de 2).
 
-- [x] 3.1 Borrar `scripts/check_crap.py`, `tests/fixtures/crap_clean/`, `tests/fixtures/crap_violation/`, `tests/lanzadera/test_crap_wiring.py`.
-- [x] 3.2 `tests/test_gate_smoke.py`: borrar la sección `check_crap` (tests que invocan `check_crap.py` directamente).
-- [x] 3.3 Crear `tests/lanzadera/test_crap_retired_guard.py` (DG-12): falla si `crap` reaparece en `GATES`, `Makefile`, `ci.yml`, `pyproject.toml` o docs.
-- [x] 3.4 Verificar: `git grep -i crap` sobre ficheros rastreados devuelve cero coincidencias en la superficie funcional (queda histórico en `docs/uat/estado-planificacion-NEW_2026-08-12.html` y en los open artifacts de este change).
-- [x] 3.5 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
+- [ ] 3.1 Borrar `scripts/check_crap.py`, `tests/fixtures/crap_clean/`, `tests/fixtures/crap_violation/`, `tests/lanzadera/test_crap_wiring.py`.
+- [ ] 3.2 `tests/test_gate_smoke.py`: borrar la sección `check_crap` (tests que invocan `check_crap.py` directamente).
+- [ ] 3.3 Crear `tests/lanzadera/test_crap_retired_guard.py` (DG-12): falla si `crap` reaparece en `GATES`, `Makefile`, `ci.yml`, `pyproject.toml` o docs.
+- [ ] 3.4 Verificar: `git grep -i crap` sobre ficheros rastreados devuelve cero coincidencias.
+- [ ] 3.5 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
 
 ## Phase 4: Gate nuevo, sin armar — PR 4 (`feat/266-decision-guards-gate` → `feat/266-crap-delete`)
 
 Traza: DG-1..DG-4, DG-7, DG-13, spec "Decision table traversal", "Fail-closed on malformed or absent input", "Two-tier guard test shape" (RED, nivel unitario).
 
-- [x] 4.1 RED: `tests/lanzadera/test_decision_guards_wiring.py` — tests unitarios sobre cadenas sintéticas para `parse_decision_tables()` (DG-2, DG-13: cabecera `id`, fila delimitadora, fila de decisión de token único vs. celda-lista) antes de que exista el módulo.
-- [x] 4.2 GREEN: crear `scripts/check_decision_guards.py` con bloque `CONFIGURATION` (`OPENSPEC_ROOT`, `TESTS_ROOT`, `SCRIPTS_ROOT`, `DECISION_ID_PREFIXES = ("DA-", "DG-", "QC-")`, `EXCLUDED_PARTS` con `fixtures`, `UNGOVERNED_DESIGNS`, `COVERED_BY`, `BASELINE` vacíos), `parse_decision_tables()`, `collect_guard_claims()` (bloque `HARNESS-PROVENANCE`, no docstring — DG-4), `validate_coverage()`, `evaluate()`, `build_report()`, `--root/--json`.
-- [x] 4.3 GREEN: tests unitarios adicionales para fallo cerrado (DG-3: sin tabla, IDs vacíos) y unicidad global de ID (DG-7: `duplicate_id`).
-- [x] 4.4 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; el gate no figura aún en `GATES`, así que `python scripts/quality_report.py` no lo invoca.
+- [ ] 4.1 RED: `tests/lanzadera/test_decision_guards_wiring.py` — tests unitarios sobre cadenas sintéticas para `parse_decision_tables()` (DG-2, DG-13: cabecera `id`, fila delimitadora, fila de decisión de token único vs. celda-lista) antes de que exista el módulo.
+- [ ] 4.2 GREEN: crear `scripts/check_decision_guards.py` con bloque `CONFIGURATION` (`OPENSPEC_ROOT`, `TESTS_ROOT`, `SCRIPTS_ROOT`, `DECISION_ID_PREFIXES = ("DA-", "DG-", "QC-")`, `EXCLUDED_PARTS` con `fixtures`, `UNGOVERNED_DESIGNS`, `COVERED_BY`, `BASELINE` vacíos), `parse_decision_tables()`, `collect_guard_claims()` (bloque `HARNESS-PROVENANCE`, no docstring — DG-4), `validate_coverage()`, `evaluate()`, `build_report()`, `--root/--json`.
+- [ ] 4.3 GREEN: tests unitarios adicionales para fallo cerrado (DG-3: sin tabla, IDs vacíos) y unicidad global de ID (DG-7: `duplicate_id`).
+- [ ] 4.4 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; el gate no figura aún en `GATES`, así que `python scripts/quality_report.py` no lo invoca.
 
 ## Phase 5: Fixtures de dos tiers — PR 5 (`feat/266-decision-guards-fixtures` → `feat/266-decision-guards-gate`)
 
 Traza: DG-5, DG-6, DG-8, DG-10, DG-13, spec "covered-by escape hatch", "BASELINE with mandatory target_date", "Two-tier guard test shape" (RED del caso de amenaza aplicable).
 
-- [x] 5.1 Crear `tests/fixtures/decision_guards_clean/`: `openspec/` mínimo con una decisión y su guard, más una tabla de cableado con celdas-lista (cabecera `Decisiones`) que el gate debe ignorar (DG-13).
-- [x] 5.2 Crear `tests/fixtures/decision_guards_violation/`: ID descubierto, tabla malformada, guard huérfano, `covered-by` obsoleto.
-- [x] 5.3 RED (amenaza única aplicable — rutas tipo documentación): fixture con cabecera `HARNESS-PROVENANCE` falsa bajo `tests/fixtures/` que cita un ID inexistente; assertar que el recorrido de producción (`--root .`) no la ve gracias a `EXCLUDED_PARTS = {"fixtures", ...}`.
-- [x] 5.4 GREEN: extender `test_decision_guards_wiring.py` con los tests tier 1 (`--root` sobre `decision_guards_violation`, exit 1 y clave de cada verdicto: `malformed_table`, `malformed_row`, `duplicate_id`, `uncovered`, `stale_coverage`, `constant_drift`, `orphan_guard`, `BASELINE` vencida) y tier 2 (`--root` sobre `decision_guards_clean`, exit 0, `decisions_total > 0`).
-- [x] 5.5 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; gate aún sin GATES.
+- [ ] 5.1 Crear `tests/fixtures/decision_guards_clean/`: `openspec/` mínimo con una decisión y su guard, más una tabla de cableado con celdas-lista (cabecera `Decisiones`) que el gate debe ignorar (DG-13).
+- [ ] 5.2 Crear `tests/fixtures/decision_guards_violation/`: ID descubierto, tabla malformada, guard huérfano, `covered-by` obsoleto.
+- [ ] 5.3 RED (amenaza única aplicable — rutas tipo documentación): fixture con cabecera `HARNESS-PROVENANCE` falsa bajo `tests/fixtures/` que cita un ID inexistente; assertar que el recorrido de producción (`--root .`) no la ve gracias a `EXCLUDED_PARTS = {"fixtures", ...}`.
+- [ ] 5.4 GREEN: extender `test_decision_guards_wiring.py` con los tests tier 1 (`--root` sobre `decision_guards_violation`, exit 1 y clave de cada verdicto: `malformed_table`, `malformed_row`, `duplicate_id`, `uncovered`, `stale_coverage`, `constant_drift`, `orphan_guard`, `BASELINE` vencida) y tier 2 (`--root` sobre `decision_guards_clean`, exit 0, `decisions_total > 0`).
+- [ ] 5.5 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; gate aún sin GATES.
 
 ## Phase 6: Armado — PR 6 (`feat/266-decision-guards-wire` → `feat/266-decision-guards-fixtures`)
 
