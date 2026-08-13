@@ -2,7 +2,13 @@
 
 When working on this project, load the relevant skill(s) BEFORE writing any code or docs.
 
-> **For documentation discipline (tone, naming, format, templates, anti-patterns), see the global `AGENTS.md` `<!-- DOCS_DISCIPLINE -->` block. The `documentation-alan-style` skill applies automatically to all repos via the global config.**
+> **Las skills de este proyecto viven en [`skills/`](skills/README.md), versionadas
+> con el código.** Instálelas con `scripts/install-skills.sh` (o `.ps1` en Windows).
+> Fuera de ahí sólo puede asumirse instalado `gentle-ai` y `engram`.
+>
+> La disciplina documental (tono, nombres, formato, plantillas, anti-patrones) se
+> traslada a `skills/documentation-alan-style/` en las entregas siguientes de #167.
+> Hasta entonces, la referencia es `CONTRIBUTING.md` y los documentos de `docs/`.
 
 ## Cómo usar
 
@@ -27,8 +33,11 @@ Consecuencias operativas:
 
 1. **El issue va primero.** El nombre de la rama necesita su número, así que
    crearla antes que el issue obliga a rehacerla.
-2. **Presupueste el tamaño antes de escribir.** Si el cambio no cabe en 400
-   líneas, decida el corte al principio, no al final.
+2. **Dimensione el trabajo al redactar el issue, no al abrir el PR.** Estime el
+   alcance en el propio issue y, si no cabe en 400 líneas, deje escrito ahí el
+   troceado: qué entra en cada PR y en qué orden. Un issue que no dice cómo se
+   entrega delega esa decisión al final, que es justo cuando la salida cómoda es
+   la excepción.
 3. **Si no cabe en 400 líneas, hay tres salidas y `size:exception` es la
    última.** Primero partir por unidad de trabajo; si las partes dependen entre
    sí, encadenar PRs (cada rama parte de la anterior); y sólo para diffs
@@ -39,6 +48,47 @@ Consecuencias operativas:
    `CONTRIBUTING.md`.
 5. **Verifique en local antes de empujar.** `make` no está disponible en Git
    Bash en Windows; invoque los scripts con `python scripts/<nombre>.py`.
+
+### Alcance: este repositorio no es un proyecto Access
+
+El producto de este repositorio es una aplicación web en Python. El material
+Access que contiene —los `*.accdb` de la raíz, `.dysflow/` y los `.cls` bajo
+`data/` e `inputs/`— es **entrada de migración en sólo lectura**. No es producto
+y no se mantiene: se lee para reemplazarlo.
+
+Su sola presencia activa los triggers de las skills de dominio Access
+(`dysflow-*`, `access-*`, `vba-*`), pensadas para los proyectos legacy. En este
+repositorio:
+
+- **Aplican** únicamente al leer o analizar ese material de entrada.
+- **No aplican** al escribir producto: código, tests, documentación o workflows.
+
+Ninguna convención de Access o VBA gobierna `app/`, `docs/`, `scripts/`,
+`.github/` ni `openspec/`. Ahí manda `CONTRIBUTING.md` y este documento.
+
+### Skills: qué se puede asumir instalado
+
+`gentle-ai` distribuye 26 skills con su instalación, entre ellas `branch-pr`,
+`chained-pr`, `work-unit-commits`, `issue-creation` y la suite `sdd-*`. Quien
+tenga el harness las tiene, así que este documento puede referenciarlas.
+
+El resto es configuración personal y **no está garantizada** para todo el equipo:
+
+| Skill | Origen |
+|---|---|
+| `branch-pr` | `gentle-ai` — garantizada |
+| `worktree-reorg-per-project` | personal — no garantizada; además describe el layout de disco de un desarrollador, no una convención del proyecto |
+| `estado-planificacion-update` | personal — no garantizada |
+| `deterministic-quality-harness` | personal — no garantizada. La ruta `.opencode/skills/` que se cita más abajo **no existe en este repositorio** |
+| `telefonica-brand-design`, `frontend-design`, `dysflow-*`, `access-*` | externas — no garantizadas |
+
+Regla: una convención obligatoria de este repositorio no puede vivir sólo en una
+skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en
+`docs/` o en [`skills/`](skills/README.md), versionado dentro del repositorio.
+
+Las entradas marcadas como personales se trasladan o se retiran en las entregas
+siguientes de #167. El contrato de `skills/` y las instrucciones de instalación
+para un colaborador nuevo están en [`skills/README.md`](skills/README.md).
 
 ## Skills obligatorias
 
