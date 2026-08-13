@@ -2,11 +2,11 @@
 
 ## Propósito
 
-Evidencia de descubrimiento de **Expedientes**, aplicación Access/VBA que crea y mantiene el expediente de contratación y sus relaciones. Este lote no propone diseño futuro: establece el inventario funcional, técnico y de migración que deberá conservarse.
+Evidencia y planificación de la migración de **Expedientes**, aplicación Access/VBA que crea y mantiene el expediente de contratación y sus relaciones. El descubrimiento alimenta un cambio SDD completo orientado a paridad de capacidades, no a réplica de formularios ni de herramientas legacy.
 
 ## Estado
 
-- **Fase:** descubrimiento completo, Batch 2.
+- **Fase:** planificación SDD completa: proposal, diez specs, design, tasks y backlog ejecutable.
 - **Fecha de evidencia:** 2026-08-05.
 - **Staging:** `0946b6a0a40acf4fb88eb62e435ec3f76f8a234d` (`origin/staging`), rama limpia salvo `Expedientes.accdb` modificado previamente.
 - **Main de comparación:** `535c38a04da5f40aedfd0f1fe6a8464199807918` (`origin/main`), rama limpia salvo `Expedientes.accdb` modificado previamente.
@@ -26,6 +26,8 @@ Lote 2 de `exploration.md` — Expedientes.
 4. [Matriz de migración](migration-matrix.md)
 5. [Integraciones y automatización](integrations-automation.md)
 6. [Seguridad y reglas](security-rules.md)
+7. [Ledger de capacidades](capability-ledger.md)
+8. [Backlog de issues de migración](issue-backlog.md)
 
 ## Fuentes de autoridad
 
@@ -51,7 +53,7 @@ Lote 2 de `exploration.md` — Expedientes.
 
 ## Siguiente paso
 
-Siguiente fase: revisar con negocio las filas `needs business decision` de la matriz, sin convertirlas todavía en diseño, propuesta o especificación.
+Ejecutar las unidades documentales D01–D54 por orden de dependencia y resolver cada decisión bloqueante antes del slice que la consume. Las 110 unidades ya tienen issue enlazada en el backlog. Proposal, specs, design y tasks ya existen bajo `openspec/changes/expedientes-web-migration/`.
 
 ## Descubrimiento de staging (2026-08-05, codegraph-vba)
 
@@ -88,7 +90,7 @@ Esta capa no introduce diseño ni propuesta: deja el mapeo conceptual explícito
 
 - **`TbExpedientes`**: **453 filas** (expedientes en producción).
 - **`TbExpedientesAnexos`**: **712 filas** (anexos, más que expedientes por anexo múltiple).
-- **49 tablas totales** (segunda app más grande después de Gestion_Riesgos con 71).
+- **49 tablas totales** (segunda app más grande después de Gestion_Riesgos con 71). Fueron observadas en runtime el 2026-08-05; esta fase de planificación no ha repetido esa validación, por lo que D40–D44 deben refrescar schema, ownership, volumen y uso antes del DDL final.
 
 **Hallazgos críticos del esquema de `TbExpedientes`** (55 columnas reales, esquema de procurement regulatorio):
 
