@@ -1,0 +1,146 @@
+name: release
+
+# Channels are versions, not branches. A tag push is the only thing that
+# publishes: `vX.Y.Z-rc.N` builds a candidate for acceptance, `vX.Y.Z` promotes
+# an accepted candidate to production. See docs/11-releases.md.
+on:
+  push:
+    tags:
+      - "v*"
+
+# Read-only is the default. Only the publish job receives write scope.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Reading the ci conclusion for this exact commit. Without it the release
+      # path cannot tell whether CI was green on the bytes it is about to ship.
+      actions: read
+    outputs:
+      kind: ${{ steps.identity.outputs.kind }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          # The preflight requires refs/tags/<tag> to be the annotated tag
+          # object, and needs sibling RC tags to validate a promotion.
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Verify tag identity against the trunk
+        run: ./scripts/release-preflight.sh "${GITHUB_REF_NAME}"
+
+      - name: Require green ci on this exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/require-ci-success.sh "${GITHUB_SHA}"
+
+      - name: Classify the channel
+        id: identity
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_NAME" == *-rc.* ]]; then
+            printf 'kind=rc\n' >>"$GITHUB_OUTPUT"
+          else
+            printf 'kind=stable\n' >>"$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: preflight
+    # Same runner class the heavy ci jobs use, so the image is built on the
+    # architecture it will actually run on.
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Recheck tag provenance on the publishing runner
+        run: ./scripts/release-preflight.sh "${GITHUB_REF_NAME}"
+
+      - name: Log in to the container registry
+        run: |
+          set -euo pipefail
+          printf '%s' '${{ github.token }}' |
+            docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+
+      - name: Build the release image
+        id: build
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          docker build --file app/Dockerfile --tag "${image}:${GITHUB_REF_NAME}" app
+          printf 'image=%s\n' "$image" >>"$GITHUB_OUTPUT"
+
+      - name: Push the image and record its digest
+        id: push
+        env:
+          IMAGE: ${{ steps.build.outputs.image }}
+        run: |
+          set -euo pipefail
+          docker push "${IMAGE}:${GITHUB_REF_NAME}"
+          digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMAGE}:${GITHUB_REF_NAME}")
+          printf 'digest=%s\n' "$digest" >>"$GITHUB_OUTPUT"
+          # The digest is the artifact identity. Promotion re-tags this exact
+          # digest; it never rebuilds, because a rebuild is a different digest.
+          {
+            printf '### Release artifact\n\n'
+            printf '| Field | Value |\n|---|---|\n'
+            printf '| Tag | `%s` |\n' "$GITHUB_REF_NAME"
+            printf '| Commit | `%s` |\n' "$GITHUB_SHA"
+            printf '| Digest | `%s` |\n' "$digest"
+          } >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KIND: ${{ needs.preflight.outputs.kind }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          set -euo pipefail
+          notes=$(printf 'Imagen publicada:\n\n    %s\n' "$DIGEST")
+          if [[ "$KIND" == rc ]]; then
+            gh release create "$GITHUB_REF_NAME" --prerelease \
+              --title "$GITHUB_REF_NAME" --notes "$notes"
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" --notes "$notes"
+          fi
+
+  verify:
+    needs: publish
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      # Publishing is not trusting. Pull what was actually published and check
+      # that it is reachable and identifies itself as the tag we just cut.
+      - name: Verify the published image is pullable
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          printf '%s' '${{ github.token }}' |
+            docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+          docker pull "${image}:${GITHUB_REF_NAME}"
+          docker image inspect "${image}:${GITHUB_REF_NAME}" >/dev/null
