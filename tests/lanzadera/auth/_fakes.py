@@ -1,5 +1,5 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp PR 42
-# In-memory test fakes for the D90 reset-flow ports.
+# In-memory port fakes for the D90 reset flow.
 """In-memory fakes for the D90 reset-flow ports (PR 42)."""
 
 from __future__ import annotations
@@ -25,10 +25,10 @@ class FakeUserRepository:
         self.by_id[user.id] = user
         self.by_email[user.email] = user
 
-    def get_by_email(self, email: str) -> User | None:
+    def get_by_email(self, email: str):
         return self.by_email.get(email)
 
-    def get_by_id(self, user_id) -> User | None:
+    def get_by_id(self, user_id):
         return self.by_id.get(user_id)
 
     def update_password_and_activate(self, user_id, password_hash: str) -> None:
@@ -45,25 +45,21 @@ class FakeResetTokenRepository:
     def add(self, token: "ResetToken") -> None:
         self.by_hash[token.token_hash] = token
 
-    def find_unused(self, token_hash: str, now) -> "ResetToken | None":
-        token = self.by_hash.get(token_hash)
-        if token is None:
+    def find_unused(self, token_hash: str, now):
+        row = self.by_hash.get(token_hash)
+        if row is None or row.consumed_at or row.superseded_at or row.expires_at <= now:
             return None
-        if token.consumed_at is not None or token.superseded_at is not None:
-            return None
-        if token.expires_at <= now:
-            return None
-        return token
+        return row
 
     def mark_consumed(self, token_hash: str, at) -> None:
-        token = self.by_hash.get(token_hash)
-        if token is not None:
-            self.by_hash[token_hash] = dataclasses.replace(token, consumed_at=at)
+        row = self.by_hash.get(token_hash)
+        if row is not None:
+            self.by_hash[token_hash] = dataclasses.replace(row, consumed_at=at)
 
     def mark_superseded(self, user_id, at) -> None:
-        for h, token in self.by_hash.items():
-            if token.user_id == user_id and token.consumed_at is None and token.superseded_at is None:
-                self.by_hash[h] = dataclasses.replace(token, superseded_at=at)
+        for h, row in self.by_hash.items():
+            if row.user_id == user_id and not row.consumed_at and not row.superseded_at:
+                self.by_hash[h] = dataclasses.replace(row, superseded_at=at)
 
     def insert(self, token: "ResetToken") -> None:
         self.by_hash[token.token_hash] = token
