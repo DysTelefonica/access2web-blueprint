@@ -63,3 +63,10 @@ platform/secrets/
 platform/build/
 platform/dist/
 platform/*.egg-info/
+
+# --- Skills instaladas por scripts/install-skills.* ---
+# El original versionado es skills/. Estas copias las regenera el script y no
+# deben commitearse: si se versionaran, habría dos fuentes de verdad.
+.claude/skills/
+.opencode/skills/
+.codex/skills/
