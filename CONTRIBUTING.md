@@ -36,9 +36,23 @@ Consulte esta guía antes de abrir un issue o un PR. Mantenga cada cambio centra
 ## Reglas específicas de este repositorio
 
 - Mantenga los PRs pequeños y centrados en una única idea.
-- Use `--squash --delete-branch` al integrar un PR.
+- Integre con `--squash`. **No borre la rama remota.** Limpie el worktree local
+  con `git worktree remove <ruta>`.
 - No añada `Co-Authored-By` ni atribución de IA a los commits.
 - Use el prefijo `docs(app):` para las épicas.
 - Mantenga los walkthrough JSONs en commits separados.
+
+### Por qué se conserva la rama remota
+
+La integración es `--squash`, de modo que `main` recibe un único commit por PR.
+Los commits por unidad de trabajo —los que separan una entrega en pasos
+revisables— existen únicamente en la rama.
+
+Borrar la rama los deja sin referencia y el recolector de basura acaba
+eliminándolos. Se perdería justo la granularidad que el trabajo por unidades
+pretende crear: `main` conserva el qué, y la rama, el cómo se llegó.
+
+El coste es una lista de ramas larga. La convención de nombre
+`<tipo>/<nº issue>-<slug>` la mantiene navegable.
 
 [← Back to README](README.md) · [Next: CHANGELOG.md →](CHANGELOG.md)
