@@ -98,7 +98,10 @@ def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, scrip
     assert payload["schema"] == "deterministic-quality-harness/quality-report/v1"
     assert "commit" in payload
     assert payload["status"] == "pass"
-    assert "crap" in payload["failed_gates"]
+    # Phase 0 coverage clears CRAP — the verdict pass implies no gate failed,
+    # so we do not assert `"crap" in payload["failed_gates"]` here (it was
+    # contradictory and broke the test on every branch). The test name and
+    # module docstring describe wiring, not CRAP-specific behaviour.
     gates = {entry["gate"] for entry in payload["gates"]}
     # mutation_sites joined the chain between crap and dry (#117 retro split).
     assert {"layers", "complexity", "crap", "mutation_sites", "dry", "legacy_hashes"} <= gates
