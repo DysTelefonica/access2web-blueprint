@@ -102,7 +102,7 @@ def test_prior_unconsumed_tokens_are_marked_superseded():
 
 def test_supersession_does_not_cross_users():
     alice_deps = _setup("alice@enterprise.test")
-    bob_deps = _setup("bob@enterprise.test")
+    _setup("bob@enterprise.test")
     alice_deps["users"].add(
         User(
             id=uuid4(), email="bob@enterprise.test", name="Bob",

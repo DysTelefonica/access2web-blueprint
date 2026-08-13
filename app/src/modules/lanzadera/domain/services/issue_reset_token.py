@@ -6,19 +6,25 @@ from __future__ import annotations
 
 import hashlib
 import secrets
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from app.src.modules.lanzadera.domain.errors import (
     NoGlobalAdminError,
     UserNotFoundError,
 )
+from app.src.modules.lanzadera.domain.ports import (
+    GlobalAdminRepository,
+    NotificationDelivery,
+    ResetTokenRepository,
+    UserRepository,
+)
 from app.src.modules.lanzadera.domain.reset_token import ResetToken
 
 
 def _require_utc(now: datetime) -> None:
     """Reject naive datetimes at the boundary (whole pipeline is UTC)."""
-    if now.tzinfo is None or now.tzinfo != timezone.utc:
+    if now.tzinfo is None or now.tzinfo != UTC:
         raise ValueError(f"issue_reset_token requires UTC datetimes; got tzinfo={now.tzinfo!r}")
 
 
@@ -34,10 +40,10 @@ def issue_reset_token(
     email: str,
     *,
     now: datetime,
-    users: "object",
-    reset_tokens: "object",
-    global_admins: "object",
-    notifications: "object",
+    users: UserRepository,
+    reset_tokens: ResetTokenRepository,
+    global_admins: GlobalAdminRepository,
+    notifications: NotificationDelivery,
     ttl: timedelta = timedelta(hours=24),
 ) -> ResetToken:
     """Issue a one-time reset token. Raises on guard failures.

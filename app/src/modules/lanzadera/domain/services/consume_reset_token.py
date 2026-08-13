@@ -5,19 +5,26 @@
 from __future__ import annotations
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.src.modules.lanzadera.domain.errors import (
     ExpiredResetTokenError,
     InvalidResetTokenError,
     ResetTokenAlreadyUsedError,
 )
-from app.src.modules.lanzadera.domain.ports import AuditLogEntry
+from app.src.modules.lanzadera.domain.ports import (
+    AuditLog,
+    AuditLogEntry,
+    PasswordHasher,
+    ResetTokenRepository,
+    UserRepository,
+)
+from app.src.modules.lanzadera.domain.reset_token import ResetToken
 
 
 def _require_utc(now: datetime) -> None:
     """Reject naive datetimes at the boundary."""
-    if now.tzinfo is None or now.tzinfo != timezone.utc:
+    if now.tzinfo is None or now.tzinfo != UTC:
         raise ValueError(f"consume_reset_token requires UTC datetimes; got tzinfo={now.tzinfo!r}")
 
 
@@ -26,7 +33,7 @@ def _hash_token(raw: str) -> str:
     return hashlib.blake2b(raw.encode("utf-8"), digest_size=32).hexdigest()
 
 
-def _classify_invalid(row: "object", now: datetime) -> Exception:
+def _classify_invalid(row: ResetToken | None, now: datetime) -> Exception:
     """Map a stored-but-non-usable token to the correct domain exception.
 
     The Fake repo exposes `by_hash`; the real Postgres adapter exposes a
@@ -56,10 +63,10 @@ def consume_reset_token(
     new_password: str,
     *,
     now: datetime,
-    hasher: "object",
-    users: "object",
-    reset_tokens: "object",
-    audit: "object",
+    hasher: PasswordHasher,
+    users: UserRepository,
+    reset_tokens: ResetTokenRepository,
+    audit: AuditLog,
 ) -> None:
     """Validate `token_str`, write the new password hash, mark the token used.
 
