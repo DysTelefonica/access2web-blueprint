@@ -1,0 +1,18 @@
+# Line endings are a property of the repository, not of each developer's
+# machine. Without this file the result depends on every contributor's
+# core.autocrlf setting, and a shell script committed with CRLF fails on the
+# Linux runners with an unhelpful `bash\r: no such file or directory`.
+* text=auto eol=lf
+
+# Executable scripts and CI definitions must stay LF on every platform.
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary assets must never be transformed.
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
+*.accdb binary
+*.ico binary
