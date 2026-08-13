@@ -2,7 +2,13 @@
 
 When working on this project, load the relevant skill(s) BEFORE writing any code or docs.
 
-> **For documentation discipline (tone, naming, format, templates, anti-patterns), see the global `AGENTS.md` `<!-- DOCS_DISCIPLINE -->` block. The `documentation-alan-style` skill applies automatically to all repos via the global config.**
+> **Las skills de este proyecto viven en [`skills/`](skills/README.md), versionadas
+> con el código.** Instálelas con `scripts/install-skills.sh` (o `.ps1` en Windows).
+> Fuera de ahí sólo puede asumirse instalado `gentle-ai` y `engram`.
+>
+> La disciplina documental (tono, nombres, formato, plantillas, anti-patrones) se
+> traslada a `skills/documentation-alan-style/` en las entregas siguientes de #167.
+> Hasta entonces, la referencia es `CONTRIBUTING.md` y los documentos de `docs/`.
 
 ## Cómo usar
 
@@ -78,7 +84,11 @@ El resto es configuración personal y **no está garantizada** para todo el equi
 
 Regla: una convención obligatoria de este repositorio no puede vivir sólo en una
 skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en
-`docs/` o en una skill versionada dentro del repositorio.
+`docs/` o en [`skills/`](skills/README.md), versionado dentro del repositorio.
+
+Las entradas marcadas como personales se trasladan o se retiran en las entregas
+siguientes de #167. El contrato de `skills/` y las instrucciones de instalación
+para un colaborador nuevo están en [`skills/README.md`](skills/README.md).
 
 ## Skills obligatorias
 
