@@ -12,14 +12,15 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   preflight:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # Per-job FIFO, one group per job: a shared group would make the three jobs
+    # of the same run queue behind each other instead of behind their peers.
+    concurrency:
+      group: release-preflight-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: read
       # Reading the ci conclusion for this exact commit. Without it the release
@@ -28,7 +29,7 @@ jobs:
     outputs:
       kind: ${{ steps.identity.outputs.kind }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           # The preflight requires refs/tags/<tag> to be the annotated tag
@@ -60,11 +61,14 @@ jobs:
     # architecture it will actually run on.
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     timeout-minutes: 45
+    concurrency:
+      group: release-publish-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: write
       packages: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -128,6 +132,9 @@ jobs:
     needs: publish
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     timeout-minutes: 15
+    concurrency:
+      group: release-verify-${{ github.ref }}
+      cancel-in-progress: false
     permissions:
       contents: read
       packages: read
