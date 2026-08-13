@@ -46,8 +46,7 @@ def _user(email: str = "alice@enterprise.test") -> User:
     )
 
 
-def _setup(user: User | None = None, *, has_admin: bool = True):
-    """Materialise a fresh set of fakes for one test."""
+def _deps(user: User | None = None, *, has_admin: bool = True):
     users = FakeUserRepository()
     if user is not None:
         users.add(user)
@@ -59,122 +58,90 @@ def _setup(user: User | None = None, *, has_admin: bool = True):
     }
 
 
-def _issue(email: str = "alice@enterprise.test", **overrides):
-    """Call `issue_reset_token` with the given overrides."""
-    deps = _setup(user=_user(email))
-    deps.update(overrides)
-    return issue_reset_token(email, now=_now(), **deps)
+def _issue(deps: dict, email: str = "alice@enterprise.test", **overrides):
+    return issue_reset_token(email, now=_now(), **deps, **overrides)
 
 
-# ---------------------------------------------------------------------------
-# Happy path
-# ---------------------------------------------------------------------------
+# Happy path ----------------------------------------------------------------
 
 
 class TestHappyPath:
     def test_returns_reset_token(self) -> None:
-        result = _issue()
+        result = _issue(_deps(user=_user()))
         assert result.user_id is not None
         assert result.token_hash and len(result.token_hash) == 64
         assert result.consumed_at is None and result.superseded_at is None
 
     def test_persists_with_blake2b_hash(self) -> None:
-        deps = _setup(user=_user())
-        issue_reset_token("alice@enterprise.test", now=_now(), **deps)
-        _to, _s, body = deps["notifications"].sent[0]
-        raw = body.split("token: ", 1)[1].strip()
+        deps = _deps(user=_user())
+        _issue(deps)
+        raw = deps["notifications"].sent[0][2].split("token: ", 1)[1].strip()
         expected = hashlib.blake2b(raw.encode("utf-8"), digest_size=32).hexdigest()
         assert expected in deps["reset_tokens"].by_hash
 
 
-# ---------------------------------------------------------------------------
-# TTL
-# ---------------------------------------------------------------------------
+# TTL -----------------------------------------------------------------------
 
 
 class TestTTL:
     def test_default_ttl_is_24_hours(self) -> None:
-        result = _issue()
+        result = _issue(_deps(user=_user()))
         assert result.expires_at == _now() + timedelta(hours=24)
         assert result.created_at == _now()
 
     def test_custom_ttl_is_honoured(self) -> None:
-        deps = _setup(user=_user())
-        result = issue_reset_token(
-            "alice@enterprise.test",
-            now=_now(),
-            ttl=timedelta(minutes=5),
-            **deps,
-        )
+        deps = _deps(user=_user())
+        result = _issue(deps, ttl=timedelta(minutes=5))
         assert result.expires_at == _now() + timedelta(minutes=5)
 
 
-# ---------------------------------------------------------------------------
-# Supersession
-# ---------------------------------------------------------------------------
+# Supersession --------------------------------------------------------------
 
 
 class TestSupersession:
-    def test_prior_unconsumed_tokens_are_marked_superseded(self) -> None:
-        deps = _setup(user=_user())
-        first = issue_reset_token("alice@enterprise.test", now=_now(), **deps)
-        issue_reset_token("alice@enterprise.test", now=_now(), **deps)
+    def test_marks_prior_unconsumed_tokens_as_superseded(self) -> None:
+        deps = _deps(user=_user())
+        first = _issue(deps)
+        _issue(deps)
         assert deps["reset_tokens"].by_hash[first.token_hash].superseded_at == _now()
 
     def test_only_targets_same_user(self) -> None:
-        alice = _user("alice@enterprise.test")
-        bob = _user("bob@enterprise.test")
-        users = FakeUserRepository()
-        users.add(alice)
-        users.add(bob)
-        deps = _setup(user=alice)
-        deps["users"] = users
-        bob_first = issue_reset_token("bob@enterprise.test", now=_now(), **deps)
-        issue_reset_token("alice@enterprise.test", now=_now(), **deps)
+        alice, bob = _user("alice@enterprise.test"), _user("bob@enterprise.test")
+        deps = _deps(user=alice)
+        deps["users"].add(bob)
+        bob_first = _issue(deps, "bob@enterprise.test")
+        _issue(deps)
         assert deps["reset_tokens"].by_hash[bob_first.token_hash].superseded_at is None
 
 
-# ---------------------------------------------------------------------------
-# NoGlobalAdminError guard
-# ---------------------------------------------------------------------------
+# Guards --------------------------------------------------------------------
 
 
-class TestNoGlobalAdminGuard:
-    def test_raises_when_no_admin_exists(self) -> None:
-        user = _user()
-        deps = _setup(user=user, has_admin=False)
+class TestGuards:
+    def test_no_global_admin_raises(self) -> None:
+        deps = _deps(user=_user(), has_admin=False)
         with pytest.raises(NoGlobalAdminError):
-            issue_reset_token(user.email, now=_now(), **deps)
+            _issue(deps)
+
+    def test_unknown_email_raises_user_not_found(self) -> None:
+        deps = _deps(user=_user())
+        with pytest.raises(UserNotFoundError):
+            _issue(deps, "ghost@enterprise.test")
 
     def test_no_persistence_when_guard_fires(self) -> None:
-        user = _user()
-        deps = _setup(user=user, has_admin=False)
+        deps = _deps(user=_user(), has_admin=False)
         with pytest.raises(NoGlobalAdminError):
-            issue_reset_token(user.email, now=_now(), **deps)
+            _issue(deps)
         assert deps["reset_tokens"].by_hash == {}
         assert deps["notifications"].sent == []
 
 
-# ---------------------------------------------------------------------------
-# User lookup
-# ---------------------------------------------------------------------------
+# UTC clock + notification --------------------------------------------------
 
 
-class TestUserLookup:
-    def test_unknown_email_raises_user_not_found(self) -> None:
-        deps = _setup(user=_user())
-        with pytest.raises(UserNotFoundError):
-            issue_reset_token("ghost@enterprise.test", now=_now(), **deps)
-
-
-# ---------------------------------------------------------------------------
-# UTC clock
-# ---------------------------------------------------------------------------
-
-
-class TestUTClock:
+class TestBoundary:
     def test_naive_datetime_is_rejected(self) -> None:
-        deps = _setup(user=_user())
+        deps = _deps(user=_user())
         with pytest.raises(ValueError):
             issue_reset_token(
                 "alice@enterprise.test",
@@ -182,17 +149,10 @@ class TestUTClock:
                 **deps,
             )
 
-
-# ---------------------------------------------------------------------------
-# Notification
-# ---------------------------------------------------------------------------
-
-
-class TestNotification:
-    def test_sent_exactly_once(self) -> None:
-        deps = _setup(user=_user())
-        issue_reset_token("alice@enterprise.test", now=_now(), **deps)
+    def test_notification_sent_exactly_once(self) -> None:
+        deps = _deps(user=_user())
+        _issue(deps)
         assert len(deps["notifications"].sent) == 1
-        to, subject, _body = deps["notifications"].sent[0]
+        to, subject, _ = deps["notifications"].sent[0]
         assert to == "alice@enterprise.test"
         assert "reset" in subject.lower()

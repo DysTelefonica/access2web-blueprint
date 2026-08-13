@@ -48,21 +48,21 @@ def _user() -> User:
     )
 
 
-def _seed_token(
+def _seed(
     user: User,
     *,
     raw: str = "raw-token-abc",
-    expires_at: datetime | None = None,
+    expires_offset: timedelta = timedelta(hours=24),
     consumed_at: datetime | None = None,
     superseded_at: datetime | None = None,
     created_at: datetime | None = None,
-) -> tuple[FakeUserRepository, FakeResetTokenRepository, FakeAuditLog, FakePasswordHasher]:
+):
     created = created_at or _now()
     token = ResetToken(
         id=uuid4(),
         user_id=user.id,
         token_hash=hashlib.blake2b(raw.encode("utf-8"), digest_size=32).hexdigest(),
-        expires_at=expires_at or (created + timedelta(hours=24)),
+        expires_at=created + expires_offset,
         consumed_at=consumed_at,
         superseded_at=superseded_at,
         created_at=created,
@@ -74,256 +74,140 @@ def _seed_token(
     return users, tokens, FakeAuditLog(), FakePasswordHasher()
 
 
-# ---------------------------------------------------------------------------
-# Happy path
-# ---------------------------------------------------------------------------
+def _consume(deps, *, raw: str = "raw-token-abc", password: str = "new-passphrase"):
+    users, tokens, audit, hasher = deps
+    return consume_reset_token(
+        raw,
+        password,
+        now=_now(),
+        hasher=hasher,
+        users=users,
+        reset_tokens=tokens,
+        audit=audit,
+    )
+
+
+# Happy path ----------------------------------------------------------------
 
 
 class TestHappyPath:
     def test_returns_none_on_success(self) -> None:
-        user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        result = consume_reset_token(
-            "raw-token-abc",
-            "new-passphrase",
-            now=_now(),
-            hasher=hasher,
-            users=users,
-            reset_tokens=tokens,
-            audit=audit,
-        )
-        assert result is None
+        assert _consume(_seed(_user())) is None
 
     def test_user_password_and_status_updated(self) -> None:
         user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        consume_reset_token(
-            "raw-token-abc", "new-passphrase", now=_now(),
-            hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-        )
+        deps = _seed(user)
+        _consume(deps)
         assert user.password_hash == "fake:new-passphrase"
         assert user.status is UserStatus.ACTIVE
 
-    def test_token_marked_consumed(self) -> None:
+    def test_token_marked_consumed_and_audit_appended(self) -> None:
         user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        consume_reset_token(
-            "raw-token-abc", "new-passphrase", now=_now(),
-            hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-        )
+        users, tokens, audit, _ = _seed(user)
+        _consume((users, tokens, audit, FakePasswordHasher()))
         stored = list(tokens.by_hash.values())[0]
         assert stored.consumed_at == _now()
-
-    def test_audit_appended(self) -> None:
-        user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        consume_reset_token(
-            "raw-token-abc", "new-passphrase", now=_now(),
-            hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-        )
         assert len(audit.entries) == 1
         assert audit.entries[0].event_type == "auth.reset.consumed"
         assert audit.entries[0].actor_id == user.id
 
 
-# ---------------------------------------------------------------------------
-# Single-use
-# ---------------------------------------------------------------------------
+# Single-use ----------------------------------------------------------------
 
 
 class TestSingleUse:
     def test_replay_raises_already_used(self) -> None:
-        user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        consume_reset_token(
-            "raw-token-abc", "first-pass", now=_now(),
-            hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-        )
+        deps = _seed(_user())
+        _consume(deps, password="first")
         with pytest.raises(ResetTokenAlreadyUsedError):
-            consume_reset_token(
-                "raw-token-abc", "second-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
+            _consume(deps, password="second")
 
     def test_no_writes_on_replay(self) -> None:
         user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        consume_reset_token(
-            "raw-token-abc", "first-pass", now=_now(),
-            hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-        )
+        deps = _seed(user)
+        _consume(deps, password="first")
         snapshot_hash = user.password_hash
-        snapshot_audit = len(audit.entries)
+        snapshot_audit = len(deps[2].entries)
         try:
-            consume_reset_token(
-                "raw-token-abc", "second-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
+            _consume(deps, password="second")
         except ResetTokenAlreadyUsedError:
             pass
         assert user.password_hash == snapshot_hash
-        assert len(audit.entries) == snapshot_audit
+        assert len(deps[2].entries) == snapshot_audit
 
 
-# ---------------------------------------------------------------------------
-# Expired
-# ---------------------------------------------------------------------------
+# Expired / invalid ---------------------------------------------------------
 
 
-class TestExpired:
+class TestLifecycleFailures:
     def test_expired_token_raises(self) -> None:
-        user = _user()
         past = _now() - timedelta(hours=2)
-        users, tokens, audit, hasher = _seed_token(
-            user,
-            created_at=past,
-            expires_at=past + timedelta(hours=1),
-        )
+        deps = _seed(_user(), created_at=past, expires_offset=timedelta(hours=1))
         with pytest.raises(ExpiredResetTokenError):
-            consume_reset_token(
-                "raw-token-abc", "new-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
+            _consume(deps)
 
-    def test_no_writes_on_expired(self) -> None:
-        user = _user()
-        past = _now() - timedelta(hours=2)
-        users, tokens, audit, hasher = _seed_token(
-            user,
-            created_at=past,
-            expires_at=past + timedelta(hours=1),
-        )
-        try:
-            consume_reset_token(
-                "raw-token-abc", "new-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
-        except ExpiredResetTokenError:
-            pass
-        assert user.password_hash is None
-        assert audit.entries == []
-
-
-# ---------------------------------------------------------------------------
-# Invalid (superseded / unknown)
-# ---------------------------------------------------------------------------
-
-
-class TestInvalid:
     def test_superseded_token_raises_invalid(self) -> None:
-        user = _user()
-        users = FakeUserRepository()
-        users.add(user)
-        tokens = FakeResetTokenRepository()
-        tokens.add(
-            ResetToken(
-                id=uuid4(),
-                user_id=user.id,
-                token_hash=hashlib.blake2b(b"raw-token-abc", digest_size=32).hexdigest(),
-                expires_at=_now() + timedelta(hours=24),
-                consumed_at=None,
-                superseded_at=_now() - timedelta(seconds=1),
-                created_at=_now(),
-            )
+        deps = _seed(
+            _user(),
+            superseded_at=_now() - timedelta(seconds=1),
         )
-        audit = FakeAuditLog()
-        hasher = FakePasswordHasher()
         with pytest.raises(InvalidResetTokenError):
-            consume_reset_token(
-                "raw-token-abc", "new-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
+            _consume(deps)
 
     def test_unknown_token_raises_invalid(self) -> None:
-        user = _user()
-        users = FakeUserRepository()
-        users.add(user)
-        tokens = FakeResetTokenRepository()
-        audit = FakeAuditLog()
-        hasher = FakePasswordHasher()
+        deps = _seed(_user())
         with pytest.raises(InvalidResetTokenError):
-            consume_reset_token(
-                "totally-unknown", "new-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
+            _consume(deps, raw="totally-unknown")
 
 
-# ---------------------------------------------------------------------------
-# Rollback on hash failure
-# ---------------------------------------------------------------------------
+# Rollback on hash failure --------------------------------------------------
 
 
-class TestRollbackOnHashFailure:
-    def test_hash_failure_propagates(self) -> None:
+class TestRollback:
+    def test_hash_failure_propagates_with_no_writes(self) -> None:
         user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        hasher.fail_next = True
-        with pytest.raises(RuntimeError, match="simulated hash failure"):
-            consume_reset_token(
-                "raw-token-abc", "new-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
-
-    def test_no_writes_on_hash_failure(self) -> None:
-        user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        hasher.fail_next = True
-        try:
-            consume_reset_token(
-                "raw-token-abc", "new-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
-        except RuntimeError:
-            pass
+        deps = _seed(user)
+        deps[3].fail_next = True
+        with pytest.raises(RuntimeError):
+            _consume(deps)
         assert user.password_hash is None
         assert user.status is UserStatus.PASSWORD_RESET_REQUIRED
-        assert audit.entries == []
-        stored = list(tokens.by_hash.values())[0]
-        assert stored.consumed_at is None
+        assert list(deps[1].by_hash.values())[0].consumed_at is None
+        assert deps[2].entries == []
 
     def test_audit_failure_propagates(self) -> None:
-        user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        audit.next_raises = RuntimeError("audit emission failed")
+        deps = _seed(_user())
+        deps[2].next_raises = RuntimeError("audit emission failed")
         with pytest.raises(RuntimeError, match="audit emission failed"):
-            consume_reset_token(
-                "raw-token-abc", "new-pass", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
+            _consume(deps)
 
 
-# ---------------------------------------------------------------------------
-# Atomicity / boundaries
-# ---------------------------------------------------------------------------
+# Atomicity / boundaries ----------------------------------------------------
 
 
-class TestAtomicity:
+class TestBoundaries:
     def test_operations_in_order(self) -> None:
         user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
-        consume_reset_token(
-            "raw-token-abc", "new-pass", now=_now(),
-            hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-        )
-        assert hasher.calls[0][0] == "hash"
-        assert len(users.update_calls) == 1
-        assert len(audit.entries) == 1
+        deps = _seed(user)
+        _consume(deps)
+        assert deps[3].calls[0][0] == "hash"
+        assert len(deps[0].update_calls) == 1
+        assert len(deps[2].entries) == 1
 
     def test_naive_now_is_rejected(self) -> None:
-        user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
+        deps = _seed(_user())
         with pytest.raises(ValueError):
             consume_reset_token(
-                "raw-token-abc", "new-pass",
+                "raw-token-abc",
+                "new-pass",
                 now=datetime(2026, 8, 13, 12, 0, 0),  # noqa: DTZ001
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
+                hasher=deps[3],
+                users=deps[0],
+                reset_tokens=deps[1],
+                audit=deps[2],
             )
 
     def test_empty_password_is_rejected(self) -> None:
-        user = _user()
-        users, tokens, audit, hasher = _seed_token(user)
+        deps = _seed(_user())
         with pytest.raises(ValueError):
-            consume_reset_token(
-                "raw-token-abc", "", now=_now(),
-                hasher=hasher, users=users, reset_tokens=tokens, audit=audit,
-            )
+            _consume(deps, password="")
