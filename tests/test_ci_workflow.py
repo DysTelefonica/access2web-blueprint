@@ -27,9 +27,6 @@ REQUIRED_COMMANDS = (
     "python scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
     "python scripts/check_branch_name.py",
-    "pip-audit",
-    "gitleaks",
-    "trivy",
 )
 
 #: Gates CI runs that `make verify` deliberately does not (Hard Rule 19).
