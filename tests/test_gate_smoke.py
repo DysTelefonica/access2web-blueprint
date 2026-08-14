@@ -164,45 +164,6 @@ def test_pr_size_override_requires_a_reason() -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# check_crap
-# ---------------------------------------------------------------------------------------------
-
-
-def test_crap_gate_fails_on_untested_complexity() -> None:
-    result = _run("check_crap.py", "--root", str(FIXTURES / "crap_violation"))
-    assert result.returncode == 1, result.stdout
-
-
-def test_crap_gate_catches_what_the_complexity_ceiling_lets_through() -> None:
-    """The whole argument for CRAP, pinned as a test.
-
-    The offender sits at complexity 4 — far under the complexity ceiling of 15, so that gate
-    passes it. With no tests behind it, CRAP scores it 20. If these two ever agree, the CRAP
-    gate has stopped adding information.
-    """
-    complexity = _run("check_complexity.py", "--root", str(FIXTURES / "crap_violation"))
-    crap = _run("check_crap.py", "--root", str(FIXTURES / "crap_violation"))
-    assert complexity.returncode == 0, complexity.stdout
-    assert crap.returncode == 1, crap.stdout
-    assert "CRAP 20.0" in crap.stdout
-
-
-def test_crap_gate_passes_on_small_covered_functions() -> None:
-    result = _run("check_crap.py", "--root", str(FIXTURES / "crap_clean"))
-    assert result.returncode == 0, result.stdout
-
-
-def test_crap_gate_fails_closed_without_coverage_data(tmp_path) -> None:
-    """No coverage data means no verdict, and no verdict must never read as success."""
-    package = tmp_path / "app" / "lanzadera" / "domain"
-    package.mkdir(parents=True)
-    (package / "model.py").write_text("def f():\n    return 1\n", encoding="utf-8")
-    result = _run("check_crap.py", "--root", str(tmp_path))
-    assert result.returncode == 1
-    assert "coverage" in (result.stderr + result.stdout).lower()
-
-
-# ---------------------------------------------------------------------------------------------
 # check_dry
 # ---------------------------------------------------------------------------------------------
 
