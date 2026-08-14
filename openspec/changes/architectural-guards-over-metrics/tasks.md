@@ -58,11 +58,11 @@ Traza: DG-12, spec "CRAP gate removal" (paso 1 de 2).
 
 Traza: DG-12, spec "CRAP gate removal" (paso 2 de 2).
 
-- [ ] 3.1 Borrar `scripts/check_crap.py`, `tests/fixtures/crap_clean/`, `tests/fixtures/crap_violation/`, `tests/lanzadera/test_crap_wiring.py`.
-- [ ] 3.2 `tests/test_gate_smoke.py`: borrar la sección `check_crap` (tests que invocan `check_crap.py` directamente).
-- [ ] 3.3 Crear `tests/lanzadera/test_crap_retired_guard.py` (DG-12): falla si `crap` reaparece en `GATES`, `Makefile`, `ci.yml`, `pyproject.toml` o docs.
-- [ ] 3.4 Verificar: `git grep -i crap` sobre ficheros rastreados devuelve cero coincidencias.
-- [ ] 3.5 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
+- [x] 3.1 Borrar `scripts/check_crap.py`, `tests/fixtures/crap_clean/`, `tests/fixtures/crap_violation/`, `tests/lanzadera/test_crap_wiring.py`.
+- [x] 3.2 `tests/test_gate_smoke.py`: borrar la sección `check_crap` (tests que invocan `check_crap.py` directamente).
+- [x] 3.3 Crear `tests/lanzadera/test_crap_retired_guard.py` (DG-12): falla si `crap` reaparece en `GATES`, `Makefile`, `ci.yml`, `pyproject.toml` o docs.
+- [x] 3.4 Verificar: `git grep -i crap` sobre ficheros rastreados devuelve cero coincidencias en la superficie funcional (queda histórico en `docs/uat/estado-planificacion-NEW_2026-08-12.html` y en los open artifacts de este change).
+- [x] 3.5 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
 
 ## Phase 4: Gate nuevo, sin armar — PR 4 (`feat/266-decision-guards-gate` → `feat/266-crap-delete`)
 
