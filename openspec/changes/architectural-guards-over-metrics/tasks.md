@@ -68,10 +68,10 @@ Traza: DG-12, spec "CRAP gate removal" (paso 2 de 2).
 
 Traza: DG-1..DG-4, DG-7, DG-13, spec "Decision table traversal", "Fail-closed on malformed or absent input", "Two-tier guard test shape" (RED, nivel unitario).
 
-- [ ] 4.1 RED: `tests/lanzadera/test_decision_guards_wiring.py` — tests unitarios sobre cadenas sintéticas para `parse_decision_tables()` (DG-2, DG-13: cabecera `id`, fila delimitadora, fila de decisión de token único vs. celda-lista) antes de que exista el módulo.
-- [ ] 4.2 GREEN: crear `scripts/check_decision_guards.py` con bloque `CONFIGURATION` (`OPENSPEC_ROOT`, `TESTS_ROOT`, `SCRIPTS_ROOT`, `DECISION_ID_PREFIXES = ("DA-", "DG-", "QC-")`, `EXCLUDED_PARTS` con `fixtures`, `UNGOVERNED_DESIGNS`, `COVERED_BY`, `BASELINE` vacíos), `parse_decision_tables()`, `collect_guard_claims()` (bloque `HARNESS-PROVENANCE`, no docstring — DG-4), `validate_coverage()`, `evaluate()`, `build_report()`, `--root/--json`.
-- [ ] 4.3 GREEN: tests unitarios adicionales para fallo cerrado (DG-3: sin tabla, IDs vacíos) y unicidad global de ID (DG-7: `duplicate_id`).
-- [ ] 4.4 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; el gate no figura aún en `GATES`, así que `python scripts/quality_report.py` no lo invoca.
+- [x] 4.1 RED: `tests/lanzadera/test_decision_guards_wiring.py` — tests unitarios sobre cadenas sintéticas para `parse_decision_tables()` (DG-2, DG-13: cabecera `id`, fila delimitadora, fila de decisión de token único vs. celda-lista) antes de que exista el módulo.
+- [x] 4.2 GREEN: crear `scripts/check_decision_guards.py` con bloque `CONFIGURATION` (`OPENSPEC_ROOT`, `TESTS_ROOT`, `SCRIPTS_ROOT`, `DECISION_ID_PREFIXES = ("DA-", "DG-", "QC-")`, `EXCLUDED_PARTS` con `fixtures`, `UNGOVERNED_DESIGNS`, `COVERED_BY`, `BASELINE` vacíos), `parse_decision_tables()`, `collect_guard_claims()` (bloque `HARNESS-PROVENANCE`, no docstring — DG-4), `validate_coverage()`, `evaluate()`, `build_report()`, `--root/--json`.
+- [x] 4.3 GREEN: tests unitarios adicionales para fallo cerrado (DG-3: sin tabla, IDs vacíos) y unicidad global de ID (DG-7: `duplicate_id`).
+- [x] 4.4 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; el gate no figura aún en `GATES`, así que `python scripts/quality_report.py` no lo invoca.
 
 ## Phase 5: Fixtures de dos tiers — PR 5 (`feat/266-decision-guards-fixtures` → `feat/266-decision-guards-gate`)
 
