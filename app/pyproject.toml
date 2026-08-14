@@ -131,14 +131,8 @@ addopts = [
     # coverage.py looks for its own configuration in the CURRENT directory, not in
     # pytest's rootdir. Both CI and the Makefile run from the repository root, where
     # there is no pyproject.toml — so [tool.coverage.run] omit, the declared
-    # testable/untestable boundary of Hard Rule 14, was never read. check_crap.py then
-    # failed closed on a package marker that the boundary already excludes:
-    #
-    #   app/pytest_plugin/__init__.py is under the root package but absent from
-    #   coverage.json; either it is untestable and belongs in the declared boundary,
-    #   or coverage did not run over it
-    #
-    # The boundary was right. Nothing was reading it.
+    # testable/untestable boundary of Hard Rule 14, was never read. The boundary was
+    # right; nothing was reading it.
     "--cov-config=app/pyproject.toml",
     "--cov=app",
     # 69 is the coverage this suite produces over the DECLARED source. It moved twice
@@ -192,7 +186,7 @@ omit = [
     # quarterly.
     #
     # Empty `__init__.py` markers carry no statements to test. Excluding them
-    # prevents check_crap.py from failing closed on package-boundary files.
+    # keeps package-boundary files out of the coverage denominator.
     "app/src/__init__.py",
     "app/src/shared/__init__.py",
     "app/src/modules/__init__.py",

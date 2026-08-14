@@ -34,7 +34,6 @@ from pathlib import Path
 GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     ("layers", "check_layers.py", ()),
     ("complexity", "check_complexity.py", ()),
-    ("crap", "check_crap.py", ()),
     ("mutation_sites", "check_mutation_sites.py", ()),
     ("dry", "check_dry.py", ()),
     # DA-13. The Makefile's `quality-report` help text has always claimed this gate
@@ -63,7 +62,6 @@ INDICATOR_MEANINGS: dict[str, tuple[str, str]] = {
     "max_complexity": ("highest cyclomatic complexity of any function", "lower"),
     "functions_over_ceiling": ("functions above the gate ceiling", "lower"),
     "functions_measured": ("functions the gate could measure", "higher"),
-    "max_crap": ("highest CRAP score of any function", "lower"),
     "line_coverage_pct": ("statements executed by the suite", "higher"),
     "max_mutation_sites": ("largest mutation surface of any file", "lower"),
     "files_over_ceiling": ("files above the gate ceiling", "lower"),
