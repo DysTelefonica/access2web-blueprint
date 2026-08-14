@@ -77,11 +77,11 @@ Traza: DG-1..DG-4, DG-7, DG-13, spec "Decision table traversal", "Fail-closed on
 
 Traza: DG-5, DG-6, DG-8, DG-10, DG-13, spec "covered-by escape hatch", "BASELINE with mandatory target_date", "Two-tier guard test shape" (RED del caso de amenaza aplicable).
 
-- [ ] 5.1 Crear `tests/fixtures/decision_guards_clean/`: `openspec/` mínimo con una decisión y su guard, más una tabla de cableado con celdas-lista (cabecera `Decisiones`) que el gate debe ignorar (DG-13).
-- [ ] 5.2 Crear `tests/fixtures/decision_guards_violation/`: ID descubierto, tabla malformada, guard huérfano, `covered-by` obsoleto.
-- [ ] 5.3 RED (amenaza única aplicable — rutas tipo documentación): fixture con cabecera `HARNESS-PROVENANCE` falsa bajo `tests/fixtures/` que cita un ID inexistente; assertar que el recorrido de producción (`--root .`) no la ve gracias a `EXCLUDED_PARTS = {"fixtures", ...}`.
-- [ ] 5.4 GREEN: extender `test_decision_guards_wiring.py` con los tests tier 1 (`--root` sobre `decision_guards_violation`, exit 1 y clave de cada verdicto: `malformed_table`, `malformed_row`, `duplicate_id`, `uncovered`, `stale_coverage`, `constant_drift`, `orphan_guard`, `BASELINE` vencida) y tier 2 (`--root` sobre `decision_guards_clean`, exit 0, `decisions_total > 0`).
-- [ ] 5.5 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; gate aún sin GATES.
+- [x] 5.1 Crear `tests/fixtures/decision_guards_clean/`: `openspec/` mínimo con una decisión y su guard, más una tabla de cableado con celdas-lista (cabecera `Decisiones`) que el gate debe ignorar (DG-13).
+- [x] 5.2 Crear `tests/fixtures/decision_guards_violation/`: ID descubierto, tabla malformada, guard huérfano, `covered-by` obsoleto.
+- [x] 5.3 RED (amenaza única aplicable — rutas tipo documentación): fixture con cabecera `HARNESS-PROVENANCE` falsa bajo `tests/fixtures/` que cita un ID inexistente; assertar que el recorrido de producción (`--root .`) no la ve gracias a `EXCLUDED_PARTS = {"fixtures", ...}`.
+- [x] 5.4 GREEN: extender `test_decision_guards_wiring.py` con los tests tier 1 (`--root` sobre `decision_guards_violation`, exit 1 y clave de cada verdicto: `malformed_table`, `malformed_row`, `duplicate_id`, `uncovered`, `stale_coverage`, `constant_drift`, `orphan_guard`, `BASELINE` vencida) y tier 2 (`--root` sobre `decision_guards_clean`, exit 0, `decisions_total > 0`).
+- [x] 5.5 Verificar límite de rebanada: `python -m pytest tests/lanzadera/test_decision_guards_wiring.py -q` en verde; gate aún sin GATES.
 
 ## Phase 6: Armado — PR 6 (`feat/266-decision-guards-wire` → `feat/266-decision-guards-fixtures`)
 
