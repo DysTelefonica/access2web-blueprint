@@ -8,7 +8,7 @@ different verdicts as its neighbours change. Every function is measured against 
 ceiling, always.
 
 This is the cheap early signal: it needs no coverage data and no test run, so it fails fast and
-points at one function. ``check_crap.py`` is the binding constraint (see its docstring).
+points at one function.
 
 Exit codes:
     0  no function above MAX_COMPLEXITY outside BASELINE

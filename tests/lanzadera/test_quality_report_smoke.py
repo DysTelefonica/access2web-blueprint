@@ -4,8 +4,8 @@
 
 The aggregator runs every gate in a fixed order and merges the envelopes.
 Phase 0 asserts the aggregator runs, produces `quality-report.json`, and that
-the gate order is the contract (`layers -> complexity -> crap -> dry ->
-legacy_hashes`).
+the gate order is the contract (`layers -> complexity -> mutation_sites -> dry
+-> legacy_hashes`).
 """
 
 from __future__ import annotations
@@ -54,16 +54,10 @@ def test_gate_order_includes_legacy_hashes(script: Path) -> None:
     sys.modules["quality_report"] = module
     spec.loader.exec_module(module)
     names = tuple(name for name, _, _ in module.GATES)
-    # mutation_sites sits between crap and dry (Hard Rule 13: order is load-bearing;
-    # #117 retro split added it on top of the original five-gate chain).
-    assert names == (
-        "layers",
-        "complexity",
-        "crap",
-        "mutation_sites",
-        "dry",
-        "legacy_hashes",
-    )
+    # CRAP gate was retired (issue #266, DG-12). The order keeps the ratchet of the
+    # retired gate documented as the absence of `crap` between `complexity` and
+    # `mutation_sites`, not as the presence of the unwired gate.
+    assert names == ("layers", "complexity", "mutation_sites", "dry", "legacy_hashes")
 
 
 def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, script: Path) -> None:

@@ -43,7 +43,7 @@ See `openspec/changes/lanzadera-mvp/{proposal,specs,design,tasks}.md` for the ch
 ## Running
 
 ```bash
-make lint typecheck test check-layers check-complexity check-crap check-dry \
+make lint typecheck test check-layers check-complexity check-dry \
      check-branch-name quality-report
 ```
 
