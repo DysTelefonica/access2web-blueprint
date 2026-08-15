@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp DA-13 — coverage_gate_helpers.py
+# HARNESS-PROVENANCE: deterministic-quality-harness + lanzadera-mvp DA-13 - coverage_gate_helpers.py
 """Pure helpers for the coverage gate plugin.
 
 These are kept off `coverage_gate.py` so the gate file itself stays under the
@@ -15,10 +15,10 @@ stays testable in isolation and pytest does not auto-load it as a plugin.
 
 from __future__ import annotations
 
-
 # --------------------------------------------------------------------------------------------
 # Coverage lookup
 # --------------------------------------------------------------------------------------------
+
 
 def _module_covered_lines(coverage_data, module_path: str) -> set[int] | None:
     """Return the executed lines for the given module file, or ``None`` when not measured.
@@ -59,6 +59,7 @@ def _module_total_executable(coverage_data, module_path: str) -> set[int] | None
 # Verdict messages — pure string builders
 # --------------------------------------------------------------------------------------------
 
+
 def _missing_module_warning(module_name: str) -> str:
     """Phase 0..3 message: the whole helper module is absent."""
     return (
@@ -80,9 +81,7 @@ def _not_measured_warning(module_name: str, helper_name: str, file_path: str) ->
     )
 
 
-def _under_coverage_failure(
-    module_name: str, helper_name: str, missing: set[int]
-) -> str:
+def _under_coverage_failure(module_name: str, helper_name: str, missing: set[int]) -> str:
     """Helper exists and is below 100% branch coverage on at least one line."""
     return (
         f"coverage_gate FAIL: '{module_name}.{helper_name}' is missing "
@@ -94,9 +93,8 @@ def _under_coverage_failure(
 # Per-target resolution and evaluation
 # --------------------------------------------------------------------------------------------
 
-def _resolve_helper(
-    module, module_name: str, helper_name: str
-) -> tuple[str | None, str | None]:
+
+def _resolve_helper(module, module_name: str, helper_name: str) -> tuple[str | None, str | None]:
     """Resolve one (module, helper) pair to its source file or an error tag.
 
     The caller passes the already-imported module so we do not re-import per

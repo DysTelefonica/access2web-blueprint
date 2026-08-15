@@ -121,9 +121,7 @@ def pytest_sessionfinish(session, exitstatus) -> None:
                 continue
             if error_tag == "no_code":
                 continue
-            warning, failure = _evaluate_helper(
-                file_path, module_name, helper_name, coverage_data
-            )
+            warning, failure = _evaluate_helper(file_path, module_name, helper_name, coverage_data)
             if warning is not None:
                 warnings.append(warning)
             if failure is not None:
