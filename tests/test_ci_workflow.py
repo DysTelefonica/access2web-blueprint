@@ -97,9 +97,7 @@ def test_gate_is_wired(run_blocks: list[str], command: str) -> None:
 
 def test_no_step_swallows_its_exit_code(steps: list[dict]) -> None:
     """Hard Rule 1: a gate that cannot fail is not a gate."""
-    offenders = [
-        step.get("name", "<unnamed>") for step in steps if step.get("continue-on-error")
-    ]
+    offenders = [step.get("name", "<unnamed>") for step in steps if step.get("continue-on-error")]
     assert not offenders, f"continue-on-error found on: {offenders}"
 
 
@@ -203,12 +201,7 @@ def _parse_makefile(path: Path) -> dict[str, tuple[list[str], list[str]]]:
             continue
         stripped = line.strip()
         head = stripped.partition(":")[0]
-        if (
-            not stripped
-            or stripped.startswith(("#", "."))
-            or ":" not in stripped
-            or " " in head
-        ):
+        if not stripped or stripped.startswith(("#", ".")) or ":" not in stripped or " " in head:
             current = None
             continue
         current = head.strip()
@@ -259,16 +252,13 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     VERIFY_EXCLUSIONS — an absence that is written down is a decision, and an
     absence that is not is a hole.
     """
-    expected = [
-        command for command in REQUIRED_COMMANDS if command not in VERIFY_EXCLUSIONS
-    ]
+    expected = [command for command in REQUIRED_COMMANDS if command not in VERIFY_EXCLUSIONS]
     # `ruff check .` reaches the recipe as `python -m ruff check .`; compare on
     # the invariant tail so the Makefile stays free to route through $(RUFF).
     missing = [
         command
         for command in expected
-        if command.removeprefix("python ")
-        not in verify_commands.replace("python -m ", "")
+        if command.removeprefix("python ") not in verify_commands.replace("python -m ", "")
         and command not in verify_commands
     ]
     assert not missing, (
@@ -317,9 +307,7 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
     if aggregator.is_file():
         wired += "\n" + aggregator.read_text(encoding="utf-8")
 
-    unwired = sorted(
-        path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired
-    )
+    unwired = sorted(path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired)
     assert not unwired, (
         f"these gate scripts exist but no CI step runs them: {unwired}. A gate that "
         "runs nowhere is a false guarantee — wire it into ci.yml or delete it "
@@ -334,9 +322,7 @@ def _install_blocks(run_blocks: list[str]) -> list[str]:
     `app[dev]` editable target — this is what every quality, mutation, and
     security job calls when wiring the project into the runner's venv.
     """
-    return [
-        block for block in run_blocks if "pip install" in block and "app[dev]" in block
-    ]
+    return [block for block in run_blocks if "pip install" in block and "app[dev]" in block]
 
 
 def test_install_step_defends_against_missing_pyproject(run_blocks: list[str]) -> None:
@@ -365,9 +351,7 @@ def test_install_step_defends_against_missing_pyproject(run_blocks: list[str]) -
         # Hard Rule 1: no silent pass on a real failure.
         assert "|| true" not in block, f"install step #{i} uses '|| true': {block}"
         # The failure path must terminate the job, not let it limp along.
-        assert "exit 1" in block, (
-            f"install step #{i} does not exit non-zero on failure: {block}"
-        )
+        assert "exit 1" in block, f"install step #{i} does not exit non-zero on failure: {block}"
         # Diagnostic must point operators to the umbrella issue. The exact
         # spelling varies; the substring `#117` is the canonical anchor.
         assert "#117" in block, (

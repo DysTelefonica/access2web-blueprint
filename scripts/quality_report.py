@@ -171,22 +171,17 @@ def render_markdown(report: dict) -> str:
             f"{entry['meaning']} |"
         )
 
-    failing = [
-        envelope for envelope in report["gates"] if envelope.get("status") != "pass"
-    ]
+    failing = [envelope for envelope in report["gates"] if envelope.get("status") != "pass"]
     if failing:
         lines += ["", "### Failing gates", ""]
         for envelope in failing:
             gate = envelope.get("gate", "unknown")
             detail = envelope.get("detail")
             lines.append(
-                f"**{gate}** — {envelope.get('status')}"
-                + (f": {detail}" if detail else "")
+                f"**{gate}** — {envelope.get('status')}" + (f": {detail}" if detail else "")
             )
             for finding in envelope.get("findings", [])[:20]:
-                lines.append(
-                    f"- `{finding['file']}:{finding['line']}` {finding['detail']}"
-                )
+                lines.append(f"- `{finding['file']}:{finding['line']}` {finding['detail']}")
             lines.append("")
     return "\n".join(lines) + "\n"
 
@@ -233,14 +228,10 @@ def main(argv: list[str] | None = None) -> int:
     out = args.out or (root / "quality-report.json")
 
     selected = list(GATES) + (list(PR_GATES) if args.include_pr_gates else [])
-    envelopes = [
-        run_gate(scripts, script, root, extra) for _, script, extra in selected
-    ]
+    envelopes = [run_gate(scripts, script, root, extra) for _, script, extra in selected]
     report = build_report(root, envelopes)
 
-    out.write_text(
-        json.dumps(report, indent=2, sort_keys=False) + "\n", encoding="utf-8"
-    )
+    out.write_text(json.dumps(report, indent=2, sort_keys=False) + "\n", encoding="utf-8")
     markdown = render_markdown(report)
     print(markdown, end="")
 
