@@ -97,6 +97,15 @@ known-first-party = ["app", "tests"]
 python_version = "3.12"
 strict = true
 files = ["src"]
+# `--explicit-package-bases` is required since slice 1 of #266 added
+# app/pytest_plugin/coverage_gate_helpers.py: without it, mypy 1.13.0
+# stops on "Source file found twice under different module names" because
+# it sees the file as both `pytest_plugin.coverage_gate_helpers` and
+# `app.pytest_plugin.coverage_gate_helpers` depending on the walk path.
+# Setting it here makes the flag implicit so a bare `mypy app/` would
+# still resolve correctly across PR #288 (main) and the 266 stack.
+# See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+explicit_package_bases = true
 # A bare `# type: ignore` graduates silence into a permanent hole. Requiring
 # the error code keeps every suppression traceable to the check it disables.
 enable_error_code = ["ignore-without-code"]
