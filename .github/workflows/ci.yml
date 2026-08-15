@@ -151,7 +151,13 @@ jobs:
         run: ruff check --config app/pyproject.toml .
 
       - name: typecheck
-        run: mypy app/
+        # `--explicit-package-bases` is required since slice 1 of #266 added
+        # app/pytest_plugin/coverage_gate_helpers.py: without it, mypy 1.13.0
+        # stops on "Source file found twice under different module names" because
+        # it sees the file as both `pytest_plugin.coverage_gate_helpers` and
+        # `app.pytest_plugin.coverage_gate_helpers` depending on the walk path.
+        # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+        run: mypy --explicit-package-bases app/
 
       - name: workflow gate
         # Hardens the workflow files themselves (issue #135): no duplicate YAML
