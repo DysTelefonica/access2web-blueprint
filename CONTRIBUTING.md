@@ -33,6 +33,63 @@ Consulte esta guía antes de abrir un issue o un PR. Mantenga cada cambio centra
 | `🔍 research` | `#7057ff` | Investigación y evidencia |
 | `⚙️ chore` | `#e4e669` | Mantenimiento técnico |
 
+## Convención multi-app
+
+Este repositorio gobierna la migración a web de ocho aplicaciones legadas. Cada issue y cada commit declara a qué aplicación pertenece, o se marca como transversal. La convención permite que varias IAs trabajen en paralelo sin pisarse y habilita el filtrado por aplicación.
+
+### Etiquetas por aplicación
+
+Aplique la etiqueta `app/<slug>` a los issues que pertenezcan a una sola aplicación. El slug coincide con el directorio canónico `docs/03-aplicaciones/<slug>/`.
+
+| Etiqueta | Aplicación |
+|---|---|
+| `app/condor` | Condor |
+| `app/hps` | HPS |
+| `app/hps-solicitudes` | HPS Solicitudes |
+| `app/brass` | Brass |
+| `app/gestion-riesgos` | Gestión de Riesgos |
+| `app/no-conformidades` | No Conformidades |
+| `app/lanzadera` | Lanzadera |
+| `app/expedientes` | Expedientes |
+
+### Etiqueta transversal
+
+Aplique `cross-cutting` a los issues que afecten a varias aplicaciones simultáneamente. Ejemplos: el patrón de secret manager (D93), la migración de booleanos `Text(2)` a `BOOLEAN` (D102), la regla de gitignore para `.accdb` (D92). El label `cross-cutting` coexiste con cualquier `app/<slug>` cuando una sola app origina la iniciativa.
+
+### Prefijo en el título del issue
+
+Anteponga al título del issue el código de la aplicación entre corchetes, en mayúsculas. Use `XCUT` para transversal.
+
+```text
+[EXP] Definir catálogos web
+[LANZ] Scaffolding del MVP
+[XCUT] Estandarizar booleanos a BOOLEAN
+```
+
+### Scope en commits
+
+Cierre el placeholder `(app)` de los conventional commits con el slug de la aplicación, o con `platform` para transversal.
+
+```text
+docs(expedientes): documentar matriz de migración
+feat(lanzadera): portar formulario de login
+fix(platform): migrar Text(2) a BOOLEAN
+```
+
+### Codificación de prefijos
+
+| Código | Aplicación |
+|---|---|
+| `[COND]` | Condor |
+| `[HPS]` | HPS |
+| `[HPSS]` | HPS Solicitudes |
+| `[BRASS]` | Brass |
+| `[GR]` | Gestión de Riesgos |
+| `[NC]` | No Conformidades |
+| `[LANZ]` | Lanzadera |
+| `[EXP]` | Expedientes |
+| `[XCUT]` | Transversal |
+
 ## Tamaño de los PRs
 
 El presupuesto es de **400 líneas** (`additions + deletions`), comprobado por

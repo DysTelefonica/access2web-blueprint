@@ -4,23 +4,23 @@
 
 **This guide is for maintainers and contributors who need to understand how blueprint + platform responsibilities coexist in this monorepo, where research, code and documentation live, and where to add new content when the platform grows.**
 
-access2web-blueprint es **monorepo de la plataforma web hexagonal + blueprint del refactor** de las 8 apps legacy Access/VBA. Aloja `docs/` (research + decisiones + épicas) y `platform/` (código FastAPI + HTMX + Alembic del MVP de Lanzadera, 2026-08). El legacy `.accdb` queda en repos separados hasta el cut-over del ecosistema completo.
+access2web-blueprint es **monorepo de la plataforma web hexagonal + blueprint del refactor** de las 8 apps legacy Access/VBA. Aloja `docs/` (research + decisiones + épicas) y `app/` (código FastAPI + HTMX + Alembic del MVP de Lanzadera, 2026-08; renombrado desde `platform/` el 2026-08-09 por shadowing del módulo stdlib — ver `app/README.md`). El legacy `.accdb` queda en repos separados hasta el cut-over del ecosistema completo.
 
 > **Sentence that organizes the whole repo**: "Lanzadera es la madre: ahí nacen usuarios, aplicativos y permisos. Las otras 7 apps son consumidoras."
 
-> **Scope del scope**: "Este repo es monorepo de plataforma + blueprint. Desde el MVP de Lanzadera (2026-08), `platform/` contiene el código web hexagonal; `docs/` contiene el research y las decisiones; `data/staging/` contiene los binarios legacy extraídos."
+> **Scope del scope**: "Este repo es monorepo de plataforma + blueprint. Desde el MVP de Lanzadera (2026-08), `app/` contiene el código web hexagonal; `docs/` contiene el research y las decisiones; `data/staging/` contiene los binarios legacy extraídos."
 
 ## 90-second mental model
 
 ```text
-Legacy apps (Access/VBA)         Este monorepo                          Apps web (platform/modules/<app>/)
+Legacy apps (Access/VBA)         Este monorepo                          Apps web (app/src/modules/<app>/)
 ┌────────────────────┐         ┌──────────────────────────┐         ┌──────────────────────────────┐
 │ NoConformidades    │         │   docs/                   │         │  lanzadera/         (MVP)     │
 │ Gestion_Riesgos     │         │     03-aplicaciones/      │         │  expedientes/                 │
 │ Brass               │  ──►    │     <app>/{epic,walk-     │  ──►    │  hps/                         │
 │ HPS                 │ walk-   │     through,capabilities} │  imple- │  hps-solicitudes/             │
 │ HPS_Solicitudes     │ through │                          │  menta  │  condor/                      │
-│ Condor              │         │   platform/  (desde MVP)  │         │  brass/                       │
+│ Condor              │         │   app/  (desde MVP)  │         │  brass/                       │
 │ Lanzadera ★        │         │     src/modules/<app>/    │         │  gestion-riesgos/             │
 │ Expedientes         │         │   docs/calidad-de-codigo- │         │  no-conformidades/            │
 └────────────────────┘         │     y-ci.md (CI + gates)  │         └──────────────────────────────┘
@@ -101,6 +101,7 @@ raíz/
 ├── data/staging/                      ← binarios legacy NO commiteados, R2-pulled
 │   ├── <app>/frontend/*.accdb        ← NO staging para Lanzadera (D156)
 │   └── <app>/backend/*.accdb
+└── inputs/                            ← material externo para IAs (automatizaciones-legacy, etc.); versionado liviano
 └── .dysflow/project.json              ← dysflow MCP config (8 backends)
 ```
 
@@ -108,15 +109,15 @@ raíz/
 
 | Artefacto | Ubicación | Owner | Cuándo se mueve |
 |---|---|---|---|
-| `epic.md` por app | `docs/03-aplicaciones/<app>/` | Research team | Se queda; el código va en `platform/modules/<app>/`. |
-| `walkthrough-*.json` | `docs/03-aplicaciones/<app>/` | Research team | Se queda; el código UI va en `platform/modules/<app>/delivery/`. |
+| `epic.md` por app | `docs/03-aplicaciones/<app>/` | Research team | Se queda; el código va en `app/src/modules/<app>/`. |
+| `walkthrough-*.json` | `docs/03-aplicaciones/<app>/` | Research team | Se queda; el código UI va en `app/src/modules/<app>/delivery/`. |
 | `capabilities.md` | `docs/03-aplicaciones/<app>/` | Research team | Se queda como contrato funcional. |
-| Mockups UI | `docs/design/mockups/` | UX/Research team | Se queda; la UI real va en `platform/modules/<app>/ui/`. |
+| Mockups UI | `docs/design/mockups/` | UX/Research team | Se queda; la UI real va en `app/src/modules/<app>/ui/`. |
 | Bugs dysflow | `docs/prompts/` + issues en DysTelefonica | Mantenedor dysflow | Issues NO se mueven; los prompts son el reporte local. |
 | Binarios legacy | `data/staging/<app>/` (R2-pulled) | Infra team | NO se commitean; quedan en R2 hasta el cut-over. |
 | Decisiones D1-D82 + QC-1 a QC-9 | `epic.md` per-app + cross-cutting en DOCS + [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) | Research team + Platform team | Per-app se mantienen; cross-cutting en DOCS; quality gates en su propio doc. |
-| Código de plataforma | `platform/src/modules/<app>/` | Platform team | Se queda en este monorepo. |
-| Migraciones Alembic | `platform/migrations/versions/` | Platform team | Se queda en este monorepo (Expand & Contract, D82). |
+| Código de plataforma | `app/src/modules/<app>/` | Platform team | Se queda en este monorepo. |
+| Migraciones Alembic | `app/migrations/versions/` | Platform team | Se queda en este monorepo (Expand & Contract, D82). |
 | Quality gates + CI | [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) + `.github/workflows/` | Platform team | El doc se mantiene; los workflows viven en `.github/`. |
 | Skills de opencode | `C:\Proyectos\skills\skills\` | El user | NO se mueven; trascienden este repo. |
 
@@ -159,7 +160,7 @@ Si en el futuro se agrega una novena app (no aplica ahora, las 8 están cerradas
 5. **Crear PR** con el título `docs(<app>): add epic - <N>/<N> forms walkthroughed via method v<N>`.
 6. **Mergear con `--squash --delete-branch`** (vía `gh pr merge`).
 7. **Actualizar este CODEBASE-GUIDE** agregando la fila en la tabla "The 8 Apps" del DOCS.
-8. **Crear `platform/modules/<nueva-app>/`** con su esqueleto hexagonal (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`). Ver [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) §Hexagonal layer gate para el contrato arquitectónico.
+8. **Crear `app/src/modules/<nueva-app>/`** con su esqueleto hexagonal (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`). Ver [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) §Hexagonal layer gate para el contrato arquitectónico.
 
 ## Workflow de contribución
 

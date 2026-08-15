@@ -90,6 +90,19 @@ Las entradas marcadas como personales se trasladan o se retiran en las entregas
 siguientes de #167. El contrato de `skills/` y las instrucciones de instalación
 para un colaborador nuevo están en [`skills/README.md`](skills/README.md).
 
+## Mandatory reads before contributing
+
+Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de proponer una decisión arquitectónica nueva, lea en este orden:
+
+1. [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) — overview + ownership + reading path.
+2. [`docs/architecture.md`](docs/architecture.md) — fuente de verdad única de la arquitectura (capas hexagonales, decisiones D-<n> cross-cutting vigentes y obsoletas, patrones transversales).
+3. [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) — gates de calidad (los 12 `check_*.py` + los 4 workflows).
+4. [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow + label system + convention multi-app.
+5. Si el cambio pertenece a un OpenSpec change vivo, su `openspec/changes/<change>/design.md`.
+6. Si toca una app específica, su `docs/03-aplicaciones/<app>/epic.md`.
+
+Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rules §1). Saltarse cualquier paso deja a la IA operando contra arquitectura obsoleta.
+
 ## Skills obligatorias
 
 These skills are **mandatory** — load them before any work in their scope:
@@ -99,6 +112,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | **`branch-pr`** | Any commit, PR creation, or merge to `main`. Conventional commits, PR pequeño y reversible. En el merge, **sin** `--delete-branch`: la rama remota se conserva; lo que se limpia es el worktree local (`git worktree remove <path>`). |
 | **`worktree-reorg-per-project`** | Any worktree op in `c:\00repos\codigo\`: `git worktree add`, `git worktree move`, `git worktree remove`, `git worktree prune`, pre-PR cleanup, fresh project setup, detected scattered WT or v1 layout (`00_main/` + `.git` FILE). El layout canónico es main en la raíz del proyecto + container hermano `<project>-worktrees\` con linked WTs adentro (v2.0). v1 está deprecated — si el proyecto está en v1, migrar a v2 antes de trabajar. La skill vive en `~/.config/opencode/skills/worktree-reorg-per-project/SKILL.md`. Author: ardelperal. |
 | **`estado-planificacion-update`** | Cualquier ciclo de refactor de una app del blueprint, desde el estudio inicial (`access-vba-capability-docs`, walkthrough de forms, propuesta OpenSpec) hasta la entrega (cierre de PRs, archive del change). El ciclo se actualiza con un `estado-planificacion-NEW_YYYY-MM-DD.html` cada vez que se cierra una fase, un PR o un gap. La skill trae `scripts/render_estado.py` (scaffold desde `tasks.md` + JSON config), `assets/style-base.css` y `assets/template.html`. Mantener el archivo vivo es la single source of truth visual del avance para los jefes. Vive en `~/.config/opencode/skills/estado-planificacion-update/SKILL.md`. Author: ardelperal. |
+| **`architecture-guardrails`** | Antes de implementar cambios estructurales en `app/`, `tests/` o `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`docs/architecture.md`](docs/architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
 
 ## Skills cross-cutting (provienen de otros repos)
 
