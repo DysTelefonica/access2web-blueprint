@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp DA-13 — test_coverage_gate_plugin.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + DA-13 — coverage plugin test
 """Coverage pin for the `app.pytest_plugin.coverage_gate` plugin (CI fail-under gate).
 
 Both `coverage_gate.py` and — when present — `coverage_gate_helpers.py` are
@@ -146,7 +146,7 @@ def test_module_covered_lines_returns_intersection_for_matching_path() -> None:
 
 
 def test_module_covered_lines_treats_none_executed_as_empty_set() -> None:
-    """`cov_data.executed_lines(file_path)` may return ``None``; the helper must not propagate it."""
+    """`cov_data.executed_lines` may return ``None``; the helper must not propagate it."""
     cov_data = MagicMock()
     cov_data.measured_files.return_value = ["app/src/target.py"]
     cov_data.executable_lines.return_value = {1, 2, 3}
