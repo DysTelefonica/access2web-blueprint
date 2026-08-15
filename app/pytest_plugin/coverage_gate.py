@@ -121,6 +121,12 @@ def pytest_sessionfinish(session, exitstatus) -> None:
                 continue
             if error_tag == "no_code":
                 continue
+            if file_path is None:
+                # No error_tag but file_path is None: this is a contract violation
+                # by _resolve_helper. Skip to keep the loop moving and let the
+                # next helper be evaluated. Mypy needs the explicit guard to
+                # narrow str | None to str below.
+                continue
             warning, failure = _evaluate_helper(file_path, module_name, helper_name, coverage_data)
             if warning is not None:
                 warnings.append(warning)
