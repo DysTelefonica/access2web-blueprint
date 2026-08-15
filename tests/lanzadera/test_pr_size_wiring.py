@@ -68,9 +68,7 @@ def test_pr_size_override_needs_reason() -> None:
     assert module.override_reason("size:exception\nno reason line here\n") is None
     # Marker AND reason — the reason line wins.
     body = "size:exception\nsize-exception-reason: PR 1 is the indivisible foundation scaffold.\n"
-    assert (
-        module.override_reason(body) == "PR 1 is the indivisible foundation scaffold."
-    )
+    assert module.override_reason(body) == "PR 1 is the indivisible foundation scaffold."
 
 
 def test_pr_size_gate_runs_against_head(root: Path, script: Path) -> None:

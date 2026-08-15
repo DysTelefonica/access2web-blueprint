@@ -66,9 +66,7 @@ def test_gate_order_includes_legacy_hashes(script: Path) -> None:
     )
 
 
-def test_quality_report_produces_json_envelope(
-    tmp_path: Path, root: Path, script: Path
-) -> None:
+def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, script: Path) -> None:
     """The aggregator runs every gate and writes `quality-report.json`."""
     # pytest-cov writes coverage.json at session end, but this test invokes the
     # aggregator as a subprocess mid-session. The CRAP gate fails closed when the

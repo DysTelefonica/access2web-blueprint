@@ -869,9 +869,7 @@ jobs:
       - run: echo ok
 """
     (tmp_path / "wf" / "ci.yml").write_text(shared.format(name="ci"), encoding="utf-8")
-    (tmp_path / "wf" / "security.yml").write_text(
-        shared.format(name="security"), encoding="utf-8"
-    )
+    (tmp_path / "wf" / "security.yml").write_text(shared.format(name="security"), encoding="utf-8")
     rc, stderr = _capture(check_workflows, tmp_path / "wf")
     assert rc == 0, stderr
     assert "concurrency-group" not in stderr

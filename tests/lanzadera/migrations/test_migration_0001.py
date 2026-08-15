@@ -218,18 +218,14 @@ async def _drop_test_database(name: str) -> None:
         await conn.close()
 
 
-def _run_alembic(
-    worktree_root: Path, alembic_ini: Path, db_name: str, *args: str
-) -> None:
+def _run_alembic(worktree_root: Path, alembic_ini: Path, db_name: str, *args: str) -> None:
     """Invoke `alembic` against the test database.
 
     We prepend `PYTHONPATH` so `app/migrations/env.py` can import
     `app.src...` symbols in future migrations. The subprocess inherits the
     test runner's environment minus a forcibly rewritten `DATABASE_URL`.
     """
-    database_url = (
-        f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"
-    )
+    database_url = f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"
     env = os.environ.copy()
     env["DATABASE_URL"] = database_url
     env["PYTHONPATH"] = str(worktree_root) + os.pathsep + env.get("PYTHONPATH", "")
@@ -448,9 +444,7 @@ def test_schema_lanzadera_exists(migrated_db: str) -> None:
             await conn.close()
         return row["schema_name"] if row else None
 
-    assert asyncio.run(_check()) == SCHEMA, (
-        "schema `lanzadera` missing after migration 0001"
-    )
+    assert asyncio.run(_check()) == SCHEMA, "schema `lanzadera` missing after migration 0001"
 
 
 @pytest.mark.integration
@@ -511,9 +505,7 @@ def test_users_status_default_is_password_reset_required(migrated_db: str) -> No
     assert column["data_type"] == "USER-DEFINED", (
         f"users.status must be an ENUM; got data_type={column['data_type']!r}"
     )
-    assert column["column_default"] is not None, (
-        "users.status must have a server-side DEFAULT"
-    )
+    assert column["column_default"] is not None, "users.status must have a server-side DEFAULT"
     # Postgres renders ENUM defaults as `<enum-cast>'label'::text` or similar;
     # the substring check is robust to either form.
     assert "password_reset_required" in column["column_default"], (
@@ -558,9 +550,7 @@ def test_all_six_indexes_created(migrated_db: str) -> None:
     """Six indexes design.md commits to exist in the `lanzadera` schema."""
     actual = asyncio.run(_fetch_index_names(migrated_db))
     expected = set(EXPECTED_INDEX_NAMES)
-    assert expected <= actual, (
-        f"missing indexes: {sorted(expected - actual)}; got {sorted(actual)}"
-    )
+    assert expected <= actual, f"missing indexes: {sorted(expected - actual)}; got {sorted(actual)}"
 
 
 @pytest.mark.integration
@@ -585,9 +575,7 @@ def test_user_app_assignments_revoked_at_is_nullable(migrated_db: str) -> None:
     a global admin revokes a profile. NOT NULL would force every assignment
     to carry a sentinel timestamp and break the "active" view.
     """
-    column = asyncio.run(
-        _fetch_column(migrated_db, "user_app_assignments", "revoked_at")
-    )
+    column = asyncio.run(_fetch_column(migrated_db, "user_app_assignments", "revoked_at"))
     assert column is not None, "user_app_assignments.revoked_at missing"
     assert column["is_nullable"] == "YES", (
         f"user_app_assignments.revoked_at must be nullable; "
