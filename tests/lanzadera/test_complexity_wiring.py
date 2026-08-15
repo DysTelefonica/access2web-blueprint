@@ -78,7 +78,9 @@ def test_max_complexity_source_declares_review_date(script: Path) -> None:
     # the constant belongs to" — a casual reader must see them together.
     lines = source.splitlines()
     max_complexity_lines = [
-        index for index, line in enumerate(lines) if "MAX_COMPLEXITY" in line and "=" in line
+        index
+        for index, line in enumerate(lines)
+        if "MAX_COMPLEXITY" in line and "=" in line
     ]
     assert max_complexity_lines, "MAX_COMPLEXITY assignment not found in source"
     target_index = max_complexity_lines[0]

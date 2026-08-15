@@ -77,7 +77,9 @@ class TestUserStatusStrEnum:
         """DA-3 + Postgres ENUM: the wire value must equal the member name."""
         assert UserStatus("active") is UserStatus.ACTIVE
         assert UserStatus("disabled") is UserStatus.DISABLED
-        assert UserStatus("password_reset_required") is UserStatus.PASSWORD_RESET_REQUIRED
+        assert (
+            UserStatus("password_reset_required") is UserStatus.PASSWORD_RESET_REQUIRED
+        )
         assert UserStatus("locked") is UserStatus.LOCKED
 
     def test_wire_values_match_postgres_enum(self) -> None:
