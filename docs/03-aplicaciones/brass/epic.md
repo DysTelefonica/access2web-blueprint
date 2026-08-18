@@ -431,6 +431,26 @@
 
 Revisión con el equipo. Una vez validada, abrir SDD (`sdd-propose` + `sdd-spec` + `sdd-design` + `sdd-tasks`) para arrancar la implementación por ticket, comenzando por **TK-BRASS-1** (auditoría de git history para `dpddpd`) antes que cualquier otro cambio de código.
 
+## Cómo se aplica a access2web-blueprint
+
+Brass es la app del dominio regulatorio de calidad/calibración: ciclo de vida de eventos regulatorios (alta, técnicos asignados, equipos de medida, calibración, facturación, materiales, planificación, partes de trabajo, libranzas, subcontratación, franqueo con validación de SLA). 5777 eventos en producción, 25639 actividades.
+
+**Entrada cruda**: walkthroughs G1..G5 consolidan 85/85 forms. Inventario Dysflow: 60 tablas, 27 FKs entre tablas de usuario (excluyendo MSysNavPane*), 14 equipos de medida con 28 calibraciones.
+
+**Decisiones operativas vigentes**: D104 (⚠️ contraseña hardcodeada `"dpddpd"` REAL — NO fallback — en `Variables Globales.bas:560`; remediación operativa separada: rotación de contraseña en producción + saneamiento del repo + cambio a `SecretManagerPort`), D102 (booleans Text(2) cross-cutting → `BOOLEAN`), dominio regulatorio de calibración (TbEquiposMedida + TbEquiposMedidaCalibraciones) preservado como caso de uso de primer orden con tests específicos, `IDEvento` Text(50) (decisión diseño legacy — la nueva plataforma decide si mantiene string UUID o migra a numéricos).
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps lista Brass como mergeada con PR pre-workflow; `docs/architecture.md` §Decisiones D-<n> vigentes lista D14, D16 (S3 para anexos de eventos), D27, D82; CODEBASE-GUIDE.md §Ownership de artefactos la referencia para el código de plataforma y el walkthrough JSON.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo están completas y verificadas contra los walkthroughs G1..G5.
+- [ ] Los 2 anexos están adjuntos con referencias válidas.
+- [ ] Los criterios de aceptación están todos marcados; los pendientes tienen ticket derivado (TK-BRASS-N prioritario).
+- [ ] Los tickets derivables tienen issue-number válido en el backlog del change correspondiente.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia los walkthroughs G1..G5, el código destino `app/src/modules/brass/`, y las decisiones D104, D102 + dominio regulatorio de calibración.
+- [ ] La épica se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo.
+
 ---
 
 [← Back to Brass README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
