@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · HPS_Solicitudes
 
 ## Propósito
@@ -88,3 +90,25 @@ Lote 7 del plan de discovery. **La app más simple de las 8** en superficie de d
 ## Siguiente paso
 
 Cruzar el inventario con la documentación previa en `OPENSPEC/00_HPS_SOLICITUDES`. Generar la **épica + tickets accionables + matriz de migración de datos** para HPS_Solicitudes (alcance expandido). Continuar después con Brass (Lote 6) y audit de D93 (password hardcoded) cross-cutting.
+
+## Core invariants
+
+- **245 solicitudes con datos personales completos (D92)**: `TbSolicitudes` contiene `DNI`, `Nombre`, `Apellido1`, `Apellido2`, `FNacimiento`, `LugarNacimiento`, `email`, `Telefono`. Riesgo de seguridad equivalente al de HPS. Cualquier artefacto del blueprint redacta con placeholders.
+- **11 tablas (la app más simple del ecosistema)**: superficie de datos mínima pero en uso activo. La migración web preserva el ciclo de vida completo (alta, renovación, cambio de tipo, traspaso a ONS, justificación).
+- **FK por texto email en `TbResponsables.Correo → TbSolicitudes.emailResponsable`**: data integrity gap. Si el email cambia en `TbResponsables`, la FK lógica se rompe. La nueva plataforma usa IDs numéricos para las FKs y mantiene el email como atributo.
+- **Acoplamiento Lanzadera via `getdbLanzadera()` (D86)**: traduce a adaptadores con `IdentityPort`; nunca se mantiene acceso directo cross-app.
+- **`Solicitudes_HPS_datos.accdb` en la raíz del repo es legacy local**: el backend autoritativo está en `C:\00repos\datos\Solicitudes_HPS_datos.accdb`. La nueva plataforma NO conserva el duplicado en el repo; el `.gitignore` debe excluirlo explícitamente.
+- **Sistema de traspasos a ONS**: `Form_FormAdjuntaTraspasoONS.cls` + `URLAdjuntoEnvioONS` (Memo en `TbSolicitudes`). Integración externa preservada como contrato de puerto (`OnsIntegrationPort`).
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 6 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el PR introduce datos personales (DNI, Nombre, Apellidos, email, F_Nacimiento), sigue D92: redacción con placeholders y scrubbing antes de commit.
+- [ ] Si el PR modifica el `.gitignore` raíz, se asegura que `Solicitudes_HPS_datos.accdb` (legacy local con datos reales) queda excluido.
+- [ ] Si el cambio añade una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas o tablas, sin `DROP` ni `ALTER` destructivos en la misma release.
+- [ ] Si el cambio toca el sistema de traspasos a ONS, se conserva como contrato de puerto y se documenta en `integrations-automation.md`.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [hps](../hps/README.md) | Next: [condor](../condor/README.md)
