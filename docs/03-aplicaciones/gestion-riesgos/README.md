@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · Gestion_Riesgos
 
 ## Propósito
@@ -105,3 +107,24 @@ Revisar con el equipo la decisión D88 (modelo de carga del árbol en la nueva p
 - El **caché multi-nivel** (5+ tablas) se traduce al **puerto de caché** del blueprint (D70-D71) con un adapter concreto (Redis u opción detrás del puerto).
 - Los **catálogos de valoración** se traducen a **enums de PostgreSQL** o **tablas de lookup** con UI admin.
 - La **vinculación con NoConformidades** se mantiene como referencia conceptual (D86/D87) con orden de migración estricto.
+
+## Core invariants
+
+- **372 callers de `getdb()` (D88)**: Gestion_Riesgos es la app con más DAO-direct del ecosistema. La migración web preserva la cobertura de las queries críticas; ningún refactor reduce el número de operaciones soportadas.
+- **Acoplamiento Lanzadera via `getdbLanzadera()` (D86)**: el módulo `Constructor.bas` consulta directamente la base de datos de Lanzadera para resolver identidad y permisos. La nueva plataforma expone identidad por puerto (`IdentityPort`) y traduce este acoplamiento a adaptadores; nunca se mantiene el acceso directo cross-app.
+- **D88 rendimiento del árbol de ediciones/riesgos**: el control ActiveX `MSComctlLib.TreeView` se descarta. La nueva plataforma usa HTMX lazy expansion + CTE recursivo en PostgreSQL; el flag temporal `CadenaJerarquicaModelo` con valores «nuevo»/«antiguo» desaparece.
+- **Patrón `_Reversa` en planes**: las 6 tablas `TbRiesgosPlanContingenciaPpal/Detalle/DetalleReversa` y `TbRiesgosPlanMitigacionPpal/Detalle/DetalleReversa` materializan transacciones reversibles. La nueva plataforma traduce esto a event sourcing o soft delete con versionado; no se preserva el patrón `_Reversa` literal.
+- **Catálogos de valoración → enums PostgreSQL**: `TbValoresPosiblesContingencia`, `TbValoresPosiblesEstadoRiesgo`, `TbValoresPosiblesMitigacion`, `TbValoresPosiblesPlazoCalidadCosteVulnerabilidad`, `TbValoresPosiblesValoracion` se traducen a enums o tablas de lookup con UI admin; nunca se mantienen como texto libre en queries.
+- **Orden de migración estricto**: Gestion_Riesgos migra después de NoConformidades (D95). Cualquier plan que invierta este orden requiere PR al `design.md` y aprobación de mantenedor.
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 6 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el cambio toca el árbol de riesgos (`Form_FormRiesgosGestion.cls:CargarArbol`), el PR migra a HTMX lazy expansion + CTE recursivo PostgreSQL y elimina el flag `CadenaJerarquicaModelo` (D88).
+- [ ] Si el cambio añade una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas o tablas, sin `DROP` ni `ALTER` destructivos en la misma release.
+- [ ] Si el cambio introduce una FK hacia NoConformidades (`TbRiesgosNC`), el orden de migración D95 sigue aplicando; el PR se bloquea si NoConformidades aún no está migrada.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [no-conformidades](../no-conformidades/README.md) | Next: [brass](../brass/README.md)
