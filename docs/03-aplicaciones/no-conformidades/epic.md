@@ -479,6 +479,26 @@
 
 Aplicar las mismas reglas a las 2 épicas restantes: HPS, HPS_Solicitudes. Tras cerrar el ciclo de revisión final del blueprint.
 
+## Cómo se aplica a access2web-blueprint
+
+NoConformidades es la app con la superficie UI más rica del ecosistema (~60 forms) y la mayor intensidad DAO (344 callers de `getdb()`). Su código destino vive en `app/src/modules/no-conformidades/` y consume el `CachePort` (DA-8) que toma como referencia el patrón de caché selectivo maduro (D91).
+
+**Entrada cruda**: los walkthroughs G1..G5 (`walkthrough-G1.json` a `walkthrough-G5.json`) consolidan 48/48 forms con `method_version: "v3"` (pre-fix #1407). Inventario real Dysflow: 42 tablas, 493 NCs totales (438 proyecto + 55 auditoría), 14 FKs.
+
+**Decisiones operativas vigentes**: D86 (acoplamiento Lanzadera via `getdbLanzadera()` traducido a adaptadores con `IdentityPort`), D88 (caché selectivo maduro: kill switch + diagnóstico + métricas + logs — referencia para el `CachePort` del blueprint), D90 (riesgo de seguridad en `backends.json` con `ACCESS_VBA_PASSWORD` en claro — remediación operativa separada), D91 (kill switch documentado como contrato de puerto), D95 (orden de migración estricto: NoConformidades antes que Gestion_Riesgos por FK conceptual en `TbRiesgosNC`), D144 (timer-driven UX preservado como skeleton web).
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps lista NoConformidades como mergeada con PR #2; `docs/architecture.md` §Decisiones D-<n> vigentes lista D14, D16 (S3 para anexos), D27 (logs estructurados), D82; CODEBASE-GUIDE.md §Ownership de artefactos la referencia para el código UI en `app/src/modules/no-conformidades/delivery/` y el walkthrough JSON en `docs/03-aplicaciones/no-conformidades/walkthrough-G*.json`.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo están completas y verificadas contra los walkthroughs G1..G5 (método v3).
+- [ ] Los 2 anexos están adjuntos con referencias válidas y verificadas con `rg` sobre el repo.
+- [ ] Los criterios de aceptación están todos marcados; los pendientes tienen ticket derivado.
+- [ ] Los tickets derivables tienen issue-number válido en el backlog del change correspondiente.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia los walkthroughs G1..G5, el código destino `app/src/modules/no-conformidades/`, y las decisiones D86, D88, D90, D91, D95, D144.
+- [ ] La épica se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo.
+
 ---
 
 [← Back to NoConformidades README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
