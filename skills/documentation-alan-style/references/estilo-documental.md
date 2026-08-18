@@ -31,15 +31,19 @@ formas, en singular y en plural.
 
 ## Estructura raíz del repositorio
 
-| Archivo | Propósito | Audiencia | ¿Obligatorio? |
-|---|---|---|---|
-| `README.md` | Visión del producto, legible en cinco minutos | Externos | Sí |
-| `AGENTS.md` | Alcance, reglas duras e índice de skills | Agentes | Sí |
-| `DOCS.md` | Índice navegable y referencia técnica | Técnicos | Si es API-product |
-| `CODEBASE-GUIDE.md` | Propiedad, flujos y guardarraíles | Mantenedores | Recomendado |
-| `CONTRIBUTING.md` | Flujo de contribución y presupuesto de PR | Contribuidores | Sí |
-| `CHANGELOG.md` | Cambios por versión, con «Unreleased» | Usuarios | Sí |
-| `SECURITY.md` | Proceso de divulgación de vulnerabilidades | Externos | Si hay datos sensibles |
+La columna «Cuándo aplica» es agnóstica al tipo de proyecto (web, CLI, API,
+librería, monorepo): un archivo vive cuando el repo cumple la condición, no
+porque sí o porque no.
+
+| Archivo | Propósito | Cuándo aplica |
+|---|---|---|
+| `README.md` | Visión del producto, legible en cinco minutos | Repos con consumidores humanos externos o agentes (IAs) |
+| `AGENTS.md` | Alcance, reglas duras e índice de skills | Repos donde agentes (IAs) ejecutan trabajo dentro del repo |
+| `DOCS.md` | Índice navegable y referencia técnica | Repos con múltiples superficies (API, CLI, MCP, TUI, librerías) o que sirven como referencia técnica externa |
+| `CODEBASE-GUIDE.md` | Propiedad, flujos y guardarraíles | Repos con varios módulos internos o contribuidores externos |
+| `CONTRIBUTING.md` | Flujo de contribución y presupuesto de PR | Repos con PRs externos o contributors nuevos recurrentes |
+| `CHANGELOG.md` | Cambios por versión, con «Unreleased» | Repos con releases semánticos o consumo externo versionado |
+| `SECURITY.md` | Proceso de divulgación de vulnerabilidades | Repos que manejan datos sensibles o exponen superficies de ataque |
 
 ## Taxonomía de `docs/`
 
@@ -51,6 +55,13 @@ subcarpeta cuando pertenece a una familia que crece con el tiempo.
 | `architecture/` | Decisiones y modelos que gobiernan el diseño | `kebab-case.md` |
 | `codebase/` | Recorridos del código, interfaces, playbooks | `kebab-case.md` |
 | `testing/` | Estrategia y guías de prueba | `kebab-case.md` |
+
+`codebase/` sigue el patrón hub-and-spoke: `docs/CODEBASE-GUIDE.md` es el hub
+y delega en páginas radiales bajo `docs/codebase/`, una por eje del proyecto.
+Las verificadas en el caso de referencia incluyen: `mental-model`,
+`repository-map`, `interfaces`, `integrations`, `maintainer-playbook`,
+`reference-map`, `dashboard`, `memory-core`, `sync-and-cloud` y la página de
+la ausencia. Adapte el conjunto al dominio.
 | `audits/` | Auditorías con fecha, inmutables | `YYYY-MM-DD-asunto.md` |
 | `releases/` | Cierres de versión | `vX.Y.Z-asunto.md` |
 | `uat/` | Actas de aceptación | `uat-<audiencia>-YYYY-MM-DD.html` |
@@ -98,3 +109,8 @@ Antes de publicar, compruebe:
 - [ ] Ningún dato duplicado en otro documento sin referencia cruzada.
 - [ ] Todo bloque de código declara su lenguaje.
 - [ ] El documento está en la capa correcta y en la carpeta correcta.
+- [ ] Si describe comportamiento que no debe romperse, declara `## Core
+      invariants` con nombres en negrita para poder citarlo en un review.
+- [ ] Si es página radial de `docs/codebase/`, cierra con
+      `## Contributor checklist` y `## Navigation` (`Previous: … | Next: …`,
+      o `Back:` al hub en la última).
