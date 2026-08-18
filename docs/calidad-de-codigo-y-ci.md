@@ -131,6 +131,28 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 4. Cablearlo en `ci.yml` con timeout explícito.
 5. Subir un PR; el revisor valida que el gate tenga un QC documentado y un test de smoke en `tests/test_gate_smoke.py` (QC-18).
 
+## Core invariants
+
+- **SHA de Actions pineados**: las versiones de actions de terceros en `.github/workflows/*.yml` van fijadas por SHA de 40 hex. `scripts/check_workflows.py` enforza esto y exige un `concurrency.group` por job. Actualizar requiere PR explícito.
+- **Wrappers prohibidos**: `|| true`, `continue-on-error`, y cualquier otro wrapper que silencie un fallo están prohibidos en `ci.yml` y en los `check_*.py`. `tests/test_ci_workflow.py` pinea el contrato.
+- **CRITICAL_HELPERS a 100 % cobertura (DA-2 + QC-5)**: `hash_password`, `verify_password`, `issue_reset_token`, `consume_reset_token`, `bootstrap_admin_set_password` y demás helpers de auth deben mantener 100 % de cobertura. El plugin `app/pytest_plugin/coverage_gate.py` falla el build si caen.
+- **Migraciones aditivas (D82)**: cada release Alembic es aditiva. El rollback es `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. No se permiten `DROP COLUMN`, `ALTER` destructivos ni `RENAME` en la misma release.
+- **Mutation semanal fuera de PR**: `check_mutation.py` corre desde `security-deep.yml` por cron semanal, no por commit. Cuando la mutation score cae del umbral, el workflow falla y crea issue automático; no bloquea PRs individuales.
+
+## Contributor checklist
+
+- [ ] Si el PR añade un `check_*.py`, el script cita el QC y la decisión D-/DA- en el docstring, y existe un test de smoke (`tests/test_gate_smoke.py`).
+- [ ] Si el PR modifica `.github/workflows/`, las Actions nuevas van pineadas por SHA de 40 hex y cada job declara `concurrency.group`.
+- [ ] Si el PR toca `pyproject.toml` (ruff/mypy/argon2), las versiones quedan pinned en `>=X,<Y+1` y `scripts/install-skills.sh` sigue corriendo.
+- [ ] Si el PR añade cobertura a `pytest --cov`, el threshold `--cov-fail-under` se mantiene o sube; nunca baja.
+- [ ] El `make lint typecheck test check-layers check-complexity check-crap check-dry check-branch-name quality-report` corre verde en local antes de push.
+- [ ] Si se cambia un comando de la sección §Cómo correrlo en local, también se actualiza `Makefile` y el `Makefile` no introduce wrappers.
+- [ ] Si se introduce una dependencia nueva en `app/pyproject.toml`, `pip-audit` corre verde y se documenta en la sección §Stack de [`docs/architecture.md`](architecture.md).
+
+## Navigation
+
+Previous: [architecture.md](architecture.md) | Next: [AGENT-SETUP.md](AGENT-SETUP.md)
+
 ---
 
 [Next: CHANGELOG →](../../CHANGELOG.md)
