@@ -57,6 +57,7 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 | `check_mutation_sites.py` | — | Lista de sitios donde se ejecuta mutación semanal | `python scripts/check_mutation_sites.py` |
 | `check_mutation.py` | — | Corre mutación semanal; falla si la mutation score cae | `python scripts/check_mutation.py` |
 | `quality_report.py` | QC-11 | Agrega envelopes de todos los gates en `quality.report.json` | `python scripts/quality_report.py` |
+| `check_walkthrough_schema.py` | — | MUST fields del template `walkthrough.json` presentes en `docs/03-aplicaciones/*/walkthrough-*.json` (53 archivos) | `python scripts/check_walkthrough_schema.py` |
 | `app/pytest_plugin/coverage_gate.py` | QC-5 | `--cov-fail-under=69` por paquete + CRITICAL_HELPERS a 100 % | activado por `pytest --cov` |
 
 > **QC mapping incompleto**: la tabla arriba es best-effort. El catálogo QC-1..QC-18 vive en `openspec/changes/lanzadera-mvp/design.md`. Este doc no es la fuente; se cruza contra el design para validar la asignación.
@@ -65,7 +66,7 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 
 | Workflow | Cuándo corre | Qué hace |
 |---|---|---|
-| `ci.yml` | cada PR + push a main | Orquesta: pip-audit, gitleaks, trivy-config, ruff/mypy/pytest, los 12 check_*.py. |
+| `ci.yml` | cada PR + push a main | Orquesta: pip-audit, gitleaks, trivy-config, ruff/mypy/pytest, los 13 check_*.py. |
 | `security.yml` | cada PR + push a main | Fast subset de seguridad: pip-audit, gitleaks, trivy config. |
 | `security-deep.yml` | semanal (cron) | Trivy filesystem + image, mutation semanal. |
 | `release.yml` | tag `v*` pushed | Gate de identidad + verify checksum; ata al release pipeline. |

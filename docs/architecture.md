@@ -230,6 +230,7 @@ Once `scripts/check_*.py` + `.github/workflows/`:
 | `check_mutation.py` | scripts/ | mutation semanal |
 | `check_workflows.py` | scripts/ | runner-pinning |
 | `quality_report.py` | scripts/ | QC-11 (agregador) |
+| `check_walkthrough_schema.py` | scripts/ | MUST fields del template `walkthrough.json` (53 walkthroughs) |
 | `pytest_plugin/coverage_gate.py` | app/ | QC-5 |
 | ci.yml | .github/workflows/ | orquesta todo por PR |
 | security.yml | .github/workflows/ | pip-audit, gitleaks, trivy config |

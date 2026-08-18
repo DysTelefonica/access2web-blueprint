@@ -1,39 +1,168 @@
 {
+  "//_comment": "Plantilla walkthrough.json — documentation-alan-style v2.1+. Comentarios JSON con prefijo // documentan MUST/SHOULD/MAY por línea. La sección Schema history al final del archivo resume la evolución desde v1.0 hasta v2.1+.",
+  "//schema_version": "2.1",
+  "//classification_keys": "MUST = requerido por el gate check_walkthrough_schema.py; SHOULD = convención estable; MAY = libre.",
+
+  "//MUST_top": "group",
   "group": "access2web-<nombre-del-grupo-walkthrough>",
+
+  "//MUST_top": "method_version",
   "method_version": "1.0",
+
+  "//SHOULD_top": "app (slug de la app; alineado con docs/03-aplicaciones/<app>/)",
+  "app": "lanzadera",
+
+  "//SHOULD_top": "project (nombre del proyecto en el repo)",
+  "project": "access2web-blueprint",
+
+  "//SHOULD_top": "generated_at (timestamp ISO-8601)",
+  "generated_at": "2026-08-07T00:00:00Z",
+
+  "//SHOULD_top": "adapter_version (versión del dysflow MCP usado)",
+  "adapter_version": "2.36.0",
+
+  "//MUST_top": "forms_count",
   "forms_count": 2,
+
+  "//SHOULD_top": "known_working_tools (lista de herramientas dysflow/codegraph-vba que funcionan en este walkthrough)",
+  "known_working_tools": ["dysflow.get_capabilities", "codegraph-vba.codegraph_explore"],
+
+  "//SHOULD_top": "known_degraded_tools (herramientas con workaround aplicado)",
+  "known_degraded_tools": ["dysflow.map_form_behavior:autoFetchCodeGraph:false"],
+
+  "//SHOULD_top": "known_broken_tools (herramientas que se saltaron con status:skipped_tool_broken)",
+  "known_broken_tools": ["dysflow.verify_form_bindings"],
+
+  "//MUST_top": "forms (array de objetos form; cada form cumple MUST_form)",
   "forms": [
     {
+      "//MUST_form": "formName",
       "formName": "<FormName>",
+
+      "//MUST_form": "sourcePath (ruta relativa al .cls o .form.txt)",
       "sourcePath": "<relative/path/to/form.cls>",
-      "codegraph_summary": "<one-line summary of the form's call path>",
+
+      "//SHOULD_form": "method_version (override del top-level si difiere por form)",
+      "method_version": "v4",
+
+      "//MUST_form": "codegraph_summary (objeto con métricas del codegraph; nunca string)",
+      "codegraph_summary": {
+        "//SHOULD_field": "handlers_count",
+        "handlers_count": 12,
+        "//SHOULD_field": "source_size_lines",
+        "source_size_lines": 540,
+        "//MAY_field": "source_size_bytes",
+        "source_size_bytes": 18432,
+        "//SHOULD_field": "symbols_count",
+        "symbols_count": 87,
+        "//SHOULD_field": "symbols_in_graph",
+        "symbols_in_graph": 12,
+        "//SHOULD_field": "files_scanned",
+        "files_scanned": 3,
+        "//SHOULD_field": "blast_radius_top_5 (top 5 símbolos por blast radius)",
+        "blast_radius_top_5": [],
+        "//SHOULD_field": "call_path_top_3 (top 3 call paths)",
+        "call_path_top_3": [],
+        "//SHOULD_field": "stale_banner_ignored (true si el banner stale del codegraph fue ignorado)",
+        "stale_banner_ignored": true,
+        "//MAY_field": "status (status del codegraph; útil cuando hay degradación)",
+        "status": "ok"
+      },
+
+      "//MUST_form": "ui (objeto con métricas de la UI del form)",
       "ui": {
-        "controls": ["<control-1>", "<control-2>"],
-        "events": ["<event-1>", "<event-2>"]
+        "//SHOULD_field": "controls_count",
+        "controls_count": 23,
+        "//SHOULD_field": "formEvents (lista de eventos del form: Form_Open, Form_Load, etc.)",
+        "formEvents": ["Form_Open"],
+        "//SHOULD_field": "bindings_count",
+        "bindings_count": 5,
+        "//SHOULD_field": "warnings (warnings de dysflow sobre el form)",
+        "warnings": []
       },
+
+      "//MUST_form": "geometry (objeto con métricas de geometría; puede ser {} si no aplica)",
       "geometry": {
-        "width": 0,
-        "height": 0,
-        "layout": "<details>"
+        "//MAY_field": "controls_count",
+        "controls_count": 23,
+        "//MAY_field": "sections_count",
+        "sections_count": 4,
+        "//MAY_field": "findings_count",
+        "findings_count": 0,
+        "//MAY_field": "status",
+        "status": "ok",
+        "//MAY_field": "by_kind",
+        "by_kind": {}
       },
+
+      "//MUST_form": "behavior (objeto con métricas de comportamiento)",
       "behavior": {
-        "open": "<Form_Open behavior>",
-        "load": "<Form_Load behavior>",
-        "handlers": ["<handler-1>", "<handler-2>"]
+        "//SHOULD_field": "controls_count",
+        "controls_count": 23,
+        "//SHOULD_field": "controls_with_handler_evidence (forms con handlers detectados)",
+        "controls_with_handler_evidence": 8,
+        "//SHOULD_field": "tables_referenced (tablas referenciadas por los handlers)",
+        "tables_referenced": [],
+        "//MAY_field": "codegraph_evidence_status",
+        "codegraph_evidence_status": "ok"
       },
+
+      "//MUST_form": "verify_form_bindings (objeto con el resultado de la verificación)",
       "verify_form_bindings": {
-        "verified": true,
+        "//MUST_field": "status (ok | skipped_tool_broken | failed | partial)",
+        "status": "ok",
+        "//MAY_field": "reason (explicación cuando status no es ok)",
+        "reason": "",
+        "//MAY_field": "findings (lista de hallazgos; vacía cuando status es ok)",
         "findings": []
       },
+
+      "//MUST_form": "unattended (true si el form se procesó sin intervención humana)",
       "unattended": true,
+
+      "//SHOULD_form": "unattended_evidence (justificación de por qué unattended es true/false)",
+      "unattended_evidence": "Formulario sin controles interactivos: sólo labels y un subform_hosted.",
+
+      "//MUST_form": "tool_warnings (lista de advertencias de herramientas; [] si ninguna)",
       "tool_warnings": []
     }
   ],
+
+  "//MUST_top": "summary (objeto con totales y métricas globales del walkthrough)",
   "summary": {
+    "//SHOULD_field": "total_forms",
     "total_forms": 2,
+    "//SHOULD_field": "attended_forms",
     "attended_forms": 0,
+    "//SHOULD_field": "unattended_forms",
     "unattended_forms": 2,
+    "//SHOULD_field": "known_skipped_tools",
     "known_skipped_tools": [],
-    "known_degraded_tools": []
-  }
+    "//SHOULD_field": "known_degraded_tools",
+    "known_degraded_tools": [],
+    "//MAY_field": "forms_with_* (métricas app-specific; emergen del análisis real)",
+    "forms_with_activex_legacy_imagelist": 0,
+    "//MAY_field": "forms_with_*",
+    "forms_with_subform_hosted": 1,
+    "//MAY_field": "tools_ok_per_form",
+    "tools_ok_per_form": 0
+  },
+
+  "//_schema_history": [
+    {
+      "version": "1.0",
+      "year": "2025-08",
+      "changes": "Versión inicial del template. 12 campos top-level + 9 por form. codegraph_summary como string."
+    },
+    {
+      "version": "2.0",
+      "year": "2026-08",
+      "changes": "Schema ampliado con código real del monorepo: unattended_evidence, codegraph_summary como objeto, known_working_tools, known_degraded_tools, known_broken_tools, generated_at, app, project. MAY fields app-specific en summary."
+    },
+    {
+      "version": "2.1",
+      "year": "2026-08-18",
+      "changes": "MUST/SHOULD/MAY clasificación explícita por línea. Schema history en el template. check_walkthrough_schema.py valida MUST. Migración de los 43 walkthroughs reales al nuevo schema (#369)."
+    }
+  ]
 }
