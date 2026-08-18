@@ -447,6 +447,26 @@ Una vez mergeado el PR, el ciclo de refactor de épicas está completo. Pendient
 - **Audit final cruzada** de las 8 épicas refactorizadas.
 - **Decisión sobre integración final** entre las 8 apps (especialmente cross-app con Lanzadera como madre).
 
+## Cómo se aplica a access2web-blueprint
+
+HPS_Solicitudes es la app más simple del ecosistema en superficie de datos (11 tablas) pero en uso activo (245 solicitudes con datos personales completos: DNI, Nombre, Apellidos, F_Nacimiento, LugarNacimiento, email, Teléfono). Su código destino vive en `app/src/modules/hps-solicitudes/` y depende de Lanzadera para identidad.
+
+**Entrada cruda**: walkthroughs G1..G5 consolidan los forms de HPS_Solicitudes. Inventario Dysflow: 11 tablas, 3 FKs, 245 solicitudes (`TbSolicitudes`), 2058 filas en `TbLogsGeneral`, 27 responsables, 7 justificaciones, 13 grados HPS.
+
+**Decisiones operativas vigentes**: D86 (acoplamiento Lanzadera via `getdbLanzadera()` traducido a adaptadores con `IdentityPort`), D92 (245 filas con datos personales completos en `TbSolicitudes` — redacción con placeholders D92), FK por texto email en `TbResponsables.Correo → TbSolicitudes.emailResponsable` (data integrity gap; la nueva plataforma usa IDs numéricos), `Solicitudes_HPS_datos.accdb` en raíz del repo es legacy local (NO backend autoritativo; el `.gitignore` debe excluirlo), sistema de traspasos a ONS preservado como contrato de puerto (`OnsIntegrationPort`), D102 (booleans Text(2) cross-cutting → `BOOLEAN`).
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps lista HPS_Solicitudes como mergeada con PR pre-workflow; `docs/architecture.md` §Decisiones D-<n> vigentes lista D14, D27, D82, D132 (XApp handshake); CODEBASE-GUIDE.md §Ownership de artefactos la referencia para el código de plataforma y el walkthrough JSON.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo están completas y verificadas contra los walkthroughs G1..G5.
+- [ ] Los 2 anexos están adjuntos con referencias válidas.
+- [ ] Los criterios de aceptación están todos marcados; los pendientes tienen ticket derivado.
+- [ ] Los tickets derivables tienen issue-number válido en el backlog del change correspondiente.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia los walkthroughs G1..G5, el código destino `app/src/modules/hps-solicitudes/`, y las decisiones D86, D92, D102 + el sistema de traspasos a ONS.
+- [ ] La épica se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo.
+
 ---
 
 [← Back to HPS_Solicitudes README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
