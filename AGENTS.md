@@ -1,27 +1,65 @@
+---
+description: access2web-blueprint — monorepo del blueprint de migración Access/VBA→web + MVP Lanzadera Python hexagonal.
+globs: *
+alwaysApply: true
+---
+
+[← Back to README](README.md)
+
 # access2web-blueprint — Agent Skills Index
 
 When working on this project, load the relevant skill(s) BEFORE writing any code or docs.
 
-> **Las skills de este proyecto viven en [`skills/`](skills/README.md), versionadas
-> con el código.** Instálelas con `scripts/install-skills.sh` (o `.ps1` en Windows).
-> Fuera de ahí sólo puede asumirse instalado `gentle-ai` y `engram`.
+> **Las skills de este proyecto viven en [`skills/`](skills/README.md), versionadas con el código.** Instálelas con `scripts/install-skills.sh` (o `.ps1` en Windows). Fuera de ahí sólo puede asumirse instalado `gentle-ai` y `engram`.
 >
-> La disciplina documental (tono, nombres, formato, plantillas, anti-patrones) se
-> traslada a `skills/documentation-alan-style/` en las entregas siguientes de #167.
-> Hasta entonces, la referencia es `CONTRIBUTING.md` y los documentos de `docs/`.
+> La disciplina documental (tono, nombres, formato, plantillas, anti-patrones) vive en `skills/documentation-alan-style/`. Su contrato es la única referencia; `CONTRIBUTING.md` y los documentos de `docs/` la aplican.
 
-## Cómo usar
+## How to Use
 
-1. Revise la columna «trigger» para localizar las skills aplicables a la tarea actual.
+1. Revise la columna «Trigger» para localizar las skills aplicables a la tarea actual.
 2. Cargue la skill leyendo el archivo `SKILL.md` en la ruta indicada (mediante la herramienta `read` o el symlink correspondiente).
 3. Aplique todos los patrones y reglas de la skill cargada.
 4. Cuando varias skills apliquen a la vez, pueden combinarse.
 
+## Mandatory skills
+
+These skills are **mandatory** — load them before any work in their scope:
+
+| Skill | Mandatory for |
+|---|---|
+| **`branch-pr`** | **Any** commit, PR creation, or merge to `main`. Conventional commits, PR pequeño y reversible. En el merge, **sin** `--delete-branch`: la rama remota se conserva; lo que se limpia es el worktree local (`git worktree remove <path>`). Vive en `~/.config/opencode/skills/branch-pr/SKILL.md` (distribuida por `gentle-ai`). |
+| **`worktree-reorg-per-project`** | **Any** worktree op en este repo: `git worktree add`, `git worktree move`, `git worktree remove`, `git worktree prune`, pre-PR cleanup, fresh project setup. El layout canónico es main en la raíz del proyecto + container hermano `<project>-worktrees\` con linked WTs adentro (v2.0). v1 está deprecated — si el proyecto está en v1, migrar a v2 antes de trabajar. Vive en `~/.config/opencode/skills/worktree-reorg-per-project/SKILL.md`. Author: ardelperal. |
+| **`architecture-guardrails`** | **Any** cambio estructural en `app/`, `tests/` u `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`docs/architecture.md`](docs/architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
+| **`documentation-alan-style`** | **Any** redacción o revisión de `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `epic.md` o `walkthrough-*.json`. Plantillas en `references/templates/`. Vive en este repo: `skills/documentation-alan-style/SKILL.md`. |
+
+## Project-context skills
+
+| Skill | Trigger | Path |
+|---|---|---|
+| `branch-pr` | Crear / abrir / preparar un PR. | `~/.config/opencode/skills/branch-pr/SKILL.md` (gentle-ai) |
+| `work-unit-commits` | Partir un cambio en commits revisables; chained PRs; mantener tests+docs con código. | `~/.config/opencode/skills/work-unit-commits/SKILL.md` (gentle-ai) |
+| `issue-creation` | Crear, redactar, triar o aprobar un issue del repo actual. | `~/.config/opencode/skills/issue-creation/SKILL.md` (gentle-ai) |
+| `chained-pr` | PRs sobre 400 líneas, stacked PRs, review slices. | `~/.config/opencode/skills/chained-pr/SKILL.md` (gentle-ai) |
+| `documentation-alan-style` | Redactar o revisar docs raíz, `epic.md`, `walkthrough-*.json`. | `skills/documentation-alan-style/SKILL.md` (este repo) |
+| `architecture-guardrails` | Cambios estructurales en `app/`, `tests/`, `openspec/`; decisiones D-<n>. | `skills/architecture-guardrails/SKILL.md` (este repo) |
+
+## Cross-cutting skills
+
+| Skill | Trigger | Origen |
+|---|---|---|
+| `telefonica-brand-design` | Cualquier UI Mistica (design tokens, brand, layout). | Gentleman-Programming/mistica |
+| `frontend-design` | Diseño UI distintivo (no AI defaults: cream/serif/terracotta; near-black/acid-green; broadsheet/hairline). | Gentleman-Programming |
+| `dysflow-usage` | Cualquier uso de dysflow MCP (analyze_form_ui, map_form_behavior, verify_form_bindings, etc.). | Gentleman-Programming |
+| `dysflow-arnes` | Hard rules de dysflow (HR-1..HR-14) y anti-patterns (AP-1..AP-12). | Gentleman-Programming |
+| `maintainer-prompt-drafter` | Estructurar prompts para el mantenedor de dysflow u otro tool externo. | Gentleman-Programming |
+| `access-vba-tdd` | Tests TDD en Access/VBA. | Gentleman-Programming |
+| `access-form-ui-builder` | Perceive → act → verify loop para forms Access. | Gentleman-Programming |
+
+> Nota: "Alan canonical examples omit YAML; this template includes it for opencode/Claude/Cursor scope filtering. Drop YAML only for byte-exact match with the AGENTS.md de Alan."
+
 ## Hard rule — `CONTRIBUTING.md` es vinculante
 
-Lea [`CONTRIBUTING.md`](CONTRIBUTING.md) **antes** de crear un issue, una rama,
-un commit o un PR. Sus convenciones no son recomendaciones: el workflow `ci` las
-comprueba y rechaza el PR cuando no se cumplen.
+Lea [`CONTRIBUTING.md`](CONTRIBUTING.md) **antes** de crear un issue, una rama, un commit o un PR. Sus convenciones no son recomendaciones: el workflow `ci` las comprueba y rechaza el PR cuando no se cumplen.
 
 | Gate | Comprueba | Si se ignora |
 |---|---|---|
@@ -31,46 +69,26 @@ comprueba y rechaza el PR cuando no se cumplen.
 
 Consecuencias operativas:
 
-1. **El issue va primero.** El nombre de la rama necesita su número, así que
-   crearla antes que el issue obliga a rehacerla.
-2. **Dimensione el trabajo al redactar el issue, no al abrir el PR.** Estime el
-   alcance en el propio issue y, si no cabe en 400 líneas, deje escrito ahí el
-   troceado: qué entra en cada PR y en qué orden. Un issue que no dice cómo se
-   entrega delega esa decisión al final, que es justo cuando la salida cómoda es
-   la excepción.
-3. **Si no cabe en 400 líneas, hay tres salidas y `size:exception` es la
-   última.** Primero partir por unidad de trabajo; si las partes dependen entre
-   sí, encadenar PRs (cada rama parte de la anterior); y sólo para diffs
-   inevitables, `size:exception` con su `size-exception-reason:`. El orden y el
-   motivo están en `CONTRIBUTING.md`.
-4. **Al integrar, conserve la rama remota.** Se integra con `--squash` y se
-   limpia el worktree local con `git worktree remove <ruta>`. El motivo está en
-   `CONTRIBUTING.md`.
-5. **Verifique en local antes de empujar.** `make` no está disponible en Git
-   Bash en Windows; invoque los scripts con `python scripts/<nombre>.py`.
+1. **El issue va primero.** El nombre de la rama necesita su número, así que crearla antes que el issue obliga a rehacerla.
+2. **Dimensione el trabajo al redactar el issue, no al abrir el PR.** Estime el alcance en el propio issue y, si no cabe en 400 líneas, deje escrito ahí el troceado: qué entra en cada PR y en qué orden. Un issue que no dice cómo se entrega delega esa decisión al final, que es justo cuando la salida cómoda es la excepción.
+3. **Si no cabe en 400 líneas, hay tres salidas y `size:exception` es la última.** Primero partir por unidad de trabajo; si las partes dependen entre sí, encadenar PRs (cada rama parte de la anterior); y sólo para diffs inevitables, `size:exception` con su `size-exception-reason:`. El orden y el motivo están en `CONTRIBUTING.md`.
+4. **Al integrar, conserve la rama remota.** Se integra con `--squash` y se limpia el worktree local con `git worktree remove <ruta>`. El motivo está en `CONTRIBUTING.md`.
+5. **Verifique en local antes de empujar.** `make` no está disponible en Git Bash en Windows; invoque los scripts con `python scripts/<nombre>.py`.
 
 ### Alcance: este repositorio no es un proyecto Access
 
-El producto de este repositorio es una aplicación web en Python. El material
-Access que contiene —los `*.accdb` de la raíz, `.dysflow/` y los `.cls` bajo
-`data/` e `inputs/`— es **entrada de migración en sólo lectura**. No es producto
-y no se mantiene: se lee para reemplazarlo.
+El producto de este repositorio es una aplicación web en Python. El material Access que contiene —los `*.accdb` de la raíz, `.dysflow/` y los `.cls` bajo `data/` e `inputs/`— es **entrada de migración en sólo lectura**. No es producto y no se mantiene: se lee para reemplazarlo.
 
-Su sola presencia activa los triggers de las skills de dominio Access
-(`dysflow-*`, `access-*`, `vba-*`), pensadas para los proyectos legacy. En este
-repositorio:
+Su sola presencia activa los triggers de las skills de dominio Access (`dysflow-*`, `access-*`, `vba-*`), pensadas para los proyectos legacy. En este repositorio:
 
 - **Aplican** únicamente al leer o analizar ese material de entrada.
 - **No aplican** al escribir producto: código, tests, documentación o workflows.
 
-Ninguna convención de Access o VBA gobierna `app/`, `docs/`, `scripts/`,
-`.github/` ni `openspec/`. Ahí manda `CONTRIBUTING.md` y este documento.
+Ninguna convención de Access o VBA gobierna `app/`, `docs/`, `scripts/`, `.github/` ni `openspec/`. Ahí manda `CONTRIBUTING.md` y este documento.
 
 ### Skills: qué se puede asumir instalado
 
-`gentle-ai` distribuye 26 skills con su instalación, entre ellas `branch-pr`,
-`chained-pr`, `work-unit-commits`, `issue-creation` y la suite `sdd-*`. Quien
-tenga el harness las tiene, así que este documento puede referenciarlas.
+`gentle-ai` distribuye 26 skills con su instalación, entre ellas `branch-pr`, `chained-pr`, `work-unit-commits`, `issue-creation` y la suite `sdd-*`. Quien tenga el harness las tiene, así que este documento puede referenciarlas.
 
 El resto es configuración personal y **no está garantizada** para todo el equipo:
 
@@ -82,13 +100,9 @@ El resto es configuración personal y **no está garantizada** para todo el equi
 | `deterministic-quality-harness` | personal — no garantizada. La ruta `.opencode/skills/` que se cita más abajo **no existe en este repositorio** |
 | `telefonica-brand-design`, `frontend-design`, `dysflow-*`, `access-*` | externas — no garantizadas |
 
-Regla: una convención obligatoria de este repositorio no puede vivir sólo en una
-skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en
-`docs/` o en [`skills/`](skills/README.md), versionado dentro del repositorio.
+Regla: una convención obligatoria de este repositorio no puede vivir sólo en una skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en `docs/` o en [`skills/`](skills/README.md), versionado dentro del repositorio.
 
-Las entradas marcadas como personales se trasladan o se retiran en las entregas
-siguientes de #167. El contrato de `skills/` y las instrucciones de instalación
-para un colaborador nuevo están en [`skills/README.md`](skills/README.md).
+Las entradas marcadas como personales se trasladan o se retiran en las entregas siguientes de #167. El contrato de `skills/` y las instrucciones de instalación para un colaborador nuevo están en [`skills/README.md`](skills/README.md).
 
 ## Mandatory reads before contributing
 
@@ -102,30 +116,6 @@ Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de propo
 6. Si toca una app específica, su `docs/03-aplicaciones/<app>/epic.md`.
 
 Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rules §1). Saltarse cualquier paso deja a la IA operando contra arquitectura obsoleta.
-
-## Skills obligatorias
-
-These skills are **mandatory** — load them before any work in their scope:
-
-| Skill | Obligatorio para |
-|---|---|
-| **`branch-pr`** | Any commit, PR creation, or merge to `main`. Conventional commits, PR pequeño y reversible. En el merge, **sin** `--delete-branch`: la rama remota se conserva; lo que se limpia es el worktree local (`git worktree remove <path>`). |
-| **`worktree-reorg-per-project`** | Any worktree op in `c:\00repos\codigo\`: `git worktree add`, `git worktree move`, `git worktree remove`, `git worktree prune`, pre-PR cleanup, fresh project setup, detected scattered WT or v1 layout (`00_main/` + `.git` FILE). El layout canónico es main en la raíz del proyecto + container hermano `<project>-worktrees\` con linked WTs adentro (v2.0). v1 está deprecated — si el proyecto está en v1, migrar a v2 antes de trabajar. La skill vive en `~/.config/opencode/skills/worktree-reorg-per-project/SKILL.md`. Author: ardelperal. |
-| **`estado-planificacion-update`** | Cualquier ciclo de refactor de una app del blueprint, desde el estudio inicial (`access-vba-capability-docs`, walkthrough de forms, propuesta OpenSpec) hasta la entrega (cierre de PRs, archive del change). El ciclo se actualiza con un `estado-planificacion-NEW_YYYY-MM-DD.html` cada vez que se cierra una fase, un PR o un gap. La skill trae `scripts/render_estado.py` (scaffold desde `tasks.md` + JSON config), `assets/style-base.css` y `assets/template.html`. Mantener el archivo vivo es la single source of truth visual del avance para los jefes. Vive en `~/.config/opencode/skills/estado-planificacion-update/SKILL.md`. Author: ardelperal. |
-| **`architecture-guardrails`** | Antes de implementar cambios estructurales en `app/`, `tests/` o `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`docs/architecture.md`](docs/architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
-
-## Skills cross-cutting (provienen de otros repos)
-
-| Skill | Trigger | Origen |
-|---|---|---|
-| `telefonica-brand-design` | Cualquier UI Mistica (design tokens, brand, layout). | Gentleman-Programming/mistica |
-| `frontend-design` | Diseño UI distintivo (no AI defaults: cream/serif/terracotta; near-black/acid-green; broadsheet/hairline). | Gentleman-Programming |
-| `dysflow-usage` | Cualquier uso de dysflow MCP (analyze_form_ui, map_form_behavior, verify_form_bindings, etc.). | Gentleman-Programming |
-| `dysflow-arnes` | Hard rules de dysflow (HR-1..HR-14) y anti-patterns (AP-1..AP-12). | Gentleman-Programming |
-| `maintainer-prompt-drafter` | Estructurar prompts para el mantenedor de dysflow u otro tool externo. | Gentleman-Programming |
-| `access-vba-tdd` | Tests TDD en Access/VBA. | Gentleman-Programming |
-| `access-form-ui-builder` | Perceive → act → verify loop para forms Access. | Gentleman-Programming |
-| `deterministic-quality-harness` | Wiring o auditoría de quality gates de plataforma (CI, lint, ratchet baseline, complexity, hexagonal layer gate, secret/dependency scan). Inspirada en `unclebob/swarm-forge` y validada por APAP_WEB. Definida en `.opencode/skills/deterministic-quality-harness/SKILL.md`, symlinkeada desde `~/.config/opencode/skills/`. Author: ardelperal. | este repo |
 
 ## Hard rule del CI — ningún CI rojo se mergea
 
