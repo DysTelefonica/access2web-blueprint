@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · No Conformidades
 
 ## Propósito
@@ -74,3 +76,23 @@ Lote 5 (posterior a Lanzadera Lote 1, Expedientes Lote 2 y Gestion_Riesgos Lote 
 ## Siguiente paso
 
 Generar la **épica + tickets accionables + matriz de migración de datos** para NoConformidades con el inventario real obtenido. Continuar con el codegraph de las 4 apps pendientes (HPS, Condor, Brass, HPS_Solicitudes) y luego sus inventarios Dysflow. Por último, épicas por aplicación según el orden acordado (primero estudio de los 8, luego épica por épica).
+
+## Core invariants
+
+- **344 callers de `getdb()`**: NoConformidades es la app con más intensidad DAO del ecosistema. La migración web preserva el patrón de repositorios y adapters hexagonal (D8, DA-1); ningún refactor reduce la cobertura de las queries críticas.
+- **Caché selectivo maduro (D91)**: el patrón de caché con kill switch, diagnóstico, métricas y logs es la referencia más rica para el `CachePort` del blueprint. La nueva plataforma consume este patrón vía `CachePort` (DA-8) con `TTLCache` in-process en el MVP.
+- **Orden de migración estricto (D95)**: NoConformidades migra antes que Gestion_Riesgos por la FK conceptual en `TbRiesgosNC`. Cualquier plan que invierta este orden requiere PR al `design.md` correspondiente (vía SDD) y aprobación de mantenedor.
+- **Riesgo de seguridad en `backends.json` (D90)**: el archivo contiene `ACCESS_VBA_PASSWORD` en claro. La remediación (saneamiento + rotación de contraseña en producción) es follow-up operativo separado; los artefactos del blueprint NO reproducen el valor.
+- **D89 invalidado**: el «fallo de inventario Dysflow» fue un diagnóstico erróneo sin contactar el runtime. El inventario Dysflow funciona perfectamente con `accessPath` absoluto explícito en el `project.json` (T18 caps-block). Cualquier nuevo síntoma de inventario se valida primero contra el runtime antes de filedar issue upstream.
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 5 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el cambio toca el puerto `CachePort`, el adapter mantiene la signatura del puerto y el dominio no importa `cachetools.TTLCache` directamente (D70-D71).
+- [ ] Si el cambio toca `backends.json`, el valor de la contraseña se reemplaza por una referencia al `SecretManagerPort` (D9-D10) y se rota la contraseña en producción vía el flujo operativo de D90.
+- [ ] Si el cambio crea o migra una FK hacia `Gestion_Riesgos` (`TbRiesgosNC`), el orden de migración estricto D95 sigue aplicando; el PR se bloquea si Gestion_Riesgos aún no está migrada.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [lanzadera](../lanzadera/README.md) | Next: [gestion-riesgos](../gestion-riesgos/README.md)
