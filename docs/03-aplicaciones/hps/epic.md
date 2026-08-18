@@ -455,6 +455,26 @@
 
 Aplicar las mismas reglas a la 1 épica restante: HPS_Solicitudes. Tras cerrar el ciclo de revisión final del blueprint.
 
+## Cómo se aplica a access2web-blueprint
+
+HPS es la app read-heavy de gestión de personal sujeto a homologación (quién está obligado, qué cursos ha hecho, fechas de renovación, observaciones y motivos). Es la app con menos intensidad DAO después de Condor (107 callers `getdb()`), pero tiene un caché en el frontend con datos personales que es un patrón raro que NO aparece en Lanzadera/Expedientes/GR/NC.
+
+**Entrada cruda**: walkthroughs G1..G5 consolidan los forms de HPS. Inventario Dysflow: 22 tablas, 6 FKs, 27 columnas en `TbUsuarios`. Volumen real: 345 usuarios activos (`TbUsuarios`), 242 históricos (`TbUsuariosHistoricos`), 1280 relaciones HPS (`TbHPS`), 330 observaciones (`TbObservaciones`).
+
+**Decisiones operativas vigentes**: D92 (campos sensibles requieren disposición explícita antes de migrar: `DNI`, `Nombre`, `Apellido_1`, `Apellido_2`, `Telefono`, `Correo_e`, `F_Nacimiento`), 12 tablas locales en frontend con datos personales (TbDatosLocal con 344 filas, TbUsuariosHistoricosLocal con 235 filas, TbCursosLocal, etc.) requieren disposición explícita antes de migrar, 4 tablas «Copia de...» + sentinels de pegado masivo (legacy copy pattern), D87 (clsTestDouble* — 5 archivos de Test Doubles: disciplina TDD madura que se preserva como referencia para pytest), D102 (booleans Text(2) cross-cutting → `BOOLEAN`), `.gitignore` debe excluir `HPS.accdb` (con datos personales).
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps lista HPS como mergeada con PR pre-workflow; `docs/architecture.md` §Decisiones D-<n> vigentes lista D14, D27, D82; CODEBASE-GUIDE.md §Ownership de artefactos la referencia para el código de plataforma y el walkthrough JSON.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo están completas y verificadas contra los walkthroughs G1..G5.
+- [ ] Los 2 anexos están adjuntos con referencias válidas.
+- [ ] Los criterios de aceptación están todos marcados; los pendientes tienen ticket derivado.
+- [ ] Los tickets derivables tienen issue-number válido en el backlog del change correspondiente.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia los walkthroughs G1..G5, el código destino `app/src/modules/hps/`, y las decisiones D92, D87, D102 + el patrón de caché frontend.
+- [ ] La épica se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo.
+
 ---
 
 [← Back to HPS README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
