@@ -1,3 +1,9 @@
+---
+description: CODEBASE-GUIDE — ownership, flows, guardrails (90-second mental model) para mantenedores del monorepo access2web-blueprint.
+globs: *
+alwaysApply: true
+---
+
 [← Back to README](../README.md)
 
 # access2web-blueprint — Codebase Guide
@@ -180,6 +186,56 @@ Ver [CONTRIBUTING](../CONTRIBUTING.md) para:
 ## Full technical reference stays in DOCS.md
 
 Esta guía explica ownership, flows, y guardrails. **NO duplica** la API reference completa. Para endpoints, schemas, MCP parameters, y CLI flags, usá [DOCS.md](../DOCS.md).
+
+## What this is
+
+| It is | Evidence in this repo |
+|---|---|
+| Mapa de ownership, flows y guardrails para mantenedores y contribuidores nuevos. | Las secciones «Recommended reading path», «Quick map inverso» y «Ownership de artefactos» más arriba. |
+| Índice de las decisiones operativas del monorepo (rename `platform/` → `app/`, walkthrough v3/v4, scope multi-app). | `docs/architecture.md` §Layout del repo + `CONTRIBUTING.md` §Convención multi-app. |
+| Punto de entrada único para agregar una nueva app al blueprint (procedimiento en 8 pasos). | Sección «Cómo agregar una nueva app al blueprint» arriba. |
+
+## What this is not
+
+| It is not | Use this boundary |
+|---|---|
+| La fuente de verdad arquitectónica. | Las decisiones D-<n> y DA-<n> viven en [`docs/architecture.md`](docs/architecture.md); este doc sólo las referencia. |
+| La referencia técnica de endpoints, schemas o CLI flags. | [`DOCS.md`](../DOCS.md) es la technical reference raíz. |
+| El manual de uso de los `check_*.py`. | [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) describe los 12 gates; este doc sólo nombra cuál aplica a qué artefacto. |
+| Una guía de estilo de código o convención de naming. | [`CONTRIBUTING.md`](../CONTRIBUTING.md) §Convención multi-app + `pyproject.fragment.toml` + ruff/mypy config. |
+
+## Core invariants
+
+- **Naming multi-app**: cada issue y commit declara a qué app pertenece con el prefijo `[<APP>]` o `[XCUT]` en el título y el scope `(app)` o `(platform)` en el commit. El `app/<slug>` label va cuando afecta una sola app.
+- **Ownership de `data/staging/<app>/`**: los binarios legacy viven en R2 y se pull-ean con `scripts/setup-staging.ps1` y `scripts/sync-to-r2.ps1`. NO se commitean nuevas adiciones a `data/`; el staging se mantiene reproducible desde R2.
+- **Walkthrough JSONs son data**: los `walkthrough-*.json` viven en commits separados de la `epic.md` correspondiente. Mezclarlos dificulta la revisión y bloquea el ciclo de `dysflow` walkthrough.
+- **Issues a dysflow son work-in-progress**: los `docs/prompts/prompt-ia-mantenedora-dysflow-round-*.md` no se mergean en `main` hasta que el issue upstream en DysTelefonica/dysflow se cierre; mantenerlos en working tree.
+- **Ramas de MVP se conservan en remoto**: cada PR se integra con `--squash` y la rama remota se queda; la limpieza es local (`git worktree remove <ruta>`). Borrar la rama remota rompe la trazabilidad por unidad de trabajo.
+
+## Existing references
+
+| Doc | Owns | Referenced from this guide |
+|---|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | Decisiones D-<n> y DA-<n>, layout del repo, gaps conocidos. | §Decisiones metodológicas, §Stack, §Layout. |
+| [`DOCS.md`](../DOCS.md) | Technical reference raíz: endpoints, schemas, MCP, CLI, env vars. | §Full technical reference stays in DOCS.md. |
+| [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) | Los 12 `check_*.py` + los 4 workflows de CI. | §CI gates, §Quality gates, §Estructura del repo. |
+| [`docs/03-aplicaciones/<app>/epic.md`](docs/03-aplicaciones/) | Spec de migración por app + walkthroughs + capabilities. | §Recommended reading path, §Ownership de artefactos, §Cómo agregar una nueva app. |
+| [`docs/prompts/`](docs/prompts/) | Reportes al mantenedor de dysflow (WIP hasta merge upstream). | §Bugs dysflow filed, §Ownership de artefactos. |
+| [`CONTRIBUTING.md`](../CONTRIBUTING.md) | Workflow de contribución + label system + convención multi-app. | §Workflow de contribución, §Recommended reading path. |
+| [`AGENTS.md`](../AGENTS.md) | Índice de skills + catálogo obligatorio para IAs. | §Quick map inverso (Configurar un agente). |
+| [`openspec/`](../openspec/) | Cambios SDD por app: proposal, design, specs, tasks. | §Recommended reading path (cambios mayores). |
+| [`skills/documentation-alan-style/SKILL.md`](skills/documentation-alan-style/SKILL.md) | Contrato de tono, formato y anti-patrones de toda la doc. | §Skills de documentación, §Recommended reading path. |
+
+## Contributor checklist
+
+- [ ] El cambio respeta los 5 gates del workflow (`check_branch_name`, `check_pr_size`, `check_workflows`, ruff, mypy).
+- [ ] Si toca `app/`, `tests/` u `openspec/`, leyó [`docs/architecture.md`](docs/architecture.md) §Decisiones D-<n> cross-cutting antes de empezar.
+- [ ] Si toca `docs/`, leyó `skills/documentation-alan-style/SKILL.md` y aplica tono castellano peninsular formal con usted.
+- [ ] El commit usa Conventional Commits con el scope `(app)` o `(platform)` correspondiente.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, parte por unidad de trabajo o encadena.
+- [ ] El worktree local se limpia tras mergear con `git worktree remove <ruta>` (la rama remota se queda).
+- [ ] El estado-planificacion HTML más reciente está actualizado si el cambio pertenece a un ciclo de refactor de app.
+- [ ] Ningún `Co-Authored-By` ni atribución de IA en los commits.
 
 ---
 
