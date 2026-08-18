@@ -4,7 +4,7 @@ description: "Trigger: redactar o revisar README, AGENTS, DOCS, CODEBASE-GUIDE, 
 license: MIT
 metadata:
   author: ardelperal
-  version: "2.0"
+  version: "2.1"
 ---
 
 ## Activation Contract
@@ -13,7 +13,8 @@ Cargue esta skill antes de escribir o revisar:
 
 - Un documento raíz: `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`,
   `CONTRIBUTING.md`, `CHANGELOG.md`.
-- Cualquier documento de `docs/`, una `epic.md` o un `walkthrough-*.json`.
+- Cualquier documento de `docs/`, una `epic.md` o un `walkthrough-*.json`. Las
+  dos últimas son extensiones opt-in; el contrato base no las requiere.
 - Un PR que cambie comportamiento ya documentado en alguno de ellos.
 
 No la cargue para decidir arquitectura, diseño visual, ni el contenido técnico de
@@ -92,3 +93,6 @@ Devuelva:
   anti-patrones.
 - `../../CONTRIBUTING.md` — convenciones de commit, rama y PR.
 - `../../AGENTS.md` — alcance del repositorio y skills disponibles.
+- Caso verificado: `Gentleman-Programming/gentle-ai` (CLI Go + Bubbletea TUI;
+  https://github.com/Gentleman-Programming/gentle-ai). El patrón se observa en
+  `docs/CODEBASE-GUIDE.md` y las páginas radiales bajo `docs/codebase/`.
