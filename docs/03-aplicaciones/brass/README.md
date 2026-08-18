@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · Brass
 
 ## Propósito
@@ -99,3 +101,23 @@ Lote 6 del plan de discovery. **Última app pendiente del study**. Posicionado p
 ## Siguiente paso
 
 Cruzar el inventario con la documentación previa en `OPENSPEC/00_BRASS`. Generar la **épica + tickets accionables + matriz de migración de datos** para Brass. **Cerrar D104** (contraseña hardcodeada) y **D102** (booleanos cross-cutting) en una iteración posterior con todas las apps. Continuar con la fase de épicas por aplicación según el alcance expandido.
+
+## Core invariants
+
+- **⚠️ D104 contraseña hardcodeada REAL**: la cadena `"dpddpd"` en `Variables Globales.bas:560` se pasa directamente a `OpenDatabase("MS Access;PWD=dpddpd")`. NO es fallback: si la contraseña rota en backend, no surte efecto sin cambio de código. Riesgo CRÍTICO; remediación operativa separada (rotación + saneamiento del repo + cambio a `SecretManagerPort`).
+- **`getdb()` con 155 callers (intermedio en DAO-intensity)**: Brass comparte el patrón `getdb()` con el resto del ecosistema; la migración web preserva la cobertura de queries y traduce a repositorios con `Optional ByRef db` cuando aplica.
+- **`IDEvento` es `Text(50)`, no `Long`**: todas las FKs del sistema (`TbEventos`, `TbActividades`, `TbAnexos`, `TbGastos`, etc.) se hacen por texto. La nueva plataforma decide si mantiene IDs como string (UUID) o los migra a numéricos; la decisión se documenta en la épica correspondiente.
+- **Calibración es dominio regulatorio crítico**: `TbEquiposMedida` + `TbEquiposMedidaCalibraciones` tienen implicaciones de calidad/cumplimiento. La nueva plataforma preserva el dominio regulatorio como caso de uso de primer orden con tests específicos.
+- **60 tablas + 27 FKs (modelo MUY rico)**: los cambios cross-cutting pasan por la `migration-matrix.md` de Brass; cualquier decisión de normalización afecta al menos 4-5 tablas y exige cobertura de tests antes de merge.
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 5 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el PR toca `Variables Globales.bas`, NO se reintroduce ninguna contraseña hardcodeada (D104, D93); el acceso a backend se hace vía `SecretManagerPort` (D9-D10) o variable de entorno.
+- [ ] Si el cambio añade una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas o tablas, sin `DROP` ni `ALTER` destructivos en la misma release.
+- [ ] Si el cambio afecta al dominio de calibración, el PR incluye tests específicos (QC-5 + DA-2) que cubren el ciclo de vida del equipo y sus calibraciones.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [gestion-riesgos](../gestion-riesgos/README.md) | Next: [hps](../hps/README.md)
