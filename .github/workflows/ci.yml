@@ -85,7 +85,8 @@ jobs:
         # contain the documented MUST fields (template at
         # skills/documentation-alan-style/references/templates/walkthrough.json.tmpl).
         # Catches drift before merge; SHOULD/MAY fields are conventions, not enforced.
-        run: python scripts/check_walkthrough_schema.py
+        # --strict promoted after #375 migrated the 43 walkthroughs to v2.1.
+        run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
     # Heavy gate (ruff + mypy + pytest + 4 quality gates over the app/) — stays on

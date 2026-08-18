@@ -15,65 +15,233 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario02DatosObservacionHistorico.form.txt",
       "group": "G5",
       "role_in_group": "observacion_historico",
-      "ui": { "controls_count": 11, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 11, "sections": 2, "findings_count": 8, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 11,
+        "sections": 2,
+        "findings_count": 8,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; histórico de observaciones — backend TbObservacionesHistoricas. Espejo de Form_FormUsuario02DatosObservacion.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial09Indicadores",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial09Indicadores.form.txt",
       "group": "G5",
       "role_in_group": "indicadores_root",
-      "ui": { "controls_count": 17, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 17, "sections": 0, "findings_count": 6, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 4, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 17,
+        "sections": 0,
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; entry del panel de indicadores en tiempo real. Backed por Indicador.cls + clsIndicadoresBus.cls + Mod_StartupCacheInitialization.bas. Test_RealTimeIndicatorCoherence.bas verifica coherencia.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial09IndicadoresDatosLocalDatos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial09IndicadoresDatosLocalDatos.form.txt",
       "group": "G5",
       "role_in_group": "indicadores_datos_local",
-      "ui": { "controls_count": 202, "formEvents": ["OnCurrent", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 202, "sections": 0, "findings_count": 202, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 198, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "warnings_only", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 202,
+        "formEvents": [
+          "OnCurrent",
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 202,
+        "sections": 0,
+        "findings_count": 202,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 198,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "warnings_only",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; detalle de indicadores locales — 202 controles (segundo form más grande del repo HPS). DatosLocal.cls es la clase de soporte.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial09IndicadoresUsuariosSICADatos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial09IndicadoresUsuariosSICADatos.form.txt",
       "group": "G5",
       "role_in_group": "indicadores_sica",
-      "ui": { "controls_count": 35, "formEvents": ["OnCurrent", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 35, "sections": 0, "findings_count": 30, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 30 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 35,
+        "formEvents": [
+          "OnCurrent",
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 35,
+        "sections": 0,
+        "findings_count": 30,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 30
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; indicadores SICA — cruza TbUsuariosSICA con indicadores de negocio.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_Formulario1",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_Formulario1.form.txt",
       "group": "G5",
       "role_in_group": "residual",
-      "ui": { "controls_count": 17, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 17, "sections": 0, "findings_count": 9, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 4, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 17,
+        "sections": 0,
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; nombre genérico 'Formulario1' — residual huérfano, probablemente vestigio de desarrollo o template no renombrado. Sin clase documentada en forms.md ni capabilities.md. Disposición recomendada: archivar o descartar en migración.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     }
   ],
   "summary": {

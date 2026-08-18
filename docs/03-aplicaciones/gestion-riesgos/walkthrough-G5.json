@@ -69,10 +69,18 @@
             "controlName": "cboSemestre",
             "message": "Control \"cboSemestre\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -122,10 +130,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -171,10 +187,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -222,10 +246,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -274,10 +306,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -331,10 +371,18 @@
             "controlName": "LIstaSuministradores",
             "message": "Control \"LIstaSuministradores\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -379,10 +427,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -431,10 +487,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -501,10 +565,18 @@
             "controlName": "cboControlCambiosAlcance",
             "message": "Control \"cboControlCambiosAlcance\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -552,10 +624,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -591,10 +671,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -643,10 +731,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -708,10 +804,18 @@
             "controlName": "VersionPrincipal",
             "message": "Control \"VersionPrincipal\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -773,10 +877,18 @@
             "controlName": "EvidenciaUTE",
             "message": "Control \"EvidenciaUTE\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -833,10 +945,18 @@
             "controlName": "EvidenciaUTE",
             "message": "Control \"EvidenciaUTE\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -885,10 +1005,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -945,10 +1073,18 @@
             "controlName": "ComboResponsableCalidad",
             "message": "Control \"ComboResponsableCalidad\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -996,10 +1132,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1045,10 +1189,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1097,10 +1249,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1136,10 +1296,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1201,10 +1369,18 @@
             "controlName": "ComboNC",
             "message": "Control \"ComboNC\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1253,10 +1429,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1318,10 +1502,18 @@
             "controlName": "IDResponsableCalidad",
             "message": "Control \"IDResponsableCalidad\" has a RowSource that could not be parsed as SQL."
           }
-        ]
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1369,10 +1561,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1421,10 +1621,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": true,
-      "unattended_evidence": "bindings_count==0 in .form.txt; behavior shows 1 handler refs — bindings set imperatively in .cls"
+      "unattended_evidence": "bindings_count==0 in .form.txt; behavior shows 1 handler refs — bindings set imperatively in .cls",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1472,10 +1680,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "group": "G5",
@@ -1511,10 +1727,18 @@
       "verify_form_bindings": {
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_3": []
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
-      "unattended_evidence": null
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     }
   ],
   "summary": {

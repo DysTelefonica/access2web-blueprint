@@ -18,5 +18,12 @@
   "forms_count": 0,
   "forms": [],
   "classification_rationale": "G1 = Auth/splash/login. En brass no hay forms G1 exportados (no Form_FormSplash, no Form_FormLogin). La aplicación arranca con Form_Form0BDOpciones (dispatcher), no con un splash/login dedicado. Por convención del blueprint, los login forms pertenecen a las apps compartidas (lanzaderas), no a brass. G1 vacío es la realidad del scope brass.",
-  "notes": "Forma del scope brass: 87 forms Form_*.form.txt. Distribución: G1=0, G2=3, G3=61, G4=8, G5=15."
+  "notes": "Forma del scope brass: 87 forms Form_*.form.txt. Distribución: G1=0, G2=3, G3=61, G4=8, G5=15.",
+  "summary": {
+    "total_forms": 0,
+    "attended_forms": 0,
+    "unattended_forms": 0,
+    "known_skipped_tools": [],
+    "known_degraded_tools": []
+  }
 }

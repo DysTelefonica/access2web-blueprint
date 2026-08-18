@@ -28,145 +28,873 @@
       "formName": "Form_FormEventoEdicion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoEdicion.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormEventoEdicion (src/forms/Form_FormEventoEdicion.cls:1) — 1 caller", "Edicion (src/forms/Form_FormEventoEdicion.cls:981) — 1 caller", "Edicion (src/forms/Form_FormActividadEdicion.cls:588) — 1 caller", "Edicion (src/forms/Form_FormSubSistemaEdicion.cls:200) — 1 caller", "Evento (src/classes/Evento.cls:1) — 26 callers"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 63, "formEvents": ["OnOpen"], "bindings_count": 9, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 25, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 6, "FORM_LAYOUT_ALIGNMENT": 14, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": ["TbCriticidad", "TbEquipos", "TbEventos", "TbNodoBUI", "TbOriginador", "TbSubsistemaBui", "TbTipoEvento"], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
-      "tablesReferenced": ["TbCriticidad", "TbEquipos", "TbEventos", "TbNodoBUI", "TbOriginador", "TbSubsistemaBui", "TbTipoEvento"],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 24, "byKind": { "FORM_BINDING_MISSING_TABLE": 19, "FORM_BINDING_TYPE_MISMATCH": 4, "FORM_BINDING_SQL_UNPARSEABLE": 1 } },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormEventoEdicion (src/forms/Form_FormEventoEdicion.cls:1) — 1 caller",
+          "Edicion (src/forms/Form_FormEventoEdicion.cls:981) — 1 caller",
+          "Edicion (src/forms/Form_FormActividadEdicion.cls:588) — 1 caller",
+          "Edicion (src/forms/Form_FormSubSistemaEdicion.cls:200) — 1 caller",
+          "Evento (src/classes/Evento.cls:1) — 26 callers"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 63,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 9,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 25,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 14,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [
+          "TbCriticidad",
+          "TbEquipos",
+          "TbEventos",
+          "TbNodoBUI",
+          "TbOriginador",
+          "TbSubsistemaBui",
+          "TbTipoEvento"
+        ],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [
+        "TbCriticidad",
+        "TbEquipos",
+        "TbEventos",
+        "TbNodoBUI",
+        "TbOriginador",
+        "TbSubsistemaBui",
+        "TbTipoEvento"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 24,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 19,
+          "FORM_BINDING_TYPE_MISMATCH": 4,
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventoCopia",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoCopia.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormEventoCopia (src/forms/Form_FormEventoCopia.cls:1) — 1 caller", "Evento (src/classes/Evento.cls:1) — 26 callers", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 11, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 7, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_ALIGNMENT": 2 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": [], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormEventoCopia (src/forms/Form_FormEventoCopia.cls:1) — 1 caller",
+          "Evento (src/classes/Evento.cls:1) — 26 callers",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 7,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_ALIGNMENT": 2
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {} },
-      "unattended": true, "unattendedEvidence": "Popup form (event copy): 0 bindings, 11 controls (Date/ID fields + buttons). Bindings assigned imperatively in Form_Open via OpenArgs parsing.", "toolWarnings": [], "method_version": "v5"
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {}
+      },
+      "unattended": true,
+      "unattendedEvidence": "Popup form (event copy): 0 bindings, 11 controls (Date/ID fields + buttons). Bindings assigned imperatively in Form_Open via OpenArgs parsing.",
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventoAlta",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEventoAlta.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormEventoAlta (src/forms/Form_FormEventoAlta.cls:1) — 1 caller", "Alta (src/forms/Form_FormEventoAlta.cls:548) — 1 caller", "Alta (src/forms/Form_FormActividadTipoAlta.cls:60) — 1 caller", "Alta (src/forms/Form_FormGastoAlta.cls:164) — 1 caller", "Alta (src/forms/Form_FormSubContratacionAlta.cls:65) — 1 caller"], "call_path_top_3": ["Form_Open → Form_Open → VBA.DoEvents", "Form_Open → Form_Open → EstablecerDatos", "Form_Open → Form_Open → Nz"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 53, "formEvents": ["OnLoad"], "bindings_count": 8, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 24, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 7, "FORM_LAYOUT_OVERLAP": 7, "FORM_LAYOUT_ALIGNMENT": 9, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["Form_Open", "EstablecerDatos", "Form_Load"], "tablesReferenced": ["TbCriticidad", "TbEventos", "TbNodoBUI", "TbOriginador", "TbSubsistemaBui", "TbTipoEvento"], "callPathsTop3": ["Form_Open → Form_Open → VBA.DoEvents", "Form_Open → Form_Open → EstablecerDatos", "Form_Open → Form_Open → Nz"], "codegraphEvidenceStatus": "unmapped_evidence" },
-      "tablesReferenced": ["TbCriticidad", "TbEventos", "TbNodoBUI", "TbOriginador", "TbSubsistemaBui", "TbTipoEvento"],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 18, "byKind": { "FORM_BINDING_MISSING_TABLE": 13, "FORM_BINDING_TYPE_MISMATCH": 3, "FORM_BINDING_SQL_UNPARSEABLE": 2 } },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormEventoAlta (src/forms/Form_FormEventoAlta.cls:1) — 1 caller",
+          "Alta (src/forms/Form_FormEventoAlta.cls:548) — 1 caller",
+          "Alta (src/forms/Form_FormActividadTipoAlta.cls:60) — 1 caller",
+          "Alta (src/forms/Form_FormGastoAlta.cls:164) — 1 caller",
+          "Alta (src/forms/Form_FormSubContratacionAlta.cls:65) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "Form_Open → Form_Open → VBA.DoEvents",
+          "Form_Open → Form_Open → EstablecerDatos",
+          "Form_Open → Form_Open → Nz"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 53,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 8,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 24,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 7,
+          "FORM_LAYOUT_OVERLAP": 7,
+          "FORM_LAYOUT_ALIGNMENT": 9,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "Form_Open",
+          "EstablecerDatos",
+          "Form_Load"
+        ],
+        "tablesReferenced": [
+          "TbCriticidad",
+          "TbEventos",
+          "TbNodoBUI",
+          "TbOriginador",
+          "TbSubsistemaBui",
+          "TbTipoEvento"
+        ],
+        "callPathsTop3": [
+          "Form_Open → Form_Open → VBA.DoEvents",
+          "Form_Open → Form_Open → EstablecerDatos",
+          "Form_Open → Form_Open → Nz"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [
+        "TbCriticidad",
+        "TbEventos",
+        "TbNodoBUI",
+        "TbOriginador",
+        "TbSubsistemaBui",
+        "TbTipoEvento"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 18,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 13,
+          "FORM_BINDING_TYPE_MISMATCH": 3,
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEquiposMedidaGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEquiposMedidaGestion.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormEquiposMedidaGestion (src/forms/Form_FormEquiposMedidaGestion.cls:1) — 1 caller", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller", "Equipo (src/classes/Equipo.cls:1) — 4 callers"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 17, "formEvents": ["OnLoad"], "bindings_count": 1, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 20, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 12, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": [], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormEquiposMedidaGestion (src/forms/Form_FormEquiposMedidaGestion.cls:1) — 1 caller",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Equipo (src/classes/Equipo.cls:1) — 4 callers"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 17,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 20,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 12,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 1, "byKind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 } },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 1,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEquipoMedida",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormEquipoMedida.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormEquipoMedida (src/forms/Form_FormEquipoMedida.cls:1) — 1 caller", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller", "Equipo (src/classes/Equipo.cls:1) — 4 callers"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 28, "formEvents": ["OnLoad"], "bindings_count": 1, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 17, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 6, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": [], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormEquipoMedida (src/forms/Form_FormEquipoMedida.cls:1) — 1 caller",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Equipo (src/classes/Equipo.cls:1) — 4 callers"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 28,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 17,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 6,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {} },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {}
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormBUIGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormBUIGestion.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormBUIGestion (src/forms/Form_FormBUIGestion.cls:1) — 1 caller", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller", "Form (src/classes/Factura.cls:107) — 1 caller"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 11, "formEvents": ["OnOpen"], "bindings_count": 1, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 10, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": ["TbBUI"], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
-      "tablesReferenced": ["TbBUI"],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 3, "byKind": { "FORM_BINDING_MISSING_TABLE": 2, "FORM_BINDING_TYPE_MISMATCH": 1 } },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormBUIGestion (src/forms/Form_FormBUIGestion.cls:1) — 1 caller",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (src/classes/Factura.cls:107) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 11,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [
+          "TbBUI"
+        ],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [
+        "TbBUI"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 2,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormAnexosNoAlcanzables",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormAnexosNoAlcanzables.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormAnexosNoAlcanzables (src/forms/Form_FormAnexosNoAlcanzables.cls:1) — 1 caller", "Anexo (src/classes/Anexo.cls:1) — 12 callers", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller", "Form (src/classes/Factura.cls:107) — 1 caller"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 16, "formEvents": ["OnOpen"], "bindings_count": 3, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 28, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 22, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": ["TbBUI", "TbEquipos", "TbEventos"], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
-      "tablesReferenced": ["TbBUI", "TbEquipos", "TbEventos"],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 10, "byKind": { "FORM_BINDING_SQL_UNPARSEABLE": 1, "FORM_BINDING_MISSING_TABLE": 8, "FORM_BINDING_TYPE_MISMATCH": 1 } },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormAnexosNoAlcanzables (src/forms/Form_FormAnexosNoAlcanzables.cls:1) — 1 caller",
+          "Anexo (src/classes/Anexo.cls:1) — 12 callers",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (src/classes/Factura.cls:107) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 16,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 3,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 28,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 22,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [
+          "TbBUI",
+          "TbEquipos",
+          "TbEventos"
+        ],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [
+        "TbBUI",
+        "TbEquipos",
+        "TbEventos"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 10,
+        "byKind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1,
+          "FORM_BINDING_MISSING_TABLE": 8,
+          "FORM_BINDING_TYPE_MISMATCH": 1
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormAnexos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormAnexos.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormAnexos (src/forms/Form_FormAnexos.cls:1) — 1 caller", "Anexo (src/classes/Anexo.cls:1) — 12 callers", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller", "Form (src/classes/Factura.cls:107) — 1 caller"], "call_path_top_3": ["Documentos → Documentos → getDocumentosCCCambio", "getDocumentosCCCambio → getDocumentosCCCambio → getdb", "getDocumentosCCCambio → getDocumentosCCCambio → Nz"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 29, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 30, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 20, "FORM_LAYOUT_ALIGNMENT": 5, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["Documentos", "getDocumentosCCCambio", "ColCampos"], "tablesReferenced": [], "callPathsTop3": ["Documentos → Documentos → getDocumentosCCCambio", "getDocumentosCCCambio → getDocumentosCCCambio → getdb", "getDocumentosCCCambio → getDocumentosCCCambio → Nz"], "codegraphEvidenceStatus": "unmapped_evidence" },
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormAnexos (src/forms/Form_FormAnexos.cls:1) — 1 caller",
+          "Anexo (src/classes/Anexo.cls:1) — 12 callers",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Form (src/classes/Factura.cls:107) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "Documentos → Documentos → getDocumentosCCCambio",
+          "getDocumentosCCCambio → getDocumentosCCCambio → getdb",
+          "getDocumentosCCCambio → getDocumentosCCCambio → Nz"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 29,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 30,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 20,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "Documentos",
+          "getDocumentosCCCambio",
+          "ColCampos"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "Documentos → Documentos → getDocumentosCCCambio",
+          "getDocumentosCCCambio → getDocumentosCCCambio → getdb",
+          "getDocumentosCCCambio → getDocumentosCCCambio → Nz"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {} },
-      "unattended": true, "unattendedEvidence": "Anexo management form: 0 bindings, 29 controls. Bindings assigned imperatively via Documentos handler populate ListaDocumentos. Imperative pattern.", "toolWarnings": [], "method_version": "v5"
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {}
+      },
+      "unattended": true,
+      "unattendedEvidence": "Anexo management form: 0 bindings, 29 controls. Bindings assigned imperatively via Documentos handler populate ListaDocumentos. Imperative pattern.",
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormActividadTipoGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormActividadTipoGestion.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormActividadTipoGestion (src/forms/Form_FormActividadTipoGestion.cls:1) — 1 caller", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller", "Actividad (src/classes/Actividad.cls:1) — 14 callers"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 12, "formEvents": ["OnOpen"], "bindings_count": 1, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 11, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 4, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": ["TbCodActividad"], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
-      "tablesReferenced": ["TbCodActividad"],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 3, "byKind": { "FORM_BINDING_MISSING_TABLE": 3 } },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormActividadTipoGestion (src/forms/Form_FormActividadTipoGestion.cls:1) — 1 caller",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Actividad (src/classes/Actividad.cls:1) — 14 callers"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 12,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [
+          "TbCodActividad"
+        ],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [
+        "TbCodActividad"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 3,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 3
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormActividadTipoEdicion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormActividadTipoEdicion.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormActividadTipoEdicion (src/forms/Form_FormActividadTipoEdicion.cls:1) — 1 caller", "Edicion (src/forms/Form_FormActividadEdicion.cls:588) — 1 caller", "Edicion (src/forms/Form_FormEventoEdicion.cls:981) — 1 caller", "Edicion (src/forms/Form_FormSubSistemaEdicion.cls:200) — 1 caller", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 15, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 16, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 8, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": [], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormActividadTipoEdicion (src/forms/Form_FormActividadTipoEdicion.cls:1) — 1 caller",
+          "Edicion (src/forms/Form_FormActividadEdicion.cls:588) — 1 caller",
+          "Edicion (src/forms/Form_FormEventoEdicion.cls:981) — 1 caller",
+          "Edicion (src/forms/Form_FormSubSistemaEdicion.cls:200) — 1 caller",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 15,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 16,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {} },
-      "unattended": true, "unattendedEvidence": "Edicion form for activity type: 0 bindings, 15 controls. Bindings populated imperatively in Form_Open from OpenArgs.", "toolWarnings": [], "method_version": "v5"
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {}
+      },
+      "unattended": true,
+      "unattendedEvidence": "Edicion form for activity type: 0 bindings, 15 controls. Bindings populated imperatively in Form_Open from OpenArgs.",
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormActividadTipoAlta",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormActividadTipoAlta.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 3, "source_size_lines": null, "blast_radius_top_5": ["Form_FormActividadTipoAlta (src/forms/Form_FormActividadTipoAlta.cls:1) — 1 caller", "Alta (src/forms/Form_FormActividadTipoAlta.cls:60) — 1 caller", "Alta (src/forms/Form_FormEventoAlta.cls:548) — 1 caller", "Alta (src/forms/Form_FormGastoAlta.cls:164) — 1 caller", "Alta (src/forms/Form_FormSubContratacionAlta.cls:65) — 1 caller"], "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 15, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 16, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 8, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 3, "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"], "tablesReferenced": [], "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"], "codegraphEvidenceStatus": "unmapped_evidence" },
+      "codegraph_summary": {
+        "handlers_count": 3,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormActividadTipoAlta (src/forms/Form_FormActividadTipoAlta.cls:1) — 1 caller",
+          "Alta (src/forms/Form_FormActividadTipoAlta.cls:60) — 1 caller",
+          "Alta (src/forms/Form_FormEventoAlta.cls:548) — 1 caller",
+          "Alta (src/forms/Form_FormGastoAlta.cls:164) — 1 caller",
+          "Alta (src/forms/Form_FormSubContratacionAlta.cls:65) — 1 caller"
+        ],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 15,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 16,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
+        "tablesReferenced": [],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {} },
-      "unattended": true, "unattendedEvidence": "Alta form for activity type: 0 bindings, 15 controls. New record creation, no data bindings needed at form-load.", "toolWarnings": [], "method_version": "v5"
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {}
+      },
+      "unattended": true,
+      "unattendedEvidence": "Alta form for activity type: 0 bindings, 15 controls. New record creation, no data bindings needed at form-load.",
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormActividadGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/brass/src/forms/Form_FormActividadGestion.form.txt",
       "group": "G3",
-      "codegraph_summary": { "handlers_count": 4, "source_size_lines": null, "blast_radius_top_5": ["Form_FormActividadGestion (src/forms/Form_FormActividadGestion.cls:1) — 1 caller", "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller", "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller", "Actividad (src/classes/Actividad.cls:1) — 14 callers"], "call_path_top_3": ["RellenarDatosEvento → RellenarDatosEvento → p_Evento.getPropiedad", "EventosRAC → EventosRAC → RellenarDatosEvento", "EventosRAC → EventosRAC → GeneraHojaResumenInformeRAC"], "stale_banner_ignored": true },
-      "ui": { "controls_count": 29, "formEvents": ["OnOpen"], "bindings_count": 2, "warnings": [] },
-      "geometry": { "controls": null, "sections": null, "findings_count": 20, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_OVERLAP": 9, "FORM_LAYOUT_ALIGNMENT": 4, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 } },
-      "behavior": { "handlersCount": 4, "handlers": ["RellenarDatosEvento", "EventosRAC", "RellenarMateriales", "ComandoDetalleEvento_Click"], "tablesReferenced": ["TbActividades", "TbEventos", "TbFacturaActividadesInvolucradas"], "callPathsTop3": ["RellenarDatosEvento → RellenarDatosEvento → p_Evento.getPropiedad", "EventosRAC → EventosRAC → RellenarDatosEvento", "EventosRAC → EventosRAC → GeneraHojaResumenInformeRAC"], "codegraphEvidenceStatus": "unmapped_evidence" },
-      "tablesReferenced": ["TbActividades", "TbEventos", "TbFacturaActividadesInvolucradas"],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 15, "byKind": { "FORM_BINDING_MISSING_TABLE": 15 } },
-      "unattended": false, "unattendedEvidence": null, "toolWarnings": [], "method_version": "v5"
+      "codegraph_summary": {
+        "handlers_count": 4,
+        "source_size_lines": null,
+        "blast_radius_top_5": [
+          "Form_FormActividadGestion (src/forms/Form_FormActividadGestion.cls:1) — 1 caller",
+          "Form (src/forms/Form_FormInformesDesdeLista.cls:19) — 1 caller",
+          "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller",
+          "Actividad (src/classes/Actividad.cls:1) — 14 callers"
+        ],
+        "call_path_top_3": [
+          "RellenarDatosEvento → RellenarDatosEvento → p_Evento.getPropiedad",
+          "EventosRAC → EventosRAC → RellenarDatosEvento",
+          "EventosRAC → EventosRAC → GeneraHojaResumenInformeRAC"
+        ],
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 29,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": null,
+        "sections": null,
+        "findings_count": 20,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 6,
+          "FORM_LAYOUT_OVERLAP": 9,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        }
+      },
+      "behavior": {
+        "handlersCount": 4,
+        "handlers": [
+          "RellenarDatosEvento",
+          "EventosRAC",
+          "RellenarMateriales",
+          "ComandoDetalleEvento_Click"
+        ],
+        "tablesReferenced": [
+          "TbActividades",
+          "TbEventos",
+          "TbFacturaActividadesInvolucradas"
+        ],
+        "callPathsTop3": [
+          "RellenarDatosEvento → RellenarDatosEvento → p_Evento.getPropiedad",
+          "EventosRAC → EventosRAC → RellenarDatosEvento",
+          "EventosRAC → EventosRAC → GeneraHojaResumenInformeRAC"
+        ],
+        "codegraphEvidenceStatus": "unmapped_evidence"
+      },
+      "tablesReferenced": [
+        "TbActividades",
+        "TbEventos",
+        "TbFacturaActividadesInvolucradas"
+      ],
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 15,
+        "byKind": {
+          "FORM_BINDING_MISSING_TABLE": 15
+        }
+      },
+      "unattended": false,
+      "unattendedEvidence": null,
+      "toolWarnings": [],
+      "method_version": "v5",
+      "tool_warnings": []
     }
   ],
   "summary": {

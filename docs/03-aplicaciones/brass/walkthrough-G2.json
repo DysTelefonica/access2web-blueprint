@@ -45,26 +45,54 @@
         ],
         "stale_banner_ignored": true
       },
-      "ui": { "controls_count": 29, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "ui": {
+        "controls_count": 29,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
       "geometry": {
-        "controls": null, "sections": null, "findings_count": 32,
-        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_OVERLAP": 20, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "controls": null,
+        "sections": null,
+        "findings_count": 32,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 20,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
         "findings": []
       },
       "behavior": {
         "controlsWithHandlerEvidence": 0,
         "handlersCount": 3,
-        "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"],
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
         "tablesReferenced": [],
-        "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
         "codegraphEvidenceStatus": "unmapped_evidence"
       },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {}, "findings": [] },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
       "unattended": true,
       "unattendedEvidence": "Menu/dispatcher form: 0 bindings (no data controls), 29 controls (mostly buttons for navigation). Bindings are imperative via menu items in Form_Open — no declarative RowSource/ControlSource. Reasonable design for a top-level menu.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_Form0BDOpcionesOtras",
@@ -79,28 +107,60 @@
           "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
           "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
         ],
-        "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
         "stale_banner_ignored": true
       },
-      "ui": { "controls_count": 31, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "ui": {
+        "controls_count": 31,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
       "geometry": {
-        "controls": null, "sections": null, "findings_count": 12,
-        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_ALIGNMENT": 7, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
+        "controls": null,
+        "sections": null,
+        "findings_count": 12,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 7,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
         "findings": []
       },
       "behavior": {
-        "controlsWithHandlerEvidence": 0, "handlersCount": 3,
-        "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"],
+        "controlsWithHandlerEvidence": 0,
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
         "tablesReferenced": [],
-        "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
         "codegraphEvidenceStatus": "unmapped_evidence"
       },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {}, "findings": [] },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
       "unattended": true,
       "unattendedEvidence": "Secondary menu (other options): 0 bindings, 31 controls (navigation buttons). Imperative navigation pattern, expected for menu/dispatcher forms.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_Form0BDInformes",
@@ -115,28 +175,59 @@
           "Form (src/forms/Form_FormInformesPorFactura.cls:15) — 1 caller in src/forms/Form_FormInformesPorFactura",
           "Form (src/classes/Factura.cls:107) — 1 caller in src/classes/Factura"
         ],
-        "call_path_top_3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "call_path_top_3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
         "stale_banner_ignored": true
       },
-      "ui": { "controls_count": 14, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [] },
+      "ui": {
+        "controls_count": 14,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
       "geometry": {
-        "controls": null, "sections": null, "findings_count": 5,
-        "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_ALIGNMENT": 1 },
+        "controls": null,
+        "sections": null,
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
         "findings": []
       },
       "behavior": {
-        "controlsWithHandlerEvidence": 0, "handlersCount": 3,
-        "handlers": ["ComandoVerVideo_Click", "Arbol_NodeClick", "CorreoAlAdministrador"],
+        "controlsWithHandlerEvidence": 0,
+        "handlersCount": 3,
+        "handlers": [
+          "ComandoVerVideo_Click",
+          "Arbol_NodeClick",
+          "CorreoAlAdministrador"
+        ],
         "tablesReferenced": [],
-        "callPathsTop3": ["ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents", "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists", "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"],
+        "callPathsTop3": [
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → VBA.DoEvents",
+          "ComandoVerVideo_Click → ComandoVerVideo_Click → fso.FileExists",
+          "Arbol_NodeClick → Arbol_NodeClick → EstablecerDatos"
+        ],
         "codegraphEvidenceStatus": "unmapped_evidence"
       },
       "tablesReferenced": [],
-      "verify_form_bindings": { "status": "ok", "findingsCount": 0, "byKind": {}, "findings": [] },
+      "verify_form_bindings": {
+        "status": "ok",
+        "findingsCount": 0,
+        "byKind": {},
+        "findings": []
+      },
       "unattended": true,
       "unattendedEvidence": "Reports submenu: 0 bindings, 14 controls (buttons for dispatching to Form_FormInformes*). Imperative navigation pattern.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     }
   ],
   "summary": {

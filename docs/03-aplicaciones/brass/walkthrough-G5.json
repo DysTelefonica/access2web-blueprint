@@ -77,7 +77,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormInformeSLA",
@@ -134,7 +135,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormInformesParaRAC",
@@ -188,7 +190,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormInformesPorFactura",
@@ -242,7 +245,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormCalibracionAlta",
@@ -295,7 +299,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormCalibracionEquipoAlta",
@@ -355,7 +360,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormCalibracionEquipoGestion",
@@ -422,7 +428,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormCalibracionGestion",
@@ -481,7 +488,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEquipoMedidaCalibracion",
@@ -534,7 +542,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEquipoMedidaCalibracionesGestion",
@@ -589,7 +598,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormMaterialAltaReparacion",
@@ -656,7 +666,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormMaterialEleccion",
@@ -709,7 +720,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormMaterialSeguimiento",
@@ -768,7 +780,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionCierre",
@@ -829,7 +842,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnicoConsultaHoras",
@@ -882,7 +896,8 @@
         ],
         "stale_banner_ignored": true
       },
-      "toolWarnings": []
+      "toolWarnings": [],
+      "tool_warnings": []
     }
   ],
   "summary": {

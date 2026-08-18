@@ -83,7 +83,8 @@
       "unattended": true,
       "unattendedEvidence": "Reporte auxiliar: franqueo (envio/courier) de un evento. 0 bindings - unattended form: data fetched imperatively.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventoSLA",
@@ -147,7 +148,8 @@
       "unattended": false,
       "unattendedEvidence": "Reporte SLA de eventos (service-level agreement). 3 bindings. 40 geometry findings (largest in G5-missing).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormFacturaResultado",
@@ -211,7 +213,8 @@
       "unattended": false,
       "unattendedEvidence": "Resultado de facturacion (informe). 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionAnexos",
@@ -273,7 +276,8 @@
       "unattended": true,
       "unattendedEvidence": "Anexos attached to a planificacion (auxiliary view). 0 bindings - unattended form; Documentos handler delegates to getDocumentosCCCambio which calls getdb.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionCalendarios",
@@ -333,7 +337,8 @@
       "unattended": true,
       "unattendedEvidence": "Vista auxiliar: calendario de planificaciones. 0 bindings - unattended form.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionesBusqueda",
@@ -401,7 +406,8 @@
       "unattended": false,
       "unattendedEvidence": "Busqueda de planificaciones (search/filter UI). 6 bindings (largest in G5-missing). 33 binding findings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionReprogramacion",
@@ -465,7 +471,8 @@
       "unattended": false,
       "unattendedEvidence": "Reprogramacion de planificaciones (utility). 2 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     }
   ],
   "summary": {
