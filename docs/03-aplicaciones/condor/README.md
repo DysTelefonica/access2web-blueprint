@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · Condor
 
 ## Propósito
@@ -93,3 +95,25 @@ Lote 5 del plan de discovery (siguiente a NoConformidades). Posicionado por ser 
 ## Siguiente paso
 
 Cruzar el inventario con la documentación previa en `OPENSPEC/00_CONDOR`. Cerrar D93 (password hardcoded) y D94 (FKs conceptuales sin constraint). Generar la **épica + tickets accionables + matriz de migración de datos** para Condor (alcance expandido). Continuar después con Brass (Lote 6) e HPS_Solicitudes (Lote 7).
+
+## Core invariants
+
+- **⚠️ D93 password hardcoded `"dpddpd"` como fallback**: `FUNCIONES UTILES.bas:150` define `GetPasswordDB = "dpddpd"` cuando el INI no tiene la contraseña. **NO es la contraseña directa**, pero igualmente expone el backend si la configuración se queda vacía. Riesgo CRÍTICO; remediación operativa separada (saneamiento del código + rotación de la contraseña).
+- **`m_TestingMode` con sandbox seguro**: `FUNCIONES UTILES.bas:84-120` enruta a `m_BackendSandboxURL` con `m_BackendSandboxPassword` cuando `m_TestingMode=True`. Hay validación de cache safety (Spec-008) y comentario explícito "TESTS BLOCKED" si el sandbox no está configurado. **Patrón de referencia** para los tests de la nueva plataforma.
+- **52+ clases (mayor superficie de dominio del ecosistema)**: ViewModels (7) + Servicios (21) + Repositorios (13) + Domain entities (18) + Sandbox (3) + Mocks + Errores. La nueva plataforma absorbe esta forma hexagonal con `app/src/modules/<app>/{domain,ports,application,adapters,di,delivery}` (D8, DA-1).
+- **Edge WebView embebido**: `Form_frmGestionSolicitud.cls` usa `Me.webInfo.Navigate rutaNavegacion` con `WebVisorCacheServicio` + `SnapshotServicio`. La nueva plataforma web absorbe esto: las rutas HTMX reemplazan el WebView, pero el patrón de cache de vistas se preserva como puerto.
+- **Vinculación con NoConformidades (`idNCAsociada` en `tbSolicitudes`)**: FK conceptual (D94). La nueva plataforma formaliza con constraint o mantiene como referencia documentada, según la decisión del SDD.
+- **`TbConfiguracionBackends` vive en frontend**: el módulo de configuración con `BackendActivo`, `BackendProduccion`, `BackendSandbox`, `BackendTest`, `IDAplicacion`, `PasswordBackend` está en el frontend legacy. La nueva plataforma lo migra al backend con el adapter `ConfigPort`.
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 6 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el PR toca `FUNCIONES UTILES.bas`, NO se reintroduce ninguna contraseña hardcodeada (D93, D104); el acceso a backend se hace vía `SecretManagerPort` (D9-D10) o variable de entorno.
+- [ ] Si el cambio añade una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas o tablas, sin `DROP` ni `ALTER` destructivos en la misma release.
+- [ ] Si el cambio toca `m_TestingMode` o el sandbox, se conserva como patrón de referencia y se documenta en `tests/` con un test de smoke que pinea el comportamiento.
+- [ ] Si el cambio introduce una FK hacia NoConformidades, la decisión D94 sigue aplicando: la FK se formaliza con constraint o se documenta como referencia conceptual.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [hps-solicitudes](../hps-solicitudes/README.md) | Next: [expedientes](../expedientes/README.md)
