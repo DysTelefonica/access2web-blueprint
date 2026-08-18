@@ -472,6 +472,28 @@
 
 Aplicar las mismas reglas a las otras 7 épicas (HPS, HPS_Solicitudes, Brass, Gestion_Riesgos, NoConformidades, Lanzadera, Expedientes, Condor) — reescribir cada `epic.md` con este formato. Pendiente tras cerrar el ciclo de revisión final del blueprint.
 
+## Cómo se aplica a access2web-blueprint
+
+Lanzadera es la madre del ecosistema: aquí nacen usuarios, aplicativos y permisos que las otras 7 apps consumen (D5 plataforma modular permission-aware). Esta épica cierra el ciclo de discovery y abre el de implementación en `app/src/modules/lanzadera/` con el MVP hexagonal Python.
+
+**Entrada cruda**: los walkthroughs G1..G5 (`walkthrough-G1.json` a `walkthrough-G5.json`) consolidan 28/28 forms, 27 clases, 89 módulos estándar. Cada walkthrough declara `method_version: "v4"`, los `tool_warnings` conocidos (#1408 OPEN, #1412 OPEN) y los hallazgos D155-D167.
+
+**Código destino**: `app/src/modules/lanzadera/` con la forma hexagonal `domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/` (DA-1). Migraciones Alembic aditivas 0001..0006 con `expand_and_contract` (D82). Argon2id `RFC_9106_LOW_MEMORY` con cobertura 100 % en `CRITICAL_HELPERS` (DA-2, QC-5). Audit en misma transacción que la mutación auth (DA-11). Mapping legacy → profiles exclusivo con `SinAcceso` (DA-12).
+
+**Decisiones operativas vigentes**: D5 (modular), D8 (hexagonal), D14 (esquema por módulo), D27 (logs estructurados), D55 (sin telemetría sensible), D66-D68 (stack Python/FastAPI + monolito modular), D71 (Redis detrás del CachePort), D77 (Docker desde día uno), D82 (Expand and Contract), D85 (catálogo de 20 apps), D88 (Argon2id), D89 (sin columna legacy_hash), D90 (reset tokens), D91 (CLI bootstrap), D110 (anti-patrón F3..F9), D112 (limpieza telemetría).
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps la lista como MVP; DOCS.md §Stack Target la referencia para los pins; `docs/architecture.md` §Decisiones D-<n> cross-cutting vigentes lista D5, D14, D21, D42, D48, D65, D85, D88-D91, D110, D112; `docs/architecture.md` §Decisiones de diseño del MVP lista DA-1..DA-13; CODEBASE-GUIDE.md §Ownership de artefactos la referencia para el código en `app/src/modules/<app>/` y Alembic.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo (Metadatos, Scope, Estado del descubrimiento, Hallazgos críticos, Decisiones aplicadas, Criterios de aceptación, Pendientes operacionales) están completas y verificadas contra los walkthroughs G1..G5.
+- [ ] Los 2 anexos (Tabla de fuentes, Decisiones referenciadas) están adjuntos con referencias válidas y verificadas con `rg` sobre el repo.
+- [ ] Los criterios de aceptación de §5 están todos marcados (`[x]` o `[ ]` con plan de cierre); los pendientes tienen ticket derivado.
+- [ ] Los tickets derivables de §7 tienen issue-number válido en el backlog del change correspondiente (cuando aplique) o referencia al epic.md de la app afectada.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia los walkthroughs G1..G5, el código destino `app/src/modules/lanzadera/`, y las decisiones D-/DA- vigentes.
+- [ ] La épica se ajusta al contrato `skills/documentation-alan-style/SKILL.md` (§3 + §8): tono castellano peninsular formal con usted, sin emojis decorativos, sin marketing fluff, párrafos < 200 caracteres.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo con `rg`/`ls`.
+
 ---
 
 [← Back to Lanzadera README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
