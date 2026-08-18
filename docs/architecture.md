@@ -278,6 +278,30 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 - **No** es el manual de uso de los `check_*.py` — cada script tiene su docstring; este doc mapea cuál aplica a qué decisión.
 - **No** reemplaza a `CODEBASE-GUIDE.md` (overview + ownership) ni a `DOCS.md` (technical reference).
 
+## Core invariants
+
+- **Hexagonalidad verificable, no discutida**: cada capa (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`) tiene reglas de importación que `scripts/check_layers.py` enforza con `ROOT_PACKAGE = "app.src.modules"`. Tests en `tests/test_ci_workflow.py` pinean `ROOT_PACKAGE`, `ALLOWED_IMPORTS` y `PURE_LAYERS` contra drift.
+- **D-<n> vigentes son vinculantes**: las decisiones de la tabla §Decisiones arquitectónicas D-<n> con estado `vigente` son contrato. Modificarlas exige PR al `design.md` del change correspondiente (vía SDD) o un issue que las reemplace por una decisión nueva; el doc nunca se edita a mano para «relajar» una regla.
+- **Expand and Contract en cada release (D82)**: toda migración Alembic es aditiva. Rollback = `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. Las migraciones 0001..0006 son la línea base del MVP; cada futura app abre su propia serie.
+- **Audit en la misma transacción que la mutación auth (DA-11)**: los eventos canónicos (`auth.bootstrap.set_password`, `auth.login.success`, `auth.login.failure`, `app.open`, `global_admins.bootstrap`) se persisten atómicamente con la mutación. Si el insert de audit falla, la mutación hace rollback.
+- **Sin telemetría sensible (D55)**: nunca se persiste `ssid`, `bssid`, `coordinates`, `machine_name`, `ip_address` en logs estructurados ni en argumentos CLI. El check AST `scripts/check_legacy_hashes.py` pinea este invariante.
+- **Pin de hashes legacy eliminado (D88+D89)**: la columna `legacy_hash` no existe; los passwords migrados van con `password_hash = NULL`. `scripts/check_legacy_hashes.py` rechaza los símbolos `legacy_hash`, `sha256`, `migrate_password` en código nuevo (DA-13).
+
+## Contributor checklist
+
+- [ ] La decisión propuesta (D-<n> nueva) se discute primero en un PR al `openspec/changes/<change>/design.md`, no se añade directamente a la tabla §Decisiones arquitectónicas.
+- [ ] Si la decisión cruza varias apps, se marca como `cross-cutting` y se referencia desde la `epic.md` correspondiente.
+- [ ] El cambio de código respeta las 6 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] El pin AST de `check_legacy_hashes.py` se mantiene verde (no se reintroducen `legacy_hash`, `sha256` ni `migrate_password`).
+- [ ] Si la decisión toca un puerto (`CachePort`, `AuditLogPort`, `SecretManagerPort`, `LocationPort`, `NotificationDeliveryPort`), el adapter mantiene la signatura del puerto y el dominio no importa el framework concreto.
+- [ ] Si la decisión introduce una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas nullable o tablas nuevas, sin `DROP` ni `ALTER` destructivos en la misma release.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+- [ ] Se actualiza la tabla §Decisiones arquitectónicas D-<n> y §Gaps conocidos si corresponde.
+
+## Navigation
+
+Previous: [CODEBASE-GUIDE](../../CODEBASE-GUIDE.md) | Next: [calidad-de-codigo-y-ci](calidad-de-codigo-y-ci.md)
+
 ---
 
 [Next: CHANGELOG →](../../CHANGELOG.md)
