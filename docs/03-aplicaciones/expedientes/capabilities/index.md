@@ -15,6 +15,8 @@ Este índice enlaza las capacidades del Expedientes que ya están documentadas e
 | CAP-001 | Alta de expediente | `data/staging/expedientes/docs/capabilities/CAP-001-alta.md` | Expediente (escritura) |
 | CAP-002 | Edición de expediente | `data/staging/expedientes/docs/capabilities/CAP-002-edicion.md` | Expediente (escritura) |
 | CAP-003 | Eliminación condicionada | `data/staging/expedientes/docs/capabilities/CAP-003-eliminacion.md` | Expediente (escritura) |
+| CAP-004 | Cambio de tipo | [`CAP-004-cambio-tipo.md`](CAP-004-cambio-tipo.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/lifecycle.md#requirement-exp-cap-004--cambio-de-tipo)) | Expediente (escritura) |
+| CAP-005 | Estado y garantía | [`CAP-005-estado-garantia.md`](CAP-005-estado-garantia.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/lifecycle.md#requirement-exp-cap-005--estado-y-garantía)) | Expediente (escritura) |
 | CAP-006 | Comercial | `data/staging/expedientes/docs/capabilities/CAP-006-comercial.md` | Catálogos (master-detail) |
 | CAP-007 | CPV | `data/staging/expedientes/docs/capabilities/CAP-007-cpv.md` | Catálogos (master-detail) |
 | CAP-008 | Ejército | `data/staging/expedientes/docs/capabilities/CAP-008-ejercito.md` | Catálogos (master-detail) |
@@ -52,7 +54,7 @@ Este índice enlaza las capacidades del Expedientes que ya están documentadas e
 
 ## Capacidades pendientes de documentar
 
-A 2026-08-18, todas las CAPs pedidas en issues abiertos están documentadas a nivel repo. Los 17 ya presentes en staging cubren la granularidad §0..§7; los 21 nuevos (CAP-016..022, 024, 026..038) son resúmenes vinculados a los Requirements del spec fuente. La lista exhaustiva está en las tablas de arriba (38 entradas totales).
+A 2026-08-18, todas las CAPs pedidas en issues abiertos están documentadas a nivel repo. Los 17 ya presentes en staging cubren la granularidad §0..§7; los 23 nuevos (CAP-004, 005, 016..022, 024, 026..038) son resúmenes vinculados a los Requirements del spec fuente. La lista exhaustiva está en las tablas de arriba (40 entradas totales).
 
 ## Cómo se aplica a access2web-blueprint
 
@@ -61,7 +63,7 @@ Este índice es el hub de las capacidades del Expedientes a nivel repo. La fuent
 ## Lista de comprobación final
 
 - [ ] Las 17 entradas referencian paths staging que existen (verificables con `ls`).
-- [ ] Las 21 entradas nuevas referencian anchors a los Requirements del spec fuente (verificables con `grep`).
+- [ ] Las 23 entradas nuevas referencian anchors a los Requirements del spec fuente (verificables con `grep`).
 - [ ] El path `data/staging/` NO se ha modificado (read-only).
 - [ ] El índice se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
 - [ ] Cross-references desde DOCS.md y `docs/03-aplicaciones/expedientes/README.md` siguen resolviendo.
