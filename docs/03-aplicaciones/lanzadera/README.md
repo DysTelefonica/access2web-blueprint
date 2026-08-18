@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · Lanzadera
 
 Lanzadera es el portal Access/VBA que concentra identidad, permisos, catálogo y lanzamiento de aplicaciones. Este índice resume el **Lote 1 completado**; el detalle está separado para facilitar revisión.
@@ -81,3 +83,23 @@ Revisar este lote y aclarar los huecos de catálogo efectivo, macros, formulario
 6. **Día de envío de tareas** (`DiaEnvioTareas`, Integer 1) — sistema de tareas programadas.
 
 7. **`.dysflow/project.json` creado en esta pasada** (con `setup_project` autorizado) en `00_LANZADERA/00_main/.dysflow/`. `projectId: 00-lanzadera-staging`, `frontendFile: Lanzadera.accdb`, `allowWrites: true`, `destinationRoot: src`.
+
+## Core invariants
+
+- **Identidad, permisos y catálogo se preservan y modernizan**: usuarios, aplicativos, permisos por aplicación y el catálogo de las 20 apps son el corazón de Lanzadera y el origen de los datos que las otras 7 apps consumen. La migración web mantiene la paridad funcional y nunca reduce cobertura (D5).
+- **Telemetría sensible prohibida (D55)**: nunca se persiste `ssid`, `bssid`, `coordinates`, `machine_name`, `ip_address` en logs estructurados ni en argumentos CLI. El check AST `scripts/check_legacy_hashes.py` pinea este invariante.
+- **Audit en la misma transacción que la mutación auth (DA-11)**: los eventos canónicos (`auth.bootstrap.set_password`, `auth.login.success`, `auth.login.failure`, `app.open`, `global_admins.bootstrap`) se persisten atómicamente con la mutación. Si el insert de audit falla, la mutación hace rollback.
+- **Mapping legacy → profiles exclusivo (DA-12)**: la tabla inmutable que traduce perfiles legacy a roles nuevos usa `SinAcceso` como estado exclusivo cuando no hay match; ningún otro fallback está permitido.
+- **Hash heredado sin sal prohibido (D88+D89)**: la columna `legacy_hash` no existe; los passwords migrados van con `password_hash = NULL`. La nueva plataforma usa Argon2id perfil `RFC_9106_LOW_MEMORY` (DA-2) con cobertura 100 % en los `CRITICAL_HELPERS` (QC-5).
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 5 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el cambio toca el puerto `NotificationDeliveryPort`, el adapter de cola-por-tabla (`mail_outbox`) sigue consumiéndose por el dispatcher externo cada ~5 min.
+- [ ] Si se añade un nuevo aplicativo al catálogo (D85), el endpoint admin correspondiente se registra en `app/src/modules/lanzadera/` con la migración Alembic aditiva (D82).
+- [ ] El `BootstrapAdapter` permanece idempotente sobre `GLOBAL_ADMIN_EMAILS`: re-ejecuciones del CLI `gentle-ai platform user set-password` no duplican filas (DA-5, DA-6).
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [DOCS](../../../DOCS.md) | Next: [no-conformidades](../no-conformidades/README.md)
