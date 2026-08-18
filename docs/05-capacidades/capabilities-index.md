@@ -16,6 +16,15 @@
 
 **Lote 1 incorporado (2026-08-04):** las capacidades de Lanzadera están en [`03-aplicaciones/lanzadera/capabilities.md`](../03-aplicaciones/lanzadera/capabilities.md), con disposición semilla y ledger de confianza. Las fichas de los demás sistemas siguen pendientes.
 
+**Lote 2 incorporado (2026-08-18):** los hubs de capacidades del Expedientes en [`expedientes/`](expedientes/) referencian las 21 Requirements de los slices D51..D54 del task plan de la epic #170. Cuatro docs a nivel repo:
+
+- [`expedientes/access-control.md`](expedientes/access-control.md) — D51, EXP-CAP-043..046 (deny-by-default, principal, sesión, auditoría).
+- [`expedientes/runtime.md`](expedientes/runtime.md) — D52, EXP-CAP-047..050 (readiness, configuración tipada, caché reconstruible, binding).
+- [`expedientes/integrations.md`](expedientes/integrations.md) — D53, EXP-CAP-051..056 (HPS, AGEDYS, Riesgos, NC, correo, documentos).
+- [`expedientes/uat-cutover-legacy-retirement.md`](expedientes/uat-cutover-legacy-retirement.md) — D54, EXP-CAP-057..063 (retiradas graduales de Win32, OLE/ActiveX, globals, selector backend, popups, menú JSON-hub).
+
+Los CAPs ya documentados en staging (`expedientes/capabilities/index.md` del directorio `docs/03-aplicaciones/`) cubren EXP-CAP-001..040 a nivel granular por formulario; los hubs aquí cubren los contratos transversales del slice D51..D54.
+
 ## Reglas del índice
 
 - Una ficha por capacidad de negocio, no por formulario o módulo.
