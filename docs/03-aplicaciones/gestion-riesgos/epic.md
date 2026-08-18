@@ -501,6 +501,26 @@ Para la épica de migración a web, esto significa:
 
 Aplicar las mismas reglas a las 3 épicas restantes: HPS, HPS_Solicitudes, NoConformidades. Tras cerrar el ciclo de revisión final del blueprint.
 
+## Cómo se aplica a access2web-blueprint
+
+Gestion_Riesgos es la app con más tablas (71) y más complejidad de caché multi-nivel. Su código destino vive en `app/src/modules/gestion-riesgos/` y depende de NoConformidades (D95 orden de migración estricto) y de Lanzadera (D86 acoplamiento identidad).
+
+**Entrada cruda**: los walkthroughs G1..G5 consolidan 61/61 forms. Inventario Dysflow: 71 tablas, 889 riesgos en producción (`TbIDRiesgos`), 2843 planes de mitigación (`TbRiesgosPlanMitigacionPpal`), 2089 nodos del árbol cacheados (`TbCacheArbolRiesgosNodo` — confirma el hallazgo D88 sobre lentitud del árbol).
+
+**Decisiones operativas vigentes**: D86 (acoplamiento Lanzadera via `getdbLanzadera()` traducido a adaptadores), D88 (rendimiento del árbol: HTMX lazy expansion + CTE recursivo PostgreSQL; descarta MSComctlLib.TreeView y flag `CadenaJerarquicaModelo`), D95 (orden de migración estricto: NoConformidades antes que Gestion_Riesgos por FK conceptual en `TbRiesgosNC`), D102 (booleans Text(2) cross-cutting → `BOOLEAN`), patrón `_Reversa` (transacciones reversibles en planes → event sourcing o soft delete con versionado), catálogos de valoración → enums PostgreSQL o tablas de lookup con UI admin.
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps lista Gestion_Riesgos como mergeada con PR #1; `docs/architecture.md` §Decisiones D-<n> vigentes lista D14, D16, D27, D82, D88 (cross-cutting, no per-app); CODEBASE-GUIDE.md §Ownership de artefactos la referencia para el código de plataforma en `app/src/modules/gestion-riesgos/` y el walkthrough JSON.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo están completas y verificadas contra los walkthroughs G1..G5.
+- [ ] Los 2 anexos están adjuntos con referencias válidas.
+- [ ] Los criterios de aceptación están todos marcados; los pendientes tienen ticket derivado.
+- [ ] Los tickets derivables tienen issue-number válido en el backlog del change correspondiente.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia los walkthroughs G1..G5, el código destino `app/src/modules/gestion-riesgos/`, y las decisiones D86, D88, D95, D102 + el patrón `_Reversa`.
+- [ ] La épica se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo.
+
 ---
 
 [← Back to Gestion_Riesgos README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
