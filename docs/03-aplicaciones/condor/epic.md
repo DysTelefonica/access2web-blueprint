@@ -392,6 +392,26 @@ Acciones manuales que el equipo debe ejecutar antes, durante o después de la mi
 
 Revisión con el equipo. Una vez validada, abrir SDD (`sdd-propose` + `sdd-spec` + `sdd-design` + `sdd-tasks`) para arrancar la implementación por ticket, comenzando por **TK-CONDOR-14** (rotación de contraseña) antes que cualquier otro cambio de código.
 
+## Cómo se aplica a access2web-blueprint
+
+Condor es la app con la evolución arquitectónica más avanzada del ecosistema: ViewModels + Servicios + Repositorios forman una capa hexagonal implícita en VBA. Su código destino absorbe directamente esta forma en `app/src/modules/condor/` con `app/src/modules/<app>/{domain,ports,application,adapters,di,delivery}` (DA-1).
+
+**Entrada cruda**: walkthroughs G1..G5 consolidan los forms de Condor. Inventario Dysflow: 15 tablas, 5 FKs, 1 solicitud activa, 9 estados, 183 mapeo campos.
+
+**Decisiones operativas vigentes**: D93 (⚠️ password hardcoded `"dpddpd"` como fallback en `FUNCIONES UTILES.bas:150` — riesgo CRÍTICO; remediación operativa: rotación de contraseña en producción + saneamiento del código), D94 (FKs conceptuales sin constraint — formalizar con constraint o documentar como referencia), `m_TestingMode` con sandbox seguro (patrón de referencia para los tests de la nueva plataforma), 52+ clases con desglose por capas (7 ViewModels + 21 Servicios + 13 Repositorios + 18 Domain entities + 3 Sandbox + 1 Mock + 1 Error), Edge WebView embebido en `Form_frmGestionSolicitud.cls` (la nueva plataforma web absorbe esto con HTMX; el patrón de cache de vistas se preserva como puerto), `TbConfiguracionBackends` (BackendActivo/BackendProduccion/BackendSandbox/BackendTest/IDAplicacion/PasswordBackend) migra del frontend al backend con `ConfigPort`.
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps lista Condor como mergeada con PR pre-workflow; `docs/architecture.md` §Decisiones D-<n> vigentes lista D14, D27, D82; CODEBASE-GUIDE.md §Ownership de artefactos la referencia para el código de plataforma y el walkthrough JSON.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo están completas y verificadas contra los walkthroughs G1..G5.
+- [ ] Los 2 anexos están adjuntos con referencias válidas.
+- [ ] Los criterios de aceptación están todos marcados; los pendientes tienen ticket derivado (TK-CONDOR-14 prioritario).
+- [ ] Los tickets derivables tienen issue-number válido en el backlog del change correspondiente.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia los walkthroughs G1..G5, el código destino `app/src/modules/condor/`, y las decisiones D93, D94 + el patrón hexagonal maduro.
+- [ ] La épica se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo.
+
 ---
 
 [← Back to Condor README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
