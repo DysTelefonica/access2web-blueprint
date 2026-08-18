@@ -1,0 +1,48 @@
+[← Inicio](../README.md)
+
+# <Repo> — Codebase Guide
+
+<opening: qué cubre esta guía, en una frase ≤ 200 caracteres.>
+
+## 90-second mental model
+
+<!-- MENTAL_MODEL_ASCII: diagrama ASCII del flujo end-to-end. ≤ 30 líneas. -->
+
+```text
+<entry point>
+  │
+  ▼
+<core component>
+  │
+  ├── <module a>
+  ├── <module b>
+  │
+  ▼
+<storage / external>
+```
+
+<!-- SENTENCE_THAT_ORGANIZES: la frase que estructura todo el repo. -->
+
+> **<The sentence that organizes the whole repo.>**
+
+## Recommended reading path
+
+<!-- RECOMMENDED_READING_PATH: 5-8 pasos. Una página por paso. -->
+
+| Step | Page | Léalo cuando... |
+|---|---|---|
+| 1 | [Mental Model](codebase/mental-model.md) | Necesita la forma del producto antes de abrir código |
+| 2 | [Repository Map](codebase/repository-map.md) | Necesita decidir qué paquete es dueño del cambio |
+| 3 | ... | ... |
+
+## Quick map: if you need X, read Y
+
+<!-- QUICK_MAP_INVERSO: 5-8 intenciones de mantenedor. -->
+
+| Si necesita... | Abra primero | Y luego consulte |
+|---|---|---|
+| Entender el producto en 5 min | `README.md` | Esta guía |
+| Cambiar <módulo> | `<path>` | [Memory Core](codebase/memory-core.md) |
+| ... | ... | ... |
+
+[Next: Mental Model →](codebase/mental-model.md)
