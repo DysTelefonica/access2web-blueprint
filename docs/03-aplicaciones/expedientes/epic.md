@@ -507,6 +507,26 @@ Una vez mergeado el PR, el blueprint está completo. Pendientes:
 - Decisión sobre Lanzaderas + Gestión_Riesgos + HPS + HPS_Solicitudes + NoConformidades (épicas pendientes de refactor).
 - Decisión sobre `Form_Formulario1` (D167 cross-app + D178 G1 WIP).
 
+## Cómo se aplica a access2web-blueprint
+
+Expedientes es la segunda app con código destino planificado tras Lanzadera: `app/src/modules/expedientes/` (plan PR-08), siguiendo el mismo esqueleto hexagonal `domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/` (DA-1).
+
+**Entrada cruda**: los walkthroughs G1..G5 (`walkthrough-G1.json` a `walkthrough-G5.json`) consolidan 46/46 forms con `method_version: "v4"`. El change OpenSpec `openspec/changes/expedientes-web-migration/` ya tiene proposal, 10 specs, design y tasks definidos.
+
+**Decisiones operativas vigentes**: D86 (forma hexagonal del legacy preservada como referencia de mapeo uno-a-uno con la nueva plataforma), D87 (cada `Test_*.bas` se traduce a pytest equivalente antes de descartar el original — ningún `Test_*` se descarta sin trazabilidad), D94 (FKs conceptuales sin constraint — formalizar o documentar como referencia), D102 (booleans Text(2) → `BOOLEAN` con regla de migración explícita), D132 (XApp HTTP/JSON handshake cross-app).
+
+**Cross-references desde otros docs**: DOCS.md §The 8 Apps lista Expedientes como mergeada con PR #4; `docs/architecture.md` §Decisiones D-<n> vigentes lista D14 (esquema por módulo), D82 (Expand and Contract); CODEBASE-GUIDE.md §Ownership de artefactos la referencia para Alembic en `app/migrations/versions/` y walkthroughs en `docs/03-aplicaciones/expedientes/walkthrough-*.json`.
+
+## Lista de comprobación final
+
+- [ ] Las 7 secciones del cuerpo están completas y verificadas contra los walkthroughs G1..G5.
+- [ ] Los 2 anexos (Tabla de fuentes, Decisiones referenciadas) están adjuntos con referencias válidas.
+- [ ] Los criterios de aceptación de §5 están todos marcados; los pendientes tienen ticket derivado.
+- [ ] Los tickets derivables de §7 tienen issue-number válido en `openspec/changes/expedientes-web-migration/`.
+- [ ] La sección «Cómo se aplica a access2web-blueprint» referencia el change SDD, los walkthroughs G1..G5, el código destino `app/src/modules/expedientes/`, y las decisiones D86, D87, D94, D102, D132.
+- [ ] La épica se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
+- [ ] Las cross-references desde DOCS.md, CODEBASE-GUIDE.md, `docs/architecture.md` y los walkthrough JSONs siguen resolviendo.
+
 ---
 
 [← Back to Expedientes README](README.md) · [← Codebase Guide](../../../CODEBASE-GUIDE.md) · [← DOCS](../../../DOCS.md)
