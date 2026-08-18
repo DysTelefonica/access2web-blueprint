@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · HPS
 
 ## Propósito
@@ -76,3 +78,23 @@ Lote 4 del plan de discovery. Elegido por ser la app de gestión de personal má
 ## Siguiente paso
 
 Cruzar el inventario con la documentación previa en `OPENSPEC/00_HPS`, resolver D92 (disposición de legacy copies + campos sensibles), y luego generar la épica + tickets para la migración de HPS. Continuar después con Condor (Lote 5), Brass (Lote 6) y HPS_Solicitudes (Lote 7) usando el mismo patrón codegraph + Dysflow.
+
+## Core invariants
+
+- **⚠️ Caché en el FRONTEND con datos personales (D92)**: el `HPS.accdb` contiene 12 tablas locales con datos sensibles (`TbDatosLocal` con 344 filas + DNI/Nombre/Apellidos/Teléfono/Correo/F_Nacimiento, `TbUsuariosHistoricosLocal` con 235 filas, etc.). Patrón raro que NO aparece en Lanzadera/Expedientes/GR/NC. La disposición de estos datos requiere decisión explícita antes de migrar (D92).
+- **`.gitignore` del repo `00_HPS` excluye solo `*.accde`/`*.mdb`/`*.mde`/`HPST.accdb`**: el `HPS.accdb` (con datos personales) NO está excluido. Riesgo: si se versiona, los datos quedan en git. La nueva plataforma NO replica el caché en frontend.
+- **4 tablas «Copia de...» + sentinels de pegado masivo**: patrón legacy de copia antes de cambios masivos + sentinel de errores en operaciones de pegado. Requieren disposición explícita en la matriz de migración antes de cerrar la épica.
+- **107 callers de `getdb()` (read-heavy)**: HPS es la app con menos intensidad DAO después de Condor. La migración web preserva la cobertura de queries de lectura; el puerto de identidad (vía Lanzadera) reemplaza cualquier acceso directo.
+- **`clsTestDouble*` (5 archivos)**: disciplina TDD madura; los Test Doubles se preservan como referencia para los nuevos tests pytest (D87).
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 5 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el PR introduce datos personales (DNI, Nombre, Apellidos, Teléfono, Correo, F_Nacimiento), sigue D92: redacción con placeholders y scrubbing antes de commit.
+- [ ] Si el PR añade un `.gitignore` o modifica reglas de exclusión, se asegura que `HPS.accdb` (y otros binarios con datos personales) quedan excluidos.
+- [ ] Si el PR toca la duplicación frontend/backend (`TbHPS`, `TbUsuariosHistoricos`), la decisión de cache local se documenta explícitamente; nunca se preserva el patrón «cache local con datos personales» en la nueva plataforma.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [brass](../brass/README.md) | Next: [hps-solicitudes](../hps-solicitudes/README.md)
