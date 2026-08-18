@@ -15,182 +15,656 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasContratistas.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 7, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 7, "sections": 0, "findings_count": 3, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "ui": {
+        "controls_count": 7,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 7,
+        "sections": 0,
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por CadenaContratistas.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasDatos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasDatos.form.txt",
       "group": "G4",
       "role_in_group": "consultas_datos_master",
-      "ui": { "controls_count": 206, "formEvents": ["OnCurrent", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 206, "sections": 0, "findings_count": 207, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 203, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "warnings_only", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 206,
+        "formEvents": [
+          "OnCurrent",
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 206,
+        "sections": 0,
+        "findings_count": 207,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 203,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "warnings_only",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; el form con más controles del repo HPS (206). Subformulario 'master' de consulta — alimenta los 8 Form_FormInicial03Consultas<PorCampo>.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasEmpresaUsuario",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasEmpresaUsuario.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 7, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 7, "sections": 0, "findings_count": 3, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "ui": {
+        "controls_count": 7,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 7,
+        "sections": 0,
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por IDEmpresaUsuario.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasEstado",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasEstado.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 4, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 4, "sections": 0, "findings_count": 2, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "ui": {
+        "controls_count": 4,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 4,
+        "sections": 0,
+        "findings_count": 2,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por estado calculado (APuntoDeCaducar/Caducado/Solicitado/PendienteRenovacion).",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasGrado",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasGrado.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 21, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 21, "sections": 0, "findings_count": 5, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 7, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 7 }, "status": "ok" },
+      "ui": {
+        "controls_count": 21,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 21,
+        "sections": 0,
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 7,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 7
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por Grado (4 tipos: NAC/OTAN/ESA/UE) — referencia TbHPSEquivalencia.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasJuridicaTramitacion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 7, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 7, "sections": 0, "findings_count": 3, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "ui": {
+        "controls_count": 7,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 7,
+        "sections": 0,
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por IDJuridicaContrato → TbJuridicasContratacion.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasMotivoHPS",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasMotivoHPS.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 7, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 7, "sections": 0, "findings_count": 3, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 2, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 2 }, "status": "ok" },
+      "ui": {
+        "controls_count": 7,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 7,
+        "sections": 0,
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 2,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por Motivo_HPS → TbMotivoHPS.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasNombre",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasNombre.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 10, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 10, "sections": 0, "findings_count": 4, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 2, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 2 }, "status": "ok" },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 10,
+        "sections": 0,
+        "findings_count": 4,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 2,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por Nombre/Apellido (LIKE en concatenated strings).",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial03ConsultasProyectoAsignado",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial03ConsultasProyectoAsignado.form.txt",
       "group": "G4",
       "role_in_group": "consultas_por_campo",
-      "ui": { "controls_count": 7, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 7, "sections": 0, "findings_count": 3, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 1, "by_kind": { "FORM_BINDING_SQL_UNPARSEABLE": 1 }, "status": "ok" },
+      "ui": {
+        "controls_count": 7,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 7,
+        "sections": 0,
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; consulta por IDExpediente (proyecto asignado).",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial07UsuariosSICADatos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial07UsuariosSICADatos.form.txt",
       "group": "G4",
       "role_in_group": "sica_datos",
-      "ui": { "controls_count": 27, "formEvents": ["OnCurrent", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 27, "sections": 0, "findings_count": 26, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 26 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 27,
+        "formEvents": [
+          "OnCurrent",
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 27,
+        "sections": 0,
+        "findings_count": 26,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 26
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; subformulario detalle de SICA, alimenta Form_FormInicial07UsuariosSICA.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormInicial08UsuariosHistoricosDatos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormInicial08UsuariosHistoricosDatos.form.txt",
       "group": "G4",
       "role_in_group": "historicos_datos",
-      "ui": { "controls_count": 41, "formEvents": ["OnCurrent", "OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 41, "sections": 0, "findings_count": 41, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 41 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 41,
+        "formEvents": [
+          "OnCurrent",
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 41,
+        "sections": 0,
+        "findings_count": 41,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 41
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; subformulario detalle histórico.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormUsuario02Anexos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario02Anexos.form.txt",
       "group": "G4",
       "role_in_group": "usuario_anexos",
-      "ui": { "controls_count": 10, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 10, "sections": 0, "findings_count": 4, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 10,
+        "sections": 0,
+        "findings_count": 4,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; gestión de anexos del usuario — backend TbAnexosUsuariosHPS (5 cols) o TbUsuarioAnexos (4 cols) — distinguir por AnexoSelectionTransactionCoordinator.",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormUsuario02DatosObservacion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuario02DatosObservacion.form.txt",
       "group": "G4",
       "role_in_group": "usuario_observacion",
-      "ui": { "controls_count": 12, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 12, "sections": 2, "findings_count": 9, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 12,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 12,
+        "sections": 2,
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 6,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; observaciones del usuario — backend TbObservaciones (330 filas).",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_FormUsuarioHistorico02Anexos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/hps/src/forms/Form_FormUsuarioHistorico02Anexos.form.txt",
       "group": "G4",
       "role_in_group": "historico_anexos",
-      "ui": { "controls_count": 2, "formEvents": ["OnOpen"], "bindings_count": 0, "warnings": [], "status": "ok" },
-      "geometry": { "controls": 2, "sections": 0, "findings_count": 1, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 1 }, "status": "ok" },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty", "status": "ok" },
-      "verify_form_bindings": { "findings_count": 0, "by_kind": {}, "status": "ok" },
+      "ui": {
+        "controls_count": 2,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0,
+        "warnings": [],
+        "status": "ok"
+      },
+      "geometry": {
+        "controls": 2,
+        "sections": 0,
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1
+        },
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty",
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "status": "ok"
+      },
       "unattended": true,
       "unattended_evidence": "bindings_count=0; anexos del histórico — backend TbAnexosUsuariosHistoricos (vacía en este snapshot).",
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     }
   ],
   "summary": {

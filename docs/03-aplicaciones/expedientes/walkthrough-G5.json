@@ -8,7 +8,9 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormGradoClasificacion.form.txt",
       "formName": "FormGradoClasificacion",
       "controlCount": 11,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [],
       "bindings_skipped": true,
       "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
@@ -24,7 +26,10 @@
           "GradoClasificacion <-> cmdSalir",
           "GradoClasificacion <-> ComandoEditar"
         ],
-        "tab_order_visual": ["ComandoEditar", "DESCRIPCION"],
+        "tab_order_visual": [
+          "ComandoEditar",
+          "DESCRIPCION"
+        ],
         "missing_geometry_controls": [
           "EncabezadoDelFormulario",
           "lblTitulo",
@@ -33,19 +38,53 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormGradosClasificacionGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormGradosClasificacionGestion.form.txt",
       "formName": "FormGradosClasificacionGestion",
       "controlCount": 15,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [
         {
           "name": "ListaFiltrados",
           "type": "ListBox",
-          "bindings": ["IDCPV;CPV;DESCRIPCIÓN"]
+          "bindings": [
+            "IDCPV;CPV;DESCRIPCIÓN"
+          ]
         }
       ],
       "bindings_skipped": true,
@@ -86,14 +125,46 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormPECAL",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormPECAL.form.txt",
       "formName": "FormPECAL",
       "controlCount": 11,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [],
       "bindings_skipped": true,
       "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
@@ -109,7 +180,10 @@
           "PECAL <-> cmdSalir",
           "PECAL <-> ComandoRegistrar"
         ],
-        "tab_order_visual": ["ComandoRegistrar", "DESCRIPCION"],
+        "tab_order_visual": [
+          "ComandoRegistrar",
+          "DESCRIPCION"
+        ],
         "missing_geometry_controls": [
           "EncabezadoDelFormulario",
           "lblTitulo",
@@ -118,19 +192,53 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormPECALESGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormPECALESGestion.form.txt",
       "formName": "FormPECALESGestion",
       "controlCount": 15,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [
         {
           "name": "ListaFiltrados",
           "type": "ListBox",
-          "bindings": ["IDESTADO;ESTADO;DESCRIPCIÓN"]
+          "bindings": [
+            "IDESTADO;ESTADO;DESCRIPCIÓN"
+          ]
         }
       ],
       "bindings_skipped": true,
@@ -169,14 +277,46 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormCPV",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormCPV.form.txt",
       "formName": "FormCPV",
       "controlCount": 11,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [],
       "bindings_skipped": true,
       "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
@@ -192,7 +332,10 @@
           "CPV <-> cmdSalir",
           "CPV <-> ComandoRegistrar"
         ],
-        "tab_order_visual": ["ComandoRegistrar", "DESCRIPCION"],
+        "tab_order_visual": [
+          "ComandoRegistrar",
+          "DESCRIPCION"
+        ],
         "missing_geometry_controls": [
           "EncabezadoDelFormulario",
           "lblTitulo",
@@ -201,19 +344,53 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormCPVsGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormCPVsGestion.form.txt",
       "formName": "FormCPVsGestion",
       "controlCount": 15,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [
         {
           "name": "ListaFiltrados",
           "type": "ListBox",
-          "bindings": ["IDCPV;CPV;DESCRIPCIÓN"]
+          "bindings": [
+            "IDCPV;CPV;DESCRIPCIÓN"
+          ]
         }
       ],
       "bindings_skipped": true,
@@ -254,14 +431,46 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormRAC",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormRAC.form.txt",
       "formName": "FormRAC",
       "controlCount": 13,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [],
       "bindings_skipped": true,
       "bindings_skip_reason": "verify_form_bindings SKIPPED per task instructions (bug #1412 OPEN)",
@@ -277,7 +486,11 @@
           "RAC <-> cmdSalir",
           "RAC <-> ComandoRegistrar"
         ],
-        "tab_order_visual": ["ComandoRegistrar", "CORREO", "DESCRIPCION"],
+        "tab_order_visual": [
+          "ComandoRegistrar",
+          "CORREO",
+          "DESCRIPCION"
+        ],
         "missing_geometry_controls": [
           "EncabezadoDelFormulario",
           "lblTitulo",
@@ -286,19 +499,53 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormRACSGestion",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormRACSGestion.form.txt",
       "formName": "FormRACSGestion",
       "controlCount": 15,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [
         {
           "name": "ListaFiltrados",
           "type": "ListBox",
-          "bindings": ["IDESTADO;ESTADO;DESCRIPCIÓN"]
+          "bindings": [
+            "IDESTADO;ESTADO;DESCRIPCIÓN"
+          ]
         }
       ],
       "bindings_skipped": true,
@@ -339,24 +586,60 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "file": "Form_FormTareas",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/expedientes/src/forms/Form_FormTareas.form.txt",
       "formName": "FormTareas",
       "controlCount": 15,
-      "formEvents": ["OnOpen"],
+      "formEvents": [
+        "OnOpen"
+      ],
       "bindings": [
         {
           "name": "ListaFiltrados",
           "type": "ListBox",
-          "bindings": ["IDExpediente;Estado;Tipo;... (Value List literal)"]
+          "bindings": [
+            "IDExpediente;Estado;Tipo;... (Value List literal)"
+          ]
         },
         {
           "name": "ListaTipoTareas",
           "type": "ListBox",
-          "bindings": ["1;Exp. Estado DESCONOCIDO (0);... (Value List literal)"]
+          "bindings": [
+            "1;Exp. Estado DESCONOCIDO (0);... (Value List literal)"
+          ]
         }
       ],
       "bindings_skipped": true,
@@ -391,14 +674,48 @@
         ]
       },
       "unattended": false,
-      "warnings": ["No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"]
+      "warnings": [
+        "No CodeGraph-VBA evidence was supplied (autoFetchCodeGraph:false per bug #1408)"
+      ],
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     }
   ],
   "summary": {
     "total_geometry_findings": 133,
     "forms_skipped_bindings": 9,
     "unattended_forms": 0,
-    "tables_referenced_union": ["CPV", "ESTADO", "Expediente"],
+    "tables_referenced_union": [
+      "CPV",
+      "ESTADO",
+      "Expediente"
+    ],
     "blast_radius_shared_symbols": [
       {
         "symbol": "Opciones_OpenFormAction",

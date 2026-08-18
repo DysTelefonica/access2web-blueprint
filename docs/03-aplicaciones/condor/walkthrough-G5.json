@@ -16,130 +16,528 @@
       "formName": "Form_frmVerLogErrores",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmVerLogErrores.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 15, "formEvents": ["OnLoad"], "bindings_count": 3, "warnings": [] },
-      "geometry": { "controls": 15, "sections": 0, "findings_count": 15, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_OVERLAP": 7, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "ui": {
+        "controls_count": 15,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 3,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 15,
+        "sections": 0,
+        "findings_count": 15,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 7,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
       "verify_form_bindings": {
-        "status": "ok", "controls": 15, "findings_count": 3,
+        "status": "ok",
+        "controls": 15,
+        "findings_count": 3,
         "findings": [
-          { "code": "FORM_BINDING_SQL_UNPARSEABLE", "severity": "warning", "message": "Control cboFiltroUsuario has a RowSource that could not be parsed as SQL.", "controlName": "cboFiltroUsuario", "data": { "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'", "binding": "RowSource" } },
-          { "code": "FORM_BINDING_SQL_UNPARSEABLE", "severity": "warning", "message": "Control cboFiltroModulo has a RowSource that could not be parsed as SQL.", "controlName": "cboFiltroModulo", "data": { "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'", "binding": "RowSource" } },
-          { "code": "FORM_BINDING_SQL_UNPARSEABLE", "severity": "warning", "message": "Control lstResultados has a RowSource that could not be parsed as SQL.", "controlName": "lstResultados", "data": { "rowSourcePreview": "idSolicitud;Tipo;Cód. Exp;Nemotécnico;F. Inicio;F. Fin;Jefe Proyecto;Resp. Cali", "binding": "RowSource" } }
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control cboFiltroUsuario has a RowSource that could not be parsed as SQL.",
+            "controlName": "cboFiltroUsuario",
+            "data": {
+              "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control cboFiltroModulo has a RowSource that could not be parsed as SQL.",
+            "controlName": "cboFiltroModulo",
+            "data": {
+              "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control lstResultados has a RowSource that could not be parsed as SQL.",
+            "controlName": "lstResultados",
+            "data": {
+              "rowSourcePreview": "idSolicitud;Tipo;Cód. Exp;Nemotécnico;F. Inicio;F. Fin;Jefe Proyecto;Resp. Cali",
+              "binding": "RowSource"
+            }
+          }
         ]
       },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmDetalleLogError",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmDetalleLogError.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 22, "formEvents": ["OnLoad"], "bindings_count": 8, "warnings": [] },
-      "geometry": { "controls": 22, "sections": 0, "findings_count": 19, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 16, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
-      "verify_form_bindings": { "status": "ok", "controls": 22, "findings_count": 0, "findings": [] },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "ui": {
+        "controls_count": 22,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 8,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 22,
+        "sections": 0,
+        "findings_count": 19,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 16,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 22,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmVerLogCambios",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmVerLogCambios.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 16, "formEvents": ["OnLoad"], "bindings_count": 3, "warnings": [] },
-      "geometry": { "controls": 16, "sections": 0, "findings_count": 18, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_OVERLAP": 8, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "ui": {
+        "controls_count": 16,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 3,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 16,
+        "sections": 0,
+        "findings_count": 18,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 6,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
       "verify_form_bindings": {
-        "status": "ok", "controls": 16, "findings_count": 3,
+        "status": "ok",
+        "controls": 16,
+        "findings_count": 3,
         "findings": [
-          { "code": "FORM_BINDING_SQL_UNPARSEABLE", "severity": "warning", "message": "Control cboFiltroUsuario has a RowSource that could not be parsed as SQL.", "controlName": "cboFiltroUsuario", "data": { "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'", "binding": "RowSource" } },
-          { "code": "FORM_BINDING_SQL_UNPARSEABLE", "severity": "warning", "message": "Control cboFiltroTabla has a RowSource that could not be parsed as SQL.", "controlName": "cboFiltroTabla", "data": { "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'", "binding": "RowSource" } },
-          { "code": "FORM_BINDING_SQL_UNPARSEABLE", "severity": "warning", "message": "Control lstResultados has a RowSource that could not be parsed as SQL.", "controlName": "lstResultados", "data": { "rowSourcePreview": "idSolicitud;Tipo;Cód. Exp;Nemotécnico;F. Inicio;F. Fin;Jefe Proyecto;Resp. Cali", "binding": "RowSource" } }
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control cboFiltroUsuario has a RowSource that could not be parsed as SQL.",
+            "controlName": "cboFiltroUsuario",
+            "data": {
+              "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control cboFiltroTabla has a RowSource that could not be parsed as SQL.",
+            "controlName": "cboFiltroTabla",
+            "data": {
+              "rowSourcePreview": "'PC';'PC - Propuesta de Cambio';'CD_CA';'CD - Concesión desviación'",
+              "binding": "RowSource"
+            }
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control lstResultados has a RowSource that could not be parsed as SQL.",
+            "controlName": "lstResultados",
+            "data": {
+              "rowSourcePreview": "idSolicitud;Tipo;Cód. Exp;Nemotécnico;F. Inicio;F. Fin;Jefe Proyecto;Resp. Cali",
+              "binding": "RowSource"
+            }
+          }
         ]
       },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmDetalleLogCambio",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmDetalleLogCambio.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 24, "formEvents": ["OnLoad"], "bindings_count": 9, "warnings": [] },
-      "geometry": { "controls": 24, "sections": 0, "findings_count": 19, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 18, "FORM_LAYOUT_ALIGNMENT": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
-      "verify_form_bindings": { "status": "ok", "controls": 24, "findings_count": 0, "findings": [] },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "ui": {
+        "controls_count": 24,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 9,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 24,
+        "sections": 0,
+        "findings_count": 19,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 18,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 24,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmFiltrosAvanzadosSolicitudes",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmFiltrosAvanzadosSolicitudes.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 21, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": 21, "sections": 0, "findings_count": 24, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 14, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 1, "tables_referenced": [], "handlers_top_5": ["cmdAplicar_Click"], "codegraph_evidence_status": "partial_index_limited" },
-      "verify_form_bindings": { "status": "ok", "controls": 21, "findings_count": 0, "findings": [] },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "ui": {
+        "controls_count": 21,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 21,
+        "sections": 0,
+        "findings_count": 24,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 14,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 1,
+        "tables_referenced": [],
+        "handlers_top_5": [
+          "cmdAplicar_Click"
+        ],
+        "codegraph_evidence_status": "partial_index_limited"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 21,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmBuscarExpediente",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmBuscarExpediente.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 19, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": 19, "sections": 0, "findings_count": 48, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 41, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
-      "verify_form_bindings": { "status": "ok", "controls": 19, "findings_count": 0, "findings": [] },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "ui": {
+        "controls_count": 19,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 19,
+        "sections": 0,
+        "findings_count": 48,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 41,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 19,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmDetalleExpediente",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmDetalleExpediente.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 34, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": 34, "sections": 0, "findings_count": 46, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 34, "FORM_LAYOUT_ALIGNMENT": 8, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
-      "verify_form_bindings": { "status": "ok", "controls": 34, "findings_count": 0, "findings": [] },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "ui": {
+        "controls_count": 34,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 34,
+        "sections": 0,
+        "findings_count": 46,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 34,
+          "FORM_LAYOUT_ALIGNMENT": 8,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 34,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmGestionAdjuntos",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmGestionAdjuntos.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 10, "formEvents": ["OnTimer", "OnLoad"], "bindings_count": 1, "warnings": [] },
-      "geometry": { "controls": 10, "sections": 0, "findings_count": 11, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 5, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
+      "ui": {
+        "controls_count": 10,
+        "formEvents": [
+          "OnTimer",
+          "OnLoad"
+        ],
+        "bindings_count": 1,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 10,
+        "sections": 0,
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 5,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
       "verify_form_bindings": {
-        "status": "ok", "controls": 10, "findings_count": 1,
+        "status": "ok",
+        "controls": 10,
+        "findings_count": 1,
         "findings": [
-          { "code": "FORM_BINDING_SQL_UNPARSEABLE", "severity": "warning", "message": "Control lstAdjuntos has a RowSource that could not be parsed as SQL.", "controlName": "lstAdjuntos", "data": { "rowSourcePreview": "idAdjunto;RutaCompleta;Nombre Archivo;Tipo;Etapa;Fecha;Subido Por;7;\\\\datoste", "binding": "RowSource" } }
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "severity": "warning",
+            "message": "Control lstAdjuntos has a RowSource that could not be parsed as SQL.",
+            "controlName": "lstAdjuntos",
+            "data": {
+              "rowSourcePreview": "idAdjunto;RutaCompleta;Nombre Archivo;Tipo;Etapa;Fecha;Subido Por;7;\\\\datoste",
+              "binding": "RowSource"
+            }
+          }
         ]
       },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmElegirEtapaAdjunto",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmElegirEtapaAdjunto.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 9, "formEvents": ["OnLoad"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": 9, "sections": 0, "findings_count": 10, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 5, "FORM_LAYOUT_ALIGNMENT": 1 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 0, "tables_referenced": [], "codegraph_evidence_status": "empty_index_limited" },
-      "verify_form_bindings": { "status": "ok", "controls": 9, "findings_count": 0, "findings": [] },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "ui": {
+        "controls_count": 9,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 9,
+        "sections": 0,
+        "findings_count": 10,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 5,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "empty_index_limited"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 9,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     },
     {
       "formName": "Form_frmWebVisor",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/condor/src/forms/Form_frmWebVisor.form.txt",
       "group": "G5",
-      "ui": { "controls_count": 6, "formEvents": ["OnOpen", "OnClose", "OnLoad"], "bindings_count": 0, "warnings": [] },
-      "geometry": { "controls": 6, "sections": 0, "findings_count": 5, "by_kind": { "FORM_LAYOUT_MISSING_GEOMETRY": 5 }, "findings": [] },
-      "behavior": { "controls_with_handler_evidence": 1, "tables_referenced": [], "handlers_top_5": ["webVisor_BeforeNavigate", "webVisor_BeforeNavigate"], "codegraph_evidence_status": "partial_index_limited" },
-      "verify_form_bindings": { "status": "ok", "controls": 6, "findings_count": 0, "findings": [] },
-      "unattended": false, "unattended_evidence": null,
-      "tool_warnings": [], "method_version": "v5"
+      "ui": {
+        "controls_count": 6,
+        "formEvents": [
+          "OnOpen",
+          "OnClose",
+          "OnLoad"
+        ],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls": 6,
+        "sections": 0,
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5
+        },
+        "findings": []
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 1,
+        "tables_referenced": [],
+        "handlers_top_5": [
+          "webVisor_BeforeNavigate",
+          "webVisor_BeforeNavigate"
+        ],
+        "codegraph_evidence_status": "partial_index_limited"
+      },
+      "verify_form_bindings": {
+        "status": "ok",
+        "controls": 6,
+        "findings_count": 0,
+        "findings": []
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "method_version": "v5",
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     }
   ],
   "summary": {
@@ -147,8 +545,14 @@
     "total_binding_findings": 8,
     "forms_skipped_bindings": 0,
     "unattended_forms": 0,
-    "tables_referenced_union": ["tbAdjuntos", "tbLogErrores", "tbLogCambios"],
-    "blast_radius_shared_symbols": ["webVisor_BeforeNavigate is the unique handler surfaced from frmWebVisor (Edge WebView BeforeNavigate event) — confirms Edge WebView is integrated"],
+    "tables_referenced_union": [
+      "tbAdjuntos",
+      "tbLogErrores",
+      "tbLogCambios"
+    ],
+    "blast_radius_shared_symbols": [
+      "webVisor_BeforeNavigate is the unique handler surfaced from frmWebVisor (Edge WebView BeforeNavigate event) — confirms Edge WebView is integrated"
+    ],
     "notes": "G5 = auxiliares (logs, adjuntos, filtros, web visor). Pattern: lstResultados/lstAdjuntos use value-list RowSource (semicolon-separated columns) — Access ListBox header pattern, intentionally unparseable as SQL. The 4 log forms (frmVerLogErrores, frmDetalleLogError, frmVerLogCambios, frmDetalleLogCambio) have a duplicated pattern for cboFiltroUsuario/cboFiltroModulo/cboFiltroTabla — type-filter combo box with hardcoded tipoSolicitud enum values. webVisor_BeforeNavigate is the only handler surfaced by codegraph — confirms Edge WebView integration per docs."
   }
 }

@@ -84,7 +84,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for Actividad. 1 binding (likely IDEvento ComboBox).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormActividadDeEventoPorLotes",
@@ -145,7 +146,8 @@
       "unattended": false,
       "unattendedEvidence": "Sub-form: batch activity creation from a single event. 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormActividadEdicion",
@@ -210,7 +212,8 @@
       "unattended": false,
       "unattendedEvidence": "Edicion form for Actividad. 4 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEquipoAlta",
@@ -276,7 +279,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for Equipo. 4 bindings; codegraph-resolved: ComandoRegistrar_Click -> AltaIDEquipo (real handler chain).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEquipoEdicion",
@@ -342,7 +346,8 @@
       "unattended": false,
       "unattendedEvidence": "Edicion form for Equipo. 4 bindings; same Equipo class handler chain as Alta.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventoEqMedida",
@@ -406,7 +411,8 @@
       "unattended": false,
       "unattendedEvidence": "Sub-form: equipos de medida attached to an evento. 2 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventoEqMedidaEdicion",
@@ -470,7 +476,8 @@
       "unattended": false,
       "unattendedEvidence": "Edicion sub-form for equipos de medida of an evento. 2 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventosAltaMasivaPorNS",
@@ -536,7 +543,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta masiva de eventos por numero de serie. 8 bindings (largest in G4-missing).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormFacturaAlta",
@@ -600,7 +608,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for Factura. 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormGastoAlta",
@@ -665,7 +674,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for Gasto. 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormMaterialIntervencionAlta",
@@ -734,7 +744,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for Material (intervencion type). 6 handlers - has a Material class with copy helpers (CopiarSeguimientoMaterial / CopiarEventoCompleto / CopiarAnexo).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormMaterialRepuestoAlta",
@@ -800,7 +811,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for Material (repuesto type). 4 bindings. 57 geometry findings (largest in G4-missing).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionAlta",
@@ -864,7 +876,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for Planificacion. 2 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionAltaEquipo",
@@ -926,7 +939,8 @@
       "unattended": true,
       "unattendedEvidence": "Sub-form: alta de un equipo dentro de una planificacion. 0 bindings - unattended form: bindings set imperatively from parent context.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionCambioIDEvento",
@@ -990,7 +1004,8 @@
       "unattended": false,
       "unattendedEvidence": "Utility form: cambia el ID de evento de una planificacion. 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionEquipos",
@@ -1056,7 +1071,8 @@
       "unattended": false,
       "unattendedEvidence": "Detail form: gestion de equipos asignados a una planificacion. 5 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormSubContratacionAlta",
@@ -1121,7 +1137,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for SubContratacion. 2 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormSubSistemaAlta",
@@ -1186,7 +1203,8 @@
       "unattended": false,
       "unattendedEvidence": "Alta form for SubSistema. 1 binding. Uses AltaIDEquipo + DameID pattern.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormSubSistemaEdicion",
@@ -1247,7 +1265,8 @@
       "unattended": true,
       "unattendedEvidence": "Edicion form for SubSistema. 0 bindings - unattended form: bindings populated imperatively from OpenArgs.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnico",
@@ -1308,7 +1327,8 @@
       "unattended": true,
       "unattendedEvidence": "Detail form for a single Tecnico (data loaded via TIPOTECNICO.Registrar class). 0 bindings - unattended form: TIPOTECNICO class handles state.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnicoAusencias",
@@ -1370,7 +1390,8 @@
       "unattended": true,
       "unattendedEvidence": "Detail sub-form for Ausencias of a Tecnico. 0 bindings - unattended form.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnicoFiestas",
@@ -1431,7 +1452,8 @@
       "unattended": true,
       "unattendedEvidence": "Detail sub-form for Fiestas of a Tecnico. 0 bindings - unattended form.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnicoTipo",
@@ -1492,7 +1514,8 @@
       "unattended": true,
       "unattendedEvidence": "Detail form for TecnicoTipo (sub-form under Tecnico). 0 bindings - unattended; TIPOTECNICO.Registrar handles state.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTipoTecnicoPrecio",
@@ -1553,7 +1576,8 @@
       "unattended": true,
       "unattendedEvidence": "Detail form for TipoTecnicoPrecio. 0 bindings - unattended form.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     }
   ],
   "summary": {

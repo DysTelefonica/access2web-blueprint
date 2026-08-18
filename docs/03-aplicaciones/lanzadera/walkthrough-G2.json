@@ -57,18 +57,56 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormAplicacionDatosGenerales.form.txt",
       "role_in_group": "detail_pane",
       "hosted_by": "FormAplicacionGeneral (subform slot FormDetalle)",
-      "codegraph": { "status": "ok", "symbols": 44, "files": 2, "stale_index": true },
+      "codegraph": {
+        "status": "ok",
+        "symbols": 44,
+        "files": 2,
+        "stale_index": true
+      },
       "ui": {
         "status": "ok",
         "controls_count": 39,
-        "roles": { "container": 1, "display": 18, "input": 18, "action": 1, "unknown": 1 },
-        "types": { "Section": 1, "Label": 18, "TextBox": 15, "CommandButton": 1, "ComboBox": 3, "OptionGroup": 1 },
-        "controls_with_events": [ { "name": "ComandoRegistrar", "type": "CommandButton", "events": ["OnClick"] } ],
+        "roles": {
+          "container": 1,
+          "display": 18,
+          "input": 18,
+          "action": 1,
+          "unknown": 1
+        },
+        "types": {
+          "Section": 1,
+          "Label": 18,
+          "TextBox": 15,
+          "CommandButton": 1,
+          "ComboBox": 3,
+          "OptionGroup": 1
+        },
+        "controls_with_events": [
+          {
+            "name": "ComandoRegistrar",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          }
+        ],
         "bindings_count": 3,
         "bindings": [
-          { "control": "EnPruebas", "value": "Sí;No", "kind": "value_list" },
-          { "control": "EjecucionEnOficina", "value": "Sí;No", "kind": "value_list" },
-          { "control": "ConIconoEnLanzadera", "value": "Sí;No", "kind": "value_list" }
+          {
+            "control": "EnPruebas",
+            "value": "Sí;No",
+            "kind": "value_list"
+          },
+          {
+            "control": "EjecucionEnOficina",
+            "value": "Sí;No",
+            "kind": "value_list"
+          },
+          {
+            "control": "ConIconoEnLanzadera",
+            "value": "Sí;No",
+            "kind": "value_list"
+          }
         ],
         "bindings_note": "All 3 bindings are literal value-lists, not table/query sources. No ControlSource resolves to a schema field."
       },
@@ -77,50 +115,169 @@
         "controls": 39,
         "sections": 0,
         "findings_total": 44,
-        "severity": { "warning": 44, "error": 0 },
-        "by_code": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 36, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
-        "examples": { "FORM_LAYOUT_MISSING_GEOMETRY": ["Detalle"], "FORM_LAYOUT_OVERLAP": ["Etiqueta66 <-> Marco17", "NombreAplicacion <-> Marco17", "Etiqueta85 <-> Marco17", "NombreEjecutable <-> Marco17", "Etiqueta72 <-> Marco17", "NombreCorto <-> Marco17"] },
+        "severity": {
+          "warning": 44,
+          "error": 0
+        },
+        "by_code": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 36,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "examples": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": [
+            "Detalle"
+          ],
+          "FORM_LAYOUT_OVERLAP": [
+            "Etiqueta66 <-> Marco17",
+            "NombreAplicacion <-> Marco17",
+            "Etiqueta85 <-> Marco17",
+            "NombreEjecutable <-> Marco17",
+            "Etiqueta72 <-> Marco17",
+            "NombreCorto <-> Marco17"
+          ]
+        },
         "note": "36 of 36 overlaps are against the container Marco17 (frame enclosing its children) — cosmetic AABB artifact, not a real collision."
       },
       "behavior": {
         "status": "ok",
-        "form_events": ["OnOpen"],
+        "form_events": [
+          "OnOpen"
+        ],
         "handlers_count": 1,
-        "handlers": ["ComandoRegistrar"],
+        "handlers": [
+          "ComandoRegistrar"
+        ],
         "codegraph_evidence_status": "empty_skipped_bug_1408",
-        "warnings": ["No CodeGraph-VBA evidence was supplied."]
+        "warnings": [
+          "No CodeGraph-VBA evidence was supplied."
+        ]
       },
-      "bindings_verification": { "status": "skipped_tool_broken", "issue": 1412, "error": "RESULT_CONTRACT_VIOLATION" },
+      "bindings_verification": {
+        "status": "skipped_tool_broken",
+        "issue": 1412,
+        "error": "RESULT_CONTRACT_VIOLATION"
+      },
       "unattended": {
         "is_unattended_strict": false,
         "is_imperative": true,
         "rowsource_controlsource_assignments": 0,
         "me_assignments": 23,
-        "data_access": { "dao": 0, "sql": 0 },
+        "data_access": {
+          "dao": 0,
+          "sql": 0
+        },
         "verdict": "Unbound form. 18 input controls with no ControlSource and no DAO/SQL — persistence is delegated elsewhere (ComandoRegistrar_Click / DoCmd x7)."
       },
-      "cls_lines": 269
+      "cls_lines": 269,
+      "formName": "FormAplicacionDatosGenerales",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "form": "Form_FormAplicaciones",
       "form_name": "FormAplicaciones",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormAplicaciones.form.txt",
       "role_in_group": "shell_dispatcher",
-      "dispatches_to": ["FormAplicacionesFueraOficina", "FormAplicacionesOficina", "FormAplicacionesPrueba"],
-      "codegraph": { "status": "ok", "symbols": 41, "files": 2, "stale_index": true },
+      "dispatches_to": [
+        "FormAplicacionesFueraOficina",
+        "FormAplicacionesOficina",
+        "FormAplicacionesPrueba"
+      ],
+      "codegraph": {
+        "status": "ok",
+        "symbols": 41,
+        "files": 2,
+        "stale_index": true
+      },
       "ui": {
         "status": "ok",
         "controls_count": 16,
-        "roles": { "unknown": 6, "display": 9, "container": 1 },
-        "types": { "FormHeader": 1, "Rectangle": 3, "Label": 6, "Image": 3, "Section": 1, "Subform": 1, "FormFooter": 1 },
+        "roles": {
+          "unknown": 6,
+          "display": 9,
+          "container": 1
+        },
+        "types": {
+          "FormHeader": 1,
+          "Rectangle": 3,
+          "Label": 6,
+          "Image": 3,
+          "Section": 1,
+          "Subform": 1,
+          "FormFooter": 1
+        },
         "controls_with_events": [
-          { "name": "EncabezadoDelFormulario", "type": "FormHeader", "events": ["OnMouseMove"] },
-          { "name": "MENU1", "type": "Rectangle", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "lblMenu1", "type": "Label", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "MENU2", "type": "Rectangle", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "lblMenu2", "type": "Label", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "MENU3", "type": "Rectangle", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "lblMenu3", "type": "Label", "events": ["OnClick", "OnMouseMove"] }
+          {
+            "name": "EncabezadoDelFormulario",
+            "type": "FormHeader",
+            "events": [
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "MENU1",
+            "type": "Rectangle",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "lblMenu1",
+            "type": "Label",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "MENU2",
+            "type": "Rectangle",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "lblMenu2",
+            "type": "Label",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "MENU3",
+            "type": "Rectangle",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "lblMenu3",
+            "type": "Label",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          }
         ],
         "bindings_count": 0
       },
@@ -129,31 +286,96 @@
         "controls": 16,
         "sections": 2,
         "findings_total": 16,
-        "severity": { "warning": 16, "error": 0 },
-        "by_code": { "FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_OVERLAP": 8, "FORM_LAYOUT_ALIGNMENT": 2 },
-        "examples": { "FORM_LAYOUT_MISSING_GEOMETRY": ["EncabezadoDelFormulario", "MENU1", "IND1", "Detail", "FormDetalle", "PieDelFormulario"], "FORM_LAYOUT_OVERLAP": ["MENU2 <-> IND2", "MENU2 <-> lblMenu2", "MENU2 <-> Imagen2", "IND2 <-> Imagen2", "MENU3 <-> IND3", "MENU3 <-> lblMenu3"] },
+        "severity": {
+          "warning": 16,
+          "error": 0
+        },
+        "by_code": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 6,
+          "FORM_LAYOUT_OVERLAP": 8,
+          "FORM_LAYOUT_ALIGNMENT": 2
+        },
+        "examples": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": [
+            "EncabezadoDelFormulario",
+            "MENU1",
+            "IND1",
+            "Detail",
+            "FormDetalle",
+            "PieDelFormulario"
+          ],
+          "FORM_LAYOUT_OVERLAP": [
+            "MENU2 <-> IND2",
+            "MENU2 <-> lblMenu2",
+            "MENU2 <-> Imagen2",
+            "IND2 <-> Imagen2",
+            "MENU3 <-> IND3",
+            "MENU3 <-> lblMenu3"
+          ]
+        },
         "note": "Overlaps are the intended menu-tile composition (Rectangle + indicator + label + icon stacked per tile)."
       },
       "behavior": {
         "status": "ok",
-        "form_events": ["OnLoad"],
+        "form_events": [
+          "OnLoad"
+        ],
         "handlers_count": 7,
-        "handlers": ["EncabezadoDelFormulario", "MENU1", "lblMenu1", "MENU2", "lblMenu2", "MENU3", "lblMenu3"],
+        "handlers": [
+          "EncabezadoDelFormulario",
+          "MENU1",
+          "lblMenu1",
+          "MENU2",
+          "lblMenu2",
+          "MENU3",
+          "lblMenu3"
+        ],
         "codegraph_evidence_status": "empty_skipped_bug_1408",
-        "warnings": ["No CodeGraph-VBA evidence was supplied."]
+        "warnings": [
+          "No CodeGraph-VBA evidence was supplied."
+        ]
       },
-      "bindings_verification": { "status": "skipped_tool_broken", "issue": 1412, "error": "RESULT_CONTRACT_VIOLATION" },
+      "bindings_verification": {
+        "status": "skipped_tool_broken",
+        "issue": 1412,
+        "error": "RESULT_CONTRACT_VIOLATION"
+      },
       "unattended": {
         "is_unattended_strict": false,
         "is_imperative": true,
         "rowsource_controlsource_assignments": 0,
         "sourceobject_assignments": 7,
         "me_assignments": 64,
-        "data_access": { "dao": 0, "sql": 0 },
+        "data_access": {
+          "dao": 0,
+          "sql": 0
+        },
         "verdict": "Unattended by SourceObject dispatch: the visible content of subform slot FormDetalle is decided at runtime (L35/43/55/67), invisible to static binding analysis.",
-        "evidence": ["L35: Me.FormDetalle.SourceObject = \"\"", "L43: = \"FormAplicacionesFueraOficina\"", "L55: = \"FormAplicacionesOficina\"", "L67: = \"FormAplicacionesPrueba\""]
+        "evidence": [
+          "L35: Me.FormDetalle.SourceObject = \"\"",
+          "L43: = \"FormAplicacionesFueraOficina\"",
+          "L55: = \"FormAplicacionesOficina\"",
+          "L67: = \"FormAplicacionesPrueba\""
+        ]
       },
-      "cls_lines": 156
+      "cls_lines": 156,
+      "formName": "FormAplicaciones",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "form": "Form_FormAplicacionesFueraOficina",
@@ -161,24 +383,105 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormAplicacionesFueraOficina.form.txt",
       "role_in_group": "launcher_pane",
       "hosted_by": "FormAplicaciones (subform slot FormDetalle)",
-      "codegraph": { "status": "ok", "symbols": 48, "files": 2, "stale_index": true },
+      "codegraph": {
+        "status": "ok",
+        "symbols": 48,
+        "files": 2,
+        "stale_index": true
+      },
       "ui": {
         "status": "ok",
         "controls_count": 40,
-        "roles": { "container": 1, "display": 27, "action": 11, "input": 1 },
-        "types": { "Section": 1, "Label": 27, "CommandButton": 11, "TextBox": 1 },
+        "roles": {
+          "container": 1,
+          "display": 27,
+          "action": 11,
+          "input": 1
+        },
+        "types": {
+          "Section": 1,
+          "Label": 27,
+          "CommandButton": 11,
+          "TextBox": 1
+        },
         "controls_with_events": [
-          { "name": "ComandoAgedysEco", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoRegistro", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoAgedysTec", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoBrass", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoGestionRiesgos", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoNC", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoActualizar", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoExpediente", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoActualizarVersiones", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoSHPS", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoCondor", "type": "CommandButton", "events": ["OnClick"] }
+          {
+            "name": "ComandoAgedysEco",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoRegistro",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoAgedysTec",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoBrass",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoGestionRiesgos",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoNC",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoActualizar",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoExpediente",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoActualizarVersiones",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoSHPS",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoCondor",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          }
         ],
         "bindings_count": 0
       },
@@ -187,30 +490,81 @@
         "controls": 40,
         "sections": 0,
         "findings_total": 12,
-        "severity": { "warning": 12, "error": 0 },
-        "by_code": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 10, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
-        "examples": { "FORM_LAYOUT_MISSING_GEOMETRY": ["Detail"] },
+        "severity": {
+          "warning": 12,
+          "error": 0
+        },
+        "by_code": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 10,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "examples": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": [
+            "Detail"
+          ]
+        },
         "note": "Zero overlaps — cleanest geometry in the group despite the highest control count."
       },
       "behavior": {
         "status": "ok",
-        "form_events": ["OnLoad"],
+        "form_events": [
+          "OnLoad"
+        ],
         "handlers_count": 11,
-        "handlers": ["ComandoAgedysEco", "ComandoRegistro", "ComandoAgedysTec", "ComandoBrass", "ComandoGestionRiesgos", "ComandoNC", "ComandoActualizar", "ComandoExpediente", "ComandoActualizarVersiones", "ComandoSHPS", "ComandoCondor"],
+        "handlers": [
+          "ComandoAgedysEco",
+          "ComandoRegistro",
+          "ComandoAgedysTec",
+          "ComandoBrass",
+          "ComandoGestionRiesgos",
+          "ComandoNC",
+          "ComandoActualizar",
+          "ComandoExpediente",
+          "ComandoActualizarVersiones",
+          "ComandoSHPS",
+          "ComandoCondor"
+        ],
         "codegraph_evidence_status": "empty_skipped_bug_1408",
-        "warnings": ["No CodeGraph-VBA evidence was supplied."]
+        "warnings": [
+          "No CodeGraph-VBA evidence was supplied."
+        ]
       },
-      "bindings_verification": { "status": "skipped_tool_broken", "issue": 1412, "error": "RESULT_CONTRACT_VIOLATION" },
+      "bindings_verification": {
+        "status": "skipped_tool_broken",
+        "issue": 1412,
+        "error": "RESULT_CONTRACT_VIOLATION"
+      },
       "unattended": {
         "is_unattended_strict": false,
         "is_imperative": true,
         "rowsource_controlsource_assignments": 0,
         "me_assignments": 9,
-        "data_access": { "dao": 0, "sql": 0 },
+        "data_access": {
+          "dao": 0,
+          "sql": 0
+        },
         "verdict": "Pure launcher. 11 buttons -> 36 DoCmd calls; no data binding of any kind.",
         "docmd_count": 36
       },
-      "cls_lines": 493
+      "cls_lines": 493,
+      "formName": "FormAplicacionesFueraOficina",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "form": "Form_FormAplicacionesGestion",
@@ -218,50 +572,155 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormAplicacionesGestion.form.txt",
       "role_in_group": "detail_pane",
       "hosted_by": "FormAplicacionGeneral (subform slot FormDetalle)",
-      "codegraph": { "status": "ok", "symbols": 48, "files": 2, "stale_index": true },
+      "codegraph": {
+        "status": "ok",
+        "symbols": 48,
+        "files": 2,
+        "stale_index": true
+      },
       "ui": {
         "status": "ok",
         "controls_count": 12,
-        "roles": { "container": 1, "input": 4, "display": 4, "action": 2, "unknown": 1 },
-        "types": { "Section": 1, "ListBox": 1, "Label": 4, "CommandButton": 2, "TextBox": 3, "OptionGroup": 1 },
+        "roles": {
+          "container": 1,
+          "input": 4,
+          "display": 4,
+          "action": 2,
+          "unknown": 1
+        },
+        "types": {
+          "Section": 1,
+          "ListBox": 1,
+          "Label": 4,
+          "CommandButton": 2,
+          "TextBox": 3,
+          "OptionGroup": 1
+        },
         "controls_with_events": [
-          { "name": "ListaAplicaciones", "type": "ListBox", "events": ["OnClick"] },
-          { "name": "ComandoLimpiarNombre", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "NombreAplicacion", "type": "TextBox", "events": ["AfterUpdate"] },
-          { "name": "ComandoQuitarAplicacionActiva", "type": "CommandButton", "events": ["OnClick"] }
+          {
+            "name": "ListaAplicaciones",
+            "type": "ListBox",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoLimpiarNombre",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "NombreAplicacion",
+            "type": "TextBox",
+            "events": [
+              "AfterUpdate"
+            ]
+          },
+          {
+            "name": "ComandoQuitarAplicacionActiva",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          }
         ],
         "bindings_count": 1,
-        "bindings": [ { "control": "ListaAplicaciones", "value": "ID;Nombre", "kind": "value_list_header" } ]
+        "bindings": [
+          {
+            "control": "ListaAplicaciones",
+            "value": "ID;Nombre",
+            "kind": "value_list_header"
+          }
+        ]
       },
       "layout": {
         "status": "ok",
         "controls": 12,
         "sections": 0,
         "findings_total": 15,
-        "severity": { "warning": 15, "error": 0 },
-        "by_code": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 10, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
-        "examples": { "FORM_LAYOUT_MISSING_GEOMETRY": ["Detalle"], "FORM_LAYOUT_OVERLAP": ["ListaAplicaciones <-> Marco17", "Etiqueta0 <-> Marco17", "ComandoLimpiarNombre <-> Marco17", "NombreAplicacion <-> Marco17", "Etiqueta8 <-> Marco17", "AplicacionSeleccionada <-> Marco17"] },
+        "severity": {
+          "warning": 15,
+          "error": 0
+        },
+        "by_code": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 10,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "examples": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": [
+            "Detalle"
+          ],
+          "FORM_LAYOUT_OVERLAP": [
+            "ListaAplicaciones <-> Marco17",
+            "Etiqueta0 <-> Marco17",
+            "ComandoLimpiarNombre <-> Marco17",
+            "NombreAplicacion <-> Marco17",
+            "Etiqueta8 <-> Marco17",
+            "AplicacionSeleccionada <-> Marco17"
+          ]
+        },
         "note": "All 10 overlaps are against container Marco17 — same frame artifact as DatosGenerales."
       },
       "behavior": {
         "status": "ok",
-        "form_events": ["OnLoad"],
+        "form_events": [
+          "OnLoad"
+        ],
         "handlers_count": 4,
-        "handlers": ["ListaAplicaciones", "ComandoLimpiarNombre", "NombreAplicacion", "ComandoQuitarAplicacionActiva"],
+        "handlers": [
+          "ListaAplicaciones",
+          "ComandoLimpiarNombre",
+          "NombreAplicacion",
+          "ComandoQuitarAplicacionActiva"
+        ],
         "codegraph_evidence_status": "empty_skipped_bug_1408",
-        "warnings": ["No CodeGraph-VBA evidence was supplied."]
+        "warnings": [
+          "No CodeGraph-VBA evidence was supplied."
+        ]
       },
-      "bindings_verification": { "status": "skipped_tool_broken", "issue": 1412, "error": "RESULT_CONTRACT_VIOLATION" },
+      "bindings_verification": {
+        "status": "skipped_tool_broken",
+        "issue": 1412,
+        "error": "RESULT_CONTRACT_VIOLATION"
+      },
       "unattended": {
         "is_unattended_strict": true,
         "is_imperative": true,
         "rowsource_controlsource_assignments": 2,
         "me_assignments": 9,
-        "data_access": { "dao": 0, "sql": 0 },
+        "data_access": {
+          "dao": 0,
+          "sql": 0
+        },
         "verdict": "ONLY form in G2 matching the strict unattended pattern: Form_Load sets Me.ListaAplicaciones.RowSource. The RowSource is a value-list header (\"ID;Nombre\") whose rows are then pushed row-by-row via .AddItem from an in-memory collection — NOT a table/query. verify_form_bindings could not have resolved it against a schema even if the tool worked.",
-        "evidence": ["L87 (Form_Load): Me.ListaAplicaciones.RowSource = \"ID;Nombre\"", "L47: lst.RowSource = \"ID;Nombre\"", "L59: lst.AddItem .IDAplicacion & \";\" & .NombreAplicacion"]
+        "evidence": [
+          "L87 (Form_Load): Me.ListaAplicaciones.RowSource = \"ID;Nombre\"",
+          "L47: lst.RowSource = \"ID;Nombre\"",
+          "L59: lst.AddItem .IDAplicacion & \";\" & .NombreAplicacion"
+        ]
       },
-      "cls_lines": 149
+      "cls_lines": 149,
+      "formName": "FormAplicacionesGestion",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "form": "Form_FormAplicacionesOficina",
@@ -269,20 +728,75 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormAplicacionesOficina.form.txt",
       "role_in_group": "launcher_pane",
       "hosted_by": "FormAplicaciones (subform slot FormDetalle)",
-      "codegraph": { "status": "ok", "symbols": 48, "files": 2, "stale_index": true },
+      "codegraph": {
+        "status": "ok",
+        "symbols": 48,
+        "files": 2,
+        "stale_index": true
+      },
       "ui": {
         "status": "ok",
         "controls_count": 23,
-        "roles": { "container": 1, "action": 7, "display": 15 },
-        "types": { "Section": 1, "CommandButton": 7, "Label": 15 },
+        "roles": {
+          "container": 1,
+          "action": 7,
+          "display": 15
+        },
+        "types": {
+          "Section": 1,
+          "CommandButton": 7,
+          "Label": 15
+        },
         "controls_with_events": [
-          { "name": "ComandoSeguridad", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoHPS", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoGestionContratos", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoSICA", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoActualizar", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoActualizarVersiones", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoAGEDO", "type": "CommandButton", "events": ["OnClick"] }
+          {
+            "name": "ComandoSeguridad",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoHPS",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoGestionContratos",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoSICA",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoActualizar",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoActualizarVersiones",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoAGEDO",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          }
         ],
         "bindings_count": 0
       },
@@ -291,30 +805,77 @@
         "controls": 23,
         "sections": 0,
         "findings_total": 7,
-        "severity": { "warning": 7, "error": 0 },
-        "by_code": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 5, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1 },
-        "examples": { "FORM_LAYOUT_MISSING_GEOMETRY": ["Detail"] },
+        "severity": {
+          "warning": 7,
+          "error": 0
+        },
+        "by_code": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "examples": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": [
+            "Detail"
+          ]
+        },
         "note": "Zero overlaps."
       },
       "behavior": {
         "status": "ok",
-        "form_events": ["OnLoad"],
+        "form_events": [
+          "OnLoad"
+        ],
         "handlers_count": 7,
-        "handlers": ["ComandoSeguridad", "ComandoHPS", "ComandoGestionContratos", "ComandoSICA", "ComandoActualizar", "ComandoActualizarVersiones", "ComandoAGEDO"],
+        "handlers": [
+          "ComandoSeguridad",
+          "ComandoHPS",
+          "ComandoGestionContratos",
+          "ComandoSICA",
+          "ComandoActualizar",
+          "ComandoActualizarVersiones",
+          "ComandoAGEDO"
+        ],
         "codegraph_evidence_status": "empty_skipped_bug_1408",
-        "warnings": ["No CodeGraph-VBA evidence was supplied."]
+        "warnings": [
+          "No CodeGraph-VBA evidence was supplied."
+        ]
       },
-      "bindings_verification": { "status": "skipped_tool_broken", "issue": 1412, "error": "RESULT_CONTRACT_VIOLATION" },
+      "bindings_verification": {
+        "status": "skipped_tool_broken",
+        "issue": 1412,
+        "error": "RESULT_CONTRACT_VIOLATION"
+      },
       "unattended": {
         "is_unattended_strict": false,
         "is_imperative": true,
         "rowsource_controlsource_assignments": 0,
         "me_assignments": 8,
-        "data_access": { "dao": 0, "sql": 0 },
+        "data_access": {
+          "dao": 0,
+          "sql": 0
+        },
         "verdict": "Pure launcher. 7 buttons -> 24 DoCmd calls; no data binding.",
         "docmd_count": 24
       },
-      "cls_lines": 371
+      "cls_lines": 371,
+      "formName": "FormAplicacionesOficina",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "form": "Form_FormAplicacionesPrueba",
@@ -322,16 +883,47 @@
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormAplicacionesPrueba.form.txt",
       "role_in_group": "launcher_pane",
       "hosted_by": "FormAplicaciones (subform slot FormDetalle)",
-      "codegraph": { "status": "ok", "symbols": 48, "files": 2, "stale_index": true },
+      "codegraph": {
+        "status": "ok",
+        "symbols": 48,
+        "files": 2,
+        "stale_index": true
+      },
       "ui": {
         "status": "ok",
         "controls_count": 10,
-        "roles": { "container": 1, "action": 3, "display": 6 },
-        "types": { "Section": 1, "CommandButton": 3, "Label": 6 },
+        "roles": {
+          "container": 1,
+          "action": 3,
+          "display": 6
+        },
+        "types": {
+          "Section": 1,
+          "CommandButton": 3,
+          "Label": 6
+        },
         "controls_with_events": [
-          { "name": "ComandoActualizar", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoCondorPrueba", "type": "CommandButton", "events": ["OnClick"] },
-          { "name": "ComandoNoConformidadesPrueba", "type": "CommandButton", "events": ["OnClick"] }
+          {
+            "name": "ComandoActualizar",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoCondorPrueba",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          },
+          {
+            "name": "ComandoNoConformidadesPrueba",
+            "type": "CommandButton",
+            "events": [
+              "OnClick"
+            ]
+          }
         ],
         "bindings_count": 0
       },
@@ -340,49 +932,145 @@
         "controls": 10,
         "sections": 0,
         "findings_total": 4,
-        "severity": { "warning": 4, "error": 0 },
-        "by_code": { "FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 3 },
-        "examples": { "FORM_LAYOUT_MISSING_GEOMETRY": ["Detail"] },
+        "severity": {
+          "warning": 4,
+          "error": 0
+        },
+        "by_code": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3
+        },
+        "examples": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": [
+            "Detail"
+          ]
+        },
         "note": "Cleanest form in the group (4 findings, zero overlaps)."
       },
       "behavior": {
         "status": "ok",
-        "form_events": ["OnLoad"],
+        "form_events": [
+          "OnLoad"
+        ],
         "handlers_count": 3,
-        "handlers": ["ComandoActualizar", "ComandoCondorPrueba", "ComandoNoConformidadesPrueba"],
+        "handlers": [
+          "ComandoActualizar",
+          "ComandoCondorPrueba",
+          "ComandoNoConformidadesPrueba"
+        ],
         "codegraph_evidence_status": "empty_skipped_bug_1408",
-        "warnings": ["No CodeGraph-VBA evidence was supplied."]
+        "warnings": [
+          "No CodeGraph-VBA evidence was supplied."
+        ]
       },
-      "bindings_verification": { "status": "skipped_tool_broken", "issue": 1412, "error": "RESULT_CONTRACT_VIOLATION" },
+      "bindings_verification": {
+        "status": "skipped_tool_broken",
+        "issue": 1412,
+        "error": "RESULT_CONTRACT_VIOLATION"
+      },
       "unattended": {
         "is_unattended_strict": false,
         "is_imperative": true,
         "rowsource_controlsource_assignments": 0,
         "me_assignments": 5,
-        "data_access": { "dao": 0, "sql": 0 },
+        "data_access": {
+          "dao": 0,
+          "sql": 0
+        },
         "verdict": "Pure launcher (test/QA variant). 3 buttons -> 12 DoCmd calls. 293 .cls lines for 3 handlers suggests copy-paste from the Oficina/FueraOficina panes.",
         "docmd_count": 12
       },
-      "cls_lines": 293
+      "cls_lines": 293,
+      "formName": "FormAplicacionesPrueba",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     },
     {
       "form": "Form_FormAplicacionGeneral",
       "form_name": "FormAplicacionGeneral",
       "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/lanzaderas/src/forms/Form_FormAplicacionGeneral.form.txt",
       "role_in_group": "shell_dispatcher",
-      "dispatches_to": ["FormAplicacionesGestion", "FormAplicacionDatosGenerales"],
-      "codegraph": { "status": "ok", "symbols": 44, "files": 2, "stale_index": true },
+      "dispatches_to": [
+        "FormAplicacionesGestion",
+        "FormAplicacionDatosGenerales"
+      ],
+      "codegraph": {
+        "status": "ok",
+        "symbols": 44,
+        "files": 2,
+        "stale_index": true
+      },
       "ui": {
         "status": "ok",
         "controls_count": 14,
-        "roles": { "unknown": 6, "display": 7, "container": 1 },
-        "types": { "FormHeader": 1, "Rectangle": 3, "Label": 5, "Image": 2, "Section": 1, "Subform": 1, "FormFooter": 1 },
+        "roles": {
+          "unknown": 6,
+          "display": 7,
+          "container": 1
+        },
+        "types": {
+          "FormHeader": 1,
+          "Rectangle": 3,
+          "Label": 5,
+          "Image": 2,
+          "Section": 1,
+          "Subform": 1,
+          "FormFooter": 1
+        },
         "controls_with_events": [
-          { "name": "EncabezadoDelFormulario", "type": "FormHeader", "events": ["OnMouseMove"] },
-          { "name": "MENU1", "type": "Rectangle", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "lblMenu1", "type": "Label", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "MENU2", "type": "Rectangle", "events": ["OnClick", "OnMouseMove"] },
-          { "name": "lblMenu2", "type": "Label", "events": ["OnClick", "OnMouseMove"] }
+          {
+            "name": "EncabezadoDelFormulario",
+            "type": "FormHeader",
+            "events": [
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "MENU1",
+            "type": "Rectangle",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "lblMenu1",
+            "type": "Label",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "MENU2",
+            "type": "Rectangle",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          },
+          {
+            "name": "lblMenu2",
+            "type": "Label",
+            "events": [
+              "OnClick",
+              "OnMouseMove"
+            ]
+          }
         ],
         "bindings_count": 0
       },
@@ -391,48 +1079,121 @@
         "controls": 14,
         "sections": 2,
         "findings_total": 12,
-        "severity": { "warning": 12, "error": 0 },
-        "by_code": { "FORM_LAYOUT_MISSING_GEOMETRY": 9, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 1 },
-        "examples": { "FORM_LAYOUT_MISSING_GEOMETRY": ["EncabezadoDelFormulario", "MENU3", "MENU1", "IND1", "Imagen1", "Imagen2"], "FORM_LAYOUT_OVERLAP": ["MENU2 <-> IND2", "MENU2 <-> lblMenu2"] },
+        "severity": {
+          "warning": 12,
+          "error": 0
+        },
+        "by_code": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 9,
+          "FORM_LAYOUT_OVERLAP": 2,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "examples": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": [
+            "EncabezadoDelFormulario",
+            "MENU3",
+            "MENU1",
+            "IND1",
+            "Imagen1",
+            "Imagen2"
+          ],
+          "FORM_LAYOUT_OVERLAP": [
+            "MENU2 <-> IND2",
+            "MENU2 <-> lblMenu2"
+          ]
+        },
         "note": "9/14 controls lack complete geometry — highest missing-geometry ratio in G2. MENU3 exists in the .form.txt but has no OnClick handler and no SourceObject target (see group findings)."
       },
       "behavior": {
         "status": "ok",
-        "form_events": ["OnLoad"],
+        "form_events": [
+          "OnLoad"
+        ],
         "handlers_count": 5,
-        "handlers": ["EncabezadoDelFormulario", "MENU1", "lblMenu1", "MENU2", "lblMenu2"],
+        "handlers": [
+          "EncabezadoDelFormulario",
+          "MENU1",
+          "lblMenu1",
+          "MENU2",
+          "lblMenu2"
+        ],
         "codegraph_evidence_status": "empty_skipped_bug_1408",
-        "warnings": ["No CodeGraph-VBA evidence was supplied."]
+        "warnings": [
+          "No CodeGraph-VBA evidence was supplied."
+        ]
       },
-      "bindings_verification": { "status": "skipped_tool_broken", "issue": 1412, "error": "RESULT_CONTRACT_VIOLATION" },
+      "bindings_verification": {
+        "status": "skipped_tool_broken",
+        "issue": 1412,
+        "error": "RESULT_CONTRACT_VIOLATION"
+      },
       "unattended": {
         "is_unattended_strict": false,
         "is_imperative": true,
         "rowsource_controlsource_assignments": 0,
         "sourceobject_assignments": 5,
         "me_assignments": 34,
-        "data_access": { "dao": 0, "sql": 0 },
+        "data_access": {
+          "dao": 0,
+          "sql": 0
+        },
         "verdict": "Unattended by SourceObject dispatch: subform slot FormDetalle resolved at runtime (L39/64/75).",
-        "evidence": ["L39: Me.FormDetalle.SourceObject = \"\"", "L64: = \"FormAplicacionesGestion\"", "L75: = \"FormAplicacionDatosGenerales\""]
+        "evidence": [
+          "L39: Me.FormDetalle.SourceObject = \"\"",
+          "L64: = \"FormAplicacionesGestion\"",
+          "L75: = \"FormAplicacionDatosGenerales\""
+        ]
       },
-      "cls_lines": 129
+      "cls_lines": 129,
+      "formName": "FormAplicacionGeneral",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "verify_form_bindings": {
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412).",
+        "findings": []
+      }
     }
   ],
   "group_architecture": {
     "shape": "two shell dispatchers, each swapping panes into a single subform slot named FormDetalle",
     "tree": {
-      "FormAplicaciones": ["FormAplicacionesFueraOficina", "FormAplicacionesOficina", "FormAplicacionesPrueba"],
-      "FormAplicacionGeneral": ["FormAplicacionesGestion", "FormAplicacionDatosGenerales"]
+      "FormAplicaciones": [
+        "FormAplicacionesFueraOficina",
+        "FormAplicacionesOficina",
+        "FormAplicacionesPrueba"
+      ],
+      "FormAplicacionGeneral": [
+        "FormAplicacionesGestion",
+        "FormAplicacionDatosGenerales"
+      ]
     },
     "note": "All 7 G2 forms belong to one navigation tree; the 2 shells cover the other 5 as panes. No pane is reachable except through its shell."
   },
   "summary": {
     "forms_processed": 7,
     "forms_total": 7,
-    "tools_ok_per_form": ["codegraph_explore", "analyze_form_ui", "analyze_form_layout", "map_form_behavior"],
+    "tools_ok_per_form": [
+      "codegraph_explore",
+      "analyze_form_ui",
+      "analyze_form_layout",
+      "map_form_behavior"
+    ],
     "verify_form_bindings_skipped": 7,
     "layout_findings_total": 110,
-    "layout_findings_by_severity": { "warning": 110, "error": 0 },
+    "layout_findings_by_severity": {
+      "warning": 110,
+      "error": 0
+    },
     "layout_findings_by_code": {
       "FORM_LAYOUT_OVERLAP": 56,
       "FORM_LAYOUT_ALIGNMENT": 30,
@@ -441,8 +1202,13 @@
       "FORM_LAYOUT_OFF_SECTION": 0
     },
     "critical_findings": 0,
-    "unattended_strict": ["Form_FormAplicacionesGestion"],
-    "unattended_by_sourceobject": ["Form_FormAplicaciones", "Form_FormAplicacionGeneral"],
+    "unattended_strict": [
+      "Form_FormAplicacionesGestion"
+    ],
+    "unattended_by_sourceobject": [
+      "Form_FormAplicaciones",
+      "Form_FormAplicacionGeneral"
+    ],
     "imperative_all": true,
     "forms_with_zero_table_bindings": 7,
     "data_access_summary": "0 DAO calls and 0 inline SELECT across all 7 .cls files — G2 is a presentation/navigation layer with no direct data layer.",

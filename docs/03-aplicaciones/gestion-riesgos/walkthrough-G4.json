@@ -14,27 +14,1396 @@
   "generated_at": "2026-08-08T09:04:56.323Z",
   "forms_count": 21,
   "forms": [
-    {"group": "G4", "formName": "Form_FormRiesgo", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgo.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgo", "controls_count": 19, "formEvents": ["OnLoad"], "bindings_count": 0}, "geometry": {"findings_count": 38, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 3, "FORM_LAYOUT_OVERLAP": 33, "FORM_LAYOUT_ALIGNMENT": 1, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "PieDelFormulario", "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 0, "by_kind": {}, "findings_top_3": []}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoBiblioteca", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoBiblioteca.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoBiblioteca", "controls_count": 13, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 11, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 4, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "Activo", "message": "Control \"Activo\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoDefinicion", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoDefinicion.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoDefinicion", "controls_count": 22, "formEvents": ["OnLoad"], "bindings_count": 5}, "geometry": {"findings_count": 6, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 4, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 135–170): ComandoLimpiarFamilia, TextoPendienteRetipificacion, ComboFamilia, Etiqueta232."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 763–795): PalabraClave, ComandoLimpiarPalabraClave, Origen, Priorizacion, Etiqueta42, Etiqueta43, Etiqueta44, Etiqueta45."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 5, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 5}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaFiltrados", "message": "Control \"ListaFiltrados\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "EntidadDetecta", "message": "Control \"EntidadDetecta\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "DetectadoPor", "message": "Control \"DetectadoPor\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoDefinicionNoBiblioteca", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoDefinicionNoBiblioteca.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoDefinicionNoBiblioteca", "controls_count": 12, "formEvents": ["OnOpen"], "bindings_count": 3}, "geometry": {"findings_count": 3, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 2}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 420–450): Origen, Priorizacion, Etiqueta232, Etiqueta34, Etiqueta36."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 2865–2895): EntidadDetecta, DetectadoPor, FechaDetectado, Etiqueta37, Etiqueta38."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 3, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 3}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "EntidadDetecta", "message": "Control \"EntidadDetecta\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "DetectadoPor", "message": "Control \"DetectadoPor\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "Origen", "message": "Control \"Origen\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoExternoDetalle", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoExternoDetalle.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoExternoDetalle", "controls_count": 21, "formEvents": ["OnOpen"], "bindings_count": 1}, "geometry": {"findings_count": 13, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 5, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "Trasladar", "message": "Control \"Trasladar\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoMaterializado", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoMaterializado.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoMaterializado", "controls_count": 8, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 5, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_OVERLAP", "controlName": "ListasMaterializaciones <-> ComandoVerEnTarea", "message": "Controls \"ListasMaterializaciones\" and \"ComandoVerEnTarea\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 255–260): FechaMaterializado, ComandoFechaMaterializado, Etiqueta232."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListasMaterializaciones", "message": "Control \"ListasMaterializaciones\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoMitigacion", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoMitigacion.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoMitigacion", "controls_count": 14, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 4, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 5625–5655): FechaJustificacionAceptacionRiesgo, FechaAprobacionAceptacionPorCalidad, FechaRechazoAceptacionPorCalidad, lblFechaJustificacionAceptacionRiesgo, lblFechaAprobacionAceptacionPorCalidad, lblFechaRechazoAceptacionPorCalidad."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 6240–6240): ComandoAceptar, ComandoRechazar."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaMitigacion", "message": "Control \"ListaMitigacion\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoNC", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoNC.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoNC", "controls_count": 40, "formEvents": ["OnOpen"], "bindings_count": 2}, "geometry": {"findings_count": 19, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 9, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 6, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Etiqueta5", "message": "Control \"Etiqueta5\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Etiqueta206", "message": "Control \"Etiqueta206\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 1, "tables_referenced": [], "unmapped_evidence_count": 6}, "verify_form_bindings": {"findings_count": 2, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 2}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "EntidadResponsable", "message": "Control \"EntidadResponsable\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "RequiereControlEficacia", "message": "Control \"RequiereControlEficacia\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoPlazoCosteCalidad", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoPlazoCosteCalidad.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoPlazoCosteCalidad", "controls_count": 8, "formEvents": ["OnLoad"], "bindings_count": 3}, "geometry": {"findings_count": 4, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 4}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Etiqueta232", "message": "Control \"Etiqueta232\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Etiqueta32", "message": "Control \"Etiqueta32\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 3, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 3}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaPlazo", "message": "Control \"ListaPlazo\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaCoste", "message": "Control \"ListaCoste\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaCalidad", "message": "Control \"ListaCalidad\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoPosiblesModificacionesAceptarRetirar", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoPosiblesModificacionesAceptarRetirar.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoPosiblesModificacionesAceptarRetirar", "controls_count": 15, "formEvents": ["OnLoad"], "bindings_count": 0}, "geometry": {"findings_count": 9, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 9}, "verify_form_bindings": {"findings_count": 0, "by_kind": {}, "findings_top_3": []}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoPosiblesModificacionesQuitarAceptar", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoPosiblesModificacionesQuitarAceptar.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoPosiblesModificacionesQuitarAceptar", "controls_count": 8, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 7, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 5, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaMitigacion", "message": "Control \"ListaMitigacion\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoRetirado", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoRetirado.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoRetirado", "controls_count": 16, "formEvents": ["OnLoad"], "bindings_count": 0}, "geometry": {"findings_count": 6, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 4, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 225–260): FechaRetirado, ComandoFRetirado, Etiqueta232."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 735–735): lblJustificacionRetiroRiesgo, ComandoEliminar."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 0, "by_kind": {}, "findings_top_3": []}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgoVulnerabilidad", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoVulnerabilidad.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgoVulnerabilidad", "controls_count": 2, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 1, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaVulnerabilidad", "message": "Control \"ListaVulnerabilidad\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgosBibliotecaGestion", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosBibliotecaGestion.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgosBibliotecaGestion", "controls_count": 24, "formEvents": ["OnOpen"], "bindings_count": 3}, "geometry": {"findings_count": 13, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 5, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 3, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 3}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ListaRiesgos", "message": "Control \"ListaRiesgos\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ComboFamilia", "message": "Control \"ComboFamilia\" has a RowSource that could not be parsed as SQL."}, {"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "Activo", "message": "Control \"Activo\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgosEstablecerPrioridades", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosEstablecerPrioridades.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgosEstablecerPrioridades", "controls_count": 13, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 12, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 4, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 6, "by_kind": {"FORM_BINDING_MISSING_COLUMN": 5, "FORM_BINDING_MISSING_TABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_MISSING_COLUMN", "controlName": "ListaRiesgos", "message": "Control \"ListaRiesgos\" RowSource references column \"TbAuxPriorizacion.IDRiesgo\" which is not in the schema for \"TbAuxPriorizacion\"."}, {"code": "FORM_BINDING_MISSING_COLUMN", "controlName": "ListaRiesgos", "message": "Control \"ListaRiesgos\" RowSource references column \"TbAuxPriorizacion.Pri\" which is not in the schema for \"TbAuxPriorizacion\"."}, {"code": "FORM_BINDING_MISSING_COLUMN", "controlName": "ListaRiesgos", "message": "Control \"ListaRiesgos\" RowSource references column \"TbAuxPriorizacion.PriEdAnterior\" which is not in the schema for \"TbAuxPriorizacion\"."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgosGestionPlanAcciones", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosGestionPlanAcciones.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgosGestionPlanAcciones", "controls_count": 14, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 5, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_ALIGNMENT": 3, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 3495–3495): ResponsableAccion, Etiqueta5."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 3940–3945): FechaInicio, FechaFinPrevista, FechaFinReal, Etiqueta6, Etiqueta7, Etiqueta8."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ResponsableAccion", "message": "Control \"ResponsableAccion\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormRiesgosGestionPlanPrincipal", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosGestionPlanPrincipal.form.txt", "method_version": "v5", "ui": {"formName": "FormRiesgosGestionPlanPrincipal", "controls_count": 11, "formEvents": ["OnLoad"], "bindings_count": 0}, "geometry": {"findings_count": 6, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 1, "FORM_LAYOUT_OVERLAP": 2, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_OVERLAP", "controlName": "Cuadro38 <-> ComandoAltaAccion", "message": "Controls \"Cuadro38\" and \"ComandoAltaAccion\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."}, {"code": "FORM_LAYOUT_OVERLAP", "controlName": "Cuadro38 <-> ComandoEliminar", "message": "Controls \"Cuadro38\" and \"ComandoEliminar\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 0, "by_kind": {}, "findings_top_3": []}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormPlanAcciones", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormPlanAcciones.form.txt", "method_version": "v5", "ui": {"formName": "FormPlanAcciones", "controls_count": 23, "formEvents": ["OnLoad"], "bindings_count": 1}, "geometry": {"findings_count": 13, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 6, "FORM_LAYOUT_OVERLAP": 1, "FORM_LAYOUT_ALIGNMENT": 5, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "ComandoAyuda", "message": "Control \"ComandoAyuda\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 1, "by_kind": {"FORM_BINDING_SQL_UNPARSEABLE": 1}, "findings_top_3": [{"code": "FORM_BINDING_SQL_UNPARSEABLE", "controlName": "ResponsableAccion", "message": "Control \"ResponsableAccion\" has a RowSource that could not be parsed as SQL."}]}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormPlanPrincipal", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormPlanPrincipal.form.txt", "method_version": "v5", "ui": {"formName": "FormPlanPrincipal", "controls_count": 14, "formEvents": ["OnLoad"], "bindings_count": 0}, "geometry": {"findings_count": 14, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 7, "FORM_LAYOUT_OVERLAP": 4, "FORM_LAYOUT_ALIGNMENT": 2, "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo1", "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 0, "by_kind": {}, "findings_top_3": []}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormMaterializacionPlanContingencia", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormMaterializacionPlanContingencia.form.txt", "method_version": "v5", "ui": {"formName": "FormMaterializacionPlanContingencia", "controls_count": 7, "formEvents": ["OnLoad"], "bindings_count": 0}, "geometry": {"findings_count": 4, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 2, "FORM_LAYOUT_ALIGNMENT": 2}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "txtFechaMaterializacion", "message": "Control \"txtFechaMaterializacion\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_ALIGNMENT", "message": "Controls form a visual row within 50 twips (Top range 900–930): lblPlanContingencia, cmbPlanContingencia."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 0, "by_kind": {}, "findings_top_3": []}, "unattended": false, "unattended_evidence": null},
-    {"group": "G4", "formName": "Form_FormSuministrador", "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormSuministrador.form.txt", "method_version": "v5", "ui": {"formName": "FormSuministrador", "controls_count": 12, "formEvents": ["OnOpen"], "bindings_count": 0}, "geometry": {"findings_count": 11, "by_kind": {"FORM_LAYOUT_MISSING_GEOMETRY": 4, "FORM_LAYOUT_OVERLAP": 3, "FORM_LAYOUT_ALIGNMENT": 4}, "findings_top_3": [{"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "EncabezadoDelFormulario", "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "lblTitulo", "message": "Control \"lblTitulo\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}, {"code": "FORM_LAYOUT_MISSING_GEOMETRY", "controlName": "Detalle", "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."}]}, "behavior": {"controls_with_handler_evidence": 0, "tables_referenced": [], "unmapped_evidence_count": 7}, "verify_form_bindings": {"findings_count": 0, "by_kind": {}, "findings_top_3": []}, "unattended": false, "unattended_evidence": null}
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgo",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgo.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgo",
+        "controls_count": 19,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0
+      },
+      "geometry": {
+        "findings_count": 38,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 3,
+          "FORM_LAYOUT_OVERLAP": 33,
+          "FORM_LAYOUT_ALIGNMENT": 1,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "PieDelFormulario",
+            "message": "Control \"PieDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoBiblioteca",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoBiblioteca.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoBiblioteca",
+        "controls_count": 13,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "Activo",
+            "message": "Control \"Activo\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoDefinicion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoDefinicion.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoDefinicion",
+        "controls_count": 22,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 5
+      },
+      "geometry": {
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 135–170): ComandoLimpiarFamilia, TextoPendienteRetipificacion, ComboFamilia, Etiqueta232."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 763–795): PalabraClave, ComandoLimpiarPalabraClave, Origen, Priorizacion, Etiqueta42, Etiqueta43, Etiqueta44, Etiqueta45."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 5
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaFiltrados",
+            "message": "Control \"ListaFiltrados\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "EntidadDetecta",
+            "message": "Control \"EntidadDetecta\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "DetectadoPor",
+            "message": "Control \"DetectadoPor\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoDefinicionNoBiblioteca",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoDefinicionNoBiblioteca.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoDefinicionNoBiblioteca",
+        "controls_count": 12,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 3
+      },
+      "geometry": {
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 420–450): Origen, Priorizacion, Etiqueta232, Etiqueta34, Etiqueta36."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 2865–2895): EntidadDetecta, DetectadoPor, FechaDetectado, Etiqueta37, Etiqueta38."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 3
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "EntidadDetecta",
+            "message": "Control \"EntidadDetecta\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "DetectadoPor",
+            "message": "Control \"DetectadoPor\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "Origen",
+            "message": "Control \"Origen\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoExternoDetalle",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoExternoDetalle.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoExternoDetalle",
+        "controls_count": 21,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 5,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "Trasladar",
+            "message": "Control \"Trasladar\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoMaterializado",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoMaterializado.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoMaterializado",
+        "controls_count": 8,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "controlName": "ListasMaterializaciones <-> ComandoVerEnTarea",
+            "message": "Controls \"ListasMaterializaciones\" and \"ComandoVerEnTarea\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 255–260): FechaMaterializado, ComandoFechaMaterializado, Etiqueta232."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListasMaterializaciones",
+            "message": "Control \"ListasMaterializaciones\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoMitigacion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoMitigacion.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoMitigacion",
+        "controls_count": 14,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 4,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 5625–5655): FechaJustificacionAceptacionRiesgo, FechaAprobacionAceptacionPorCalidad, FechaRechazoAceptacionPorCalidad, lblFechaJustificacionAceptacionRiesgo, lblFechaAprobacionAceptacionPorCalidad, lblFechaRechazoAceptacionPorCalidad."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 6240–6240): ComandoAceptar, ComandoRechazar."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaMitigacion",
+            "message": "Control \"ListaMitigacion\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoNC",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoNC.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoNC",
+        "controls_count": 40,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 2
+      },
+      "geometry": {
+        "findings_count": 19,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 9,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 6,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Etiqueta5",
+            "message": "Control \"Etiqueta5\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Etiqueta206",
+            "message": "Control \"Etiqueta206\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 1,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 6
+      },
+      "verify_form_bindings": {
+        "findings_count": 2,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 2
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "EntidadResponsable",
+            "message": "Control \"EntidadResponsable\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "RequiereControlEficacia",
+            "message": "Control \"RequiereControlEficacia\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoPlazoCosteCalidad",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoPlazoCosteCalidad.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoPlazoCosteCalidad",
+        "controls_count": 8,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 3
+      },
+      "geometry": {
+        "findings_count": 4,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Etiqueta232",
+            "message": "Control \"Etiqueta232\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Etiqueta32",
+            "message": "Control \"Etiqueta32\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 3
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaPlazo",
+            "message": "Control \"ListaPlazo\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaCoste",
+            "message": "Control \"ListaCoste\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaCalidad",
+            "message": "Control \"ListaCalidad\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoPosiblesModificacionesAceptarRetirar",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoPosiblesModificacionesAceptarRetirar.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoPosiblesModificacionesAceptarRetirar",
+        "controls_count": 15,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0
+      },
+      "geometry": {
+        "findings_count": 9,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 2,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 9
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoPosiblesModificacionesQuitarAceptar",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoPosiblesModificacionesQuitarAceptar.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoPosiblesModificacionesQuitarAceptar",
+        "controls_count": 8,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 7,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 5,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaMitigacion",
+            "message": "Control \"ListaMitigacion\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoRetirado",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoRetirado.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoRetirado",
+        "controls_count": 16,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0
+      },
+      "geometry": {
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 4,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 225–260): FechaRetirado, ComandoFRetirado, Etiqueta232."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 735–735): lblJustificacionRetiroRiesgo, ComandoEliminar."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgoVulnerabilidad",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgoVulnerabilidad.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgoVulnerabilidad",
+        "controls_count": 2,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaVulnerabilidad",
+            "message": "Control \"ListaVulnerabilidad\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgosBibliotecaGestion",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosBibliotecaGestion.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgosBibliotecaGestion",
+        "controls_count": 24,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 3
+      },
+      "geometry": {
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 5,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 3,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 3
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ListaRiesgos",
+            "message": "Control \"ListaRiesgos\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ComboFamilia",
+            "message": "Control \"ComboFamilia\" has a RowSource that could not be parsed as SQL."
+          },
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "Activo",
+            "message": "Control \"Activo\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgosEstablecerPrioridades",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosEstablecerPrioridades.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgosEstablecerPrioridades",
+        "controls_count": 13,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 12,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_BINDING_MISSING_COLUMN": 5,
+          "FORM_BINDING_MISSING_TABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_MISSING_COLUMN",
+            "controlName": "ListaRiesgos",
+            "message": "Control \"ListaRiesgos\" RowSource references column \"TbAuxPriorizacion.IDRiesgo\" which is not in the schema for \"TbAuxPriorizacion\"."
+          },
+          {
+            "code": "FORM_BINDING_MISSING_COLUMN",
+            "controlName": "ListaRiesgos",
+            "message": "Control \"ListaRiesgos\" RowSource references column \"TbAuxPriorizacion.Pri\" which is not in the schema for \"TbAuxPriorizacion\"."
+          },
+          {
+            "code": "FORM_BINDING_MISSING_COLUMN",
+            "controlName": "ListaRiesgos",
+            "message": "Control \"ListaRiesgos\" RowSource references column \"TbAuxPriorizacion.PriEdAnterior\" which is not in the schema for \"TbAuxPriorizacion\"."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgosGestionPlanAcciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosGestionPlanAcciones.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgosGestionPlanAcciones",
+        "controls_count": 14,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 5,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_ALIGNMENT": 3,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 3495–3495): ResponsableAccion, Etiqueta5."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 3940–3945): FechaInicio, FechaFinPrevista, FechaFinReal, Etiqueta6, Etiqueta7, Etiqueta8."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ResponsableAccion",
+            "message": "Control \"ResponsableAccion\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormRiesgosGestionPlanPrincipal",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormRiesgosGestionPlanPrincipal.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormRiesgosGestionPlanPrincipal",
+        "controls_count": 11,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0
+      },
+      "geometry": {
+        "findings_count": 6,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 1,
+          "FORM_LAYOUT_OVERLAP": 2,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "controlName": "Cuadro38 <-> ComandoAltaAccion",
+            "message": "Controls \"Cuadro38\" and \"ComandoAltaAccion\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          },
+          {
+            "code": "FORM_LAYOUT_OVERLAP",
+            "controlName": "Cuadro38 <-> ComandoEliminar",
+            "message": "Controls \"Cuadro38\" and \"ComandoEliminar\" have overlapping bounding boxes (strict AABB; edge-touching is allowed)."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormPlanAcciones",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormPlanAcciones.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormPlanAcciones",
+        "controls_count": 23,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 1
+      },
+      "geometry": {
+        "findings_count": 13,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 6,
+          "FORM_LAYOUT_OVERLAP": 1,
+          "FORM_LAYOUT_ALIGNMENT": 5,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "ComandoAyuda",
+            "message": "Control \"ComandoAyuda\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 1,
+        "by_kind": {
+          "FORM_BINDING_SQL_UNPARSEABLE": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_BINDING_SQL_UNPARSEABLE",
+            "controlName": "ResponsableAccion",
+            "message": "Control \"ResponsableAccion\" has a RowSource that could not be parsed as SQL."
+          }
+        ],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormPlanPrincipal",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormPlanPrincipal.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormPlanPrincipal",
+        "controls_count": 14,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0
+      },
+      "geometry": {
+        "findings_count": 14,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 7,
+          "FORM_LAYOUT_OVERLAP": 4,
+          "FORM_LAYOUT_ALIGNMENT": 2,
+          "FORM_LAYOUT_TAB_ORDER_MISMATCH": 1
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo1",
+            "message": "Control \"lblTitulo1\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormMaterializacionPlanContingencia",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormMaterializacionPlanContingencia.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormMaterializacionPlanContingencia",
+        "controls_count": 7,
+        "formEvents": [
+          "OnLoad"
+        ],
+        "bindings_count": 0
+      },
+      "geometry": {
+        "findings_count": 4,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 2,
+          "FORM_LAYOUT_ALIGNMENT": 2
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "txtFechaMaterializacion",
+            "message": "Control \"txtFechaMaterializacion\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_ALIGNMENT",
+            "message": "Controls form a visual row within 50 twips (Top range 900–930): lblPlanContingencia, cmbPlanContingencia."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    },
+    {
+      "group": "G4",
+      "formName": "Form_FormSuministrador",
+      "sourcePath": "C:/00repos/codigo/access2web-blueprint/data/staging/gestion-riesgos/src/forms/Form_FormSuministrador.form.txt",
+      "method_version": "v5",
+      "ui": {
+        "formName": "FormSuministrador",
+        "controls_count": 12,
+        "formEvents": [
+          "OnOpen"
+        ],
+        "bindings_count": 0
+      },
+      "geometry": {
+        "findings_count": 11,
+        "by_kind": {
+          "FORM_LAYOUT_MISSING_GEOMETRY": 4,
+          "FORM_LAYOUT_OVERLAP": 3,
+          "FORM_LAYOUT_ALIGNMENT": 4
+        },
+        "findings_top_3": [
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "EncabezadoDelFormulario",
+            "message": "Control \"EncabezadoDelFormulario\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "lblTitulo",
+            "message": "Control \"lblTitulo\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          },
+          {
+            "code": "FORM_LAYOUT_MISSING_GEOMETRY",
+            "controlName": "Detalle",
+            "message": "Control \"Detalle\" is missing complete Left/Top/Width/Height geometry; skipped from overlap/alignment/tab-order checks."
+          }
+        ]
+      },
+      "behavior": {
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "unmapped_evidence_count": 7
+      },
+      "verify_form_bindings": {
+        "findings_count": 0,
+        "by_kind": {},
+        "findings_top_3": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
+      },
+      "unattended": false,
+      "unattended_evidence": null,
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
+    }
   ],
   "summary": {
     "total_geometry_findings": 204,

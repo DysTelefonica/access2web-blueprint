@@ -81,11 +81,18 @@
         "controls_count": 0,
         "findings_count": 0,
         "by_kind": {},
-        "findings_top_5": []
+        "findings_top_5": [],
+        "status": "skipped_tool_broken",
+        "reason": "verify_form_bindings returns RESULT_CONTRACT_VIOLATION (issue #1412)."
       },
       "unattended": false,
       "unattended_evidence": null,
-      "tool_warnings": []
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      }
     }
   ],
   "summary": {

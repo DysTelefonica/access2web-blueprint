@@ -88,7 +88,8 @@
       "unattended": false,
       "unattendedEvidence": "Main gestion form for Equipos: declarative RowSources (TbEquipos JOIN TbPlanificacionEquipos) drive ListaFiltrados; handlers reuse the standard menu triple (ComandoVerVideo/Arbol/CorreoAdmin) from m_ObjAyuda.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventoGestion",
@@ -155,7 +156,8 @@
       "unattended": false,
       "unattendedEvidence": "Main gestion form for Eventos. Largest form (63 controls). 9 declarative RowSource bindings; handler signature Eventos -> getEventosConEquipoMedida suggests data is fetched imperatively then bound.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormEventoTipoGestion",
@@ -221,7 +223,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for TbTipoEvento. 1 binding (RowSource). Shares Eventos handler pattern.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormFacturacionGestion",
@@ -285,7 +288,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Factura. 1 binding. 26 geometry findings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormGastoGestion",
@@ -349,7 +353,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Gasto. 3 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormMaterialesGestion",
@@ -414,7 +419,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Materiales. 11 declarative bindings (largest in G3-missing).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormNodoBUIGestion",
@@ -479,7 +485,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for NodoBUI. 3 bindings. 29 geometry findings (largest in G3-missing).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormNodoGestion",
@@ -544,7 +551,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Nodo. 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormOriginadorGestion",
@@ -609,7 +617,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Originador. 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormParteGestion",
@@ -671,7 +680,8 @@
       "unattended": true,
       "unattendedEvidence": "CRUD lista for Parte. 0 bindings - unattended form: bindings assigned imperatively in Form_Open; 4 handlers (Eventos + menu triple).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormPlanificacionGestion",
@@ -735,7 +745,8 @@
       "unattended": true,
       "unattendedEvidence": "Main gestion form for Planificacion. 0 bindings - unattended form; imperative data fetch via RellenarDatosEvento. 5 handlers including EventosRAC pattern (mirrors FormActividadGestion).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormSubContratacionGestion",
@@ -800,7 +811,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for SubContratacion. 3 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormSubSistemaGestion",
@@ -865,7 +877,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for SubSistema. 2 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnicoAusenciasGestion",
@@ -928,7 +941,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Ausencias (Tecnico). 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnicoFiestasGestion",
@@ -991,7 +1005,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Fiestas (Tecnico). 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTecnicoGestion",
@@ -1057,7 +1072,8 @@
       "unattended": false,
       "unattendedEvidence": "Main gestion form for Tecnico. 2 bindings; mirrors the EventosRAC / RellenarDatosEvento pattern of PlanificacionGestion (likely same base class for entity list with activity/event context).",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormTipoTecnicoPreciosGestion",
@@ -1121,7 +1137,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for TipoTecnicoPrecio. 2 bindings.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     },
     {
       "formName": "Form_FormUbicacionGestion",
@@ -1186,7 +1203,8 @@
       "unattended": false,
       "unattendedEvidence": "CRUD lista for Ubicacion. 1 binding.",
       "toolWarnings": [],
-      "method_version": "v5"
+      "method_version": "v5",
+      "tool_warnings": []
     }
   ],
   "summary": {

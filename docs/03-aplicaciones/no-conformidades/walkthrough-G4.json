@@ -30,15 +30,25 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 16,
-        "formEvents": ["OnClose", "OnLoad"],
+        "formEvents": [
+          "OnClose",
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 0,
         "events_count": 2,
-        "controls_with_events": ["ComandoSalir", "ComandoInforme"]
+        "controls_with_events": [
+          "ComandoSalir",
+          "ComandoInforme"
+        ]
       },
       "form_list_controls": {
         "control_count": 16,
-        "missing_geometry": ["EncabezadoDelFormulario", "Detalle", "PieDelFormulario"],
+        "missing_geometry": [
+          "EncabezadoDelFormulario",
+          "Detalle",
+          "PieDelFormulario"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -64,13 +74,51 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "NavGeneral..NavMotivoBorrado + BotónDeNavegación1 all on top=90 — horizontal nav strip (intentional, top-aligned)",
-        "manual_missing_geometry": ["EncabezadoDelFormulario", "Detalle", "PieDelFormulario"],
+        "manual_missing_geometry": [
+          "EncabezadoDelFormulario",
+          "Detalle",
+          "PieDelFormulario"
+        ],
         "manual_tab_order": "No TabIndex present in IR; tab order inherits visual layout"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["Scripting", "Expediente", "EnumSino", "NCProyecto"],
-        "calls_top": ["ComandoInforme_Click", "Form_Close", "Form_Load", "ComandoSalir_Click"]
+        "references_to": [
+          "Scripting",
+          "Expediente",
+          "EnumSino",
+          "NCProyecto"
+        ],
+        "calls_top": [
+          "ComandoInforme_Click",
+          "Form_Close",
+          "Form_Load",
+          "ComandoSalir_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyecto",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -82,12 +130,25 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 61,
-        "formEvents": ["OnOpen"],
+        "formEvents": [
+          "OnOpen"
+        ],
         "warnings": [],
         "bindings_count": 10,
         "events_count": 42,
         "controls_with_events_count": 41,
-        "controls_with_bindings": ["ListaFiltrados", "ComboCodigo", "ComboJuridica", "ComboTipo", "EstadoNC", "ComboRequiereControlEficacia", "ComboControlEficaciaRelleno", "ComboRegistrosCerrados", "RESPONSABLECALIDAD", "RESPONSABLETELEFONICA"]
+        "controls_with_bindings": [
+          "ListaFiltrados",
+          "ComboCodigo",
+          "ComboJuridica",
+          "ComboTipo",
+          "EstadoNC",
+          "ComboRequiereControlEficacia",
+          "ComboControlEficaciaRelleno",
+          "ComboRegistrosCerrados",
+          "RESPONSABLECALIDAD",
+          "RESPONSABLETELEFONICA"
+        ]
       },
       "form_list_controls": {
         "control_count": 61,
@@ -120,8 +181,44 @@
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["Form_FormExpedientesBusqueda", "ncProyecto", "Scripting", "Expediente", "Nz"],
-        "calls_top": ["ActualizarLista", "ListaFiltrados_Click", "ComandoInformeLista_Click", "ComandoEnviarCorreoElectronico_Click", "ComandoListaEnExcel_Click"]
+        "references_to": [
+          "Form_FormExpedientesBusqueda",
+          "ncProyecto",
+          "Scripting",
+          "Expediente",
+          "Nz"
+        ],
+        "calls_top": [
+          "ActualizarLista",
+          "ListaFiltrados_Click",
+          "ComandoInformeLista_Click",
+          "ComandoEnviarCorreoElectronico_Click",
+          "ComandoListaEnExcel_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoGestion",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -133,7 +230,9 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 49,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 0,
         "events_count": 0,
@@ -172,8 +271,40 @@
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["ncProyecto", "Scripting", "Expediente"],
-        "calls_top": ["PintarIndicadores", "CargarDatos", "ComandoGuardar_Click"]
+        "references_to": [
+          "ncProyecto",
+          "Scripting",
+          "Expediente"
+        ],
+        "calls_top": [
+          "PintarIndicadores",
+          "CargarDatos",
+          "ComandoGuardar_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoGeneral",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -185,7 +316,9 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 28,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 0,
         "events_count": 0,
@@ -224,8 +357,38 @@
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["ncProyecto", "Expediente"],
-        "calls_top": ["PintarIndicadores", "CargarVinculoNC"]
+        "references_to": [
+          "ncProyecto",
+          "Expediente"
+        ],
+        "calls_top": [
+          "PintarIndicadores",
+          "CargarVinculoNC"
+        ]
+      },
+      "formName": "Form_FormNCProyectoGeneralConVinculoNC",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -237,16 +400,28 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 23,
-        "formEvents": ["OnOpen"],
+        "formEvents": [
+          "OnOpen"
+        ],
         "warnings": [],
         "bindings_count": 1,
         "events_count": 5,
         "controls_with_events_count": 5,
-        "controls_with_bindings": ["Responsable"]
+        "controls_with_bindings": [
+          "Responsable"
+        ]
       },
       "form_list_controls": {
         "control_count": 23,
-        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "FechaInicialMinima", "FechaFinalUltima", "FechaFinPrevistaUltima", "PieDelFormulario"],
+        "missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "FechaInicialMinima",
+          "FechaFinalUltima",
+          "FechaFinPrevistaUltima",
+          "PieDelFormulario"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -270,13 +445,52 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Layout columnar con fechas como Section-band (sin geometría explícita en IR)",
-        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "FechaInicialMinima", "FechaFinalUltima", "FechaFinPrevistaUltima", "PieDelFormulario"],
+        "manual_missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "FechaInicialMinima",
+          "FechaFinalUltima",
+          "FechaFinPrevistaUltima",
+          "PieDelFormulario"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNCAccionCorrectivas", "ncProyecto"],
-        "calls_top": ["ComandoGuardar_Click", "CalcularFechasAC", "Form_Open"]
+        "references_to": [
+          "TbNCAccionCorrectivas",
+          "ncProyecto"
+        ],
+        "calls_top": [
+          "ComandoGuardar_Click",
+          "CalcularFechasAC",
+          "Form_Open"
+        ]
+      },
+      "formName": "Form_FormNCProyectoAC",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -288,16 +502,25 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 25,
-        "formEvents": ["OnOpen"],
+        "formEvents": [
+          "OnOpen"
+        ],
         "warnings": [],
         "bindings_count": 1,
         "events_count": 9,
         "controls_with_events_count": 9,
-        "controls_with_bindings": ["Responsable"]
+        "controls_with_bindings": [
+          "Responsable"
+        ]
       },
       "form_list_controls": {
         "control_count": 25,
-        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario"],
+        "missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -321,13 +544,49 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Layout columnar",
-        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario"],
+        "manual_missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNCAccionesRealizadas", "ncProyecto"],
-        "calls_top": ["ComandoGuardar_Click", "ActualizarFechasAR", "Form_Open"]
+        "references_to": [
+          "TbNCAccionesRealizadas",
+          "ncProyecto"
+        ],
+        "calls_top": [
+          "ComandoGuardar_Click",
+          "ActualizarFechasAR",
+          "Form_Open"
+        ]
+      },
+      "formName": "Form_FormNCProyectoAR",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -339,16 +598,22 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 14,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 1,
         "events_count": 6,
         "controls_with_events_count": 6,
-        "controls_with_bindings": ["ConformeControlEficacia"]
+        "controls_with_bindings": [
+          "ConformeControlEficacia"
+        ]
       },
       "form_list_controls": {
         "control_count": 14,
-        "missing_geometry": ["Detalle"],
+        "missing_geometry": [
+          "Detalle"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -372,13 +637,45 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Layout simple",
-        "manual_missing_geometry": ["Detalle"],
+        "manual_missing_geometry": [
+          "Detalle"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNoConformidades", "ncProyecto"],
-        "calls_top": ["Form_Load", "ComandoGuardar_Click"]
+        "references_to": [
+          "TbNoConformidades",
+          "ncProyecto"
+        ],
+        "calls_top": [
+          "Form_Load",
+          "ComandoGuardar_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoControlEficacia",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -390,7 +687,9 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 12,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 0,
         "events_count": 4,
@@ -399,7 +698,13 @@
       },
       "form_list_controls": {
         "control_count": 12,
-        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario", "cmdSalir"],
+        "missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario",
+          "cmdSalir"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -424,13 +729,49 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Layout simple vertical",
-        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "PieDelFormulario", "cmdSalir"],
+        "manual_missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "PieDelFormulario",
+          "cmdSalir"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNoConformidades", "Expediente"],
-        "calls_top": ["Form_Open", "ComandoAceptar_Click"]
+        "references_to": [
+          "TbNoConformidades",
+          "Expediente"
+        ],
+        "calls_top": [
+          "Form_Open",
+          "ComandoAceptar_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoControlEficaciaAlta",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -442,16 +783,26 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 23,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 4,
         "events_count": 18,
         "controls_with_events_count": 18,
-        "controls_with_bindings": ["ListaAC", "ListaAR", "OrdenAC", "OrdenAR"]
+        "controls_with_bindings": [
+          "ListaAC",
+          "ListaAR",
+          "OrdenAC",
+          "OrdenAR"
+        ]
       },
       "form_list_controls": {
         "control_count": 23,
-        "missing_geometry": ["Detalle", "ImagenNotaAC"],
+        "missing_geometry": [
+          "Detalle",
+          "ImagenNotaAC"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -475,13 +826,48 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Two parallel lists AC + AR",
-        "manual_missing_geometry": ["Detalle", "ImagenNotaAC"],
+        "manual_missing_geometry": [
+          "Detalle",
+          "ImagenNotaAC"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNCAccionCorrectivas", "TbNCAccionesRealizadas", "ncProyecto"],
-        "calls_top": ["Form_Load", "ComandoAnadirAC_Click", "ComandoAnadirAR_Click"]
+        "references_to": [
+          "TbNCAccionCorrectivas",
+          "TbNCAccionesRealizadas",
+          "ncProyecto"
+        ],
+        "calls_top": [
+          "Form_Load",
+          "ComandoAnadirAC_Click",
+          "ComandoAnadirAR_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoAcciones",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -493,16 +879,22 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 10,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 1,
         "events_count": 7,
         "controls_with_events_count": 6,
-        "controls_with_bindings": ["ListaDocumentos"]
+        "controls_with_bindings": [
+          "ListaDocumentos"
+        ]
       },
       "form_list_controls": {
         "control_count": 10,
-        "missing_geometry": ["Detalle"],
+        "missing_geometry": [
+          "Detalle"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -526,13 +918,45 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Lista Documentos vertical",
-        "manual_missing_geometry": ["Detalle"],
+        "manual_missing_geometry": [
+          "Detalle"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNCDocumentos", "ncProyecto"],
-        "calls_top": ["Form_Load", "ComandoAnadirDocumento_Click"]
+        "references_to": [
+          "TbNCDocumentos",
+          "ncProyecto"
+        ],
+        "calls_top": [
+          "Form_Load",
+          "ComandoAnadirDocumento_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoDocumentos",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -544,7 +968,9 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 5,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 0,
         "events_count": 2,
@@ -553,7 +979,9 @@
       },
       "form_list_controls": {
         "control_count": 5,
-        "missing_geometry": ["Detalle"],
+        "missing_geometry": [
+          "Detalle"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -578,13 +1006,44 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Layout vertical simple",
-        "manual_missing_geometry": ["Detalle"],
+        "manual_missing_geometry": [
+          "Detalle"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNCInformacionRAC"],
-        "calls_top": ["Form_Open", "ComandoAnadirNota_Click"]
+        "references_to": [
+          "TbNCInformacionRAC"
+        ],
+        "calls_top": [
+          "Form_Open",
+          "ComandoAnadirNota_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoNota",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -596,7 +1055,9 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 4,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 0,
         "events_count": 2,
@@ -605,7 +1066,9 @@
       },
       "form_list_controls": {
         "control_count": 4,
-        "missing_geometry": ["Detalle"],
+        "missing_geometry": [
+          "Detalle"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -630,13 +1093,44 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Minimal layout (4 controls)",
-        "manual_missing_geometry": ["Detalle"],
+        "manual_missing_geometry": [
+          "Detalle"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNoConformidades"],
-        "calls_top": ["Form_Open", "ComandoGuardarMotivo_Click"]
+        "references_to": [
+          "TbNoConformidades"
+        ],
+        "calls_top": [
+          "Form_Open",
+          "ComandoGuardarMotivo_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoMotivoEliminado",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -648,16 +1142,22 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 9,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 1,
         "events_count": 1,
         "controls_with_events_count": 1,
-        "controls_with_bindings": ["ListaReplanificaciones"]
+        "controls_with_bindings": [
+          "ListaReplanificaciones"
+        ]
       },
       "form_list_controls": {
         "control_count": 9,
-        "missing_geometry": ["Detalle"],
+        "missing_geometry": [
+          "Detalle"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -681,13 +1181,43 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Layout vertical simple",
-        "manual_missing_geometry": ["Detalle"],
+        "manual_missing_geometry": [
+          "Detalle"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbReplanificacionesProyecto"],
-        "calls_top": ["Form_Load"]
+        "references_to": [
+          "TbReplanificacionesProyecto"
+        ],
+        "calls_top": [
+          "Form_Load"
+        ]
+      },
+      "formName": "Form_FormNCProyectoReplanificaciones",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -699,7 +1229,9 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 13,
-        "formEvents": ["OnOpen"],
+        "formEvents": [
+          "OnOpen"
+        ],
         "warnings": [],
         "bindings_count": 0,
         "events_count": 2,
@@ -708,7 +1240,13 @@
       },
       "form_list_controls": {
         "control_count": 13,
-        "missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "Etiqueta237", "PieDelFormulario"],
+        "missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "Etiqueta237",
+          "PieDelFormulario"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -733,13 +1271,48 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Navigation host layout",
-        "manual_missing_geometry": ["EncabezadoDelFormulario", "lblTitulo", "Detalle", "Etiqueta237", "PieDelFormulario"],
+        "manual_missing_geometry": [
+          "EncabezadoDelFormulario",
+          "lblTitulo",
+          "Detalle",
+          "Etiqueta237",
+          "PieDelFormulario"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNCProyecto", "ncProyecto"],
-        "calls_top": ["Form_Open"]
+        "references_to": [
+          "TbNCProyecto",
+          "ncProyecto"
+        ],
+        "calls_top": [
+          "Form_Open"
+        ]
+      },
+      "formName": "Form_FormNCProyectoSeguimiento",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -751,16 +1324,25 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 22,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 3,
         "events_count": 13,
         "controls_with_events_count": 12,
-        "controls_with_bindings": ["ListaFiltrados", "RESPONSABLECALIDAD", "Responsable"]
+        "controls_with_bindings": [
+          "ListaFiltrados",
+          "RESPONSABLECALIDAD",
+          "Responsable"
+        ]
       },
       "form_list_controls": {
         "control_count": 22,
-        "missing_geometry": ["Detalle", "Etiqueta237"],
+        "missing_geometry": [
+          "Detalle",
+          "Etiqueta237"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -784,13 +1366,46 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Lista filtrados + combos",
-        "manual_missing_geometry": ["Detalle", "Etiqueta237"],
+        "manual_missing_geometry": [
+          "Detalle",
+          "Etiqueta237"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNoConformidades", "TbEstadoCatalogo"],
-        "calls_top": ["Form_Load", "ComandoVer_Click"]
+        "references_to": [
+          "TbNoConformidades",
+          "TbEstadoCatalogo"
+        ],
+        "calls_top": [
+          "Form_Load",
+          "ComandoVer_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoSeguimientoNC",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     },
     {
@@ -802,16 +1417,26 @@
       "kind": "Form",
       "analyze_form_ui": {
         "controls_count": 23,
-        "formEvents": ["OnLoad"],
+        "formEvents": [
+          "OnLoad"
+        ],
         "warnings": [],
         "bindings_count": 4,
         "events_count": 14,
         "controls_with_events_count": 13,
-        "controls_with_bindings": ["ListaFiltrados", "RESPONSABLECALIDAD", "Estado", "Responsable"]
+        "controls_with_bindings": [
+          "ListaFiltrados",
+          "RESPONSABLECALIDAD",
+          "Estado",
+          "Responsable"
+        ]
       },
       "form_list_controls": {
         "control_count": 23,
-        "missing_geometry": ["Detalle", "Etiqueta237"],
+        "missing_geometry": [
+          "Detalle",
+          "Etiqueta237"
+        ],
         "tab_count": 0
       },
       "codegraph": {
@@ -835,13 +1460,47 @@
         "layout_status": "skipped_bug_1407",
         "manual_overlap": [],
         "manual_alignment_row": "Lista filtrados + combos",
-        "manual_missing_geometry": ["Detalle", "Etiqueta237"],
+        "manual_missing_geometry": [
+          "Detalle",
+          "Etiqueta237"
+        ],
         "manual_tab_order": "Sin TabIndex presente en IR"
       },
       "blast_radius": {
         "external_callers": 0,
-        "references_to": ["TbNCAccionCorrectivas", "TbNCAccionesRealizadas", "TbEstadoCatalogo"],
-        "calls_top": ["Form_Load", "ComandoVer_Click"]
+        "references_to": [
+          "TbNCAccionCorrectivas",
+          "TbNCAccionesRealizadas",
+          "TbEstadoCatalogo"
+        ],
+        "calls_top": [
+          "Form_Load",
+          "ComandoVer_Click"
+        ]
+      },
+      "formName": "Form_FormNCProyectoSeguimientoTareas",
+      "tool_warnings": [],
+      "codegraph_summary": {
+        "status": "not_applicable",
+        "note": "No codegraph evidence collected for this form.",
+        "stale_banner_ignored": true
+      },
+      "ui": {
+        "controls_count": 0,
+        "formEvents": [],
+        "bindings_count": 0,
+        "warnings": []
+      },
+      "geometry": {
+        "controls_count": 0,
+        "findings_count": 0,
+        "status": "ok"
+      },
+      "behavior": {
+        "controls_count": 0,
+        "controls_with_handler_evidence": 0,
+        "tables_referenced": [],
+        "codegraph_evidence_status": "not_applicable"
       }
     }
   ],
@@ -882,9 +1541,15 @@
       "TbEstadoCatalogo",
       "TbCacheNCProyecto"
     ],
-    "skipped_tools": ["analyze_form_layout (bug #1407)"],
-    "degraded_tools": ["map_form_behavior autoFetchCodeGraph (bug #1408)"],
-    "broken_tools": ["verify_form_bindings (RESULT_CONTRACT_VIOLATION)"],
+    "skipped_tools": [
+      "analyze_form_layout (bug #1407)"
+    ],
+    "degraded_tools": [
+      "map_form_behavior autoFetchCodeGraph (bug #1408)"
+    ],
+    "broken_tools": [
+      "verify_form_bindings (RESULT_CONTRACT_VIOLATION)"
+    ],
     "total_source_bytes": 2697195,
     "average_source_bytes": 168575,
     "largest_form": "Form_FormNCProyectoGestion (384050 bytes)",
