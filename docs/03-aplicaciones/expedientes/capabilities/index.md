@@ -25,13 +25,34 @@ Este índice enlaza las capacidades del Expedientes que ya están documentadas e
 | CAP-013 | Grado | `data/staging/expedientes/docs/capabilities/CAP-013-grado.md` | Catálogos (master-detail) |
 | CAP-014 | Órgano | `data/staging/expedientes/docs/capabilities/CAP-014-organo.md` | Catálogos (master-detail) |
 | CAP-015 | Oficina | `data/staging/expedientes/docs/capabilities/CAP-015-oficina.md` | Catálogos (master-detail) |
+| CAP-016 | CPV | [`CAP-016-cpv.md`](CAP-016-cpv.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-016--cpv)) | Catálogos (master-detail) |
+| CAP-017 | Ejércitos | [`CAP-017-ejercitos.md`](CAP-017-ejercitos.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-017--ejércitos)) | Catálogos (master-detail) |
+| CAP-018 | Suministradores | [`CAP-018-suministradores.md`](CAP-018-suministradores.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-018--suministradores)) | Suministradores |
+| CAP-019 | Lugares de ejecución | [`CAP-019-lugares-ejecucion.md`](CAP-019-lugares-ejecucion.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-019--lugares-de-ejecución)) | Catálogos (master-detail) |
+| CAP-020 | PECAL | [`CAP-020-pecal.md`](CAP-020-pecal.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-020--pecal)) | Catálogos (master-detail) |
+| CAP-021 | RAC | [`CAP-021-rac.md`](CAP-021-rac.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-021--rac)) | Catálogos (master-detail) |
+| CAP-022 | Grados de clasificación | [`CAP-022-grados-clasificacion.md`](CAP-022-grados-clasificacion.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-022--grados-de-clasificación)) | Catálogos (master-detail) |
 | CAP-023 | Búsqueda avanzada | `data/staging/expedientes/docs/capabilities/CAP-023-busqueda-avanzada.md` | Consulta |
+| CAP-024 | Oficinas de programa | [`CAP-024-oficinas-programa.md`](CAP-024-oficinas-programa.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/catalogs.md#requirement-exp-cap-024--oficinas-de-programa)) | Catálogos (master-detail) |
 | CAP-025 | Excel | `data/staging/expedientes/docs/capabilities/CAP-025-excel.md` | Exportación |
+| CAP-026 | Búsqueda avanzada (consulta) | [`CAP-026-busqueda-avanzada.md`](CAP-026-busqueda-avanzada.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/query-and-tasks.md#requirement-exp-cap-026--búsqueda-avanzada)) | Consulta |
+| CAP-027 | Búsqueda técnica | [`CAP-027-busqueda-tecnica.md`](CAP-027-busqueda-tecnica.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/query-and-tasks.md#requirement-exp-cap-027--búsqueda-técnica)) | Consulta |
+| CAP-028 | Exportación Excel | [`CAP-028-exportacion-excel.md`](CAP-028-exportacion-excel.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/query-and-tasks.md#requirement-exp-cap-028--exportación-excel)) | Exportación |
+| CAP-029 | Tareas calculadas | [`CAP-029-tareas-calculadas.md`](CAP-029-tareas-calculadas.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/query-and-tasks.md#requirement-exp-cap-029--tareas-calculadas)) | Tareas |
+| CAP-030 | Autosave generales y fechas | [`CAP-030-autosave-generales.md`](CAP-030-autosave-generales.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/write-resilience.md#requirement-exp-cap-030--autosave-generales-y-fechas)) | Escritura |
+| CAP-031 | Autosave relacionados | [`CAP-031-autosave-relacionados.md`](CAP-031-autosave-relacionados.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/write-resilience.md#requirement-exp-cap-031--autosave-relacionados)) | Escritura |
+| CAP-032 | Idempotencia y feedback | [`CAP-032-idempotencia-feedback.md`](CAP-032-idempotencia-feedback.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/write-resilience.md#requirement-exp-cap-032--idempotencia-y-feedback)) | Escritura |
+| CAP-033 | DTO estable | [`CAP-033-dto-estable.md`](CAP-033-dto-estable.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-033--dto-estable)) | E2E |
+| CAP-034 | JSON determinista | [`CAP-034-json-determinista.md`](CAP-034-json-determinista.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-034--json-determinista)) | E2E |
+| CAP-035 | Batch E2E | [`CAP-035-batch-e2e.md`](CAP-035-batch-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-035--batch-e2e)) | E2E |
+| CAP-036 | Hash versionado | [`CAP-036-hash-versionado.md`](CAP-036-hash-versionado.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-036--hash-versionado)) | E2E |
+| CAP-037 | Paquete E2E | [`CAP-037-paquete-e2e.md`](CAP-037-paquete-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-037--paquete-e2e)) | E2E |
+| CAP-038 | Trazabilidad E2E | [`CAP-038-trazabilidad-e2e.md`](CAP-038-trazabilidad-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-038--trazabilidad-e2e)) | E2E |
 | CAP-040 | Tareas (bandeja) | `data/staging/expedientes/docs/capabilities/CAP-040-tareas-bandeja.md` | Tareas |
 
 ## Capacidades pendientes de documentar
 
-21 CAPs (CAP-016..022, 024, 026..038) no tienen fichero en staging ni en `docs/`. Véase el issue de gap creado en paralelo para el plan de cierre.
+A 2026-08-18, todas las CAPs pedidas en issues abiertos están documentadas a nivel repo. Los 17 ya presentes en staging cubren la granularidad §0..§7; los 21 nuevos (CAP-016..022, 024, 026..038) son resúmenes vinculados a los Requirements del spec fuente. La lista exhaustiva está en las tablas de arriba (38 entradas totales).
 
 ## Cómo se aplica a access2web-blueprint
 
@@ -40,7 +61,7 @@ Este índice es el hub de las capacidades del Expedientes a nivel repo. La fuent
 ## Lista de comprobación final
 
 - [ ] Las 17 entradas referencian paths staging que existen (verificables con `ls`).
-- [ ] Las 21 capacidades pendientes quedan abiertas en el issue de gap, no se pierden.
+- [ ] Las 21 entradas nuevas referencian anchors a los Requirements del spec fuente (verificables con `grep`).
 - [ ] El path `data/staging/` NO se ha modificado (read-only).
 - [ ] El índice se ajusta al contrato de `skills/documentation-alan-style/SKILL.md` (§3 + §8): castellano peninsular formal con usted, sin emojis decorativos.
 - [ ] Cross-references desde DOCS.md y `docs/03-aplicaciones/expedientes/README.md` siguen resolviendo.
