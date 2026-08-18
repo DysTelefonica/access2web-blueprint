@@ -80,6 +80,13 @@ jobs:
           PR_BODY: ${{ github.event.pull_request.body }}
         run: python scripts/check_pr_size.py
 
+      - name: walkthrough schema
+        # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST
+        # contain the documented MUST fields (template at
+        # skills/documentation-alan-style/references/templates/walkthrough.json.tmpl).
+        # Catches drift before merge; SHOULD/MAY fields are conventions, not enforced.
+        run: python scripts/check_walkthrough_schema.py
+
   quality:
     # Heavy gate (ruff + mypy + pytest + 4 quality gates over the app/) — stays on
     # the self-hosted VPS because the rest is just not worth re-pinning to a hosted
