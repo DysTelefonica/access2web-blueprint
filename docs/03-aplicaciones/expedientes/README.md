@@ -1,3 +1,5 @@
+[← Back to DOCS](../../../DOCS.md)
+
 # 03 · Expedientes
 
 ## Propósito
@@ -112,3 +114,27 @@ Esta capa no introduce diseño ni propuesta: deja el mapeo conceptual explícito
 **Sentinels detectados** (de `Copia de TbExpedientes`, `Copia de TbExpedientesConEntidades`, `ListaPrevia`, `TbAusExpPostAGEDO`, `TbAuxEstadosMartina`, `TbAuxNemotecnico`, `TbConfMostrarEstado`): patrón legacy de copia antes de cambios masivos + tablas auxiliares.
 
 **`.dysflow/project.json` creado en esta pasada** (con `setup_project` autorizado) en `00_EXPEDIENTES/00_main/.dysflow/`. `projectId: 00-expedientes-staging`, `frontendFile: Expedientes.accdb`, `allowWrites: true`.
+
+## Core invariants
+
+- **D86: forma hexagonal del legacy preservada**: el mapeo conceptual entre capas VBA (clases de dominio, composition root, helpers por dominio, forms, integraciones externas) y la nueva plataforma hexagonal (FastAPI + HTMX) es uno a uno. La nueva implementación NO inventa la forma hexagonal; el legacy ya la tenía.
+- **D87: `Test_*` VBA preservados como evidencia de comportamiento**: cada `Test_*.bas` en `tests/` se traduce a un test pytest equivalente antes de descartar el original. La cobertura de `Test_BackendCache`, `Test_BackendResolver`, `Test_ExpedienteCacheTransacciones`, `Test_*Helper` se mantiene al migrar.
+- **49 tablas (segunda más grande después de Gestion_Riesgos con 71)**: schema, ownership, volumen y uso se refrescan antes del DDL final (D40–D44). Cualquier tabla marcada `legacy copy` o sentinel requiere disposición explícita antes de mergear la migración.
+- **`HashActual` + `HashUltimaExportacion` (Text 64)**: sincronización E2E bidireccional entre Expedientes y Lanzadera con verificación de hash. La nueva plataforma preserva este patrón como contrato de puerto (no se sustituye por un checksum de transporte sin trazabilidad E2E).
+- **Jerarquía AM/lote (`IDExpedientePadre`)**: jerarquía recursiva que se formaliza con CTE recursivo en PostgreSQL. La query de árbol de AM/lotes no usa materialized path ni nested set por decisión de diseño.
+- **`IDUsuario` como Text(255) en audit**: `IDUsuarioCreacion`, `IDUsuarioUltimoCambio` son strings que probablemente contienen el email o `UsuarioRed`. La migración agrega FK numérica real a `users.id` para preservar integridad referencial.
+- **14 columnas booleanas como Text(2)** (`'Sí'/'No'`): D102 cross-cutting — estandarizar a `BOOLEAN` en PostgreSQL con regla de migración explícita.
+
+## Contributor checklist
+
+- [ ] El cambio respeta las 7 reglas de §Core invariants; el `ci / quality` check pasa verde.
+- [ ] Si el PR añade una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas o tablas, sin `DROP` ni `ALTER` destructivos en la misma release.
+- [ ] Si el PR introduce un cambio en la jerarquía AM/lote, la query correspondiente usa CTE recursivo en PostgreSQL (no materialized path).
+- [ ] Si el PR modifica la sincronización E2E con Lanzadera, preserva el patrón `HashActual` + `HashUltimaExportacion` y lo documenta como contrato de puerto.
+- [ ] Si el PR descarta un `Test_*.bas` legacy, el test pytest equivalente está en `tests/` antes del merge (D87).
+- [ ] Si el PR toca una columna `Sí`/`No` Text(2), aplica la regla de D102: migración a `BOOLEAN` con script explícito.
+- [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
+
+## Navigation
+
+Previous: [condor](../condor/README.md) | Next: [DOCS](../../../DOCS.md)
