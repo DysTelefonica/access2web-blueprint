@@ -8,9 +8,31 @@ Todos los cambios relevantes del blueprint se documentan aquí. El formato sigue
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-18
+
+Aplicación completa de `documentation-alan-style` v2.1 al monorepo (5 root docs, 3 guías de `docs/`, 8 READMs por app, 8 épicas, walkthrough template + validator + migration). El skill prescribe plantillas para README, AGENTS, DOCS, CODEBASE-GUIDE, CHANGELOG, walkthrough.json y epic.md; antes de esta versión, sólo los 5 root docs tenían su plantilla aplicada parcialmente. Esta versión cierra la brecha en todas las superficies documentales del proyecto.
+
 ### Added
 
-- `docs(root): aplicar las plantillas de documentation-alan-style v2.1 a los 5 docs raíz (README, AGENTS, DOCS, CODEBASE-GUIDE, CHANGELOG). Cierra los issues #325, #321, #322, #324 y #323.`
+- **5 root docs** (#326-#330): plantillas v2.1 aplicadas a README.md (hero + badges + Quick start arriba + Documentation table + Next steps + License), AGENTS.md (frontmatter YAML + tabla estandarizada + nota Alan-omits), CODEBASE-GUIDE.md (frontmatter + Core invariants + Existing references + Contributor checklist + Navigation), DOCS.md (What this is/is not + Status Visibility Matrix + Contributor checklist + Back link), CHANGELOG.md (entrada `[0.1.0]` inicial con sub-secciones Keep a Changelog).
+- **3 guías de `docs/`** (#334-#336): patrones de sección aplicados a docs/architecture.md (6 invariantes), docs/calidad-de-codigo-y-ci.md (5 invariantes + lista §Los 13 check_*.py), docs/AGENT-SETUP.md (back link + 4 invariantes + 5 checks).
+- **8 READMs por app** (#345-#352): back link + Core invariants + Contributor checklist + Navigation por app — Lanzadera (D5/D55/DA-11), NoConformidades (D88/D91/D95), Gestion_Riesgos (D86/D88/D95), Brass (D104), HPS (D92), HPS_Solicitudes (D86/D92), Condor (D93), Expedientes (D86/D87/D94).
+- **8 épicas** (#361-#368): sección «Cómo se aplica a access2web-blueprint» + «Lista de comprobación final» del epic.md.tmpl añadidas al final de cada épica, conservando estructura existente (migración híbrida preservadora).
+- **walkthrough.json.tmpl ampliado** (#372): clasificación MUST/SHOULD/MAY por campo en `skills/documentation-alan-style/references/templates/walkthrough.json.tmpl`, con Schema history v1.0 → v2.1+. Inclusión de campos evolucionados: `unattended_evidence`, `codegraph_summary` como objeto, `known_working_tools`, `known_degraded_tools`, `known_broken_tools`, `generated_at`, `app`, `project`.
+- **scripts/check_walkthrough_schema.py** (#372): nuevo gate análogo a los 12 check_*.py existentes. Itera `docs/03-aplicaciones/*/walkthrough-*.json` y valida que los MUST fields estén presentes. Modo advisory por defecto (exit 0 con findings); `--strict` para enforzar (exit 1).
+- **scripts/migrate_walkthrough_schema.py** (#376): one-shot idempotente que añade MUST fields faltantes a los 43 walkthroughs reales. Maneja 4 variantes de schema: camelCase (v2.1), snake_case legacy (form_name, source_path), tercera variante (id, name), sub-form (subfrm en formName).
+- **13 quality gates** (#372, #376): tras añadir `check_walkthrough_schema.py`, `scripts/check_*.py` pasa de 12 a 13. El gate corre en `ci.yml` como paso adicional del job `review-budget`, invocado con `--strict` tras la migración.
+- **docs/03-aplicaciones/<app>/walkthrough-*.json** (#376): 26 walkthroughs no conformes migrados al schema v2.1 (767 field additions); 17 ya conformes. El validator pasa con `--strict` sobre los 43 archivos.
+
+### Changed
+
+- `.github/workflows/ci.yml` (#372): añade paso `walkthrough schema` al job `review-budget`. Inicialmente en modo advisory (#372); promovido a `--strict` (#376) tras la migración.
+- `docs/calidad-de-codigo-y-ci.md` (#372): §Los 12 check_*.py → §Los 13 check_*.py con la entrada `check_walkthrough_schema.py` añadida.
+- `docs/architecture.md` (#372): tabla de CI gates actualizada con la entrada del nuevo gate.
+
+### Fixed
+
+- `scripts/check_walkthrough_schema.py` (#372): formato ruff aplicado (`indent=2`, line-length 100). Sin el formato, el CI fallaba en el paso `format`.
 
 ## [0.1.0] - 2026-08-18
 
@@ -55,5 +77,6 @@ Todos los cambios relevantes del blueprint se documentan aquí. El formato sigue
 |---|---|---|
 | `platform/` (directorio pre-2026-08-09) | `app/` | Renombrar imports de `platform.src.modules.<app>` a `app.src.modules.<app>`. El rename ya está mergeado (#303, #306); los cambios futuros usan `app/`. |
 | Layout v1 (`00_main/` + `.git` FILE) | Layout v2 (main en raíz + `<project>-worktrees/`) | Migrar worktrees siguiendo la skill `worktree-reorg-per-project`. |
+| `walkthrough.json` schema v1 (template mínimo, 12 campos) | Schema v2.1 (MUST/SHOULD/MAY, 14+ campos) | Migrar con `scripts/migrate_walkthrough_schema.py`. El gate `check_walkthrough_schema.py` (en `--strict`) bloquea nuevos walkthroughs no conformes. |
 
 [← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)
