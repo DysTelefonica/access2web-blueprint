@@ -38,3 +38,10 @@ ignore_errors = true
 [[tool.mypy.overrides]]
 module = "app.pytest_plugin.coverage_gate"
 ignore_errors = true
+
+# coverage_gate_helpers.py is the helper module extracted from coverage_gate
+# by PR #294. It has the same untyped-function debt as the parent file; the
+# type-annotation cleanup is also deferred. Exempt it for the same reason.
+[[tool.mypy.overrides]]
+module = "app.pytest_plugin.coverage_gate_helpers"
+ignore_errors = true
