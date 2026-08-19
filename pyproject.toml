@@ -1,0 +1,32 @@
+# Root pyproject.toml for access2web-blueprint.
+#
+# HARNESS-PROVENANCE: This file exists so mypy (and other tools that look for
+# `pyproject.toml` in the current directory) find their config when invoked from
+# the repository root. The application code and its full configuration live in
+# `app/pyproject.toml`; this file only carries the tool sections that need to be
+# visible from the root (mypy, pytest, coverage).
+#
+# Once #117 (F2) is fully resolved and the consuming app's `app/pyproject.toml`
+# is the single source of truth, this file can be deleted and the CI commands
+# updated to pass `--config app/pyproject.toml` explicitly.
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src"]
+# `--explicit-package-bases` is required: without it, mypy 1.13.0 stops
+# on "Source file found twice under different module names" because it sees
+# `app/src/modules/lanzadera/domain/reset_token.py` as both
+# `app.src.modules.lanzadera.domain.reset_token` and
+# `src.modules.lanzadera.domain.reset_token` depending on the walk path.
+# Setting it here makes the flag implicit so a bare `mypy app/` resolves
+# correctly for every new file added under `app/src/`.
+# See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+explicit_package_bases = true
+# A bare `# type: ignore` graduates silence into a permanent hole. Requiring
+# the error code keeps every suppression traceable to the check it disables.
+enable_error_code = ["ignore-without-code"]
+
+[[tool.mypy.overrides]]
+module = "tests.fixtures.*"
+ignore_errors = true
