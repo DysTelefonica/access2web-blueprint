@@ -56,7 +56,14 @@ def test_gate_order_includes_legacy_hashes(script: Path) -> None:
     names = tuple(name for name, _, _ in module.GATES)
     # mutation_sites sits between crap and dry (Hard Rule 13: order is load-bearing;
     # #117 retro split added it on top of the original five-gate chain).
-    assert names == ("layers", "complexity", "crap", "mutation_sites", "dry", "legacy_hashes")
+    assert names == (
+        "layers",
+        "complexity",
+        "crap",
+        "mutation_sites",
+        "dry",
+        "legacy_hashes",
+    )
 
 
 def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, script: Path) -> None:
@@ -104,4 +111,11 @@ def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, scrip
     # module docstring describe wiring, not CRAP-specific behaviour.
     gates = {entry["gate"] for entry in payload["gates"]}
     # mutation_sites joined the chain between crap and dry (#117 retro split).
-    assert {"layers", "complexity", "crap", "mutation_sites", "dry", "legacy_hashes"} <= gates
+    assert {
+        "layers",
+        "complexity",
+        "crap",
+        "mutation_sites",
+        "dry",
+        "legacy_hashes",
+    } <= gates
