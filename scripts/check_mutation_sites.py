@@ -52,11 +52,16 @@ class BaselineEntry:
     target_date: str  # ISO-8601, YYYY-MM-DD
 
 
-# Measured on 2026-08-10, the first run in which this gate executed. Emitted by
-# `--emit-baseline`, not hand-written: a ratchet you typed is a ratchet you got wrong.
+# Measured on 2026-08-13 after issue #266 slice 1 split `coverage_gate.py` into
+# the orchestrator file plus a helpers module. `coverage_gate.py` is now under
+# the ceiling and no longer needs a BASELINE slot. `coverage_gate_helpers.py`
+# carried the lookup + per-target resolution out of the gate and lands at 111
+# sites — emitted by `--emit-baseline`, not hand-written: a ratchet you typed
+# is a ratchet you got wrong. The ratchet target aligns with the DG-11 review
+# date in `openspec/changes/architectural-guards-over-metrics/tasks.md`.
 BASELINE: dict[str, BaselineEntry] = {
-    "app/pytest_plugin/coverage_gate.py": BaselineEntry(
-        sites=118, target=100, target_date="2026-11-08"
+    "app/pytest_plugin/coverage_gate_helpers.py": BaselineEntry(
+        sites=111, target=100, target_date="2027-02-13"
     ),
 }
 
