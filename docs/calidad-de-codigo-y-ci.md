@@ -51,7 +51,6 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 | `check_workflows.py` | QC-9 | Actions fijadas por SHA de 40 hex; `concurrency.group` por job (AGENTS.md) | `python scripts/check_workflows.py` |
 | `check_layers.py` | QC-2, QC-9 | `ROOT_PACKAGE = "app.src.modules"`; slicing vertical prohibido entre módulos (DA-1) | `python scripts/check_layers.py` |
 | `check_complexity.py` | QC-1, QC-10 | Techo de complejidad ciclomática 15 (DA-1) | `python scripts/check_complexity.py` |
-| `check_crap.py` | QC-11 | CRAP score ≤ 6; pendiente decisión v0.2 sobre el techo efectivo (issue #266) | `python scripts/check_crap.py` |
 | `check_dry.py` | QC-11 | DRY: no duplicación de conocimiento por módulo | `python scripts/check_dry.py` |
 | `check_legacy_hashes.py` | QC-5, DA-13 | Pin AST rechaza `legacy_hash`, `sha256`, `migrate_password` (D88+D89) | `python scripts/check_legacy_hashes.py` |
 | `check_mutation_sites.py` | — | Lista de sitios donde se ejecuta mutación semanal | `python scripts/check_mutation_sites.py` |
@@ -77,7 +76,7 @@ Los SHA de las actions se pinean vía `check_workflows.py`; actualizarlos requie
 
 ```bash
 # Workflow completo (lo que corre CI por PR)
-make lint typecheck test check-layers check-complexity check-crap check-dry \
+make lint typecheck test check-layers check-complexity check-dry \
      check-branch-name quality-report
 
 # Cada target invoca un tool pinned o un check_*.py.
@@ -146,7 +145,7 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 - [ ] Si el PR modifica `.github/workflows/`, las Actions nuevas van pineadas por SHA de 40 hex y cada job declara `concurrency.group`.
 - [ ] Si el PR toca `pyproject.toml` (ruff/mypy/argon2), las versiones quedan pinned en `>=X,<Y+1` y `scripts/install-skills.sh` sigue corriendo.
 - [ ] Si el PR añade cobertura a `pytest --cov`, el threshold `--cov-fail-under` se mantiene o sube; nunca baja.
-- [ ] El `make lint typecheck test check-layers check-complexity check-crap check-dry check-branch-name quality-report` corre verde en local antes de push.
+- [ ] El `make lint typecheck test check-layers check-complexity check-dry check-branch-name quality-report` corre verde en local antes de push.
 - [ ] Si se cambia un comando de la sección §Cómo correrlo en local, también se actualiza `Makefile` y el `Makefile` no introduce wrappers.
 - [ ] Si se introduce una dependencia nueva en `app/pyproject.toml`, `pip-audit` corre verde y se documenta en la sección §Stack de [`docs/architecture.md`](architecture.md).
 
