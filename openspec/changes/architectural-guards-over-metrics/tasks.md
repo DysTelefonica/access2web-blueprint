@@ -46,12 +46,13 @@ Traza: DG-11, spec "Complexity ceiling lowered with review date".
 
 Traza: DG-12, spec "CRAP gate removal" (paso 1 de 2).
 
-- [ ] 2.1 `scripts/quality_report.py`: quitar `("crap", "check_crap.py", ())` de `GATES`.
-- [ ] 2.2 `Makefile`, `.github/workflows/ci.yml`, `app/pyproject.toml`, `app/README.md`, `.gitignore`: quitar referencias a `crap`.
-- [ ] 2.3 Docstrings de `check_complexity.py` y `check_mutation.py`: quitar mención a CRAP como "binding constraint".
-- [ ] 2.4 `tests/test_ci_workflow.py`: quitar `"crap"` de `REQUIRED_GATE_ORDER`.
-- [ ] 2.5 `tests/test_gate_smoke.py`: quitar `"check_crap.py"` del parametrize de `test_every_gate_emits_a_well_formed_envelope`; retargetear `test_quality_report_aggregates_indicators`/`test_quality_report_names_the_failing_gate`/`test_quality_report_is_byte_identical_for_the_same_commit` fuera de `crap_clean`/`crap_violation` y de la aserción `crap.max_crap`.
-- [ ] 2.6 Verificar límite de rebanada: `python scripts/quality_report.py` sin `crap` en el envelope, `python -m pytest -q` en verde (script y fixtures de CRAP siguen en disco, solo descableados).
+- [x] 2.1 `scripts/quality_report.py`: quitar `("crap", "check_crap.py", ())` de `GATES`.
+- [x] 2.2 `Makefile`, `.github/workflows/ci.yml`, `app/pyproject.toml`, `app/README.md`, `.gitignore`: quitar referencias a `crap`.
+- [x] 2.3 Docstrings de `check_complexity.py` y `check_mutation.py`: quitar mención a CRAP como "binding constraint".
+- [x] 2.4 `tests/test_ci_workflow.py`: quitar `"crap"` de `REQUIRED_GATE_ORDER`.
+- [x] 2.5 `tests/test_gate_smoke.py`: quitar `"check_crap.py"` del parametrize de `test_every_gate_emits_a_well_formed_envelope`; retargetear `test_quality_report_aggregates_indicators`/`test_quality_report_names_the_failing_gate`/`test_quality_report_is_byte_identical_for_the_same_commit` fuera de `crap_clean`/`crap_violation` y de la aserción `crap.max_crap`.
+- [x] 2.6 Verificar límite de rebanada: `python scripts/quality_report.py` sin `crap` en el envelope, `python -m pytest -q` en verde (script y fixtures de CRAP siguen en disco, solo descableados).
+- [x] 2.7 `tests/lanzadera/test_quality_report_smoke.py::test_gate_order_includes_legacy_hashes`: quitar `"crap"` de la tupla esperada (queda `("layers", "complexity", "mutation_sites", "dry", "legacy_hashes")`); el assert documenta la ratchet del gate retired, no la presencia de CRAP. Esta tarea existía como pre-existente esperando el slice; el sub-agente la agrega porque 2.1 rompe el assert.
 
 ## Phase 3: Borrado de CRAP — PR 3, `size:exception` (`feat/266-crap-delete` → `feat/266-crap-unwire`)
 

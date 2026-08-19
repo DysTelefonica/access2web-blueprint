@@ -43,6 +43,15 @@ VERIFY_EXCLUSIONS = (
     "trivy",  # docker
 )
 
+#: Gate scripts that exist on disk but are deliberately unwired from CI as part of
+#: an in-progress retirement (issue #266, DG-12). Slice 3 deletes the script itself;
+#: the entry here is the documented transitional state — removing it before slice 3
+#: causes `test_every_gate_script_on_disk_is_wired_in_ci` to fail on a gate that
+#: the slice is mid-retiring, not on a gate that was written and forgotten.
+SCRIPT_EXCLUSIONS = (
+    "check_crap.py",  # retired (issue #266 DG-12); slice 3 deletes the file
+)
+
 #: The code gates, in the order they must run. Deduplication moves code, which changes
 #: complexity — so the sequence is part of the contract, not a preference.
 REQUIRED_GATE_ORDER = (
@@ -316,7 +325,7 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
     unwired = sorted(
         path.name
         for path in scripts_dir.glob("check_*.py")
-        if path.name not in wired and path.name not in KNOWN_PENDING_GATES
+        if path.name not in wired and path.name not in SCRIPT_EXCLUSIONS
     )
     assert not unwired, (
         f"these gate scripts exist but no CI step runs them: {unwired}. A gate that "
