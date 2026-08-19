@@ -116,9 +116,7 @@ def test_parse_decision_tables_ignores_list_cells(gate_module) -> None:
     """DG-13: a cell listing ``DG-1, DG-2, DG-3`` is a wiring cell, not a
     decision row. The wiring table's header does NOT normalise to ``id``."""
     with pytest.TempPath() as tmp:
-        _write_design_md(
-            tmp, "openspec/changes/sample/design.md", _WIRING_TABLE_WITH_LIST_CELLS
-        )
+        _write_design_md(tmp, "openspec/changes/sample/design.md", _WIRING_TABLE_WITH_LIST_CELLS)
         decisions = gate_module.parse_decision_tables(tmp)
     assert decisions == {}, f"wiring table must be skipped; got {sorted(decisions)}"
 
@@ -136,9 +134,7 @@ def test_parse_decision_tables_ignores_non_id_header(gate_module) -> None:
     """DG-2: the ``Recurso | Ruta`` table has no header cell that normalises
     to ``id``; it must be skipped."""
     with pytest.TempPath() as tmp:
-        _write_design_md(
-            tmp, "openspec/changes/sample/design.md", _RANDOM_TWO_COLUMN_TABLE
-        )
+        _write_design_md(tmp, "openspec/changes/sample/design.md", _RANDOM_TWO_COLUMN_TABLE)
         decisions = gate_module.parse_decision_tables(tmp)
     assert decisions == {}
 
@@ -174,7 +170,7 @@ def test_parse_decision_tables_fails_closed_on_malformed_table(gate_module) -> N
         _write_design_md(
             tmp,
             "openspec/changes/sample/design.md",
-            ("| ID | Decision |\n" "| DG-1 | malformed |\n"),
+            ("| ID | Decision |\n| DG-1 | malformed |\n"),
         )
         decisions = gate_module.parse_decision_tables(tmp)
     assert decisions == {}
@@ -271,7 +267,7 @@ def test_validate_coverage_accepts_guard_claim(gate_module) -> None:
             (
                 "# HARNESS-PROVENANCE: deterministic-quality-harness v1.6\n"
                 "# + sample DA-1 — test_da1.py\n"
-                "\"\"\"Pin for DA-1.\"\"\"\n"
+                '"""Pin for DA-1."""\n'
             ),
         )
         decisions = gate_module.parse_decision_tables(tmp)
@@ -293,7 +289,7 @@ def test_validate_coverage_emits_orphan_guard(gate_module) -> None:
             (
                 "# HARNESS-PROVENANCE: deterministic-quality-harness v1.6\n"
                 "# + sample DA-999 — test_orphan.py\n"
-                "\"\"\"Guards a decision that does not exist.\"\"\"\n"
+                '"""Guards a decision that does not exist."""\n'
             ),
         )
         claims = gate_module.collect_guard_claims(tmp)
