@@ -37,10 +37,10 @@ Orden obligatorio: 1 antes que 2 y 3 (con CRAP vivo el techo efectivo es 6; en o
 
 Traza: DG-11, spec "Complexity ceiling lowered with review date".
 
-- [ ] 1.1 `scripts/check_complexity.py`: `MAX_COMPLEXITY = 10`, fecha de revisión `2027-02-13` junto a la constante.
-- [ ] 1.2 `tests/lanzadera/test_complexity_wiring.py`: pinear `MAX_COMPLEXITY == 10` y presencia de `2027-02-13` en el módulo.
-- [ ] 1.3 Verificar: `python scripts/check_complexity.py --root .` sale 0 sin tocar código de `app/`.
-- [ ] 1.4 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
+- [x] 1.1 `scripts/check_complexity.py`: `MAX_COMPLEXITY = 10`, fecha de revisión `2027-02-13` junto a la constante.
+- [x] 1.2 `tests/lanzadera/test_complexity_wiring.py`: pinear `MAX_COMPLEXITY == 10` y presencia de `2027-02-13` en el módulo.
+- [x] 1.3 Verificar: `python scripts/check_complexity.py --root .` sale 0 sin tocar código de `app/`.
+- [x] 1.4 Verificar límite de rebanada: `python scripts/quality_report.py` y `python -m pytest -q` en verde.
 
 ## Phase 2: Descableado de CRAP — PR 2 (`feat/266-crap-unwire` → `feat/266-complexity-ceiling`)
 
