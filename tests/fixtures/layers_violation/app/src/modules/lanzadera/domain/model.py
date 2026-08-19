@@ -3,8 +3,12 @@
 
 import fastapi  # purity:domain — a pure layer must not touch a framework
 
-from app.src.modules.expedientes.domain import Expediente  # slice:lanzadera->expedientes
-from app.src.modules.lanzadera.adapters.repo import UserRepo  # direction:domain->adapters
+from app.src.modules.expedientes.domain import (
+    Expediente,
+)  # slice:lanzadera->expedientes
+from app.src.modules.lanzadera.adapters.repo import (
+    UserRepo,
+)  # direction:domain->adapters
 
 
 class User:

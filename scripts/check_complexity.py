@@ -32,7 +32,10 @@ from pathlib import Path
 ROOT_PACKAGE = "app"
 
 #: The ceiling. Absolute, global, applied to every function without exception.
-MAX_COMPLEXITY = 15
+#: Review date: 2027-02-13 (issue #266, decision DG-11). The review decides
+#: whether the margin was used: if the code stays at CC 6, the ceiling moves
+#: toward 6. The value 10 is transient, not a destination.
+MAX_COMPLEXITY = 10
 
 EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
 
