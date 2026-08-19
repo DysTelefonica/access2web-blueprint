@@ -7,14 +7,13 @@
 # VERIFICATION ORDER (Hard Rule 13) — declared once, never reordered:
 #   1. review-budget gates (pr-size, branch-name)  cheap, and they gate reviewability, not code
 #   2. format, lint, typecheck                     mechanical, fix before reading anything else
-#   3. tests + coverage                            produces coverage.json, which CRAP consumes
-#   4. layers -> complexity -> CRAP -> DRY         run by scripts/quality_report.py, in that order
+#   3. tests + coverage                            produces coverage.json
+#   4. layers -> complexity -> DRY                 run by scripts/quality_report.py, in that order
 #
-# The four code gates are NOT separate YAML steps on purpose. Their order is load-bearing —
-# architecture work moves code between modules and changes per-function complexity; CRAP prices
-# that complexity against coverage; deduplication then moves code again. Upstream `swarm-forge`
-# fixes CRAP before DRY for exactly this reason. Order that matters belongs in code, where a test
-# pins it, not in YAML where a reviewer can reorder two steps without noticing.
+# The code gates are NOT separate YAML steps on purpose. Their order is load-bearing —
+# architecture work moves code between modules and changes per-function complexity; deduplication
+# then moves code again. Order that matters belongs in code, where a test pins it, not in YAML
+# where a reviewer can reorder two steps without noticing.
 #
 # Fix everything a gate reports before moving to the next. Same code plus a different fix order
 # must not yield a different final state.
@@ -99,7 +98,7 @@ jobs:
     concurrency:
       group: gate-quality
       cancel-in-progress: false
-    # Generous: ruff + mypy + pytest + layers + complexity + crap + dry on the full
+    # Generous: ruff + mypy + pytest + layers + complexity + dry on the full
     # testable boundary. Below this the gate either hung (real failure) or the floor
     # moved (deliberate change to be discussed in a PR, not in a hung runner).
     timeout-minutes: 30
@@ -159,7 +158,13 @@ jobs:
         run: ruff check --config app/pyproject.toml .
 
       - name: typecheck
-        run: mypy app/
+        # `--explicit-package-bases` is required since slice 1 of #266 added
+        # app/pytest_plugin/coverage_gate_helpers.py: without it, mypy 1.13.0
+        # stops on "Source file found twice under different module names" because
+        # it sees the file as both `pytest_plugin.coverage_gate_helpers` and
+        # `app.pytest_plugin.coverage_gate_helpers` depending on the walk path.
+        # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+        run: mypy --explicit-package-bases app/
 
       - name: workflow gate
         # Hardens the workflow files themselves (issue #135): no duplicate YAML
@@ -170,9 +175,6 @@ jobs:
         run: python scripts/check_workflows.py
 
       - name: tests
-        # coverage.json is an input to the CRAP gate, not a nicety. Without it that gate fails
-        # closed, which is the correct behaviour and a useless CI run — so produce it here.
-        #
         # `-c app/pyproject.toml --rootdir=app` is load-bearing. The pytest contract
         # lives in app/pyproject.toml and is written for rootdir=app: `pythonpath =
         # [".."]` is what makes `from app.src...` resolve, `testpaths = ["../tests"]`
@@ -186,7 +188,7 @@ jobs:
 
 
       - name: quality gates and indicators
-        # Runs layers -> complexity -> CRAP -> DRY in that fixed order, writes
+        # Runs layers -> complexity -> DRY in that fixed order, writes
         # quality-report.json, and renders the indicator table into the job summary.
         run: python scripts/quality_report.py
 

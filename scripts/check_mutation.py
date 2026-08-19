@@ -4,7 +4,7 @@
 
 Mutation testing is the only mechanical answer to "do these tests assert anything". Coverage
 says a line executed; mutation changes the line and asks whether any test noticed. Everything
-else in this harness — complexity, CRAP, duplication — measures the shape of the code. This
+else in this harness — complexity, duplication — measures the shape of the code. This
 measures the value of the suite.
 
 Three things this gate does that a plain threshold on the survival rate does not:

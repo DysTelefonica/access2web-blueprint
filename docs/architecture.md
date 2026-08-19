@@ -223,7 +223,6 @@ Once `scripts/check_*.py` + `.github/workflows/`:
 | `check_pr_size.py` | scripts/ | QC-6 |
 | `check_layers.py` | scripts/ | QC-2, QC-9 |
 | `check_complexity.py` | scripts/ | QC-1, QC-10 |
-| `check_crap.py` | scripts/ | QC-11 |
 | `check_dry.py` | scripts/ | QC-11 |
 | `check_legacy_hashes.py` | scripts/ | DA-13 (pin AST) |
 | `check_mutation_sites.py` | scripts/ | mutation semanal |

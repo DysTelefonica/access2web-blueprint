@@ -164,45 +164,6 @@ def test_pr_size_override_requires_a_reason() -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# check_crap
-# ---------------------------------------------------------------------------------------------
-
-
-def test_crap_gate_fails_on_untested_complexity() -> None:
-    result = _run("check_crap.py", "--root", str(FIXTURES / "crap_violation"))
-    assert result.returncode == 1, result.stdout
-
-
-def test_crap_gate_catches_what_the_complexity_ceiling_lets_through() -> None:
-    """The whole argument for CRAP, pinned as a test.
-
-    The offender sits at complexity 4 — far under the complexity ceiling of 15, so that gate
-    passes it. With no tests behind it, CRAP scores it 20. If these two ever agree, the CRAP
-    gate has stopped adding information.
-    """
-    complexity = _run("check_complexity.py", "--root", str(FIXTURES / "crap_violation"))
-    crap = _run("check_crap.py", "--root", str(FIXTURES / "crap_violation"))
-    assert complexity.returncode == 0, complexity.stdout
-    assert crap.returncode == 1, crap.stdout
-    assert "CRAP 20.0" in crap.stdout
-
-
-def test_crap_gate_passes_on_small_covered_functions() -> None:
-    result = _run("check_crap.py", "--root", str(FIXTURES / "crap_clean"))
-    assert result.returncode == 0, result.stdout
-
-
-def test_crap_gate_fails_closed_without_coverage_data(tmp_path) -> None:
-    """No coverage data means no verdict, and no verdict must never read as success."""
-    package = tmp_path / "app" / "lanzadera" / "domain"
-    package.mkdir(parents=True)
-    (package / "model.py").write_text("def f():\n    return 1\n", encoding="utf-8")
-    result = _run("check_crap.py", "--root", str(tmp_path))
-    assert result.returncode == 1
-    assert "coverage" in (result.stderr + result.stdout).lower()
-
-
-# ---------------------------------------------------------------------------------------------
 # check_dry
 # ---------------------------------------------------------------------------------------------
 
@@ -395,13 +356,12 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
     [
         "check_layers.py",
         "check_complexity.py",
-        "check_crap.py",
         "check_dry.py",
         "check_branch_name.py",
     ],
 )
 def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
-    root = FIXTURES / "crap_clean"
+    root = FIXTURES / "layers_clean"
     args = ["--branch", "main"] if gate_script == "check_branch_name.py" else ["--root", str(root)]
     result = _run(gate_script, *args, "--json")
     envelope = json.loads(result.stdout)
@@ -413,17 +373,16 @@ def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
 
 def test_quality_report_aggregates_indicators(tmp_path) -> None:
     out = tmp_path / "quality-report.json"
-    result = _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(out))
+    result = _run("quality_report.py", "--root", str(FIXTURES / "layers_clean"), "--out", str(out))
     assert result.returncode == 0, result.stdout
     report = json.loads(out.read_text(encoding="utf-8"))
     assert report["status"] == "pass"
     for indicator in (
         "layers.violations",
         "complexity.max_complexity",
-        "crap.max_crap",
     ):
         assert indicator in report["indicators"], report["indicators"].keys()
-    assert report["indicators"]["crap.max_crap"]["ceiling"] == 6.0
+    assert report["indicators"]["layers.violations"]["ceiling"] == 0
 
 
 def test_quality_report_names_the_failing_gate(tmp_path) -> None:
@@ -431,23 +390,23 @@ def test_quality_report_names_the_failing_gate(tmp_path) -> None:
     result = _run(
         "quality_report.py",
         "--root",
-        str(FIXTURES / "crap_violation"),
+        str(FIXTURES / "layers_violation"),
         "--out",
         str(out),
     )
     assert result.returncode == 1
     report = json.loads(out.read_text(encoding="utf-8"))
-    assert report["failed_gates"] == ["crap"]
+    assert report["failed_gates"] == ["layers"]
 
 
 def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
     """Determinism pin: no wall-clock timestamp may leak into the report."""
     first, second = tmp_path / "a.json", tmp_path / "b.json"
-    _run("quality_report.py", "--root", str(FIXTURES / "crap_clean"), "--out", str(first))
+    _run("quality_report.py", "--root", str(FIXTURES / "layers_clean"), "--out", str(first))
     _run(
         "quality_report.py",
         "--root",
-        str(FIXTURES / "crap_clean"),
+        str(FIXTURES / "layers_clean"),
         "--out",
         str(second),
     )

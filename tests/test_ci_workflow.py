@@ -19,7 +19,7 @@ import yaml
 REQUIRED_COMMANDS = (
     "ruff format --check --config app/pyproject.toml",
     "ruff check --config app/pyproject.toml .",
-    "mypy app/",
+    "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
     "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
     "python scripts/check_workflows.py",
@@ -43,12 +43,11 @@ VERIFY_EXCLUSIONS = (
     "trivy",  # docker
 )
 
-#: The four code gates, in the order they must run. Deduplication moves code, which changes
-#: complexity, which changes CRAP — so the sequence is part of the contract, not a preference.
+#: The code gates, in the order they must run. Deduplication moves code, which changes
+#: complexity — so the sequence is part of the contract, not a preference.
 REQUIRED_GATE_ORDER = (
     "layers",
     "complexity",
-    "crap",
     "mutation_sites",
     "dry",
     # DA-13, last: a symbol walker, not a metric, so it neither consumes nor
@@ -294,6 +293,13 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
     a gate that was written and never wired, because whoever forgot the CI step
     also forgot to add the entry here. Walking `scripts/` closes that: the gate
     exists on disk, so it must run somewhere, or be deleted.
+
+    Slice 4 of issue #266 (architectural-guards-over-metrics) lands the
+    ``check_decision_guards.py`` script ahead of its CI wiring. The gate is
+    invoked standalone (unit tests on synthetic markdown) and waits for slice 6
+    to add it to ``GATES`` in ``quality_report.py``. Until then
+    ``KNOWN_PENDING_GATES`` is the documented exception that keeps this guard
+    honest about the slice boundary without forcing slice 4 to do slice 6 work.
     """
     scripts_dir = _find_makefile().parent / "scripts"
     if not scripts_dir.is_dir():
@@ -307,12 +313,28 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
     if aggregator.is_file():
         wired += "\n" + aggregator.read_text(encoding="utf-8")
 
-    unwired = sorted(path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired)
+    unwired = sorted(
+        path.name
+        for path in scripts_dir.glob("check_*.py")
+        if path.name not in wired and path.name not in KNOWN_PENDING_GATES
+    )
     assert not unwired, (
         f"these gate scripts exist but no CI step runs them: {unwired}. A gate that "
         "runs nowhere is a false guarantee — wire it into ci.yml or delete it "
-        "(Decision Gate: 'Gate runs locally but not in CI')."
+        "(Decision Gate: 'Gate runs locally but not in CI'). Pending slice "
+        "exceptions live in KNOWN_PENDING_GATES."
     )
+
+
+#: Gate scripts that exist on disk but have not been wired into CI yet because
+#: they are intentionally staged ahead of their aggregator entry. Each entry
+#: MUST name the slice that removes the exception, otherwise the exception
+#: becomes a permanent dead-script tomb.
+KNOWN_PENDING_GATES: tuple[str, ...] = (
+    # Slice 4 of #266: scripts/check_decision_guards.py is the unit-tested gate.
+    # Slice 6 wires it into GATES and removes this entry.
+    "check_decision_guards.py",
+)
 
 
 def _install_blocks(run_blocks: list[str]) -> list[str]:

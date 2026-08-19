@@ -28,8 +28,8 @@ help:
 	@echo "format           - ruff format --check --config app/pyproject.toml (mechanical, fix first)"
 	@echo "lint             - ruff check --config app/pyproject.toml ."
 	@echo "typecheck        - mypy over $(PACKAGE)/"
-	@echo "test             - pytest with coverage.json, which the CRAP gate consumes"
-	@echo "quality-report   - layers -> complexity -> CRAP -> mutation sites -> DRY, in order"
+	@echo "test             - pytest with coverage.json"
+	@echo "quality-report   - layers -> complexity -> mutation sites -> DRY, in order"
 	@echo "mutation         - the cosmic-ray session + ratchet (slow; CI runs it weekly)"
 	@echo ""
 	@echo "Run 'make verify' before opening a PR. Its gate list is pinned to ci.yml by"
@@ -49,7 +49,7 @@ lint:
 	$(RUFF) check --config app/pyproject.toml .
 
 typecheck:
-	$(MYPY) $(PACKAGE)/
+	$(MYPY) --explicit-package-bases $(PACKAGE)/
 
 # -c app/pyproject.toml --rootdir=app is load-bearing: pytest's contract
 # (pythonpath, testpaths, the coverage-gate plugin by its `app.` path) is
@@ -64,7 +64,7 @@ test:
 check-workflows:
 	$(PYTHON) scripts/check_workflows.py
 
-# quality_report.py runs layers -> complexity -> CRAP -> mutation_sites -> DRY
+# quality_report.py runs layers -> complexity -> mutation_sites -> DRY
 # in one process because their order is pinned in code (GATES), not in YAML
 # where a reviewer can swap two steps without noticing.
 quality-report:
