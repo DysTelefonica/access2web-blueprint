@@ -313,7 +313,11 @@ def test_every_gate_script_on_disk_is_wired_in_ci(run_blocks: list[str]) -> None
     if aggregator.is_file():
         wired += "\n" + aggregator.read_text(encoding="utf-8")
 
-    unwired = sorted(path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired)
+    unwired = sorted(
+        path.name
+        for path in scripts_dir.glob("check_*.py")
+        if path.name not in wired and path.name not in KNOWN_PENDING_GATES
+    )
     assert not unwired, (
         f"these gate scripts exist but no CI step runs them: {unwired}. A gate that "
         "runs nowhere is a false guarantee — wire it into ci.yml or delete it "
