@@ -15,6 +15,7 @@ SQL to stdout) modes are supported. Online mode is the production path;
 offline is for SQL review and for the CI gate that confirms the rendered
 DDL matches the committed migration.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -144,9 +145,7 @@ async def run_async_migrations() -> None:
         # migration's own `CREATE SCHEMA` is also guarded so re-running
         # the migration after a manual schema drop does not trip over an
         # existing one.
-        await connection.exec_driver_sql(
-            f'CREATE SCHEMA IF NOT EXISTS "{_VERSION_SCHEMA}"'
-        )
+        await connection.exec_driver_sql(f'CREATE SCHEMA IF NOT EXISTS "{_VERSION_SCHEMA}"')
         # Run the migration inside its own transaction so alembic's
         # bookkeeping (creation/deletion of `alembic_version`) and the
         # migration's DDL land atomically.

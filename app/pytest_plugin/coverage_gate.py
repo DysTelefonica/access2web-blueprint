@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp DA-13 — coverage_gate.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp DA-13 — coverage_gate.py
 """Coverage gate plugin — 100% floor on CRITICAL_HELPERS, mutate `session.exitstatus`.
 
 Phase 0 ships only the **declaration** of `CRITICAL_HELPERS` and the
@@ -17,9 +17,21 @@ release can pass this gate.
 
 Lanzadera MVP CRITICAL_HELPERS (orchestrator pre-resolved, 2026-08-09):
     hash_password, verify_password, issue_reset_token, consume_reset_token.
+
+DG-11 (issue #266, slice 1): the per-target resolution and the coverage lookup
+live in `coverage_gate_helpers.py` so the gate file itself stays below the
+mutation-sites ceiling. The orchestrator stays here because it owns the side
+effects — stdout/stderr writes and `session.exitstatus` mutation.
 """
 
 from __future__ import annotations
+
+from app.pytest_plugin.coverage_gate_helpers import (
+    _evaluate_helper,
+    _missing_helper_warning,
+    _missing_module_warning,
+    _resolve_helper,
+)
 
 # Symbol names that must reach 100% coverage the moment they exist. Until they
 # exist, the plugin emits a WARNING — Phase 0 ships no implementation.
@@ -51,39 +63,25 @@ def _try_import(module_name: str):
         return None
 
 
-def _module_covered_lines(coverage_data, module_path: str) -> set[int] | None:
-    """Return the executed lines for the given module file, or ``None`` when not measured.
+def _emit_verdicts(warnings: list[str], failures: list[str], session) -> None:
+    """Print each verdict line to stderr and mutate ``session.exitstatus``.
 
-    coverage_data is the in-memory coverage report after the pytest run. Keys
-    are the relative paths of measured files; we match by suffix so the
-    plugin works regardless of where pytest was invoked from.
+    Hard Rule 8: the contract is to mutate ``session.exitstatus`` from inside
+    the sessionfinish hook; ``config.exitstatus = 1`` does NOT change pytest's
+    exit code. We pass the session through so the mutation happens here.
     """
-    if coverage_data is None:
-        return None
-    cov_data = getattr(coverage_data, "_data", None)
-    if cov_data is None:
-        return None
-    measured_files = cov_data.measured_files()
-    for file_path in measured_files:
-        if module_path in file_path or file_path.endswith(module_path):
-            executable = cov_data.executable_lines(file_path)
-            executed = cov_data.executed_lines(file_path) or set()
-            return executable & executed  # only executable-and-executed lines
-    return None
+    # Emit one-line verdicts to stderr so reviewers see them even when pytest
+    # is invoked from the CI aggregator.
+    import sys
 
+    for line in warnings:
+        print(line, file=sys.stderr)
+    for line in failures:
+        print(line, file=sys.stderr)
 
-def _module_total_executable(coverage_data, module_path: str) -> set[int] | None:
-    """Return the executable lines for the given module file, or ``None`` when not measured."""
-    if coverage_data is None:
-        return None
-    cov_data = getattr(coverage_data, "_data", None)
-    if cov_data is None:
-        return None
-    measured_files = cov_data.measured_files()
-    for file_path in measured_files:
-        if module_path in file_path or file_path.endswith(module_path):
-            return set(cov_data.executable_lines(file_path))
-    return None
+    if failures:
+        # Hard Rule 8: mutate session.exitstatus, not config.exitstatus.
+        session.exitstatus = 1
 
 
 def pytest_sessionfinish(session, exitstatus) -> None:
@@ -98,6 +96,10 @@ def pytest_sessionfinish(session, exitstatus) -> None:
     exist yet, so the run ends with four WARNINGS and exit code 0 (assuming
     no other test failed). Phase 4+ will fail loudly until each helper
     reaches 100%.
+
+    DG-11 (issue #266): the per-target resolution and the coverage lookup
+    moved to `coverage_gate_helpers.py` so this file stays under the
+    mutation-sites ceiling.
     """
     coverage_data = getattr(session.config, "_coverage", None)
     if coverage_data is None:
@@ -109,58 +111,26 @@ def pytest_sessionfinish(session, exitstatus) -> None:
     for module_name in TARGET_MODULES:
         module = _try_import(module_name)
         if module is None:
-            # Phase 0..3: helper module absent. Emit a WARNING per missing module.
-            warnings.append(
-                f"coverage_gate WARNING: helper module '{module_name}' is not importable; "
-                f"the CRITICAL_HELPERS it would host cannot be measured yet"
-            )
+            warnings.append(_missing_module_warning(module_name))
             continue
 
         for helper_name in CRITICAL_HELPERS:
-            helper = getattr(module, helper_name, None)
-            if helper is None:
-                # Phase 0..3: helper absent inside an existing module. WARN.
-                warnings.append(
-                    f"coverage_gate WARNING: '{module_name}.{helper_name}' is not defined yet"
-                )
+            file_path, error_tag = _resolve_helper(module, module_name, helper_name)
+            if error_tag == "missing_helper":
+                warnings.append(_missing_helper_warning(module_name, helper_name))
                 continue
-
-            # Helper exists. Resolve its file path and check coverage.
-            helper_file = getattr(helper, "__code__", None)
-            if helper_file is None:
+            if error_tag == "no_code":
                 continue
-            file_path = helper_file.co_filename
-
-            executed = _module_covered_lines(coverage_data, file_path)
-            executable = _module_total_executable(coverage_data, file_path)
-            if executed is None or executable is None:
-                # File was not measured — pytest-cov scope excluded it, or the helper is
-                # defined in a file outside coverage scope. Surface as WARNING; the verifier
-                # (Phase 6) will pin the scope.
-                warnings.append(
-                    f"coverage_gate WARNING: '{module_name}.{helper_name}' exists but its "
-                    f"file '{file_path}' is not measured by pytest-cov"
-                )
+            if file_path is None:
+                # No error_tag but file_path is None: this is a contract violation
+                # by _resolve_helper. Skip to keep the loop moving and let the
+                # next helper be evaluated. Mypy needs the explicit guard to
+                # narrow str | None to str below.
                 continue
+            warning, failure = _evaluate_helper(file_path, module_name, helper_name, coverage_data)
+            if warning is not None:
+                warnings.append(warning)
+            if failure is not None:
+                failures.append(failure)
 
-            missing = executable - executed
-            if missing:
-                failures.append(
-                    f"coverage_gate FAIL: '{module_name}.{helper_name}' is missing "
-                    f"{len(missing)} executed line(s): {sorted(missing)[:5]}..."
-                )
-            else:
-                pass  # silent OK
-
-    # Emit one-line verdicts to stderr so reviewers see them even when pytest
-    # is invoked from the CI aggregator.
-    import sys
-
-    for line in warnings:
-        print(line, file=sys.stderr)
-    for line in failures:
-        print(line, file=sys.stderr)
-
-    if failures:
-        # Hard Rule 8: mutate session.exitstatus, not config.exitstatus.
-        session.exitstatus = 1
+    _emit_verdicts(warnings, failures, session)

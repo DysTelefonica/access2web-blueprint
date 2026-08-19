@@ -525,7 +525,9 @@ jobs:
     assert "WARN" not in stderr
 
 
-def test_concurrency_positive_per_job_overrides_absent_top_level(tmp_path: Path) -> None:
+def test_concurrency_positive_per_job_overrides_absent_top_level(
+    tmp_path: Path,
+) -> None:
     """This repo declares it per gate, not top-level; both must be accepted."""
     body = """\
 name: ok
@@ -846,7 +848,9 @@ jobs:
     assert "'b'" in stderr
 
 
-def test_concurrency_group_uniqueness_allows_same_group_across_workflows(tmp_path: Path) -> None:
+def test_concurrency_group_uniqueness_allows_same_group_across_workflows(
+    tmp_path: Path,
+) -> None:
     """The check is per-workflow. The same literal in two files is fine."""
     (tmp_path / "wf").mkdir()
     shared = """\
