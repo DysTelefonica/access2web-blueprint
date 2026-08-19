@@ -49,7 +49,7 @@ lint:
 	$(RUFF) check --config app/pyproject.toml .
 
 typecheck:
-	$(MYPY) $(PACKAGE)/
+	$(MYPY) --explicit-package-bases $(PACKAGE)/
 
 # -c app/pyproject.toml --rootdir=app is load-bearing: pytest's contract
 # (pythonpath, testpaths, the coverage-gate plugin by its `app.` path) is
