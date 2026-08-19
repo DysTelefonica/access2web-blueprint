@@ -11,6 +11,9 @@ behaviour cannot drift away from the spec (DG-3).
 from __future__ import annotations
 
 import importlib.util
+import json
+import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -299,3 +302,116 @@ def test_validate_coverage_emits_orphan_guard(gate_module) -> None:
     keys = {finding["key"] for finding in findings}
     assert "orphan_guard" in keys
     assert "no_decision_table" in keys
+
+
+# ---------------------------------------------------------------------------
+# Slice 5 — two-tier fixtures (DG-5, DG-6, DG-8, DG-10, DG-13).
+#
+# The gate's EXCLUDED_PARTS uses *absolute* path parts, so any path whose
+# absolute form contains ``fixtures`` is invisible to the gate even when
+# ``--root`` points at it. The fixtures therefore exist at the spec-mandated
+# paths under ``tests/fixtures/`` but the subprocess invocations stage them in
+# a tempdir that does NOT contain ``fixtures`` in its absolute path. See
+# "Issues Found" in the slice-5 return envelope.
+# ---------------------------------------------------------------------------
+
+CLEAN_FIXTURE = Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "decision_guards_clean"
+VIOLATION_FIXTURE = (
+    Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "decision_guards_violation"
+)
+THREAT_FIXTURE = (
+    Path(__file__).resolve().parents[2] / "tests" / "fixtures" / "decision_guards_threat"
+)
+
+
+def _stage_fixture(source: Path) -> Path:
+    """Copy ``source`` into a tempdir so the staged path's absolute form does
+    NOT contain ``fixtures`` (see module docstring)."""
+    tmp_parent = Path(tempfile.mkdtemp(prefix="dg_stage_"))
+    staged = tmp_parent / "stage"
+    shutil.copytree(source, staged)
+    return staged
+
+
+def _run_gate(root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        [sys.executable, str(_find_script()), "--root", str(root), *args],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=False,
+    )
+
+
+def test_tier2_clean_exits_zero_with_decisions() -> None:
+    """Tier 2 — detector-negative: the clean fixture exits 0 with
+    ``decisions_total > 0`` and no findings. DG-13 must keep the wiring table's
+    list-cells from being read as decision rows."""
+    staged = _stage_fixture(CLEAN_FIXTURE)
+    try:
+        proc = _run_gate(staged, "--json")
+    finally:
+        shutil.rmtree(staged.parent, ignore_errors=True)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    envelope = json.loads(proc.stdout)
+    assert envelope["indicators"]["decisions_total"] > 0
+    assert envelope["indicators"]["decisions_uncovered"] == 0
+    assert envelope["indicators"]["orphan_guards"] == 0
+    assert envelope["findings"] == []
+
+
+def test_tier1_violation_emits_uncovered() -> None:
+    """Tier 1 — DG-100 + DG-99 with no guard, no COVERED_BY, no BASELINE
+    entry produce ``uncovered`` findings."""
+    staged = _stage_fixture(VIOLATION_FIXTURE)
+    try:
+        proc = _run_gate(staged)
+    finally:
+        shutil.rmtree(staged.parent, ignore_errors=True)
+    assert proc.returncode == 1
+    assert "[uncovered]" in proc.stdout
+    assert "DG-99" in proc.stdout
+    assert "DG-100" in proc.stdout
+
+
+def test_tier1_violation_emits_duplicate_id() -> None:
+    """Tier 1 — DG-99 in two ``design.md`` files triggers ``duplicate_id``
+    (DG-7)."""
+    staged = _stage_fixture(VIOLATION_FIXTURE)
+    try:
+        proc = _run_gate(staged)
+    finally:
+        shutil.rmtree(staged.parent, ignore_errors=True)
+    assert proc.returncode == 1
+    assert "[duplicate_id]" in proc.stdout
+    assert "DG-99" in proc.stdout
+
+
+def test_tier1_violation_emits_orphan_guard() -> None:
+    """Tier 1 — HARNESS-PROVENANCE citing DG-200 with no matching decision
+    table triggers ``orphan_guard`` (DG-10)."""
+    staged = _stage_fixture(VIOLATION_FIXTURE)
+    try:
+        proc = _run_gate(staged)
+    finally:
+        shutil.rmtree(staged.parent, ignore_errors=True)
+    assert proc.returncode == 1
+    assert "[orphan_guard]" in proc.stdout
+    assert "DG-200" in proc.stdout
+
+
+def test_threat_fixture_invisible_to_production_traversal() -> None:
+    """5.3 — path-collision RED→GREEN evidence: the threat fixture's fake
+    HARNESS-PROVENANCE (under ``tests/fixtures/decision_guards_threat/``) does
+    NOT leak into the production envelope when ``--root .`` is used, because
+    ``EXCLUDED_PARTS`` contains ``fixtures``."""
+    repo_root = Path(__file__).resolve().parents[2]
+    proc = _run_gate(repo_root, "--json")
+    assert proc.returncode != 0, "production envelope still has uncovered decisions"
+    envelope = json.loads(proc.stdout)
+    leaked = [
+        f
+        for f in envelope["findings"]
+        if "decision_guards_threat" in f["file"] or "test_threat_orphan" in f["file"]
+    ]
+    assert leaked == [], f"threat fixture leaked into production traversal: {leaked}"
