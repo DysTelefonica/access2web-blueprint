@@ -172,9 +172,7 @@ def _iter_design_md(root: Path) -> list[Path]:
     if not openspec.is_dir():
         return []
     return sorted(
-        path
-        for path in openspec.rglob("design.md")
-        if not EXCLUDED_PARTS.intersection(path.parts)
+        path for path in openspec.rglob("design.md") if not EXCLUDED_PARTS.intersection(path.parts)
     )
 
 
@@ -213,7 +211,8 @@ def _parse_design_file(path: Path) -> dict[str, tuple[str, int]]:
                 decision_id = _extract_decision_token(first_cell)
                 if decision_id is not None:
                     decisions.setdefault(
-                        decision_id, (display, cursor + 1)  # 1-indexed line
+                        decision_id,
+                        (display, cursor + 1),  # 1-indexed line
                     )
             cursor += 1
 
@@ -253,9 +252,7 @@ def _iter_python_files(root: Path) -> list[Path]:
     if not tests.is_dir():
         return []
     return sorted(
-        path
-        for path in tests.rglob("*.py")
-        if not EXCLUDED_PARTS.intersection(path.parts)
+        path for path in tests.rglob("*.py") if not EXCLUDED_PARTS.intersection(path.parts)
     )
 
 
@@ -489,9 +486,7 @@ def validate_coverage(
                     "id": decision_id,
                     "file": file_path,
                     "line": line_no,
-                    "detail": (
-                        f"BASELINE active until {entry.target_date}, count={entry.count}"
-                    ),
+                    "detail": (f"BASELINE active until {entry.target_date}, count={entry.count}"),
                 }
             )
             continue
@@ -502,8 +497,7 @@ def validate_coverage(
                 "file": file_path,
                 "line": line_no,
                 "detail": (
-                    f"decision {decision_id} has no guard, no COVERED_BY, "
-                    "and no BASELINE entry"
+                    f"decision {decision_id} has no guard, no COVERED_BY, and no BASELINE entry"
                 ),
             }
         )
@@ -573,13 +567,9 @@ def build_report(
             "designs_ungoverned": 0,
         },
         "findings": [
-            {"file": f["file"], "line": f["line"], "detail": f["detail"]}
-            for f in findings
+            {"file": f["file"], "line": f["line"], "detail": f["detail"]} for f in findings
         ]
-        + [
-            {"file": n["file"], "line": n["line"], "detail": n["detail"]}
-            for n in notes
-        ],
+        + [{"file": n["file"], "line": n["line"], "detail": n["detail"]} for n in notes],
     }
 
 

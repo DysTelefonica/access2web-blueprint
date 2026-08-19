@@ -19,7 +19,7 @@ import yaml
 REQUIRED_COMMANDS = (
     "ruff format --check --config app/pyproject.toml",
     "ruff check --config app/pyproject.toml .",
-    "mypy app/",
+    "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
     "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
     "python scripts/check_workflows.py",
