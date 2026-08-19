@@ -381,7 +381,9 @@ def test_install_step_defends_against_missing_pyproject(run_blocks: list[str]) -
         )
 
 
-def test_install_step_reports_chain_hole_when_fragment_only(run_blocks: list[str]) -> None:
+def test_install_step_reports_chain_hole_when_fragment_only(
+    run_blocks: list[str],
+) -> None:
     """The fragment-only branch must produce a diagnostic naming F2.
 
     When `app/pyproject.toml` is missing but `pyproject.fragment.toml` is
