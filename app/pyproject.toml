@@ -56,6 +56,7 @@ dev = [
     "pytest-cov==7.0.0",           # Coverage + gate plugin host.
     "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
     "pip-audit==2.9.0",            # Dependency scan (security.yml).
+    "types-cachetools==6.2.0",     # Type stubs for cachetools (DA-8, WU AD5).
 ]
 
 # ---------------------------------------------------------------------------
