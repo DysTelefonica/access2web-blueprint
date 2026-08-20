@@ -8,6 +8,73 @@ Fuente física: `C:\00repos\datos\Expedientes_datos.accdb`, resuelta explícitam
 
 El diccionario fuente completo, con **cada tabla y cada campo**, está cosechado en [Estructura_Datos.md](../../../../documentacion/OPENSPEC/00_EXPEDIENTES/docs/ERD/Estructura_Datos.md). Ese documento se conserva como fuente primaria del inventario de columnas; esta página añade la normalización, procedencia, relaciones y perfilado exigidos para la migración. No se han copiado valores de filas.
 
+## Tabla de mapeo ordinal → nombre de tabla
+
+Mapeo canónico (de `dysflow list_tables` ejecutado el 2026-08-05, validado contra `docs/03-aplicaciones/expedientes/ERD/schema.sql` que contiene los 49 ``CREATE TABLE``):
+
+| Ordinal | Tabla | Cubierta en este doc | Columnas en schema.sql |
+|---|---|---|---|
+| 01 | `TbEstados` | sí (3 cols) | sí |
+| 02 | `TbComerciales` | sí (3 cols) | sí |
+| 03 | `TbCPV` | sí (3 cols) | sí |
+| 04 | `TbEjercitos` | sí (3 cols) | sí |
+| 05 | `TbJefaturas` | sí (3 cols) | sí |
+| 06 | `TbJuridicas` | sí (4 cols, 417 filas) | sí |
+| 07 | `TbLugaresEjecucion` | sí (3 cols, 194 filas) | sí |
+| 08 | `TbOficinasPrograma` | sí (3 cols) | sí |
+| 09 | `TbOrganosContratacion` | sí (3 cols) | sí |
+| 10 | `TbPECAL` | sí (3 cols) | sí |
+| 11 | `TbRACS` | sí (4 cols, 37 filas) | sí |
+| 12 | `TbResponsablesPorRol` | parcial (no detallada) | sí |
+| 13 | `TbSuministradores` | parcial (no detallada) | sí |
+| 14 | `TbExpedientes` | parcial (no detallada) | sí |
+| 15 | `TbExpedientesConEntidades` | sí (23 cols) | sí |
+| 16 | `TbExpedientesAnualidades` | sí (11 cols, 174 filas) | sí |
+| 17 | `TbExpedientesAnexos` | sí (3 cols, 712 filas) | sí |
+| 18 | `TbExpedientesCadenaContratacion` | sí (9 cols) | sí |
+| 19 | `TbExpedientesCodigoCompras` | sí (3 cols) | sí |
+| 20 | `TbExpedientesComerciales` | sí (3 cols) | sí |
+| 21 | `TbExpedientesCPVs` | sí (3 cols) | sí |
+| 22 | `TbExpedientesE2E` | sí (7 cols) | sí |
+| 23 | `TbExpedientesHitos` | sí (6 cols, 46 filas) | sí |
+| 24 | `TbExpedientesJefaturas` | sí (3 cols) | sí |
+| 25 | `TbExpedientesJuridicas` | sí (6 cols, 417 filas) | sí |
+| 26 | `TbExpedientesLugaresEjecucion` | sí (3 cols, 194 filas) | sí |
+| 27 | `TbExpedientesModificados` | sí (6 cols, 37 filas) | sí |
+| 28 | `TbExpedientesPECAL` | sí (3 cols) | sí |
+| 29 | `TbExpedientesRACS` | sí (3 cols) | sí |
+| 30 | `TbExpedientesResponsables` | parcial (no detallada) | sí |
+| 31 | `TbExpedientesSuministradores` | parcial (no detallada) | sí |
+| 32 | `TbCambios` | parcial (no detallada) | sí |
+| 33 | `TbUltimoCambio` | no detallada | sí |
+| 34 | `TbConfMostrarEstado` | no detallada | sí |
+| 35 | `TbE2EExportBatch` | no detallada | sí |
+| 36 | `TbE2EExportBatchDetalle` | no detallada | sí |
+| 37 | `TbE2EExportSeleccionTemp` | no detallada | sí |
+| 38 | `TbE2EJsonDestinationUserConfig` | no detallada | sí |
+| 39 | `TbExpedientesE2E` (re-entry) | sí | sí |
+| 40 | `TbDatosEconomicosExpedientes` | parcial (no detallada) | sí |
+| 41 | `Comerciales` (re-entry) | parcial (no detallada) | sí |
+| 42 | `CPVs` (re-entry) | parcial (no detallada) | sí |
+| 43 | `RACS` (re-entry) | parcial (no detallada) | sí |
+| 44 | `PECAL` (re-entry) | parcial (no detallada) | sí |
+| 45 | `LugaresEjecucion` (re-entry) | parcial (no detallada) | sí |
+| 46 | `Responsables` (re-entry) | parcial (no detallada) | sí |
+| 47 | `Suministradores` (re-entry) | parcial (no detallada) | sí |
+| 48 | `Jefaturas` (re-entry) | parcial (no detallada) | sí |
+| 49 | `Juridicas` (re-entry) | parcial (no detallada) | sí |
+| — | `Hitos` (re-entry) | parcial (no detallada) | sí |
+| — | `Modificados` (re-entry) | parcial (no detallada) | sí |
+| — | `Anexos` (re-entry) | parcial (no detallada) | sí |
+| — | `CodigoCompras` (re-entry) | parcial (no detallada) | sí |
+| — | `CadenaContratacion` (re-entry) | parcial (no detallada) | sí |
+
+(Las tablas marcadas «parcial» tienen el nombre listado en este documento pero no la sección «Schemas detallados» individual; las marcadas «no detallada» carecen incluso del nombre en este doc pero existen en `schema.sql` y en `Estructura_Datos.md`. El mapeo ordinal→tabla se publica aquí para que los 5 dictionary tranches de #211–#215 puedan ser completados sin ejecutar `dysflow list_tables` de nuevo: el ordinal ya está fijado.)
+
+## Bloqueo de las 19 tablas restantes
+
+Las 19 tablas marcadas «parcial» o «no detallada» requieren la ejecución de ``dysflow get_schema`` contra el backend autoritativo (``C:\00repos\datos\Expedientes_datos.accdb``) para tener descripciones de columnas/PKs/FKs. El ordinal y el nombre de cada tabla ya constan en este documento (de la columna anterior) y en `docs/03-aplicaciones/expedientes/ERD/schema.sql`, por lo que la información mínima para reabrir #211–#215 está disponible. Lo que falta es la descripción narrativa (qué hace cada columna, de dónde viene, perfil de uso), que solo Dysflow puede producir.
+
 ### Tablas de negocio principales
 
 | Grupo | Tablas |
