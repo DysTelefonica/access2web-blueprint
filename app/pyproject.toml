@@ -34,7 +34,7 @@ classifiers = [
 # Exact runtime pins (orchestrator decision, 2026-08-09). Each line is required.
 dependencies = [
     "argon2-cffi==25.1.0",         # DA-2: Argon2id PHC strings for password hashing.
-    "cryptography==41.0.*",        # AES-GCM for NationalIdCipher (CA-S4).
+    "cryptography>=50.0,<51",      # AES-GCM for NationalIdCipher (CA-S4). Pinned above the 49.0.0 CVE floor (PYSEC-2026-3553/3554) and the 48.0.1 floor (GHSA-537c-gmf6-5ccf).
     "sqlalchemy==2.0.*",           # Core ORM for adapters (Phase 4).
     "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
     "asyncpg==0.30.*",             # Postgres driver for SQLAlchemy (Phase 4).
