@@ -14,7 +14,11 @@ permissions:
 
 jobs:
   preflight:
-    runs-on: ubuntu-24.04
+    # Runs on the self-hosted `a2w` runner. Antes vivía en `ubuntu-24.04` por el
+    # split del retro #117/#127 — la contención que justificaba ese split ya no
+    # aplica (2026-08-20): corren 2 runners `a2w` en fan-out. El billing de
+    # GitHub Actions rompió el 2026-08-20 y no debe condicionar el release path.
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     timeout-minutes: 15
     # Per-job FIFO, one group per job: a shared group would make the three jobs
     # of the same run queue behind each other instead of behind their peers.

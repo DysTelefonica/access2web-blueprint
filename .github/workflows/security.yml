@@ -22,10 +22,13 @@ concurrency:
 
 jobs:
   gitleaks:
-    # Docker-based scan. Routes to GitHub-hosted so it does not contend for the
-    # single self-hosted runner with quality/mutation. Break the monopoly that
-    # blocked reviewability feedback during the #117 retro split (#127).
-    runs-on: ubuntu-24.04
+    # Docker-based scan. Runs on the self-hosted `a2w` runner (image
+    # `myoung34/github-runner:ubuntu-noble` ya trae Docker). Antes vivía en
+    # `ubuntu-24.04` por el split del retro #117/#127 — la contención que
+    # justificaba ese split ya no aplica (2026-08-20): corren 2 runners `a2w`
+    # en fan-out. El billing de GitHub Actions rompió el 2026-08-20 y no debe
+    # condicionar la mergeabilidad de los PRs.
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     # Per-gate FIFO on this runner. A slow docker daemon stalls one invocation;
     # the next waits in submission order rather than racing.
     concurrency:
@@ -102,9 +105,13 @@ jobs:
           GITLEAKS_MIN_BYTES: "1000000"
 
   trivy-config:
-    # Docker-based scan. GitHub-hosted runners ship Docker; routing here breaks
-    # the monopoly #127.
-    runs-on: ubuntu-24.04
+    # Docker-based scan. Runs on the self-hosted `a2w` runner (image
+    # `myoung34/github-runner:ubuntu-noble` ya trae Docker). Antes vivía en
+    # `ubuntu-24.04` por el split del retro #127 — la contención que justificaba
+    # ese split ya no aplica (2026-08-20): corren 2 runners `a2w` en fan-out.
+    # El billing de GitHub Actions rompió el 2026-08-20 y no debe condicionar la
+    # mergeabilidad de los PRs.
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     concurrency:
       group: gate-trivy-config
       cancel-in-progress: false
@@ -131,8 +138,12 @@ jobs:
 
   pip-audit:
     # venv install + advisory DB download — no Docker, no self-hosted infra needed.
-    # Routes to GitHub-hosted to free the VPS for quality/mutation.
-    runs-on: ubuntu-24.04
+    # Runs on the self-hosted `a2w` runner. Antes vivía en `ubuntu-24.04` para
+    # liberar el VPS para `quality`/`mutation` (split del retro #117/#127). Hoy
+    # corren 2 runners `a2w` en fan-out y la contención que justificaba el split
+    # ya no aplica (2026-08-20). El billing de GitHub Actions rompió el
+    # 2026-08-20 y no debe condicionar la mergeabilidad de los PRs.
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     concurrency:
       group: gate-pip-audit
       cancel-in-progress: false
