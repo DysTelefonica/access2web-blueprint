@@ -43,11 +43,13 @@ env:
 
 jobs:
   review-budget:
-    # Cheap gate (PR-size + branch-name, both <1s) — runs on GitHub-hosted so it does
-    # not contend with quality/security for the single self-hosted runner. Routing
-    # these reads off the VPS is what stops a stuck quality job from also stalling
-    # reviewability feedback (umbrella #117).
-    runs-on: ubuntu-24.04
+    # Cheap gate (PR-size + branch-name, both <1s). Runs on the self-hosted
+    # `a2w` runner (Coolify `a2w-runner-1` / `a2w-runner-2`). Antes vivía en
+    # `ubuntu-24.04` por el split del retro #117 — la contención que justificaba
+    # ese split ya no aplica (2026-08-20): corren 2 runners `a2w` en fan-out.
+    # El billing de GitHub Actions rompió el 2026-08-20 y no debe condicionar
+    # la mergeabilidad de los PRs.
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     if: github.event_name == 'pull_request'
     # Per-gate FIFO: if a `review-budget` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
