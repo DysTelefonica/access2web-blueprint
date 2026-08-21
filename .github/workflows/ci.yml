@@ -136,17 +136,24 @@ jobs:
         # ``app/``). The guard below is the F2 contract — it MUST keep saying
         # "neither app/pyproject.toml nor pyproject.fragment.toml found" when the
         # branch really is broken — but the runner's stale worktree is not a real
-        # branch break. The fallback at the top of the block pipes
-        # ``git show HEAD:app/pyproject.toml`` into the file when the worktree
-        # copy is missing AND the branch tip has the file. After the fallback the
-        # guard sees the file and the install proceeds; if the fallback also
-        # fails (branch tip really lacks the file) the guard's existing
-        # "neither found" diagnostic kicks in unchanged.
+        # branch break. The fallback at the top of the block lands the file via
+        # the index instead of the worktree: ``actions/checkout``'s
+        # ``sparse-checkout-cone-mode: true`` only materialises paths touched
+        # by the PR diff, and writing to a non-materialised worktree path
+        # fails with a "Read-only file system" error. Routing the file
+        # through ``git update-index`` + ``git checkout-index --force``
+        # bypasses the cone filter (the index entry has no skip-worktree
+        # bit). After the fallback the guard sees the file and the install
+        # proceeds; if the fallback also fails (branch tip really lacks
+        # the file) the guard's existing "neither found" diagnostic kicks
+        # in unchanged.
         run: |
           set -euo pipefail
           if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
             mkdir -p app
-            git show HEAD:app/pyproject.toml > app/pyproject.toml
+            blob_oid=$(git show HEAD:app/pyproject.toml | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
+            git checkout-index --force --all app/pyproject.toml
           fi
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
@@ -250,14 +257,16 @@ jobs:
           set -euo pipefail
           if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
             mkdir -p app
-            git show HEAD:app/pyproject.toml > app/pyproject.toml
+            blob_oid=$(git show HEAD:app/pyproject.toml | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
+            git checkout-index --force --all app/pyproject.toml
           fi
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
-            echo "::error::See issue #117 (umbrella) and the F2 acceptance criterion."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
             exit 1
           else
             echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
