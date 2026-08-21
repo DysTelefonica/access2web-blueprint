@@ -129,8 +129,25 @@ jobs:
         # before consolidating it into app/pyproject.toml must not fail with a cryptic
         # pip error. The guard below proves the project exists before pip sees one and
         # emits a diagnostic that names the umbrella issue.
+        #
+        # Issue #414 fix: the self-hosted runner (a2w-coolify-noble-2) has a
+        # stale-sparse-checkout bug that excludes ``app/pyproject.toml`` from the
+        # worktree on certain PRs (notably those whose diff adds new files under
+        # ``app/``). The guard below is the F2 contract — it MUST keep saying
+        # "neither app/pyproject.toml nor pyproject.fragment.toml found" when the
+        # branch really is broken — but the runner's stale worktree is not a real
+        # branch break. The fallback at the top of the block pipes
+        # ``git show HEAD:app/pyproject.toml`` into the file when the worktree
+        # copy is missing AND the branch tip has the file. After the fallback the
+        # guard sees the file and the install proceeds; if the fallback also
+        # fails (branch tip really lacks the file) the guard's existing
+        # "neither found" diagnostic kicks in unchanged.
         run: |
           set -euo pipefail
+          if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
+            mkdir -p app
+            git show HEAD:app/pyproject.toml > app/pyproject.toml
+          fi
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
@@ -228,9 +245,13 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: install
-        # See the quality job's install step (#109, #110, #117 F2).
+        # See the quality job's install step (#109, #110, #117 F2, #414).
         run: |
           set -euo pipefail
+          if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
+            mkdir -p app
+            git show HEAD:app/pyproject.toml > app/pyproject.toml
+          fi
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
