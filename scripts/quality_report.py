@@ -41,6 +41,21 @@ GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
     # legacy crypto symbols ran nowhere in CI. Last on purpose: it is a symbol
     # walker, not a metric, so it neither consumes nor invalidates the numbers above.
     ("legacy_hashes", "check_legacy_hashes.py", ()),
+    # L01 of expedientes-web-migration (#264). Same pattern as the legacy
+    # crypto gate above: this is a structural walker, not a metric, so
+    # it belongs after the numeric gates. It rejects reintroduction of Win32
+    # network / OLE COM symbols (CAP-057) once the access backend is
+    # retired. The other 6 retirement gates (CAP-058..063) land as
+    # ``app/src/`` grows the corresponding legacy to retire.
+    # The third tuple element passes extra args to the script: ``--gate``
+    # selects which CAP's forbidden-symbol set to enforce; ``--gate-name``
+    # sets the envelope ``gate`` key so the aggregator's ``failed_gates``
+    # list reports the correct name even when the CAP id differs.
+    (
+        "legacy_retirement",
+        "check_legacy_retirement.py",
+        ("--gate", "CAP-057", "--gate-name", "legacy_retirement"),
+    ),
 )
 
 #: The mutation gate is not here on purpose: it consumes a session database produced by a real
