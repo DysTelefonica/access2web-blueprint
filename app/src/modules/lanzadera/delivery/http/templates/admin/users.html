@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block heading %}Usuarios{% endblock %}
+{% block content %}
+  <section class="mds-card">
+    <table class="mds-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Nombre</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.email }}</td>
+          <td>{{ u.name }}</td>
+          <td>
+            <span class="mds-tag {% if u.status == 'active' %}mds-tag--active{% elif u.status == 'disabled' %}mds-tag--disabled{% endif %}">
+              {{ u.status }}
+            </span>
+          </td>
+          <td>
+            <form method="post" action="/admin/users/{{ u.id }}/disable" style="display:inline">
+              <button class="mds-button mds-button--danger" type="submit">Deshabilitar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No users yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <h2>Alta</h2>
+    <form method="post" action="/admin/users">
+      <input class="mds-textfield" type="email" name="email" placeholder="email" required />
+      <input class="mds-textfield" type="text" name="name" placeholder="name" required />
+      <input class="mds-textfield" type="text" name="dni" placeholder="DNI" required />
+      <button class="mds-button" type="submit">Crear</button>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block heading %}Usuario deshabilitado{% endblock %}
+{% block content %}
+  <section class="mds-card">
+    <p>Usuario <code>{{ user_id }}</code> deshabilitado.</p>
+    <a class="mds-button mds-button--secondary" href="/admin/users">Volver al listado</a>
+  </section>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block heading %}Auditoría{% endblock %}
+{% block content %}
+  <section class="mds-card">
+    <table class="mds-table">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Actor</th>
+          <th>Target</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in events %}
+        <tr>
+          <td>{{ ev.created_at.strftime('%Y-%m-%d %H:%M') if ev.created_at else '' }}</td>
+          <td><code>{{ ev.event_type }}</code></td>
+          <td>{{ ev.actor_id or 'system' }}</td>
+          <td>{{ ev.target_id }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No events yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+{% endblock %}

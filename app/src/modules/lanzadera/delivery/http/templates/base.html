@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Lanzadera · admin{% endblock %}</title>
+    <style>
+      /* Minimal Mística-style spacing without bundling the full Mística
+         CSS — the Mística design system provides design tokens, not
+         runtime CSS. The classes used here (mds-button, mds-card,
+         mds-table, mds-textfield, mds-tag) match the Mística token
+         names so a future swap to the upstream Mistica CSS is mechanical. */
+      body { font-family: system-ui, sans-serif; margin: 1rem; }
+      .mds-card { border: 1px solid #d0d7de; border-radius: 6px; padding: 1rem; margin: 1rem 0; }
+      .mds-button { padding: 0.5rem 1rem; border: 1px solid #0066cc; border-radius: 4px; background: #0066cc; color: white; cursor: pointer; }
+      .mds-button--secondary { background: white; color: #0066cc; }
+      .mds-button--danger { background: #cc0000; border-color: #cc0000; }
+      .mds-table { width: 100%; border-collapse: collapse; }
+      .mds-table th, .mds-table td { padding: 0.5rem; border-bottom: 1px solid #d0d7de; text-align: left; }
+      .mds-textfield { padding: 0.5rem; border: 1px solid #d0d7de; border-radius: 4px; width: 20rem; }
+      .mds-tag { display: inline-block; padding: 0.2rem 0.5rem; background: #e6e6e6; border-radius: 4px; font-size: 0.8rem; }
+      .mds-tag--active { background: #d4f4dd; }
+      .mds-tag--disabled { background: #f4d4d4; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>{% block heading %}Lanzadera · admin{% endblock %}</h1>
+      <nav>
+        <a class="mds-button mds-button--secondary" href="/admin/users">Usuarios</a>
+        <a class="mds-button mds-button--secondary" href="/admin/apps">Aplicaciones</a>
+        <a class="mds-button mds-button--secondary" href="/admin/assignments">Asignaciones</a>
+        <a class="mds-button mds-button--secondary" href="/admin/audit">Auditoría</a>
+      </nav>
+    </header>
+    <main>{% block content %}{% endblock %}</main>
+  </body>
+</html>

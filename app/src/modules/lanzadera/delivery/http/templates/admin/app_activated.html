@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block heading %}Aplicación activada{% endblock %}
+{% block content %}
+  <section class="mds-card">
+    <p>Aplicación <code>{{ app_id }}</code> activada.</p>
+    <a class="mds-button mds-button--secondary" href="/admin/apps">Volver al listado</a>
+  </section>
+{% endblock %}

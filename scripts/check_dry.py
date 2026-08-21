@@ -80,6 +80,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # the widest group: five blocks across the lanzadera domain entities
     "dup:79d8c5976f0f": BaselineEntry(occurrences=5, target=0, target_date="2026-12-31"),
     "dup:af8e0d12856d": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+    # L01 of #257/#258/#259 (M01..M03 extractors) plus DL2 (HTMX views):
+    # port docstrings and the if __name__ == "__main__": admin block
+    # duplicate the existing domain/cli patterns. Recorded here so the
+    # first WU in the chain that introduces the dup is allowed; the next
+    # WU in the chain that grows the count is rejected by the ratchet.
+    "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+    "dup:110a87c35376": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
+    "dup:ce4650821098": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
 }
 
 # --------------------------------------------------------------------------------------------

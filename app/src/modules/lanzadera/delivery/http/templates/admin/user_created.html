@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block heading %}Usuario creado{% endblock %}
+{% block content %}
+  <section class="mds-card">
+    <p>Usuario <code>{{ user.email }}</code> creado con estado
+       <span class="mds-tag mds-tag--active">{{ user.status }}</span>.</p>
+    <a class="mds-button mds-button--secondary" href="/admin/users">Volver al listado</a>
+  </section>
+{% endblock %}

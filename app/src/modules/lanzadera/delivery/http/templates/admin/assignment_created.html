@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block heading %}Asignación creada{% endblock %}
+{% block content %}
+  <section class="mds-card">
+    <p>Asignación creada: usuario <code>{{ user_id }}</code> → app <code>{{ app_id }}</code>
+       con perfil <code>{{ profile_id }}</code>.</p>
+    <a class="mds-button mds-button--secondary" href="/admin/assignments">Volver</a>
+  </section>
+{% endblock %}
