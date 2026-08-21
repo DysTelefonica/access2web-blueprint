@@ -63,6 +63,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` is the real fix for #414: the
+          # default ``sparse-checkout-cone-mode: true`` only materialises
+          # paths touched by the PR diff, so writing to
+          # ``app/pyproject.toml`` (not in the diff) fails with
+          # "Read-only file system" and the worktree guard trips.
+          # (the git-show fallback in the install step remains as a secondary path.)
+          sparse-checkout-cone-mode: false
+          sparse-checkout: disable
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -108,6 +117,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` is the real fix for #414: the
+          # default ``sparse-checkout-cone-mode: true`` only materialises
+          # paths touched by the PR diff, so writing to
+          # ``app/pyproject.toml`` (not in the diff) fails with
+          # "Read-only file system" and the worktree guard trips.
+          # (the git-show fallback in the install step remains as a secondary path.)
+          sparse-checkout-cone-mode: false
+          sparse-checkout: disable
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -136,24 +154,44 @@ jobs:
         # ``app/``). The guard below is the F2 contract — it MUST keep saying
         # "neither app/pyproject.toml nor pyproject.fragment.toml found" when the
         # branch really is broken — but the runner's stale worktree is not a real
-        # branch break. The fallback at the top of the block pipes
-        # ``git show HEAD:app/pyproject.toml`` into the file when the worktree
-        # copy is missing AND the branch tip has the file. After the fallback the
-        # guard sees the file and the install proceeds; if the fallback also
-        # fails (branch tip really lacks the file) the guard's existing
-        # "neither found" diagnostic kicks in unchanged.
+        # branch break. The fallback at the top of the block lands the file via
+        # the index instead of the worktree: ``actions/checkout``'s
+        # ``sparse-checkout-cone-mode: true`` only materialises paths touched
+        # by the PR diff, and writing to a non-materialised worktree path
+        # fails with a "Read-only file system" error. Routing the file
+        # through ``git update-index`` + ``git checkout-index --force``
+        # bypasses the cone filter (the index entry has no skip-worktree
+        # bit). After the fallback the guard sees the file and the install
+        # proceeds; if the fallback also fails (branch tip really lacks
+        # the file) the guard's existing "neither found" diagnostic kicks
+        # in unchanged.
         run: |
           set -euo pipefail
+          # The actions/checkout v7 ``sparse-checkout-cone-mode: true``
+          # default combined with the worktree's skip-worktree bit
+          # means writing to paths not in the PR diff (e.g.
+          # ``app/pyproject.toml``) fails with "Read-only file system".
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` in the checkout action sets the
+          # configuration, but a flaky interaction with the self-hosted
+          # runner's cache can leave the cone active in some runs. The
+          # reliable belt-and-suspenders fix is to disable sparse-checkout
+          # at runtime via ``git sparse-checkout disable`` after the
+          # checkout, then restore the file via ``git show`` + index +
+          # ``checkout-index`` if it is missing.
+          git sparse-checkout disable || true
           if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
             mkdir -p app
-            git show HEAD:app/pyproject.toml > app/pyproject.toml
+            blob_oid=$(git show HEAD:app/pyproject.toml | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
+            git checkout-index --force --all app/pyproject.toml
           fi
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
-            echo "::error::See issue #117 (umbrella) and the F2 acceptance criterion."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
             exit 1
           else
             echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
@@ -239,6 +277,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` is the real fix for #414: the
+          # default ``sparse-checkout-cone-mode: true`` only materialises
+          # paths touched by the PR diff, so writing to
+          # ``app/pyproject.toml`` (not in the diff) fails with
+          # "Read-only file system" and the worktree guard trips.
+          # (the git-show fallback in the install step remains as a secondary path.)
+          sparse-checkout-cone-mode: false
+          sparse-checkout: disable
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -248,16 +295,19 @@ jobs:
         # See the quality job's install step (#109, #110, #117 F2, #414).
         run: |
           set -euo pipefail
+          git sparse-checkout disable || true
           if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
             mkdir -p app
-            git show HEAD:app/pyproject.toml > app/pyproject.toml
+            blob_oid=$(git show HEAD:app/pyproject.toml | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
+            git checkout-index --force --all app/pyproject.toml
           fi
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
-            echo "::error::See issue #117 (umbrella) and the F2 acceptance criterion."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
             exit 1
           else
             echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
