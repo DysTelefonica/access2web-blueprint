@@ -63,13 +63,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          # ``sparse-checkout-cone-mode: false`` is the real fix for #414: the
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` is the real fix for #414: the
           # default ``sparse-checkout-cone-mode: true`` only materialises
           # paths touched by the PR diff, so writing to
           # ``app/pyproject.toml`` (not in the diff) fails with
           # "Read-only file system" and the worktree guard trips.
           # (the git-show fallback in the install step remains as a secondary path.)
           sparse-checkout-cone-mode: false
+          sparse-checkout: disable
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -115,13 +117,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          # ``sparse-checkout-cone-mode: false`` is the real fix for #414: the
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` is the real fix for #414: the
           # default ``sparse-checkout-cone-mode: true`` only materialises
           # paths touched by the PR diff, so writing to
           # ``app/pyproject.toml`` (not in the diff) fails with
           # "Read-only file system" and the worktree guard trips.
           # (the git-show fallback in the install step remains as a secondary path.)
           sparse-checkout-cone-mode: false
+          sparse-checkout: disable
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -167,7 +171,8 @@ jobs:
           # default combined with the worktree's skip-worktree bit
           # means writing to paths not in the PR diff (e.g.
           # ``app/pyproject.toml``) fails with "Read-only file system".
-          # ``sparse-checkout-cone-mode: false`` in the checkout action sets the
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` in the checkout action sets the
           # configuration, but a flaky interaction with the self-hosted
           # runner's cache can leave the cone active in some runs. The
           # reliable belt-and-suspenders fix is to disable sparse-checkout
@@ -272,13 +277,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-          # ``sparse-checkout-cone-mode: false`` is the real fix for #414: the
+          # ``sparse-checkout-cone-mode: false
+          sparse-checkout: disable`` is the real fix for #414: the
           # default ``sparse-checkout-cone-mode: true`` only materialises
           # paths touched by the PR diff, so writing to
           # ``app/pyproject.toml`` (not in the diff) fails with
           # "Read-only file system" and the worktree guard trips.
           # (the git-show fallback in the install step remains as a secondary path.)
           sparse-checkout-cone-mode: false
+          sparse-checkout: disable
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
