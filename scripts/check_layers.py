@@ -51,6 +51,16 @@ ALLOWED_IMPORTS: dict[str, frozenset[str]] = {
     "shared": frozenset({"domain", "ports", "shared"}),
     "delivery": frozenset({"domain", "ports", "application", "adapters", "shared", "delivery"}),
     "di": frozenset({"domain", "ports", "application", "adapters", "shared", "delivery", "di"}),
+    # M01..M04 of #225/#257 (#225=#225 baseline) land read-only
+    # extractors, staging writers, and promotion logic under
+    # ``app/src/modules/expedientes/migration/``. The layer is a sibling
+    # of ``adapters`` (it touches the same cross-cutting infrastructure)
+    # but the only thing it imports from the rest of the module is the
+    # domain's value objects. M02..M04 do not yet exist; the layer is
+    # here so M01's ``extractor.py`` and ``watermark.py`` pass the
+    # ``check_layers.py`` ratchet without being treated as
+    # "unclassified".
+    "migration": frozenset({"domain", "ports", "adapters", "shared", "migration"}),
 }
 
 #: Layers that must not touch a framework at all.
