@@ -50,9 +50,13 @@ REQUIRED_GATE_ORDER = (
     "complexity",
     "mutation_sites",
     "dry",
-    # DA-13, last: a symbol walker, not a metric, so it neither consumes nor
-    # invalidates the numbers before it.
+    # DA-13, last among the metric gates: a symbol walker, not a metric,
+    # so it neither consumes nor invalidates the numbers before it.
     "legacy_hashes",
+    # L01 of #264 (expedientes-web-migration): retirement gate. Same
+    # rationale as legacy_hashes (a structural walker, not a metric) so
+    # it sits at the end of the chain.
+    "legacy_retirement",
 )
 
 _SHA_PIN = re.compile(r"^[0-9a-f]{40}$")

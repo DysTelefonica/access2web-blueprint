@@ -57,7 +57,14 @@ def test_gate_order_includes_legacy_hashes(script: Path) -> None:
     # CRAP gate was retired (issue #266, DG-12). The order keeps the ratchet of the
     # retired gate documented as the absence of `crap` between `complexity` and
     # `mutation_sites`, not as the presence of the unwired gate.
-    assert names == ("layers", "complexity", "mutation_sites", "dry", "legacy_hashes")
+    assert names == (
+        "layers",
+        "complexity",
+        "mutation_sites",
+        "dry",
+        "legacy_hashes",
+        "legacy_retirement",
+    )
 
 
 def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, script: Path) -> None:
@@ -112,4 +119,5 @@ def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, scrip
         "mutation_sites",
         "dry",
         "legacy_hashes",
+        "legacy_retirement",
     } <= gates
