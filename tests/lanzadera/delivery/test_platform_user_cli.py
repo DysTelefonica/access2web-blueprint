@@ -32,14 +32,14 @@ from app.src.modules.lanzadera.delivery.cli.platform_user import (
     cmd_revoke_global_admin,
     cmd_set_password,
 )
-from app.src.modules.lanzadera.domain.user import User, UserStatus
 from app.src.modules.lanzadera.domain.ports import UserRepository
-from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
-    GlobalAdminRepositoryPort,
-)
 from app.src.modules.lanzadera.domain.ports.assignment_repository import (
     AssignmentRepositoryPort,
 )
+from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
+    GlobalAdminRepositoryPort,
+)
+from app.src.modules.lanzadera.domain.user import User, UserStatus
 
 # ---------------------------------------------------------------------------
 # In-memory fakes. Each fake satisfies the structural Protocol the
