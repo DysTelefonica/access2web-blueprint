@@ -23,10 +23,8 @@ from app.src.modules.lanzadera.adapters.notification.mail_queue_table_adapter im
 from app.src.modules.lanzadera.adapters.persistence import (
     AssignmentRepositoryPg,  # W02 (#45) -- migrated from repos/
     AuditLogPg,
-)  # W03 (#55) -- migrated from repos/
-from app.src.modules.lanzadera.adapters.repos.global_admin_repository_pg import (
     GlobalAdminRepositoryPg,
-)
+)  # W03 (#55) -- migrated from repos/  # W04 (#21) -- migrated from repos/
 from app.src.modules.lanzadera.adapters.repos.reset_token_repository_pg import (
     ResetTokenRepositoryPg,
 )
