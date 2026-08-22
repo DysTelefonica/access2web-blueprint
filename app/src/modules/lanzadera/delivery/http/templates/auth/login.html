@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block heading %}Iniciar sesión{% endblock %}
+{% block content %}
+  <section class="mds-card">
+    {% if request.query_params.get('error') %}
+      <p class="mds-tag mds-tag--disabled">Credenciales inválidas</p>
+    {% endif %}
+    <form method="post" action="/login" x-data="{ submitting: false }" @submit="submitting = true">
+      <input class="mds-textfield" type="email" name="email" placeholder="email" required />
+      <input class="mds-textfield" type="password" name="password" placeholder="contraseña" required />
+      <button class="mds-button" type="submit" x-bind:disabled="submitting">Entrar</button>
+    </form>
+    <p><a href="/reset">¿Olvidó su contraseña?</a></p>
+  </section>
+{% endblock %}
