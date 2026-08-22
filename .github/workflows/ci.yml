@@ -170,7 +170,7 @@ jobs:
           # means writing to paths not in the PR diff (e.g.
           # ``app/pyproject.toml``) fails with "Read-only file system".
           # ``sparse-checkout-cone-mode: false
-          sparse-checkout: disable`` in the checkout action sets the
+          # sparse-checkout: disable`` in the checkout action sets the
           # configuration, but a flaky interaction with the self-hosted
           # runner's cache can leave the cone active in some runs. The
           # reliable belt-and-suspenders fix is to disable sparse-checkout

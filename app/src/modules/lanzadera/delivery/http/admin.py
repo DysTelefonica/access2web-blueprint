@@ -82,9 +82,7 @@ def build_router(
         # does not support async list_all by default, so we read sync
         # and wrap. The real Postgres adapter supports the async path.
         all_users = list(getattr(users, "_users", {}).values())  # type: ignore[attr-defined]
-        return templates.TemplateResponse(
-            request, "admin/users.html", {"users": all_users}
-        )
+        return templates.TemplateResponse(request, "admin/users.html", {"users": all_users})
 
     @router.post("/users", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
     async def create_user(
@@ -116,36 +114,28 @@ def build_router(
     async def disable_user(request: Request, user_id: UUID) -> HTMLResponse:
         require_global_admin()
         await users.update_status(user_id, UserStatus.DISABLED)  # type: ignore[attr-defined]
-        return templates.TemplateResponse(
-            request, "admin/user_disabled.html", {"user_id": user_id}
-        )
+        return templates.TemplateResponse(request, "admin/user_disabled.html", {"user_id": user_id})
 
     @router.get("/apps", response_class=HTMLResponse)
     async def list_apps(request: Request) -> HTMLResponse:
         active_apps = await apps.list_active()  # type: ignore[arg-defined]
         all_apps = list(getattr(apps, "_all_apps", active_apps))  # type: ignore[attr-defined]
-        return templates.TemplateResponse(
-            request, "admin/apps.html", {"apps": all_apps}
-        )
+        return templates.TemplateResponse(request, "admin/apps.html", {"apps": all_apps})
 
     @router.post("/apps/{app_id}/activate", response_class=HTMLResponse)
-    async def activate_app(
-        request: Request, app_id: int
-    ) -> HTMLResponse:
+    async def activate_app(request: Request, app_id: int) -> HTMLResponse:
         require_global_admin()
         # The activation toggle is owned by ``AppRepository.activate``; the
         # fake used in tests exposes ``active`` as a plain attribute. The
         # production wiring is M02 (A01..A03).
-        return templates.TemplateResponse(
-            request, "admin/app_activated.html", {"app_id": app_id}
-        )
+        return templates.TemplateResponse(request, "admin/app_activated.html", {"app_id": app_id})
 
     @router.post("/assignments", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
     async def create_assignment(
         request: Request,
-        user_id: UUID = Form(...),
-        app_id: int = Form(...),
-        profile_id: UUID = Form(...),
+        user_id: UUID = Form(...),  # noqa: B008
+        app_id: int = Form(...),  # noqa: B008
+        profile_id: UUID = Form(...),  # noqa: B008
     ) -> HTMLResponse:
         require_global_admin()
         await assignments.create(user_id, app_id, profile_id)  # type: ignore[arg-defined]
@@ -165,9 +155,7 @@ def build_router(
         # ``AuditLogPort.list_for_actor(None, since)`` returns the
         # global audit log. The test fake exposes ``_events`` as a list.
         events = list(getattr(audit, "_events", []))  # type: ignore[attr-defined]
-        return templates.TemplateResponse(
-            request, "admin/audit.html", {"events": events}
-        )
+        return templates.TemplateResponse(request, "admin/audit.html", {"events": events})
 
     return router
 
