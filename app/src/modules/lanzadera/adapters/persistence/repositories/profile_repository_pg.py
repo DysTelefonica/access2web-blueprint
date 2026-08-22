@@ -78,22 +78,18 @@ class ProfileRepositoryPg:
         DA-12: the canonical per-app profile set is OPEN (gap G-2);
         the delivery layer filters on ``active`` further down.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = (
                 select(PROFILES_TABLE)
                 .where(PROFILES_TABLE.c.app_id == app_id)
                 .order_by(PROFILES_TABLE.c.code)
             )
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_profile(r) for r in rows]
 
     async def get_by_code(self, app_id: int, code: str) -> Profile | None:
         """Return the profile identified by ``(app_id, code)`` or ``None``."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(PROFILES_TABLE).where(
                 sa.and_(
                     PROFILES_TABLE.c.app_id == app_id,
@@ -101,8 +97,6 @@ class ProfileRepositoryPg:
                 )
             )
             row = (await session.execute(stmt)).first()
-        finally:
-            await session.close()
         return _row_to_profile(row) if row is not None else None
 
     async def create(self, profile: Profile) -> None:
