@@ -64,13 +64,23 @@ jobs:
         with:
           fetch-depth: 0
           # ``sparse-checkout-cone-mode: false
-          sparse-checkout: disable`` is the real fix for #414: the
+          # sparse-checkout: disable`` is the real fix for #414: the
           # default ``sparse-checkout-cone-mode: true`` only materialises
           # paths touched by the PR diff, so writing to
           # ``app/pyproject.toml`` (not in the diff) fails with
           # "Read-only file system" and the worktree guard trips.
           # (the git-show fallback in the install step remains as a secondary path.)
           sparse-checkout-cone-mode: false
+
+      - name: disable sparse-checkout cone mode (runtime fallback)
+        # The v7 ``actions/checkout`` ``sparse-checkout: disable`` input
+        # is unreliable on the self-hosted a2w runner (issue #414): the
+        # cached cone config from a previous run sometimes overrides
+        # the step's config. Re-running ``git sparse-checkout disable``
+        # after the checkout guarantees every file in the branch is
+        # materialised in the worktree; the worst case is ``command not
+        # found`` on an older git, which is absorbed by ``|| true``.
+        run: git sparse-checkout disable || true
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
@@ -278,13 +288,19 @@ jobs:
         with:
           fetch-depth: 0
           # ``sparse-checkout-cone-mode: false
-          sparse-checkout: disable`` is the real fix for #414: the
+          # sparse-checkout: disable`` is the real fix for #414: the
           # default ``sparse-checkout-cone-mode: true`` only materialises
           # paths touched by the PR diff, so writing to
           # ``app/pyproject.toml`` (not in the diff) fails with
           # "Read-only file system" and the worktree guard trips.
           # (the git-show fallback in the install step remains as a secondary path.)
           sparse-checkout-cone-mode: false
+
+      - name: disable sparse-checkout cone mode (runtime fallback)
+        # See the same step in the ``quality`` and ``review-budget``
+        # jobs. The weekly mutation job runs on the same self-hosted
+        # runner and inherits the same stale cone config from the cache.
+        run: git sparse-checkout disable || true
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
