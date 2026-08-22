@@ -63,6 +63,21 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/pytest_plugin/coverage_gate_helpers.py": BaselineEntry(
         sites=111, target=100, target_date="2027-02-13"
     ),
+    # Issue #56 (PR #422) shipped platform_user.py with a single 234-site
+    # mutation surface; the deterministic-quality-harness ceiling is 100.
+    # Ratcheted here so the next WU in the chain (W12 — CLI command split
+    # for retirements, #266 slice 5) can split it down. The target date
+    # matches coverage_gate_helpers.py so the two ratchets line up.
+    "app/src/modules/lanzadera/delivery/cli/platform_user.py": BaselineEntry(
+        sites=234, target=100, target_date="2027-02-13"
+    ),
+    # DL2 (#55 / bf59e7b) shipped admin.py as a single 118-site mutation
+    # surface (router + every CRUD template). Ratcheted here so the next
+    # WU that adds a route (#266 slice 5 — the platform admin CRUD split)
+    # splits it down. The target date matches the rest of the ratchet.
+    "app/src/modules/lanzadera/delivery/http/admin.py": BaselineEntry(
+        sites=118, target=100, target_date="2027-02-13"
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
