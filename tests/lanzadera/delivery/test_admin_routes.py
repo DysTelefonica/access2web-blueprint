@@ -94,11 +94,13 @@ class FakeGlobalAdminRepository:
 
 def fake_now():
     from datetime import datetime, UTC
+
     return datetime(2026, 8, 21, 21, 0, 0, tzinfo=UTC)
 
 
 def fake_uuid():
     from uuid import uuid4
+
     return uuid4()
 
 
@@ -121,6 +123,7 @@ def fakes():
 @pytest.fixture
 def app(fakes):
     from app.src.modules.lanzadera.delivery.http import templates
+
     templates_dir = Path(templates.__file__).parent
     templates_jinja = Jinja2Templates(directory=str(templates_dir))
     application = FastAPI()
@@ -182,6 +185,7 @@ async def test_list_apps_renders_empty(client: AsyncClient) -> None:
 
 async def test_create_assignment_calls_repo(client: AsyncClient, fakes) -> None:
     from uuid import uuid4
+
     r = await client.post(
         "/admin/assignments",
         data={

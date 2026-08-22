@@ -95,6 +95,7 @@ def build_router(
         # The dependency on ``issue_reset_token`` and ``reset_tokens``
         # here matches the WU DL1 spec (auth-core + auth-reset).
         from datetime import UTC, datetime, timedelta
+
         now = datetime.now(UTC)
         await issue_reset_token(
             email=email.strip().lower(),

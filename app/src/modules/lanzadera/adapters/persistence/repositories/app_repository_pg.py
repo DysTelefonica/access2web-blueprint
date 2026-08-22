@@ -74,8 +74,7 @@ class AppRepositoryPg(AppRepositoryPort):
             await session.close()
         return None if row is None else _row_to_app(row)
 
-    async def list_active(
-            self) -> Sequence[App]:  # type: ignore[misc]
+    async def list_active(self) -> Sequence[App]:  # type: ignore[misc]
         """Return apps with ``registration_status='active'``.
 
         DA-8: this is the hot path. Cached by ``TtlCacheAdapter`` with

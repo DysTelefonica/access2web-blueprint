@@ -47,9 +47,7 @@ class FakeResetTokenRepository:
     def __init__(self) -> None:
         self.tokens: list[ResetToken] = []
 
-    async def insert(
-        self, user_id: UUID, token_hash: str, expires_at: datetime
-    ) -> ResetToken:
+    async def insert(self, user_id: UUID, token_hash: str, expires_at: datetime) -> ResetToken:
         token = ResetToken(
             id=UUID(int=0xDEAD),
             user_id=user_id,
@@ -105,6 +103,7 @@ def fakes():
 @pytest.fixture
 def app(fakes):
     from app.src.modules.lanzadera.delivery.http import templates
+
     templates_dir = Path(templates.__file__).parent
     templates_jinja = Jinja2Templates(directory=str(templates_dir))
     application = FastAPI()

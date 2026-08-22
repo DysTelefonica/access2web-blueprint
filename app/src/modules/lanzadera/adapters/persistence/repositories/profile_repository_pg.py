@@ -77,11 +77,8 @@ class ProfileRepositoryPg(ProfileRepositoryPort):
     async def get_by_code(self, app_id: int, code: str) -> Profile | None:  # type: ignore[misc]
         session = self._factory()
         try:
-            stmt = (
-                select(TABLE)
-                .where(  # type: ignore[arg-type]
-                    (TABLE.c.app_id == app_id) & (TABLE.c.code == code)
-                )
+            stmt = select(TABLE).where(  # type: ignore[arg-type]
+                (TABLE.c.app_id == app_id) & (TABLE.c.code == code)
             )
             row = (await session.execute(stmt)).first()
         finally:
@@ -91,16 +88,13 @@ class ProfileRepositoryPg(ProfileRepositoryPort):
     async def create(self, profile: Profile) -> None:  # type: ignore[misc]
         session = self._factory()
         try:
-            stmt = (
-                insert(TABLE)
-                .values(
-                    id=profile.id,
-                    app_id=profile.app_id,
-                    code=profile.code,
-                    name=profile.name,
-                    capabilities=profile.capabilities,
-                    active=profile.active,
-                )
+            stmt = insert(TABLE).values(
+                id=profile.id,
+                app_id=profile.app_id,
+                code=profile.code,
+                name=profile.name,
+                capabilities=profile.capabilities,
+                active=profile.active,
             )
             await session.execute(stmt)
             await session.commit()
@@ -116,7 +110,10 @@ class ProfileRepositoryPg(ProfileRepositoryPort):
             stmt = (
                 update(TABLE)
                 .where(TABLE.c.id == profile_id)  # type: ignore[arg-type]
-                .values(active=active, updated_at=__import__("datetime").datetime.now(__import__("datetime").UTC))
+                .values(
+                    active=active,
+                    updated_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
+                )
             )
             await session.execute(stmt)
             await session.commit()
