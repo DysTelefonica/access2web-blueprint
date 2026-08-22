@@ -14,6 +14,7 @@ from .assignment_repository_pg import AssignmentRepositoryPg
 from .audit_log_pg import AUDIT_TABLE, AuditLogPg
 from .global_admin_repository_pg import GLOBAL_ADMINS_TABLE, GlobalAdminRepositoryPg
 from .profile_repository_pg import PROFILES_TABLE, ProfileRepositoryPg
+from .reset_token_repository_pg import RESET_TOKENS_TABLE, ResetTokenRepositoryPg
 from .user_repository_pg import USERS_TABLE, UserRepositoryPg
 
 __all__ = [
@@ -21,11 +22,13 @@ __all__ = [
     "AUDIT_TABLE",
     "GLOBAL_ADMINS_TABLE",
     "PROFILES_TABLE",
+    "RESET_TOKENS_TABLE",
     "USERS_TABLE",
     "AppRepositoryPg",
     "AssignmentRepositoryPg",
     "AuditLogPg",
     "GlobalAdminRepositoryPg",
     "ProfileRepositoryPg",
+    "ResetTokenRepositoryPg",
     "UserRepositoryPg",
 ]

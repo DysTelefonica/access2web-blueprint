@@ -112,6 +112,16 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/adapters/persistence/repositories/audit_log_pg.py": (
         BaselineEntry(sites=108, target=100, target_date="2027-02-13")
     ),
+    # W05 (#42-subset): the fifth and final Postgres adapter for
+    # the WU AD2 chain. ResetTokenRepositoryPg has 5 methods
+    # (insert, find_unused, mark_consumed, mark_superseded,
+    # purge_expired) each opening its own AsyncSession, plus the
+    # table reflection + row-to-dataclass mapper. The next WU
+    # (cleaving the prelude into a base class) is responsible for
+    # bringing it below 100.
+    "app/src/modules/lanzadera/adapters/persistence/repositories/reset_token_repository_pg.py": (
+        BaselineEntry(sites=141, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------

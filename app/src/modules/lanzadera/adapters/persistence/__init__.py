@@ -32,11 +32,13 @@ from .repositories import (
     AUDIT_TABLE,
     GLOBAL_ADMINS_TABLE,
     PROFILES_TABLE,
+    RESET_TOKENS_TABLE,
     USERS_TABLE,
     AssignmentRepositoryPg,
     AuditLogPg,
     GlobalAdminRepositoryPg,
     ProfileRepositoryPg,
+    ResetTokenRepositoryPg,
     UserRepositoryPg,
 )
 
@@ -48,11 +50,13 @@ __all__ = [
     "AsyncSessionFactoryPort",
     "GLOBAL_ADMINS_TABLE",
     "PROFILES_TABLE",
+    "RESET_TOKENS_TABLE",
     "USERS_TABLE",
     "AssignmentRepositoryPg",
     "AuditLogPg",
     "GlobalAdminRepositoryPg",
     "ProfileRepositoryPg",
+    "ResetTokenRepositoryPg",
     "UserRepositoryPg",
     "async_session_factory",
 ]

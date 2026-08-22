@@ -24,10 +24,8 @@ from app.src.modules.lanzadera.adapters.persistence import (
     AssignmentRepositoryPg,  # W02 (#45) -- migrated from repos/
     AuditLogPg,
     GlobalAdminRepositoryPg,
-)  # W03 (#55) -- migrated from repos/  # W04 (#21) -- migrated from repos/
-from app.src.modules.lanzadera.adapters.repos.reset_token_repository_pg import (
     ResetTokenRepositoryPg,
-)
+)  # W03 (#55) -- migrated from repos/  # W04 (#21) -- migrated from repos/  # W05 (#42-subset) -- migrated from repos/
 
 __all__ = [
     "AssignmentRepositoryPg",
