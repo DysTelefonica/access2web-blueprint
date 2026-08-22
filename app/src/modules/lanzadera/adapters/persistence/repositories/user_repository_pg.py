@@ -28,7 +28,6 @@ import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import CITEXT
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
