@@ -22,7 +22,6 @@ from typing import Any
 import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
@@ -84,12 +83,9 @@ class AppRepositoryPg:
 
     async def get_by_id(self, app_id: int) -> App | None:
         """Return the app with ``id == app_id`` or ``None``."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(APPS_TABLE).where(APPS_TABLE.c.id == app_id)
             row = (await session.execute(stmt)).first()
-        finally:
-            await session.close()
         return _row_to_app(row) if row is not None else None
 
     async def list_active(self) -> Sequence[App]:
@@ -98,16 +94,13 @@ class AppRepositoryPg:
         Ordered by ``short_code`` so the delivery layer's `select`
         dropdown is deterministic across renders.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = (
                 select(APPS_TABLE)
                 .where(APPS_TABLE.c.registration_status == AppRegistrationStatus.ACTIVE.value)
                 .order_by(APPS_TABLE.c.short_code)
             )
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_app(r) for r in rows]
 
     async def list_visible_to(self, user_id: object) -> Sequence[App]:
@@ -119,8 +112,7 @@ class AppRepositoryPg:
         migration 0001 so the planner can pick ``ix_assignments_user``
         directly.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = (
                 select(APPS_TABLE)
                 .outerjoin(
@@ -140,8 +132,6 @@ class AppRepositoryPg:
                 .distinct()
             )
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_app(r) for r in rows]
 
 
