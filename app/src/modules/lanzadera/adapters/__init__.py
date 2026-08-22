@@ -21,11 +21,11 @@ from app.src.modules.lanzadera.adapters.notification.mail_queue_table_adapter im
     MailQueueTableAdapter,
 )
 from app.src.modules.lanzadera.adapters.persistence import (
-    AssignmentRepositoryPg,  # W02 (#45) -- migrated from repos/
+    # W02 (#45), W03 (#55), W04 (#21), W05 (#42-subset): all four
+    # Postgres adapters migrated from the legacy repos/ subpackage.
+    AssignmentRepositoryPg,
     AuditLogPg,
     GlobalAdminRepositoryPg,
-)  # W03 (#55) -- migrated from repos/  # W04 (#21) -- migrated from repos/
-from app.src.modules.lanzadera.adapters.repos.reset_token_repository_pg import (
     ResetTokenRepositoryPg,
 )
 
