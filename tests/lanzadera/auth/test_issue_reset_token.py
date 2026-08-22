@@ -24,7 +24,7 @@ def _now() -> datetime:
     return datetime(2026, 8, 13, 12, 0, 0, tzinfo=UTC)
 
 
-def _setup(email: str = "alice@enterprise.test", *, has_admin: bool = True):
+async def _setup(email: str = "alice@enterprise.test", *, has_admin: bool = True):
     """Build the four fakes and a user. Caller passes them as kwargs."""
     from tests.lanzadera.auth._fakes import (  # noqa: PLC0415  local in helper
         FakeGlobalAdminRepository,
@@ -55,23 +55,23 @@ def _setup(email: str = "alice@enterprise.test", *, has_admin: bool = True):
     }
 
 
-def _issue(deps, email: str = "alice@enterprise.test", **overrides):
-    return issue_reset_token(email, now=_now(), **deps, **overrides)
+async def _issue(deps, email: str = "alice@enterprise.test", **overrides):
+    return await issue_reset_token(email, now=_now(), **deps, **overrides)
 
 
 # -- Happy path --------------------------------------------------------------
 
 
-def test_returns_reset_token_with_24h_hash():
-    result = _issue(_setup())
+async def test_returns_reset_token_with_24h_hash():
+    result = await _issue(await _setup())
     assert result.token_hash and len(result.token_hash) == 64
     assert result.user_id is not None
     assert result.consumed_at is None and result.superseded_at is None
 
 
-def test_persists_with_blake2b_hash_of_raw_token():
-    deps = _setup()
-    _issue(deps)
+async def test_persists_with_blake2b_hash_of_raw_token():
+    deps = await _setup()
+    await _issue(deps)
     raw = deps["notifications"].sent[0][2].split("token: ", 1)[1].strip()
     expected = hashlib.blake2b(raw.encode("utf-8"), digest_size=32).hexdigest()
     assert expected in deps["reset_tokens"].by_hash
@@ -80,30 +80,30 @@ def test_persists_with_blake2b_hash_of_raw_token():
 # -- TTL ---------------------------------------------------------------------
 
 
-def test_default_ttl_is_24_hours():
-    result = _issue(_setup())
+async def test_default_ttl_is_24_hours():
+    result = await _issue(await _setup())
     assert result.expires_at == _now() + timedelta(hours=24)
 
 
-def test_custom_ttl_is_honoured():
-    deps = _setup()
-    result = _issue(deps, ttl=timedelta(minutes=5))
+async def test_custom_ttl_is_honoured():
+    deps = await _setup()
+    result = await _issue(deps, ttl=timedelta(minutes=5))
     assert result.expires_at == _now() + timedelta(minutes=5)
 
 
 # -- Supersession ------------------------------------------------------------
 
 
-def test_prior_unconsumed_tokens_are_marked_superseded():
-    deps = _setup()
-    first = _issue(deps)
-    _issue(deps)
+async def test_prior_unconsumed_tokens_are_marked_superseded():
+    deps = await _setup()
+    first = await _issue(deps)
+    await _issue(deps)
     assert deps["reset_tokens"].by_hash[first.token_hash].superseded_at == _now()
 
 
-def test_supersession_does_not_cross_users():
-    alice_deps = _setup("alice@enterprise.test")
-    _setup("bob@enterprise.test")
+async def test_supersession_does_not_cross_users():
+    alice_deps = await _setup("alice@enterprise.test")
+    await _setup("bob@enterprise.test")
     alice_deps["users"].add(
         User(
             id=uuid4(),
@@ -118,28 +118,28 @@ def test_supersession_does_not_cross_users():
             updated_at=_now(),
         )
     )
-    bob_first = _issue(alice_deps, "bob@enterprise.test")
-    _issue(alice_deps)
+    bob_first = await _issue(alice_deps, "bob@enterprise.test")
+    await _issue(alice_deps)
     assert alice_deps["reset_tokens"].by_hash[bob_first.token_hash].superseded_at is None
 
 
 # -- Guards ------------------------------------------------------------------
 
 
-def test_no_global_admin_raises_no_global_admin_error():
+async def test_no_global_admin_raises_no_global_admin_error():
     with pytest.raises(NoGlobalAdminError):
-        _issue(_setup(has_admin=False))
+        await _issue(await _setup(has_admin=False))
 
 
-def test_unknown_email_raises_user_not_found():
+async def test_unknown_email_raises_user_not_found():
     with pytest.raises(UserNotFoundError):
-        _issue(_setup(), "ghost@enterprise.test")
+        await _issue(await _setup(), "ghost@enterprise.test")
 
 
-def test_no_persistence_when_guard_fires():
-    deps = _setup(has_admin=False)
+async def test_no_persistence_when_guard_fires():
+    deps = await _setup(has_admin=False)
     with pytest.raises(NoGlobalAdminError):
-        _issue(deps)
+        await _issue(deps)
     assert deps["reset_tokens"].by_hash == {}
     assert deps["notifications"].sent == []
 
@@ -147,19 +147,19 @@ def test_no_persistence_when_guard_fires():
 # -- Boundary --------------------------------------------------------------
 
 
-def test_naive_datetime_is_rejected():
-    deps = _setup()
+async def test_naive_datetime_is_rejected():
+    deps = await _setup()
     with pytest.raises(ValueError):
-        issue_reset_token(
+        await issue_reset_token(
             "alice@enterprise.test",
             now=datetime(2026, 8, 13, 12, 0, 0),  # noqa: DTZ001
             **deps,
         )
 
 
-def test_notification_sent_exactly_once_with_reset_subject():
-    deps = _setup()
-    _issue(deps)
+async def test_notification_sent_exactly_once_with_reset_subject():
+    deps = await _setup()
+    await _issue(deps)
     assert len(deps["notifications"].sent) == 1
     to, subject, _ = deps["notifications"].sent[0]
     assert to == "alice@enterprise.test"

@@ -126,7 +126,7 @@ async def cmd_set_password(
     test suite uses).
     """
     normalised_email = email.strip().lower()
-    user = await users.get_by_email(normalised_email)  # type: ignore[misc]
+    user = await users.get_by_email(normalised_email)
     if user is None:
         return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
     if not confirmed and not _prompt_confirmation("set-password", f"for user {normalised_email}"):
@@ -141,7 +141,7 @@ async def cmd_set_password(
     # reset-flow's consume_reset_token uses. For this WU we expose a
     # thin wrapper on the user repository; the actual lifecycle write is
     # M02 / T01.
-    await users.update_password_and_activate(user.id, hashed)  # type: ignore[func-returns-value]
+    await users.update_password_and_activate(user.id, hashed)
     return CommandResult(
         exit_code=0,
         message=f"password set for {normalised_email}; status=active",
@@ -157,7 +157,7 @@ async def cmd_grant_global_admin(
 ) -> CommandResult:
     """Grant global-admin to a user (DA-6, the bootstrap path's sibling)."""
     normalised_email = email.strip().lower()
-    user = await users.get_by_email(normalised_email)  # type: ignore[misc]
+    user = await users.get_by_email(normalised_email)
     if user is None:
         return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
     if not confirmed and not _prompt_confirmation("grant-global-admin", f"to {normalised_email}"):
@@ -178,7 +178,7 @@ async def cmd_revoke_global_admin(
 ) -> CommandResult:
     """Revoke global-admin (D42: must keep at least one admin)."""
     normalised_email = email.strip().lower()
-    user = await users.get_by_email(normalised_email)  # type: ignore[misc]
+    user = await users.get_by_email(normalised_email)
     if user is None:
         return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
     if not confirmed and not _prompt_confirmation(
@@ -213,7 +213,7 @@ async def cmd_assign_profile(
 ) -> CommandResult:
     """Assign a profile to a user in an app (DA-12)."""
     normalised_email = email.strip().lower()
-    user = await users.get_by_email(normalised_email)  # type: ignore[misc]
+    user = await users.get_by_email(normalised_email)
     if user is None:
         return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
     profile = await profiles.get_by_code(app_id, profile_code)

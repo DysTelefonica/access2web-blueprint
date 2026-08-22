@@ -36,7 +36,7 @@ def _hash_token(raw: str) -> str:
     return hashlib.blake2b(raw.encode("utf-8"), digest_size=32).hexdigest()
 
 
-def issue_reset_token(
+async def issue_reset_token(
     email: str,
     *,
     now: datetime,
@@ -48,6 +48,10 @@ def issue_reset_token(
 ) -> ResetToken:
     """Issue a one-time reset token. Raises on guard failures.
 
+    Async: every driven port is now async (DA-1). The async propagation
+    reaches the HTTP router and the CLI handlers, which call this
+    inside an event loop.
+
     D90 contract:
         * No global admin -> raises `NoGlobalAdminError`.
         * Unknown email -> raises `UserNotFoundError`.
@@ -58,17 +62,17 @@ def issue_reset_token(
           `ResetToken` value object carries the BLAKE2b hash only.
     """
     _require_utc(now)
-    if not global_admins.there_is_any():
+    if not await global_admins.there_is_any():
         raise NoGlobalAdminError(
             "issue_reset_token requires at least one global admin; "
             "bootstrap via CLI set-password (D91)"
         )
 
-    user = users.get_by_email(email)
+    user = await users.get_by_email(email)
     if user is None:
         raise UserNotFoundError(f"no user with email {email!r}")
 
-    reset_tokens.mark_superseded(user.id, now)
+    await reset_tokens.mark_superseded(user.id, now)
 
     raw_token = secrets.token_urlsafe(32)
     token_hash = _hash_token(raw_token)
@@ -85,8 +89,8 @@ def issue_reset_token(
         superseded_at=None,
         created_at=now,
     )
-    reset_tokens.insert(token)
-    notifications.send(
+    await reset_tokens.insert(token)
+    await notifications.send(
         to=user.email,
         subject="Reset your Lanzadera password",
         body=f"A password reset was requested. Use this token: {raw_token}",
