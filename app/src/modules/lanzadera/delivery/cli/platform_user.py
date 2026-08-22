@@ -134,7 +134,7 @@ async def cmd_set_password(
     password = _read_password("New password: ")
     if not password:
         return CommandResult(exit_code=1, message="empty password is not allowed")
-    hashed = hasher.hash_password(password)
+    hashed = await hasher.hash(password)
     # The actual write is mediated by a use case (lifecycle) that updates
     # the password_hash AND sets status='active' in one transaction (DA-5);
     # the CLI ships the hashed value to the same code path that the

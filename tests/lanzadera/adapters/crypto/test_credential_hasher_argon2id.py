@@ -42,13 +42,13 @@ def hasher() -> CredentialHasherArgon2id:
 class TestArgon2idProfile:
     """auth-core/spec.md §Hash uses Argon2id with the pinned profile."""
 
-    def test_hash_is_argon2id_phc_string(self, hasher: CredentialHasherArgon2id) -> None:
-        phc = hasher.hash_password("correct horse battery staple")
+    async def test_hash_is_argon2id_phc_string(self, hasher: CredentialHasherArgon2id) -> None:
+        phc = await hasher.hash("correct horse battery staple")
         # Argon2id PHC strings start with "$argon2id$".
         assert phc.startswith("$argon2id$")
 
-    def test_hash_uses_low_memory_profile(self, hasher: CredentialHasherArgon2id) -> None:
-        phc = hasher.hash_password("hunter2hunter2")
+    async def test_hash_uses_low_memory_profile(self, hasher: CredentialHasherArgon2id) -> None:
+        phc = await hasher.hash("hunter2hunter2")
         params = _parse_phc_parameters(phc)
         # RFC_9106_LOW_MEMORY profile (m=65536, t=3, p=4). Pin is contract.
         assert params["m"] == 65536  # 64 MiB
@@ -59,43 +59,45 @@ class TestArgon2idProfile:
 class TestHashDistinctness:
     """Salt is random — two hashes of the same plaintext must differ."""
 
-    def test_two_hashes_of_same_plain_differ(self, hasher: CredentialHasherArgon2id) -> None:
-        first = hasher.hash_password("same-plaintext")
-        second = hasher.hash_password("same-plaintext")
+    async def test_two_hashes_of_same_plain_differ(self, hasher: CredentialHasherArgon2id) -> None:
+        first = await hasher.hash("same-plaintext")
+        second = await hasher.hash("same-plaintext")
         assert first != second
 
-    def test_two_hashes_both_verify(self, hasher: CredentialHasherArgon2id) -> None:
+    async def test_two_hashes_both_verify(self, hasher: CredentialHasherArgon2id) -> None:
         # Even though the strings differ, both must verify against the same
         # plaintext — that's the property salts give us.
         plain = "same-plaintext"
-        first = hasher.hash_password(plain)
-        second = hasher.hash_password(plain)
-        assert hasher.verify_password(plain, first) is True
-        assert hasher.verify_password(plain, second) is True
+        first = await hasher.hash(plain)
+        second = await hasher.hash(plain)
+        assert await hasher.verify(plain, first) is True
+        assert await hasher.verify(plain, second) is True
 
 
 class TestVerifyAcceptsAndRejects:
     """auth-core/spec.md §Verify accepts matching plaintext and rejects wrong."""
 
-    def test_verify_accepts_matching_plaintext(self, hasher: CredentialHasherArgon2id) -> None:
-        plain = "correct horse battery staple"
-        hashed = hasher.hash_password(plain)
-        assert hasher.verify_password(plain, hashed) is True
-
-    def test_verify_rejects_wrong_plaintext(self, hasher: CredentialHasherArgon2id) -> None:
-        hashed = hasher.hash_password("correct horse battery staple")
-        assert hasher.verify_password("wrong", hashed) is False
-
-    def test_verify_rejects_similar_plaintext(self, hasher: CredentialHasherArgon2id) -> None:
-        hashed = hasher.hash_password("correct horse battery staple")
-        # One character off — must reject.
-        assert hasher.verify_password("correct horse battery staplE", hashed) is False
-
-    def test_verify_rejects_empty_plaintext_against_real_hash(
+    async def test_verify_accepts_matching_plaintext(
         self, hasher: CredentialHasherArgon2id
     ) -> None:
-        hashed = hasher.hash_password("some-real-password")
-        assert hasher.verify_password("", hashed) is False
+        plain = "correct horse battery staple"
+        hashed = await hasher.hash(plain)
+        assert await hasher.verify(plain, hashed) is True
+
+    async def test_verify_rejects_wrong_plaintext(self, hasher: CredentialHasherArgon2id) -> None:
+        hashed = await hasher.hash("correct horse battery staple")
+        assert await hasher.verify("wrong", hashed) is False
+
+    async def test_verify_rejects_similar_plaintext(self, hasher: CredentialHasherArgon2id) -> None:
+        hashed = await hasher.hash("correct horse battery staple")
+        # One character off — must reject.
+        assert await hasher.verify("correct horse battery staplE", hashed) is False
+
+    async def test_verify_rejects_empty_plaintext_against_real_hash(
+        self, hasher: CredentialHasherArgon2id
+    ) -> None:
+        hashed = await hasher.hash("some-real-password")
+        assert await hasher.verify("", hashed) is False
 
 
 class TestVerifyRejectsEmptyHash:
@@ -107,18 +109,18 @@ class TestVerifyRejectsEmptyHash:
     miss-attempt counter bump.
     """
 
-    def test_verify_rejects_empty_string_hash(self, hasher: CredentialHasherArgon2id) -> None:
+    async def test_verify_rejects_empty_string_hash(self, hasher: CredentialHasherArgon2id) -> None:
         with pytest.raises(ValueError, match="empty"):
-            hasher.verify_password("any-plain", "")
+            await hasher.verify("any-plain", "")
 
-    def test_hash_empty_plaintext_is_accepted_but_distinct(
+    async def test_hash_empty_plaintext_is_accepted_but_distinct(
         self, hasher: CredentialHasherArgon2id
     ) -> None:
         # Empty *plaintext* is the caller's responsibility to forbid at the
         # application boundary; the KDF accepts it (Argon2id doesn't refuse
         # empty strings). We just assert it produces a valid PHC that verifies.
-        hashed = hasher.hash_password("")
-        assert hasher.verify_password("", hashed) is True
+        hashed = await hasher.hash("")
+        assert await hasher.verify("", hashed) is True
 
 
 class TestVerifyRejectsMalformedHash:
@@ -132,21 +134,21 @@ class TestVerifyRejectsMalformedHash:
             "$argon2id$garbage$",
         ],
     )
-    def test_malformed_hash_returns_false(
+    async def test_malformed_hash_returns_false(
         self, hasher: CredentialHasherArgon2id, garbage: str
     ) -> None:
-        assert hasher.verify_password("any-plain", garbage) is False
+        assert await hasher.verify("any-plain", garbage) is False
 
 
 class TestUnicodeAndLongPlaintext:
     """Real-world passwords are messy — assert the helper keeps working."""
 
-    def test_unicode_plaintext_roundtrip(self, hasher: CredentialHasherArgon2id) -> None:
+    async def test_unicode_plaintext_roundtrip(self, hasher: CredentialHasherArgon2id) -> None:
         plain = "contraseña-ñ-😀-long-enough"
-        hashed = hasher.hash_password(plain)
-        assert hasher.verify_password(plain, hashed) is True
+        hashed = await hasher.hash(plain)
+        assert await hasher.verify(plain, hashed) is True
 
-    def test_long_plaintext_roundtrip(self, hasher: CredentialHasherArgon2id) -> None:
+    async def test_long_plaintext_roundtrip(self, hasher: CredentialHasherArgon2id) -> None:
         plain = "x" * 4096  # 4 KiB — well above any sane password max
-        hashed = hasher.hash_password(plain)
-        assert hasher.verify_password(plain, hashed) is True
+        hashed = await hasher.hash(plain)
+        assert await hasher.verify(plain, hashed) is True

@@ -112,6 +112,6 @@ class FakePasswordHasher:
             raise RuntimeError("simulated hash failure")
         return f"fake:{password}"
 
-    async def verify(self, password_hash: str, password: str) -> bool:
-        self.calls.append(("verify", password_hash, password))
+    async def verify(self, password: str, password_hash: str) -> bool:
+        self.calls.append(("verify", password, password_hash))
         return password_hash == f"fake:{password}"
