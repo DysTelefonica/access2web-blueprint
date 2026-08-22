@@ -104,8 +104,7 @@ class UserRepositoryPg:
         are NOT supplied here — ``RETURNING`` reads them back so the
         in-memory ``User`` reflects the row's authoritative timestamps.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.insert(USERS_TABLE)
                 .values(
@@ -124,12 +123,6 @@ class UserRepositoryPg:
                 )
             )
             row = (await session.execute(stmt)).first()
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
         # The returned server-side defaults are reflected in ``user``
         # only when the caller passes a mutable dict; in the canonical
         # call path, the adapter is called with a freshly-constructed
@@ -141,20 +134,13 @@ class UserRepositoryPg:
 
     async def update_status(self, user_id: UUID, status: UserStatus) -> None:
         """Transition ``status`` for the user; touches ``updated_at`` via a server default."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.update(USERS_TABLE)
                 .where(USERS_TABLE.c.id == user_id)
                 .values(status=status.value)
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
     async def update_password_and_activate(self, user_id: UUID, password_hash: str) -> None:
         """Hash → status=ACTIVE in a single transaction (DA-11, D89).
@@ -164,8 +150,7 @@ class UserRepositoryPg:
         owns. ``updated_at`` is handled by a Postgres trigger (see
         migration 0001).
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.update(USERS_TABLE)
                 .where(USERS_TABLE.c.id == user_id)
@@ -175,21 +160,12 @@ class UserRepositoryPg:
                 )
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
     async def list_all(self) -> Sequence[User]:
         """Return every user (admin scope)."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(USERS_TABLE).order_by(USERS_TABLE.c.email)
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_user(r) for r in rows]
 
 
