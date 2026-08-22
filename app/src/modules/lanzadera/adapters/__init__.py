@@ -20,8 +20,8 @@ from app.src.modules.lanzadera.adapters.bootstrap.env_admin_source_adapter impor
 from app.src.modules.lanzadera.adapters.notification.mail_queue_table_adapter import (
     MailQueueTableAdapter,
 )
-from app.src.modules.lanzadera.adapters.repos.assignment_repository_pg import (
-    AssignmentRepositoryPg,
+from app.src.modules.lanzadera.adapters.persistence import (
+    AssignmentRepositoryPg,  # W02 (#45) -- migrated from repos/
 )
 from app.src.modules.lanzadera.adapters.repos.audit_log_pg import AuditLogPg
 from app.src.modules.lanzadera.adapters.repos.global_admin_repository_pg import (
