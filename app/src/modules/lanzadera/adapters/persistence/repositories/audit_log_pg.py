@@ -117,8 +117,7 @@ class AuditLogPg:
         Ordered by ``created_at`` DESC so the delivery layer's audit
         viewer renders the newest first.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = (
                 select(AUDIT_TABLE)
                 .where(
@@ -130,8 +129,6 @@ class AuditLogPg:
                 .order_by(AUDIT_TABLE.c.created_at.desc())
             )
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_event(r) for r in rows]
 
 
