@@ -51,22 +51,16 @@ class GlobalAdminRepositoryPg:
 
     async def list_all(self) -> Sequence[GlobalAdmin]:
         """Return every global-admin row (no soft-delete on this table)."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(GLOBAL_ADMINS_TABLE.c.user_id).order_by(GLOBAL_ADMINS_TABLE.c.granted_at)
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_admin(r) for r in rows]
 
     async def is_global_admin(self, user_id: UUID) -> bool:
         """Return True iff a row exists for ``user_id``."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(sa.literal(1)).where(GLOBAL_ADMINS_TABLE.c.user_id == user_id).limit(1)
             row = (await session.execute(stmt)).first()
-        finally:
-            await session.close()
         return row is not None
 
     async def grant(self, user_id: UUID) -> None:
