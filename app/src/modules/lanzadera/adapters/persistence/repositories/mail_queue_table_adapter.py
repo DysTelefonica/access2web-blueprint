@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
@@ -66,9 +65,13 @@ class MailQueueTableAdapter(NotificationDeliveryPort):
         commit point (so a failed enqueue cannot roll back the password
         reset); transactional consumers wire this adapter via
         session sharing instead.
+
+        Implementation uses the ``AsyncSessionFactory.transaction()``
+        helper: one INSERT, one COMMIT, rollback on exception,
+        ``__aexit__`` closes the session. The shape is identical to
+        any other single-write method on the W01..W14 adapters.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = sa.insert(MAIL_OUTBOX_TABLE).values(
                 to_addr=to,
                 subject=subject,
@@ -76,12 +79,6 @@ class MailQueueTableAdapter(NotificationDeliveryPort):
                 status="pending",
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
 
 __all__ = [

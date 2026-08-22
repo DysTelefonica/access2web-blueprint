@@ -69,6 +69,16 @@ class AsyncSessionFactoryPort(Protocol):
         """
         ...
 
+    def transaction(self) -> AbstractAsyncContextManager[AsyncSession]:
+        """Async-context-manager entry point: yield a session inside a transaction.
+
+        Single-write paths prefer this so they do not carry a 4-line
+        ``try/except/finally`` boilerplate per method. The body's
+        INSERT/UPDATE/DELETE statements commit on exit and roll back
+        on exception (``__aexit__`` handles both).
+        """
+        ...
+
 
 @dataclass(frozen=True)
 class AsyncSessionFactory:
