@@ -25,11 +25,10 @@ from sqlalchemy import insert, select, update
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     AsyncSessionFactoryPort,
 )
-from app.src.modules.lanzadera.domain.profile import Profile
 from app.src.modules.lanzadera.domain.ports.profile_repository import (
     ProfileRepositoryPort,
 )
-
+from app.src.modules.lanzadera.domain.profile import Profile
 
 SCHEMA = "lanzadera"
 TABLE = sa.Table(

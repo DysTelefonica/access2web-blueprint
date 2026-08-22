@@ -20,15 +20,14 @@ templates use the Mística CSS tokens (``mds-button``, ``mds-card``,
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from datetime import datetime, UTC
 from typing import Protocol
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
+from app.src.modules.lanzadera.domain.ports import UserRepository
 from app.src.modules.lanzadera.domain.ports.app_repository import AppRepositoryPort
 from app.src.modules.lanzadera.domain.ports.assignment_repository import (
     AssignmentRepositoryPort,
@@ -37,7 +36,6 @@ from app.src.modules.lanzadera.domain.ports.audit_log import AuditLogPort
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
     GlobalAdminRepositoryPort,
 )
-from app.src.modules.lanzadera.domain.ports import UserRepository
 from app.src.modules.lanzadera.domain.user import UserStatus
 
 
@@ -133,9 +131,9 @@ def build_router(
     @router.post("/assignments", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
     async def create_assignment(
         request: Request,
-        user_id: UUID = Form(...),
-        app_id: int = Form(...),
-        profile_id: UUID = Form(...),
+        user_id: UUID = Form(...),  # noqa: B008
+        app_id: int = Form(...),  # noqa: B008
+        profile_id: UUID = Form(...),  # noqa: B008
     ) -> HTMLResponse:
         require_global_admin()
         await assignments.create(user_id, app_id, profile_id)  # type: ignore[arg-defined]

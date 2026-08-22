@@ -8,7 +8,6 @@ treats them as the production adapters.
 
 from __future__ import annotations
 
-from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -19,7 +18,6 @@ from httpx import ASGITransport, AsyncClient
 from app.src.modules.lanzadera.delivery.http.admin import build_router
 from app.src.modules.lanzadera.domain.app import App
 from app.src.modules.lanzadera.domain.user import User, UserStatus
-
 
 # ---------------------------------------------------------------------------
 # Fakes — one per port the router depends on. Each fake records every
@@ -93,7 +91,7 @@ class FakeGlobalAdminRepository:
 
 
 def fake_now():
-    from datetime import datetime, UTC
+    from datetime import UTC, datetime
 
     return datetime(2026, 8, 21, 21, 0, 0, tzinfo=UTC)
 

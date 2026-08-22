@@ -18,11 +18,11 @@ policy forbids local copies per the design.md §CDN).
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Form, Request, status
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from app.src.modules.lanzadera.domain.ports.audit_log import AuditLogPort
+from app.src.modules.lanzadera.domain.ports import UserRepository
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
     GlobalAdminRepositoryPort,
 )
@@ -32,7 +32,6 @@ from app.src.modules.lanzadera.domain.ports.notification_delivery import (
 from app.src.modules.lanzadera.domain.ports.reset_token_repository import (
     ResetTokenRepositoryPort,
 )
-from app.src.modules.lanzadera.domain.ports import UserRepository
 from app.src.modules.lanzadera.domain.services.issue_reset_token import (
     issue_reset_token,
 )

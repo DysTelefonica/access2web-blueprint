@@ -31,7 +31,6 @@ from app.src.modules.lanzadera.adapters.persistence.async_session_factory import
 from app.src.modules.lanzadera.domain.app import App, AppRegistrationStatus, AppTopology
 from app.src.modules.lanzadera.domain.ports.app_repository import AppRepositoryPort
 
-
 SCHEMA = "lanzadera"
 TABLE = sa.Table(
     "apps",

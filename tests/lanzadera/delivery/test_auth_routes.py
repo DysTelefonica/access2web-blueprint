@@ -9,9 +9,8 @@ admin to exist (DA-6).
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterator
 from uuid import UUID
 
 import pytest
@@ -20,12 +19,11 @@ from fastapi.templating import Jinja2Templates
 from httpx import ASGITransport, AsyncClient
 
 from app.src.modules.lanzadera.delivery.http.auth import build_router
-from app.src.modules.lanzadera.domain.reset_token import ResetToken
-from app.src.modules.lanzadera.domain.user import User, UserStatus
 from app.src.modules.lanzadera.domain.ports.notification_delivery import (
     NotificationDeliveryPort,
 )
-
+from app.src.modules.lanzadera.domain.reset_token import ResetToken
+from app.src.modules.lanzadera.domain.user import User, UserStatus
 
 # ---------------------------------------------------------------------------
 # Fakes.
@@ -137,7 +135,7 @@ async def test_get_reset_renders_form(client: AsyncClient) -> None:
 
 
 async def test_post_login_redirects_to_admin_on_known_email(client: AsyncClient) -> None:
-    user = User(
+    _user = User(  # noqa: F841
         id=UUID(int=0xCAFE),
         email="[email protected]",
         name="Alice",

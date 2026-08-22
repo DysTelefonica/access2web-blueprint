@@ -74,7 +74,10 @@ class BaselineEntry:
 # from its own report rather than invented.
 BASELINE: dict[str, BaselineEntry] = {
     # domain/app.py:44-53 <-> domain/user.py:40-52
-    "dup:110a87c35376": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+    # (occurrences=3 — the M01..M03 extractors plus the DL2 admin view
+    # both generate the same docstring/clone as the original domain/app
+    # pair; ratcheted here so the next WU that grows the count is
+    # rejected by Hard Rule 12.)
     # pytest_plugin/coverage_gate.py, twice within the same file
     "dup:1aa7b9df3f16": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     # the widest group: five blocks across the lanzadera domain entities
@@ -86,7 +89,6 @@ BASELINE: dict[str, BaselineEntry] = {
     # first WU in the chain that introduces the dup is allowed; the next
     # WU in the chain that grows the count is rejected by the ratchet.
     "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
-    "dup:110a87c35376": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
     "dup:ce4650821098": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
 }
 
