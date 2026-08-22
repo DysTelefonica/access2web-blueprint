@@ -117,6 +117,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # imported by every adapter) collapses every "dup:" entry this
     # class added across the W-series in one PR.
     "dup:1a1bacf15531": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
+    # W04 (#21): the 7-line import prelude shows up across more
+    # adapters (User, Assignment, GlobalAdmin). The prelude-cleave
+    # planned for W04 (after GlobalAdmin lands) collapses every
+    # ``dup:*`` entry the W-series added across the chain in one PR.
+    "dup:25d63157feb1": BaselineEntry(occurrences=3, target=0, target_date="2027-02-13"),
 }
 
 # --------------------------------------------------------------------------------------------
