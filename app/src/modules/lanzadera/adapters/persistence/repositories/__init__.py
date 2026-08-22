@@ -11,15 +11,18 @@ W02 (#45) adds ``AssignmentRepositoryPg``
 
 from .app_repository_pg import APPS_TABLE, AppRepositoryPg
 from .assignment_repository_pg import AssignmentRepositoryPg
+from .audit_log_pg import AUDIT_TABLE, AuditLogPg
 from .profile_repository_pg import PROFILES_TABLE, ProfileRepositoryPg
 from .user_repository_pg import USERS_TABLE, UserRepositoryPg
 
 __all__ = [
     "APPS_TABLE",
+    "AUDIT_TABLE",
     "PROFILES_TABLE",
     "USERS_TABLE",
     "AppRepositoryPg",
     "AssignmentRepositoryPg",
+    "AuditLogPg",
     "ProfileRepositoryPg",
     "UserRepositoryPg",
 ]

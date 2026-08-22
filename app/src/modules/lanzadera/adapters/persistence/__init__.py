@@ -29,21 +29,25 @@ from .async_session_factory import (
 )
 from .repositories import (
     APPS_TABLE,
+    AUDIT_TABLE,
     PROFILES_TABLE,
     USERS_TABLE,
     AssignmentRepositoryPg,
+    AuditLogPg,
     ProfileRepositoryPg,
     UserRepositoryPg,
 )
 
 __all__ = [
     "APPS_TABLE",
+    "AUDIT_TABLE",
     "AsyncSessionFactory",
     "AsyncSessionFactoryError",
     "AsyncSessionFactoryPort",
     "PROFILES_TABLE",
     "USERS_TABLE",
     "AssignmentRepositoryPg",
+    "AuditLogPg",
     "ProfileRepositoryPg",
     "UserRepositoryPg",
     "async_session_factory",
