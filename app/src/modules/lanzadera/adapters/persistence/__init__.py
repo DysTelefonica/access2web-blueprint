@@ -1,25 +1,24 @@
-"""Postgres persistence adapters for the D90 reset-flow surface.
+"""Postgres persistence adapters for the D90 + W-series surface.
 
-W01 (#44) ships three adapters and the factory that produces the
-``AsyncSession`` seam:
-
+W01 (#44) ships the seam:
 - :func:`async_session_factory` builds an ``AsyncEngine`` + an
   :class:`AsyncSessionFactoryPort` whose ``search_path`` is set to
   ``lanzadera,public`` (the canonical schema, with public as the
   fallback for cross-schema lookups).
-- :class:`UserRepositoryPg`, :class:`AppRepositoryPg`, and
-  :class:`ProfileRepositoryPg` implement the corresponding domain
-  Protocols (DA-1, DA-12, D90).
 
-The three adapters share the same construction shape:
+W01 also ships the three Postgres adapters of the user-port trio:
+:class:`UserRepositoryPg`, :class:`AppRepositoryPg`, and
+:class:`ProfileRepositoryPg` (DA-1, DA-12).
 
-    factory = AsyncSessionFactoryPort(...)  # built by `async_session_factory`
+W02 (#45) adds :class:`AssignmentRepositoryPg` on top.
+
+All adapters share the construction shape:
+
+    factory = async_session_factory(url)
     repo    = UserRepositoryPg(factory)
 
-The factory is the only seam; the adapters do not import the engine
-directly. Adapters open and close an ``AsyncSession`` per call
-(matching the AsyncSession lifetime contract declared in
-``async_session_factory``).
+Adapters open and close an ``AsyncSession`` per call. None of them
+import an engine directly — the factory is the only seam.
 """
 
 from .async_session_factory import (
@@ -32,6 +31,7 @@ from .repositories import (
     APPS_TABLE,
     PROFILES_TABLE,
     USERS_TABLE,
+    AssignmentRepositoryPg,
     ProfileRepositoryPg,
     UserRepositoryPg,
 )
@@ -42,8 +42,9 @@ __all__ = [
     "AsyncSessionFactoryError",
     "AsyncSessionFactoryPort",
     "PROFILES_TABLE",
-    "ProfileRepositoryPg",
     "USERS_TABLE",
+    "AssignmentRepositoryPg",
+    "ProfileRepositoryPg",
     "UserRepositoryPg",
     "async_session_factory",
 ]

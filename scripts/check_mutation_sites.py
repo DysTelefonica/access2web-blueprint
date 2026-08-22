@@ -95,6 +95,16 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/adapters/persistence/repositories/profile_repository_pg.py": (
         BaselineEntry(sites=117, target=100, target_date="2027-02-13")
     ),
+    # W02 (#45): the AssignmentRepositoryPg carries the largest
+    # mutation surface of any adapter so far because it owns the
+    # JSONB-joined ``effective_permissions`` query (the read path
+    # on every request, DA-8) on top of the same prelude the W01
+    # adapters already share. The next WU (cleaving the prelude
+    # into a base class, planned alongside the AuthenticationAdapter
+    # W03) is responsible for bringing it below 100.
+    "app/src/modules/lanzadera/adapters/persistence/repositories/assignment_repository_pg.py": (
+        BaselineEntry(sites=204, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------

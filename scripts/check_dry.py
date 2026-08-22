@@ -100,6 +100,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # implementation lands in #44 itself) is the one that needs to
     # either extract the import block or accept the ratchet.
     "dup:3d62b08337d3": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
+    "dup:25d63157feb1": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
 }
 
 # --------------------------------------------------------------------------------------------
