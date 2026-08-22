@@ -78,6 +78,23 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/delivery/http/admin.py": BaselineEntry(
         sites=118, target=100, target_date="2027-02-13"
     ),
+    # W01 (#44): each Postgres adapter sits above the 100-site ceiling
+    # because it carries the full SQLAlchemy table reflection, the
+    # _row_to_* mapping helper, and every per-method async with /
+    # await session.execute(...) plumbing. The next WU
+    # (splitting the adapters into table-reflection + mapper modules,
+    # expected alongside W03 when the real AuthenticationAdapter lands)
+    # is responsible for bringing each below 100. The three sites are
+    # recorded as the count the W01 implementation actually emits.
+    "app/src/modules/lanzadera/adapters/persistence/repositories/user_repository_pg.py": (
+        BaselineEntry(sites=148, target=100, target_date="2027-02-13")
+    ),
+    "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
+        BaselineEntry(sites=148, target=100, target_date="2027-02-13")
+    ),
+    "app/src/modules/lanzadera/adapters/persistence/repositories/profile_repository_pg.py": (
+        BaselineEntry(sites=117, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
