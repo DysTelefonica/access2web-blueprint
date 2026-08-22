@@ -116,7 +116,6 @@ BASELINE: dict[str, BaselineEntry] = {
     # shared 7-line prelude into a base class or module helper
     # imported by every adapter) collapses every "dup:" entry this
     # class added across the W-series in one PR.
-    "dup:1a1bacf15531": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
     # W04 (#21): the 7-line import prelude shows up across more
     # adapters (User, Assignment, GlobalAdmin). The prelude-cleave
     # planned for W04 (after GlobalAdmin lands) collapses every

@@ -23,6 +23,7 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from contextlib import AbstractAsyncContextManager
 from typing import Protocol
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -57,6 +58,15 @@ class AsyncSessionFactoryPort(Protocol):
         Callers are responsible for closing the session (the helpers
         below are context managers; the adapters use
         ``try/except/finally`` directly).
+        """
+
+    def read_only_session(self) -> AbstractAsyncContextManager[AsyncSession]:
+        """Async-context-manager entry point: yield a fresh session, close on exit.
+
+        Read-only paths prefer this over ``__call__`` so they do not
+        carry a 4-line ``try/finally`` boilerplate per method. The
+        returned object's ``__aenter__`` yields an ``AsyncSession``;
+        ``__aexit__`` closes the session even on exception.
         """
         ...
 
@@ -104,6 +114,22 @@ class AsyncSessionFactory:
         except Exception:
             await session.rollback()
             raise
+        finally:
+            await session.close()
+
+    @asynccontextmanager
+    async def read_only_session(self) -> AsyncIterator[AsyncSession]:
+        """Yield a fresh ``AsyncSession`` for read-only paths.
+
+        No commit (the read session never starts a transaction in
+        Postgres' default ``READ COMMITTED`` isolation). The session is
+        closed on exit even when an exception is raised inside the
+        ``async with`` body -- the adapters carry no ``try/finally``
+        boilerplate for that anymore.
+        """
+        session = self.maker()
+        try:
+            yield session
         finally:
             await session.close()
 

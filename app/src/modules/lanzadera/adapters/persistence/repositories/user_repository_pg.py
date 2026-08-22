@@ -82,22 +82,16 @@ class UserRepositoryPg:
 
     async def get_by_email(self, email: str) -> User | None:
         """Return the user with ``email`` (lower-cased, DA-3) or ``None``."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(USERS_TABLE).where(USERS_TABLE.c.email == email.strip().lower())
             row = (await session.execute(stmt)).first()
-        finally:
-            await session.close()
         return _row_to_user(row) if row is not None else None
 
     async def get_by_id(self, user_id: UUID) -> User | None:
         """Return the user with ``id == user_id`` or ``None``."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(USERS_TABLE).where(USERS_TABLE.c.id == user_id)
             row = (await session.execute(stmt)).first()
-        finally:
-            await session.close()
         return _row_to_user(row) if row is not None else None
 
     async def create(self, user: User) -> None:
