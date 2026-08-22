@@ -140,8 +140,7 @@ class AssignmentRepositoryPg:
 
     async def list_for_user(self, user_id: UUID) -> Sequence[Assignment]:
         """Return the live assignments for ``user_id`` (``revoked_at IS NULL``)."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = (
                 select(USER_APP_ASSIGNMENTS_TABLE)
                 .where(
@@ -153,14 +152,11 @@ class AssignmentRepositoryPg:
                 .order_by(USER_APP_ASSIGNMENTS_TABLE.c.granted_at.desc())
             )
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_assignment(r) for r in rows]
 
     async def list_for_app(self, app_id: int) -> Sequence[Assignment]:
         """Return the live assignments for ``app_id`` (``revoked_at IS NULL``)."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = (
                 select(USER_APP_ASSIGNMENTS_TABLE)
                 .where(
@@ -172,8 +168,6 @@ class AssignmentRepositoryPg:
                 .order_by(USER_APP_ASSIGNMENTS_TABLE.c.user_id)
             )
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         return [_row_to_assignment(r) for r in rows]
 
     async def effective_permissions(self, user_id: UUID, app_id: int) -> Sequence[str]:
@@ -187,8 +181,7 @@ class AssignmentRepositoryPg:
         platform's permission check is set-membership based
         (DA-12 + H11).
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = (
                 select(PROFILES_TABLE.c.capabilities)
                 .join(
@@ -205,8 +198,6 @@ class AssignmentRepositoryPg:
                 )
             )
             rows = (await session.execute(stmt)).all()
-        finally:
-            await session.close()
         capabilities: set[str] = set()
         for (caps,) in rows:
             if caps:
