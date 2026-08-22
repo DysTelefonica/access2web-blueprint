@@ -13,6 +13,7 @@ from .app_repository_pg import APPS_TABLE, AppRepositoryPg
 from .assignment_repository_pg import AssignmentRepositoryPg
 from .audit_log_pg import AUDIT_TABLE, AuditLogPg
 from .global_admin_repository_pg import GLOBAL_ADMINS_TABLE, GlobalAdminRepositoryPg
+from .mail_queue_table_adapter import MAIL_OUTBOX_TABLE, MailQueueTableAdapter
 from .profile_repository_pg import PROFILES_TABLE, ProfileRepositoryPg
 from .reset_token_repository_pg import RESET_TOKENS_TABLE, ResetTokenRepositoryPg
 from .user_repository_pg import USERS_TABLE, UserRepositoryPg
@@ -21,6 +22,7 @@ __all__ = [
     "APPS_TABLE",
     "AUDIT_TABLE",
     "GLOBAL_ADMINS_TABLE",
+    "MAIL_OUTBOX_TABLE",
     "PROFILES_TABLE",
     "RESET_TOKENS_TABLE",
     "USERS_TABLE",
@@ -28,6 +30,7 @@ __all__ = [
     "AssignmentRepositoryPg",
     "AuditLogPg",
     "GlobalAdminRepositoryPg",
+    "MailQueueTableAdapter",
     "ProfileRepositoryPg",
     "ResetTokenRepositoryPg",
     "UserRepositoryPg",
