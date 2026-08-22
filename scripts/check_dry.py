@@ -91,6 +91,15 @@ BASELINE: dict[str, BaselineEntry] = {
     "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     "dup:110a87c35376": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
     "dup:ce4650821098": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
+    # W01 (#44): the three Postgres adapters (UserRepositoryPg,
+    # AppRepositoryPg, ProfileRepositoryPg) share the SQLAlchemy
+    # import-block prelude (``collections.abc``, ``typing``, ``sa``,
+    # ``select``, etc.). The fix is mechanical (lift the prelude to a
+    # base class or to ``__init__.py``); ratcheted at 2 with the
+    # W-series target date so the next WU (when the UserRepository
+    # implementation lands in #44 itself) is the one that needs to
+    # either extract the import block or accept the ratchet.
+    "dup:3d62b08337d3": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
 }
 
 # --------------------------------------------------------------------------------------------
