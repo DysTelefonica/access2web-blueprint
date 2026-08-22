@@ -115,8 +115,7 @@ class ResetTokenRepositoryPg:
 
     async def find_unused(self, token_hash: str) -> ResetToken | None:
         """Return the live row, ``None`` for unknown / expired / consumed / superseded."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.read_only_session() as session:
             stmt = select(RESET_TOKENS_TABLE).where(
                 sa.and_(
                     RESET_TOKENS_TABLE.c.token_hash == token_hash,
@@ -126,8 +125,6 @@ class ResetTokenRepositoryPg:
                 )
             )
             row = (await session.execute(stmt)).first()
-        finally:
-            await session.close()
         return _row_to_token(row) if row is not None else None
 
     async def mark_consumed(self, token_hash: str, at: datetime) -> None:
