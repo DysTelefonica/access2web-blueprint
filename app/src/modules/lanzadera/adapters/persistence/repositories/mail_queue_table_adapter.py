@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
