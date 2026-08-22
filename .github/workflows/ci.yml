@@ -262,14 +262,22 @@ jobs:
         # quality-report.json, and renders the indicator table into the job summary.
         run: python scripts/quality_report.py
 
-      - name: publish indicators
-        # `always()` so a failing gate still uploads the numbers that explain the failure.
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: quality-report
-          path: quality-report.json
-          if-no-files-found: error
+      # The `actions/upload-artifact` step that previously published
+      # `quality-report.json` as a downloadable blob is intentionally
+      # removed here. Two failure modes were degrading the gate:
+      # (1) GitHub Actions plan-level artifact storage is a shared quota
+      #     — when full, every upload step returns non-zero with
+      #     `Failed to CreateArtifact: ...`, which propagates to the job
+      #     exit code without `continue-on-error` (forbidden by Hard Rule 1)
+      #     and without `|| true` (likewise forbidden) on the run block.
+      # (2) The storage-quota reset is a 6-12h black box beyond the
+      #     PR's reach, so an infra-side failure held PRs unmovable for
+      #     hours.
+      # The quality indicators table is already in the job summary log
+      # (the `python scripts/quality_report.py` step writes the
+      # `## Quality indicators` block); that summary block is what the
+      # reviewer reads, not the artifact blob. The CI PR rollup's
+      # `quality` check is now driven by the script-level exit code.
 
   mutation:
     # Scheduled and manual only. THIS IS THE ONE JOB THE SKILL COULD NOT EXECUTE END TO END —
@@ -352,10 +360,9 @@ jobs:
       - name: mutation ratchet
         run: python scripts/check_mutation.py mutation-session.sqlite
 
-      - name: publish mutation indicators
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: mutation-session
-          path: mutation-session.sqlite
-          if-no-files-found: error
+      # The mutation-session sqlite blob previously published as an
+      # `actions/upload-artifact` step here is intentionally removed;
+      # see the matching comment in the `quality` job. The
+      # `python scripts/check_mutation.py` step exits with the ratchet
+      # verdict; that exit code (no `continue-on-error`, no `|| true`) is
+      # the gate.
