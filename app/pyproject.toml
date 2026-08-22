@@ -53,6 +53,7 @@ dev = [
     "ruff==0.15.21",               # QC-3 lint.
     "mypy==1.13.0",                # QC-4 typecheck (platform/src/ only).
     "pytest==8.4.2",               # Strict-TDD runner.
+    "pytest-asyncio==1.4.0",       # Async test runner (DR2 reset-flow fixtures in tests/lanzadera/auth/ use async; pytest-asyncio honours asyncio_mode = \"auto\").
     "pytest-cov==7.0.0",           # Coverage + gate plugin host.
     "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
     "pip-audit==2.9.0",            # Dependency scan (security.yml).

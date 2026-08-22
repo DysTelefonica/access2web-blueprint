@@ -10,4 +10,5 @@ The templates are kept in a single file per page so the Mística
 classes appear next to the data they render. ``base.html`` is the
 shared layout; the other templates extend it via Jinja ``{% block %}``.
 """
+
 from __future__ import annotations
