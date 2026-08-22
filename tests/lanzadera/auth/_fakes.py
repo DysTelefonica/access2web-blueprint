@@ -1,6 +1,13 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp PR 42
 # In-memory port fakes for the D90 reset flow.
-"""In-memory fakes for the D90 reset-flow ports (PR 42)."""
+"""In-memory fakes for the D90 reset-flow ports (PR 42).
+
+The async surface mirrors the protocol the Postgres adapter (W02, #45)
+will pin. ``add`` / ``update_password``-style helpers stay sync because
+they are *test-side convenience*, not part of the Protocol; tests
+construct the user / token entities synchronously up front, then call the
+async protocol methods from inside ``async def test_*`` functions.
+"""
 
 from __future__ import annotations
 
@@ -25,13 +32,13 @@ class FakeUserRepository:
         self.by_id[user.id] = user
         self.by_email[user.email] = user
 
-    def get_by_email(self, email: str):
+    async def get_by_email(self, email: str):
         return self.by_email.get(email)
 
-    def get_by_id(self, user_id):
+    async def get_by_id(self, user_id):
         return self.by_id.get(user_id)
 
-    def update_password_and_activate(self, user_id, password_hash: str) -> None:
+    async def update_password_and_activate(self, user_id, password_hash: str) -> None:
         user = self.by_id[user_id]
         user.password_hash = password_hash
         user.status = UserStatus.ACTIVE
@@ -45,23 +52,23 @@ class FakeResetTokenRepository:
     def add(self, token: ResetToken) -> None:
         self.by_hash[token.token_hash] = token
 
-    def find_unused(self, token_hash: str, now):
+    async def find_unused(self, token_hash: str, now):
         row = self.by_hash.get(token_hash)
         if row is None or row.consumed_at or row.superseded_at or row.expires_at <= now:
             return None
         return row
 
-    def mark_consumed(self, token_hash: str, at) -> None:
+    async def mark_consumed(self, token_hash: str, at) -> None:
         row = self.by_hash.get(token_hash)
         if row is not None:
             self.by_hash[token_hash] = dataclasses.replace(row, consumed_at=at)
 
-    def mark_superseded(self, user_id, at) -> None:
+    async def mark_superseded(self, user_id, at) -> None:
         for h, row in self.by_hash.items():
             if row.user_id == user_id and not row.consumed_at and not row.superseded_at:
                 self.by_hash[h] = dataclasses.replace(row, superseded_at=at)
 
-    def insert(self, token: ResetToken) -> None:
+    async def insert(self, token: ResetToken) -> None:
         self.by_hash[token.token_hash] = token
 
 
@@ -69,7 +76,7 @@ class FakeResetTokenRepository:
 class FakeGlobalAdminRepository:
     has_any: bool = False
 
-    def there_is_any(self) -> bool:
+    async def there_is_any(self) -> bool:
         return self.has_any
 
 
@@ -77,7 +84,7 @@ class FakeGlobalAdminRepository:
 class FakeNotificationDelivery:
     sent: list = field(default_factory=list)
 
-    def send(self, to: str, subject: str, body: str) -> None:
+    async def send(self, to: str, subject: str, body: str) -> None:
         self.sent.append((to, subject, body))
 
 
@@ -86,7 +93,7 @@ class FakeAuditLog:
     entries: list = field(default_factory=list)
     next_raises: BaseException | None = None
 
-    def append(self, event: AuditLogEntry) -> None:
+    async def append(self, event: AuditLogEntry) -> None:
         if self.next_raises is not None:
             exc, self.next_raises = self.next_raises, None
             raise exc
@@ -98,13 +105,13 @@ class FakePasswordHasher:
     calls: list = field(default_factory=list)
     fail_next: bool = False
 
-    def hash(self, password: str) -> str:
+    async def hash(self, password: str) -> str:
         self.calls.append(("hash", password))
         if self.fail_next:
             self.fail_next = False
             raise RuntimeError("simulated hash failure")
         return f"fake:{password}"
 
-    def verify(self, password_hash: str, password: str) -> bool:
+    async def verify(self, password_hash: str, password: str) -> bool:
         self.calls.append(("verify", password_hash, password))
         return password_hash == f"fake:{password}"

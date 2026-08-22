@@ -56,7 +56,7 @@ def _classify_invalid(row: ResetToken | None, now: datetime) -> Exception:
     return InvalidResetTokenError("reset token is unusable")
 
 
-def consume_reset_token(
+async def consume_reset_token(
     token_str: str,
     new_password: str,
     *,
@@ -68,7 +68,7 @@ def consume_reset_token(
 ) -> None:
     """Validate `token_str`, write the new password hash, mark the token used.
 
-    Sequence (DA-4, DA-11):
+    Async: every driven port is now async (DA-1). Sequence (DA-4, DA-11):
         1. Validate `now` is UTC and `new_password` is non-empty.
         2. BLAKE2b the raw token and look it up via `reset_tokens.find_unused`.
         3. Classify the failure mode when the lookup returns None.
@@ -84,16 +84,23 @@ def consume_reset_token(
     if not new_password:
         raise ValueError("consume_reset_token.new_password must be a non-empty string")
 
-    token = reset_tokens.find_unused(_hash_token(token_str), now)
+    token = await reset_tokens.find_unused(_hash_token(token_str), now)
     if token is None:
-        # Find the underlying row to pick the right exception.
-        stored = getattr(reset_tokens, "by_hash", {}).get(_hash_token(token_str))
-        raise _classify_invalid(stored, now)
+        # Find the underlying row to pick the right exception. The fake
+        # exposes `by_hash` for inspection; the Postgres adapter does
+        # not need this path because it raises the typed exception
+        # directly inside `find_unused`.
+        stored = getattr(reset_tokens, "by_hash", None)
+        if stored is not None:
+            stored_row = stored.get(_hash_token(token_str))
+        else:
+            stored_row = None
+        raise _classify_invalid(stored_row, now)
 
-    new_password_hash = hasher.hash(new_password)
-    users.update_password_and_activate(token.user_id, new_password_hash)
-    reset_tokens.mark_consumed(token.token_hash, now)
-    audit.append(
+    new_password_hash = await hasher.hash(new_password)
+    await users.update_password_and_activate(token.user_id, new_password_hash)
+    await reset_tokens.mark_consumed(token.token_hash, now)
+    await audit.append(
         AuditLogEntry(
             event_type="auth.reset.consumed",
             actor_id=token.user_id,

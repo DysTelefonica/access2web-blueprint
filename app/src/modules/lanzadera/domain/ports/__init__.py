@@ -21,39 +21,73 @@ if TYPE_CHECKING:
 
 
 class PasswordHasher(Protocol):
-    """Argon2id port (DA-2, D88). Real adapter in PR 46."""
+    """Argon2id port (DA-2, D88). Real adapter in PR 46.
 
-    def hash(self, password: str) -> str: ...
-    def verify(self, password_hash: str, password: str) -> bool: ...
+    Methods are async to match the design (DA-1): the Postgres adapter
+    uses ``argon2-cffi``'s async bindings under the hood, and the
+    HTTP delivery that calls them already runs inside an event loop.
+    The in-memory fakes in ``tests/lanzadera/auth/_fakes.py`` carry the
+    matching ``async def`` shape so the contract is symmetric end to
+    end.
+    """
+
+    async def hash(self, password: str) -> str: ...
+    async def verify(self, password_hash: str, password: str) -> bool: ...
 
 
 class UserRepository(Protocol):
-    """User storage port. PR 43 ships the full contract."""
+    """User storage port.
 
-    def get_by_email(self, email: str) -> User | None: ...
-    def get_by_id(self, user_id: UUID) -> User | None: ...
-    def update_password_and_activate(self, user_id: UUID, password_hash: str) -> None: ...
+    Async to match the design (DA-1). The protocol was declared sync by
+    PR #42 (#288) before the design ratified async for every repository;
+    this PR restates the contract to match the AsyncSession-backed
+    adapters (Postgres + the in-memory Fakes) and the async delivery
+    adapters that already call ``await users.<method>(...)``.
+
+    The ``create`` / ``update_status`` / ``list_all`` operations on the
+    user port are not part of the reset-flow surface (D90); they live
+    on a separate Protocol (``UserAdminPort``, future) that the
+    delivery/admin WU will pin. Today's admin router reaches them via
+    ``getattr`` fallbacks against the in-memory fake; those are not in
+    scope for the D90/W01 reset-flow surface and stay outside the
+    Protocol until the dedicated WU.
+    """
+
+    async def get_by_email(self, email: str) -> User | None: ...
+    async def get_by_id(self, user_id: UUID) -> User | None: ...
+    async def update_password_and_activate(self, user_id: UUID, password_hash: str) -> None: ...
 
 
 class ResetTokenRepository(Protocol):
-    """Reset-token storage port (DA-4, D90). PR 45 ships the Postgres adapter."""
+    """Reset-token storage port (DA-4, D90). W02 (#45) ships the Postgres adapter.
 
-    def insert(self, token: ResetToken) -> None: ...
-    def find_unused(self, token_hash: str, now: datetime) -> ResetToken | None: ...
-    def mark_consumed(self, token_hash: str, at: datetime) -> None: ...
-    def mark_superseded(self, user_id: UUID, at: datetime) -> None: ...
+    Async to match the design (DA-1). ``insert`` takes the
+    domain ``ResetToken`` value object (the in-memory fake and the
+    Postgres adapter both persist it as-is; the Postgres adapter
+    decomposes it into columns under the hood).
+    """
+
+    async def insert(self, token: ResetToken) -> None: ...
+    async def find_unused(self, token_hash: str, now: datetime) -> ResetToken | None: ...
+    async def mark_consumed(self, token_hash: str, at: datetime) -> None: ...
+    async def mark_superseded(self, user_id: UUID, at: datetime) -> None: ...
 
 
 class GlobalAdminRepository(Protocol):
-    """Global-admin read port (D90, D91)."""
+    """Global-admin read port (D90, D91). Async."""
 
-    def there_is_any(self) -> bool: ...
+    async def there_is_any(self) -> bool: ...
 
 
 class NotificationDelivery(Protocol):
-    """Email delivery port (DA-10). Real adapter in PR 47."""
+    """Email delivery port (DA-10). Real adapter in W05 (#47).
 
-    def send(self, to: str, subject: str, body: str) -> None: ...
+    Async: the SMTP/SES adapter opens a network connection; a sync
+    call would block the FastAPI event loop. The contract is a single
+    ``send(...)`` matching the DA-10 message shape.
+    """
+
+    async def send(self, to: str, subject: str, body: str) -> None: ...
 
 
 @dataclass(frozen=True)
@@ -68,6 +102,6 @@ class AuditLogEntry:
 
 
 class AuditLog(Protocol):
-    """Audit emission port (DA-11). Real adapter in PR 44."""
+    """Audit emission port (DA-11). Real adapter in PR 44. Async."""
 
-    def append(self, event: AuditLogEntry) -> None: ...
+    async def append(self, event: AuditLogEntry) -> None: ...
