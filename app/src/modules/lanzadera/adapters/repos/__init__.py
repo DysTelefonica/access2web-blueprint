@@ -20,7 +20,6 @@ against this skeleton today will pass against the real adapter tomorrow
 
 from __future__ import annotations
 
-from app.src.modules.lanzadera.adapters.repos.audit_log_pg import AuditLogPg
 from app.src.modules.lanzadera.adapters.repos.global_admin_repository_pg import (
     GlobalAdminRepositoryPg,
 )
@@ -29,7 +28,6 @@ from app.src.modules.lanzadera.adapters.repos.reset_token_repository_pg import (
 )
 
 __all__ = [
-    "AuditLogPg",
     "GlobalAdminRepositoryPg",
     "ResetTokenRepositoryPg",
 ]

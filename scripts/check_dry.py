@@ -47,7 +47,16 @@ MIN_STATEMENTS = 5
 #: refactoring heuristic, not a gate.
 MIN_OCCURRENCES = 2
 
-EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
+EXCLUDED_PARTS = frozenset(
+    {
+        "__pycache__",
+        ".venv",
+        "venv",
+        "build",
+        "dist",
+        "migrations",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -100,7 +109,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # implementation lands in #44 itself) is the one that needs to
     # either extract the import block or accept the ratchet.
     "dup:3d62b08337d3": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
-    "dup:25d63157feb1": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
+    # W02 (#45) + W03 (#55): the same 7-line import prelude that the
+    # W01 adapters share is also duplicated between
+    # AssignmentRepositoryPg and the audit/adapter that follow in
+    # W02/W03. The prelude-cleave planned for W03 (lifting the
+    # shared 7-line prelude into a base class or module helper
+    # imported by every adapter) collapses every "dup:" entry this
+    # class added across the W-series in one PR.
+    "dup:1a1bacf15531": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
 }
 
 # --------------------------------------------------------------------------------------------
