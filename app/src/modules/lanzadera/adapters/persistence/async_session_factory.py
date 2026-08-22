@@ -21,9 +21,8 @@ injection; the adapters do not know about a global engine).
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from dataclasses import dataclass
-from contextlib import AbstractAsyncContextManager
 from typing import Protocol
 
 from sqlalchemy.exc import SQLAlchemyError
