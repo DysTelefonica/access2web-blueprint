@@ -64,15 +64,17 @@ access2web-blueprint/
 │   │           │   ├── audit_append.py
 │   │           │   └── bootstrap_global_admins.py    # arranque idempotente
 │   │           ├── adapters/          # driven — implementación
-│   │           │   ├── postgres/
-│   │           │   │   ├── user_repository_pg.py
-│   │           │   │   ├── app_repository_pg.py
-│   │           │   │   ├── profile_repository_pg.py
-│   │           │   │   ├── assignment_repository_pg.py
-│   │           │   │   ├── reset_token_repository_pg.py
-│   │           │   │   ├── global_admin_repository_pg.py
-│   │           │   │   ├── audit_log_pg.py
-│   │           │   │   └── session.py                # async_session_factory
+│   │           │   ├── persistence/    # seam único Postgres (DA-1)
+│   │           │   │   ├── async_session_factory.py
+│   │           │   │   └── repositories/
+│   │           │   │       ├── user_repository_pg.py
+│   │           │   │       ├── app_repository_pg.py
+│   │           │   │       ├── profile_repository_pg.py
+│   │           │   │       ├── assignment_repository_pg.py
+│   │           │   │       ├── reset_token_repository_pg.py
+│   │           │   │       ├── global_admin_repository_pg.py
+│   │           │   │       ├── audit_log_pg.py
+│   │           │   │       └── mail_queue_table_adapter.py
 │   │           │   ├── crypto/
 │   │           │   │   ├── credential_hasher_argon2id.py   # CRITICAL_HELPER (D88)
 │   │           │   │   └── national_id_cipher.py          # AES-GCM vía secret manager
