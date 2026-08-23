@@ -20,7 +20,6 @@ from uuid import UUID
 import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
@@ -70,16 +69,9 @@ class GlobalAdminRepositoryPg:
         is detected at the unique-violation round-trip rather than at
         the application layer).
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = sa.insert(GLOBAL_ADMINS_TABLE).values(user_id=user_id)
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
     async def revoke(self, user_id: UUID) -> None:
         """Delete the global-admin row for ``user_id``.
@@ -87,9 +79,14 @@ class GlobalAdminRepositoryPg:
         D42: refuse the deletion if it would leave the system without
         a global admin. The check is the adapter's job because the
         invariant is a database invariant.
+
+        The SELECT count + DELETE run inside one
+        ``transaction()`` block so a concurrent grant cannot slip
+        between the count and the delete (the original
+        implementation had the same atomicity guarantee via the
+        manual ``try/except/finally``; the helper makes it explicit).
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             count_stmt = select(sa.func.count()).select_from(GLOBAL_ADMINS_TABLE)
             total = (await session.execute(count_stmt)).scalar_one()
             if total <= 1:
@@ -97,12 +94,6 @@ class GlobalAdminRepositoryPg:
 
             stmt = sa.delete(GLOBAL_ADMINS_TABLE).where(GLOBAL_ADMINS_TABLE.c.user_id == user_id)
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
 
 __all__ = [
