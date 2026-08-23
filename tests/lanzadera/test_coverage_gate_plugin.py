@@ -57,20 +57,27 @@ pytestmark_helpers_required = pytest.mark.skipif(
 
 
 def test_critical_helpers_lists_the_four_named_helpers() -> None:
-    """DA-2, DA-4: the four CRITICAL_HELPERS the gate is supposed to enforce."""
+    """DA-2, DA-4: the four CRITICAL_HELPERS the gate is supposed to enforce.
+
+    The names mirror the live ``PasswordHasher`` Protocol surface (DA-2):
+    the ``CredentialHasherArgon2id`` adapter carries ``hash`` and ``verify``
+    since W07 (#434). The earlier ``hash_password`` / ``verify_password``
+    names pre-date that migration.
+    """
     assert coverage_gate.CRITICAL_HELPERS == (
-        "hash_password",
-        "verify_password",
+        "hash",
+        "verify",
         "issue_reset_token",
         "consume_reset_token",
     )
 
 
-def test_target_modules_lists_the_two_lanzadera_helpers() -> None:
-    """Phase 4+ scope: credential_helpers (Argon2id PHC strings) and auth_reset (atomic tokens)."""
+def test_target_modules_lists_the_three_lanzadera_helpers() -> None:
+    """Phase 4+ scope: ``CredentialHasherArgon2id`` (DA-2) plus two reset-flow services (DA-4)."""
     assert coverage_gate.TARGET_MODULES == (
-        "app.src.modules.lanzadera.application.credential_helpers",
-        "app.src.modules.lanzadera.application.auth_reset",
+        "app.src.modules.lanzadera.adapters.crypto.credential_hasher_argon2id",
+        "app.src.modules.lanzadera.domain.services.issue_reset_token",
+        "app.src.modules.lanzadera.domain.services.consume_reset_token",
     )
 
 
@@ -226,16 +233,39 @@ def test_sessionfinish_returns_early_when_coverage_disabled() -> None:
 def test_sessionfinish_warns_when_target_module_not_importable(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """Phase 0..3 contract: a missing target module emits a WARNING, exit status unchanged."""
+    """Phase 0..3 contract: a missing target module emits a WARNING, exit status unchanged.
+
+    Today's ``CredentialHasherArgon2id`` module IS importable, so the
+    orchestrator walks the next branch — it warns that each helper
+    (``hash``, ``verify``) is not defined as a module-level attribute. The
+    helper classes live as methods inside the class, not as free
+    functions, so the orchestrator's attribute lookup returns False. The
+    test verifies the WARNING line fires per ``(module, helper)`` pair.
+    """
+    sentinel_module = ModuleType("sentinel_sessionfinish")
     cov = _make_coverage_data(
         measured_files=[],
         executable_lines={},
         executed_lines={},
     )
-    session = _make_session(cov)
-    coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+    real_try_import = coverage_gate._try_import
+
+    def fake_try_import(name: str) -> ModuleType | None:
+        if name in coverage_gate.TARGET_MODULES:
+            return sentinel_module  # importable, no helpers as module attrs
+        return real_try_import(name)
+
+    coverage_gate._try_import = fake_try_import
+    try:
+        session = _make_session(cov)
+        coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+    finally:
+        coverage_gate._try_import = real_try_import
+
     captured = capsys.readouterr()
-    assert "is not importable" in captured.err
+    for module_name in coverage_gate.TARGET_MODULES:
+        for helper_name in coverage_gate.CRITICAL_HELPERS:
+            assert f"'{module_name}.{helper_name}' is not defined yet" in captured.err
     assert session.exitstatus == 0
 
 
