@@ -1,27 +1,39 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp DA-13 — coverage_gate.py
 """Coverage gate plugin — 100% floor on CRITICAL_HELPERS, mutate `session.exitstatus`.
 
-Phase 0 ships only the **declaration** of `CRITICAL_HELPERS` and the
-`pytest_sessionfinish` hook. The four named helpers
-(`hash_password`, `verify_password`, `issue_reset_token`,
-`consume_reset_token`) are implemented in PR 4 (Phase 3). Until then, the
-plugin MUST tolerate their absence — it emits a WARNING, not a failure.
+The plugin ships the ``pytest_sessionfinish`` hook that walks every
+``(TARGET_MODULE, CRITICAL_HELPER)`` pair. Each pair that exists in
+the live code is checked against the pytest-cov in-memory report; a
+helper that exists but lands below 100 % branch coverage mutates
+``session.exitstatus = 1`` per Hard Rule 8.
 
-Hard Rule 8: `config.exitstatus = 1` does NOT change the exit code; the
-contract is to mutate `session.exitstatus` from inside `pytest_sessionfinish`.
-The plugin is verified end-to-end by `pytester` in PR 4 (Phase 6).
+Phase 0 emitted WARNINGs for missing helpers because the implementation
+did not yet exist. The current state (post-W07) is the inverse: the
+modules exist (the Argon2id adapter lands in
+``adapters/crypto/credential_hasher_argon2id`` and the two reset-flow
+services land in ``domain/services/``), but the helper **names** are
+methods on classes, not free functions, so the module-level attribute
+lookup the orchestrator runs (``getattr(module, helper_name)``) does
+not match. The orchestrator therefore warns that each helper is
+``not defined yet``; today the gate stays in WARNING mode and the
+release does not pass through 100 % coverage.
+
+Hard Rule 8: ``config.exitstatus = 1`` does NOT change the exit code; the
+contract is to mutate ``session.exitstatus`` from inside
+``pytest_sessionfinish``.
 
 DA-2, DA-4: the helpers themselves are Argon2id PHC strings and atomic reset
-tokens. Coverage must reach 100% on every branch of every helper before a
+tokens. Coverage must reach 100 % on every branch of every helper before a
 release can pass this gate.
 
-Lanzadera MVP CRITICAL_HELPERS (orchestrator pre-resolved, 2026-08-09):
-    hash_password, verify_password, issue_reset_token, consume_reset_token.
+Lanzadera MVP CRITICAL_HELPERS (W-series current):
+    hash, verify  # methods on CredentialHasherArgon2id (W07 #434)
+    issue_reset_token, consume_reset_token  # domain services (D90)
 
 DG-11 (issue #266, slice 1): the per-target resolution and the coverage lookup
-live in `coverage_gate_helpers.py` so the gate file itself stays below the
+live in ``coverage_gate_helpers.py`` so the gate file itself stays below the
 mutation-sites ceiling. The orchestrator stays here because it owns the side
-effects — stdout/stderr writes and `session.exitstatus` mutation.
+effects — stdout/stderr writes and ``session.exitstatus`` mutation.
 """
 
 from __future__ import annotations
@@ -35,17 +47,24 @@ from app.pytest_plugin.coverage_gate_helpers import (
 
 # Symbol names that must reach 100% coverage the moment they exist. Until they
 # exist, the plugin emits a WARNING — Phase 0 ships no implementation.
+# The names mirror the live ``PasswordHasher`` Protocol surface (DA-2), not
+# the earlier ``hash_password`` / ``verify_password`` names that the
+# ``CredentialHasherArgon2id`` adapter carried before W07 (#434).
 CRITICAL_HELPERS: tuple[str, ...] = (
-    "hash_password",
-    "verify_password",
+    "hash",
+    "verify",
     "issue_reset_token",
     "consume_reset_token",
 )
 
 # Modules under test (Phase 4+ scope; Phase 0 walks nothing yet).
+# The real modules live in ``adapters/crypto`` and ``domain/services``;
+# the older ``application.{credential_helpers,auth_reset}`` paths the
+# plugin declared at design time never materialised.
 TARGET_MODULES: tuple[str, ...] = (
-    "app.src.modules.lanzadera.application.credential_helpers",
-    "app.src.modules.lanzadera.application.auth_reset",
+    "app.src.modules.lanzadera.adapters.crypto.credential_hasher_argon2id",
+    "app.src.modules.lanzadera.domain.services.issue_reset_token",
+    "app.src.modules.lanzadera.domain.services.consume_reset_token",
 )
 
 
