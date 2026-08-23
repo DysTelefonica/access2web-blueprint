@@ -111,11 +111,15 @@ def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, scrip
     # contradictory and broke the test on every branch). The test name and
     # module docstring describe wiring, not CRAP-specific behaviour.
     gates = {entry["gate"] for entry in payload["gates"]}
-    # mutation_sites joined the chain between crap and dry (#117 retro split).
+    # The aggregator declares six gates (DA-1 + DA-11 + DA-13). The
+    # older ``crap`` gate that the test originally pinned has been
+    # removed from the aggregator (it would have required a third-party
+    # CRAP tool whose runner is not wired; DA-13 dropped it from the
+    # gates list). The remaining six are the only ones the aggregator
+    # ever emits on a clean run.
     assert {
         "layers",
         "complexity",
-        "crap",
         "mutation_sites",
         "dry",
         "legacy_hashes",
