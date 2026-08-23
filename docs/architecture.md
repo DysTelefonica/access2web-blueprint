@@ -183,6 +183,16 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 - Alembic con `expand_and_contract` (D82): cada release es aditiva. Rollback = `DROP SCHEMA <módulo> CASCADE;` (legacy intacto).
 - Migraciones `0001..0006` son la línea base del MVP. Cada futura app tiene su propia serie numerada.
 
+### Adapters Postgres (DA-1, W01..W06)
+
+- Ruta canónica de los adapters: `app/src/modules/lanzadera/adapters/persistence/repositories/<entity>_pg.py`. La ruta legacy `adapters/repos/` se conserva como stub vacío para enlazar imports durante la transición.
+- `async_session_factory(url)` construye el seam único: `AsyncEngine` + `AsyncSessionFactoryPort` con `search_path = lanzadera, public`. Todos los adapters toman ese puerto por constructor; ninguno importa `sqlalchemy.engine` directamente.
+- Adapters implementados en el seam: `UserRepositoryPg`, `AppRepositoryPg`, `ProfileRepositoryPg`, `AssignmentRepositoryPg`, `AuditLogPg`, `GlobalAdminRepositoryPg`, `ResetTokenRepositoryPg`, `MailQueueTableAdapter`. Cada uno declara su propio `sa.Table` para mantener la tabla-reflection consigo mismo.
+- `AsyncSessionFactory` expone dos context-manager helpers:
+  - `read_only_session()`: yields una `AsyncSession` y la cierra al exit, sin commit. Para paths de lectura.
+  - `transaction()`: yields una `AsyncSession`, commitea al exit, rollback en exception. Para paths de escritura.
+- Cada adapter abre y cierra su `AsyncSession` por método. El boilerplate `try/except/finally` queda cerrado desde W08..W20 (8 PRs de prelude-cleave consecutivos).
+
 ## Caché (D70-D71 + DA-8)
 
 - `CachePort` con `TTLCache` in-process (MVP).
