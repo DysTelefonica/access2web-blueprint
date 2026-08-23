@@ -8,6 +8,39 @@ Todos los cambios relevantes del blueprint se documentan aquí. El formato sigue
 
 ## [Unreleased]
 
+### Added
+
+- **Async session factory** (#427, DA-1): `async_session_factory(url)` produce `AsyncEngine` + `AsyncSessionFactoryPort` con `search_path = lanzadera,public`. Es el seam único entre plataforma y Postgres.
+- **W01 user/app/profile Postgres adapters** (#427): `UserRepositoryPg`, `AppRepositoryPg`, `ProfileRepositoryPg` implementan los Protocols de dominio. Mapean `users`/`apps`/`profiles` (migración 0001) a los dataclasses de dominio.
+- **W02 AssignmentRepositoryPg** (#428, DA-12/D22/H11): cuatro métodos (create, list_for_user, list_for_app, effective_permissions). `effective_permissions` JOIN `user_app_assignments` con `profiles.capabilities` JSONB.
+- **W03 AuditLogPg** (#429, DA-11/D27/D55): dos métodos (append, list_for_actor). Append-only, sin columnas de telemetría (DA-13 + D55).
+- **W04 GlobalAdminRepositoryPg** (#430, DA-1/D21/D42): cuatro métodos (list_all, is_global_admin, grant, revoke). El invariant D42 (al menos un global admin) se enforce dentro de `revoke` antes del DELETE.
+- **W05 ResetTokenRepositoryPg** (#432, DA-4/D90): cinco métodos (insert, find_unused, mark_consumed, mark_superseded, purge_expired). Single-use, bounded-TTL, supersedable.
+- **W06 MailQueueTableAdapter** (#433, DA-10/D11): un método (send). Encola una fila en `lanzadera.mail_outbox` con `status='pending'`. El dispatcher real es D65 y queda fuera del alcance de esta entrega.
+- **W07 Argon2id async API** (#434, DA-2): `CredentialHasherArgon2id.hash/verify` migran a `async def`. El KDF se delega a `asyncio.to_thread` para no bloquear el event loop.
+- **W08 read-only session helper** (#436): `AsyncSessionFactory.read_only_session()` añade el context-manager para paths de lectura. Cierra el boilerplate `try/finally` que se repite 27 veces en los adapters.
+- **W09..W13 read-only migrations** (#437, #438, #439, #440, #441): los read paths de `AppRepositoryPg`, `ProfileRepositoryPg`, `AssignmentRepositoryPg`, `AuditLogPg`, `GlobalAdminRepositoryPg` migran al helper.
+- **W14 ResetTokenRepositoryPg.find_unused** (#442): método de lectura migrado al helper.
+- **W15 MailQueueTableAdapter.send → transaction()** (#443): la única vía de escritura migra al context-manager `transaction()` que commit-once + rollback-on-exception.
+- **W16 UserRepositoryPg writes → transaction()** (#444): tres métodos (create, update_status, update_password_and_activate). `list_all` migra a `read_only_session()` en el mismo PR.
+- **W17 ResetTokenRepositoryPg writes** (#446): cuatro métodos (insert, mark_consumed, mark_superseded, purge_expired) migran a `transaction()`. El INSERT + 2nd SELECT viajan juntos en una sola transacción.
+- **W18 AssignmentRepositoryPg.create** (#447): el INSERT + 2nd SELECT viven ahora dentro de una sola transacción (side benefit: cierra una ventana de orden donde el read corría post-commit).
+- **W19 GlobalAdminRepositoryPg.grant + revoke** (#448): el SELECT count + DELETE de `revoke` se mantiene atómico dentro de `transaction()`. La verificación D42 sigue siendo previa al DELETE.
+- **W20 AuditLog.append + ProfileRepositoryPg.create/set_active** (#449): los últimos 3 bloques `try/except/finally` manuales del W-series se consolidan. La deuda de boilerplate de los 8 Postgres adapters queda cerrada.
+- **Async-everywhere en los auth-flow services** (#426): `PasswordHasher`, `UserRepository`, `ResetTokenRepository`, `GlobalAdminRepository`, `NotificationDelivery`, `AuditLog` migran a `async def`. `consume_reset_token` se vuelve async y propaga `await` por toda la cadena. Prereq para W01..W07.
+- **CI install-step unblock** (#424): el bash-comment multi-línea con backticks en `.github/workflows/ci.yml` se cierra con el `#` que faltaba. El fallback `git show` + `git update-index` + `git checkout-index` para `app/pyproject.toml` aterriza con la corrección.
+- **`pytest-asyncio==1.4.0`** (#424): pin en `[project.optional-dependencies].dev`. Pre-condición para que `asyncio_mode = "auto"` del `[tool.pytest.ini_options]` funcione.
+- **CI mutation-sites BASELINE entries** (W01..W19): tres nuevas entradas (`user_repository_pg.py` 148, `app_repository_pg.py` 148, `profile_repository_pg.py` 117, `assignment_repository_pg.py` 204, `audit_log_pg.py` 108, `reset_token_repository_pg.py` 141). `target_date="2027-02-13"` consistente con `coverage_gate_helpers`.
+- **DRY BASELINE cleanup**:
+  - Entradas marcadas como no-longer-duplicated: `dup:1a1bacf15531`, `dup:25d63157feb1` (tras el post-ruff-format prelude único).
+  - BASELINE restantes siguen activas porque el prelude-cleave de los 8 adapters está agendado para W21+: `3d62b08337d3` (W01), `25d63157feb1` con occurrences=3 (W02..W04).
+  - **`3d62b08337d3`** en W01: prelude compartido en `UserRepositoryPg`, `AssignmentRepositoryPg`, `ProfileRepositoryPg`.
+  - **`25d63157feb1`** con occurrences=3 en W02..W04: prelude compartido en `AssignmentRepositoryPg`, `AuditLogPg`, `GlobalAdminRepositoryPg`.
+
+### Fixed
+
+- **`coverage_gate` plugin (#424)**: el paso `install` del job `quality` ahora materializa `app/pyproject.toml` con el triple `git show` + `git update-index` + `git checkout-index`. La etapa anterior fallaba porque la copia de trabajo del runner self-hosted tenía la ruta en skip-worktree state.
+
 ## [0.2.0] - 2026-08-18
 
 Aplicación completa de `documentation-alan-style` v2.1 al monorepo (5 root docs, 3 guías de `docs/`, 8 READMs por app, 8 épicas, walkthrough template + validator + migration). El skill prescribe plantillas para README, AGENTS, DOCS, CODEBASE-GUIDE, CHANGELOG, walkthrough.json y epic.md; antes de esta versión, sólo los 5 root docs tenían su plantilla aplicada parcialmente. Esta versión cierra la brecha en todas las superficies documentales del proyecto.
