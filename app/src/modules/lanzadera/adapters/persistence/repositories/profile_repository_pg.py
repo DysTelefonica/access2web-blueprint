@@ -21,7 +21,6 @@ from typing import Any
 import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
@@ -105,8 +104,7 @@ class ProfileRepositoryPg:
         Uses the JSONB ``capabilities`` column directly; the
         canonical per-app shape lands in migration 0003 (PR 3b).
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = sa.insert(PROFILES_TABLE).values(
                 app_id=profile.app_id,
                 code=profile.code,
@@ -115,12 +113,6 @@ class ProfileRepositoryPg:
                 active=profile.active,
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
     async def set_active(self, app_id: int, code: str, *, active: bool) -> None:
         """Toggle ``active`` for the profile ``(app_id, code)``.
@@ -128,8 +120,7 @@ class ProfileRepositoryPg:
         The capability set is unaffected. ``updated_at`` is touched by
         the Postgres trigger declared in migration 0001.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.update(PROFILES_TABLE)
                 .where(
@@ -141,12 +132,6 @@ class ProfileRepositoryPg:
                 .values(active=active)
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
 
 __all__ = ["ProfileRepositoryPg", "PROFILES_TABLE"]
