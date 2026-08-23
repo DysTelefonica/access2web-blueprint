@@ -23,6 +23,7 @@ tests the orchestrator unconditionally and the helpers module conditionally.
 from __future__ import annotations
 
 import importlib
+import os
 import sys
 from types import ModuleType, SimpleNamespace
 from typing import Any
@@ -88,8 +89,6 @@ def test_target_modules_lists_the_three_lanzadera_helpers() -> None:
 
 def test_try_import_returns_module_when_importable() -> None:
     """A module present on sys.path resolves to the actual module object."""
-    import os
-
     assert coverage_gate._try_import("os") is os
 
 
