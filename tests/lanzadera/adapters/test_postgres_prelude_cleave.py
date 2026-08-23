@@ -36,7 +36,7 @@ ADAPTER_FILES = [
 
 
 def test_no_legacy_session_lifecycle_in_postgres_adapters() -> None:
-    """None of the 8 Postgres adapters may carry the manual ``session: AsyncSession = self._factory()`` shape.
+    """None of the 8 Postgres adapters may carry the manual session shape.
 
     The W08 prelude-cleave (PR #436) introduced
     ``AsyncSessionFactory.read_only_session()`` and ``transaction()``.
