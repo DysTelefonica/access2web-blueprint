@@ -35,7 +35,6 @@ import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
@@ -97,9 +96,15 @@ class AssignmentRepositoryPg:
         / ``NOW()``). The adapter returns the row after a `RETURNING`
         so the domain layer sees the authoritative IDs (DA-1: the
         adapter never invents IDs client-side).
+
+        ``async with self._factory.transaction()`` wraps the INSERT
+        AND the 2nd SELECT inside a single transaction: the helper
+        commits on exit and rolls back on exception. The 2nd SELECT
+        lives inside the transaction (the read-only semantics is
+        preserved by virtue of READ COMMITTED isolation -- reads do
+        not block writes).
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.insert(USER_APP_ASSIGNMENTS_TABLE)
                 .values(
@@ -114,7 +119,6 @@ class AssignmentRepositoryPg:
                 )
             )
             await session.execute(stmt)
-            await session.commit()
             # Re-SELECT with the now-known fields so the returned
             # dataclass carries every attribute. The 2nd read is
             # cheaper than chasing every RETURNING column.
@@ -126,11 +130,6 @@ class AssignmentRepositoryPg:
                 )
             )
             row = (await session.execute(stmt2)).first()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
         if row is None:
             raise RuntimeError(
                 f"create() returned but row not found for user={user_id} "
