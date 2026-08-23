@@ -20,39 +20,42 @@ from __future__ import annotations
 # --------------------------------------------------------------------------------------------
 
 
-def _module_covered_lines(coverage_data, module_path: str) -> set[int] | None:
-    """Return the executed lines for the given module file, or ``None`` when not measured.
+def _file_for_module(coverage_data, module_path: str) -> str | None:
+    """Return the measured file path whose name ends with ``module_path``.
 
-    coverage_data is the in-memory coverage report after the pytest run. Keys
-    are the relative paths of measured files; we match by suffix so the
-    plugin works regardless of where pytest was invoked from.
+    ``coverage_data`` is the in-memory coverage report after the pytest
+    run. The plugin matches by suffix so it works regardless of where
+    pytest was invoked from.
     """
     if coverage_data is None:
         return None
     cov_data = getattr(coverage_data, "_data", None)
     if cov_data is None:
         return None
-    measured_files = cov_data.measured_files()
-    for file_path in measured_files:
+    for file_path in cov_data.measured_files():
         if module_path in file_path or file_path.endswith(module_path):
-            executable = cov_data.executable_lines(file_path)
-            executed = cov_data.executed_lines(file_path) or set()
-            return executable & executed  # only executable-and-executed lines
+            return file_path
     return None
+
+
+def _module_covered_lines(coverage_data, module_path: str) -> set[int] | None:
+    """Return the executed lines for the given module file, or ``None`` when not measured."""
+    file_path = _file_for_module(coverage_data, module_path)
+    if file_path is None:
+        return None
+    cov_data = coverage_data._data
+    executable = cov_data.executable_lines(file_path)
+    executed = cov_data.executed_lines(file_path) or set()
+    return executable & executed  # only executable-and-executed lines
 
 
 def _module_total_executable(coverage_data, module_path: str) -> set[int] | None:
     """Return the executable lines for the given module file, or ``None`` when not measured."""
-    if coverage_data is None:
+    file_path = _file_for_module(coverage_data, module_path)
+    if file_path is None:
         return None
-    cov_data = getattr(coverage_data, "_data", None)
-    if cov_data is None:
-        return None
-    measured_files = cov_data.measured_files()
-    for file_path in measured_files:
-        if module_path in file_path or file_path.endswith(module_path):
-            return set(cov_data.executable_lines(file_path))
-    return None
+    cov_data = coverage_data._data
+    return set(cov_data.executable_lines(file_path))
 
 
 # --------------------------------------------------------------------------------------------
