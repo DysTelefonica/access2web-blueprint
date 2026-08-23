@@ -37,7 +37,6 @@ from uuid import UUID
 import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
@@ -85,8 +84,7 @@ class ResetTokenRepositoryPg:
         expires_at: datetime,
     ) -> ResetToken:
         """Persist a fresh token. Uniqueness on ``token_hash`` is enforced."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.insert(RESET_TOKENS_TABLE)
                 .values(
@@ -100,15 +98,9 @@ class ResetTokenRepositoryPg:
                 )
             )
             await session.execute(stmt)
-            await session.commit()
             # Re-read so the returned dataclass carries server defaults.
             stmt2 = select(RESET_TOKENS_TABLE).where(RESET_TOKENS_TABLE.c.token_hash == token_hash)
             row = (await session.execute(stmt2)).first()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
         if row is None:
             raise RuntimeError(f"insert() returned but row not found for hash={token_hash}")
         return _row_to_token(row)
@@ -129,25 +121,17 @@ class ResetTokenRepositoryPg:
 
     async def mark_consumed(self, token_hash: str, at: datetime) -> None:
         """Stamp ``consumed_at`` once. Idempotent on the second call."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.update(RESET_TOKENS_TABLE)
                 .where(RESET_TOKENS_TABLE.c.token_hash == token_hash)
                 .values(consumed_at=at)
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
     async def mark_superseded(self, user_id: UUID, at: datetime) -> None:
         """Stamp ``superseded_at`` on every live row for ``user_id`` (DA-4 / D90)."""
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = (
                 sa.update(RESET_TOKENS_TABLE)
                 .where(
@@ -160,12 +144,6 @@ class ResetTokenRepositoryPg:
                 .values(superseded_at=at)
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
     async def purge_expired(self, now: datetime) -> int:
         """Delete rows whose ``expires_at < now``; return the deleted count.
@@ -175,16 +153,9 @@ class ResetTokenRepositoryPg:
         stub would mark it ``int | None``. We coerce and default to 0
         on the rare ``None`` case the dialect can produce.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = sa.delete(RESET_TOKENS_TABLE).where(RESET_TOKENS_TABLE.c.expires_at < now)
             result = await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
         rowcount: int = getattr(result, "rowcount", 0) or 0
         return rowcount
 
