@@ -143,7 +143,7 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 | ID | Resumen |
 |---|---|
 | DA-1 | Capas hexagonales con `ROOT_PACKAGE = "app.src.modules"` (post-rename), `PURE_LAYERS = {domain, ports, application}`. |
-| DA-2 | Argon2id perfil RFC_9106_LOW_MEMORY. CRITICAL_HELPERS a 100 % cobertura (QC-5). |
+| DA-2 | Argon2id perfil RFC_9106_LOW_MEMORY. QC-5 exige 100 % en `CredentialHasherArgon2id.hash` y `.verify`. |
 | DA-3 | `users.password_hash` NULL + `status` ENUM. Sin columna legacy. |
 | DA-4 | Reset tokens atómicos, expiración 24 h, supersession. |
 | DA-5 | CLI `gentle-ai platform user set-password` exclusivo para bootstrap. |
@@ -172,7 +172,7 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 
 ## Auth (D88-D91 + DA-2..DA-5)
 
-- **Crypto**: Argon2id perfil `RFC_9106_LOW_MEMORY`. `hash_password` y `verify_password` declarados `CRITICAL_HELPERS` con 100 % cobertura (QC-5).
+- **Crypto**: Argon2id perfil `RFC_9106_LOW_MEMORY`. QC-5 resuelve `CredentialHasherArgon2id.hash` y `.verify` sobre la clase y exige 100 % de cobertura.
 - **Bootstrap**: `gentle-ai platform user set-password <email>` es el único camino para crear el primer admin. `BootstrapAdapter` siembra los siguientes vía `GLOBAL_ADMIN_EMAILS`. Idempotente.
 - **Reset**: tokens one-time, 24 h, atómicos. `issue_reset_token` y `consume_reset_token` ambos `CRITICAL_HELPERS`.
 - **Audit**: `auth.bootstrap.set_password`, `auth.login.success`, `auth.login.failure` van en **misma transacción** que la mutación (DA-11).
