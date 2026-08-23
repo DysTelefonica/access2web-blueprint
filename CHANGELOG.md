@@ -37,6 +37,7 @@ Todos los cambios relevantes del blueprint se documentan aquí. El formato sigue
   - **`3d62b08337d3`** en W01: prelude compartido en `UserRepositoryPg`, `AssignmentRepositoryPg`, `ProfileRepositoryPg`.
   - **`25d63157feb1`** con occurrences=3 en W02..W04: prelude compartido en `AssignmentRepositoryPg`, `AuditLogPg`, `GlobalAdminRepositoryPg`.
 - **W21+22 retire `adapters/repos/` stub** (PR #450): el directorio ``app/src/modules/lanzadera/adapters/repos/__init__.py`` existía sólo como redirect transitorio para enlazar imports durante la W-series. Las redirect reales viven en ``adapters/__init__.py`` desde el PR W02..W05. Una vez consolidada la W-series (W08..W20), el subdirectorio stub queda sin función y se elimina. El bullet list del docstring de ``adapters/__init__.py`` queda sincronizado con la ruta canónica (``.persistence.*``) — antes seguía apuntando a la ruta legacy ``.repos.*`` que ya no existe.
+- **W23 prelude-cleave pin** (PR #452): test arquitectónico que barre los 8 Postgres adapters (UserRepositoryPg, AppRepositoryPg, ProfileRepositoryPg, AssignmentRepositoryPg, AuditLogPg, GlobalAdminRepositoryPg, ResetTokenRepositoryPg, MailQueueTableAdapter) y falla si alguno regresa al shape manual ``session: AsyncSession = self._factory()``. La W-series (W08..W20) pagó el coste de la migración; esta gate evita la regresión. El test pasa hoy y rompe de forma determinista cuando alguien introduce el patrón pre-W08.
 
 ### Fixed
 
