@@ -28,7 +28,6 @@ import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     SCHEMA,
@@ -90,8 +89,7 @@ class AuditLogPg:
         transactional consumers wire the adapter via session sharing
         instead.
         """
-        session: AsyncSession = self._factory()
-        try:
+        async with self._factory.transaction() as session:
             stmt = sa.insert(AUDIT_TABLE).values(
                 id=event.id,
                 event_type=event.event_type,
@@ -104,12 +102,6 @@ class AuditLogPg:
                 created_at=event.created_at,
             )
             await session.execute(stmt)
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
 
     async def list_for_actor(self, actor_id: UUID, since: datetime) -> Sequence[AuditEvent]:
         """Return every audit row with ``actor_id == actor_id`` and ``created_at >= since``.
