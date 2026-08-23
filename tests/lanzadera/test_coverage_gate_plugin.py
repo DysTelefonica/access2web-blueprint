@@ -98,6 +98,54 @@ def test_try_import_returns_none_on_missing_module() -> None:
 
 
 # --------------------------------------------------------------------------------------------
+# _file_for_module — measured-files lookup
+# --------------------------------------------------------------------------------------------
+
+
+def test_file_for_module_returns_none_when_coverage_data_is_none() -> None:
+    """A missing coverage report short-circuits the lookup."""
+    assert coverage_gate_helpers._file_for_module(None, "app.x.y") is None
+
+
+def test_file_for_module_matches_by_suffix() -> None:
+    """Match by suffix tolerates worktree-root prefix variations."""
+    cov = _make_coverage_data(
+        measured_files=["app/src/modules/lanzadera/domain/user.py"],
+        executable_lines={},
+        executed_lines={},
+    )
+    path = coverage_gate_helpers._file_for_module(
+        cov,
+        "lanzadera/domain/user.py",
+    )
+    assert path == "app/src/modules/lanzadera/domain/user.py"
+
+
+def test_file_for_module_matches_by_substring() -> None:
+    """Match by substring catches paths that share the module name suffix."""
+    cov = _make_coverage_data(
+        measured_files=["/tmp/build/app/src/modules/lanzadera/app.py"],
+        executable_lines={},
+        executed_lines={},
+    )
+    path = coverage_gate_helpers._file_for_module(
+        cov,
+        "app/src/modules/lanzadera/app.py",
+    )
+    assert path == "/tmp/build/app/src/modules/lanzadera/app.py"
+
+
+def test_file_for_module_returns_none_when_no_match() -> None:
+    """An unmatched ``module_path`` returns ``None``."""
+    cov = _make_coverage_data(
+        measured_files=["app/src/modules/lanzadera/domain/user.py"],
+        executable_lines={},
+        executed_lines={},
+    )
+    assert coverage_gate_helpers._file_for_module(cov, "wrong") is None
+
+
+# --------------------------------------------------------------------------------------------
 # _module_covered_lines and _module_total_executable — coverage_data queries
 # --------------------------------------------------------------------------------------------
 
