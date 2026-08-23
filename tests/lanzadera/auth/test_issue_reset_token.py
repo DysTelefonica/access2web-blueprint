@@ -91,6 +91,11 @@ async def test_custom_ttl_is_honoured():
     assert result.expires_at == _now() + timedelta(minutes=5)
 
 
+async def test_nonpositive_ttl_is_rejected():
+    with pytest.raises(ValueError, match="ttl must be positive"):
+        await _issue(await _setup(), ttl=timedelta(0))
+
+
 # -- Supersession ------------------------------------------------------------
 
 

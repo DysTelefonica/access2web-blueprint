@@ -57,7 +57,7 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 | `check_mutation.py` | — | Corre mutación semanal; falla si la mutation score cae | `python scripts/check_mutation.py` |
 | `quality_report.py` | QC-11 | Agrega envelopes de todos los gates en `quality.report.json` | `python scripts/quality_report.py` |
 | `check_walkthrough_schema.py` | — | MUST fields del template `walkthrough.json` presentes en `docs/03-aplicaciones/*/walkthrough-*.json` (53 archivos) | `python scripts/check_walkthrough_schema.py` |
-| `app/pytest_plugin/coverage_gate.py` | QC-5 | `--cov-fail-under=69` por paquete + CRITICAL_HELPERS a 100 % | activado por `pytest --cov` |
+| `app/pytest_plugin/coverage_gate.py` | QC-5 | `--cov-fail-under=69` global + cuatro targets auth exactos a 100 % | activado por `pytest --cov` |
 
 > **QC mapping incompleto**: la tabla arriba es best-effort. El catálogo QC-1..QC-18 vive en `openspec/changes/lanzadera-mvp/design.md`. Este doc no es la fuente; se cruza contra el design para validar la asignación.
 
@@ -135,7 +135,7 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 
 - **SHA de Actions pineados**: las versiones de actions de terceros en `.github/workflows/*.yml` van fijadas por SHA de 40 hex. `scripts/check_workflows.py` enforza esto y exige un `concurrency.group` por job. Actualizar requiere PR explícito.
 - **Wrappers prohibidos**: `|| true`, `continue-on-error`, y cualquier otro wrapper que silencie un fallo están prohibidos en `ci.yml` y en los `check_*.py`. `tests/test_ci_workflow.py` pinea el contrato.
-- **CRITICAL_HELPERS a 100 % cobertura (DA-2 + QC-5)**: `hash_password`, `verify_password`, `issue_reset_token`, `consume_reset_token`, `bootstrap_admin_set_password` y demás helpers de auth deben mantener 100 % de cobertura. El plugin `app/pytest_plugin/coverage_gate.py` falla el build si caen.
+- **Cuatro targets auth a 100 % (DA-2, DA-4 y QC-5)**: `CredentialHasherArgon2id.hash`, `CredentialHasherArgon2id.verify`, `issue_reset_token` y `consume_reset_token`. El plugin falla el build con `session.exitstatus = 1` si cualquiera queda infracubierto.
 - **Migraciones aditivas (D82)**: cada release Alembic es aditiva. El rollback es `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. No se permiten `DROP COLUMN`, `ALTER` destructivos ni `RENAME` en la misma release.
 - **Mutation semanal fuera de PR**: `check_mutation.py` corre desde `security-deep.yml` por cron semanal, no por commit. Cuando la mutation score cae del umbral, el workflow falla y crea issue automático; no bloquea PRs individuales.
 

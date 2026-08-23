@@ -60,8 +60,11 @@ class BaselineEntry:
 # is a ratchet you got wrong. The ratchet target aligns with the DG-11 review
 # date in `openspec/changes/architectural-guards-over-metrics/tasks.md`.
 BASELINE: dict[str, BaselineEntry] = {
+    "app/pytest_plugin/coverage_gate.py": BaselineEntry(
+        sites=109, target=100, target_date="2027-02-13"
+    ),
     "app/pytest_plugin/coverage_gate_helpers.py": BaselineEntry(
-        sites=111, target=100, target_date="2027-02-13"
+        sites=127, target=100, target_date="2027-02-13"
     ),
     # Issue #56 (PR #422) shipped platform_user.py with a single 234-site
     # mutation surface; the deterministic-quality-harness ceiling is 100.

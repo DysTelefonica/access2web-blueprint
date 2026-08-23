@@ -24,7 +24,9 @@ from __future__ import annotations
 
 import importlib
 import os
+import subprocess
 import sys
+from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
@@ -166,7 +168,17 @@ def _make_coverage_data(
     cov_data.measured_files.return_value = measured_files
     cov_data.executable_lines.side_effect = lambda path: executable_lines.get(path, set())
     cov_data.executed_lines.side_effect = lambda path: executed_lines.get(path, set())
-    return SimpleNamespace(_data=cov_data)
+    coverage = MagicMock()
+    coverage._data = cov_data
+    coverage.get_data.return_value = cov_data
+    coverage.analysis2.side_effect = lambda path: (
+        path,
+        sorted(executable_lines.get(path, set())),
+        [],
+        sorted(executable_lines.get(path, set()) - executed_lines.get(path, set())),
+        "",
+    )
+    return coverage
 
 
 def test_module_covered_lines_returns_none_when_no_coverage_data() -> None:
@@ -250,7 +262,7 @@ def _make_session(coverage_data: Any | None) -> Any:
     return session
 
 
-def _make_sessionfinish_sentinel_module() -> tuple[ModuleType, str]:
+def _make_sessionfinish_sentinel_module() -> tuple[ModuleType, str, set[int]]:
     """Build a real ``ModuleType`` carrying one ``__code__``-bearing helper per CRITICAL_HELPER.
 
     The orchestrator iterates CRITICAL_HELPERS and emits a WARNING per missing
@@ -267,14 +279,58 @@ def _make_sessionfinish_sentinel_module() -> tuple[ModuleType, str]:
 
     for helper_name in coverage_gate.CRITICAL_HELPERS:
         setattr(sentinel_module, helper_name, fake_helper)
-    return sentinel_module, fake_helper.__code__.co_filename
+    sentinel_module.CredentialHasherArgon2id = type(  # type: ignore[attr-defined]
+        "CredentialHasherArgon2id", (), {"hash": fake_helper, "verify": fake_helper}
+    )
+    line_span = coverage_gate_helpers._callable_line_span(
+        sentinel_module.CredentialHasherArgon2id,
+        "hash",  # type: ignore[attr-defined]
+    )
+    assert line_span is not None
+    return sentinel_module, fake_helper.__code__.co_filename, line_span
 
 
 def test_sessionfinish_returns_early_when_coverage_disabled() -> None:
     """No coverage on the run means the gate delegates to pytest-cov's global floor."""
     session = _make_session(None)
-    coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+    coverage_gate._enforce_critical_coverage(session, None)
     assert session.exitstatus == 0
+
+
+def test_live_pytest_cov_fails_for_undercovered_exact_target(tmp_path: Path) -> None:
+    (tmp_path / "target_module.py").write_text(
+        "def critical(flag):\n    if flag:\n        return 1\n    return 0\n", encoding="utf-8"
+    )
+    (tmp_path / "test_target.py").write_text(
+        "from target_module import critical\n\ndef test_x():\n    assert critical(True) == 1\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "conftest.py").write_text(
+        "import app.pytest_plugin.coverage_gate as gate\n"
+        'gate.CRITICAL_TARGETS = (("target_module", None, "critical"),)\n',
+        encoding="utf-8",
+    )
+    env = os.environ.copy()
+    env["PYTHONPATH"] = os.pathsep.join(
+        (str(Path(__file__).resolve().parents[2]), env.get("PYTHONPATH", ""))
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-p",
+            "app.pytest_plugin.coverage_gate",
+            "--cov=target_module",
+            "test_target.py",
+        ],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert (result.returncode, "coverage_gate FAIL" in result.stderr) == (1, True)
 
 
 def test_sessionfinish_warns_when_target_module_not_importable(
@@ -305,14 +361,12 @@ def test_sessionfinish_warns_when_target_module_not_importable(
     coverage_gate._try_import = fake_try_import
     try:
         session = _make_session(cov)
-        coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+        coverage_gate._enforce_critical_coverage(session, cov)
     finally:
         coverage_gate._try_import = real_try_import
 
     captured = capsys.readouterr()
-    for module_name in coverage_gate.TARGET_MODULES:
-        for helper_name in coverage_gate.CRITICAL_HELPERS:
-            assert f"'{module_name}.{helper_name}' is not defined yet" in captured.err
+    assert captured.err.count("is not defined yet") == 4
     assert session.exitstatus == 0
 
 
@@ -337,14 +391,12 @@ def test_sessionfinish_warns_and_does_not_fail_when_helper_absent(
     coverage_gate._try_import = fake_try_import
     try:
         session = _make_session(cov)
-        coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+        coverage_gate._enforce_critical_coverage(session, cov)
     finally:
         coverage_gate._try_import = real_try_import
 
     captured = capsys.readouterr()
-    for module_name in coverage_gate.TARGET_MODULES:
-        for helper_name in coverage_gate.CRITICAL_HELPERS:
-            assert f"'{module_name}.{helper_name}' is not defined yet" in captured.err
+    assert captured.err.count("is not defined yet") == 4
     assert session.exitstatus == 0
 
 
@@ -358,7 +410,7 @@ def test_sessionfinish_warns_when_helper_file_not_measured(
     branch; the coverage report deliberately lists a different file so the
     helper is treated as unmeasured.
     """
-    sentinel_module, sentinel_filename = _make_sessionfinish_sentinel_module()
+    sentinel_module, sentinel_filename, _ = _make_sessionfinish_sentinel_module()
     cov = _make_coverage_data(
         measured_files=["other/module.py"],
         executable_lines={"other/module.py": {1}},
@@ -375,7 +427,7 @@ def test_sessionfinish_warns_when_helper_file_not_measured(
     coverage_gate._try_import = fake_try_import
     try:
         session = _make_session(cov)
-        coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+        coverage_gate._enforce_critical_coverage(session, cov)
     finally:
         coverage_gate._try_import = real_try_import
 
@@ -389,11 +441,11 @@ def test_sessionfinish_silent_when_helper_fully_covered(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """100% covered helper: no warning, no failure, exit status unchanged."""
-    sentinel_module, sentinel_filename = _make_sessionfinish_sentinel_module()
+    sentinel_module, sentinel_filename, line_span = _make_sessionfinish_sentinel_module()
     cov = _make_coverage_data(
         measured_files=[sentinel_filename],
-        executable_lines={sentinel_filename: {1, 2, 3}},
-        executed_lines={sentinel_filename: {1, 2, 3}},
+        executable_lines={sentinel_filename: line_span},
+        executed_lines={sentinel_filename: line_span},
     )
 
     real_try_import = coverage_gate._try_import
@@ -406,7 +458,7 @@ def test_sessionfinish_silent_when_helper_fully_covered(
     coverage_gate._try_import = fake_try_import
     try:
         session = _make_session(cov)
-        coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+        coverage_gate._enforce_critical_coverage(session, cov)
     finally:
         coverage_gate._try_import = real_try_import
 
@@ -419,11 +471,11 @@ def test_sessionfinish_fails_when_helper_under_covered(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """Hard Rule 8: under-covered helper mutates ``session.exitstatus`` to 1."""
-    sentinel_module, sentinel_filename = _make_sessionfinish_sentinel_module()
+    sentinel_module, sentinel_filename, line_span = _make_sessionfinish_sentinel_module()
     cov = _make_coverage_data(
         measured_files=[sentinel_filename],
-        executable_lines={sentinel_filename: {1, 2, 3, 4}},
-        executed_lines={sentinel_filename: {1}},
+        executable_lines={sentinel_filename: line_span},
+        executed_lines={sentinel_filename: line_span - {max(line_span)}},
     )
 
     real_try_import = coverage_gate._try_import
@@ -436,7 +488,7 @@ def test_sessionfinish_fails_when_helper_under_covered(
     coverage_gate._try_import = fake_try_import
     try:
         session = _make_session(cov)
-        coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+        coverage_gate._enforce_critical_coverage(session, cov)
     finally:
         coverage_gate._try_import = real_try_import
 
@@ -462,6 +514,9 @@ def test_sessionfinish_skips_helper_without_code_object(
 
     for helper_name in coverage_gate.CRITICAL_HELPERS:
         setattr(sentinel_module, helper_name, NoCode())
+    sentinel_module.CredentialHasherArgon2id = type(  # type: ignore[attr-defined]
+        "CredentialHasherArgon2id", (), {"hash": NoCode(), "verify": NoCode()}
+    )
 
     cov = _make_coverage_data(
         measured_files=[],
@@ -479,7 +534,7 @@ def test_sessionfinish_skips_helper_without_code_object(
     coverage_gate._try_import = fake_try_import
     try:
         session = _make_session(cov)
-        coverage_gate.pytest_sessionfinish(session, exitstatus=0)
+        coverage_gate._enforce_critical_coverage(session, cov)
     finally:
         coverage_gate._try_import = real_try_import
 
@@ -631,7 +686,9 @@ def test_helpers_evaluate_helper_returns_none_pair_when_fully_covered() -> None:
         executable_lines={"some/file.py": {1, 2}},
         executed_lines={"some/file.py": {1, 2}},
     )
-    warning, failure = coverage_gate_helpers._evaluate_helper("some/file.py", "app.x", "h", cov)
+    warning, failure = coverage_gate_helpers._evaluate_helper(
+        "some/file.py", "app.x", "h", cov, {1, 2}
+    )
     assert warning is None
     assert failure is None
 
@@ -643,7 +700,9 @@ def test_helpers_evaluate_helper_returns_warning_when_not_measured() -> None:
         executable_lines={},
         executed_lines={},
     )
-    warning, failure = coverage_gate_helpers._evaluate_helper("some/file.py", "app.x", "h", cov)
+    warning, failure = coverage_gate_helpers._evaluate_helper(
+        "some/file.py", "app.x", "h", cov, {1}
+    )
     assert warning is not None
     assert "not measured" in warning
     assert failure is None
@@ -656,7 +715,9 @@ def test_helpers_evaluate_helper_returns_failure_when_under_covered() -> None:
         executable_lines={"some/file.py": {1, 2, 3, 4}},
         executed_lines={"some/file.py": {1}},
     )
-    warning, failure = coverage_gate_helpers._evaluate_helper("some/file.py", "app.x", "h", cov)
+    warning, failure = coverage_gate_helpers._evaluate_helper(
+        "some/file.py", "app.x", "h", cov, {1, 2, 3, 4}
+    )
     assert warning is None
     assert failure is not None
     assert "FAIL" in failure

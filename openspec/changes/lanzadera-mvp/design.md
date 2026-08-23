@@ -114,8 +114,7 @@ access2web-blueprint/
 │   │   ├── test_gate_smoke.py        # QC-18 — smoke de cada gate
 │   │   ├── test_no_legacy_in_auth.py # DA-13 — AST pinning
 │   │   └── lanzadera/
-│   │       ├── auth/test_hash_password.py
-│   │       ├── auth/test_verify_password.py
+│   │       ├── adapters/crypto/test_credential_hasher_argon2id.py
 │   │       ├── auth/test_issue_reset_token.py
 │   │       ├── auth/test_consume_reset_token.py
 │   │       ├── auth/test_no_legacy_compat.py
@@ -150,7 +149,7 @@ Las decisiones DA-* numeran el contrato que este `change` concreta. Cada fila de
 | ID | Decisión | Rationale | Alternativa descartada | Heredada |
 |---|---|---|---|---|
 | DA-1 | Capas `domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/` con `ALLOWED_IMPORTS` estricto y `PURE_LAYERS = {"domain", "ports", "application"}`; `ROOT_PACKAGE = "app.src.modules"` para `check_layers.py`; slicing vertical prohibido entre módulos salvo `shared` exento. | D8 exige hexagonal global; sin gate, la declaración queda en prosa y se viola sin huella (QC-9). | Sin gate: el hexagonal se «declara» y se viola silenciosamente (issue APAP_WEB #436). | D8, QC-2, QC-9 |
-| DA-2 | Auth con Argon2id vía `argon2-cffi==25.1.0`, perfil `RFC_9106_LOW_MEMORY` (Argon2id, 64 MiB, 3 iteraciones, 4 hilos). `hash_password` y `verify_password` declarados `CRITICAL_HELPERS` al 100 % de cobertura (QC-5). | OWASP 2024 sitúa Argon2id como primera opción (memory-hard, resistente a GPU/ASIC). SHA256 sin salt del legacy no cumple estándares modernos (H1, resuelto). | bcrypt (`bcrypt==4.x`) — menos resistente a GPU que Argon2id; scrypt — sin bindings mantenidos en Python 3.12. | D88, D9, QC-5 |
+| DA-2 | Auth con Argon2id vía `argon2-cffi==25.1.0`, perfil `RFC_9106_LOW_MEMORY` (Argon2id, 64 MiB, 3 iteraciones, 4 hilos). QC-5 exige 100 % en `CredentialHasherArgon2id.hash` y `.verify`. | OWASP 2024 sitúa Argon2id como primera opción (memory-hard, resistente a GPU/ASIC). SHA256 sin salt del legacy no cumple estándares modernos (H1, resuelto). | bcrypt (`bcrypt==4.x`) — menos resistente a GPU que Argon2id; scrypt — sin bindings mantenidos en Python 3.12. | D88, D9, QC-5 |
 | DA-3 | Schema `users.password_hash` NULL por defecto; `users.status` ENUM (`active`, `disabled`, `password_reset_required`, `locked`); **sin** columna `legacy_hash`, `password_legacy` ni `pass_hash_v1`. La columna `users.password_hash` se queda `NULL` para los 156 usuarios migrados; el flag `status='password_reset_required'` los bloquea hasta `consume_reset_token`. | D89 sustituye D36+D37 (obsoletos). Sin doble algoritmo, no hay superficie de ataque para un hash heredado sin sal. Migración 0004 no escribe hashes: el reset flow los crea (D88+D90). | Mantener `legacy_hash` + adapter de verificación legacy — rechazado por H1 (SHA256-hex sin sal no cumple OWASP 2024). | D89, D9 |
 | DA-4 | Reset flow con tabla `reset_tokens` (`id`, `user_id`, `token_hash`, `expires_at`, `consumed_at`, `superseded_at`); `issue_reset_token(user_id) -> str` y `consume_reset_token(token, new_password) -> bool` atómicos y single-use; expiración 24 h; supersession al re-emitir; emisión del token crudo vía `NotificationDeliveryPort`. Ambos helpers declarados `CRITICAL_HELPERS`. | D90 exige tokens one-time de 24 h. La atomicidad previene reuso (race condition entre SELECT y UPDATE). El supersession anula el token anterior cuando el usuario pide otro. | Tokens JWT firmados — sin caducidad server-side fiable; sesiones persistentes con token persistente — no son one-time. | D90, D25, QC-5 |
 | DA-5 | CLI `gentle-ai platform user set-password <email>` como camino **exclusivo** para crear el primer global admin antes de cualquier reset flow por email. El subcomando aplica Argon2id, marca `status='active'`, añade fila a `global_admins` y emite auditoría `auth.bootstrap.set_password`. | D91 cierra el bootstrap: el sistema no puede emitir tokens por email antes de tener un admin global que no haya pasado por email. | Reset flow auto-iniciado — rechazado por auth-reset (no_global_admin guard). | D25, D91 |
@@ -173,7 +172,7 @@ Cada fila declara el puerto (interfaz `Protocol`), el adapter MVP que lo impleme
 | `AppRepositoryPort` | `async def get_by_id(app_id: int) -> App | None`; `async def list_active() -> Sequence[App]`; `async def list_visible_to(user_id: UUID) -> Sequence[App]`. | `AppRepositoryPg`; cachea `list_active` vía `CachePort` (DA-8). | `tests/lanzadera/apps/test_app_repository_contract.py`. |
 | `ProfileRepositoryPort` | `async def list_for_app(app_id: int) -> Sequence[Profile]`; `async def get_by_code(app_id: int, code: str) -> Profile | None`; `async def create(profile: Profile) -> None`; `async def set_active(profile_id: UUID, active: bool) -> None`. | `ProfileRepositoryPg`; cachea `list_for_app` con TTL 5 min (DA-8). | `tests/lanzadera/profiles/test_profile_repository_contract.py`. |
 | `AssignmentRepositoryPort` | `async def create(user_id: UUID, app_id: int, profile_id: UUID) -> None`; `async def list_for_user(user_id: UUID) -> Sequence[Assignment]`; `async def list_for_app(app_id: int) -> Sequence[Assignment]`; `async def effective_permissions(user_id: UUID, app_id: int) -> Sequence[str]`. | `AssignmentRepositoryPg`; cachea `effective_permissions` por `(user_id, app_id)` con TTL 60 s e invalidación al mutar. | `tests/lanzadera/assignments/test_assignment_repository_contract.py`; incluye `test_sinacceso_exclusivity.py` (cardinalidad H11). |
-| `CredentialHasherPort` | `def hash_password(plain: str) -> str`; `def verify_password(plain: str, hashed: str) -> bool`. | `CredentialHasherArgon2id` con `argon2-cffi==25.1.0` perfil `RFC_9106_LOW_MEMORY` (m=65536, t=3, p=4). | `tests/lanzadera/auth/test_hash_password.py` + `test_verify_password.py` (CRITICAL_HELPERS). |
+| `PasswordHasher` | `async def hash(password: str) -> str`; `async def verify(password: str, password_hash: str) -> bool`. | `CredentialHasherArgon2id` con `argon2-cffi==25.1.0` perfil `RFC_9106_LOW_MEMORY` (m=65536, t=3, p=4). | `tests/lanzadera/adapters/crypto/test_credential_hasher_argon2id.py` (dos targets QC-5). |
 | `ResetTokenRepositoryPort` | `async def insert(user_id: UUID, token_hash: str, expires_at: datetime) -> None`; `async def find_unused(token_hash: str) -> ResetToken | None`; `async def mark_consumed(token_hash: str, at: datetime) -> None`; `async def mark_superseded(user_id: UUID, at: datetime) -> None`; `async def purge_expired(now: datetime) -> int`. | `ResetTokenRepositoryPg`; unicidad por `token_hash`; índice en `(user_id, expires_at)`. | `tests/lanzadera/auth/test_issue_reset_token.py` + `test_consume_reset_token.py` (CRITICAL_HELPERS, atómicos). |
 | `NotificationDeliveryPort` | `async def send(to: str, subject: str, body: str) -> None`. | `MailQueueTableAdapter`: inserta fila en `mail_outbox` con `status='pending'`. | `tests/lanzadera/notifications/test_mail_queue_contract.py`. |
 | `LocationPort` | `async def is_user_in_office(user_id: UUID) -> bool`. | `AssumeInOfficeAdapter` devuelve `True` (DA-9, H12). | `tests/lanzadera/test_assume_in_office.py` (asserts explícito del stub). |
@@ -218,7 +217,7 @@ El usuario migrado entra con `password_hash = NULL` y `status = 'password_reset_
          │           ├─→ ports/NotificationDeliveryPort.send  → adapters/notification/mail_queue_table_adapter
          │           └─→ ports/AuditLogPort.append  (en la misma transacción)
          └─ En caso contrario:
-               ├─→ ports/CredentialHasherPort.verify_password  (CRITICAL_HELPER, D88)
+               ├─→ ports/PasswordHasher.verify  (target QC-5, D88)
                ├─ Si ok → ports/AuditLogPort.append('auth.login.success')
                └─ Si nok → contador de fallos; al 5º, ports/UserRepositoryPort.update_status('locked') + audit 'auth.lockout' (D38-D40)
 ```
@@ -232,7 +231,7 @@ El usuario llega al endpoint público `/reset` con el token crudo (string) recib
     └─→ application/consume_reset_token.py  (CRITICAL_HELPER, D90)
          ├─→ ports/ResetTokenRepositoryPort.find_unused(token_hash)
          ├─ Si hash desconocido / expirado / superseded / consumido → return False
-         ├─→ ports/CredentialHasherPort.hash_password(new_password)  (D88, RFC_9106_LOW_MEMORY)
+         ├─→ ports/PasswordHasher.hash(new_password)  (D88, RFC_9106_LOW_MEMORY)
          ├─→ ports/UserRepositoryPort.update(user_id, password_hash, status='active')
          ├─→ ports/ResetTokenRepositoryPort.mark_consumed(token_hash, now)
          └─→ ports/AuditLogPort.append('auth.reset.consumed')
@@ -257,7 +256,7 @@ El operador arranca la plataforma por primera vez con `GLOBAL_ADMIN_EMAILS` defi
     └─→ delivery/cli/platform_user.py
          └─→ application/set_password.py
               ├─→ ports/UserRepositoryPort.get_by_email
-              ├─→ ports/CredentialHasherPort.hash_password(new_password)  (D88)
+              ├─→ ports/PasswordHasher.hash(new_password)  (D88)
               ├─→ ports/UserRepositoryPort.update(password_hash, status='active')
               ├─→ ports/GlobalAdminRepositoryPort.grant(user_id)  (D91, primer admin)
               └─→ ports/AuditLogPort.append('auth.bootstrap.set_password')
@@ -292,7 +291,7 @@ Los doce gates del MVP se commitean antes del primer `git commit` de código de 
 |---|---|---|---|
 | Lint base (`ruff check .`) | `pyproject.toml` `[tool.ruff]` con `select = ["E","F","W","I","UP","B"]`, pin exacto `ruff==0.15.21`. | `pyproject.toml`, `.github/workflows/ci.yml`. | QC-3 |
 | Typecheck (`mypy app/src/`) | `pyproject.toml` `[tool.mypy]` con `python_version = "3.12"`, `enable_error_code = ["ignore-without-code"]`, `disallow_untyped_defs = true`. Pin `mypy==1.13.0`. | `pyproject.toml`. | QC-4 |
-| Tests + cobertura (`pytest --cov=platform --cov-fail-under=85`) | `pyproject.toml` `[tool.coverage]` + `scripts/pytest_plugin/coverage_gate.py`. CRITICAL_HELPERS al 100 % vía `pytest_sessionfinish` mutando `session.exitstatus`. | `pyproject.toml`, `scripts/pytest_plugin/coverage_gate.py`, `.github/workflows/ci.yml`. | QC-5 |
+| Tests + cobertura (`pytest --cov=app --cov-fail-under=69`) | `app/pyproject.toml` + `app/pytest_plugin/coverage_gate.py`. Cuatro callables auth al 100 % mediante un wrapper `pytest_runtestloop` try-last que usa el fixture `cov` y `Coverage.analysis2`. | `app/pyproject.toml`, `app/pytest_plugin/coverage_gate.py`, `.github/workflows/ci.yml`. | QC-5 |
 | Hexagonal layer gate (`python scripts/check_layers.py`) | AST walk; `ROOT_PACKAGE = "app.src.modules"`; `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados en DA-1; slicing vertical prohibido entre módulos salvo `shared` exento. | `scripts/check_layers.py`, `tests/lanzadera/test_layers_wiring.py`. | QC-2, QC-9, DA-1 |
 | Complexity ceiling (`python scripts/check_complexity.py`) | AST + CC por función; **techo absoluto global `CC ≤ 15`** (QC-10). Nunca `top-N`. | `scripts/check_complexity.py`, `tests/lanzadera/test_complexity_wiring.py`. | QC-1 derivado, QC-10 |
 | CRAP ceiling (`python scripts/check_crap.py`) | `CC² · (1 − cobertura)³ + CC` por función, techo `≤ 6` (QC-11). Consume `coverage.json`; falla cerrado si no existe. | `scripts/check_crap.py`. | QC-11 |
@@ -309,13 +308,12 @@ Ningún step lleva `continue-on-error: true` ni `|| true` (Hard Rule 1 de `deter
 
 ## Tests y TDD
 
-La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`, `rules.apply.test_command: pytest --cov=platform --cov-fail-under=85`). El orden de adopción es el del plan por día de `docs/calidad-de-codigo-y-ci.md`. Los archivos siguientes son los que el MVP debe tener antes del primer `git commit` de código de `lanzadera.auth`.
+La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`; comando vivo: `pytest --cov=app --cov-fail-under=69`). El orden de adopción es el del plan por día de `docs/calidad-de-codigo-y-ci.md`. Los archivos siguientes son los que el MVP debe tener antes del primer `git commit` de código de `lanzadera.auth`.
 
 | Archivo de test | Verifica | Decisión / Spec |
 |---|---|---|
 | `tests/test_ci_workflow.py` | Parsea `.github/workflows/ci.yml` y assertea la presencia de cada step de gate; cualquier改名 o borrado rompe el test. | QC-9, Hard Rule 4 (wiring pin). |
-| `tests/lanzadera/auth/test_hash_password.py` | `hash_password` produce un PHC string Argon2id con `m=65536, t=3, p=4`; dos invocaciones con el mismo input producen hashes distintos (salt aleatorio); cobertura al 100 % del helper. | D88, DA-2, QC-5. |
-| `tests/lanzadera/auth/test_verify_password.py` | `verify_password(plain, hash)` devuelve `True` para el par canónico y `False` ante cualquier perturbación; hash vacío o `None` lanzan `ValueError` (no se ejecuta Argon2id contra hash nulo). | D88, DA-2, QC-5. |
+| `tests/lanzadera/adapters/crypto/test_credential_hasher_argon2id.py` | `CredentialHasherArgon2id.hash` produce PHC Argon2id con salt aleatorio; `.verify` acepta el par canónico, rechaza perturbaciones y no procesa hashes vacíos. | D88, DA-2, QC-5. |
 | `tests/lanzadera/auth/test_issue_reset_token.py` | `issue_reset_token(user_id)` persiste `token_hash`, `expires_at = now + 24h`, `consumed_at = NULL`, `superseded_at = NULL`; invoca `NotificationDeliveryPort.send` exactamente una vez; rechaza con `no_global_admin` cuando `global_admins` está vacío (salvo para `set-password` ya ejecutado). | D90, DA-4, QC-5. |
 | `tests/lanzadera/auth/test_consume_reset_token.py` | `consume_reset_token(token, new_password)` actualiza `password_hash` y `status='active'` atómicamente; marca `consumed_at`; rechaza tokens desconocidos, expirados, superseded o ya consumidos; la transacción rollbackea si la auditoría falla. | D90, DA-4, DA-11, QC-5. |
 | `tests/lanzadera/auth/test_no_legacy_compat.py` | AST walk sobre `app/src/modules/lanzadera/auth/` y `app/src/`; falla si encuentra los símbolos `legacy_hash`, `verify_legacy`, `sha256`, `old_password`, `migrate_password`. Se ejecuta como test pytest normal; la presencia de cualquiera de esos nombres falla el suite. | D88, D89, DA-13. |
@@ -326,7 +324,7 @@ La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`, `rul
 | `tests/lanzadera/test_no_legacy_in_auth.py` | Wrapper del `test_no_legacy_compat.py` con scope global a `app/src/` (defense-in-depth si se introduce un nuevo módulo con auth). | D88, DA-13. |
 | `tests/test_gate_smoke.py` | Cada script `check_*.py` se invoca con un fixture que viola su contrato; se assertea exit `1` y se valida el envelope JSON. | Hard Rule 18, Execution Step 5. |
 
-Los cuatro archivos `test_hash_password.py`, `test_verify_password.py`, `test_issue_reset_token.py`, `test_consume_reset_token.py` declaran `CRITICAL_HELPERS` y elevan la cobertura local al 100 % antes de admitir el helper en `coverage_gate.py` (QC-5). El orden de implementación sigue la curva RED → GREEN → REFACTOR; el refactor posterior nunca introduce duplicación detectable por `check_dry.py`.
+Los tests del adapter Argon2id y de los dos servicios reset elevan los cuatro targets exactos al 100 % antes de admitirlos en `coverage_gate.py` (QC-5). El orden de implementación sigue la curva RED → GREEN → REFACTOR.
 
 ## Riesgos de implementación
 
@@ -371,7 +369,7 @@ Objetivo: gates hexagonales activos y `lanzadera.auth` implementado con strict T
 - Día 3 (8 h). Copia literal de `assets/scripts/check_layers.py` desde `deterministic-quality-harness`; ajustar `ROOT_PACKAGE = "app.src.modules"`; declarar `ALLOWED_IMPORTS` y `PURE_LAYERS` (DA-1). Wiring en CI. `tests/lanzadera/test_layers_wiring.py`.
 - Día 4 (3 h). `check_complexity.py` con techo absoluto `CC ≤ 15`. Wiring. `tests/lanzadera/test_complexity_wiring.py`.
 - Día 5 (1 h). Convenciones operativas en `AGENTS.md` raíz (Conf-1 a Conf-8).
-- Día 6 (TDD). Primer módulo `app.src.modules.lanzadera.auth` con strict TDD: RED → GREEN → REFACTOR para `hash_password`, `verify_password`, `issue_reset_token`, `consume_reset_token`. Cobertura CRITICAL_HELPERS al 100 %. `test_no_legacy_compat.py` pinea la ausencia de legacy.
+- Día 6 (TDD). Primer módulo auth con strict TDD: RED → GREEN → REFACTOR para `CredentialHasherArgon2id.hash`, `.verify`, `issue_reset_token` y `consume_reset_token`. QC-5 exige 100 % en los cuatro targets.
 
 Salida de fase: `make quality-report` limpio; `coverage_gate` exige 100 % sobre los cuatro CRITICAL_HELPERS.
 
@@ -427,9 +425,9 @@ Gaps cerrados por este diseño: G-1 (DA-3), G-3 (DA-7). G-2, G-4, G-5, G-6, G-7,
 
 Si alguno de estos puntos falta, `sdd-tasks` debe marcarlo como `##ABIERTO##` en el primer ticket del lote, no avanzar en silencio.
 
-## Contratos críticos (firma exacta de los `CRITICAL_HELPERS`)
+## Targets críticos de QC-5
 
-Los cuatro helpers declarados `CRITICAL_HELPERS` se escriben en `app/src/modules/lanzadera/application/` como funciones puras o casos de uso. Las firmas siguen los contratos de los sub-specs. El coverage gate exige 100 % de líneas ejecutadas sobre cada uno (QC-5). El pin test `test_no_legacy_compat.py` rechaza cualquier import que reintroduzca SHA256 u `old_password` en el árbol.
+QC-5 evalúa exactamente `CredentialHasherArgon2id.hash`, `CredentialHasherArgon2id.verify`, `issue_reset_token` y `consume_reset_token`. Los dos primeros se resuelven sobre la clase; los otros dos, sobre sus módulos. Los bloques siguientes conservan el pseudocódigo de diseño y no definen el lookup del gate.
 
 ```python
 # app/src/modules/lanzadera/ports/credential_hasher.py
@@ -440,12 +438,12 @@ from typing import Protocol
 class CredentialHasherPort(Protocol):
     """Argon2id via argon2-cffi==25.1.0 profile RFC_9106_LOW_MEMORY (D88)."""
 
-    def hash_password(self, plain: str) -> str: ...
-    def verify_password(self, plain: str, hashed: str) -> bool: ...
+    async def hash(self, password: str) -> str: ...
+    async def verify(self, password: str, password_hash: str) -> bool: ...
 ```
 
 ```python
-# app/src/modules/lanzadera/application/issue_reset_token.py
+# OBSOLETO: boceto previo a W07; ruta y firmas retiradas.
 from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import secrets
@@ -460,13 +458,13 @@ def _hasher() -> PasswordHasher:
     return PasswordHasher(**PHC_PARAMS)
 
 
-def hash_password(plain: str) -> str:
+def removed_pre_w07_hash_signature(plain: str) -> str:
     if not plain:
         raise ValueError("plain must be non-empty")
     return _hasher().hash(plain)
 
 
-def verify_password(plain: str, hashed: str) -> bool:
+def removed_pre_w07_verify_signature(plain: str, hashed: str) -> bool:
     if not hashed:
         return False
     try:
@@ -476,14 +474,14 @@ def verify_password(plain: str, hashed: str) -> bool:
 ```
 
 ```python
-# app/src/modules/lanzadera/application/consume_reset_token.py
+# OBSOLETO: boceto previo a W07; ruta y firmas retiradas.
 from __future__ import annotations
 import hashlib
 from datetime import datetime, timezone
 from uuid import UUID
 
 from app.src.modules.lanzadera.ports.audit_log import AuditLogPort
-from app.src.modules.lanzadera.ports.credential_hasher import hash_password
+# OBSOLETO: el import de la función libre se retiró en W07.
 from app.src.modules.lanzadera.ports.reset_token_repository import ResetTokenRepositoryPort
 from app.src.modules.lanzadera.ports.user_repository import UserRepositoryPort
 
@@ -526,7 +524,7 @@ async def consume_reset_token(
     record = await reset_tokens.find_unused(token_hash=token_hash, now=datetime.now(timezone.utc))
     if record is None:
         return False
-    new_hash = hash_password(new_password)
+    new_hash = await hasher.hash(new_password)
     await users.set_password_and_activate(user_id=record.user_id, password_hash=new_hash)
     await reset_tokens.mark_consumed(token_hash=token_hash, at=datetime.now(timezone.utc))
     await audit.append(event_type="auth.reset.consumed", actor_id=record.user_id)
@@ -553,7 +551,7 @@ docker compose up -d postgres
 alembic upgrade head
 
 # 4. Ejecutar suite
-pytest --cov=platform --cov-fail-under=85
+pytest --cov=app --cov-fail-under=69
 
 # 5. Smoke del gate hexagonal
 python scripts/check_layers.py --root .
@@ -629,7 +627,7 @@ Las ocho convenciones de `docs/calidad-de-codigo-y-ci.md` §Convenciones operati
 | Conf-5 | `from __future__ import annotations` en cada `.py`. | Cada archivo del módulo y de los tests empieza con esa línea; lo verifica `ruff format --check`. |
 | Conf-6 | PR ≤ 400 líneas; nombre de rama `^(feat\|fix\|refactor\|docs\|ci\|test)/<n>-<slug>$`. | `check_pr_size.py` mide `git diff --stat` con CRLF normalizado a LF; `check_branch_name.py` aplica la regex. Override `size:exception` exige justificación en el cuerpo de PR (Hard Rule 11 — segregación de roles). |
 | Conf-7 | Migraciones siempre backward-compatibles con estrategia Expand and Contract. | 0001-0006 son aditivas; ninguna tira columnas legacy. El Contract exige dos releases según D82. |
-| Conf-8 | `coverage_gate.py` marca los `CRITICAL_HELPERS` del módulo. | `CRITICAL_HELPERS = ["hash_password", "verify_password", "issue_reset_token", "consume_reset_token"]` declarados en `scripts/pytest_plugin/coverage_gate.py`. La función `pytest_sessionfinish` muta `session.exitstatus` (Hard Rule 8). |
+| Conf-8 | `coverage_gate.py` marca cuatro callables auth exactos. | `CRITICAL_TARGETS` declara dos métodos de `CredentialHasherArgon2id` y dos servicios de reset. El wrapper `pytest_runtestloop` try-last usa el fixture `cov` y `Coverage.analysis2`. |
 
 ## Referencias
 
@@ -652,7 +650,7 @@ Las ocho convenciones de `docs/calidad-de-codigo-y-ci.md` §Convenciones operati
 - [ ] Los dos gaps adicionales detectados (G-7 peso de `SinAcceso` en menú, G-8 retención definitiva) están registrados.
 - [ ] Las seis migraciones Alembic 0001-0006 siguen Expand and Contract (D82); la 0004 deja `password_hash = NULL`; la 0006 omite SSID/ubicación/coordenadas.
 - [ ] El gate hexagonal `check_layers.py` está dimensionado con `ROOT_PACKAGE = "app.src.modules"`, `ALLOWED_IMPORTS` y `PURE_LAYERS` declarados.
-- [ ] Los cuatro `CRITICAL_HELPERS` (`hash_password`, `verify_password`, `issue_reset_token`, `consume_reset_token`) están listados con cobertura al 100 % (QC-5).
+- [ ] Los cuatro targets (`CredentialHasherArgon2id.hash`, `.verify`, `issue_reset_token`, `consume_reset_token`) están listados con cobertura al 100 % (QC-5).
 - [ ] Los doce quality gates aparecen wired en `ci.yml`, pinned por `tests/test_ci_workflow.py` y commiteados antes del primer `git commit` de código de aplicación.
 - [ ] El tono es Castellano peninsular formal en el cuerpo narrativo; inglés en nombres de archivo, código y secciones técnicas.
 - [ ] No se crean archivos `tasks.md` ni `archive.md` en este `change` (los abren `sdd-tasks` y `sdd-archive`).

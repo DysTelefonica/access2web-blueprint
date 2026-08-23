@@ -156,6 +156,17 @@ async def test_unknown_token_raises_invalid_error():
         await _consume(deps, raw="totally-unknown")
 
 
+async def test_unknown_token_without_inspection_hook_is_invalid():
+    class OpaqueTokens:
+        async def find_unused(self, token_hash, now):
+            return None
+
+    deps = list(_seed())
+    deps[2] = OpaqueTokens()
+    with pytest.raises(InvalidResetTokenError):
+        await _consume(tuple(deps), raw="totally-unknown")
+
+
 # -- Rollback on hash failure -----------------------------------------------
 
 

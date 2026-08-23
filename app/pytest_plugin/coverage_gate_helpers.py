@@ -15,6 +15,9 @@ stays testable in isolation and pytest does not auto-load it as a plugin.
 
 from __future__ import annotations
 
+import inspect
+from pathlib import Path
+
 # --------------------------------------------------------------------------------------------
 # Coverage lookup
 # --------------------------------------------------------------------------------------------
@@ -85,7 +88,7 @@ def _not_measured_warning(module_name: str, helper_name: str, file_path: str) ->
 
 
 def _under_coverage_failure(module_name: str, helper_name: str, missing: set[int]) -> str:
-    """Helper exists and is below 100% branch coverage on at least one line."""
+    """Helper exists with at least one uncovered executable statement."""
     return (
         f"coverage_gate FAIL: '{module_name}.{helper_name}' is missing "
         f"{len(missing)} executed line(s): {sorted(missing)[:5]}..."
@@ -114,11 +117,23 @@ def _resolve_helper(module, module_name: str, helper_name: str) -> tuple[str | N
     return helper_file.co_filename, None
 
 
+def _callable_line_span(owner, helper_name: str) -> set[int] | None:
+    helper = getattr(owner, helper_name, None)
+    if helper is None:
+        return None
+    try:
+        source, start = inspect.getsourcelines(inspect.unwrap(helper))
+    except (OSError, TypeError):
+        return None
+    return set(range(start, start + len(source)))
+
+
 def _evaluate_helper(
     file_path: str,
     module_name: str,
     helper_name: str,
     coverage_data,
+    line_span: set[int],
 ) -> tuple[str | None, str | None]:
     """Return ``(warning, failure)`` for one present helper's coverage check.
 
@@ -127,11 +142,19 @@ def _evaluate_helper(
     carries a "missing lines" message when the file was measured but under
     100%.
     """
-    executed = _module_covered_lines(coverage_data, file_path)
-    executable = _module_total_executable(coverage_data, file_path)
-    if executed is None or executable is None:
+    expected_path = Path(file_path).resolve()
+    measured_file = next(
+        (
+            path
+            for path in coverage_data.get_data().measured_files()
+            if Path(path).resolve() == expected_path
+        ),
+        None,
+    )
+    if measured_file is None:
         return _not_measured_warning(module_name, helper_name, file_path), None
-    missing = executable - executed
+    _, executable, _, missing_lines, _ = coverage_data.analysis2(measured_file)
+    missing = set(missing_lines) & set(executable) & line_span
     if missing:
         return None, _under_coverage_failure(module_name, helper_name, missing)
     return None, None

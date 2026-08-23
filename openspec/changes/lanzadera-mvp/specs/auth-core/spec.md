@@ -4,7 +4,7 @@
 
 ## Purpose
 
-Esta specification describe el núcleo del dominio `auth`: hashing Argon2id, verificación, lockout configurable, persistencia de credenciales sin legacy. Cubre `hash_password`, `verify_password`, lockout y la regla "no legacy verification path exists". No cubre reset de密码 (ver `auth-reset`); no cubre bootstrap CLI del primer admin (ver `auth-bootstrap`); no cubre identidad del usuario (ver `users`); no cubre sesiones web persistentes.
+Esta specification describe el núcleo del dominio `auth`: hashing Argon2id, verificación, lockout configurable y persistencia de credenciales sin legacy. Cubre `CredentialHasherArgon2id.hash`, `.verify`, lockout y la regla «no legacy verification path exists». No cubre reset de contraseña (ver `auth-reset`), bootstrap CLI, identidad ni sesiones web persistentes.
 
 Decisiones de origen: D9, D38, D39, D40, D42, D88, D89.
 
@@ -16,16 +16,16 @@ The system SHALL hash every password with Argon2id via `argon2-cffi==25.1.0` usi
 
 #### Scenario: Hash uses Argon2id with the pinned profile
 
-- GIVEN `hash_password(plain) -> str` is invoked
+- GIVEN `await CredentialHasherArgon2id.hash(plain) -> str` is invoked
 - WHEN the helper computes the hash
 - THEN the produced string is the Argon2id PHC string with embedded parameters m=65536, t=3, p=4
 
 #### Scenario: Verify accepts matching plaintext and rejects wrong
 
-- GIVEN `password_hash = hash_password('correct horse battery staple')`
-- WHEN `verify_password('correct horse battery staple', password_hash)` runs
+- GIVEN `password_hash = await CredentialHasherArgon2id.hash('correct horse battery staple')`
+- WHEN `await CredentialHasherArgon2id.verify('correct horse battery staple', password_hash)` runs
 - THEN the helper returns `true`
-- AND `verify_password('wrong', password_hash)` returns `false`
+- AND `await CredentialHasherArgon2id.verify('wrong', password_hash)` returns `false`
 
 #### Scenario: Schema forbids legacy hash column
 
