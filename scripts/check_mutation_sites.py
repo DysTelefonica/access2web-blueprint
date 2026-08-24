@@ -90,13 +90,13 @@ BASELINE: dict[str, BaselineEntry] = {
     # is responsible for bringing each below 100. The three sites are
     # recorded as the count the W01 implementation actually emits.
     "app/src/modules/lanzadera/adapters/persistence/repositories/user_repository_pg.py": (
-        BaselineEntry(sites=148, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=145, target=100, target_date="2027-02-13")
     ),
     "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
         BaselineEntry(sites=148, target=100, target_date="2027-02-13")
     ),
     "app/src/modules/lanzadera/adapters/persistence/repositories/profile_repository_pg.py": (
-        BaselineEntry(sites=117, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=115, target=100, target_date="2027-02-13")
     ),
     # W02 (#45): the AssignmentRepositoryPg carries the largest
     # mutation surface of any adapter so far because it owns the
@@ -106,14 +106,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # into a base class, planned alongside the AuthenticationAdapter
     # W03) is responsible for bringing it below 100.
     "app/src/modules/lanzadera/adapters/persistence/repositories/assignment_repository_pg.py": (
-        BaselineEntry(sites=204, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=203, target=100, target_date="2027-02-13")
     ),
     # W03 (#55): AuditLogPg carries two methods (append + list_for_actor)
     # plus the table reflection and the row-to-dataclass mapper. The
     # current count is just over the 100 ceiling; W03's next step is
     # the same prelude-cleave that W01+W02 are pinned for.
     "app/src/modules/lanzadera/adapters/persistence/repositories/audit_log_pg.py": (
-        BaselineEntry(sites=108, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=107, target=100, target_date="2027-02-13")
     ),
     # W05 (#42-subset): the fifth and final Postgres adapter for
     # the WU AD2 chain. ResetTokenRepositoryPg has 5 methods
@@ -123,7 +123,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # (cleaving the prelude into a base class) is responsible for
     # bringing it below 100.
     "app/src/modules/lanzadera/adapters/persistence/repositories/reset_token_repository_pg.py": (
-        BaselineEntry(sites=141, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=137, target=100, target_date="2027-02-13")
     ),
 }
 
