@@ -101,7 +101,6 @@ BASELINE: dict[str, BaselineEntry] = {
     # WU in the chain that grows the count is rejected by the ratchet.
     "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     "dup:110a87c35376": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
-    "dup:ce4650821098": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
     # W32 (#467) extracted the SQLAlchemy + typing prelude and the
     # ``async_session_factory`` symbols into
     # ``_pg_imports.py``; each Postgres adapter now collapses to a
