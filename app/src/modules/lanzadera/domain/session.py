@@ -12,9 +12,11 @@ of the domain.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
-from uuid import UUID
+from app.src.modules.lanzadera.domain._imports import (
+    UUID,
+    dataclass,
+    datetime,
+)
 
 
 @dataclass(frozen=True)
