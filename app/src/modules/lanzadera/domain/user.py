@@ -16,10 +16,12 @@ D89 + DA-3: `password_hash` is `NULL` until `consume_reset_token` succeeds.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
-from enum import StrEnum
-from uuid import UUID
+from app.src.modules.lanzadera.domain._imports import (
+    UUID,
+    StrEnum,
+    dataclass,
+    datetime,
+)
 
 
 class UserStatus(StrEnum):
