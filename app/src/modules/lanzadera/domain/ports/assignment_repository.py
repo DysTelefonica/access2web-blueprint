@@ -12,11 +12,12 @@ required to cache it per ``(user_id, app_id)`` with TTL 60 s (DA-8).
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Protocol
-from uuid import UUID
-
 from app.src.modules.lanzadera.domain.assignment import Assignment
+from app.src.modules.lanzadera.domain.ports._imports import (
+    UUID,
+    Protocol,
+    Sequence,
+)
 
 
 class AssignmentRepositoryPort(Protocol):
