@@ -98,7 +98,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # duplicate the existing domain/cli patterns. Recorded here so the
     # first WU in the chain that introduces the dup is allowed; the next
     # WU in the chain that grows the count is rejected by the ratchet.
-    "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+    # W37 (#477) extracted the Protocol/Sequence/UUID prelude into
+    # ``app/.../domain/ports/_imports.py``; ``app_repository.py`` and
+    # ``assignment_repository.py`` collapse the three separate imports
+    # into one multi-line ``from _imports import (...)``. The
+    # 5-statement window ``08c289bbf440`` protected is gone.
+    # "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     # W36 (#475) added StrEnum to ``app/.../domain/_imports.py``;
     # ``app.py`` and ``user.py`` now collapse their dataclass/datetime/
     # StrEnum (and UUID in user.py) into the same multi-line

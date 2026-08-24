@@ -10,11 +10,12 @@ DA-8 caches it with a 5-minute TTL.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Protocol
-from uuid import UUID
-
 from app.src.modules.lanzadera.domain.app import App
+from app.src.modules.lanzadera.domain.ports._imports import (
+    UUID,
+    Protocol,
+    Sequence,
+)
 
 
 class AppRepositoryPort(Protocol):
