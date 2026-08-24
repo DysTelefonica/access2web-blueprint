@@ -32,6 +32,7 @@ from app.src.modules.lanzadera.domain.ports.assignment_repository import (
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
     GlobalAdminRepositoryPort,
 )
+from app.src.modules.lanzadera.domain.user import User
 
 
 class _AppRepositoryPort(Protocol):
@@ -109,6 +110,32 @@ def _read_password(prompt: str) -> str:
         return input(prompt)
 
 
+async def _resolve_user_with_confirmation(
+    email: str,
+    users: UserRepository,
+    *,
+    action: str,
+    description: str,
+    cancellation_message: str,
+    confirmed: bool,
+) -> User | CommandResult:
+    """Look up the user by ``email`` (lowercased per DA-3) and gate on confirmation.
+
+    Returns the looked-up ``User`` on success; returns a ``CommandResult``
+    with ``exit_code=1`` if the user is absent or the operator declined
+    the confirmation prompt (D26). Shared by ``cmd_set_password``,
+    ``cmd_grant_global_admin``, and ``cmd_revoke_global_admin`` — the
+    five-statement lookup+confirm block they used to repeat.
+    """
+    normalised_email = email.strip().lower()
+    user = await users.get_by_email(normalised_email)
+    if user is None:
+        return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
+    if not confirmed and not _prompt_confirmation(action, description):
+        return CommandResult(exit_code=1, message=cancellation_message)
+    return user
+
+
 async def cmd_set_password(
     email: str,
     users: UserRepository,
@@ -125,12 +152,17 @@ async def cmd_set_password(
     confirmation unless ``confirmed=True`` (the latter is what the
     test suite uses).
     """
-    normalised_email = email.strip().lower()
-    user = await users.get_by_email(normalised_email)
-    if user is None:
-        return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
-    if not confirmed and not _prompt_confirmation("set-password", f"for user {normalised_email}"):
-        return CommandResult(exit_code=1, message="set-password cancelled by operator")
+    resolved = await _resolve_user_with_confirmation(
+        email,
+        users,
+        action="set-password",
+        description=f"for user {email.strip().lower()}",
+        cancellation_message="set-password cancelled by operator",
+        confirmed=confirmed,
+    )
+    if isinstance(resolved, CommandResult):
+        return resolved
+    user = resolved
     password = _read_password("New password: ")
     if not password:
         return CommandResult(exit_code=1, message="empty password is not allowed")
@@ -144,7 +176,7 @@ async def cmd_set_password(
     await users.update_password_and_activate(user.id, hashed)
     return CommandResult(
         exit_code=0,
-        message=f"password set for {normalised_email}; status=active",
+        message=f"password set for {user.email}; status=active",
     )
 
 
@@ -156,17 +188,22 @@ async def cmd_grant_global_admin(
     confirmed: bool = False,
 ) -> CommandResult:
     """Grant global-admin to a user (DA-6, the bootstrap path's sibling)."""
-    normalised_email = email.strip().lower()
-    user = await users.get_by_email(normalised_email)
-    if user is None:
-        return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
-    if not confirmed and not _prompt_confirmation("grant-global-admin", f"to {normalised_email}"):
-        return CommandResult(exit_code=1, message="grant cancelled by operator")
+    resolved = await _resolve_user_with_confirmation(
+        email,
+        users,
+        action="grant-global-admin",
+        description=f"to {email.strip().lower()}",
+        cancellation_message="grant cancelled by operator",
+        confirmed=confirmed,
+    )
+    if isinstance(resolved, CommandResult):
+        return resolved
+    user = resolved
     try:
         await global_admins.grant(user.id)
     except ValueError as exc:
         return CommandResult(exit_code=1, message=f"cannot grant: {exc}")
-    return CommandResult(exit_code=0, message=f"global admin granted to {normalised_email}")
+    return CommandResult(exit_code=0, message=f"global admin granted to {user.email}")
 
 
 async def cmd_revoke_global_admin(
@@ -177,19 +214,22 @@ async def cmd_revoke_global_admin(
     confirmed: bool = False,
 ) -> CommandResult:
     """Revoke global-admin (D42: must keep at least one admin)."""
-    normalised_email = email.strip().lower()
-    user = await users.get_by_email(normalised_email)
-    if user is None:
-        return CommandResult(exit_code=1, message=f"user not found: {normalised_email}")
-    if not confirmed and not _prompt_confirmation(
-        "revoke-global-admin", f"from {normalised_email}"
-    ):
-        return CommandResult(exit_code=1, message="revoke cancelled by operator")
+    resolved = await _resolve_user_with_confirmation(
+        email,
+        users,
+        action="revoke-global-admin",
+        description=f"from {email.strip().lower()}",
+        cancellation_message="revoke cancelled by operator",
+        confirmed=confirmed,
+    )
+    if isinstance(resolved, CommandResult):
+        return resolved
+    user = resolved
     try:
         await global_admins.revoke(user.id)
     except ValueError as exc:
         return CommandResult(exit_code=1, message=f"cannot revoke: {exc}")
-    return CommandResult(exit_code=0, message=f"global admin revoked from {normalised_email}")
+    return CommandResult(exit_code=0, message=f"global admin revoked from {user.email}")
 
 
 async def cmd_list_apps(apps: _AppRepositoryPort) -> CommandResult:
