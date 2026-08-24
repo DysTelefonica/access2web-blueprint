@@ -98,27 +98,14 @@ BASELINE: dict[str, BaselineEntry] = {
     "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     "dup:110a87c35376": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
     "dup:ce4650821098": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
-    # W01 (#44): the three Postgres adapters (UserRepositoryPg,
-    # AppRepositoryPg, ProfileRepositoryPg) share the SQLAlchemy
-    # import-block prelude (``collections.abc``, ``typing``, ``sa``,
-    # ``select``, etc.). The fix is mechanical (lift the prelude to a
-    # base class or to ``__init__.py``); ratcheted at 2 with the
-    # W-series target date so the next WU (when the UserRepository
-    # implementation lands in #44 itself) is the one that needs to
-    # either extract the import block or accept the ratchet.
-    "dup:3d62b08337d3": BaselineEntry(occurrences=2, target=0, target_date="2027-02-13"),
-    # W02 (#45) + W03 (#55): the same 7-line import prelude that the
-    # W01 adapters share is also duplicated between
-    # AssignmentRepositoryPg and the audit/adapter that follow in
-    # W02/W03. The prelude-cleave planned for W03 (lifting the
-    # shared 7-line prelude into a base class or module helper
-    # imported by every adapter) collapses every "dup:" entry this
-    # class added across the W-series in one PR.
-    # W04 (#21): the 7-line import prelude shows up across more
-    # adapters (User, Assignment, GlobalAdmin). The prelude-cleave
-    # planned for W04 (after GlobalAdmin lands) collapses every
-    # ``dup:*`` entry the W-series added across the chain in one PR.
-    "dup:25d63157feb1": BaselineEntry(occurrences=3, target=0, target_date="2027-02-13"),
+    # W32 (#467) extracted the SQLAlchemy + typing prelude and the
+    # ``async_session_factory`` symbols into
+    # ``_pg_imports.py``; each Postgres adapter now collapses to a
+    # single multi-line ``from _pg_imports import (...)`` statement.
+    # The two BASELINE entries that protected the duplicated 7-line
+    # prelude (``3d62b08337d3`` occurrences=2 and ``25d63157feb1``
+    # occurrences=3) are no longer needed; both groups report zero
+    # duplicated blocks after the refactor.
 }
 
 # --------------------------------------------------------------------------------------------

@@ -20,18 +20,18 @@ not own a transaction.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
-from typing import Any
 from uuid import UUID
 
-import sqlalchemy as sa
-from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import CITEXT
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 
-from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
+from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
     SCHEMA,
+    Any,
     AsyncSessionFactoryPort,
+    Sequence,
+    sa,
+    select,
 )
 from app.src.modules.lanzadera.domain.user import User, UserStatus
 
