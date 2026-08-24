@@ -87,8 +87,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # both generate the same docstring/clone as the original domain/app
     # pair; ratcheted here so the next WU that grows the count is
     # rejected by Hard Rule 12.)
-    # the widest group: five blocks across the lanzadera domain entities
-    "dup:79d8c5976f0f": BaselineEntry(occurrences=5, target=0, target_date="2026-12-31"),
+    # W34 (#471) extracted the dataclass/datetime/UUID prelude into
+    # ``app/src/modules/lanzadera/domain/_imports.py``; the five
+    # entities (assignment, audit_event, profile, reset_token,
+    # session) collapse to a single multi-line ``from ..._imports
+    # import (...)``. The 5-statement block the ratchet protected is
+    # no longer duplicated — Hard Rule 12 again.
     "dup:af8e0d12856d": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     # L01 of #257/#258/#259 (M01..M03 extractors) plus DL2 (HTMX views):
     # port docstrings and the if __name__ == "__main__": admin block
