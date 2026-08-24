@@ -31,16 +31,16 @@ consumers wire the adapter via session sharing instead.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 from uuid import UUID
 
-import sqlalchemy as sa
-from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 
-from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
+from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
     SCHEMA,
+    Any,
     AsyncSessionFactoryPort,
+    sa,
+    select,
 )
 from app.src.modules.lanzadera.domain.reset_token import ResetToken
 
