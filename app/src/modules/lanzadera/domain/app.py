@@ -10,9 +10,11 @@ migrated — they belong to the runtime launch system, retired by D52.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime
-from enum import StrEnum
+from app.src.modules.lanzadera.domain._imports import (
+    StrEnum,
+    dataclass,
+    datetime,
+)
 
 
 class AppTopology(StrEnum):

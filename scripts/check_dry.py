@@ -93,13 +93,17 @@ BASELINE: dict[str, BaselineEntry] = {
     # session) collapse to a single multi-line ``from ..._imports
     # import (...)``. The 5-statement block the ratchet protected is
     # no longer duplicated — Hard Rule 12 again.
-    "dup:af8e0d12856d": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     # L01 of #257/#258/#259 (M01..M03 extractors) plus DL2 (HTMX views):
     # port docstrings and the if __name__ == "__main__": admin block
     # duplicate the existing domain/cli patterns. Recorded here so the
     # first WU in the chain that introduces the dup is allowed; the next
     # WU in the chain that grows the count is rejected by the ratchet.
     "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
+    # W36 (#475) added StrEnum to ``app/.../domain/_imports.py``;
+    # ``app.py`` and ``user.py`` now collapse their dataclass/datetime/
+    # StrEnum (and UUID in user.py) into the same multi-line
+    # ``from _imports import (...)`` shape. The 5-statement block
+    # ``af8e0d12856d`` protected (occurrences=2) is no longer duplicated.
     "dup:110a87c35376": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
     # W32 (#467) extracted the SQLAlchemy + typing prelude and the
     # ``async_session_factory`` symbols into
