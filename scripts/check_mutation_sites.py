@@ -72,7 +72,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # for retirements, #266 slice 5) can split it down. The target date
     # matches coverage_gate_helpers.py so the two ratchets line up.
     "app/src/modules/lanzadera/delivery/cli/platform_user.py": BaselineEntry(
-        sites=234, target=100, target_date="2027-02-13"
+        sites=231, target=100, target_date="2027-02-13"
     ),
     # DL2 (#55 / bf59e7b) shipped admin.py as a single 118-site mutation
     # surface (router + every CRUD template). Ratcheted here so the next
