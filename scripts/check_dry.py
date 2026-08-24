@@ -87,8 +87,6 @@ BASELINE: dict[str, BaselineEntry] = {
     # both generate the same docstring/clone as the original domain/app
     # pair; ratcheted here so the next WU that grows the count is
     # rejected by Hard Rule 12.)
-    # pytest_plugin/coverage_gate.py, twice within the same file
-    "dup:1aa7b9df3f16": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     # the widest group: five blocks across the lanzadera domain entities
     "dup:79d8c5976f0f": BaselineEntry(occurrences=5, target=0, target_date="2026-12-31"),
     "dup:af8e0d12856d": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
