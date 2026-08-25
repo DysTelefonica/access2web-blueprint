@@ -1,7 +1,9 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + DA-13 — coverage plugin test
 """Coverage pin for the `app.pytest_plugin.coverage_gate` plugin (CI fail-under gate).
 
-Both `coverage_gate.py` and — when present — `coverage_gate_helpers.py` are
+Both `coverage_gate.py` and the three split helpers modules
+(`coverage_gate_coverage.py`, `coverage_gate_messages.py`,
+`coverage_gate_resolution.py`) are
 imported by pytest at startup (via the ``-p app.pytest_plugin.coverage_gate``
 entry in `app/pyproject.toml::tool.pytest.ini_options.addopts`). pytest-cov
 measures every reachable module, so until something actually executes their
@@ -35,22 +37,28 @@ import pytest
 
 coverage_gate = importlib.import_module("app.pytest_plugin.coverage_gate")
 
-try:
-    coverage_gate_helpers = importlib.import_module("app.pytest_plugin.coverage_gate_helpers")
-except ImportError:  # pragma: no cover — helpers absent on the tracker
-    coverage_gate_helpers = None  # type: ignore[assignment]
+# W44 (#488) split the helpers into three cohesive modules:
+# - ``coverage_gate_coverage`` — the three lookup helpers
+# - ``coverage_gate_messages`` — the four verdict message builders
+# - ``coverage_gate_resolution`` — the three resolution+eval helpers
+coverage_gate_coverage = importlib.import_module("app.pytest_plugin.coverage_gate_coverage")
+coverage_gate_messages = importlib.import_module("app.pytest_plugin.coverage_gate_messages")
+coverage_gate_resolution = importlib.import_module("app.pytest_plugin.coverage_gate_resolution")
 
-# The pure helpers (`_module_covered_lines`, `_module_total_executable`,
-# `_resolve_helper`, `_evaluate_helper`, the four message builders) live in
-# `coverage_gate_helpers` on slice 1+ branches, in `coverage_gate` itself on
-# the tracker. Pick whichever module owns them so the same test file drives
-# the helpers regardless of which branch it runs on.
-helpers_module: Any = coverage_gate_helpers if coverage_gate_helpers is not None else coverage_gate
+# The pure helpers (`_module_covered_lines`, `_module_total_executable`)
+# live in ``coverage_gate_coverage``; the four message builders live in
+# ``coverage_gate_messages``; (`_resolve_helper`, `_evaluate_helper`,
+# `_callable_line_span`) live in ``coverage_gate_resolution``.
+coverage_module = coverage_gate_coverage
+messages_module = coverage_gate_messages
+resolution_module = coverage_gate_resolution
 
 # Module-level fixture: pytest collects the test even if helpers are absent.
+# The three split modules are always imported together; we keep the
+# skipif marker for backward compatibility with the single-helpers branch.
 pytestmark_helpers_required = pytest.mark.skipif(
-    coverage_gate_helpers is None,
-    reason="app.pytest_plugin.coverage_gate_helpers not split out on this branch",
+    False,
+    reason="coverage_gate helpers are split into three modules, always importable",
 )
 
 
@@ -106,7 +114,7 @@ def test_try_import_returns_none_on_missing_module() -> None:
 
 def test_file_for_module_returns_none_when_coverage_data_is_none() -> None:
     """A missing coverage report short-circuits the lookup."""
-    assert coverage_gate_helpers._file_for_module(None, "app.x.y") is None
+    assert coverage_gate_coverage._file_for_module(None, "app.x.y") is None
 
 
 def test_file_for_module_matches_by_suffix() -> None:
@@ -116,7 +124,7 @@ def test_file_for_module_matches_by_suffix() -> None:
         executable_lines={},
         executed_lines={},
     )
-    path = coverage_gate_helpers._file_for_module(
+    path = coverage_gate_coverage._file_for_module(
         cov,
         "lanzadera/domain/user.py",
     )
@@ -130,7 +138,7 @@ def test_file_for_module_matches_by_substring() -> None:
         executable_lines={},
         executed_lines={},
     )
-    path = coverage_gate_helpers._file_for_module(
+    path = coverage_gate_coverage._file_for_module(
         cov,
         "app/src/modules/lanzadera/app.py",
     )
@@ -144,7 +152,7 @@ def test_file_for_module_returns_none_when_no_match() -> None:
         executable_lines={},
         executed_lines={},
     )
-    assert coverage_gate_helpers._file_for_module(cov, "wrong") is None
+    assert coverage_gate_coverage._file_for_module(cov, "wrong") is None
 
 
 # --------------------------------------------------------------------------------------------
@@ -183,12 +191,12 @@ def _make_coverage_data(
 
 def test_module_covered_lines_returns_none_when_no_coverage_data() -> None:
     """No coverage means no measurement — Phase 0 contract."""
-    assert helpers_module._module_covered_lines(None, "anywhere/foo.py") is None
+    assert coverage_module._module_covered_lines(None, "anywhere/foo.py") is None
 
 
 def test_module_covered_lines_returns_none_when_data_has_no_inner_data() -> None:
     """Coverage data without `_data` is treated as unmeasured (defensive)."""
-    assert helpers_module._module_covered_lines(SimpleNamespace(), "anywhere/foo.py") is None
+    assert coverage_module._module_covered_lines(SimpleNamespace(), "anywhere/foo.py") is None
 
 
 def test_module_covered_lines_returns_none_when_path_does_not_match() -> None:
@@ -198,7 +206,7 @@ def test_module_covered_lines_returns_none_when_path_does_not_match() -> None:
         executable_lines={"app/src/other.py": {1, 2}},
         executed_lines={"app/src/other.py": {1, 2}},
     )
-    assert helpers_module._module_covered_lines(cov, "app/src/target.py") is None
+    assert coverage_module._module_covered_lines(cov, "app/src/target.py") is None
 
 
 def test_module_covered_lines_returns_intersection_for_matching_path() -> None:
@@ -208,7 +216,7 @@ def test_module_covered_lines_returns_intersection_for_matching_path() -> None:
         executable_lines={"app/src/target.py": {1, 2, 3, 4}},
         executed_lines={"app/src/target.py": {2, 3}},
     )
-    assert helpers_module._module_covered_lines(cov, "app/src/target.py") == {2, 3}
+    assert coverage_module._module_covered_lines(cov, "app/src/target.py") == {2, 3}
 
 
 def test_module_covered_lines_treats_none_executed_as_empty_set() -> None:
@@ -218,15 +226,15 @@ def test_module_covered_lines_treats_none_executed_as_empty_set() -> None:
     cov_data.executable_lines.return_value = {1, 2, 3}
     cov_data.executed_lines.return_value = None
     cov = SimpleNamespace(_data=cov_data)
-    assert helpers_module._module_covered_lines(cov, "app/src/target.py") == set()
+    assert coverage_module._module_covered_lines(cov, "app/src/target.py") == set()
 
 
 def test_module_total_executable_returns_none_when_no_coverage_data() -> None:
-    assert helpers_module._module_total_executable(None, "anywhere/foo.py") is None
+    assert coverage_module._module_total_executable(None, "anywhere/foo.py") is None
 
 
 def test_module_total_executable_returns_none_when_data_has_no_inner_data() -> None:
-    assert helpers_module._module_total_executable(SimpleNamespace(), "anywhere/foo.py") is None
+    assert coverage_module._module_total_executable(SimpleNamespace(), "anywhere/foo.py") is None
 
 
 def test_module_total_executable_returns_none_when_path_does_not_match() -> None:
@@ -235,7 +243,7 @@ def test_module_total_executable_returns_none_when_path_does_not_match() -> None
         executable_lines={"app/src/other.py": {1}},
         executed_lines={"app/src/other.py": set()},
     )
-    assert helpers_module._module_total_executable(cov, "app/src/target.py") is None
+    assert coverage_module._module_total_executable(cov, "app/src/target.py") is None
 
 
 def test_module_total_executable_returns_executable_lines_for_matching_path() -> None:
@@ -244,7 +252,7 @@ def test_module_total_executable_returns_executable_lines_for_matching_path() ->
         executable_lines={"app/src/target.py": {1, 2, 3}},
         executed_lines={"app/src/target.py": {1}},
     )
-    assert helpers_module._module_total_executable(cov, "app/src/target.py") == {1, 2, 3}
+    assert coverage_module._module_total_executable(cov, "app/src/target.py") == {1, 2, 3}
 
 
 # --------------------------------------------------------------------------------------------
@@ -282,7 +290,7 @@ def _make_sessionfinish_sentinel_module() -> tuple[ModuleType, str, set[int]]:
     sentinel_module.CredentialHasherArgon2id = type(  # type: ignore[attr-defined]
         "CredentialHasherArgon2id", (), {"hash": fake_helper, "verify": fake_helper}
     )
-    line_span = coverage_gate_helpers._callable_line_span(
+    line_span = coverage_gate_resolution._callable_line_span(
         sentinel_module.CredentialHasherArgon2id,
         "hash",  # type: ignore[attr-defined]
     )
@@ -544,18 +552,20 @@ def test_sessionfinish_skips_helper_without_code_object(
 
 
 # --------------------------------------------------------------------------------------------
-# coverage_gate_helpers — exercised only when the split exists (slice 1+ branches)
+# coverage_gate_coverage / coverage_gate_messages / coverage_gate_resolution
 # --------------------------------------------------------------------------------------------
 
 
 @pytestmark_helpers_required
 def test_helpers_module_covered_lines_returns_none_when_no_coverage_data() -> None:
-    assert coverage_gate_helpers._module_covered_lines(None, "anywhere/foo.py") is None
+    assert coverage_gate_coverage._module_covered_lines(None, "anywhere/foo.py") is None
 
 
 @pytestmark_helpers_required
 def test_helpers_module_covered_lines_returns_none_when_data_has_no_inner_data() -> None:
-    assert coverage_gate_helpers._module_covered_lines(SimpleNamespace(), "anywhere/foo.py") is None
+    assert (
+        coverage_gate_coverage._module_covered_lines(SimpleNamespace(), "anywhere/foo.py") is None
+    )
 
 
 @pytestmark_helpers_required
@@ -565,7 +575,7 @@ def test_helpers_module_covered_lines_returns_none_when_path_does_not_match() ->
         executable_lines={"app/src/other.py": {1}},
         executed_lines={"app/src/other.py": {1}},
     )
-    assert coverage_gate_helpers._module_covered_lines(cov, "app/src/target.py") is None
+    assert coverage_gate_coverage._module_covered_lines(cov, "app/src/target.py") is None
 
 
 @pytestmark_helpers_required
@@ -575,7 +585,7 @@ def test_helpers_module_covered_lines_returns_intersection_for_matching_path() -
         executable_lines={"app/src/target.py": {1, 2, 3, 4}},
         executed_lines={"app/src/target.py": {2, 3}},
     )
-    assert coverage_gate_helpers._module_covered_lines(cov, "app/src/target.py") == {2, 3}
+    assert coverage_gate_coverage._module_covered_lines(cov, "app/src/target.py") == {2, 3}
 
 
 @pytestmark_helpers_required
@@ -585,18 +595,19 @@ def test_helpers_module_covered_lines_treats_none_executed_as_empty_set() -> Non
     cov_data.executable_lines.return_value = {1, 2, 3}
     cov_data.executed_lines.return_value = None
     cov = SimpleNamespace(_data=cov_data)
-    assert coverage_gate_helpers._module_covered_lines(cov, "app/src/target.py") == set()
+    assert coverage_gate_coverage._module_covered_lines(cov, "app/src/target.py") == set()
 
 
 @pytestmark_helpers_required
 def test_helpers_module_total_executable_returns_none_when_no_coverage_data() -> None:
-    assert coverage_gate_helpers._module_total_executable(None, "anywhere/foo.py") is None
+    assert coverage_gate_coverage._module_total_executable(None, "anywhere/foo.py") is None
 
 
 @pytestmark_helpers_required
 def test_helpers_module_total_executable_returns_none_when_data_has_no_inner_data() -> None:
     assert (
-        coverage_gate_helpers._module_total_executable(SimpleNamespace(), "anywhere/foo.py") is None
+        coverage_gate_coverage._module_total_executable(SimpleNamespace(), "anywhere/foo.py")
+        is None
     )
 
 
@@ -607,7 +618,7 @@ def test_helpers_module_total_executable_returns_none_when_path_does_not_match()
         executable_lines={"app/src/other.py": {1}},
         executed_lines={"app/src/other.py": set()},
     )
-    assert coverage_gate_helpers._module_total_executable(cov, "app/src/target.py") is None
+    assert coverage_gate_coverage._module_total_executable(cov, "app/src/target.py") is None
 
 
 @pytestmark_helpers_required
@@ -617,26 +628,26 @@ def test_helpers_module_total_executable_returns_executable_lines_for_matching_p
         executable_lines={"app/src/target.py": {1, 2, 3}},
         executed_lines={"app/src/target.py": {1}},
     )
-    assert coverage_gate_helpers._module_total_executable(cov, "app/src/target.py") == {1, 2, 3}
+    assert coverage_gate_coverage._module_total_executable(cov, "app/src/target.py") == {1, 2, 3}
 
 
 @pytestmark_helpers_required
 def test_helpers_missing_module_warning_names_module() -> None:
-    msg = coverage_gate_helpers._missing_module_warning("app.x.y")
+    msg = coverage_gate_messages._missing_module_warning("app.x.y")
     assert "app.x.y" in msg
     assert "not importable" in msg
 
 
 @pytestmark_helpers_required
 def test_helpers_missing_helper_warning_names_pair() -> None:
-    msg = coverage_gate_helpers._missing_helper_warning("app.x.y", "helper_z")
+    msg = coverage_gate_messages._missing_helper_warning("app.x.y", "helper_z")
     assert "app.x.y.helper_z" in msg
     assert "not defined yet" in msg
 
 
 @pytestmark_helpers_required
 def test_helpers_not_measured_warning_names_pair_and_file() -> None:
-    msg = coverage_gate_helpers._not_measured_warning("app.x.y", "helper_z", "/tmp/file.py")
+    msg = coverage_gate_messages._not_measured_warning("app.x.y", "helper_z", "/tmp/file.py")
     assert "app.x.y.helper_z" in msg
     assert "/tmp/file.py" in msg
     assert "not measured" in msg
@@ -644,7 +655,7 @@ def test_helpers_not_measured_warning_names_pair_and_file() -> None:
 
 @pytestmark_helpers_required
 def test_helpers_under_coverage_failure_counts_missing() -> None:
-    msg = coverage_gate_helpers._under_coverage_failure("app.x.y", "helper_z", {1, 2, 3, 4, 5, 6})
+    msg = coverage_gate_messages._under_coverage_failure("app.x.y", "helper_z", {1, 2, 3, 4, 5, 6})
     assert "6" in msg
     assert "app.x.y.helper_z" in msg
 
@@ -653,7 +664,7 @@ def test_helpers_under_coverage_failure_counts_missing() -> None:
 def test_helpers_resolve_helper_returns_file_path_when_present() -> None:
     sentinel = ModuleType("sentinel")
     sentinel.fake_helper = lambda: None  # type: ignore[attr-defined]
-    file_path, error = coverage_gate_helpers._resolve_helper(sentinel, "app.x", "fake_helper")
+    file_path, error = coverage_gate_resolution._resolve_helper(sentinel, "app.x", "fake_helper")
     assert error is None
     assert file_path is not None
 
@@ -661,7 +672,7 @@ def test_helpers_resolve_helper_returns_file_path_when_present() -> None:
 @pytestmark_helpers_required
 def test_helpers_resolve_helper_returns_missing_helper_when_absent() -> None:
     sentinel = ModuleType("sentinel")
-    file_path, error = coverage_gate_helpers._resolve_helper(sentinel, "app.x", "no_such")
+    file_path, error = coverage_gate_resolution._resolve_helper(sentinel, "app.x", "no_such")
     assert file_path is None
     assert error == "missing_helper"
 
@@ -674,7 +685,7 @@ def test_helpers_resolve_helper_returns_no_code_when_helper_has_no_code() -> Non
         pass
 
     sentinel.weird = Weird()  # type: ignore[attr-defined]
-    file_path, error = coverage_gate_helpers._resolve_helper(sentinel, "app.x", "weird")
+    file_path, error = coverage_gate_resolution._resolve_helper(sentinel, "app.x", "weird")
     assert file_path is None
     assert error == "no_code"
 
@@ -686,7 +697,7 @@ def test_helpers_evaluate_helper_returns_none_pair_when_fully_covered() -> None:
         executable_lines={"some/file.py": {1, 2}},
         executed_lines={"some/file.py": {1, 2}},
     )
-    warning, failure = coverage_gate_helpers._evaluate_helper(
+    warning, failure = coverage_gate_resolution._evaluate_helper(
         "some/file.py", "app.x", "h", cov, {1, 2}
     )
     assert warning is None
@@ -700,7 +711,7 @@ def test_helpers_evaluate_helper_returns_warning_when_not_measured() -> None:
         executable_lines={},
         executed_lines={},
     )
-    warning, failure = coverage_gate_helpers._evaluate_helper(
+    warning, failure = coverage_gate_resolution._evaluate_helper(
         "some/file.py", "app.x", "h", cov, {1}
     )
     assert warning is not None
@@ -715,7 +726,7 @@ def test_helpers_evaluate_helper_returns_failure_when_under_covered() -> None:
         executable_lines={"some/file.py": {1, 2, 3, 4}},
         executed_lines={"some/file.py": {1}},
     )
-    warning, failure = coverage_gate_helpers._evaluate_helper(
+    warning, failure = coverage_gate_resolution._evaluate_helper(
         "some/file.py", "app.x", "h", cov, {1, 2, 3, 4}
     )
     assert warning is None

@@ -10,6 +10,10 @@ Todos los cambios relevantes del blueprint se documentan aquí. El formato sigue
 
 Vacío. Las nuevas entregas se documentan aquí antes del siguiente release cut.
 
+### Changed
+
+- **W44 split coverage_gate_helpers.py** (#488): el archivo `app/pytest_plugin/coverage_gate_helpers.py` (127 sitios, BASELINE sobre el ceiling) se rompe en tres módulos cohesivos: `coverage_gate_coverage.py` (3 lookup helpers, 42 sitios), `coverage_gate_messages.py` (4 verdict builders, 26 sitios), `coverage_gate_resolution.py` (3 resolution+eval helpers, 61 sitios). Cada uno queda bien bajo el ceiling de 100 sitios, así que no requiere BASELINE entries propias. `coverage_gate.py` actualiza imports para usar los 3 módulos directamente. `tests/lanzadera/test_coverage_gate_plugin.py` actualiza los `importlib.import_module(...)` dinámicos y los accesos `_file_for_module` / `_module_covered_lines` / etc. al módulo correcto. `coverage_gate_helpers.py` desaparece; la BASELINE entry se cierra. El orchestrator en `coverage_gate.py` sigue en 109 sitios — fuera de scope de W44 (requiere un restructure de la lógica del loop).
+
 ## [0.3.0] - 2026-08-24
 
 Cierre de la W-series del Lanzadera MVP (#427..#449): los 8 Postgres adapters se migran de su forma manual `try/except/finally` a los context-managers `AsyncSessionFactory.read_only_session()` y `transaction()`. La migración cierra 27 bloques boilerplate + añade un prelude-cleave pin (#452) que detecta regresiones futuras. El coverage gate (#453..#458) cierra la grieta de los class-methods en `CredentialHasherArgon2id.hash`/`.verify` vía `_resolve_helper` con owner no-None. Los WUs W21..W40 refactorizan preludes duplicados (`_pg_imports.py`, `_imports.py` en `domain/` y `domain/ports/`), bajan el helper de `platform_user.py`, y dejan el repo verde por primera vez: DRY ratchet 6 de 7 BASELINE entries cerradas + 1 permanente; mutation-sites ratchet lockeado al shape actual vía lock-in.
