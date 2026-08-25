@@ -77,14 +77,16 @@ BASELINE: dict[str, BaselineEntry] = {
     # "app/pytest_plugin/coverage_gate_helpers.py": BaselineEntry(
     #     sites=127, target=100, target_date="2027-02-13"
     # ),
-    # Issue #56 (PR #422) shipped platform_user.py with a single 234-site
-    # mutation surface; the deterministic-quality-harness ceiling is 100.
-    # Ratcheted here so the next WU in the chain (W12 — CLI command split
-    # for retirements, #266 slice 5) can split it down. The target date
-    # matches coverage_gate_helpers.py so the two ratchets line up.
-    "app/src/modules/lanzadera/delivery/cli/platform_user.py": BaselineEntry(
-        sites=231, target=100, target_date="2027-02-13"
-    ),
+    # W46 (#492) split platform_user.py into three cohesive modules:
+    # - platform_user_types.py (47 sites): shared types + helpers
+    # - platform_user_auth.py (89 sites): set-password, grant/revoke global admin
+    # - platform_user_apps.py (58 sites): list-apps, assign-profile
+    # platform_user.py (52 sites) stays as the entry point that re-exports
+    # the command callables. None of the four files exceed the 100-site
+    # ceiling, so no BASELINE entries are needed.
+    # "app/src/modules/lanzadera/delivery/cli/platform_user.py": BaselineEntry(
+    #     sites=231, target=100, target_date="2027-02-13"
+    # ),
     # DL2 (#55 / bf59e7b) shipped admin.py as a single 118-site mutation
     # surface (router + every CRUD template). Ratcheted here so the next
     # WU that adds a route (#266 slice 5 — the platform admin CRUD split)
