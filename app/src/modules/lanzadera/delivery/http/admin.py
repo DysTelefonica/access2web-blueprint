@@ -1,4 +1,3 @@
-# mypy: disable-error-code=unused-ignore
 """Admin HTTP delivery (DL2, issue #55).
 
 FastAPI router that exposes the seven ``/admin/...`` endpoints called out
