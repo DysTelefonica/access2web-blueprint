@@ -63,9 +63,15 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/pytest_plugin/coverage_gate.py": BaselineEntry(
         sites=109, target=100, target_date="2027-02-13"
     ),
-    "app/pytest_plugin/coverage_gate_helpers.py": BaselineEntry(
-        sites=127, target=100, target_date="2027-02-13"
-    ),
+    # W44 (#488) split coverage_gate_helpers.py into three cohesive
+    # modules (coverage_gate_coverage, coverage_gate_messages,
+    # coverage_gate_resolution). Each is well below the 100-site
+    # ceiling (26/42/61 sites), so no BASELINE entry is needed for them.
+    # The orchestrator in coverage_gate.py is still 109 sites — that's
+    # the file left to address via a future orchestrator restructure.
+    # "app/pytest_plugin/coverage_gate_helpers.py": BaselineEntry(
+    #     sites=127, target=100, target_date="2027-02-13"
+    # ),
     # Issue #56 (PR #422) shipped platform_user.py with a single 234-site
     # mutation surface; the deterministic-quality-harness ceiling is 100.
     # Ratcheted here so the next WU in the chain (W12 — CLI command split

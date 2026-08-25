@@ -33,11 +33,13 @@ from typing import Any
 
 import pytest
 
-from app.pytest_plugin.coverage_gate_helpers import (
-    _callable_line_span,
-    _evaluate_helper,
+from app.pytest_plugin.coverage_gate_messages import (
     _missing_helper_warning,
     _missing_module_warning,
+)
+from app.pytest_plugin.coverage_gate_resolution import (
+    _callable_line_span,
+    _evaluate_helper,
     _resolve_helper,
 )
 
