@@ -46,7 +46,7 @@ def _module_covered_lines(coverage_data: Any, module_path: str) -> set[int] | No
     if file_path is None:
         return None
     cov_data = coverage_data._data
-    executable = cov_data.executable_lines(file_path)
+    executable = cov_data.executable_lines(file_path)  # type: ignore[no-any-return]
     executed = cov_data.executed_lines(file_path) or set()
     return executable & executed  # only executable-and-executed lines
 
@@ -57,4 +57,4 @@ def _module_total_executable(coverage_data: Any, module_path: str) -> set[int] |
     if file_path is None:
         return None
     cov_data = coverage_data._data
-    return set(cov_data.executable_lines(file_path))
+    return set(cov_data.executable_lines(file_path))  # type: ignore[no-any-return]
