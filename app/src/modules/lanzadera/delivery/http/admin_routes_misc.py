@@ -48,8 +48,8 @@ def register_misc_routes(
 
     @router.get("/apps", response_class=HTMLResponse)
     async def list_apps(request: Request) -> HTMLResponse:
-        active_apps = await apps.list_active()  # type: ignore[arg-defined]
-        all_apps = list(getattr(apps, "_all_apps", active_apps))  # type: ignore[attr-defined]
+        active_apps = await apps.list_active()
+        all_apps = list(getattr(apps, "_all_apps", active_apps))
         return templates.TemplateResponse(request, "admin/apps.html", {"apps": all_apps})
 
     @router.post("/apps/{app_id}/activate", response_class=HTMLResponse)
@@ -68,7 +68,7 @@ def register_misc_routes(
         profile_id: UUID = Form(...),  # noqa: B008
     ) -> HTMLResponse:
         _admin.require_global_admin()
-        await assignments.create(user_id, app_id, profile_id)  # type: ignore[arg-defined]
+        await assignments.create(user_id, app_id, profile_id)
         return templates.TemplateResponse(
             request,
             "admin/assignment_created.html",
@@ -84,7 +84,7 @@ def register_misc_routes(
     async def list_audit(request: Request) -> HTMLResponse:
         # ``AuditLogPort.list_for_actor(None, since)`` returns the
         # global audit log. The test fake exposes ``_events`` as a list.
-        events = list(getattr(audit, "_events", []))  # type: ignore[attr-defined]
+        events = list(getattr(audit, "_events", []))
         return templates.TemplateResponse(request, "admin/audit.html", {"events": events})
 
 
