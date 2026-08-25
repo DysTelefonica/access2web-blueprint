@@ -33,14 +33,8 @@ from typing import Any
 
 import pytest
 
-from app.pytest_plugin.coverage_gate_messages import (
-    _missing_helper_warning,
-    _missing_module_warning,
-)
-from app.pytest_plugin.coverage_gate_resolution import (
-    _callable_line_span,
-    _evaluate_helper,
-    _resolve_helper,
+from app.pytest_plugin.coverage_gate_evaluate import (
+    _enforce_critical_coverage as _evaluate_coverage,
 )
 
 # Exact (module, optional owner, helper) targets required by DA-2 and DA-4.
@@ -91,15 +85,28 @@ def _try_import(module_name: str):
         return None
 
 
-def _emit_verdicts(warnings: list[str], failures: list[str], session) -> None:
+def _enforce_critical_coverage(session: Any, coverage_data: Any) -> None:
+    """Backward-compat wrapper — delegates to ``coverage_gate_evaluate``.
+
+    W45 extracted the orchestrator into ``coverage_gate_evaluate.py`` for
+    the mutation-sites ratchet. This shim preserves the original
+    ``(session, coverage_data)`` signature so existing tests continue
+    to work without changes. The shim imports the implementation lazily
+    so monkey-patching ``coverage_gate._try_import`` propagates to the
+    implementation (the implementation reads ``coverage_gate._try_import``
+    via lazy import per iteration).
+    """
+    warnings, failures = _evaluate_coverage(session, coverage_data, CRITICAL_TARGETS)
+    _emit_verdicts(warnings, failures, session)
+
+
+def _emit_verdicts(warnings: list[str], failures: list[str], session: Any) -> None:
     """Print each verdict line to stderr and mutate ``session.exitstatus``.
 
     Hard Rule 8: the contract is to mutate ``session.exitstatus`` from inside
     the sessionfinish hook; ``config.exitstatus = 1`` does NOT change pytest's
     exit code. We pass the session through so the mutation happens here.
     """
-    # Emit one-line verdicts to stderr so reviewers see them even when pytest
-    # is invoked from the CI aggregator.
     import sys
 
     for line in warnings:
@@ -108,80 +115,9 @@ def _emit_verdicts(warnings: list[str], failures: list[str], session) -> None:
         print(line, file=sys.stderr)
 
     if failures:
-        # Hard Rule 8: mutate session.exitstatus, not config.exitstatus.
         session.exitstatus = 1
         if hasattr(session, "testsfailed"):
             session.testsfailed += 1
-
-
-def _resolve_target(
-    module: Any,
-    module_name: str,
-    owner_name: str | None,
-    helper_name: str,
-) -> tuple[str, str | None, set[int] | None, str | None]:
-    owner = module if owner_name is None else getattr(module, owner_name, None)
-    target_owner_name = ".".join(filter(None, (module_name, owner_name)))
-    if owner is None:
-        return target_owner_name, None, None, "missing_helper"
-    file_path, error_tag = _resolve_helper(owner, target_owner_name, helper_name)
-    line_span = _callable_line_span(owner, helper_name)
-    return target_owner_name, file_path, line_span, error_tag
-
-
-def _enforce_critical_coverage(session, coverage_data) -> None:
-    """Mutate `session.exitstatus` if any exact target is under-covered.
-
-    Behaviour:
-        * Helper missing everywhere           -> emit WARNING, exit code unchanged.
-        * Helper present and 100% covered     -> emit OK, exit code unchanged.
-        * Helper present and <100% covered   -> emit FAIL, mutate exitstatus.
-
-    The plugin is intentionally tolerant on Phase 0: the four helpers do not
-    exist yet, so the run ends with four WARNINGS and exit code 0 (assuming
-    no other test failed). Phase 4+ will fail loudly until each helper
-    reaches 100%.
-
-    DG-11 (issue #266): the per-target resolution and the coverage lookup
-    moved to `coverage_gate_helpers.py` so this file stays under the
-    mutation-sites ceiling.
-    """
-    if coverage_data is None:
-        return
-
-    warnings: list[str] = []
-    failures: list[str] = []
-
-    for module_name, owner_name, helper_name in CRITICAL_TARGETS:
-        module = _try_import(module_name)
-        if module is None:
-            warnings.append(_missing_module_warning(module_name))
-            continue
-
-        target_owner_name, file_path, line_span, error_tag = _resolve_target(
-            module,
-            module_name,
-            owner_name,
-            helper_name,
-        )
-        if error_tag == "missing_helper":
-            warnings.append(_missing_helper_warning(target_owner_name, helper_name))
-            continue
-        if error_tag == "no_code" or file_path is None or line_span is None:
-            continue
-        warning, failure = _evaluate_helper(
-            file_path,
-            target_owner_name,
-            helper_name,
-            coverage_data,
-            line_span,
-        )
-        if warning is not None:
-            warnings.append(warning)
-        if failure is not None:
-            failures.append(failure)
-
-    _emit_verdicts(warnings, failures, session)
 
 
 _COVERAGE_KEY = pytest.StashKey[Any]()
