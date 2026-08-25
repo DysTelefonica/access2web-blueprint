@@ -19,8 +19,10 @@ mutation-sites ceiling.
 
 from __future__ import annotations
 
+from typing import Any
 
-def _file_for_module(coverage_data, module_path: str) -> str | None:
+
+def _file_for_module(coverage_data: Any, module_path: str) -> str | None:
     """Return the measured file path whose name ends with ``module_path``.
 
     ``coverage_data`` is the in-memory coverage report after the pytest
@@ -38,7 +40,7 @@ def _file_for_module(coverage_data, module_path: str) -> str | None:
     return None
 
 
-def _module_covered_lines(coverage_data, module_path: str) -> set[int] | None:
+def _module_covered_lines(coverage_data: Any, module_path: str) -> set[int] | None:
     """Return the executed lines for the given module file, or ``None`` when not measured."""
     file_path = _file_for_module(coverage_data, module_path)
     if file_path is None:
@@ -49,7 +51,7 @@ def _module_covered_lines(coverage_data, module_path: str) -> set[int] | None:
     return executable & executed  # only executable-and-executed lines
 
 
-def _module_total_executable(coverage_data, module_path: str) -> set[int] | None:
+def _module_total_executable(coverage_data: Any, module_path: str) -> set[int] | None:
     """Return the executable lines for the given module file, or ``None`` when not measured."""
     file_path = _file_for_module(coverage_data, module_path)
     if file_path is None:

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import inspect
 from pathlib import Path
+from typing import Any
 
 from app.pytest_plugin.coverage_gate_messages import (
     _not_measured_warning,
@@ -34,7 +35,9 @@ from app.pytest_plugin.coverage_gate_messages import (
 )
 
 
-def _resolve_helper(module, module_name: str, helper_name: str) -> tuple[str | None, str | None]:
+def _resolve_helper(
+    module: Any, module_name: str, helper_name: str
+) -> tuple[str | None, str | None]:
     """Resolve one (module, helper) pair to its source file or an error tag.
 
     The caller passes the already-imported module so we do not re-import per
@@ -51,7 +54,7 @@ def _resolve_helper(module, module_name: str, helper_name: str) -> tuple[str | N
     return helper_file.co_filename, None
 
 
-def _callable_line_span(owner, helper_name: str) -> set[int] | None:
+def _callable_line_span(owner: Any, helper_name: str) -> set[int] | None:
     helper = getattr(owner, helper_name, None)
     if helper is None:
         return None
@@ -66,7 +69,7 @@ def _evaluate_helper(
     file_path: str,
     module_name: str,
     helper_name: str,
-    coverage_data,
+    coverage_data: Any,
     line_span: set[int],
 ) -> tuple[str | None, str | None]:
     """Return ``(warning, failure)`` for one present helper's coverage check.
