@@ -87,13 +87,15 @@ BASELINE: dict[str, BaselineEntry] = {
     # "app/src/modules/lanzadera/delivery/cli/platform_user.py": BaselineEntry(
     #     sites=231, target=100, target_date="2027-02-13"
     # ),
-    # DL2 (#55 / bf59e7b) shipped admin.py as a single 118-site mutation
-    # surface (router + every CRUD template). Ratcheted here so the next
-    # WU that adds a route (#266 slice 5 — the platform admin CRUD split)
-    # splits it down. The target date matches the rest of the ratchet.
-    "app/src/modules/lanzadera/delivery/http/admin.py": BaselineEntry(
-        sites=118, target=100, target_date="2027-02-13"
-    ),
+    # W47 (#494) split admin.py into four cohesive modules:
+    # - admin_routes_users.py (55 sites): list/create/disable users
+    # - admin_routes_misc.py (59 sites): apps + assignments + audit
+    # - admin_routes.py (11 sites): per-router dispatch
+    # - admin.py (17 sites): build_router + require_global_admin
+    # None exceed the 100-site ceiling.
+    # "app/src/modules/lanzadera/delivery/http/admin.py": BaselineEntry(
+    #     sites=118, target=100, target_date="2027-02-13"
+    # ),
     # W01 (#44): each Postgres adapter sits above the 100-site ceiling
     # because it carries the full SQLAlchemy table reflection, the
     # _row_to_* mapping helper, and every per-method async with /
