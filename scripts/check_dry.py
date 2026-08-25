@@ -109,7 +109,17 @@ BASELINE: dict[str, BaselineEntry] = {
     # StrEnum (and UUID in user.py) into the same multi-line
     # ``from _imports import (...)`` shape. The 5-statement block
     # ``af8e0d12856d`` protected (occurrences=2) is no longer duplicated.
-    "dup:110a87c35376": BaselineEntry(occurrences=3, target=0, target_date="2026-11-30"),
+    # W40 (#482) makes this BASELINE permanent: the 5-statement block
+    # is a dataclass-field shape coincidence across ``admin/app/user``
+    # (each entity declares ``id`` + ``name`` + one more field). The
+    # AST shape matches structurally because ``check_dry.py`` normalises
+    # docstring constants to their type name (``str``), but the actual
+    # fields differ — there is no extraction that preserves each
+    # entity's distinct field set. ``target`` is bumped from the
+    # unreachable ``0`` to the current count ``3`` so the ratchet stays
+    # open at the current shape; ``target_date`` moves to a far horizon
+    # so the ratchet does not expire.
+    "dup:110a87c35376": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
     # W32 (#467) extracted the SQLAlchemy + typing prelude and the
     # ``async_session_factory`` symbols into
     # ``_pg_imports.py``; each Postgres adapter now collapses to a
