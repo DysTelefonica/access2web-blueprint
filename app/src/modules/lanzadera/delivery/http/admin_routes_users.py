@@ -61,7 +61,7 @@ def register_user_routes(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"user {email} already exists",
             )
-        new_user = await users.create(
+        new_user = await users.create(  # type: ignore[attr-defined]
             email=email.strip().lower(),
             name=name,
             dni_encrypted=dni.encode("utf-8"),
@@ -76,7 +76,7 @@ def register_user_routes(
     @router.patch("/users/{user_id}/disable", response_class=HTMLResponse)
     async def disable_user(request: Request, user_id: UUID) -> HTMLResponse:
         _admin.require_global_admin()
-        await users.update_status(user_id, UserStatus.DISABLED)
+        await users.update_status(user_id, UserStatus.DISABLED)  # type: ignore[attr-defined]
         return templates.TemplateResponse(request, "admin/user_disabled.html", {"user_id": user_id})
 
 
