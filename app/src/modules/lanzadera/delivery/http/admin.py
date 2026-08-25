@@ -17,6 +17,8 @@ propagate).
 
 from __future__ import annotations
 
+__all__: tuple[str, ...] = ("build_router", "require_global_admin")
+
 from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 
