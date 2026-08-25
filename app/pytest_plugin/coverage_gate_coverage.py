@@ -36,7 +36,7 @@ def _file_for_module(coverage_data: Any, module_path: str) -> str | None:
         return None
     for file_path in cov_data.measured_files():
         if module_path in file_path or file_path.endswith(module_path):
-            return file_path
+            return str(file_path)  # type: ignore[no-any-return]
     return None
 
 
@@ -46,7 +46,7 @@ def _module_covered_lines(coverage_data: Any, module_path: str) -> set[int] | No
     if file_path is None:
         return None
     cov_data = coverage_data._data
-    executable = cov_data.executable_lines(file_path)  # type: ignore[no-any-return]
+    executable: set[int] = cov_data.executable_lines(file_path)  # type: ignore[assignment]
     executed = cov_data.executed_lines(file_path) or set()
     return executable & executed  # only executable-and-executed lines
 
