@@ -40,9 +40,9 @@ from app.src.modules.lanzadera.delivery.cli.platform_user_auth import (
 from app.src.modules.lanzadera.delivery.cli.platform_user_types import (  # noqa: F401
     CommandResult,
     ConfirmableDestructiveCommandError,
-    _prompt_confirmation,
-    _read_password,
-    _resolve_user_with_confirmation,
+    _prompt_confirmation,  # noqa: F401
+    _read_password,  # noqa: F401
+    _resolve_user_with_confirmation,  # noqa: F401
 )
 
 
