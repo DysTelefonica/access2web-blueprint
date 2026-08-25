@@ -91,4 +91,7 @@ __all__ = [
     "cmd_list_apps",
     "cmd_revoke_global_admin",
     "cmd_set_password",
+    "_prompt_confirmation",  # re-exported for tests + split-module lookup
+    "_read_password",  # re-exported for tests + split-module lookup
+    "_resolve_user_with_confirmation",  # re-exported for split-module lookup
 ]
