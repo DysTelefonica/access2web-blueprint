@@ -16,37 +16,24 @@ important for the existing RLS policies (see migration 0001).
 
 from __future__ import annotations
 
+from typing import Any
+
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
     SCHEMA,
-    Any,
     AsyncSessionFactoryPort,
     Sequence,
     sa,
     select,
 )
+from app.src.modules.lanzadera.adapters.persistence.repositories.app_table import (
+    APPS_TABLE,
+)  # noqa: F401  # re-exported for back-compat
 from app.src.modules.lanzadera.domain.app import (
     App,
     AppRegistrationStatus,
     AppTopology,
-)
-
-APPS_TABLE = sa.Table(
-    "apps",
-    sa.MetaData(),
-    sa.Column("id", sa.Integer, sa.Identity(always=False), primary_key=True),
-    sa.Column("name", sa.Text(), nullable=False),
-    sa.Column("short_code", sa.Text(), nullable=False),
-    sa.Column("deployment_topology", sa.Enum(AppTopology, name="app_topology")),
-    sa.Column("requires_office_presence", sa.Boolean, nullable=False, default=False),
-    sa.Column(
-        "registration_status",
-        sa.Enum(AppRegistrationStatus, name="app_registration_status"),
-    ),
-    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-    schema=SCHEMA,
 )
 
 USER_APP_ASSIGNMENTS_TABLE = sa.Table(
