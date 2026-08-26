@@ -31,31 +31,18 @@ consumers wire the adapter via session sharing instead.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
-
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
-    SCHEMA,
-    Any,
     AsyncSessionFactoryPort,
     sa,
     select,
 )
+from app.src.modules.lanzadera.adapters.persistence.repositories.reset_token_table import (
+    RESET_TOKENS_TABLE,
+)  # noqa: F401  # re-exported for back-compat
 from app.src.modules.lanzadera.domain.reset_token import ResetToken
-
-RESET_TOKENS_TABLE = sa.Table(
-    "reset_tokens",
-    sa.MetaData(),
-    sa.Column("id", PGUUID(as_uuid=True), primary_key=True),
-    sa.Column("user_id", PGUUID(as_uuid=True), nullable=False),
-    sa.Column("token_hash", sa.Text(), nullable=False),
-    sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
-    sa.Column("consumed_at", sa.DateTime(timezone=True), nullable=True),
-    sa.Column("superseded_at", sa.DateTime(timezone=True), nullable=True),
-    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-    schema=SCHEMA,
-)
 
 
 def _row_to_token(row: sa.Row[Any]) -> ResetToken:

@@ -139,9 +139,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # table reflection + row-to-dataclass mapper. The next WU
     # (cleaving the prelude into a base class) is responsible for
     # bringing it below 100.
-    "app/src/modules/lanzadera/adapters/persistence/repositories/reset_token_repository_pg.py": (
-        BaselineEntry(sites=137, target=100, target_date="2027-02-13")
-    ),
+    # W50 (#500) extracted RESET_TOKENS_TABLE to reset_token_table.py
+    # (~60 sites). The adapter is now ~79 sites — well below the ceiling.
+    # "app/src/modules/lanzadera/adapters/persistence/repositories/reset_token_repository_pg.py": (
+    #     BaselineEntry(sites=137, target=100, target_date="2027-02-13")
+    # ),
 }
 
 # --------------------------------------------------------------------------------------------
