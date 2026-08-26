@@ -20,35 +20,19 @@ so the contract here is enforced by CI rather than by adapter code.
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
-
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
-    SCHEMA,
-    Any,
     AsyncSessionFactoryPort,
     Sequence,
     sa,
     select,
 )
+from app.src.modules.lanzadera.adapters.persistence.repositories.audit_log_table import (
+    AUDIT_TABLE,
+)  # noqa: F401  # re-exported for back-compat
 from app.src.modules.lanzadera.domain.audit_event import AuditEvent
-
-AUDIT_TABLE = sa.Table(
-    "audit",
-    sa.MetaData(),
-    sa.Column("id", PGUUID(as_uuid=True), primary_key=True),
-    sa.Column("event_type", sa.Text(), nullable=False),
-    sa.Column("actor_id", PGUUID(as_uuid=True), nullable=True),
-    sa.Column("target_id", sa.Text(), nullable=False),
-    sa.Column("module", sa.Text(), nullable=False),
-    sa.Column("result", sa.Text(), nullable=False),
-    sa.Column("correlation_id", PGUUID(as_uuid=True), nullable=False),
-    sa.Column("payload", JSONB(astext_type=sa.Text()), nullable=False),
-    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-    schema=SCHEMA,
-)
 
 
 def _row_to_event(row: sa.Row[Any]) -> AuditEvent:
