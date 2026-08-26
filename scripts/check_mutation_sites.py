@@ -123,13 +123,12 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/adapters/persistence/repositories/assignment_repository_pg.py": (
         BaselineEntry(sites=203, target=100, target_date="2027-02-13")
     ),
-    # W03 (#55): AuditLogPg carries two methods (append + list_for_actor)
-    # plus the table reflection and the row-to-dataclass mapper. The
-    # current count is just over the 100 ceiling; W03's next step is
-    # the same prelude-cleave that W01+W02 are pinned for.
-    "app/src/modules/lanzadera/adapters/persistence/repositories/audit_log_pg.py": (
-        BaselineEntry(sites=107, target=100, target_date="2027-02-13")
-    ),
+    # W48 (#496) extracted the AUDIT_TABLE sa.Table definition into
+    # ``audit_log_table.py`` (~69 sites); the adapter class
+    # ``audit_log_pg.py`` is now ~40 sites. No BASELINE needed.
+    # "app/src/modules/lanzadera/adapters/persistence/repositories/audit_log_pg.py": (
+    #     BaselineEntry(sites=107, target=100, target_date="2027-02-13")
+    # ),
     # W05 (#42-subset): the fifth and final Postgres adapter for
     # the WU AD2 chain. ResetTokenRepositoryPg has 5 methods
     # (insert, find_unused, mark_consumed, mark_superseded,
