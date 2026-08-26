@@ -36,7 +36,6 @@ from uuid import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
     AsyncSessionFactoryPort,
-    Sequence,
     sa,
     select,
 )
