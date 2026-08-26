@@ -20,36 +20,19 @@ not own a transaction.
 
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
-from sqlalchemy.dialects.postgresql import CITEXT
-from sqlalchemy.dialects.postgresql import UUID as PGUUID
-
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
-    SCHEMA,
-    Any,
     AsyncSessionFactoryPort,
     Sequence,
     sa,
     select,
 )
+from app.src.modules.lanzadera.adapters.persistence.repositories.user_table import (
+    USERS_TABLE,
+)  # noqa: F401  # re-exported for back-compat
 from app.src.modules.lanzadera.domain.user import User, UserStatus
-
-USERS_TABLE = sa.Table(
-    "users",
-    sa.MetaData(),
-    sa.Column("id", PGUUID(as_uuid=True), primary_key=True),
-    sa.Column("email", CITEXT(), nullable=False),
-    sa.Column("name", sa.Text(), nullable=False),
-    sa.Column("dni_encrypted", sa.LargeBinary(), nullable=False),
-    sa.Column("password_hash", sa.Text(), nullable=True),
-    sa.Column("status", sa.Enum(UserStatus, name="user_status")),
-    sa.Column("failed_attempts", sa.Integer(), nullable=False, default=0),
-    sa.Column("last_login_at", sa.DateTime(timezone=True), nullable=True),
-    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-    schema=SCHEMA,
-)
 
 
 def _row_to_user(row: sa.Row[Any]) -> User:
