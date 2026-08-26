@@ -104,9 +104,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # expected alongside W03 when the real AuthenticationAdapter lands)
     # is responsible for bringing each below 100. The three sites are
     # recorded as the count the W01 implementation actually emits.
-    "app/src/modules/lanzadera/adapters/persistence/repositories/user_repository_pg.py": (
-        BaselineEntry(sites=145, target=100, target_date="2027-02-13")
-    ),
+    # W51 (#502) extracted USERS_TABLE to user_table.py (~77 sites).
+    # user_repository_pg.py is now ~70 sites — well below the ceiling.
+    # "app/src/modules/lanzadera/adapters/persistence/repositories/user_repository_pg.py": (
+    #     BaselineEntry(sites=145, target=100, target_date="2027-02-13")
+    # ),
     "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
         BaselineEntry(sites=148, target=100, target_date="2027-02-13")
     ),
