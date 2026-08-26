@@ -109,9 +109,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # "app/src/modules/lanzadera/adapters/persistence/repositories/user_repository_pg.py": (
     #     BaselineEntry(sites=145, target=100, target_date="2027-02-13")
     # ),
-    "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
-        BaselineEntry(sites=148, target=100, target_date="2027-02-13")
-    ),
+    # W52 (#504) extracted APPS_TABLE to app_table.py (~65 sites).
+    # app_repository_pg.py is now ~85 sites — well below the ceiling.
+    # "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
+    #     BaselineEntry(sites=148, target=100, target_date="2027-02-13")
+    # ),
     # W49 (#498) extracted PROFILES_TABLE into profile_table.py.
     # profile_repository_pg.py is now ~54 sites; profile_table.py is ~63.
     # No BASELINE needed for either.
