@@ -15,31 +15,18 @@ DA-12 by serialising the capabilities map atomically per call.
 
 from __future__ import annotations
 
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from typing import Any
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
-    SCHEMA,
-    Any,
     AsyncSessionFactoryPort,
     Sequence,
     sa,
     select,
 )
+from app.src.modules.lanzadera.adapters.persistence.repositories.profile_table import (
+    PROFILES_TABLE,
+)  # noqa: F401  # re-exported for back-compat
 from app.src.modules.lanzadera.domain.profile import Profile
-
-PROFILES_TABLE = sa.Table(
-    "profiles",
-    sa.MetaData(),
-    sa.Column("id", UUID(as_uuid=True), primary_key=True),
-    sa.Column("app_id", sa.Integer, nullable=False),
-    sa.Column("code", sa.Text(), nullable=False),
-    sa.Column("name", sa.Text(), nullable=False),
-    sa.Column("capabilities", JSONB(astext_type=sa.Text()), nullable=False),
-    sa.Column("active", sa.Boolean, nullable=False, default=True),
-    sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
-    sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
-    schema=SCHEMA,
-)
 
 
 def _row_to_profile(row: sa.Row[Any]) -> Profile:

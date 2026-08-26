@@ -110,9 +110,12 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
         BaselineEntry(sites=148, target=100, target_date="2027-02-13")
     ),
-    "app/src/modules/lanzadera/adapters/persistence/repositories/profile_repository_pg.py": (
-        BaselineEntry(sites=115, target=100, target_date="2027-02-13")
-    ),
+    # W49 (#498) extracted PROFILES_TABLE into profile_table.py.
+    # profile_repository_pg.py is now ~54 sites; profile_table.py is ~63.
+    # No BASELINE needed for either.
+    # "app/src/modules/lanzadera/adapters/persistence/repositories/profile_repository_pg.py": (
+    #     BaselineEntry(sites=115, target=100, target_date="2027-02-13")
+    # ),
     # W02 (#45): the AssignmentRepositoryPg carries the largest
     # mutation surface of any adapter so far because it owns the
     # JSONB-joined ``effective_permissions`` query (the read path
