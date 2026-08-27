@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from typing import Protocol
+from uuid import UUID
 
 from app.src.modules.lanzadera.domain.profile import Profile
 
@@ -25,6 +26,9 @@ class ProfileRepositoryPort(Protocol):
 
     async def get_by_code(self, app_id: int, code: str) -> Profile | None:
         """Return the profile identified by ``(app_id, code)`` or ``None``."""
+
+    async def get_by_id(self, profile_id: UUID) -> Profile | None:
+        """Return the profile with ``id == profile_id`` or ``None``."""
         ...
 
     async def create(self, profile: Profile) -> None:

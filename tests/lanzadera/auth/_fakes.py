@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import UUID
 
 from app.src.modules.lanzadera.domain.user import User, UserStatus
 
@@ -27,6 +29,10 @@ class FakeUserRepository:
     by_id: dict = field(default_factory=dict)
     by_email: dict = field(default_factory=dict)
     update_calls: list = field(default_factory=list)
+    create_calls: list = field(default_factory=list)
+    status_calls: list = field(default_factory=list)
+    failed_attempts_calls: list = field(default_factory=list)
+    last_login_calls: list = field(default_factory=list)
 
     def add(self, user: User) -> None:
         self.by_id[user.id] = user
@@ -38,11 +44,37 @@ class FakeUserRepository:
     async def get_by_id(self, user_id):
         return self.by_id.get(user_id)
 
+    async def list_all(self):
+        return list(self.by_id.values())
+
+    async def create(self, user: User) -> None:
+        self.create_calls.append(user)
+        self.add(user)
+
+    async def update_status(self, user_id: UUID, status: UserStatus) -> None:
+        self.status_calls.append((user_id, status))
+        user = self.by_id[user_id]
+        user.status = status
+
     async def update_password_and_activate(self, user_id, password_hash: str) -> None:
+        self.update_calls.append((user_id, password_hash))
         user = self.by_id[user_id]
         user.password_hash = password_hash
         user.status = UserStatus.ACTIVE
-        self.update_calls.append((user_id, password_hash))
+
+    async def update_failed_attempts(self, user_id, failed_attempts: int) -> None:
+        self.failed_attempts_calls.append((user_id, failed_attempts))
+        user = self.by_id[user_id]
+        user.failed_attempts = failed_attempts
+
+    async def record_login_attempt(self, user_id, *, at: datetime) -> None:
+        self.last_login_calls.append((user_id, at))
+        user = self.by_id[user_id]
+        user.last_login_at = at
+
+    async def reset_failed_attempts(self, user_id) -> None:
+        user = self.by_id[user_id]
+        user.failed_attempts = 0
 
 
 @dataclass

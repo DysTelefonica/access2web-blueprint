@@ -10,14 +10,15 @@ here.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Sequence
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
 
 if TYPE_CHECKING:
     from app.src.modules.lanzadera.domain.reset_token import ResetToken
-    from app.src.modules.lanzadera.domain.user import User
+    from app.src.modules.lanzadera.domain.user import User, UserStatus
 
 
 class PasswordHasher(Protocol):
@@ -36,7 +37,7 @@ class PasswordHasher(Protocol):
 
 
 class UserRepository(Protocol):
-    """User storage port.
+    """User storage port (DA-1, D89).
 
     Async to match the design (DA-1). The protocol was declared sync by
     PR #42 (#288) before the design ratified async for every repository;
@@ -44,18 +45,22 @@ class UserRepository(Protocol):
     adapters (Postgres + the in-memory Fakes) and the async delivery
     adapters that already call ``await users.<method>(...)``.
 
-    The ``create`` / ``update_status`` / ``list_all`` operations on the
-    user port are not part of the reset-flow surface (D90); they live
-    on a separate Protocol (``UserAdminPort``, future) that the
-    delivery/admin WU will pin. Today's admin router reaches them via
-    ``getattr`` fallbacks against the in-memory fake; those are not in
-    scope for the D90/W01 reset-flow surface and stay outside the
-    Protocol until the dedicated WU.
+    W54 (#508) extended the protocol to surface the admin-side
+    operations (create, update_status, list_all, the failed_attempts
+    family). The Postgres adapter and the in-memory fakes already
+    implement all of these — this PR just brings the contract in
+    line with the implementations.
     """
 
     async def get_by_email(self, email: str) -> User | None: ...
     async def get_by_id(self, user_id: UUID) -> User | None: ...
+    async def list_all(self) -> Sequence[User]: ...
+    async def create(self, user: User) -> None: ...
+    async def update_status(self, user_id: UUID, status: UserStatus) -> None: ...
     async def update_password_and_activate(self, user_id: UUID, password_hash: str) -> None: ...
+    async def update_failed_attempts(self, user_id: UUID, failed_attempts: int) -> None: ...
+    async def record_login_attempt(self, user_id: UUID, *, at: datetime) -> None: ...
+    async def reset_failed_attempts(self, user_id: UUID) -> None: ...
 
 
 class ResetTokenRepository(Protocol):
@@ -99,6 +104,9 @@ class AuditLogEntry:
     target_id: str
     result: str
     created_at: datetime
+    module: str = "lanzadera"
+    correlation_id: UUID | None = None
+    payload: dict = field(default_factory=dict)
 
 
 class AuditLog(Protocol):
