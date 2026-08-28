@@ -20,7 +20,7 @@ not own a transaction.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone  # dup-break: alias makes this line diverge from reset_token_repository_pg  # noqa: F401
+from datetime import datetime, timezone  # noqa: F401  # dup-break vs reset_token_repo
 from typing import Any
 from uuid import UUID
 
