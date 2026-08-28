@@ -288,7 +288,7 @@ class AuditLog(Protocol):
     """Audit emission port (DA-11). Real adapter in PR 44. Async."""
 
     async def append(self, event: AuditLogEntry) -> None: ...
-    async def list_for_actor(self, actor_id: UUID, since: datetime) -> Sequence: ...
+    async def list_for_actor(self, actor_id: UUID, since: datetime) -> Sequence[object]: ...  # noqa: UP037
 
 
 __all__ = [
