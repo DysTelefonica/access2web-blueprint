@@ -62,6 +62,7 @@ def register_user_routes(
                 detail=f"user {email} already exists",
             )
         from app.src.modules.lanzadera.domain.user import User, UserStatus
+
         new_user = User(
             id=__import__("uuid").uuid4(),
             email=email.strip().lower(),
