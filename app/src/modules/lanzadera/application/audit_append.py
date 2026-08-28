@@ -16,8 +16,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from app.src.modules.lanzadera.domain.audit_event import AuditEvent
-from app.src.modules.lanzadera.domain.ports import AuditLog
+from app.src.modules.lanzadera.domain.ports import AuditLog, AuditLogEntry
 
 
 async def audit_append(
@@ -31,18 +30,17 @@ async def audit_append(
     now: datetime,
     correlation_id: UUID | None = None,
     module: str = "lanzadera",
-) -> AuditEvent:
+) -> AuditLogEntry:
     """Persist an audit row with the canonical lanzadera shape.
 
-    Returns the freshly-stamped event so the caller can correlate the
-    response with the audit log entry. D55: the value object constructor
-    enforces ``event_type`` / ``module`` / ``result`` are non-empty
-    strings (empty values would slip past validation downstream); the
-    caller does not need to repeat the check.
+    Returns the freshly-stamped entry so the caller can correlate the
+    response with the audit log row. D55: the value object
+    constructor enforces ``event_type`` / ``module`` / ``result`` are
+    non-empty strings (empty values would slip past validation
+    downstream); the caller does not need to repeat the check.
     """
     cid = correlation_id if correlation_id is not None else uuid4()
-    event = AuditEvent(
-        id=uuid4(),
+    entry = AuditLogEntry(
         event_type=event_type,
         actor_id=actor_id,
         target_id=target_id,
@@ -52,8 +50,8 @@ async def audit_append(
         payload=payload,
         created_at=now,
     )
-    await audit.append(event)
-    return event
+    await audit.append(entry)
+    return entry
 
 
 __all__ = ["audit_append"]

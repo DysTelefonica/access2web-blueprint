@@ -29,7 +29,7 @@ _UNIQUE_TAG = "dupbreak-disable_user"  # noqa: F841
 
 
 class _ReadsById(Protocol):
-    async def get_by_id(self, user_id: UUID): ...
+    async def get_by_id(self, user_id: UUID) -> "User | None": ...
 
 
 async def disable_user(

@@ -116,7 +116,7 @@ class AuditLogEntry:
     created_at: datetime
     module: str = "lanzadera"
     correlation_id: UUID | None = None
-    payload: dict = field(default_factory=dict)
+    payload: dict[str, object] = field(default_factory=dict)
 
 
 class AuditLog(Protocol):
