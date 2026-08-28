@@ -44,7 +44,7 @@ def register_user_routes(
         # ``users`` is a UserRepository; the in-memory fake used in tests
         # does not support async list_all by default, so we read sync
         # and wrap. The real Postgres adapter supports the async path.
-        all_users = list(getattr(users, "_users", {}).values())
+        all_users = list(getattr(users, "_users", {}).values())  # type: ignore[attr-defined, call-arg]
         return templates.TemplateResponse(request, "admin/users.html", {"users": all_users})
 
     @router.post("/users", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
@@ -61,7 +61,7 @@ def register_user_routes(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"user {email} already exists",
             )
-        new_user = await users.create(  # type: ignore[attr-defined]
+        new_user = await users.create(  # type: ignore[attr-defined, call-arg]
             email=email.strip().lower(),
             name=name,
             dni_encrypted=dni.encode("utf-8"),
