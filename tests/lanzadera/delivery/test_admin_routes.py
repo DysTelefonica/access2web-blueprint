@@ -41,21 +41,8 @@ class FakeUserRepository:
                 u.status = status
                 return
 
-    async def create(self, *, email: str, name: str, dni_encrypted: bytes) -> User:
-        user = User(
-            id=fake_uuid(),
-            email=email,
-            name=name,
-            dni_encrypted=dni_encrypted,
-            password_hash=None,
-            status=UserStatus.PASSWORD_RESET_REQUIRED,
-            failed_attempts=0,
-            last_login_at=None,
-            created_at=fake_now(),
-            updated_at=fake_now(),
-        )
-        self._users[email] = user
-        return user
+    async def create(self, user: User) -> None:
+        self._users[user.email] = user
 
     async def list_all(self) -> list[User]:
         return list(self._users.values())

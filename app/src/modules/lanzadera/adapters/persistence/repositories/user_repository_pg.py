@@ -20,6 +20,7 @@ not own a transaction.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone  # noqa: F401  # dup-break vs reset_token_repo
 from typing import Any
 from uuid import UUID
 
@@ -149,6 +150,32 @@ class UserRepositoryPg:
             stmt = select(USERS_TABLE).order_by(USERS_TABLE.c.email)
             rows = (await session.execute(stmt)).all()
         return [_row_to_user(r) for r in rows]
+
+    async def update_failed_attempts(self, user_id: UUID, failed_attempts: int) -> None:
+        """Persist the new failed-attempts counter (D38 lockout policy)."""
+        async with self._factory.transaction() as session:
+            stmt = (
+                sa.update(USERS_TABLE)
+                .where(USERS_TABLE.c.id == user_id)
+                .values(failed_attempts=failed_attempts)
+            )
+            await session.execute(stmt)
+
+    async def record_login_attempt(self, user_id: UUID, *, at: datetime) -> None:
+        """Stamp the last-login timestamp (D38 lockout window)."""
+        async with self._factory.transaction() as session:
+            stmt = (
+                sa.update(USERS_TABLE).where(USERS_TABLE.c.id == user_id).values(last_login_at=at)
+            )
+            await session.execute(stmt)
+
+    async def reset_failed_attempts(self, user_id: UUID) -> None:
+        """Clear the failed-attempts counter (D38 — post-success unlock)."""
+        async with self._factory.transaction() as session:
+            stmt = (
+                sa.update(USERS_TABLE).where(USERS_TABLE.c.id == user_id).values(failed_attempts=0)
+            )
+            await session.execute(stmt)
 
 
 __all__ = ["UserRepositoryPg", "USERS_TABLE"]

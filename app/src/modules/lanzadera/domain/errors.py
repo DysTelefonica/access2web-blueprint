@@ -23,3 +23,11 @@ class ResetTokenAlreadyUsedError(Exception):
 
 class UserNotFoundError(Exception):
     """`issue_reset_token` was called for an email that matches no user."""
+
+
+class DuplicateEmailError(Exception):
+    """`create_user` was called for an email that already maps to a row."""
+
+
+class ProfileNotFoundError(Exception):
+    """`assign_profile` was called for a profile that does not exist on the app."""

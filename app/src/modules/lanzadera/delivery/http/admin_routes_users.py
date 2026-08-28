@@ -61,11 +61,21 @@ def register_user_routes(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"user {email} already exists",
             )
-        new_user = await users.create(  # type: ignore[attr-defined]
+        from app.src.modules.lanzadera.domain.user import User, UserStatus
+
+        new_user = User(
+            id=__import__("uuid").uuid4(),
             email=email.strip().lower(),
             name=name,
             dni_encrypted=dni.encode("utf-8"),
+            password_hash=None,
+            status=UserStatus.PASSWORD_RESET_REQUIRED,
+            failed_attempts=0,
+            last_login_at=None,
+            created_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
+            updated_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
         )
+        await users.create(new_user)
         return templates.TemplateResponse(
             request,
             "admin/user_created.html",
@@ -76,7 +86,7 @@ def register_user_routes(
     @router.patch("/users/{user_id}/disable", response_class=HTMLResponse)
     async def disable_user(request: Request, user_id: UUID) -> HTMLResponse:
         _admin.require_global_admin()
-        await users.update_status(user_id, UserStatus.DISABLED)  # type: ignore[attr-defined]
+        await users.update_status(user_id, UserStatus.DISABLED)
         return templates.TemplateResponse(request, "admin/user_disabled.html", {"user_id": user_id})
 
 
