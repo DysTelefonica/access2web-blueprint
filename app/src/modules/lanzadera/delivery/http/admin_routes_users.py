@@ -61,11 +61,20 @@ def register_user_routes(
                 status_code=status.HTTP_409_CONFLICT,
                 detail=f"user {email} already exists",
             )
-        new_user = await users.create(
+        from app.src.modules.lanzadera.domain.user import User, UserStatus
+        new_user = User(
+            id=__import__("uuid").uuid4(),
             email=email.strip().lower(),
             name=name,
             dni_encrypted=dni.encode("utf-8"),
+            password_hash=None,
+            status=UserStatus.PASSWORD_RESET_REQUIRED,
+            failed_attempts=0,
+            last_login_at=None,
+            created_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
+            updated_at=__import__("datetime").datetime.now(__import__("datetime").UTC),
         )
+        await users.create(new_user)
         return templates.TemplateResponse(
             request,
             "admin/user_created.html",
