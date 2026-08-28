@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Protocol
 from uuid import UUID
 
 if TYPE_CHECKING:
+    from app.src.modules.lanzadera.domain.global_admin import GlobalAdmin
     from app.src.modules.lanzadera.domain.reset_token import ResetToken
     from app.src.modules.lanzadera.domain.user import User, UserStatus
 
@@ -79,9 +80,18 @@ class ResetTokenRepository(Protocol):
 
 
 class GlobalAdminRepository(Protocol):
-    """Global-admin read port (D90, D91). Async."""
+    """Global-admin storage port (D21, D42, DA-11). Async.
+
+    W54 (#508) extended the surface with the operations the admin use
+    cases need: is_global_admin (idempotency check), grant and revoke
+    (the membership mutation), and list_all (audit / bootstrap).
+    """
 
     async def there_is_any(self) -> bool: ...
+    async def is_global_admin(self, user_id: UUID) -> bool: ...
+    async def list_all(self) -> Sequence["GlobalAdmin"]: ...
+    async def grant(self, user_id: UUID) -> None: ...
+    async def revoke(self, user_id: UUID) -> None: ...
 
 
 class NotificationDelivery(Protocol):
