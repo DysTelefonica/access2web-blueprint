@@ -23,13 +23,13 @@ from app.src.modules.lanzadera.domain.ports import (
     AuditLogEntry,
     UserRepository,
 )
-from app.src.modules.lanzadera.domain.user import UserStatus
+from app.src.modules.lanzadera.domain.user import User, UserStatus
 
 _UNIQUE_TAG = "dupbreak-disable_user"  # noqa: F841
 
 
 class _ReadsById(Protocol):
-    async def get_by_id(self, user_id: UUID) -> "User | None": ...
+    async def get_by_id(self, user_id: UUID) -> User | None: ...
 
 
 async def disable_user(
