@@ -63,10 +63,12 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.user_repository
 from app.src.modules.lanzadera.di.use_cases import build_use_case_factories
 from app.src.modules.lanzadera.domain.ports import (
     AuditLog,
-    BootstrapAdminSource,
     PasswordHasher,
-    SecretManager,
 )
+from app.src.modules.lanzadera.domain.ports.bootstrap_admin_source import (
+    BootstrapAdminSource,
+)
+from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -76,7 +78,10 @@ if TYPE_CHECKING:
     from app.src.modules.lanzadera.domain.user import User
 
 
-def _adapter(adapter_cls, factory: AsyncSessionFactoryPort) -> object:
+def _adapter(
+    adapter_cls: Callable[[AsyncSessionFactoryPort], object],
+    factory: AsyncSessionFactoryPort,
+) -> object:
     return adapter_cls(factory)
 
 
@@ -155,7 +160,7 @@ class LanzaderaContainer:
         national_id: str,
         actor_id: UUID | None = None,
     ) -> User:
-        return await self._use_cases["create_user"](
+        return await self._use_cases["create_user"](  # type: ignore[no-any-return]
             email=email,
             name=name,
             national_id=national_id,
@@ -202,7 +207,7 @@ class LanzaderaContainer:
         )
 
     async def list_effective_apps(self, user_id: UUID) -> Sequence[App]:
-        return await self._use_cases["list_effective_apps"](user_id=user_id)
+        return await self._use_cases["list_effective_apps"](user_id=user_id)  # type: ignore[no-any-return]
 
     async def audit_append(
         self,
@@ -215,7 +220,7 @@ class LanzaderaContainer:
         correlation_id: UUID | None = None,
         module: str = "lanzadera",
     ) -> AuditLog:
-        return await self._use_cases["audit_append"](
+        return await self._use_cases["audit_append"](  # type: ignore[no-any-return]
             event_type=event_type,
             actor_id=actor_id,
             target_id=target_id,
@@ -230,7 +235,7 @@ class LanzaderaContainer:
         *,
         actor_id: UUID | None = None,
     ) -> int:
-        return await self._use_cases["bootstrap_global_admins"](actor_id=actor_id)
+        return await self._use_cases["bootstrap_global_admins"](actor_id=actor_id)  # type: ignore[no-any-return]
 
     async def set_password(
         self,
