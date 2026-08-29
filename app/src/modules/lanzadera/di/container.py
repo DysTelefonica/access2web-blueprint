@@ -31,7 +31,7 @@ from __future__ import annotations
 # di-only marker: container wiring is the composition root (W55).
 import time as _di_t  # noqa: F401
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from app.src.modules.lanzadera.adapters.bootstrap.env_admin_source_adapter import (
     EnvAdminSourceAdapter,
@@ -64,9 +64,22 @@ from app.src.modules.lanzadera.di.use_cases import build_use_case_factories
 from app.src.modules.lanzadera.domain.ports import (
     AuditLog,
     PasswordHasher,
+    UserRepository,
+)
+from app.src.modules.lanzadera.domain.ports.app_repository import (
+    AppRepositoryPort,
+)
+from app.src.modules.lanzadera.domain.ports.assignment_repository import (
+    AssignmentRepositoryPort,
 )
 from app.src.modules.lanzadera.domain.ports.bootstrap_admin_source import (
     BootstrapAdminSource,
+)
+from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
+    GlobalAdminRepositoryPort,
+)
+from app.src.modules.lanzadera.domain.ports.profile_repository import (
+    ProfileRepositoryPort,
 )
 from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
 
@@ -93,16 +106,29 @@ class LanzaderaContainer:
     construct the container with the in-memory fakes in
     ``tests/lanzadera/_fakes.py`` and exercise the use cases
     end-to-end without a real database.
+
+    W-TEST (#519) extended the constructor with optional port
+    arguments. When a port argument is supplied, the Postgres adapter
+    is not built for that slot — the test path stays free of any
+    SQLAlchemy session. Production callers keep the default behaviour
+    (Postgres adapter built against ``session_factory``).
     """
 
     def __init__(
         self,
         *,
-        session_factory: AsyncSessionFactoryPort,
+        session_factory: AsyncSessionFactoryPort | None = None,
         secret_manager: SecretManager,
         password_hasher: PasswordHasher,
         bootstrap_source: BootstrapAdminSource | None = None,
         clock: Callable[[], datetime] | None = None,
+        user_repo: UserRepository | None = None,
+        app_repo: AppRepositoryPort | None = None,
+        profile_repo: ProfileRepositoryPort | None = None,
+        assignment_repo: AssignmentRepositoryPort | None = None,
+        global_admin_repo: GlobalAdminRepositoryPort | None = None,
+        reset_token_repo: object | None = None,
+        audit: AuditLog | None = None,
     ) -> None:
         self._factory = session_factory
         self._secret_manager = secret_manager
@@ -119,17 +145,32 @@ class LanzaderaContainer:
             clock = _default_clock
         self._clock = clock
 
-        # Build adapter instances once and re-use them per call. The
-        # adapter is the Postgres-backed implementation; tests inject
-        # fakes via this very constructor (D89 / DA-1: the connection
-        # opens and closes per call inside the adapter).
-        self._user_repo = UserRepositoryPg(self._factory)
-        self._app_repo = AppRepositoryPg(self._factory)
-        self._profile_repo = ProfileRepositoryPg(self._factory)
-        self._assignment_repo = AssignmentRepositoryPg(self._factory)
-        self._global_admin_repo = GlobalAdminRepositoryPg(self._factory)
-        self._reset_token_repo = ResetTokenRepositoryPg(self._factory)
-        self._audit = AuditLogPg(self._factory)
+        # W-TEST (#519): build the Postgres adapter only when no test
+        # fake has been injected for the slot. The factory is still
+        # required by every Postgres adapter constructor, so callers
+        # that inject a fake may pass ``session_factory=None``; the
+        # injected fake is the only port that will ever see traffic.
+        self._user_repo = user_repo if user_repo is not None else UserRepositoryPg(self._factory)  # type: ignore[arg-type]
+        self._app_repo = app_repo if app_repo is not None else AppRepositoryPg(self._factory)  # type: ignore[arg-type]
+        self._profile_repo = (
+            profile_repo if profile_repo is not None else ProfileRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
+        self._assignment_repo = (
+            assignment_repo
+            if assignment_repo is not None
+            else AssignmentRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
+        self._global_admin_repo = (
+            global_admin_repo
+            if global_admin_repo is not None
+            else GlobalAdminRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
+        self._reset_token_repo = (
+            reset_token_repo
+            if reset_token_repo is not None
+            else ResetTokenRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
+        self._audit = cast(AuditLog, audit if audit is not None else AuditLogPg(self._factory))  # type: ignore[arg-type]
 
         # Build the use case partials once. The public method below
         # forwards the per-call ``actor_id`` etc. to the partial.
@@ -140,7 +181,7 @@ class LanzaderaContainer:
             assignment_repo=self._assignment_repo,
             global_admin_repo=self._global_admin_repo,
             reset_token_repo=self._reset_token_repo,
-            audit=self._audit,  # type: ignore[arg-type]
+            audit=self._audit,
             password_hasher=self._password_hasher,
             secret_manager=self._secret_manager,
             clock=self._clock,
@@ -173,7 +214,14 @@ class LanzaderaContainer:
         *,
         actor_id: UUID | None = None,
     ) -> None:
-        await self._use_cases["disable_user"](user_id=user_id, actor_id=actor_id)
+        # W-TEST (#519): ``disable_user`` requires ``now: datetime``; the
+        # partial does not bind it so the container resolves a fresh value
+        # per call (DA-11: each mutation gets its own audit timestamp).
+        await self._use_cases["disable_user"](
+            user_id=user_id,
+            actor_id=actor_id,
+            now=self._clock(),
+        )
 
     async def grant_global_admin(
         self,
@@ -181,7 +229,12 @@ class LanzaderaContainer:
         *,
         actor_id: UUID | None = None,
     ) -> None:
-        await self._use_cases["grant_global_admin"](user_id=user_id, actor_id=actor_id)
+        # W-TEST (#519): ``grant_global_admin`` requires ``now: datetime``.
+        await self._use_cases["grant_global_admin"](
+            user_id=user_id,
+            actor_id=actor_id,
+            now=self._clock(),
+        )
 
     async def revoke_global_admin(
         self,
@@ -189,7 +242,12 @@ class LanzaderaContainer:
         *,
         actor_id: UUID | None = None,
     ) -> None:
-        await self._use_cases["revoke_global_admin"](user_id=user_id, actor_id=actor_id)
+        # W-TEST (#519): ``revoke_global_admin`` requires ``now: datetime``.
+        await self._use_cases["revoke_global_admin"](
+            user_id=user_id,
+            actor_id=actor_id,
+            now=self._clock(),
+        )
 
     async def assign_profile(
         self,
@@ -199,11 +257,13 @@ class LanzaderaContainer:
         *,
         actor_id: UUID | None = None,
     ) -> None:
+        # W-TEST (#519): ``assign_profile`` requires ``now: datetime``.
         await self._use_cases["assign_profile"](
             user_id=user_id,
             app_id=app_id,
             profile_id=profile_id,
             actor_id=actor_id,
+            now=self._clock(),
         )
 
     async def list_effective_apps(self, user_id: UUID) -> Sequence[App]:
@@ -220,6 +280,8 @@ class LanzaderaContainer:
         correlation_id: UUID | None = None,
         module: str = "lanzadera",
     ) -> AuditLog:
+        # W-TEST (#519): ``audit_append`` requires ``now: datetime``;
+        # the use case uses it to stamp the audit row's ``created_at``.
         return await self._use_cases["audit_append"](  # type: ignore[no-any-return]
             event_type=event_type,
             actor_id=actor_id,
@@ -228,6 +290,7 @@ class LanzaderaContainer:
             payload=payload,
             correlation_id=correlation_id,
             module=module,
+            now=self._clock(),
         )
 
     async def bootstrap_global_admins(
@@ -235,7 +298,11 @@ class LanzaderaContainer:
         *,
         actor_id: UUID | None = None,
     ) -> int:
-        return await self._use_cases["bootstrap_global_admins"](actor_id=actor_id)  # type: ignore[no-any-return]
+        # W-TEST (#519): ``bootstrap_global_admins`` requires ``now: datetime``.
+        return await self._use_cases["bootstrap_global_admins"](  # type: ignore[no-any-return]
+            actor_id=actor_id,
+            now=self._clock(),
+        )
 
     async def set_password(
         self,
@@ -244,29 +311,31 @@ class LanzaderaContainer:
         new_password: str,
         actor_id: UUID | None = None,
     ) -> None:
+        # W-TEST (#519): ``set_password`` requires ``now: datetime``.
         await self._use_cases["set_password"](
             email=email,
             new_password=new_password,
             actor_id=actor_id,
+            now=self._clock(),
         )
 
     @property
-    def users(self) -> UserRepositoryPg:
+    def users(self) -> UserRepository:
         """Read-only access to the UserRepository for admin queries."""
         return self._user_repo
 
     @property
-    def app_repo(self) -> AppRepositoryPg:
+    def app_repo(self) -> AppRepositoryPort:
         """Read-only access to the AppRepository for admin queries."""
         return self._app_repo
 
     @property
-    def assignment_repo(self) -> AssignmentRepositoryPg:
+    def assignment_repo(self) -> AssignmentRepositoryPort:
         """Read-only access to the AssignmentRepository for admin queries."""
         return self._assignment_repo
 
     @property
-    def audit_repo(self) -> AuditLogPg:
+    def audit_repo(self) -> AuditLog:
         """Read-only access to the AuditLog for admin queries."""
         return self._audit
 
@@ -282,7 +351,7 @@ class LanzaderaContainer:
         ``Mostrando X-Y de Z`` and decide whether ``Siguiente`` is
         enabled. The hard cap (``limit=200``) lives on the adapter.
         """
-        return await self._user_repo.list_all_paginated(limit=limit, offset=offset)
+        return await self._user_repo.list_all_paginated(limit=limit, offset=offset)  # type: ignore[no-any-return,attr-defined]
 
 
 __all__ = ["LanzaderaContainer"]

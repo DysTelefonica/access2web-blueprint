@@ -155,6 +155,24 @@ BASELINE: dict[str, BaselineEntry] = {
     # "app/src/modules/lanzadera/adapters/persistence/repositories/reset_token_repository_pg.py": (
     #     BaselineEntry(sites=137, target=100, target_date="2027-02-13")
     # ),
+    # W-TEST (#520, formerly #519): container.py grew from ~64 to
+    # 126 mutation sites because the constructor learned optional
+    # port kwargs (``user_repo``, ``app_repo``, ``profile_repo``,
+    # ``assignment_repo``, ``global_admin_repo``, ``reset_token_repo``,
+    # ``audit``) plus the ``session_factory`` ``| None`` widening
+    # needed for test injection. Each new keyword adds AST nodes for
+    # default values + per-slot ``is None`` branches that build the
+    # Postgres adapter. The container is the wiring layer that
+    # touches every port; it is *expected* to be above the ceiling
+    # while integration tests live here.
+    # The follow-up WU (cleaving container.py along port-group
+    # boundaries — for example ``container_users.py`` /
+    # ``container_apps.py`` / ``container_auth.py`` / a thin
+    # ``container.py`` re-exporter) is responsible for bringing it
+    # below 100 before the BASELINE expires on 2027-02-13.
+    "app/src/modules/lanzadera/di/container.py": (
+        BaselineEntry(sites=126, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
