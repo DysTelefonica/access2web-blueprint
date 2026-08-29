@@ -140,7 +140,7 @@ def build_use_case_factories(
         ),
         "set_password": functools.partial(
             set_password,
-            hasher=password_hasher.hash,
+            hasher=password_hasher,
             users=user_repo,
             global_admins=global_admin_repo,
             audit=audit,

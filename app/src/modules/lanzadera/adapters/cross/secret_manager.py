@@ -59,7 +59,7 @@ class EnvSecretManagerAdapter(SecretManagerPort):
                 secret = os.environ.get("SECRET_KEY", "dev-only-fallback")
                 key = hashlib.sha256(secret.encode()).digest()
             self._fernet_cache = Fernet(base64.urlsafe_b64encode(key))
-        return self._fernet_cache  # type: ignore[has-type]
+        return self._fernet_cache
 
     def encrypt(self, plaintext: str) -> bytes:
         """Symmetric encrypt plaintext via Fernet.

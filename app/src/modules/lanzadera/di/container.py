@@ -61,7 +61,7 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.user_repository
     UserRepositoryPg,
 )
 from app.src.modules.lanzadera.di.use_cases import build_use_case_factories
-from app.src.modules.lanzadera.ports import (
+from app.src.modules.lanzadera.domain.ports import (
     AuditLog,
     BootstrapAdminSource,
     PasswordHasher,
@@ -133,9 +133,9 @@ class LanzaderaContainer:
             app_repo=self._app_repo,
             profile_repo=self._profile_repo,
             assignment_repo=self._assignment_repo,
-            global_admins=self._global_admin_repo,
-            reset_tokens=self._reset_token_repo,
-            audit=self._audit,
+            global_admin_repo=self._global_admin_repo,
+            reset_token_repo=self._reset_token_repo,
+            audit=self._audit,  # type: ignore[arg-type]
             password_hasher=self._password_hasher,
             secret_manager=self._secret_manager,
             clock=self._clock,
@@ -245,28 +245,29 @@ class LanzaderaContainer:
             actor_id=actor_id,
         )
 
-        @property
-        def users(self) -> UserRepositoryPg:
-            """Read-only access to the UserRepository for admin queries."""
-            return self._user_repo
+    @property
+    def users(self) -> UserRepositoryPg:
+        """Read-only access to the UserRepository for admin queries."""
+        return self._user_repo
 
-        @property
-        def app_repo(self) -> AppRepositoryPg:
-            """Read-only access to the AppRepository for admin queries."""
-            return self._app_repo
+    @property
+    def app_repo(self) -> AppRepositoryPg:
+        """Read-only access to the AppRepository for admin queries."""
+        return self._app_repo
 
-        @property
-        def assignment_repo(self) -> AssignmentRepositoryPg:
-            """Read-only access to the AssignmentRepository for admin queries."""
-            return self._assignment_repo
+    @property
+    def assignment_repo(self) -> AssignmentRepositoryPg:
+        """Read-only access to the AssignmentRepository for admin queries."""
+        return self._assignment_repo
 
-        @property
-        def audit_repo(self) -> AuditLogPg:
-            """Read-only access to the AuditLog for admin queries."""
-            return self._audit
+    @property
+    def audit_repo(self) -> AuditLogPg:
+        """Read-only access to the AuditLog for admin queries."""
+        return self._audit
 
-        async def list_all_users(self) -> Sequence[User]:
-            """List all platform users (admin-only)."""
-            return await self._user_repo.list_all()
+    async def list_all_users(self) -> Sequence[User]:
+        """List all platform users (admin-only)."""
+        return await self._user_repo.list_all()
 
-    __all__ = ["LanzaderaContainer"]
+
+__all__ = ["LanzaderaContainer"]
