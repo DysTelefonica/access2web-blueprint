@@ -26,7 +26,7 @@ from app.src.modules.lanzadera.application.bootstrap_global_admins import (
 # name differs from the application marker to keep the 5-statement
 # window hash distinct).
 # di_uc_marker_dupbreak and the next 4 imports are dup-break; noqa: E402, F841
-from app.src.modules.lanzadera.application.create_user import create_user as _create_user_alias
+from app.src.modules.lanzadera.application.create_user import create_user
 from app.src.modules.lanzadera.application.disable_user import disable_user
 from app.src.modules.lanzadera.application.grant_global_admin import (
     grant_global_admin,
@@ -38,6 +38,7 @@ from app.src.modules.lanzadera.application.revoke_global_admin import (
     revoke_global_admin,
 )
 from app.src.modules.lanzadera.application.set_password import set_password
+from app.src.modules.lanzadera.domain.ports import AuditLog, PasswordHasher, SecretManager
 
 if TYPE_CHECKING:
     from datetime import datetime

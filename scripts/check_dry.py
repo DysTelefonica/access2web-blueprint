@@ -123,9 +123,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # Replaced by dup:7f84566161ae: @dataclass+class+docstring coincidence
     # between app.py and user.py (occurrences=2, structural — not a smell).
     "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W58: application/__init__.py and di/use_cases.py share a structural
     # docstring+import AST coincidence (not a smell).
+    # W58 (#515): application/__init__.py:19-29 <-> di/use_cases.py:21-36
+    # same 5-statement import sequence for application modules.
+    "dup:4c92a9c9a240": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:c2ebd0b393d8": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W32 (#467) extracted the SQLAlchemy + typing prelude and the
     # ``async_session_factory`` symbols into

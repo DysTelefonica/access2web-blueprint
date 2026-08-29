@@ -22,21 +22,20 @@ from __future__ import annotations
 
 import logging
 import os
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncIterator
 
-from fastapi import FastAPI, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, status
 from fastapi.templating import Jinja2Templates
 
 from app.src.modules.lanzadera.adapters.bootstrap.env_admin_source_adapter import (
     EnvAdminSourceAdapter,
 )
+from app.src.modules.lanzadera.adapters.cross.secret_manager import EnvSecretManagerAdapter
 from app.src.modules.lanzadera.adapters.crypto.credential_hasher_argon2id import (
     CredentialHasherArgon2id,
 )
-from app.src.modules.lanzadera.adapters.cross.secret_manager import EnvSecretManagerAdapter
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     async_session_factory,
 )
