@@ -153,9 +153,7 @@ class LanzaderaContainer:
         self._user_repo = user_repo if user_repo is not None else UserRepositoryPg(self._factory)  # type: ignore[arg-type]
         self._app_repo = app_repo if app_repo is not None else AppRepositoryPg(self._factory)  # type: ignore[arg-type]
         self._profile_repo = (
-            profile_repo
-            if profile_repo is not None
-            else ProfileRepositoryPg(self._factory)  # type: ignore[arg-type]
+            profile_repo if profile_repo is not None else ProfileRepositoryPg(self._factory)  # type: ignore[arg-type]
         )
         self._assignment_repo = (
             assignment_repo
