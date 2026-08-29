@@ -31,8 +31,8 @@ from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports imp
     select,
 )
 from app.src.modules.lanzadera.adapters.persistence.repositories.user_table import (
-    USERS_TABLE,
-)  # noqa: F401  # re-exported for back-compat
+    USERS_TABLE as USERS_TABLE,
+)  # explicit re-export for mypy --no-implicit-reexport (default in --strict)
 from app.src.modules.lanzadera.domain.user import User, UserStatus
 
 # W59 (#517): pagination defaults for the admin users list.
@@ -212,4 +212,4 @@ class UserRepositoryPg:
 
 __all__ = [
     "UserRepositoryPg"
-]  # USERS_TABLE is re-exported for back-compat but not part of the public surface.
+]  # USERS_TABLE is re-exported for back-compat via the `as USERS_TABLE` import syntax.
