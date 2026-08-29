@@ -2,6 +2,7 @@
 {% block heading %}Usuarios{% endblock %}
 {% block content %}
   <section class="mds-card">
+    {% set shown_count = users|length %}
     <table class="mds-table">
       <thead>
         <tr>
@@ -32,6 +33,31 @@
         {% endfor %}
       </tbody>
     </table>
+    {# Pagination controls — W59 (#517). The buttons always render so the
+       layout is stable; ``disabled`` keeps the navigation predictable
+       when there is no previous/next page. The links preserve the
+       current ``limit`` so the page size survives the round trip. #}
+    {% set prev_offset = offset - limit %}
+    {% set next_offset = offset + limit %}
+    <nav aria-label="Paginación de usuarios" style="display:flex; gap:0.5rem; align-items:center; margin:1rem 0;">
+      {% if offset > 0 %}
+        <a class="mds-button mds-button--secondary" href="?limit={{ limit }}&amp;offset={{ prev_offset }}">Anterior</a>
+      {% else %}
+        <button class="mds-button mds-button--secondary" type="button" disabled>Anterior</button>
+      {% endif %}
+      <span>
+        {% if shown_count > 0 %}
+          Mostrando {{ offset + 1 }}-{{ offset + shown_count }} de {{ total }}
+        {% else %}
+          Sin resultados
+        {% endif %}
+      </span>
+      {% if offset + shown_count < total %}
+        <a class="mds-button mds-button--secondary" href="?limit={{ limit }}&amp;offset={{ next_offset }}">Siguiente</a>
+      {% else %}
+        <button class="mds-button mds-button--secondary" type="button" disabled>Siguiente</button>
+      {% endif %}
+    </nav>
     <h2>Alta</h2>
     <form method="post" action="/admin/users">
       <input class="mds-textfield" type="email" name="email" placeholder="email" required />

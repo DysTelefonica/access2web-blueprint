@@ -35,6 +35,11 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.user_table impo
 )  # noqa: F401  # re-exported for back-compat
 from app.src.modules.lanzadera.domain.user import User, UserStatus
 
+# W59 (#517): pagination defaults for the admin users list.
+_DEFAULT_LIST_LIMIT: int = 50
+_MAX_LIST_LIMIT: int = 200
+_DEFAULT_LIST_OFFSET: int = 0
+
 
 def _row_to_user(row: sa.Row[Any]) -> User:
     """Map a ``users`` row to the domain ``User`` dataclass.
@@ -144,12 +149,39 @@ class UserRepositoryPg:
             )
             await session.execute(stmt)
 
-    async def list_all(self) -> Sequence[User]:
-        """Return every user (admin scope)."""
+    async def list_all(
+        self,
+        limit: int = _DEFAULT_LIST_LIMIT,
+        offset: int = _DEFAULT_LIST_OFFSET,
+    ) -> Sequence[User]:
+        # W59 (#517): thin delegate to ``list_all_paginated`` so the SQL
+        # and the cap live in a single place. ``_total`` is discarded
+        # because callers that only want the rows do not pay the count.
+        users, _total = await self.list_all_paginated(limit=limit, offset=offset)
+        return users
+
+    async def list_all_paginated(
+        self,
+        limit: int = _DEFAULT_LIST_LIMIT,
+        offset: int = _DEFAULT_LIST_OFFSET,
+    ) -> tuple[Sequence[User], int]:
+        # W59 (#517): return one page plus the total so the HTTP layer
+        # can render "Mostrando X-Y de Z". ``limit`` is hard-capped at
+        # ``_MAX_LIST_LIMIT``; offset is clamped by the HTTP route.
+        # Both queries share the same ``read_only_session`` — the count
+        # is a snapshot, and a tiny drift between rows and total is
+        # acceptable for an admin viewer.
         async with self._factory.read_only_session() as session:
-            stmt = select(USERS_TABLE).order_by(USERS_TABLE.c.email)
-            rows = (await session.execute(stmt)).all()
-        return [_row_to_user(r) for r in rows]
+            rows_stmt = (
+                select(USERS_TABLE)
+                .order_by(USERS_TABLE.c.email)
+                .limit(min(limit, _MAX_LIST_LIMIT))
+                .offset(offset)
+            )
+            rows = (await session.execute(rows_stmt)).all()
+            count_stmt = select(sa.func.count()).select_from(USERS_TABLE)
+            total = (await session.execute(count_stmt)).scalar_one()
+        return [_row_to_user(r) for r in rows], total
 
     async def update_failed_attempts(self, user_id: UUID, failed_attempts: int) -> None:
         """Persist the new failed-attempts counter (D38 lockout policy)."""
@@ -178,4 +210,6 @@ class UserRepositoryPg:
             await session.execute(stmt)
 
 
-__all__ = ["UserRepositoryPg", "USERS_TABLE"]
+__all__ = [
+    "UserRepositoryPg"
+]  # USERS_TABLE is re-exported for back-compat but not part of the public surface.

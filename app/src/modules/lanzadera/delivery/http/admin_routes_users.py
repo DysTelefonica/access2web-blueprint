@@ -37,9 +37,22 @@ def register_user_routes(
     """Attach the user-management endpoints to ``router``."""
 
     @router.get("/users", response_class=HTMLResponse)
-    async def list_users(request: Request) -> HTMLResponse:
-        all_users = await container.list_all_users()
-        return templates.TemplateResponse(request, "admin/users.html", {"users": list(all_users)})
+    async def list_users(
+        request: Request,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> HTMLResponse:
+        users, total = await container.list_all_users(limit=limit, offset=offset)
+        return templates.TemplateResponse(
+            request,
+            "admin/users.html",
+            {
+                "users": list(users),
+                "total": total,
+                "limit": min(limit, 200),
+                "offset": max(offset, 0),
+            },
+        )
 
     @router.post("/users", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
     async def create_user(

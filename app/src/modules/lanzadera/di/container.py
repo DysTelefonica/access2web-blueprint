@@ -270,9 +270,19 @@ class LanzaderaContainer:
         """Read-only access to the AuditLog for admin queries."""
         return self._audit
 
-    async def list_all_users(self) -> Sequence[User]:
-        """List all platform users (admin-only)."""
-        return await self._user_repo.list_all()
+    async def list_all_users(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[Sequence[User], int]:
+        """List platform users (admin-only) with pagination.
+
+        W59 (#517) paginated the admin users list. Returns the page
+        rows plus the total count so the HTTP layer can render
+        ``Mostrando X-Y de Z`` and decide whether ``Siguiente`` is
+        enabled. The hard cap (``limit=200``) lives on the adapter.
+        """
+        return await self._user_repo.list_all_paginated(limit=limit, offset=offset)
 
 
 __all__ = ["LanzaderaContainer"]
