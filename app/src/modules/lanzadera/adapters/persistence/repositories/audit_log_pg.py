@@ -19,29 +19,20 @@ so the contract here is enforced by CI rather than by adapter code.
 
 from __future__ import annotations
 
-# A no-op assignment here so the module-level statement sequence
-# diverges from the other Postgres adapters (which would otherwise hash
-# to the same DRY window: future + stdlib imports). The variable is
-# intentionally unused; ruff's F841 is suppressed below.
-_ = None  # noqa: F841
+from datetime import datetime
+from uuid import UUID
 
-# E402 is on the following import lines (the assignment is required to
-# break the dup window, so ruff needs to be told those imports are OK
-# after the assignment).
-from datetime import datetime  # noqa: E402
-from typing import Any  # noqa: E402
-from uuid import UUID  # noqa: E402
-
-from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (  # noqa: E402
+from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
+    Any,
     AsyncSessionFactoryPort,
     Sequence,
     sa,
     select,
 )
-from app.src.modules.lanzadera.adapters.persistence.repositories.audit_log_table import (  # noqa: E402, F401
+from app.src.modules.lanzadera.adapters.persistence.repositories.audit_log_table import (
     AUDIT_TABLE,
-)  # re-exported for back-compat
-from app.src.modules.lanzadera.domain.audit_event import AuditEvent  # noqa: E402
+)  # noqa: F401  # re-exported for back-compat
+from app.src.modules.lanzadera.domain.audit_event import AuditEvent
 
 
 def _row_to_event(row: sa.Row[Any]) -> AuditEvent:

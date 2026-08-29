@@ -119,7 +119,10 @@ BASELINE: dict[str, BaselineEntry] = {
     # unreachable ``0`` to the current count ``3`` so the ratchet stays
     # open at the current shape; ``target_date`` moves to a far horizon
     # so the ratchet does not expire.
-    "dup:110a87c35376": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
+    # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
+    # Replaced by dup:7f84566161ae: @dataclass+class+docstring coincidence
+    # between app.py and user.py (occurrences=2, structural — not a smell).
+    "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W32 (#467) extracted the SQLAlchemy + typing prelude and the
     # ``async_session_factory`` symbols into
     # ``_pg_imports.py``; each Postgres adapter now collapses to a
