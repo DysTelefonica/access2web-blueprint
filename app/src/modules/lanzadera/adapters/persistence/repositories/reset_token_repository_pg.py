@@ -31,10 +31,10 @@ consumers wire the adapter via session sharing instead.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 from uuid import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
+    Any,
     AsyncSessionFactoryPort,
     sa,
     select,

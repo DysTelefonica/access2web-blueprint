@@ -27,16 +27,10 @@ The four-method contract:
 
 from __future__ import annotations
 
-# A no-op if-block here so the module-level statement sequence
-# diverges from the other Postgres adapters (which would otherwise hash
-# to the same DRY window: future + stdlib imports).
-if False:  # noqa: F401
-    pass
-
-from typing import Any
 from uuid import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
+    Any,
     AsyncSessionFactoryPort,
     Sequence,
     sa,
@@ -47,16 +41,6 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.assignment_tabl
     USER_APP_ASSIGNMENTS_TABLE,
 )
 from app.src.modules.lanzadera.domain.assignment import Assignment
-
-
-# A no-op function definition here so the module-level statement
-# sequence diverges from the other Postgres adapters (which would
-# otherwise hash to the same DRY window: future + stdlib imports).
-def _no_op_marker() -> None:
-    """Marker function — exists only to break the DRY dup window.
-
-    The body is empty; the function is never called.
-    """
 
 
 def _row_to_assignment(row: sa.Row[Any]) -> Assignment:
