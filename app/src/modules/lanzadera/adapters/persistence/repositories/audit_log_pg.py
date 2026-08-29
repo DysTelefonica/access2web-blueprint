@@ -107,6 +107,13 @@ class AuditLogPg:
             rows = (await session.execute(stmt)).all()
         return [_row_to_event(r) for r in rows]
 
+    async def list_recent(self, limit: int = 200) -> Sequence[AuditEvent]:
+        """Return the most recent audit events (admin audit log viewer)."""
+        async with self._factory.read_only_session() as session:
+            stmt = select(AUDIT_TABLE).order_by(AUDIT_TABLE.c.created_at.desc()).limit(limit)
+            rows = (await session.execute(stmt)).all()
+        return [_row_to_event(r) for r in rows]
+
 
 __all__ = [
     "AUDIT_TABLE",

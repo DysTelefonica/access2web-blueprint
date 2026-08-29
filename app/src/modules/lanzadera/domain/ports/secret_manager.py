@@ -25,3 +25,6 @@ class SecretManagerPort(Protocol):
                 key name alongside any other secret.
         """
         ...
+
+
+SecretManager = SecretManagerPort

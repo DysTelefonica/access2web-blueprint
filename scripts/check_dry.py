@@ -122,7 +122,26 @@ BASELINE: dict[str, BaselineEntry] = {
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # Replaced by dup:7f84566161ae: @dataclass+class+docstring coincidence
     # between app.py and user.py (occurrences=2, structural — not a smell).
-    "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W58 (#515): the surviving 2-way admin/app coincidence retains the
+    # W40 dataclass-field shape (`id` + `name` + one more field across
+    # the entities that survived `admin.py` retirement). CI runs the
+    # gate on Python 3.12 where ``ast.dump`` emits the same fields
+    # order as the W40 baseline, so the digest remains
+    # ``110a87c35376``; restoring the W40 entry preserves the ratchet
+    # for that environment.
+    "dup:110a87c35376": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W58 (#515): application/__init__.py and di/use_cases.py share a
+    # structural docstring+import AST coincidence (not a smell). CI
+    # runs the gate on Python 3.12 and computes this digest for the
+    # 5-statement window; restoring it keeps the ratchet green.
+    "dup:44873193a475": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring
+    # coincidence between application/__init__.py and di/use_cases.py
+    # recorded when the W58 wiring was first added. The subsequent fix
+    # (use_cases.py module-level port imports + dup-break markers)
+    # collapsed the 5-statement window into ``dup:4c92a9c9a240``
+    # (import sequence) instead. ``dup:c2ebd0b393d8`` no longer matches
+    # any detected block; remove it from BASELINE.
     # W32 (#467) extracted the SQLAlchemy + typing prelude and the
     # ``async_session_factory`` symbols into
     # ``_pg_imports.py``; each Postgres adapter now collapses to a

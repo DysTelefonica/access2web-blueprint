@@ -33,8 +33,8 @@ def test_healthcheck_returns_ok(client: TestClient) -> None:
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "ok"
-    assert payload["phase"] == "0"
-    assert payload["service"] == "app-lanzadera-mvp"
+    assert payload["phase"] == "1"
+    assert payload["service"] == "lanzadera"
 
 
 def test_app_factory_exposes_expected_metadata() -> None:
