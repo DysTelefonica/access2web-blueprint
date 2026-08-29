@@ -1,0 +1,492 @@
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W-TEST (#519)
+"""In-memory fakes for the W54-W59 admin use cases (issue #519).
+
+The admin HTTP routes (``list_users``, ``create_user``, ``disable_user``,
+``assign_profile``) go through the full chain ``HTTP route →
+LanzaderaContainer → use case → repository``. This module stands in for
+the Postgres adapters at the repository seam so the integration tests
+exercise the use-case logic end-to-end without a real database.
+
+Why a top-level ``tests/lanzadera/_fakes.py`` (not ``delivery/_fakes.py``
+or ``auth/_fakes.py``): the admin chain uses every port the container
+owns, and routing imports from three of them. Splitting the fakes across
+``auth/`` and ``adapters/`` would force the admin tests to reach across
+two modules to build the container — which is exactly the kind of test
+brittleness the W-TEST slice set out to fix. One module, one chain,
+one fixture.
+
+Design choices:
+
+- Every fake is a plain dataclass with ``field(default_factory=...)``
+  so two tests can build two independent fakes without sharing state.
+- The fakes record every mutation in ``*_calls`` / ``entries`` lists so
+  the assertions can pin the exact mutation count (DA-11: one audit
+  row per mutation, no more, no less).
+- ``FakeSecretManager`` implements the ``encrypt`` method the use cases
+  call via ``functools.partial(secret_manager.encrypt)`` — that is the
+  contract the production wiring pins, so the fake mirrors it.
+- ``FakeUserRepository.list_all_paginated`` returns ``(rows, total)`` to
+  match the W59 (#517) ``UserRepositoryPg.list_all_paginated`` contract
+  the admin ``list_users`` route goes through.
+"""
+
+from __future__ import annotations
+
+import dataclasses
+from collections.abc import Sequence
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
+
+# Imported at module level (not under ``TYPE_CHECKING``) so ``ruff``'s
+# ``F821`` rule stays happy — the dataclass field annotations reference
+# these names as strings at runtime (via ``from __future__ import
+# annotations``), but the static checker cannot see forward references
+# defined only inside ``TYPE_CHECKING``.
+from app.src.modules.lanzadera.domain.app import App
+from app.src.modules.lanzadera.domain.assignment import Assignment
+from app.src.modules.lanzadera.domain.audit_event import AuditEvent
+from app.src.modules.lanzadera.domain.global_admin import GlobalAdmin
+from app.src.modules.lanzadera.domain.profile import Profile
+from app.src.modules.lanzadera.domain.reset_token import ResetToken
+from app.src.modules.lanzadera.domain.user import User, UserStatus
+
+if TYPE_CHECKING:
+    pass  # the runtime imports above already cover the static checker
+
+
+# ---------------------------------------------------------------------------
+# User repository — DA-1, D89, W59
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeUserRepository:
+    """In-memory ``UserRepository`` covering every method the admin chain hits.
+
+    The fake mirrors the production surface: ``create`` / ``get_by_email`` /
+    ``get_by_id`` / ``update_status`` for the use cases, plus
+    ``list_all_paginated`` for the W59 admin ``list_users`` route. The
+    full ``UserRepository`` Protocol is implemented so any test in the
+    file can use the same fake.
+    """
+
+    by_id: dict[UUID, User] = field(default_factory=dict)
+    by_email: dict[str, User] = field(default_factory=dict)
+    create_calls: list[User] = field(default_factory=list)
+    status_calls: list[tuple[UUID, UserStatus]] = field(default_factory=list)
+    failed_attempts_calls: list[tuple[UUID, int]] = field(default_factory=list)
+    last_login_calls: list[tuple[UUID, datetime]] = field(default_factory=list)
+
+    def add(self, user: User) -> None:
+        """Seed the fake synchronously (test-side helper, not in the Protocol)."""
+        self.by_id[user.id] = user
+        self.by_email[user.email] = user
+
+    async def get_by_email(self, email: str) -> User | None:
+        return self.by_email.get(email)
+
+    async def get_by_id(self, user_id: UUID) -> User | None:
+        return self.by_id.get(user_id)
+
+    async def list_all(self) -> Sequence[User]:
+        return list(self.by_id.values())
+
+    async def list_all_paginated(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> tuple[Sequence[User], int]:
+        """Mirror the W59 (#517) Postgres adapter contract.
+
+        ``limit`` is hard-capped at 200 by the production adapter; the
+        fake honours the same cap so a test that pushes 250 rows still
+        gets the documented behaviour. ``offset`` is clamped to a
+        non-negative value.
+        """
+        cap = min(limit, 200)
+        rows = sorted(self.by_id.values(), key=lambda u: u.email)
+        return rows[offset : offset + cap], len(rows)
+
+    async def create(self, user: User) -> None:
+        self.create_calls.append(user)
+        self.add(user)
+
+    async def update_status(self, user_id: UUID, status: UserStatus) -> None:
+        self.status_calls.append((user_id, status))
+        user = self.by_id[user_id]
+        user.status = status
+
+    async def update_password_and_activate(self, user_id: UUID, password_hash: str) -> None:
+        user = self.by_id[user_id]
+        user.password_hash = password_hash
+        user.status = self._active()  # type: ignore[attr-defined]
+
+    async def update_failed_attempts(self, user_id: UUID, failed_attempts: int) -> None:
+        self.failed_attempts_calls.append((user_id, failed_attempts))
+        user = self.by_id[user_id]
+        user.failed_attempts = failed_attempts
+
+    async def record_login_attempt(self, user_id: UUID, *, at: datetime) -> None:
+        self.last_login_calls.append((user_id, at))
+        user = self.by_id[user_id]
+        user.last_login_at = at
+
+    async def reset_failed_attempts(self, user_id: UUID) -> None:
+        user = self.by_id[user_id]
+        user.failed_attempts = 0
+
+    def _active(self) -> UserStatus:
+        # Imported lazily to keep the dataclass free of circular-import risk.
+        from app.src.modules.lanzadera.domain.user import UserStatus
+
+        return UserStatus.ACTIVE
+
+
+# ---------------------------------------------------------------------------
+# App repository — DA-7, D52, D85
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeAppRepository:
+    """In-memory ``AppRepositoryPort`` covering every method the admin chain hits.
+
+    The admin ``list_apps`` route reads via ``list_active``. The
+    ``assign_profile`` use case reads via ``get_by_id`` to validate
+    that the target app exists.
+    """
+
+    by_id: dict[int, App] = field(default_factory=dict)
+    list_active_calls: int = 0
+    get_by_id_calls: int = 0
+    list_visible_to_calls: list[UUID] = field(default_factory=list)
+
+    def add(self, app: App) -> None:
+        self.by_id[app.id] = app
+
+    async def get_by_id(self, app_id: int) -> App | None:
+        self.get_by_id_calls += 1
+        return self.by_id.get(app_id)
+
+    async def list_active(self) -> Sequence[App]:
+        """Return every app with ``registration_status='active'``."""
+        self.list_active_calls += 1
+        from app.src.modules.lanzadera.domain.app import AppRegistrationStatus
+
+        return [
+            a for a in self.by_id.values() if a.registration_status is AppRegistrationStatus.ACTIVE
+        ]
+
+    async def list_visible_to(self, user_id: UUID) -> Sequence[App]:
+        self.list_visible_to_calls.append(user_id)
+        return list(self.by_id.values())
+
+
+# ---------------------------------------------------------------------------
+# Assignment repository — DA-12, D22, D42, H11
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeAssignmentRepository:
+    """In-memory ``AssignmentRepositoryPort``.
+
+    Tracks every ``create`` call so the tests can assert the use case
+    issued exactly one INSERT (DA-12 + H11: ``SinAcceso`` exclusivity
+    is enforced at the application layer; the fake matches the
+    lenient path used by the admin route tests).
+    """
+
+    by_id: dict[UUID, Assignment] = field(default_factory=dict)
+    create_calls: list[tuple[UUID, int, UUID]] = field(default_factory=list)
+
+    def add(self, assignment: Assignment) -> None:
+        self.by_id[assignment.id] = assignment
+
+    async def create(self, user_id: UUID, app_id: int, profile_id: UUID) -> Assignment:
+        from app.src.modules.lanzadera.domain.assignment import Assignment
+
+        self.create_calls.append((user_id, app_id, profile_id))
+        assignment = Assignment(
+            id=uuid4(),
+            user_id=user_id,
+            app_id=app_id,
+            profile_id=profile_id,
+            granted_by=None,
+            granted_at=datetime.now(UTC),
+            revoked_at=None,
+        )
+        self.by_id[assignment.id] = assignment
+        return assignment
+
+    async def list_for_user(self, user_id: UUID) -> Sequence[Assignment]:
+        return [a for a in self.by_id.values() if a.user_id == user_id and a.revoked_at is None]
+
+    async def list_for_app(self, app_id: int) -> Sequence[Assignment]:
+        return [a for a in self.by_id.values() if a.app_id == app_id and a.revoked_at is None]
+
+    async def effective_permissions(self, user_id: UUID, app_id: int) -> Sequence[str]:
+        return []
+
+
+# ---------------------------------------------------------------------------
+# Global admin repository — D21, D42
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeGlobalAdminRepository:
+    """In-memory ``GlobalAdminRepositoryPort`` with the W54 surface.
+
+    The fake honours the D42 last-admin invariant in ``revoke``: the
+    use-case tests that exercise that path can rely on the
+    ``ValueError`` the production Postgres adapter raises.
+    """
+
+    members: set[UUID] = field(default_factory=set)
+    grant_calls: list[UUID] = field(default_factory=list)
+    revoke_calls: list[UUID] = field(default_factory=list)
+
+    async def there_is_any(self) -> bool:
+        return bool(self.members)
+
+    async def is_global_admin(self, user_id: UUID) -> bool:
+        return user_id in self.members
+
+    async def list_all(self) -> Sequence[GlobalAdmin]:
+        from app.src.modules.lanzadera.domain.global_admin import GlobalAdmin
+
+        return [GlobalAdmin(user_id=u) for u in self.members]
+
+    async def grant(self, user_id: UUID) -> None:
+        self.grant_calls.append(user_id)
+        self.members.add(user_id)
+
+    async def revoke(self, user_id: UUID) -> None:
+        self.revoke_calls.append(user_id)
+        if len(self.members) <= 1:
+            raise ValueError("cannot revoke the last global admin")
+        self.members.discard(user_id)
+
+
+# ---------------------------------------------------------------------------
+# Reset token repository — DA-4, D90
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeResetTokenRepository:
+    """In-memory ``ResetTokenRepository`` (the auth-flow port).
+
+    The admin chain does not exercise the reset-flow directly, but the
+    container instantiates a reset-token repo at boot — passing a fake
+    keeps the test path free of any SQLAlchemy session. ``insert`` /
+    ``find_unused`` mirror the legacy ``Protocol`` shape so the fake
+    stays compatible with the auth-flow tests in
+    ``tests/lanzadera/auth/_fakes.py`` that import from here.
+    """
+
+    by_hash: dict[str, ResetToken] = field(default_factory=dict)
+    insert_calls: list[UUID] = field(default_factory=list)
+
+    async def insert(self, token: ResetToken) -> None:
+        self.insert_calls.append(token.user_id)
+        self.by_hash[token.token_hash] = token
+
+    async def find_unused(self, token_hash: str, now: datetime) -> ResetToken | None:
+        token = self.by_hash.get(token_hash)
+        if token is None or token.consumed_at or token.superseded_at or token.expires_at <= now:
+            return None
+        return token
+
+    async def mark_consumed(self, token_hash: str, at: datetime) -> None:
+        token = self.by_hash.get(token_hash)
+        if token is not None:
+            self.by_hash[token_hash] = dataclasses.replace(token, consumed_at=at)
+
+    async def mark_superseded(self, user_id: UUID, at: datetime) -> None:
+        for h, row in list(self.by_hash.items()):
+            if row.user_id == user_id and not row.consumed_at and not row.superseded_at:
+                self.by_hash[h] = dataclasses.replace(row, superseded_at=at)
+
+
+# ---------------------------------------------------------------------------
+# Profile repository — DA-12, D22, D45
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeProfileRepository:
+    """In-memory ``ProfileRepositoryPort`` for the assign_profile use case.
+
+    ``assign_profile`` calls ``get_by_id`` to validate the profile
+    exists and that its ``app_id`` matches the target app. Tests that
+    exercise the SinAcceso exclusivity branch seed the fake with two
+    profiles: a non-SinAcceso one and a SinAcceso one, and assert that
+    the use case rejects the swap.
+    """
+
+    by_id: dict[UUID, Profile] = field(default_factory=dict)
+    get_by_id_calls: list[UUID] = field(default_factory=list)
+
+    def add(self, profile: Profile) -> None:
+        self.by_id[profile.id] = profile
+
+    async def get_by_id(self, profile_id: UUID) -> Profile | None:
+        self.get_by_id_calls.append(profile_id)
+        return self.by_id.get(profile_id)
+
+    async def get_by_code(self, app_id: int, code: str) -> Profile | None:
+        for p in self.by_id.values():
+            if p.app_id == app_id and p.code == code:
+                return p
+        return None
+
+    async def list_for_app(self, app_id: int) -> Sequence[Profile]:
+        return [p for p in self.by_id.values() if p.app_id == app_id]
+
+    async def create(self, profile: Profile) -> None:
+        self.by_id[profile.id] = profile
+
+    async def set_active(self, app_id: int, code: str, *, active: bool) -> None:
+        for p in self.by_id.values():
+            if p.app_id == app_id and p.code == code:
+                p.active = active
+
+
+# ---------------------------------------------------------------------------
+# Audit log — DA-11, D27, D55
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeAuditLog:
+    """In-memory ``AuditLog`` covering ``append`` and ``list_recent``.
+
+    The admin route ``GET /admin/audit`` reads via ``list_recent`` on
+    the Postgres adapter (``AuditLogPg.list_recent``); the fake
+    implements the same method so the route works end-to-end against
+    the injected fake. ``append`` records the raw ``AuditLogEntry``
+    dataclass — DA-11: the production adapter stores an ``AuditEvent``
+    that carries the row's UUID, but the use case emits an
+    ``AuditLogEntry`` which the Postgres adapter translates under the
+    hood. The fake accepts the entry shape the use case actually
+    passes, which is what the contract test pins.
+    """
+
+    entries: list = field(default_factory=list)
+    list_recent_calls: int = 0
+    next_raises: BaseException | None = None
+
+    async def append(self, event) -> None:
+        if self.next_raises is not None:
+            exc, self.next_raises = self.next_raises, None
+            raise exc
+        self.entries.append(event)
+
+    async def list_recent(self, limit: int = 200) -> Sequence[AuditEvent]:
+        """Mirror the production ``list_recent`` ordering (newest first)."""
+        self.list_recent_calls += 1
+        return list(reversed(self.entries))[:limit]
+
+    async def list_for_actor(self, actor_id: UUID, since: datetime) -> Sequence[AuditEvent]:
+        return [e for e in self.entries if e.actor_id == actor_id and e.created_at >= since]
+
+
+# ---------------------------------------------------------------------------
+# Secret manager — D25, D73, D11
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeSecretManager:
+    """In-memory ``SecretManager`` with the ``encrypt`` method the use cases call.
+
+    The container's ``build_use_case_factories`` passes
+    ``secret_manager.encrypt`` as a ``functools.partial`` argument to
+    ``create_user`` and ``bootstrap_global_admins``. The fake mirrors
+    that exact attribute — the call site is ``secrets.encrypt(plaintext)
+    -> bytes`` and the fake returns ``b"enc:" + plaintext.encode()``.
+
+    The ``get`` method is included so the fake also satisfies the
+    ``SecretManagerPort`` Protocol if a test asserts it.
+    """
+
+    encrypted: list[str] = field(default_factory=list)
+    fail_next: bool = False
+
+    def get(self, key: str) -> str:
+        return f"fake-secret-for-{key}"
+
+    def encrypt(self, plaintext: str) -> bytes:
+        self.encrypted.append(plaintext)
+        if self.fail_next:
+            self.fail_next = False
+            raise RuntimeError("simulated encrypt failure")
+        return b"enc:" + plaintext.encode("utf-8")
+
+
+# ---------------------------------------------------------------------------
+# Password hasher — DA-2, D88
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakePasswordHasher:
+    """Identity ``PasswordHasher`` for the admin chain.
+
+    The admin HTTP routes never invoke the hasher (the reset-flow
+    chain is what hashes), but the container requires a
+    ``PasswordHasher`` at construction time. The fake is included so
+    the container fixture does not have to reach for
+    ``CredentialHasherArgon2id`` (which spins up a real Argon2
+    derivation per call — overkill for the admin tests).
+    """
+
+    hash_calls: list[str] = field(default_factory=list)
+    verify_calls: list[tuple[str, str]] = field(default_factory=list)
+
+    async def hash(self, password: str) -> str:
+        self.hash_calls.append(password)
+        return f"fake:{password}"
+
+    async def verify(self, password: str, password_hash: str) -> bool:
+        self.verify_calls.append((password, password_hash))
+        return password_hash == f"fake:{password}"
+
+
+# ---------------------------------------------------------------------------
+# Bootstrap admin source — D91
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeBootstrapAdminSource:
+    """In-memory ``BootstrapAdminSource`` returning a fixed email set.
+
+    The bootstrap path is exercised by ``container.bootstrap_global_admins``;
+    the admin HTTP tests do not call it, but the container is built
+    once and the source is queried only at startup. Returning an empty
+    list keeps the bootstrap path a no-op.
+    """
+
+    emails: list[str] = field(default_factory=list)
+
+    def list_emails(self) -> list[str]:
+        return list(self.emails)
+
+
+__all__ = [
+    "FakeAppRepository",
+    "FakeAssignmentRepository",
+    "FakeAuditLog",
+    "FakeBootstrapAdminSource",
+    "FakeGlobalAdminRepository",
+    "FakePasswordHasher",
+    "FakeProfileRepository",
+    "FakeResetTokenRepository",
+    "FakeSecretManager",
+    "FakeUserRepository",
+]

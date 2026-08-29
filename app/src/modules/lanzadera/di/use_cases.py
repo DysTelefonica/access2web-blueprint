@@ -96,7 +96,7 @@ def build_use_case_factories(
             _create_user,
             users=user_repo,
             audit=audit,
-            secrets=secret_manager.encrypt,  # type: ignore[attr-defined]
+            secrets=secret_manager,  # type: ignore[arg-type]
         ),
         "disable_user": functools.partial(
             disable_user,
@@ -137,7 +137,7 @@ def build_use_case_factories(
             users=user_repo,
             global_admins=global_admin_repo,
             audit=audit,
-            secrets=secret_manager.encrypt,  # type: ignore[attr-defined]
+            secrets=secret_manager,  # type: ignore[arg-type]
         ),
         "set_password": functools.partial(
             set_password,
@@ -145,7 +145,7 @@ def build_use_case_factories(
             users=user_repo,
             global_admins=global_admin_repo,
             audit=audit,
-            secrets=secret_manager.encrypt,  # type: ignore[attr-defined]
+            secrets=secret_manager,  # type: ignore[arg-type]
         ),
     }
 
