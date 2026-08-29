@@ -31,7 +31,7 @@ from __future__ import annotations
 # di-only marker: container wiring is the composition root (W55).
 import time as _di_t  # noqa: F401
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from app.src.modules.lanzadera.adapters.bootstrap.env_admin_source_adapter import (
     EnvAdminSourceAdapter,
@@ -153,24 +153,26 @@ class LanzaderaContainer:
         self._user_repo = user_repo if user_repo is not None else UserRepositoryPg(self._factory)  # type: ignore[arg-type]
         self._app_repo = app_repo if app_repo is not None else AppRepositoryPg(self._factory)  # type: ignore[arg-type]
         self._profile_repo = (
-            profile_repo if profile_repo is not None else ProfileRepositoryPg(self._factory)
-        )  # type: ignore[arg-type]
+            profile_repo
+            if profile_repo is not None
+            else ProfileRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
         self._assignment_repo = (
             assignment_repo
             if assignment_repo is not None
-            else AssignmentRepositoryPg(self._factory)
-        )  # type: ignore[arg-type]
+            else AssignmentRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
         self._global_admin_repo = (
             global_admin_repo
             if global_admin_repo is not None
-            else GlobalAdminRepositoryPg(self._factory)
-        )  # type: ignore[arg-type]
+            else GlobalAdminRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
         self._reset_token_repo = (
             reset_token_repo
             if reset_token_repo is not None
-            else ResetTokenRepositoryPg(self._factory)
-        )  # type: ignore[arg-type]
-        self._audit = audit if audit is not None else AuditLogPg(self._factory)  # type: ignore[arg-type]
+            else ResetTokenRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
+        self._audit = cast(AuditLog, audit if audit is not None else AuditLogPg(self._factory))  # type: ignore[arg-type]
 
         # Build the use case partials once. The public method below
         # forwards the per-call ``actor_id`` etc. to the partial.
@@ -181,7 +183,7 @@ class LanzaderaContainer:
             assignment_repo=self._assignment_repo,
             global_admin_repo=self._global_admin_repo,
             reset_token_repo=self._reset_token_repo,
-            audit=self._audit,  # type: ignore[arg-type]
+            audit=self._audit,
             password_hasher=self._password_hasher,
             secret_manager=self._secret_manager,
             clock=self._clock,
@@ -320,22 +322,22 @@ class LanzaderaContainer:
         )
 
     @property
-    def users(self) -> UserRepositoryPg:
+    def users(self) -> UserRepository:
         """Read-only access to the UserRepository for admin queries."""
         return self._user_repo
 
     @property
-    def app_repo(self) -> AppRepositoryPg:
+    def app_repo(self) -> AppRepositoryPort:
         """Read-only access to the AppRepository for admin queries."""
         return self._app_repo
 
     @property
-    def assignment_repo(self) -> AssignmentRepositoryPg:
+    def assignment_repo(self) -> AssignmentRepositoryPort:
         """Read-only access to the AssignmentRepository for admin queries."""
         return self._assignment_repo
 
     @property
-    def audit_repo(self) -> AuditLogPg:
+    def audit_repo(self) -> AuditLog:
         """Read-only access to the AuditLog for admin queries."""
         return self._audit
 
@@ -351,7 +353,7 @@ class LanzaderaContainer:
         ``Mostrando X-Y de Z`` and decide whether ``Siguiente`` is
         enabled. The hard cap (``limit=200``) lives on the adapter.
         """
-        return await self._user_repo.list_all_paginated(limit=limit, offset=offset)
+        return await self._user_repo.list_all_paginated(limit=limit, offset=offset)  # type: ignore[no-any-return,attr-defined]
 
 
 __all__ = ["LanzaderaContainer"]

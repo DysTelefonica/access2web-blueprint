@@ -96,7 +96,7 @@ def build_use_case_factories(
             _create_user,
             users=user_repo,
             audit=audit,
-            secrets=secret_manager,  # type: ignore[arg-type]
+            secrets=secret_manager,
         ),
         "disable_user": functools.partial(
             disable_user,
