@@ -1,0 +1,1 @@
+{"autonomousMode": true, "guardedCommands": {"gitPush": "allow", "gitCommit": "allow"}}

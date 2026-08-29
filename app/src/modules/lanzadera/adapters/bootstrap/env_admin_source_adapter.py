@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import os
 
-from app.src.modules.lanzadera.ports.bootstrap_admin_source import (
-    BootstrapAdminSource,
+from app.src.modules.lanzadera.domain.ports.bootstrap_admin_source import (
+    BootstrapAdminSourcePort as BootstrapAdminSource,
 )
 
 _ENV_KEY = "GLOBAL_ADMIN_EMAILS"

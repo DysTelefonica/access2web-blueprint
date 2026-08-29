@@ -7,56 +7,41 @@ cohesive slices:
 - ``admin_routes_users.py`` — list/create/disable users (3 routes).
 - ``admin_routes_misc.py`` — apps + assignments + audit (4 routes).
 
-W47 (#494) extracted the routes from ``admin.py`` so each file stays
-under the mutation-sites ceiling. ``admin.py`` keeps ``build_router`` +
-the ``require_global_admin`` placeholder; this file is just the
-per-router attachment dispatch.
-"""
+W47 (#494) split the routes from ``admin.py``; W58 (#515) re-wired
+both slices to accept the ``LanzaderaContainer`` instead of individual
+repository arguments, so use-case invariants (audit append, encrypt,
+status transitions) are enforced end-to-end.
 
+``admin.py`` keeps ``build_router`` + the ``require_global_admin``
+placeholder; this file is just the per-router attachment dispatch.
+"""
 from __future__ import annotations
 
 from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 
-from app.src.modules.lanzadera.delivery.http.admin_ports import (
-    AppRepositoryPort,
-    AssignmentRepositoryPort,
-    AuditLogPort,
-    GlobalAdminRepositoryPort,
-    UserRepository,
-)
 from app.src.modules.lanzadera.delivery.http.admin_routes_misc import (
     register_misc_routes,
 )
 from app.src.modules.lanzadera.delivery.http.admin_routes_users import (
     register_user_routes,
 )
+from app.src.modules.lanzadera.di.container import LanzaderaContainer
 
 
 def register_routes(
     router: APIRouter,
     *,
     templates: Jinja2Templates,
-    users: UserRepository,
-    apps: AppRepositoryPort,
-    assignments: AssignmentRepositoryPort,
-    audit: AuditLogPort,
-    admins: GlobalAdminRepositoryPort,
+    container: LanzaderaContainer,
 ) -> None:
     """Attach the seven admin endpoints to ``router``.
 
-    ``admins`` is accepted for symmetry with ``build_router`` — the
-    destructive commands look it up indirectly via the
-    ``_admin.require_global_admin`` placeholder.
+    All routes are wired to the ``LanzaderaContainer`` so the use-case
+    layer (W54, issue #43) is in the call chain.
     """
-    register_user_routes(router, templates=templates, users=users)
-    register_misc_routes(
-        router,
-        templates=templates,
-        apps=apps,
-        assignments=assignments,
-        audit=audit,
-    )
+    register_user_routes(router, templates=templates, container=container)
+    register_misc_routes(router, templates=templates, container=container)
 
 
 __all__ = ["register_routes"]
