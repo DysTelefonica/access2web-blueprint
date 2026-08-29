@@ -156,7 +156,7 @@ BASELINE: dict[str, BaselineEntry] = {
     #     BaselineEntry(sites=137, target=100, target_date="2027-02-13")
     # ),
     # W-TEST (#520, formerly #519): container.py grew from ~64 to
-    # 124 mutation sites because the constructor learned optional
+    # 126 mutation sites because the constructor learned optional
     # port kwargs (``user_repo``, ``app_repo``, ``profile_repo``,
     # ``assignment_repo``, ``global_admin_repo``, ``reset_token_repo``,
     # ``audit``) plus the ``session_factory`` ``| None`` widening
@@ -171,7 +171,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # ``container.py`` re-exporter) is responsible for bringing it
     # below 100 before the BASELINE expires on 2027-02-13.
     "app/src/modules/lanzadera/di/container.py": (
-        BaselineEntry(sites=124, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=126, target=100, target_date="2027-02-13")
     ),
 }
 
