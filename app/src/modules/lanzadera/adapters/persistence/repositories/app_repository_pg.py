@@ -16,12 +16,11 @@ important for the existing RLS policies (see migration 0001).
 
 from __future__ import annotations
 
-from typing import Any
-
 from sqlalchemy.dialects.postgresql import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
     SCHEMA,
+    Any,
     AsyncSessionFactoryPort,
     Sequence,
     sa,
