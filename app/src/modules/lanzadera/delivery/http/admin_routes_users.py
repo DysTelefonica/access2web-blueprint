@@ -15,6 +15,7 @@ The templates use the Mística CSS tokens (``mds-button``,
 ``mds-card``, ``mds-table``, ``mds-tag``, ``mds-textfield``) — see
 ``docs/architecture.md §UI tokens``.
 """
+
 from __future__ import annotations
 
 from uuid import UUID

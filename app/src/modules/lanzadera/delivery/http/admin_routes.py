@@ -15,6 +15,7 @@ status transitions) are enforced end-to-end.
 ``admin.py`` keeps ``build_router`` + the ``require_global_admin``
 placeholder; this file is just the per-router attachment dispatch.
 """
+
 from __future__ import annotations
 
 from fastapi import APIRouter

@@ -17,6 +17,7 @@ Design choices (D73, D91, DA-1):
 - ``FERNET_KEY`` or ``SECRET_KEY`` configures the DNI encryption key.
 - The admin router is mounted under ``/admin`` with the container injected.
 """
+
 from __future__ import annotations
 
 import logging
