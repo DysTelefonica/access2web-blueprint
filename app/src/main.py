@@ -90,7 +90,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     lifespan=lifespan,
     title="Platform — Lanzadera MVP",
-    version="0.1.0",
+    version="0.0.0+phase0",
     description=(
         "Hexagonal Python platform for the Lanzadera admin module. "
         "W58 (#515) wired the LanzaderaContainer (W55, #49) to the "

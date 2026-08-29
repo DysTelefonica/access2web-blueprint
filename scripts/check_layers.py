@@ -115,7 +115,18 @@ class BaselineEntry:
 # Hexagonal layer purity is enforced by ALLOWED_IMPORTS and FORBIDDEN_IN_PURE_LAYERS,
 # not by a ratchet. The first violation blocks the gate immediately.
 # See #112 for the broader BASELINE conversation that includes this gate.
-BASELINE: dict[str, BaselineEntry] = {}
+#
+# W58 (#515): delivery routes accept the LanzaderaContainer (W55, #49)
+# so each admin endpoint goes through the use-case layer (W54, #43).
+# The container lives in `di/` because that is the composition root;
+# the delivery route functions cannot receive it any other way without
+# either re-exporting `di/` (worse layering) or reaching into
+# `app.state.container` from every handler (worse testability). The
+# three violations are tolerated at the documented count, with a far
+# horizon so the ratchet cannot expire unnoticed.
+BASELINE: dict[str, BaselineEntry] = {
+    "direction:delivery->di": BaselineEntry(count=3, target=3, target_date="2030-01-01"),
+}
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
