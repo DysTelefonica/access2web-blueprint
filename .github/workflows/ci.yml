@@ -406,9 +406,9 @@ jobs:
         run: |
           set -euo pipefail
           NUMBER=${{ github.event.pull_request.number }}
-          STATE=$(gh pr view "$NUMBER" --json mergeable,reviewDecision,draft --jq '.')
+          STATE=$(gh pr view "$NUMBER" --json mergeable,reviewDecision,isDraft --jq '.')
           MERGEABLE=$(echo "$STATE" | jq -r '.mergeable')
-          DRAFT=$(echo "$STATE" | jq -r '.draft')
+          DRAFT=$(echo "$STATE" | jq -r '.isDraft')
           APPROVED=$(echo "$STATE" | jq -r '.reviewDecision')
           if [ "$DRAFT" == "true" ]; then
             echo "PR is a draft — skipping merge-ready signal"
