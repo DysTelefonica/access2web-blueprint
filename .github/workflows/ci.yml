@@ -200,14 +200,18 @@ jobs:
             git checkout-index --force --all app/pyproject.toml
           fi
           # Same stale cone bug as app/pyproject.toml above: scripts/check_mutation_sites.py
-          # is not in the PR diff, so it is excluded from sparse-checkout, but ruff format
-          # scans the whole repo and will report it as "Would reformat" when missing.
+          # is not in the PR diff, so it is excluded from sparse-checkout. The merge commit
+          # may be older than the latest local formatting, so also run ruff format on it to
+          # guarantee compliance regardless of which version was materialised by the checkout.
           if [ ! -f scripts/check_mutation_sites.py ] && git show HEAD:scripts/check_mutation_sites.py >/dev/null 2>&1; then
             mkdir -p scripts
             blob_oid=$(git show HEAD:scripts/check_mutation_sites.py | git hash-object -w --stdin)
             git update-index --add --cacheinfo 100644,$blob_oid,scripts/check_mutation_sites.py
             git checkout-index --force --all scripts/check_mutation_sites.py
           fi
+          # Re-format unconditionally: the file may have arrived as an unformatted
+          # version (e.g. from a pre-format-fix merge commit). ruff format is idempotent.
+          ruff format scripts/check_mutation_sites.py
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
@@ -347,14 +351,18 @@ jobs:
             git checkout-index --force --all app/pyproject.toml
           fi
           # Same stale cone bug as app/pyproject.toml above: scripts/check_mutation_sites.py
-          # is not in the PR diff, so it is excluded from sparse-checkout, but ruff format
-          # scans the whole repo and will report it as "Would reformat" when missing.
+          # is not in the PR diff, so it is excluded from sparse-checkout. The merge commit
+          # may be older than the latest local formatting, so also run ruff format on it to
+          # guarantee compliance regardless of which version was materialised by the checkout.
           if [ ! -f scripts/check_mutation_sites.py ] && git show HEAD:scripts/check_mutation_sites.py >/dev/null 2>&1; then
             mkdir -p scripts
             blob_oid=$(git show HEAD:scripts/check_mutation_sites.py | git hash-object -w --stdin)
             git update-index --add --cacheinfo 100644,$blob_oid,scripts/check_mutation_sites.py
             git checkout-index --force --all scripts/check_mutation_sites.py
           fi
+          # Re-format unconditionally: the file may have arrived as an unformatted
+          # version (e.g. from a pre-format-fix merge commit). ruff format is idempotent.
+          ruff format scripts/check_mutation_sites.py
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
