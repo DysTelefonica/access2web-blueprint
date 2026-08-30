@@ -255,7 +255,13 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     VERIFY_EXCLUSIONS — an absence that is written down is a decision, and an
     absence that is not is a hole.
     """
-    expected = [command for command in REQUIRED_COMMANDS if command not in VERIFY_EXCLUSIONS and command.removeprefix("python ") not in [v.removeprefix("python ") for v in VERIFY_EXCLUSIONS]]
+    expected = [
+        command
+        for command in REQUIRED_COMMANDS
+        if command not in VERIFY_EXCLUSIONS
+        and command.removeprefix("python ")
+        not in [v.removeprefix("python ") for v in VERIFY_EXCLUSIONS]
+    ]
     # Strip prefix before comparison so commands (now without `python ` prefix)
     # match VERIFY_EXCLUSIONS entries (which keep the prefix for compatibility).
     missing = [
