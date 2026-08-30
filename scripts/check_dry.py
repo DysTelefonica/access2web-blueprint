@@ -133,26 +133,20 @@ BASELINE: dict[str, BaselineEntry] = {
     # W60 (#522): presence.py added — its ConnectedUser docstring coincides
     # with profile.py (5 statements, @dataclass + class + docstring shape).
     # dup:33cfad6d55a4: structural coincidence, not a smell.
-    "dup:33cfad6d55a4": BaselineEntry(
-        occurrences=2, target=2, target_date="2030-01-01"
-    ),
+    "dup:33cfad6d55a4": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
     # @dataclass docstring coincidence (5 statements). Same structural
     # pattern as the W40 baseline — dataclass field shape coincidence,
     # not a smell.
-    "dup:7f84566161ae": BaselineEntry(
-        occurrences=2, target=2, target_date="2030-01-01"
-    ),
+    "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.
     # W57 (#514): dup:7ab7416cb810 shrank to 0 (NOTE). Entry removed.
     # W525: application/__init__.py and di/use_cases.py re-export the same
     # import list (5 statements, import-from-import coincidence). Intentional
     # — the DI composition root mirrors the application's public interface.
-    "dup:9d0fa147ad27": BaselineEntry(
-        occurrences=2, target=2, target_date="2030-01-01"
-    ),
+    "dup:9d0fa147ad27": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): dup:8aa3296e6ce7 shrank to 0 (NOTE).
     # W525: not re-detected — entry removed from BASELINE.
     # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring
@@ -274,9 +268,7 @@ def collect_groups(root: Path) -> list[CloneGroup]:
                     start_line=window[0].lineno,
                     end_line=getattr(window[-1], "end_lineno", window[-1].lineno),
                 )
-                buckets.setdefault(_digest(window), []).append(
-                    (occurrence, MIN_STATEMENTS)
-                )
+                buckets.setdefault(_digest(window), []).append((occurrence, MIN_STATEMENTS))
 
     # Stable ordering: most occurrences first, then digest. Never rely on dict insertion order
     # for a verdict.
@@ -304,9 +296,7 @@ def collect_groups(root: Path) -> list[CloneGroup]:
         # duplication dozens of times. A gate that reports 333 findings for 37 real clones gets
         # switched off inside a week, and a gate that is switched off protects nothing.
         fresh: list[Occurrence] = []
-        for occurrence, _ in sorted(
-            entries, key=lambda item: (item[0].file, item[0].start_line)
-        ):
+        for occurrence, _ in sorted(entries, key=lambda item: (item[0].file, item[0].start_line)):
             if _overlaps(occurrence):
                 continue
             fresh.append(occurrence)
@@ -401,9 +391,7 @@ def build_report(root: Path, groups: list[CloneGroup], status: str) -> dict:
         "indicators": {
             "duplicate_groups": len(groups),
             "duplicated_statements": duplicated,
-            "duplicated_ratio_pct": round(100 * duplicated / total, 2)
-            if total
-            else 0.0,
+            "duplicated_ratio_pct": round(100 * duplicated / total, 2) if total else 0.0,
         },
         "ceilings": {"duplicate_groups": 0},
         "findings": [
@@ -437,9 +425,7 @@ def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
-    parser.add_argument(
-        "--json", action="store_true", help="emit the indicator envelope"
-    )
+    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
