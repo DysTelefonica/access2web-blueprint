@@ -404,3 +404,63 @@ jobs:
       # `python scripts/check_mutation.py` step exits with the ratchet
       # verdict; that exit code (no `continue-on-error`, no `|| true`) is
       # the gate.
+
+  merge-ready:
+    # Signal-only job. Replaces GitHub Team branch protection (which costs
+    # $4/user/month): the team's open-source plan does not include
+    # required-status-checks, so this workflow drives the same gate from a
+    # job the open-source plan can run.
+    #
+    # Semantics (PR only, never on push):
+    #   - draft PR           -> exit 0 with a "skipping" note (a draft is
+    #                           not asking to be merged)
+    #   - not yet approved   -> exit 0 with a "skipping" note (approval is
+    #                           a reviewer action, not a CI verdict)
+    #   - approved but not
+    #     yet mergeable      -> exit 1 (CI still running or a required
+    #                           check is failing; the auto-merge button
+    #                           must not be enabled)
+    #   - approved and
+    #     mergeable          -> exit 0 with an explicit "merge-ready"
+    #                           signal in the job log
+    #
+    # The actual squash-merge is performed by the reviewer through GitHub's
+    # native "Auto-merge" button on the PR. Enabling that button on a PR
+    # is the equivalent of "Require approvals" + "Require status checks"
+    # together, and it is free on the open-source plan.
+    if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: read
+    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    concurrency:
+      group: merge-ready-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - name: Check PR mergeability
+        env:
+          # `gh` reads GH_TOKEN (or GITHUB_TOKEN, depending on version).
+          # The pull_request event ships a token with pull-requests: read
+          # scope, which is the minimum `gh pr view` needs.
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          NUMBER=${{ github.event.pull_request.number }}
+          STATE=$(gh pr view "$NUMBER" --json mergeable,reviewDecision,isDraft --jq '.')
+          MERGEABLE=$(echo "$STATE" | jq -r '.mergeable')
+          DRAFT=$(echo "$STATE" | jq -r '.isDraft')
+          APPROVED=$(echo "$STATE" | jq -r '.reviewDecision')
+          if [ "$DRAFT" == "true" ]; then
+            echo "PR is a draft — skipping merge-ready signal"
+            exit 0
+          fi
+          if [ "$APPROVED" != "APPROVED" ]; then
+            echo "PR is not approved (reviewDecision=$APPROVED) — skipping"
+            exit 0
+          fi
+          if [ "$MERGEABLE" != "true" ]; then
+            echo "PR is not mergeable (mergeable=$MERGEABLE) — CI may still be running"
+            exit 1
+          fi
+          echo "PR is approved and mergeable — merge-ready signal: PASS"
+          exit 0
