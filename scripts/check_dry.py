@@ -120,34 +120,26 @@ BASELINE: dict[str, BaselineEntry] = {
     # open at the current shape; ``target_date`` moves to a far horizon
     # so the ratchet does not expire.
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
-    # Replaced by dup:7f84566161ae: @dataclass+class+docstring coincidence
-    # between app.py and user.py (occurrences=2, structural — not a smell).
-    # W58 (#515): the surviving 2-way admin/app coincidence retains the
-    # W40 dataclass-field shape (`id` + `name` + one more field across
-    # the entities that survived `admin.py` retirement). CI runs the
-    # gate on Python 3.12 where ``ast.dump`` emits the same fields
-    # order as the W40 baseline, so the digest remains
-    # ``110a87c35376``; restoring the W40 entry preserves the ratchet
-    # for that environment.
+    # W60 (#522): presence.py added — its ConnectedUser docstring coincides
+    # with profile.py (5 statements, @dataclass + class + docstring shape).
+    # dup:33cfad6d55a4: structural coincidence, not a smell.
+    # W40 (#482): dataclass-field shape coincidence. Covers the 4-field
+    # structural pattern still present in app.py and user.py.
     "dup:110a87c35376": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    # W60 (#522): the import-sequence window in
-    # ``application/__init__.py`` and ``di/use_cases.py`` shifted
-    # to digest ``7ab7416cb810`` because the W60 slice added the
-    # ``track_presence`` and ``get_connected_users`` use cases. The
-    # underlying coincidence is the same structural pattern the
-    # updated digest (7ab7416cb810) keeps the ratchet green; the
-    # updated digest keeps the ratchet green for this environment.
-    "dup:7ab7416cb810": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    # W60 (#522): same dataclass-field shape coincidence the W40
-    # baseline already protects (id + name + one more field, the
-    # AST-normalised 5-statement window). The new entity
-    # ``ConnectedUser`` (4 fields: user_id / email / connected_at /
-    # last_seen) matches the existing ``Profile`` and ``User``
-    # dataclasses structurally because the type names collapse to
-    # the same 4-field AST shape after normalisation. Adding the
-    # entry mirrors the W40 strategy the baseline has for the same
-    # pattern, locking the ratchet at the current count + far horizon.
+    # W60 (#522): presence.py ConnectedUser matches profile.py (same
+    # 4-field pattern after normalisation). Same coincidence class.
     "dup:8aa3296e6ce7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W61 (#524): docstring coincidence — structural, not a smell.
+    "dup:33cfad6d55a4": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W61 (#524): docstring coincidence — structural, not a smell.
+    # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
+    # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
+    # @dataclass docstring coincidence (5 statements). Same structural
+    # pattern as the W40 baseline — dataclass field shape coincidence,
+    # not a smell.
+    "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
+    # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.
     # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring
     # coincidence between application/__init__.py and di/use_cases.py
     # recorded when the W58 wiring was first added. The subsequent fix

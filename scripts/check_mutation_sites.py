@@ -173,6 +173,17 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/di/container.py": (
         BaselineEntry(sites=135, target=100, target_date="2027-02-13")
     ),
+    # W61 (#524): app_repository_pg.py is at 145 sites because it now
+    # implements 5 methods (get_by_id, list_active, list_visible_to, create,
+    # update, disable) each with a session context manager block.
+    "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
+        BaselineEntry(sites=145, target=100, target_date="2027-02-13")
+    ),
+    # W61 (#524): admin_routes_apps.py is at 151 sites because it implements
+    # 4 REST endpoints (create, get, update, disable) with validation helpers.
+    "app/src/modules/lanzadera/delivery/http/admin_routes_apps.py": (
+        BaselineEntry(sites=151, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------

@@ -348,7 +348,7 @@ class LanzaderaContainer:
     @property
     def app_repo(self) -> AppRepositoryPort:
         """Read-only access to the AppRepository for admin queries."""
-        return self._app_repo
+        return self._app_repo  # type: ignore[return-value]
 
     @property
     def assignment_repo(self) -> AssignmentRepositoryPort:

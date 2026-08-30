@@ -26,7 +26,11 @@ from app.src.modules.lanzadera.application.bootstrap_global_admins import (
 # name differs from the application marker to keep the 5-statement
 # window hash distinct).
 # di_uc_marker_dupbreak and the next 4 imports are dup-break; noqa: E402, F841
+# W61 (#524): app CRUD slice — three new use cases (create_app,
+# update_app, disable_app) keyed off the existing ``app_repo``.
+from app.src.modules.lanzadera.application.create_app import create_app
 from app.src.modules.lanzadera.application.create_user import create_user
+from app.src.modules.lanzadera.application.disable_app import disable_app
 from app.src.modules.lanzadera.application.disable_user import disable_user
 
 # W60 (#522): presence slice — two new use cases (track_presence,
@@ -46,6 +50,7 @@ from app.src.modules.lanzadera.application.revoke_global_admin import (
 )
 from app.src.modules.lanzadera.application.set_password import set_password
 from app.src.modules.lanzadera.application.track_presence import track_presence
+from app.src.modules.lanzadera.application.update_app import update_app
 from app.src.modules.lanzadera.domain.ports import AuditLog, PasswordHasher
 from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
 
@@ -137,6 +142,14 @@ def build_use_case_factories(
             apps=app_repo,
             assignments=assignment_repo,
         ),
+        # W61 (#524): app CRUD slice — the three new partials share
+        # the same ``app_repo`` instance the ``list_effective_apps``
+        # partial already binds. The audit kwarg is reserved for the
+        # W62 hardening pass; the W61 routes accept an
+        # ``actor_id`` header and the use case ignores it for now.
+        "create_app": functools.partial(create_app, apps=app_repo),
+        "update_app": functools.partial(update_app, apps=app_repo),
+        "disable_app": functools.partial(disable_app, apps=app_repo),
         "audit_append": functools.partial(
             audit_append,
             audit=audit,

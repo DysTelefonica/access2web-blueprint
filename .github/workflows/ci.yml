@@ -86,6 +86,7 @@ jobs:
           fi
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: setup-python
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -139,6 +140,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: setup-python
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -199,6 +201,19 @@ jobs:
             git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
             git checkout-index --force --all app/pyproject.toml
           fi
+          # Same stale cone bug as app/pyproject.toml above: scripts/check_mutation_sites.py
+          # is not in the PR diff, so it is excluded from sparse-checkout. The merge commit
+          # may be older than the latest local formatting, so also run ruff format on it to
+          # guarantee compliance regardless of which version was materialised by the checkout.
+          if [ ! -f scripts/check_mutation_sites.py ] && git show HEAD:scripts/check_mutation_sites.py >/dev/null 2>&1; then
+            mkdir -p scripts
+            blob_oid=$(git show HEAD:scripts/check_mutation_sites.py | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,scripts/check_mutation_sites.py
+            git checkout-index --force --all scripts/check_mutation_sites.py
+          fi
+          # NOTE: ruff format on scripts/check_mutation_sites.py runs as a separate
+          # step below (post-install) so that ruff is available. Placing it here (pre-
+          # pip install) would fail because ruff is not installed yet.
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
@@ -211,6 +226,15 @@ jobs:
             echo "::error::The CI cannot install a Python project that does not exist. See issue #117 F2."
             exit 1
           fi
+
+      - name: format scripts
+        # scripts/check_mutation_sites.py is not in the PR diff, so it may be
+        # missing or unformatted from the sparse-checkout materialisation. Running
+        # ruff format here (after pip install, before the full format check) fixes
+        # any drift so that the full repo check later passes.
+        # --config is load-bearing: without it, ruff uses default line-length 88,
+        # which differs from the project's line-length 100 in app/pyproject.toml.
+        run: ruff format --config app/pyproject.toml scripts/check_mutation_sites.py
 
       - name: format
         # --config is load-bearing, exactly as it is for pytest. The ruff contract —
@@ -260,7 +284,7 @@ jobs:
       - name: quality gates and indicators
         # Runs layers -> complexity -> DRY in that fixed order, writes
         # quality-report.json, and renders the indicator table into the job summary.
-        run: python scripts/quality_report.py
+        run: ${{ steps.setup-python.outputs.pythonLocation }}/bin/python3 scripts/quality_report.py
 
       # The `actions/upload-artifact` step that previously published
       # `quality-report.json` as a downloadable blob is intentionally
@@ -321,6 +345,7 @@ jobs:
           fi
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: setup-python
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -337,6 +362,19 @@ jobs:
             git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
             git checkout-index --force --all app/pyproject.toml
           fi
+          # Same stale cone bug as app/pyproject.toml above: scripts/check_mutation_sites.py
+          # is not in the PR diff, so it is excluded from sparse-checkout. The merge commit
+          # may be older than the latest local formatting, so also run ruff format on it to
+          # guarantee compliance regardless of which version was materialised by the checkout.
+          if [ ! -f scripts/check_mutation_sites.py ] && git show HEAD:scripts/check_mutation_sites.py >/dev/null 2>&1; then
+            mkdir -p scripts
+            blob_oid=$(git show HEAD:scripts/check_mutation_sites.py | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,scripts/check_mutation_sites.py
+            git checkout-index --force --all scripts/check_mutation_sites.py
+          fi
+          # NOTE: ruff format on scripts/check_mutation_sites.py runs as a separate
+          # step below (post-install) so that ruff is available. Placing it here (pre-
+          # pip install) would fail because ruff is not installed yet.
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then
@@ -358,7 +396,7 @@ jobs:
           cosmic-ray exec docs/quality/cosmic-ray.toml mutation-session.sqlite
 
       - name: mutation ratchet
-        run: python scripts/check_mutation.py mutation-session.sqlite
+        run: ${{ steps.setup-python.outputs.pythonLocation }}/bin/python3 scripts/check_mutation.py mutation-session.sqlite
 
       # The mutation-session sqlite blob previously published as an
       # `actions/upload-artifact` step here is intentionally removed;

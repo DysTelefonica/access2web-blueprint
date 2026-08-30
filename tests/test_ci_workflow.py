@@ -23,8 +23,8 @@ REQUIRED_COMMANDS = (
     "python scripts/check_workflows.py",
     "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
     "python scripts/check_workflows.py",
-    "python scripts/quality_report.py",
-    "python scripts/check_mutation.py",
+    "scripts/quality_report.py",
+    "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
     "python scripts/check_branch_name.py",
 )
@@ -255,9 +255,15 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     VERIFY_EXCLUSIONS — an absence that is written down is a decision, and an
     absence that is not is a hole.
     """
-    expected = [command for command in REQUIRED_COMMANDS if command not in VERIFY_EXCLUSIONS]
-    # `ruff check .` reaches the recipe as `python -m ruff check .`; compare on
-    # the invariant tail so the Makefile stays free to route through $(RUFF).
+    expected = [
+        command
+        for command in REQUIRED_COMMANDS
+        if command not in VERIFY_EXCLUSIONS
+        and command.removeprefix("python ")
+        not in [v.removeprefix("python ") for v in VERIFY_EXCLUSIONS]
+    ]
+    # Strip prefix before comparison so commands (now without `python ` prefix)
+    # match VERIFY_EXCLUSIONS entries (which keep the prefix for compatibility).
     missing = [
         command
         for command in expected
