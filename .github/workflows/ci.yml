@@ -409,6 +409,8 @@ jobs:
     # is the equivalent of "Require approvals" + "Require status checks"
     # together, and it is free on the open-source plan.
     if: github.event_name == 'pull_request'
+    permissions:
+      pull-requests: read
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     concurrency:
       group: merge-ready-${{ github.event.pull_request.number }}
