@@ -40,7 +40,9 @@ SCAN_DIRS = ("app",)
 #: the codebase.
 MAX_MUTATION_SITES = 100
 
-EXCLUDED_PARTS = frozenset({"__pycache__", ".venv", "venv", "build", "dist", "migrations"})
+EXCLUDED_PARTS = frozenset(
+    {"__pycache__", ".venv", "venv", "build", "dist", "migrations"}
+)
 
 
 @dataclass(frozen=True)
@@ -173,17 +175,17 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/di/container.py": (
         BaselineEntry(sites=135, target=100, target_date="2027-02-13")
     ),
-        # W61 (#524): app_repository_pg.py is at 145 sites because it now
-        # implements 5 methods (get_by_id, list_active, list_visible_to, create,
-        # update, disable) each with a session context manager block.
-        "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
-            BaselineEntry(sites=145, target=100, target_date="2027-02-13")
-        ),
-        # W61 (#524): admin_routes_apps.py is at 151 sites because it implements
-        # 4 REST endpoints (create, get, update, disable) with validation helpers.
-        "app/src/modules/lanzadera/delivery/http/admin_routes_apps.py": (
-            BaselineEntry(sites=151, target=100, target_date="2027-02-13")
-        ),
+    # W61 (#524): app_repository_pg.py is at 145 sites because it now
+    # implements 5 methods (get_by_id, list_active, list_visible_to, create,
+    # update, disable) each with a session context manager block.
+    "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
+        BaselineEntry(sites=145, target=100, target_date="2027-02-13")
+    ),
+    # W61 (#524): admin_routes_apps.py is at 151 sites because it implements
+    # 4 REST endpoints (create, get, update, disable) with validation helpers.
+    "app/src/modules/lanzadera/delivery/http/admin_routes_apps.py": (
+        BaselineEntry(sites=151, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
@@ -219,7 +221,9 @@ def _count_sites(tree: ast.AST) -> int:
     for node in ast.walk(tree):
         if isinstance(node, _MUTABLE_NODES):
             total += 1
-        elif isinstance(node, ast.Constant) and isinstance(node.value, (int, float, str, bool)):
+        elif isinstance(node, ast.Constant) and isinstance(
+            node.value, (int, float, str, bool)
+        ):
             total += 1
         elif isinstance(node, ast.Call):
             total += len(node.args) + len(node.keywords)
@@ -261,13 +265,17 @@ def evaluate(offenders: list[Measurement], today: date) -> tuple[int, list[str]]
             lines.append(
                 f"FAIL  {item.file}: {item.sites} mutation sites, ceiling is {MAX_MUTATION_SITES}"
             )
-            lines.append("        split the file before handoff, or ratchet it with a target date")
+            lines.append(
+                "        split the file before handoff, or ratchet it with a target date"
+            )
         elif item.sites > allowance.sites:
             failed = True
             lines.append(
                 f"FAIL  {item.file}: grew to {item.sites} sites, BASELINE allows {allowance.sites}"
             )
-        elif today.isoformat() > allowance.target_date and item.sites > allowance.target:
+        elif (
+            today.isoformat() > allowance.target_date and item.sites > allowance.target
+        ):
             failed = True
             lines.append(
                 f"FAIL  {item.file}: BASELINE expired on {allowance.target_date} at "
@@ -283,11 +291,15 @@ def evaluate(offenders: list[Measurement], today: date) -> tuple[int, list[str]]
             lines.append(f"NOTE  {key}: now under the ceiling; remove it from BASELINE")
 
     if not failed:
-        lines.append(f"OK    every file at or below {MAX_MUTATION_SITES} mutation sites")
+        lines.append(
+            f"OK    every file at or below {MAX_MUTATION_SITES} mutation sites"
+        )
     return (1 if failed else 0), lines
 
 
-def render_baseline(offenders: list[Measurement], today: date, horizon_days: int = 90) -> str:
+def render_baseline(
+    offenders: list[Measurement], today: date, horizon_days: int = 90
+) -> str:
     """Emit a BASELINE block. Every entry carries a target and a date; there is no other shape."""
     target_date = date.fromordinal(today.toordinal() + horizon_days).isoformat()
     lines = ["BASELINE: dict[str, BaselineEntry] = {"]
@@ -330,7 +342,9 @@ def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser.add_argument(
+        "--json", action="store_true", help="emit the indicator envelope"
+    )
     parser.add_argument(
         "--emit-baseline",
         action="store_true",
@@ -342,7 +356,11 @@ def main(argv: list[str] | None = None) -> int:
     if not any((root / scan_dir).is_dir() for scan_dir in SCAN_DIRS):
         message = f"none of {SCAN_DIRS} found under {root}"
         if args.json:
-            print(json.dumps({"gate": "mutation_sites", "status": "error", "detail": message}))
+            print(
+                json.dumps(
+                    {"gate": "mutation_sites", "status": "error", "detail": message}
+                )
+            )
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
@@ -358,7 +376,11 @@ def main(argv: list[str] | None = None) -> int:
         # looks like success (harness v1.6).
         message = f"{list(SCAN_DIRS)} under {root} yielded no files to measure"
         if args.json:
-            print(json.dumps({"gate": "mutation_sites", "status": "error", "detail": message}))
+            print(
+                json.dumps(
+                    {"gate": "mutation_sites", "status": "error", "detail": message}
+                )
+            )
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
