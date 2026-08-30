@@ -198,4 +198,15 @@ async def _register_admin_routes() -> None:
     )
 
     app.include_router(presence_router, prefix="/admin", tags=["presence"])
+    # W61 (#524): mount the app CRUD slice as its own router so the
+    # JSON routes resolve the container via ``request.state.container``
+    # (mirrored by the middleware above) — the same seam the W60
+    # presence slice uses. Mounting it before the legacy ``admin_router``
+    # keeps the order deterministic; FastAPI dispatches by exact
+    # match so the two routers cannot collide on shared paths.
+    from app.src.modules.lanzadera.delivery.http.admin_routes_apps import (
+        router as apps_router,
+    )
+
+    app.include_router(apps_router, prefix="/admin", tags=["apps"])
     app.include_router(admin_router)

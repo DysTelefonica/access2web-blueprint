@@ -44,7 +44,7 @@ from uuid import UUID, uuid4
 # these names as strings at runtime (via ``from __future__ import
 # annotations``), but the static checker cannot see forward references
 # defined only inside ``TYPE_CHECKING``.
-from app.src.modules.lanzadera.domain.app import App
+from app.src.modules.lanzadera.domain.app import App, AppTopology
 from app.src.modules.lanzadera.domain.assignment import Assignment
 from app.src.modules.lanzadera.domain.audit_event import AuditEvent
 from app.src.modules.lanzadera.domain.global_admin import GlobalAdmin
@@ -165,6 +165,16 @@ class FakeAppRepository:
     list_active_calls: int = 0
     get_by_id_calls: int = 0
     list_visible_to_calls: list[UUID] = field(default_factory=list)
+    # W61 (#524): mutation recorders — one entry per call. ``create``
+    # appends the new ``App``; ``update`` appends
+    # ``(app_id, kwargs)``; ``disable`` appends ``app_id``.
+    create_calls: list[App] = field(default_factory=list)
+    update_calls: list[tuple[int, dict[str, object]]] = field(default_factory=list)
+    disable_calls: list[int] = field(default_factory=list)
+    # W61 (#524): counter the create / update / disable fake uses to
+    # mint new ids. Starts at 100 to avoid colliding with the
+    # seeded ``add()`` rows (the tests usually seed ``id=1``).
+    next_id: int = 100
 
     def add(self, app: App) -> None:
         self.by_id[app.id] = app
@@ -185,6 +195,112 @@ class FakeAppRepository:
     async def list_visible_to(self, user_id: UUID) -> Sequence[App]:
         self.list_visible_to_calls.append(user_id)
         return list(self.by_id.values())
+
+    async def create(
+        self,
+        name: str,
+        short_code: str,
+        deployment_topology: AppTopology,
+        requires_office_presence: bool,
+    ) -> App:
+        """Insert a fake row; the row's ``id`` is minted off ``next_id``.
+
+        Mirrors the production ``AppRepositoryPg.create`` contract:
+        the returned ``App`` has ``registration_status='pending'``
+        (the production adapter stamps it on INSERT) and the
+        authoritative ``id`` / ``created_at`` / ``updated_at`` the
+        route renders into the response payload.
+        """
+        from datetime import UTC, datetime
+
+        from app.src.modules.lanzadera.domain.app import AppRegistrationStatus
+
+        self.next_id += 1
+        now = datetime.now(UTC)
+        app = App(
+            id=self.next_id,
+            name=name,
+            short_code=short_code,
+            deployment_topology=deployment_topology,
+            requires_office_presence=requires_office_presence,
+            registration_status=AppRegistrationStatus.PENDING,
+            created_at=now,
+            updated_at=now,
+        )
+        self.create_calls.append(app)
+        self.by_id[app.id] = app
+        return app
+
+    async def update(
+        self,
+        app_id: int,
+        *,
+        name: str | None = None,
+        deployment_topology: AppTopology | None = None,
+        requires_office_presence: bool | None = None,
+    ) -> App:
+        """Patch the matching row in-place; ``None`` fields are skipped.
+
+        Mirrors the production ``AppRepositoryPg.update`` contract:
+        the returned ``App`` carries the post-update values and a
+        fresh ``updated_at`` stamp. ``RuntimeError`` if the id is
+        unknown — matches the production adapter's empty-RETURNING
+        signal.
+        """
+        from datetime import UTC, datetime
+
+        kwargs: dict[str, object] = {}
+        if name is not None:
+            kwargs["name"] = name
+        if deployment_topology is not None:
+            kwargs["deployment_topology"] = deployment_topology
+        if requires_office_presence is not None:
+            kwargs["requires_office_presence"] = requires_office_presence
+        self.update_calls.append((app_id, kwargs))
+        existing = self.by_id.get(app_id)
+        if existing is None:
+            raise RuntimeError(f"app update() returned no row for id={app_id!r}")
+        patched = App(
+            id=existing.id,
+            name=kwargs.get("name", existing.name),
+            short_code=existing.short_code,
+            deployment_topology=kwargs.get("deployment_topology", existing.deployment_topology),
+            requires_office_presence=kwargs.get(
+                "requires_office_presence", existing.requires_office_presence
+            ),
+            registration_status=existing.registration_status,
+            created_at=existing.created_at,
+            updated_at=datetime.now(UTC),
+        )
+        self.by_id[app_id] = patched
+        return patched
+
+    async def disable(self, app_id: int) -> App:
+        """Flip the matching row to ``registration_status='retired'``.
+
+        Mirrors the production ``AppRepositoryPg.disable`` contract.
+        ``RuntimeError`` if the id is unknown.
+        """
+        from datetime import UTC, datetime
+
+        from app.src.modules.lanzadera.domain.app import AppRegistrationStatus
+
+        self.disable_calls.append(app_id)
+        existing = self.by_id.get(app_id)
+        if existing is None:
+            raise RuntimeError(f"app disable() returned no row for id={app_id!r}")
+        disabled = App(
+            id=existing.id,
+            name=existing.name,
+            short_code=existing.short_code,
+            deployment_topology=existing.deployment_topology,
+            requires_office_presence=existing.requires_office_presence,
+            registration_status=AppRegistrationStatus.RETIRED,
+            created_at=existing.created_at,
+            updated_at=datetime.now(UTC),
+        )
+        self.by_id[app_id] = disabled
+        return disabled
 
 
 # ---------------------------------------------------------------------------
