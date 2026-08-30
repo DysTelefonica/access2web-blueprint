@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import logging
 import os
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -30,6 +30,7 @@ from fastapi import FastAPI, status
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request as _StarletteRequest
+from starlette.responses import Response
 
 from app.src.modules.lanzadera.adapters.bootstrap.env_admin_source_adapter import (
     EnvAdminSourceAdapter,
@@ -67,7 +68,11 @@ class _ContainerMirrorMiddleware(BaseHTTPMiddleware):
     mid-flight; the mirror re-reads it every request).
     """
 
-    async def dispatch(self, request: _StarletteRequest, call_next):
+    async def dispatch(
+        self,
+        request: _StarletteRequest,
+        call_next: Callable[[_StarletteRequest], Awaitable[Response]],
+    ) -> Response:
         container = getattr(request.app.state, "container", None)
         if container is not None:
             request.state.container = container
