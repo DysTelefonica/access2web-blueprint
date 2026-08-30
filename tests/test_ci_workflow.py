@@ -23,8 +23,8 @@ REQUIRED_COMMANDS = (
     "python scripts/check_workflows.py",
     "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
     "python scripts/check_workflows.py",
-    "python scripts/quality_report.py",
-    "python scripts/check_mutation.py",
+    "scripts/quality_report.py",
+    "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
     "python scripts/check_branch_name.py",
 )
