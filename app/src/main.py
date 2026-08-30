@@ -28,6 +28,8 @@ from pathlib import Path
 
 from fastapi import FastAPI, status
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as _StarletteRequest
 
 from app.src.modules.lanzadera.adapters.bootstrap.env_admin_source_adapter import (
     EnvAdminSourceAdapter,
@@ -44,6 +46,47 @@ from app.src.modules.lanzadera.di.bootstrap import run_bootstrap
 from app.src.modules.lanzadera.di.container import LanzaderaContainer
 
 _logger = logging.getLogger(__name__)
+
+# W60 (#522): middleware that mirrors ``app.state.container`` onto every
+# request. The SSE emitter at ``/admin/presence/stream`` resolves the
+# container via ``request.state.container`` so the long-lived generator
+# does not depend on the closure that registered the rest of the admin
+# routes (those go through ``register_routes`` and bind the container at
+# startup). The mirror is a one-line pass-through that re-reads the app
+# state per request — the app-level container reference can be replaced
+# during the lifespan and every subsequent request sees the new value.
+_container_mirror_installed: bool = False
+
+
+class _ContainerMirrorMiddleware(BaseHTTPMiddleware):
+    """HTTP middleware that exposes ``app.state.container`` as
+    ``request.state.container`` on every request. The middleware is
+    installed at startup by the ``_register_admin_routes`` callback so
+    the admin and presence slices share a single per-request view of
+    the container (the lifespan may replace ``app.state.container``
+    mid-flight; the mirror re-reads it every request).
+    """
+
+    async def dispatch(self, request: _StarletteRequest, call_next):
+        container = getattr(request.app.state, "container", None)
+        if container is not None:
+            request.state.container = container
+        return await call_next(request)
+
+
+def _ensure_container_middleware(app_obj: FastAPI) -> None:
+    """Install the container-mirror middleware once per app instance.
+
+    Adding the middleware twice would double the per-request cost; the
+    module-level ``_container_mirror_installed`` flag keeps the install
+    idempotent across startup callbacks (TestClient, ASGI hot reload, etc.).
+    """
+    global _container_mirror_installed
+    if _container_mirror_installed:
+        return
+    app_obj.add_middleware(_ContainerMirrorMiddleware)
+    _container_mirror_installed = True
+
 
 # Resolve the templates directory relative to this file so the app works
 # regardless of the current working directory.
@@ -134,10 +177,20 @@ async def _register_admin_routes() -> None:
     from fastapi import APIRouter
 
     container: LanzaderaContainer = app.state.container  # type: ignore[unused-ignore]
+    _ensure_container_middleware(app)
     admin_router = APIRouter(prefix="/admin", tags=["admin"])
     register_routes(
         admin_router,
         templates=_admin_templates,
         container=container,
     )
+    # W60 (#522): mount the SSE/heartbeat slice as its own router so
+    # the long-lived generator in ``presence_stream`` resolves the
+    # container via ``request.state.container`` (mirrored by the
+    # middleware above) instead of a closure-bound instance.
+    from app.src.modules.lanzadera.delivery.http.admin_routes_presence import (
+        router as presence_router,
+    )
+
+    app.include_router(presence_router, prefix="/admin", tags=["presence"])
     app.include_router(admin_router)

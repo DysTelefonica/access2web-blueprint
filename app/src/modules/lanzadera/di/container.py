@@ -31,7 +31,7 @@ from __future__ import annotations
 # di-only marker: container wiring is the composition root (W55).
 import time as _di_t  # noqa: F401
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from app.src.modules.lanzadera.adapters.bootstrap.env_admin_source_adapter import (
     EnvAdminSourceAdapter,
@@ -50,6 +50,11 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.audit_log_pg im
 )
 from app.src.modules.lanzadera.adapters.persistence.repositories.global_admin_repository_pg import (
     GlobalAdminRepositoryPg,
+)
+
+# W60 (#522): presence repo (real Postgres adapter).
+from app.src.modules.lanzadera.adapters.persistence.repositories.presence_repository_pg import (
+    PresenceRepositoryPg,
 )
 from app.src.modules.lanzadera.adapters.persistence.repositories.profile_repository_pg import (
     ProfileRepositoryPg,
@@ -77,6 +82,11 @@ from app.src.modules.lanzadera.domain.ports.bootstrap_admin_source import (
 )
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
     GlobalAdminRepositoryPort,
+)
+
+# W60 (#522): presence port Protocol.
+from app.src.modules.lanzadera.domain.ports.presence_repository import (
+    PresenceRepository,
 )
 from app.src.modules.lanzadera.domain.ports.profile_repository import (
     ProfileRepositoryPort,
@@ -128,6 +138,10 @@ class LanzaderaContainer:
         assignment_repo: AssignmentRepositoryPort | None = None,
         global_admin_repo: GlobalAdminRepositoryPort | None = None,
         reset_token_repo: object | None = None,
+        # W60 (#522): presence port; like the rest of the driven ports,
+        # the constructor accepts either a fake (for tests) or ``None``
+        # to defer the Postgres adapter build to the runtime factory.
+        presence_repo: PresenceRepository | None = None,
         audit: AuditLog | None = None,
     ) -> None:
         self._factory = session_factory
@@ -170,6 +184,12 @@ class LanzaderaContainer:
             if reset_token_repo is not None
             else ResetTokenRepositoryPg(self._factory)  # type: ignore[arg-type]
         )
+        # W60 (#522): presence repo. Mirrors the reset_token_repo
+        # pattern: a fake is honoured when injected; otherwise the
+        # Postgres adapter is built against ``self._factory``.
+        self._presence_repo = (
+            presence_repo if presence_repo is not None else PresenceRepositoryPg(self._factory)  # type: ignore[arg-type]
+        )
         self._audit = cast(AuditLog, audit if audit is not None else AuditLogPg(self._factory))  # type: ignore[arg-type]
 
         # Build the use case partials once. The public method below
@@ -181,6 +201,7 @@ class LanzaderaContainer:
             assignment_repo=self._assignment_repo,
             global_admin_repo=self._global_admin_repo,
             reset_token_repo=self._reset_token_repo,
+            presence_repo=self._presence_repo,
             audit=self._audit,
             password_hasher=self._password_hasher,
             secret_manager=self._secret_manager,
@@ -338,6 +359,29 @@ class LanzaderaContainer:
     def audit_repo(self) -> AuditLog:
         """Read-only access to the AuditLog for admin queries."""
         return self._audit
+
+    @property
+    def presence_repo(self) -> PresenceRepository:
+        """Read-only access to the PresenceRepository for admin queries.
+
+        W60 (#522): the SSE emitter and ``POST /presence/heartbeat`` route
+        both resolve the repository through this property so the HTTP
+        delivery layer never touches the protected Postgres adapter
+        directly.
+        """
+        return self._presence_repo
+
+    @property
+    def use_cases(self) -> dict[str, Any]:
+        """Expose the use-case partials as a public attribute.
+
+        W60 (#522): the SSE/heartbeat routes access the partials by name
+        (``container.use_cases["track_presence"]`` etc.). Every other use
+        case still goes through the dedicated ``container.<use_case>``
+        methods; this property is the seam the SSE slice needs to invoke
+        a use case without bloating the container's public surface.
+        """
+        return self._use_cases
 
     async def list_all_users(
         self,

@@ -55,6 +55,9 @@ from app.src.modules.lanzadera.domain.user import User, UserStatus
 if TYPE_CHECKING:
     pass  # the runtime imports above already cover the static checker
 
+# W60 (#522): presence fake imported at module level so the rest of the
+# fakes (and the conftest) can reach it without a TYPE_CHECKING dance.
+from tests.lanzadera._presence_fakes import FakePresenceRepository
 
 # ---------------------------------------------------------------------------
 # User repository — DA-1, D89, W59
@@ -485,6 +488,7 @@ __all__ = [
     "FakeBootstrapAdminSource",
     "FakeGlobalAdminRepository",
     "FakePasswordHasher",
+    "FakePresenceRepository",
     "FakeProfileRepository",
     "FakeResetTokenRepository",
     "FakeSecretManager",
