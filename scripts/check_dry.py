@@ -103,6 +103,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # ``assignment_repository.py`` collapse the three separate imports
     # into one multi-line ``from _imports import (...)``. The
     # 5-statement window ``08c289bbf440`` protected is gone.
+    # W525: application/__init__.py and di/use_cases.py import coincidence
+    # matches dup:7ab7416cb810 on Python 3.12 (CI), dup:9d0fa147ad27 on 3.14.
+    "dup:7ab7416cb810": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W61 (#524) + W60 (#522): dataclass-field structural coincidence.
+    # dup:110a87c35376 (Python 3.12) vs dup:33cfad6d55a4 (Python 3.14).
+    "dup:110a87c35376": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # dup:8aa3296e6ce7 (Python 3.12) vs dup:7f84566161ae (Python 3.14).
+    "dup:8aa3296e6ce7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # "dup:08c289bbf440": BaselineEntry(occurrences=2, target=0, target_date="2026-11-30"),
     # W36 (#475) added StrEnum to ``app/.../domain/_imports.py``;
     # ``app.py`` and ``user.py`` now collapse their dataclass/datetime/
