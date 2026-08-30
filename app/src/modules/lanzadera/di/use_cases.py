@@ -28,6 +28,13 @@ from app.src.modules.lanzadera.application.bootstrap_global_admins import (
 # di_uc_marker_dupbreak and the next 4 imports are dup-break; noqa: E402, F841
 from app.src.modules.lanzadera.application.create_user import create_user
 from app.src.modules.lanzadera.application.disable_user import disable_user
+
+# W60 (#522): presence slice — two new use cases (track_presence,
+# get_connected_users) keep the same functools.partial contract as the
+# rest of the partials; no breaking change for existing callers.
+from app.src.modules.lanzadera.application.get_connected_users import (
+    get_connected_users,
+)
 from app.src.modules.lanzadera.application.grant_global_admin import (
     grant_global_admin,
 )
@@ -38,6 +45,7 @@ from app.src.modules.lanzadera.application.revoke_global_admin import (
     revoke_global_admin,
 )
 from app.src.modules.lanzadera.application.set_password import set_password
+from app.src.modules.lanzadera.application.track_presence import track_presence
 from app.src.modules.lanzadera.domain.ports import AuditLog, PasswordHasher
 from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
 
@@ -79,6 +87,7 @@ def build_use_case_factories(
     assignment_repo: Any,
     global_admin_repo: Any,
     reset_token_repo: Any,
+    presence_repo: Any,
     audit: AuditLog,
     password_hasher: PasswordHasher,
     secret_manager: SecretManager,
@@ -147,6 +156,13 @@ def build_use_case_factories(
             audit=audit,
             secrets=secret_manager,  # type: ignore[arg-type]
         ),
+        # W60 (#522): presence use cases. The two partials share the
+        # same ``presence_repo`` instance — the SSE emitter polls
+        # ``get_connected_users`` while ``POST /presence/heartbeat``
+        # triggers ``track_presence`` on the same backing table, so
+        # the writes need a single repository object.
+        "track_presence": functools.partial(track_presence, presence=presence_repo),
+        "get_connected_users": functools.partial(get_connected_users, presence=presence_repo),
     }
 
 

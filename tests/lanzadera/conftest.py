@@ -24,6 +24,7 @@ from tests.lanzadera._fakes import (
     FakeBootstrapAdminSource,
     FakeGlobalAdminRepository,
     FakePasswordHasher,
+    FakePresenceRepository,
     FakeProfileRepository,
     FakeResetTokenRepository,
     FakeSecretManager,
@@ -53,6 +54,10 @@ class FakeFixtures:
     secrets: FakeSecretManager
     hasher: FakePasswordHasher
     bootstrap: FakeBootstrapAdminSource
+    # W60 (#522): presence fake wired in alongside the rest of the
+    # in-memory fakes so the container fixture can inject it for
+    # the SSE/heartbeat use cases.
+    presence: FakePresenceRepository
 
 
 @pytest.fixture
@@ -75,6 +80,9 @@ def fake_fixtures() -> FakeFixtures:
         secrets=FakeSecretManager(),
         hasher=FakePasswordHasher(),
         bootstrap=FakeBootstrapAdminSource(),
+        # W60 (#522): presence fake — one per test, mirroring the
+        # isolation the rest of the fakes already pin.
+        presence=FakePresenceRepository(),
     )
 
 
@@ -104,6 +112,9 @@ def container(fake_fixtures: FakeFixtures) -> LanzaderaContainer:
         assignment_repo=fake_fixtures.assignments,
         global_admin_repo=fake_fixtures.global_admins,
         reset_token_repo=fake_fixtures.reset_tokens,
+        # W60 (#522): presence fake injected so the SSE slice
+        # never reaches a real Postgres adapter in the test path.
+        presence_repo=fake_fixtures.presence,
         audit=fake_fixtures.audit,
     )
 
