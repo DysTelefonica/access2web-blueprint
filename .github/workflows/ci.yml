@@ -230,7 +230,9 @@ jobs:
         # missing or unformatted from the sparse-checkout materialisation. Running
         # ruff format here (after pip install, before the full format check) fixes
         # any drift so that the full repo check later passes.
-        run: ruff format scripts/check_mutation_sites.py
+        # --config is load-bearing: without it, ruff uses default line-length 88,
+        # which differs from the project's line-length 100 in app/pyproject.toml.
+        run: ruff format --config app/pyproject.toml scripts/check_mutation_sites.py
 
       - name: format
         # --config is load-bearing, exactly as it is for pytest. The ruff contract —
