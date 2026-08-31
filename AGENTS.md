@@ -42,6 +42,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | `chained-pr` | PRs sobre 400 líneas, stacked PRs, review slices. | `~/.config/opencode/skills/chained-pr/SKILL.md` (gentle-ai) |
 | `documentation-alan-style` | Redactar o revisar docs raíz, `epic.md`, `walkthrough-*.json`. | `skills/documentation-alan-style/SKILL.md` (este repo) |
 | `architecture-guardrails` | Cambios estructurales en `app/`, `tests/`, `openspec/`; decisiones D-<n>. | `skills/architecture-guardrails/SKILL.md` (este repo) |
+| `lanzadera-testing-strategy` | Clasificar test nuevo en Categoría 1–5; revisar capa de un test; decidir mock vs. fake; debate sobre `auth_bypass`. | `skills/lanzadera-testing-strategy/SKILL.md` (este repo) |
 
 ## Cross-cutting skills
 
