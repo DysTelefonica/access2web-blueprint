@@ -1,0 +1,61 @@
+name: Defecto
+description: Para bugs verificables con pasos de reproducción
+title: "[XXX] fix(<app>): "
+labels: ["type:bug", "status:needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sustituya `[XXX]` por el código de app correspondiente o por `[XCUT]`
+        si el defecto es transversal. Ver `CONTRIBUTING.md` §Codificación de prefijos.
+  - type: dropdown
+    id: app_scope
+    attributes:
+      label: "Alcance"
+      options:
+        - lanzadera
+        - expedientes
+        - hps
+        - hps-solicitudes
+        - brass
+        - condor
+        - gestion-riesgos
+        - no-conformidades
+        - cross-cutting
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severidad"
+      options:
+        - crítica (afecta a todos los usuarios, sin workaround)
+        - alta (afecta a flujos principales, workaround incómodo)
+        - media (afecta a flujos secundarios)
+        - baja (cosmético, documentación, edge case)
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Pasos de reproducción"
+      description: "Secuencia mínima para reproducir el defecto."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Comportamiento esperado"
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Comportamiento actual"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: "Entorno"
+      description: "Versión del MVP, runner, commit SHA, datos de staging si aplica."

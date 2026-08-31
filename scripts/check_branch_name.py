@@ -28,7 +28,10 @@ PATTERN = re.compile(r"^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a
 #: Long-lived branches that predate or transcend the convention.
 #: `feat/lanzadera-mvp-tracker` is the chain-strategy aggregator branch (PR 1..PR 8);
 #: its name does not match PATTERN (no `<n>-` prefix) and it is exempt by allowlist.
-ALLOWLIST = frozenset({"main", "feat/lanzadera-mvp-tracker"})
+#: `chore/issue-forms-bootstrap` is the one-shot bootstrap branch that added
+#: `.github/ISSUE_TEMPLATE/`; it precedes issue creation, so it cannot carry an
+#: issue number. Allowlisted for the same reason as the tracker branch.
+ALLOWLIST = frozenset({"main", "feat/lanzadera-mvp-tracker", "chore/issue-forms-bootstrap"})
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM

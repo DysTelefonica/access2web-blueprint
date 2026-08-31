@@ -1,0 +1,66 @@
+name: Nueva capacidad
+description: Para features, chantiers y verticales nuevas
+title: "[XXX] feat(<app>): "
+labels: ["status:needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de enviar, lea [`CONTRIBUTING.md`](../../CONTRIBUTING.md) (workflow) y
+        [`AGENTS.md`](../../AGENTS.md) (skills disponibles). El código de prefijo `[XXX]`
+        se sustituye por `[LANZ]`, `[EXP]`, `[HPS]`, `[HPSS]`, `[BRASS]`, `[COND]`,
+        `[GR]`, `[NC]` o `[XCUT]` según la app o el alcance transversal.
+  - type: dropdown
+    id: app_scope
+    attributes:
+      label: "Alcance"
+      description: "App a la que aplica la capacidad, o transversal."
+      options:
+        - lanzadera
+        - expedientes
+        - hps
+        - hps-solicitudes
+        - brass
+        - condor
+        - gestion-riesgos
+        - no-conformidades
+        - cross-cutting
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problema"
+      description: "Qué problema resuelve la capacidad. Cita paths del repo si los conoces."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Criterios de aceptación"
+      description: "Lista verificable. Cada criterio debe poderse comprobar en revisión."
+    validations:
+      required: true
+  - type: textarea
+    id: chain_plan
+    attributes:
+      label: "Plan de entrega"
+      description: "PRs planeados, orden y dependencias entre ramas. Si requiere chained PRs, declare la cadena aquí."
+  - type: checkboxes
+    id: size_check
+    attributes:
+      label: "Tamaño del PR"
+      options:
+        - label: "Estimo < 400 líneas (additions + deletions)"
+        - label: "Cabe en un solo PR"
+        - label: "Requiere chained PRs"
+        - label: "Requiere size:exception con motivo documentado en el cuerpo del PR"
+  - type: checkboxes
+    id: discipline
+    attributes:
+      label: "Disciplina"
+      options:
+        - label: "Conventional commits con scope correcto (lanzadera, platform, etc.)"
+        - label: "Rama <tipo>/<nº issue>-<kebab-slug>"
+        - label: "Sin Co-Authored-By ni atribución de IA"
+        - label: "Worktree en `<repo>-worktrees/<slug>` siguiendo worktree-reorg-per-project"
