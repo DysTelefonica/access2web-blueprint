@@ -23,7 +23,6 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 
 import check_test_classification as gate  # noqa: E402  — sys.path tweak above
 
-
 # --------------------------------------------------------------------------------------------
 # Helpers
 # --------------------------------------------------------------------------------------------
@@ -53,9 +52,21 @@ def _rule_hits(stderr: str, prefix: str) -> bool:
 # --------------------------------------------------------------------------------------------
 
 # R1 — application/ with FakeFixtures vs. with MagicMock
-APP_OK = "from tests.lanzadera._fakes import FakeUserRepository\ndef test_x() -> None:\n    assert FakeUserRepository() is not None\n"
-APP_BAD = "from unittest.mock import MagicMock\ndef test_x() -> None:\n    assert MagicMock() is not None\n"
-APP_STRING = 'def test_x() -> None:\n    """Do not use MagicMock here."""\n    assert True\n'
+APP_OK = (
+    "from tests.lanzadera._fakes import FakeUserRepository\n"
+    "def test_x() -> None:\n"
+    "    assert FakeUserRepository() is not None\n"
+)
+APP_BAD = (
+    "from unittest.mock import MagicMock\n"
+    "def test_x() -> None:\n"
+    "    assert MagicMock() is not None\n"
+)
+APP_STRING = (
+    "def test_x() -> None:\n"
+    '    """Do not use MagicMock here."""\n'
+    "    assert True\n"
+)
 
 # R2 — delivery/ + admin_routes with/without auth gate
 DELIVERY_OK_FIXTURE = (
