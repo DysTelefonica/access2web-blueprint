@@ -1,0 +1,67 @@
+name: Documentación
+description: Para épicas, walkthroughs, tranches de docs y estrategias (testing, architecture)
+title: "[XXX] docs(<app>): "
+labels: ["type:docs", "status:needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes de redactar, cargue la skill [`documentation-alan-style`](../../skills/documentation-alan-style/SKILL.md).
+        El doc debe cerrar con `## Contributor checklist` y `## Navigation` (§13).
+  - type: dropdown
+    id: app_scope
+    attributes:
+      label: "Alcance"
+      options:
+        - lanzadera
+        - expedientes
+        - hps
+        - hps-solicitudes
+        - brass
+        - condor
+        - gestion-riesgos
+        - no-conformidades
+        - cross-cutting
+    validations:
+      required: true
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: "Tipo de documento"
+      options:
+        - epic
+        - walkthrough-json
+        - capability
+        - migration-matrix
+        - testing-strategy
+        - architecture
+        - audit
+        - changelog-entry
+        - otro
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: "Alcance del cambio"
+      description: "Qué secciones se añaden, modifican o retiran. Cite paths objetivo."
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Criterios de aceptación"
+      description: "Cómo se verifica que el doc cumple su propósito. Cite la verificación que aplicará el revisor."
+    validations:
+      required: true
+  - type: checkboxes
+    id: style_check
+    attributes:
+      label: "Lista de comprobación de estilo"
+    options:
+      - label: "Sigue documentation-alan-style §13 (Contributor checklist, Navigation)"
+      - label: "Cero emojis decorativos en headings ni cuerpo"
+      - label: "Cross-references con paths verificables en `main`"
+      - label: "Castellano peninsular formal (usted, no tuteo, no voseo)"
+      - label: "Un único H1; ningún H4 ni más profundo"
+      - label: "Tabla 'What this is / is not' con columna de evidencia (path o límite)"
