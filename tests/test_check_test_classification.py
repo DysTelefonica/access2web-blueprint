@@ -62,11 +62,7 @@ APP_BAD = (
     "def test_x() -> None:\n"
     "    assert MagicMock() is not None\n"
 )
-APP_STRING = (
-    "def test_x() -> None:\n"
-    '    """Do not use MagicMock here."""\n'
-    "    assert True\n"
-)
+APP_STRING = 'def test_x() -> None:\n    """Do not use MagicMock here."""\n    assert True\n'
 
 # R2 — delivery/ + admin_routes with/without auth gate
 DELIVERY_OK_FIXTURE = (
