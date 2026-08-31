@@ -344,6 +344,11 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # Slice 4 of #266: scripts/check_decision_guards.py is the unit-tested gate.
     # Slice 6 wires it into GATES and removes this entry.
     "check_decision_guards.py",
+    # Pieza 4 of testing-strategy epic (#535): scripts/check_test_classification.py
+    # ships in --dry-run mode for one sprint per testing-strategy.md §Pieza 4.3.
+    # After the sprint, --strict activates in ci.yml's quality job and this entry
+    # is removed. Issue #535 tracks the exit criteria.
+    "check_test_classification.py",
 )
 
 
