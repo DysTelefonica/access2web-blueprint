@@ -14,6 +14,7 @@ Default mode is ``--dry-run``: print violations to stderr, exit 0.
 Use ``--strict`` to exit 1 on violations. See ``docs/testing/testing-strategy.md``
 §Pieza 4 for the rollout plan (one sprint of dry-run, then ``--strict`` in CI).
 """
+
 from __future__ import annotations
 
 import argparse

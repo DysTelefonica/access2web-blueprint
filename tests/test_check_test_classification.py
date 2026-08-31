@@ -6,6 +6,7 @@ Every rule has both a positive case (a layout that passes) and a negative case
 with file and rule). If any negative case passes silently, the gate is
 broken and the next layer-violation slips through.
 """
+
 from __future__ import annotations
 
 import contextlib
@@ -54,7 +55,7 @@ def _rule_hits(stderr: str, prefix: str) -> bool:
 # R1 — application/ with FakeFixtures vs. with MagicMock
 APP_OK = "from tests.lanzadera._fakes import FakeUserRepository\ndef test_x() -> None:\n    assert FakeUserRepository() is not None\n"
 APP_BAD = "from unittest.mock import MagicMock\ndef test_x() -> None:\n    assert MagicMock() is not None\n"
-APP_STRING = "def test_x() -> None:\n    \"\"\"Do not use MagicMock here.\"\"\"\n    assert True\n"
+APP_STRING = 'def test_x() -> None:\n    """Do not use MagicMock here."""\n    assert True\n'
 
 # R2 — delivery/ + admin_routes with/without auth gate
 DELIVERY_OK_FIXTURE = (
