@@ -79,7 +79,7 @@ async def login(
     password: str,
     *,
     now: datetime,
-    users: "UserRepository",
+    users: UserRepository,
     sessions: SessionRepository,
     password_hasher: PasswordHasher,
     audit: AuditLog,
