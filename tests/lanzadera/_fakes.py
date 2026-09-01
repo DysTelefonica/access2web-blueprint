@@ -50,6 +50,7 @@ from app.src.modules.lanzadera.domain.audit_event import AuditEvent
 from app.src.modules.lanzadera.domain.global_admin import GlobalAdmin
 from app.src.modules.lanzadera.domain.profile import Profile
 from app.src.modules.lanzadera.domain.reset_token import ResetToken
+from app.src.modules.lanzadera.domain.session import Session
 from app.src.modules.lanzadera.domain.user import User, UserStatus
 
 if TYPE_CHECKING:
@@ -597,6 +598,44 @@ class FakeBootstrapAdminSource:
         return list(self.emails)
 
 
+# ---------------------------------------------------------------------------
+# Session repository — W62 (D-W62-2, DA-1)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeSessionRepository:
+    """In-memory SessionRepositoryPort for the W62 auth flow.
+
+    Mirrors the production SessionRepositoryPg contract: create
+    stores the row verbatim, get_by_id returns the row regardless
+    of expiry (the caller is responsible for the expiry check), and
+    revoke shortens expires_at to a past timestamp without
+    deleting the row (DA-11 audit-consumer visibility).
+    """
+
+    sessions: dict[UUID, Session] = field(default_factory=dict)
+    create_calls: list[UUID] = field(default_factory=list)
+    revoke_calls: list[UUID] = field(default_factory=list)
+
+    async def create(self, session: Session) -> Session:
+        self.sessions[session.id] = session
+        self.create_calls.append(session.id)
+        return session
+
+    async def get_by_id(self, session_id: UUID) -> Session | None:
+        return self.sessions.get(session_id)
+
+    async def revoke(self, session_id: UUID, at: datetime) -> bool:
+        if session_id not in self.sessions:
+            return False
+        existing = self.sessions[session_id]
+        new_expires = at if at < existing.expires_at else existing.expires_at
+        self.sessions[session_id] = dataclasses.replace(existing, expires_at=new_expires)
+        self.revoke_calls.append(session_id)
+        return True
+
+
 __all__ = [
     "FakeAppRepository",
     "FakeAssignmentRepository",
@@ -608,5 +647,6 @@ __all__ = [
     "FakeProfileRepository",
     "FakeResetTokenRepository",
     "FakeSecretManager",
+    "FakeSessionRepository",
     "FakeUserRepository",
 ]
