@@ -45,6 +45,14 @@ from app.src.modules.lanzadera.application.grant_global_admin import (
 from app.src.modules.lanzadera.application.list_effective_apps import (
     list_effective_apps,
 )
+
+# W62 (#539): login use case — wires the auth flow's first piece into
+# the container. Sits next to the other admin use cases in alphabetical
+# order so the dup-break baseline stays put.
+from app.src.modules.lanzadera.application.login import (
+    DEFAULT_SESSION_TTL_SECONDS,
+    login,
+)
 from app.src.modules.lanzadera.application.revoke_global_admin import (
     revoke_global_admin,
 )
@@ -53,6 +61,7 @@ from app.src.modules.lanzadera.application.track_presence import track_presence
 from app.src.modules.lanzadera.application.update_app import update_app
 from app.src.modules.lanzadera.domain.ports import AuditLog, PasswordHasher
 from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
+from app.src.modules.lanzadera.domain.session import LockoutPolicy
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -93,6 +102,7 @@ def build_use_case_factories(
     global_admin_repo: Any,
     reset_token_repo: Any,
     presence_repo: Any,
+    session_repo: Any,
     audit: AuditLog,
     password_hasher: PasswordHasher,
     secret_manager: SecretManager,
@@ -176,6 +186,18 @@ def build_use_case_factories(
         # the writes need a single repository object.
         "track_presence": functools.partial(track_presence, presence=presence_repo),
         "get_connected_users": functools.partial(get_connected_users, presence=presence_repo),
+        # W62 (#539): login use case. The lockout policy is read once at
+        # container-build time and frozen into the partial; per-call
+        # ``actor_id`` still flows through to the use case.
+        "login": functools.partial(
+            login,
+            users=user_repo,
+            sessions=session_repo,
+            password_hasher=password_hasher,
+            audit=audit,
+            lockout=LockoutPolicy(),
+            session_ttl_seconds=DEFAULT_SESSION_TTL_SECONDS,
+        ),
     }
 
 

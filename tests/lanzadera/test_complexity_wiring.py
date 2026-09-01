@@ -133,12 +133,15 @@ def test_complexity_gate_emits_valid_envelope(root: Path, script: Path) -> None:
     envelope = json.loads(result.stdout)
     assert envelope["gate"] == "complexity"
     assert envelope["status"] == "pass"
-    # W60 (#522): 1 BASELINE function above ceiling (LanzaderaContainer.__init__)
-    assert envelope["indicators"]["functions_over_ceiling"] == 1
+    # W62 (#539): refactor pulled LanzaderaContainer.__init__ under the
+    # 10 ceiling (the _pick helper absorbs the conditional adapters).
+    # The W60 BASELINE entry for this function is now obsolete.
+    assert envelope["indicators"]["functions_over_ceiling"] == 0
     # The Phase 0 composition root (`app/src/main.py`) contributes a couple
     # of trivial functions; `max_complexity` is the high-water mark and MUST
     # stay at or below the current ceiling. We assert the ceiling rather than
     # the exact value so the test is robust against new trivial helpers.
-    # W60 (#522): LanzaderaContainer.__init__ is CC=11 (BASELINE)
-    assert envelope["indicators"]["max_complexity"] == 11
+    # The DG-11 ceiling is 10 (hardcoded here to avoid pulling
+    # ``check_complexity.MAX_COMPLEXITY`` into this test's module).
+    assert envelope["indicators"]["max_complexity"] <= 10
     assert envelope["ceilings"]["max_complexity"] == 10
