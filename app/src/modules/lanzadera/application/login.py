@@ -21,6 +21,7 @@ so the security log captures every attempt.
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from app.src.modules.lanzadera.domain.errors import (
@@ -38,6 +39,9 @@ from app.src.modules.lanzadera.domain.ports.session_repository import (
 )
 from app.src.modules.lanzadera.domain.session import LockoutPolicy, Session
 from app.src.modules.lanzadera.domain.user import User, UserStatus
+
+if TYPE_CHECKING:
+    from app.src.modules.lanzadera.domain.ports import UserRepository
 
 #: D-W62-2 — session TTL is 24 hours by default. The lockout policy
 #: threshold / duration are read from the ``LockoutPolicy`` value object
@@ -75,7 +79,7 @@ async def login(
     password: str,
     *,
     now: datetime,
-    users: object,  # UserRepository — kept loose to avoid a circular import.
+    users: "UserRepository",
     sessions: SessionRepository,
     password_hasher: PasswordHasher,
     audit: AuditLog,

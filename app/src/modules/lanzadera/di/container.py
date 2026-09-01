@@ -114,7 +114,7 @@ def _adapter(
 
 def _pick(
     fake: object | None,
-    factory: AsyncSessionFactoryPort,
+    factory: AsyncSessionFactoryPort | None,
     adapter_cls: Callable[[AsyncSessionFactoryPort], object],
 ) -> object:
     """Return ``fake`` if the test path injected one, else build the Postgres adapter.
@@ -123,7 +123,10 @@ def _pick(
     production path falls through to the adapter constructor. Extracted
     to keep ``LanzaderaContainer.__init__`` under the complexity ceiling.
     """
-    return fake if fake is not None else _adapter(adapter_cls, factory)
+    if fake is not None:
+        return fake
+    assert factory is not None, "no fake and no factory — caller must inject one"
+    return _adapter(adapter_cls, factory)
 
 
 class LanzaderaContainer:
@@ -186,27 +189,27 @@ class LanzaderaContainer:
         # required by every Postgres adapter constructor, so callers
         # that inject a fake may pass ``session_factory=None``; the
         # injected fake is the only port that will ever see traffic.
-        self._user_repo = _pick(user_repo, self._factory, UserRepositoryPg)  # type: ignore[arg-type]
-        self._app_repo = _pick(app_repo, self._factory, AppRepositoryPg)  # type: ignore[arg-type]
+        self._user_repo = _pick(user_repo, self._factory, UserRepositoryPg)
+        self._app_repo = _pick(app_repo, self._factory, AppRepositoryPg)
         self._profile_repo = _pick(
             profile_repo,
             self._factory,
-            ProfileRepositoryPg,  # type: ignore[arg-type]
+            ProfileRepositoryPg,
         )
         self._assignment_repo = _pick(
             assignment_repo,
             self._factory,
-            AssignmentRepositoryPg,  # type: ignore[arg-type]
+            AssignmentRepositoryPg,
         )
         self._global_admin_repo = _pick(
             global_admin_repo,
             self._factory,
-            GlobalAdminRepositoryPg,  # type: ignore[arg-type]
+            GlobalAdminRepositoryPg,
         )
         self._reset_token_repo = _pick(
             reset_token_repo,
             self._factory,
-            ResetTokenRepositoryPg,  # type: ignore[arg-type]
+            ResetTokenRepositoryPg,
         )
         # W60 (#522): presence repo. Mirrors the reset_token_repo
         # pattern: a fake is honoured when injected; otherwise the
@@ -214,16 +217,19 @@ class LanzaderaContainer:
         self._presence_repo = _pick(
             presence_repo,
             self._factory,
-            PresenceRepositoryPg,  # type: ignore[arg-type]
+            PresenceRepositoryPg,
         )
-        self._audit = cast(AuditLog, _pick(audit, self._factory, AuditLogPg))  # type: ignore[arg-type]
+        self._audit = cast(AuditLog, _pick(audit, self._factory, AuditLogPg))
         # W62 (#539): session_repo mirrors the other driven-port slots.
         # The Postgres adapter for sessions lands in a follow-up slice;
         # for now the only injection path is the test fake.
+        # ``_build_default_session_repo`` ignores its factory arg (it raises),
+        # but ``_pick`` requires the adapter_cls to accept one. Pass a
+        # lambda that swallows the factory; the factory arg is unused on this branch.
         self._session_repo = _pick(
             session_repo,
             self._factory,
-            self._build_default_session_repo,  # type: ignore[arg-type]
+            lambda _f: self._build_default_session_repo(),
         )
 
         # Build the use case partials once. The public method below
@@ -413,7 +419,7 @@ class LanzaderaContainer:
     @property
     def users(self) -> UserRepository:
         """Read-only access to the UserRepository for admin queries."""
-        return self._user_repo
+        return cast(UserRepository, self._user_repo)
 
     @property
     def app_repo(self) -> AppRepositoryPort:
@@ -423,7 +429,7 @@ class LanzaderaContainer:
     @property
     def assignment_repo(self) -> AssignmentRepositoryPort:
         """Read-only access to the AssignmentRepository for admin queries."""
-        return self._assignment_repo
+        return cast(AssignmentRepositoryPort, self._assignment_repo)
 
     @property
     def audit_repo(self) -> AuditLog:
@@ -439,7 +445,7 @@ class LanzaderaContainer:
         delivery layer never touches the protected Postgres adapter
         directly.
         """
-        return self._presence_repo
+        return cast(PresenceRepository, self._presence_repo)
 
     @property
     def use_cases(self) -> dict[str, Any]:
