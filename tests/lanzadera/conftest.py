@@ -28,6 +28,7 @@ from tests.lanzadera._fakes import (
     FakeProfileRepository,
     FakeResetTokenRepository,
     FakeSecretManager,
+    FakeSessionRepository,
     FakeUserRepository,
 )
 
@@ -58,6 +59,11 @@ class FakeFixtures:
     # in-memory fakes so the container fixture can inject it for
     # the SSE/heartbeat use cases.
     presence: FakePresenceRepository
+    # W62 (#539): session fake mirrors the rest — one per test,
+    # isolated. The login use case calls ``sessions.create`` after a
+    # successful password verification (PR-2); the logout use case
+    # (PR-3) calls ``sessions.revoke``.
+    sessions: FakeSessionRepository
 
 
 @pytest.fixture
@@ -83,6 +89,8 @@ def fake_fixtures() -> FakeFixtures:
         # W60 (#522): presence fake — one per test, mirroring the
         # isolation the rest of the fakes already pin.
         presence=FakePresenceRepository(),
+        # W62 (#539): session fake, one per test.
+        sessions=FakeSessionRepository(),
     )
 
 
@@ -115,6 +123,9 @@ def container(fake_fixtures: FakeFixtures) -> LanzaderaContainer:
         # W60 (#522): presence fake injected so the SSE slice
         # never reaches a real Postgres adapter in the test path.
         presence_repo=fake_fixtures.presence,
+        # W62 (#539): session fake injected so the login use case
+        # never reaches a real Postgres adapter in the test path.
+        session_repo=fake_fixtures.sessions,
         audit=fake_fixtures.audit,
     )
 

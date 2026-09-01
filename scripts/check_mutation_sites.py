@@ -170,8 +170,16 @@ BASELINE: dict[str, BaselineEntry] = {
     # ``container_apps.py`` / ``container_auth.py`` / a thin
     # ``container.py`` re-exporter) is responsible for bringing it
     # below 100 before the BASELINE expires on 2027-02-13.
+    # W62 (#539): container.py grew from 135 to 158 sites because the
+    # login use case added session_repo to the constructor and the
+    # conditional-adapter pattern was extracted to the _pick helper
+    # (3 new branches + the helper itself). The follow-up WU (cleaving
+    # container.py along port-group boundaries into container_auth.py
+    # / container_apps.py / a thin re-exporter) is responsible for
+    # bringing the per-file count below 100 before the BASELINE expires
+    # on 2027-02-13.
     "app/src/modules/lanzadera/di/container.py": (
-        BaselineEntry(sites=135, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=158, target=100, target_date="2027-02-13")
     ),
     # W61 (#524): app_repository_pg.py is at 145 sites because it now
     # implements 5 methods (get_by_id, list_active, list_visible_to, create,
@@ -183,6 +191,15 @@ BASELINE: dict[str, BaselineEntry] = {
     # 4 REST endpoints (create, get, update, disable) with validation helpers.
     "app/src/modules/lanzadera/delivery/http/admin_routes_apps.py": (
         BaselineEntry(sites=151, target=100, target_date="2027-02-13")
+    ),
+    # W62 (#539): login.py landed at 165 mutation sites because the
+    # single function unpacks 5 dependency ports, builds the Session
+    # row, and branches on 4 failure modes (DA-11 audit). The
+    # follow-up WU (cleaving into login_verify.py / login_session.py)
+    # is responsible for bringing it below 100 before the BASELINE
+    # expires on 2027-02-13.
+    "app/src/modules/lanzadera/application/login.py": (
+        BaselineEntry(sites=165, target=100, target_date="2027-02-13")
     ),
 }
 
