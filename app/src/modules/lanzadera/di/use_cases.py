@@ -53,6 +53,10 @@ from app.src.modules.lanzadera.application.login import (
     DEFAULT_SESSION_TTL_SECONDS,
     login,
 )
+
+# W62 (#540): logout use case — inverse of login. Sits next to it
+# alphabetically (the dup-break baseline groups consecutive imports).
+from app.src.modules.lanzadera.application.logout import logout
 from app.src.modules.lanzadera.application.revoke_global_admin import (
     revoke_global_admin,
 )
@@ -197,6 +201,14 @@ def build_use_case_factories(
             audit=audit,
             lockout=LockoutPolicy(),
             session_ttl_seconds=DEFAULT_SESSION_TTL_SECONDS,
+        ),
+        # W62 (#540): logout use case. The ``actor_id`` (the JWT subject
+        # resolved by the auth middleware in PR-5) flows through the
+        # audit row's ``actor_id`` field for cross-referencing.
+        "logout": functools.partial(
+            logout,
+            sessions=session_repo,
+            audit=audit,
         ),
     }
 
