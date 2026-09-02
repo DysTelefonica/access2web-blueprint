@@ -290,6 +290,26 @@ class LanzaderaContainer:
             actor_id=actor_id,
         )
 
+    async def logout(
+        self,
+        session_id: UUID,
+        *,
+        actor_id: UUID | None = None,
+    ) -> None:
+        """Revoke the session identified by ``session_id`` (W62 #540).
+
+        The caller (delivery, PR-6) reads ``session_id`` from the JWT
+        ``sub`` claim and passes it here. The auth middleware (PR-5)
+        decodes the token before the call lands on this method, so the
+        use case itself does not touch JWT code. ``SessionNotFoundError``
+        is the only typed exception raised; the delivery routes map
+        it to HTTP 401.
+        """
+        await self._use_cases["logout"](
+            session_id=session_id,
+            actor_id=actor_id,
+        )
+
     async def create_user(
         self,
         email: str,

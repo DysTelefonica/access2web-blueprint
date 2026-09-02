@@ -58,3 +58,12 @@ class AccountNotActiveError(Exception):
     the global admin or reset-flow path is the only way out of a
     non-ACTIVE state.
     """
+
+
+class SessionNotFoundError(Exception):
+    """`logout` was called for a session id that does not exist.
+
+    The caller (delivery, PR-5) maps this to HTTP 401 to avoid leaking
+    which sessions were once valid; the audit row records the attempt
+    so the security log can correlate brute-force probes.
+    """
