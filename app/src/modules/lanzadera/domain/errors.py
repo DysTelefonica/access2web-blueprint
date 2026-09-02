@@ -67,3 +67,20 @@ class SessionNotFoundError(Exception):
     which sessions were once valid; the audit row records the attempt
     so the security log can correlate brute-force probes.
     """
+
+
+class InvalidTokenError(Exception):
+    """`JwtSignerPort.verify` was called with a token that does not
+    parse, has an invalid signature, or has a malformed segment
+    (header / payload / signature). The auth middleware (PR-5)
+    catches this and lets the request through with
+    ``request.state.user_id = None`` — the delivery routes' own
+    ``require_global_admin`` then returns HTTP 401.
+    """
+
+
+class ExpiredTokenError(Exception):
+    """`JwtSignerPort.verify` was called with a token whose payload
+    ``exp`` is in the past (``now >= exp``). The auth middleware
+    (PR-5) catches this the same way as ``InvalidTokenError``.
+    """
