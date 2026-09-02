@@ -200,12 +200,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # expires on 2027-02-13.
     "app/src/modules/lanzadera/application/login.py": (
         BaselineEntry(sites=166, target=100, target_date="2027-02-13")
-        ),
-        # W62 (#541): jwt.py at 118 mutation sites (HS256 signer with
-        # base64url codec + 2-branch verify). Follow-up WU splits the
-        # codec into _codec.py to bring it below 100 before BASELINE expires.
-        "app/src/modules/lanzadera/adapters/crypto/jwt.py": (
-            BaselineEntry(sites=118, target=100, target_date="2027-02-13")
+    ),
+    # W62 (#541): jwt.py at 118 mutation sites (HS256 signer with
+    # base64url codec + 2-branch verify). Follow-up WU splits the
+    # codec into _codec.py to bring it below 100 before BASELINE expires.
+    "app/src/modules/lanzadera/adapters/crypto/jwt.py": (
+        BaselineEntry(sites=118, target=100, target_date="2027-02-13")
     ),
 }
 
