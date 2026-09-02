@@ -36,7 +36,7 @@ import dataclasses
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
 # Imported at module level (not under ``TYPE_CHECKING``) so ``ruff``'s
@@ -54,6 +54,8 @@ from app.src.modules.lanzadera.domain.session import Session
 from app.src.modules.lanzadera.domain.user import User, UserStatus
 
 if TYPE_CHECKING:
+    from app.src.modules.lanzadera.adapters.crypto.jwt import Hs256JwtSigner
+
     pass  # the runtime imports above already cover the static checker
 
 # W60 (#522): presence fake imported at module level so the rest of the
@@ -636,12 +638,64 @@ class FakeSessionRepository:
         return True
 
 
+# ---------------------------------------------------------------------------
+# JWT signer — D-W62-1 (PR-4)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+# ---------------------------------------------------------------------------
+# JWT signer — D-W62-1 (PR-4)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class FakeJwtSigner:
+    """In-memory ``JwtSignerPort`` for the W62 auth flow.
+
+    Wraps the production ``Hs256JwtSigner`` (with a fixed 32-byte
+    secret) so the test path behaves identically to production
+    while still recording every ``sign`` and ``verify`` call for
+    introspection (e.g. count the rounds of a token-rotation test,
+    or assert the middleware never re-signs).
+    """
+
+    _signer: Hs256JwtSigner
+    sign_calls: list[Any] = field(default_factory=list)
+    verify_calls: list[tuple[str, int]] = field(default_factory=list)
+
+    def __init__(self) -> None:
+        # Constructed manually (not via @dataclass __init__) so the
+        # ``Hs256JwtSigner`` instance is built lazily without needing
+        # ``__future__.annotations`` to forward-reference the field.
+        # The runtime import lives inside the method to avoid a circular
+        # dependency at module load time (``crypto.jwt`` does not import
+        # from ``_fakes``; this is one-directional).
+        from app.src.modules.lanzadera.adapters.crypto.jwt import (
+            Hs256JwtSigner as _Hs256JwtSigner,
+        )
+
+        self._signer = _Hs256JwtSigner(b"x" * 32)
+        self.sign_calls = []
+        self.verify_calls = []
+
+    def sign(self, payload: dict[str, Any]) -> str:
+        self.sign_calls.append(dict(payload))
+        return self._signer.sign(payload)
+
+    def verify(self, token: str, *, now: int) -> dict[str, Any]:
+        self.verify_calls.append((token, now))
+        return self._signer.verify(token, now=now)
+        return self._signer.verify(token, now=now)
+
+
 __all__ = [
     "FakeAppRepository",
     "FakeAssignmentRepository",
     "FakeAuditLog",
     "FakeBootstrapAdminSource",
     "FakeGlobalAdminRepository",
+    "FakeJwtSigner",
     "FakePasswordHasher",
     "FakePresenceRepository",
     "FakeProfileRepository",
