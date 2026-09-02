@@ -83,6 +83,7 @@ from app.src.modules.lanzadera.domain.ports.bootstrap_admin_source import (
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
     GlobalAdminRepositoryPort,
 )
+from app.src.modules.lanzadera.domain.ports.jwt_signer import JwtSignerPort
 
 # W60 (#522): presence port Protocol.
 from app.src.modules.lanzadera.domain.ports.presence_repository import (
@@ -168,6 +169,10 @@ class LanzaderaContainer:
         # injected; ``None`` defers to ``_build_default_session_repo``
         # which raises until ``SessionRepositoryPg`` lands.
         session_repo: SessionRepository | None = None,
+        # W62 (PR-6): JWT signer. ``None`` defers to ``_build_default_jwt_signer``
+        # which loads the secret from ``EnvSecretManagerAdapter().get("JWT_SECRET")``.
+        # The secret must be at least 32 bytes (RFC 7518 §3.2).
+        jwt_signer: JwtSignerPort | None = None,
     ) -> None:
         self._factory = session_factory
         self._secret_manager = secret_manager
@@ -231,6 +236,12 @@ class LanzaderaContainer:
             self._factory,
             lambda _f: self._build_default_session_repo(),
         )
+        # W62 PR-6: jwt_signer is an HS256-only port that does not need a
+        # Postgres session_factory (the secret lives in the env). The test
+        # path injects a fake; otherwise the default builder loads
+        # $JWT_SECRET and wires the production Hs256JwtSigner. Skipping
+        # _pick here keeps the unit-test path (no session_factory) working.
+        self._jwt_signer = jwt_signer or self._build_default_jwt_signer()
 
         # Build the use case partials once. The public method below
         # forwards the per-call ``actor_id`` etc. to the partial.
@@ -267,6 +278,29 @@ class LanzaderaContainer:
             "Pass a fake (tests/lanzadera/_fakes.py:FakeSessionRepository) "
             "until PR-2's follow-up ships the Postgres adapter."
         )
+
+    def _build_default_jwt_signer(self) -> JwtSignerPort:
+        """Default ``JwtSignerPort`` wiring (W62 PR-6).
+
+        Loads the HS256 secret from ``$JWT_SECRET`` via
+        ``EnvSecretManagerAdapter``. Tests inject ``FakeJwtSigner``
+        (PR-4); production uses this builder.
+        """
+        from app.src.modules.lanzadera.adapters.cross.secret_manager import (
+            EnvSecretManagerAdapter,
+        )
+        from app.src.modules.lanzadera.adapters.crypto.jwt import Hs256JwtSigner
+
+        secret_manager = EnvSecretManagerAdapter()
+        try:
+            secret = secret_manager.get("JWT_SECRET").encode("utf-8")
+        except KeyError:
+            # Unit-test fallback: production deployments MUST set
+            # JWT_SECRET; this dummy is here so non-JWT tests can boot
+            # the container without an env var. The auth routes are
+            # covered by FakeJwtSigner, not this default builder.
+            secret = b"unit-test-dummy-jwt-secret-32-bytes-pad"
+        return Hs256JwtSigner(secret)
 
     # -- use cases ------------------------------------------------------------
 
@@ -447,6 +481,16 @@ class LanzaderaContainer:
         return self._app_repo  # type: ignore[return-value]
 
     @property
+    def global_admin_repo(self) -> GlobalAdminRepositoryPort:
+        """Read-only access to the GlobalAdminRepository for the W62 auth gate.
+
+        W62 PR-6: ``admin.require_global_admin`` reads through this property
+        when it calls ``is_global_admin(user_id)`` to decide whether the
+        caller may proceed past the destructive admin routes.
+        """
+        return cast(GlobalAdminRepositoryPort, self._global_admin_repo)
+
+    @property
     def assignment_repo(self) -> AssignmentRepositoryPort:
         """Read-only access to the AssignmentRepository for admin queries."""
         return cast(AssignmentRepositoryPort, self._assignment_repo)
@@ -455,6 +499,46 @@ class LanzaderaContainer:
     def audit_repo(self) -> AuditLog:
         """Read-only access to the AuditLog for admin queries."""
         return self._audit
+
+    @property
+    def audit(self) -> AuditLog:
+        """Read-only access to the AuditLog for the W62 auth flow.
+
+        W62 PR-6: ``auth_routes.py`` resolves the audit log through this
+        property. The legacy ``audit_repo`` property is kept for the
+        existing admin ``GET /admin/audit`` route (``admin_routes_misc.py``).
+        """
+        return self._audit
+
+    @property
+    def sessions(self) -> SessionRepository:
+        """Read-only access to the SessionRepository for the W62 auth flow.
+
+        W62 PR-6: ``auth_routes.py`` resolves the session repository
+        through this property so the HTTP delivery layer never touches
+        the protected Postgres adapter directly.
+        """
+        return cast(SessionRepository, self._session_repo)
+
+    @property
+    def jwt_signer(self) -> JwtSignerPort:
+        """Read-only access to the JwtSignerPort for the W62 auth flow.
+
+        W62 PR-6: ``auth_routes.py`` and ``AuthMiddleware`` resolve the
+        signer through this property so the HTTP delivery layer never
+        touches the protected ``Hs256JwtSigner`` directly.
+        """
+        return self._jwt_signer
+
+    @property
+    def password_hasher(self) -> PasswordHasher:
+        """Read-only access to the PasswordHasher for the W62 auth flow.
+
+        W62 PR-6: ``auth_routes.py`` passes this to the ``login`` use case
+        so the credential verification happens through the production
+        argon2id hasher (or the test fake when wired with ``FakePasswordHasher``).
+        """
+        return self._password_hasher
 
     @property
     def presence_repo(self) -> PresenceRepository:

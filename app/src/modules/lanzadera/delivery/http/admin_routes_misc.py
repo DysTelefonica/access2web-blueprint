@@ -43,7 +43,7 @@ def register_misc_routes(
 
     @router.post("/apps/{app_id}/activate", response_class=HTMLResponse)
     async def activate_app(request: Request, app_id: int) -> HTMLResponse:
-        _admin.require_global_admin()
+        await _admin.require_global_admin(request)
         return templates.TemplateResponse(request, "admin/app_activated.html", {"app_id": app_id})
 
     @router.post("/assignments", response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
@@ -53,7 +53,7 @@ def register_misc_routes(
         app_id: int = Form(...),  # noqa: B008
         profile_id: UUID = Form(...),  # noqa: B008
     ) -> HTMLResponse:
-        _admin.require_global_admin()
+        await _admin.require_global_admin(request)
         await container.assign_profile(
             user_id=user_id,
             app_id=app_id,

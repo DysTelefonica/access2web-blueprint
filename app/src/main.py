@@ -183,6 +183,22 @@ async def _register_admin_routes() -> None:
 
     container: LanzaderaContainer = app.state.container  # type: ignore[unused-ignore]
     _ensure_container_middleware(app)
+    # W62 PR-6: mount the auth middleware so the destructive admin
+    # routes (``require_global_admin``) and the new ``/auth/logout``
+    # route can read ``request.state.user_id`` / ``session_id`` from
+    # the Bearer token. Starlette applies middleware in reverse order,
+    # so the last ``add_middleware`` call wraps the stack innermost —
+    # AuthMiddleware fires first on each request, ahead of the
+    # container mirror middleware installed above.
+    from app.src.modules.lanzadera.delivery.http.auth_middleware import (
+        AuthMiddleware,
+    )
+
+    app.add_middleware(
+        AuthMiddleware,
+        jwt_signer=container.jwt_signer,
+        now=lambda: int(container._clock().timestamp()),
+    )
     admin_router = APIRouter(prefix="/admin", tags=["admin"])
     register_routes(
         admin_router,
@@ -210,3 +226,15 @@ async def _register_admin_routes() -> None:
 
     app.include_router(apps_router, prefix="/admin", tags=["apps"])
     app.include_router(admin_router)
+    # W62 PR-6: mount the three auth routes (``/auth/login``,
+    # ``/auth/logout``, ``/auth/me``). The router is created with the
+    # ``auth`` tag and registered last so the path table stays
+    # predictable; FastAPI dispatches by exact match so the new
+    # routes cannot collide with the existing ``/admin/...`` slices.
+    from app.src.modules.lanzadera.delivery.http.auth_routes import (
+        register_auth_routes,
+    )
+
+    auth_router = APIRouter(tags=["auth"])
+    register_auth_routes(auth_router, container=container)
+    app.include_router(auth_router)
