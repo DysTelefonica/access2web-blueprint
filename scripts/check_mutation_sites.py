@@ -207,15 +207,15 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/adapters/crypto/jwt.py": (
         BaselineEntry(sites=118, target=100, target_date="2027-02-13")
     ),
-        # W62 (PR-6): auth_routes.py landed at 112 mutation sites because
-        # three endpoints each carry their own try/except ladders (one per
-        # use-case exception type) plus the W62 silent-failure 401 contract
-        # on every guarded route. Follow-up WU extracts the exception → HTTP
-        # mapping into a helper module to bring it below 100 before the
-        # BASELINE expires on 2027-02-13.
-        "app/src/modules/lanzadera/delivery/http/auth_routes.py": (
-            BaselineEntry(sites=112, target=100, target_date="2027-02-13")
-        ),
+    # W62 (PR-6): auth_routes.py landed at 112 mutation sites because
+    # three endpoints each carry their own try/except ladders (one per
+    # use-case exception type) plus the W62 silent-failure 401 contract
+    # on every guarded route. Follow-up WU extracts the exception → HTTP
+    # mapping into a helper module to bring it below 100 before the
+    # BASELINE expires on 2027-02-13.
+    "app/src/modules/lanzadera/delivery/http/auth_routes.py": (
+        BaselineEntry(sites=112, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------

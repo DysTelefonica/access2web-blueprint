@@ -242,9 +242,7 @@ def _mint_jwt(*, sub: UUID, ttl_seconds: int = 3600) -> str:
     so the auth middleware's ``verify`` accepts the token.
     """
     now = int(datetime.now(UTC).timestamp())
-    return Hs256JwtSigner(_JWT_SECRET).sign(
-        {"sub": str(sub), "iat": now, "exp": now + ttl_seconds}
-    )
+    return Hs256JwtSigner(_JWT_SECRET).sign({"sub": str(sub), "iat": now, "exp": now + ttl_seconds})
 
 
 # ---------------------------------------------------------------------------
@@ -375,9 +373,7 @@ def test_logout_revokes_session_with_valid_token(
     session = _seed_session(fake_fixtures, user_id=user.id)
     token = _mint_jwt(sub=session.id)
 
-    response = auth_client.post(
-        "/auth/logout", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = auth_client.post("/auth/logout", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 204
     # Exactly one revoke call for the session id; the row stays (DA-11).
@@ -437,9 +433,7 @@ def test_require_global_admin_returns_403_for_non_admin(
     token = _mint_jwt(sub=user.id)
     # Intentionally NOT calling ``fake_fixtures.global_admins.grant(user.id)``.
 
-    response = protected_client.get(
-        "/protected", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 403
     assert "admin" in response.json()["detail"].lower()
@@ -453,9 +447,7 @@ def test_require_global_admin_passes_for_admin(
     fake_fixtures.global_admins.members.add(user.id)
     token = _mint_jwt(sub=user.id)
 
-    response = protected_client.get(
-        "/protected", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     assert response.json() == {"ok": True}
@@ -480,8 +472,6 @@ def test_require_global_admin_returns_503_without_container(
     token = _mint_jwt(sub=user.id)
 
     with TestClient(app) as test_client:
-        response = test_client.get(
-            "/protected", headers={"Authorization": f"Bearer {token}"}
-        )
+        response = test_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 503

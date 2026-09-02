@@ -301,6 +301,7 @@ class LanzaderaContainer:
             # covered by FakeJwtSigner, not this default builder.
             secret = b"unit-test-dummy-jwt-secret-32-bytes-pad"
         return Hs256JwtSigner(secret)
+
     # -- use cases ------------------------------------------------------------
 
     async def login(

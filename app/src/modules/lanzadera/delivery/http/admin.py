@@ -21,6 +21,7 @@ existing ``auth_bypass`` test fixture (PR-7 retires it) can still
 monkeypatch the function for the integration tests that need to skip
 the gate in the transition.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

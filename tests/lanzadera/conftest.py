@@ -128,11 +128,11 @@ def container(fake_fixtures: FakeFixtures) -> LanzaderaContainer:
         # never reaches a real Postgres adapter in the test path.
         session_repo=fake_fixtures.sessions,
         audit=fake_fixtures.audit,
-            # W62 PR-6: jwt_signer fake so the auth routes (and the
-            # AuthMiddleware that PR-6 mounts on the production app) exercise
-            # a real HS256 implementation in tests rather than the env-driven
-            # default builder.
-            jwt_signer=FakeJwtSigner(),
+        # W62 PR-6: jwt_signer fake so the auth routes (and the
+        # AuthMiddleware that PR-6 mounts on the production app) exercise
+        # a real HS256 implementation in tests rather than the env-driven
+        # default builder.
+        jwt_signer=FakeJwtSigner(),
     )
 
 

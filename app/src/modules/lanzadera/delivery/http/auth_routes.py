@@ -25,6 +25,7 @@ keyword-only argument so the routes resolve their ports through the
 container's properties (``container.jwt_signer``, ``container.sessions``,
 ``container.audit``) rather than reaching into the di layer's internals.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -113,7 +114,11 @@ def register_auth_routes(router: APIRouter, *, container: "LanzaderaContainer") 
             ) from exc
 
         token = container.jwt_signer.sign(
-            {"sub": str(session.id), "iat": int(now.timestamp()), "exp": int(session.expires_at.timestamp())}
+            {
+                "sub": str(session.id),
+                "iat": int(now.timestamp()),
+                "exp": int(session.expires_at.timestamp()),
+            }
         )
         return {"token": token, "session_id": str(session.id)}
 
