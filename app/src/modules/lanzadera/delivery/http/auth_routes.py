@@ -28,7 +28,7 @@ container's properties (``container.jwt_signer``, ``container.sessions``,
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import APIRouter, Body, HTTPException, Request, status
 
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from app.src.modules.lanzadera.di.container import LanzaderaContainer
 
 
-def register_auth_routes(router: APIRouter, *, container: "LanzaderaContainer") -> None:
+def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) -> None:
     """Mount the auth routes on ``router``.
 
     The container provides:
@@ -72,7 +72,10 @@ def register_auth_routes(router: APIRouter, *, container: "LanzaderaContainer") 
         return datetime.now(UTC)
 
     @router.post("/auth/login", status_code=status.HTTP_200_OK, tags=["auth"])
-    async def login_route(req: Request, body: dict[str, object] = Body(...)) -> dict[str, str]:
+    async def login_route(
+        req: Request,
+        body: Annotated[dict[str, object], Body()],
+    ) -> dict[str, str]:
         """Verify credentials, create a session, issue a JWT.
 
         Body: ``{"email": "...", "password": "..."}``. Returns

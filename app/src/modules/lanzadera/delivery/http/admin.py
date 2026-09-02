@@ -30,7 +30,7 @@ from fastapi import HTTPException, status
 from starlette.requests import Request
 
 if TYPE_CHECKING:
-    from app.src.modules.lanzadera.di.container import LanzaderaContainer
+    pass
 
 
 __all__ = ["require_global_admin"]

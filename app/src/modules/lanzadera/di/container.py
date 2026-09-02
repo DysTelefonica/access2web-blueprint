@@ -83,6 +83,7 @@ from app.src.modules.lanzadera.domain.ports.bootstrap_admin_source import (
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
     GlobalAdminRepositoryPort,
 )
+from app.src.modules.lanzadera.domain.ports.jwt_signer import JwtSignerPort
 
 # W60 (#522): presence port Protocol.
 from app.src.modules.lanzadera.domain.ports.presence_repository import (
@@ -91,7 +92,6 @@ from app.src.modules.lanzadera.domain.ports.presence_repository import (
 from app.src.modules.lanzadera.domain.ports.profile_repository import (
     ProfileRepositoryPort,
 )
-from app.src.modules.lanzadera.domain.ports.jwt_signer import JwtSignerPort
 from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
 from app.src.modules.lanzadera.domain.ports.session_repository import (
     SessionRepository,
@@ -286,10 +286,10 @@ class LanzaderaContainer:
         ``EnvSecretManagerAdapter``. Tests inject ``FakeJwtSigner``
         (PR-4); production uses this builder.
         """
-        from app.src.modules.lanzadera.adapters.crypto.jwt import Hs256JwtSigner
         from app.src.modules.lanzadera.adapters.cross.secret_manager import (
             EnvSecretManagerAdapter,
         )
+        from app.src.modules.lanzadera.adapters.crypto.jwt import Hs256JwtSigner
 
         secret_manager = EnvSecretManagerAdapter()
         try:

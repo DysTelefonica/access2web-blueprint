@@ -100,8 +100,9 @@ def _patch_auth_routes_request_type() -> None:
     injection. Production behaviour is unchanged; the patch is local to
     the test process.
     """
-    from app.src.modules.lanzadera.delivery.http import auth_routes as _auth_routes_module
     from fastapi import Request as _FastAPIRequest
+
+    from app.src.modules.lanzadera.delivery.http import auth_routes as _auth_routes_module
 
     _auth_routes_module.Request = _FastAPIRequest  # type: ignore[attr-defined]
 
