@@ -528,7 +528,7 @@ class LanzaderaContainer:
         signer through this property so the HTTP delivery layer never
         touches the protected ``Hs256JwtSigner`` directly.
         """
-        return cast(JwtSignerPort, self._jwt_signer)
+        return self._jwt_signer
 
     @property
     def password_hasher(self) -> PasswordHasher:
