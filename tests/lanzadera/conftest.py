@@ -23,6 +23,7 @@ from tests.lanzadera._fakes import (
     FakeAuditLog,
     FakeBootstrapAdminSource,
     FakeGlobalAdminRepository,
+    FakeJwtSigner,
     FakePasswordHasher,
     FakePresenceRepository,
     FakeProfileRepository,
@@ -127,6 +128,11 @@ def container(fake_fixtures: FakeFixtures) -> LanzaderaContainer:
         # never reaches a real Postgres adapter in the test path.
         session_repo=fake_fixtures.sessions,
         audit=fake_fixtures.audit,
+            # W62 PR-6: jwt_signer fake so the auth routes (and the
+            # AuthMiddleware that PR-6 mounts on the production app) exercise
+            # a real HS256 implementation in tests rather than the env-driven
+            # default builder.
+            jwt_signer=FakeJwtSigner(),
     )
 
 
@@ -151,7 +157,10 @@ def auth_bypass(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     """
     from app.src.modules.lanzadera.delivery.http import admin as _admin
 
-    monkeypatch.setattr(_admin, "require_global_admin", lambda: None)
+    async def _noop_admin_gate(_request: object) -> None:
+        return None
+
+    monkeypatch.setattr(_admin, "require_global_admin", _noop_admin_gate)
     yield
 
 

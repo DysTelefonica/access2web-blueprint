@@ -61,7 +61,7 @@ def register_user_routes(
         name: str = Form(...),
         dni: str = Form(...),
     ) -> HTMLResponse:
-        _admin.require_global_admin()
+        await _admin.require_global_admin(request)
         try:
             new_user = await container.create_user(
                 email=email.strip().lower(),
@@ -82,7 +82,7 @@ def register_user_routes(
 
     @router.patch("/users/{user_id}/disable", response_class=HTMLResponse)
     async def disable_user(request: Request, user_id: UUID) -> HTMLResponse:
-        _admin.require_global_admin()
+        await _admin.require_global_admin(request)
         await container.disable_user(user_id=user_id)
         return templates.TemplateResponse(request, "admin/user_disabled.html", {"user_id": user_id})
 
