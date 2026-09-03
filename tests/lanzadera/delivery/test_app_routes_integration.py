@@ -1,5 +1,5 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W61
-# W61 (#524) — integration tests for the app CRUD HTTP routes.
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W62 PR-7
+# W61 (#524) + W62 PR-7 (#544) — integration tests for the app CRUD HTTP routes.
 """Integration tests for the W61 (#524) ``/admin/apps/...`` JSON routes.
 
 The routes go through the full chain ``HTTP route → LanzaderaContainer →
@@ -16,20 +16,39 @@ The tests cover the W61 slice:
 - ``PATCH /admin/apps/{id}`` — apply a partial patch and return 200.
 - ``DELETE /admin/apps/{id}`` — flip to ``retired`` and return 204.
 
-The ``X-Admin-User-ID`` header is accepted by the destructive routes
-(a missing header is a no-op until W62 lands the real auth middleware).
+W62 PR-7 (#544): the ``X-Admin-User-ID`` header stub that the W61 routes
+parsed manually has been replaced by ``request.state.user_id``
+populated by ``AuthMiddleware`` (PR-5). The test app wires a
+``_TestAuthMiddleware`` that reads the ``X-Test-Session-Id`` header and
+looks up the seeded session in the container's ``session_repo`` — the
+same seam the production ``AuthMiddleware`` populates after a successful
+JWT verify, but without requiring the test path to mint + verify a
+token (the JWT coverage lives in
+``tests/lanzadera/delivery/test_auth_routes_integration.py``).
+
+The W61 contract continues to accept a missing actor on the app routes
+(see ``admin_routes_apps.py`` docstring): ``_actor_id(request)`` returns
+``None`` when the header is absent and the use case accepts that value
+without raising. The destructive app routes do NOT wire
+``require_global_admin`` (PR-6) — that gate lives on the
+``/admin/users`` and ``/admin/assignments`` routes in
+``admin_routes_users.py`` / ``admin_routes_misc.py`` and its
+application to the app catalog is a future slice.
 """
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Awaitable, Callable, Iterator
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
-from uuid import uuid4
+from uuid import UUID
 
 import pytest
 from fastapi import APIRouter, FastAPI
 from fastapi.testclient import TestClient
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request as _StarletteRequest
+from starlette.responses import Response
 
 from app.src.modules.lanzadera.delivery.http.admin_routes_apps import (
     router as apps_router,
@@ -46,6 +65,56 @@ if TYPE_CHECKING:
     from tests.lanzadera.conftest import FakeFixtures
 
 
+# ---------------------------------------------------------------------------
+# Test app factory — mounts the apps router with the fakes-backed container.
+# ---------------------------------------------------------------------------
+
+
+class _TestAuthMiddleware(BaseHTTPMiddleware):
+    """Test-only middleware that populates ``request.state.user_id`` from ``X-Test-Session-Id``.
+
+    W62 PR-7 (#544) replaces the W61 ``X-Admin-User-ID`` header stub
+    (parsed by ``_actor_id`` in ``admin_routes_apps.py``) with
+    ``request.state.user_id`` populated by the production
+    ``AuthMiddleware`` (PR-5). The production middleware verifies a
+    Bearer JWT against the container's ``jwt_signer``; the test path
+    exercises the same end-to-end coverage without minting + verifying a
+    token per test by reading the test-only ``X-Test-Session-Id``
+    header and looking up the seeded ``Session`` row in the
+    container's ``session_repo``. If the header is missing or the
+    session is unknown, the middleware leaves ``request.state.user_id``
+    ``None`` — mirroring the AD-W62-2 silent-failure contract — and
+    ``_actor_id(request)`` returns ``None`` so the audit-actor field on
+    the use case stays explicit.
+    """
+
+    async def dispatch(
+        self,
+        request: _StarletteRequest,
+        call_next: Callable[[_StarletteRequest], Awaitable[Response]],
+    ) -> Response:
+        # Default state: no auth. Mirrors ``AuthMiddleware.dispatch``
+        # before the Bearer branch — the production silent-failure
+        # contract (AD-W62-2) leaves ``request.state.user_id`` empty.
+        request.state.user_id = None
+        request.state.session_id = None
+
+        session_id_header = request.headers.get("X-Test-Session-Id")
+        if session_id_header:
+            try:
+                session_id = UUID(session_id_header)
+            except ValueError:
+                session_id = None
+            if session_id is not None:
+                container: LanzaderaContainer = request.app.state.container  # type: ignore[attr-defined]
+                session = await container.sessions.get_by_id(session_id)
+                if session is not None:
+                    request.state.session_id = session.id
+                    request.state.user_id = session.user_id
+
+        return await call_next(request)
+
+
 def _build_app(container: LanzaderaContainer) -> FastAPI:
     """Minimal FastAPI app with the apps router wired to ``container``.
 
@@ -54,6 +123,13 @@ def _build_app(container: LanzaderaContainer) -> FastAPI:
     ``request.state.container``, so a small middleware mirrors the
     app-level container onto every request. The router's prefix is
     ``/admin`` so the test paths match the production surface.
+
+    W62 PR-7 (#544): the app also mounts ``_TestAuthMiddleware`` so the
+    W62 auth path (Bearer → ``request.state.user_id`` → ``_actor_id``)
+    is exercised end-to-end against the seeded session. The mirror
+    middleware stays in place because the W61 routes' ``_container``
+    helper still reads ``request.state.container`` (the production
+    seam).
     """
     app = FastAPI()
     app.state.container = container  # type: ignore[attr-defined]
@@ -66,7 +142,20 @@ def _build_app(container: LanzaderaContainer) -> FastAPI:
     router = APIRouter(prefix="/admin")
     router.include_router(apps_router)
     app.include_router(router)
+    app.add_middleware(_TestAuthMiddleware)
     return app
+
+
+def _auth_headers(session_id: UUID) -> dict[str, str]:
+    """Return the ``X-Test-Session-Id`` header that ``_TestAuthMiddleware`` reads.
+
+    Helper for the W62 PR-7 auth-aware tests. The middleware looks up
+    the seeded session in ``container.sessions`` and copies the
+    session's ``user_id`` onto ``request.state.user_id`` — the same
+    seam the production ``AuthMiddleware`` populates after a successful
+    JWT verify.
+    """
+    return {"X-Test-Session-Id": str(session_id)}
 
 
 @pytest.fixture
@@ -268,12 +357,31 @@ def test_delete_apps_flips_to_retired(
 
 
 # ---------------------------------------------------------------------------
-# X-Admin-User-ID header — W62 stub
+# W62 PR-7 auth path — X-Test-Session-Id → request.state.user_id
 # ---------------------------------------------------------------------------
 
 
-def test_post_apps_accepts_admin_user_header(client: TestClient) -> None:
-    """``POST /admin/apps`` accepts a valid ``X-Admin-User-ID`` header without error."""
+@pytest.mark.usefixtures("auth_session")
+def test_post_apps_requires_auth_session(client: TestClient, auth_session: dict[str, UUID]) -> None:
+    """``POST /admin/apps`` accepts the ``X-Test-Session-Id`` header and returns 201.
+
+    W62 PR-7 (#544): the W61 ``X-Admin-User-ID`` header stub is
+    retired; the new auth path is ``AuthMiddleware`` →
+    ``request.state.user_id`` → ``_actor_id(request)``. The test app
+    wires ``_TestAuthMiddleware`` (mirroring the production
+    ``AuthMiddleware`` for the JWT verify step) that reads
+    ``X-Test-Session-Id`` and looks up the seeded ``Session`` row in
+    ``container.sessions``. This test confirms the seam works: the
+    seeded session id produces a populated ``request.state.user_id``
+    and the destructive route still returns 201.
+
+    The ``auth_session`` fixture (see ``tests/lanzadera/conftest.py``)
+    seeds a global admin + a 24 h ``Session`` row via
+    ``FakeSessionRepository``. The session id is forwarded in the
+    ``X-Test-Session-Id`` header so the test middleware can resolve
+    it end-to-end against the same ``session_repo`` the production
+    middleware hits after a successful JWT verify.
+    """
     response = client.post(
         "/admin/apps",
         json={
@@ -281,26 +389,10 @@ def test_post_apps_accepts_admin_user_header(client: TestClient) -> None:
             "short_code": "lanza",
             "deployment_topology": "central",
         },
-        headers={"X-Admin-User-ID": str(uuid4())},
+        headers=_auth_headers(auth_session["session_id"]),
     )
 
     assert response.status_code == 201
-
-
-def test_post_apps_rejects_invalid_admin_user_header(client: TestClient) -> None:
-    """``POST /admin/apps`` returns 400 when ``X-Admin-User-ID`` is not a valid UUID."""
-    response = client.post(
-        "/admin/apps",
-        json={
-            "name": "Lanzadera",
-            "short_code": "lanza",
-            "deployment_topology": "central",
-        },
-        headers={"X-Admin-User-ID": "not-a-uuid"},
-    )
-
-    assert response.status_code == 400
-    assert "X-Admin-User-ID" in response.json()["detail"]
 
 
 __all__ = [
@@ -309,10 +401,9 @@ __all__ = [
     "test_get_apps_returns_row",
     "test_patch_apps_rejects_invalid_topology",
     "test_patch_apps_updates_partial_fields",
-    "test_post_apps_accepts_admin_user_header",
     "test_post_apps_creates_row_with_pending_status",
+    "test_post_apps_requires_auth_session",
     "test_post_apps_rejects_empty_name",
     "test_post_apps_rejects_empty_short_code",
-    "test_post_apps_rejects_invalid_admin_user_header",
     "test_post_apps_rejects_unknown_topology",
 ]

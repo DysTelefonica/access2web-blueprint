@@ -1,18 +1,34 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W-TEST (#519)
-"""Pytest fixtures for the W54-W59 admin integration tests (issue #519).
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W62 PR-7 (#544)
+"""Pytest fixtures for the W54-W62 admin integration tests (issue #519, #544).
 
 The ``fake_fixtures`` fixture returns the bag of in-memory port fakes
 the admin chain needs. The ``container`` fixture wires those fakes into
 a real ``LanzaderaContainer`` so the use cases and the HTTP routes run
-end-to-end against the fakes. The ``auth_bypass`` fixture monkeypatches
-``admin.require_global_admin`` so the destructive commands propagate
-without an auth session in the test process.
+end-to-end against the fakes.
+
+The ``auth_session`` fixture (W62 PR-7) seeds a global admin and a live
+session row so the destructive routes that gate on
+``require_global_admin`` (PR-6) can be exercised end-to-end against the
+real gate rather than the W54-W59 ``auth_bypass`` no-op. Tests that need
+auth pass ``auth_session`` as a fixture argument and read the
+``session_id`` to set the test-only ``X-Test-Session-Id`` header that
+the admin routes' test middleware (see
+``tests/lanzadera/delivery/test_admin_routes_integration.py``) reads
+to populate ``request.state.user_id``.
+
+The ``auth_bypass`` fixture is kept as a deprecated alias that still
+monkeypatches ``admin.require_global_admin`` — it lets the
+``test_check_test_classification`` meta-test (which cites the fixture
+by source string) keep passing while the destructive routes migrate
+to the real gate. New tests must use ``auth_session``.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -137,23 +153,83 @@ def container(fake_fixtures: FakeFixtures) -> LanzaderaContainer:
 
 
 # ---------------------------------------------------------------------------
-# Auth bypass — disable the D91 global-admin gate for the destructive routes.
+# Auth session — W62 PR-7 (#544) replacement for ``auth_bypass``.
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(autouse=False)
+def auth_session(fake_fixtures: FakeFixtures) -> Iterator[dict[str, UUID]]:
+    """Seed a global admin + session so ``require_global_admin`` accepts destructive routes.
+
+    W62 PR-7 replaces the W54-W59 ``auth_bypass`` fixture (a no-op
+    monkeypatch of ``admin.require_global_admin``) with a real seeding
+    fixture that mirrors the W62 auth flow:
+
+    1. Mint a fresh ``admin_id`` and call
+       ``fake_fixtures.global_admins.grant(admin_id)`` so
+       ``require_global_admin``'s ``is_global_admin`` check returns
+       ``True``.
+    2. Mint a fresh ``session_id`` and persist a ``Session`` row in
+       ``fake_fixtures.sessions`` with a 24 h ``expires_at`` (matching
+       D-W62-2). The ``Session`` is inserted via the fake's own
+       ``create`` coroutine so the audit trail (DA-11) and the call
+       introspection both work.
+
+    The fixture yields ``{"admin_id": <UUID>, "session_id": <UUID>}``
+    so the test can send the session id in the test-only
+    ``X-Test-Session-Id`` header that the admin routes' test middleware
+    reads to populate ``request.state.user_id``. Tests that do not need
+    auth (e.g. ``GET /admin/users`` pagination) can still opt in via
+    ``@pytest.mark.usefixtures("auth_session")``; the seeded row is
+    simply unused.
+
+    Marked ``autouse=False`` so individual test files opt in via
+    ``@pytest.mark.usefixtures("auth_session")`` — only the route
+    tests need the seeding.
+    """
+    import asyncio
+
+    from app.src.modules.lanzadera.domain.session import Session
+
+    admin_id: UUID = uuid4()
+    session_id: UUID = uuid4()
+    now = datetime.now(UTC)
+
+    async def _seed() -> None:
+        await fake_fixtures.global_admins.grant(admin_id)
+        session = Session(
+            id=session_id,
+            user_id=admin_id,
+            created_at=now,
+            expires_at=now + timedelta(hours=24),
+        )
+        await fake_fixtures.sessions.create(session)
+
+    asyncio.run(_seed())
+
+    yield {"admin_id": admin_id, "session_id": session_id}
+
+
+# ---------------------------------------------------------------------------
+# Auth bypass — DEPRECATED, retained only for the meta-test that cites it.
 # ---------------------------------------------------------------------------
 
 
 @pytest.fixture(autouse=False)
 def auth_bypass(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """Stub ``admin.require_global_admin`` so destructive commands propagate.
+    """DEPRECATED — use ``auth_session`` instead.
 
-    The HTTP routes call ``_admin.require_global_admin()`` at the top of
-    the destructive handlers. The placeholder raises nothing in the
-    test process (no auth wiring exists in the unit-test path), but
-    stubbing it explicitly documents the intent and lets the destructive
-    tests run without depending on the default no-op behaviour.
+    Stub ``admin.require_global_admin`` so destructive commands propagate
+    without an auth session.
 
-    Marked ``autouse=False`` so individual test files opt in via
-    ``@pytest.mark.usefixtures("auth_bypass")`` — only the route tests
-    need the bypass.
+    W62 PR-7 (#544) replaces this fixture with ``auth_session`` which
+    seeds a real global admin + session and lets the production gate
+    (``require_global_admin``) take its real decision. This no-op
+    fixture is retained only so the
+    ``test_check_test_classification`` meta-test (which validates the
+    HR-6 string match by source) keeps passing without churn. New
+    destructive-route tests must use ``@pytest.mark.usefixtures("auth_session")``
+    and pass the session id in the ``X-Test-Session-Id`` header.
     """
     from app.src.modules.lanzadera.delivery.http import admin as _admin
 
@@ -167,6 +243,7 @@ def auth_bypass(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 __all__ = [
     "FakeFixtures",
     "auth_bypass",
+    "auth_session",
     "container",
     "fake_fixtures",
 ]

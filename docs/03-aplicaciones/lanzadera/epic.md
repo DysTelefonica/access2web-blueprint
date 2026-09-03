@@ -2,7 +2,7 @@
 
 # Épica — Lanzadera (migración a web)
 
-> **Estado:** DRAFT v0.1 (2026-08-07) — pendiente revisión final al cerrar el ciclo de las 8 épicas.
+> **Estado:** DRAFT v0.2 (2026-08-08) — W62 auth flow cerrado (PR-1..PR-7 merged); pendiente revisión final al cerrar el ciclo de las 8 épicas.
 > **Lote:** Lote 8 — junto con Brass, HPS, HPS_Solicitudes, Condor, Gestion_Riesgos, NoConformidades, Expedientes.
 > **App legacy:** `00_LANZADERA` · frontend `Lanzadera.accdb` + backend `Lanzadera_Datos.accdb` — **binarios NO staging** (D156).
 > **Sentence that organizes**: **Lanzadera es la madre: ahí nacen usuarios, aplicativos y permisos. Las otras 7 apps son consumidoras.**
