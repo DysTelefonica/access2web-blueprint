@@ -1,5 +1,7 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W61
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W62 PR-7
 # W61 (#524) — admin JSON routes for the app catalog.
+# W62 PR-7 (#544) — replaced the X-Admin-User-ID header stub with
+# request.state.user_id populated by AuthMiddleware (PR-5).
 """Admin HTTP route handlers for the W61 (#524) app CRUD slice.
 
 Four ``/admin/apps/...`` JSON endpoints:
@@ -9,14 +11,14 @@ Four ``/admin/apps/...`` JSON endpoints:
 - ``PATCH  /admin/apps/{app_id}``      — apply a partial patch.
 - ``DELETE /admin/apps/{app_id}``      — retire the row (status=retired).
 
-The destructive routes (``POST``, ``PATCH``, ``DELETE``) accept an
-``X-Admin-User-ID`` header that stands in for ``request.state.user_id``
-until the auth middleware ships with W62; the W61 contract pins the
-behaviour behind that header so the slice is exercisable end-to-end
-before the real auth wiring lands. The header is optional on ``POST``
-and ``PATCH`` (a missing header is treated as ``actor_id=None`` for
-now; the audit row emission deferred to W62 will tighten the
-contract).
+The destructive routes (``POST``, ``PATCH``, ``DELETE``) record the
+audit actor from ``request.state.user_id`` populated by
+``AuthMiddleware`` (W62 PR-5). The ``_actor_id`` helper resolves
+the value or returns ``None`` when the request carries no auth
+session — the W61 contract continues to accept a missing actor
+(rather than 401-ing) because ``require_global_admin`` (PR-6) is the
+gate that enforces presence of a global admin on the destructive
+routes; ``actor_id`` is the audit-trail field that flows into DA-11.
 
 The router is mounted directly in ``app/src/main.py`` (W61 ships its
 own ``/admin`` prefix), mirroring the W60 presence slice. The
@@ -61,25 +63,20 @@ def _container(request: Request) -> object:
 
 
 def _actor_id(request: Request) -> UUID | None:
-    """Return the ``X-Admin-User-ID`` header value or ``None`` when absent.
+    """Return the authenticated user ID from the request state.
 
-    W62 (#519) will replace this stub with ``request.state.user_id``
-    populated by the auth middleware. The W61 contract deliberately
-    accepts a missing header (rather than 401-ing) so the destructive
-    routes are exercisable from the test path before the auth wiring
-    ships; the W62 hardening pass will tighten this to require a
-    non-empty header.
+    W62 PR-7 (#544): the W61 ``X-Admin-User-ID`` header stub is
+    replaced by ``request.state.user_id`` populated by
+    ``AuthMiddleware`` (PR-5). When the request has no valid auth
+    session (no Bearer token, expired token, or invalid signature
+    under the AD-W62-2 silent-failure contract), the middleware
+    leaves the state ``None`` and this helper propagates the
+    ``None`` so the audit-actor field on the use case stays
+    explicit. ``require_global_admin`` (PR-6) is the gate that
+    turns an empty state into HTTP 401 before the destructive
+    routes ever call ``_actor_id``.
     """
-    raw = request.headers.get("X-Admin-User-ID")
-    if not raw:
-        return None
-    try:
-        return UUID(raw)
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"X-Admin-User-ID is not a valid UUID: {raw!r}",
-        ) from exc
+    return getattr(request.state, "user_id", None)
 
 
 def _serialise(app: App) -> dict[str, object]:
