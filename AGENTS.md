@@ -118,18 +118,25 @@ Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de propo
 
 Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rules §1). Saltarse cualquier paso deja a la IA operando contra arquitectura obsoleta.
 
-## Hard rule del CI — ningún CI rojo se mergea
+## Hard rule del CI — ningún CI rojo se integra
 
-Este repositorio **no tiene branch protection automatizada** en `main` (decisión del 2026-08-10: GitHub Team cuesta $4/user/mes, no aprobado todavía). El CI workflow (`deterministic-quality-harness` v1.4, orquestado en `.github/workflows/ci.yml`) corre en cada PR y los status checks aparecen en línea, pero **no bloquean el merge**.
+`main` tiene branch protection desde el 2026-09-09, tras hacer público el
+repositorio en GitHub Free. La protección se aplica también a administradores.
 
-**Por convención del equipo: el revisor NO debe mergear un PR con CI rojo.** Esto es una regla humana, no técnica. Para reactivarla como automatismo en el futuro, migrar el repo a público (branch protection gratis en Free) o upgrade a GitHub Team.
+GitHub exige un PR actualizado con `main`, todas las conversaciones resueltas y
+estos checks en verde: `quality`, `review-budget`, `pip-audit`, `gitleaks` y
+`trivy-config`. No permite force-push ni borrar la rama.
+
+`merge-ready` conserva su función informativa. No es un check protegido porque
+no agrega los demás jobs y termina correctamente cuando falta una aprobación.
 
 Pasos del revisor antes de mergear:
 
-1. Verificar que el check `ci / quality` está verde en el PR.
-2. Verificar que el check `ci / review-budget` está verde (si el PR es un pull_request).
-3. Si el check `ci / security` falla **solo** por vulnerabilidades en paquetes externos no relacionados con el cambio, abrir issue y mergear con un follow-up PR.
-4. Si **cualquier** otro check falla, pedir al autor que arregle antes de mergear.
+1. Verifique que los cinco checks protegidos pertenecen al último SHA del PR.
+2. Compruebe que las conversaciones están resueltas.
+3. Si un check falla por una dependencia externa, abra un issue y corrija el
+   bloqueo antes de integrar. No eluda la protección.
+4. Integre con `--squash` y conserve la rama remota.
 
 Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mergear.
 
