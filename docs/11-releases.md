@@ -35,13 +35,14 @@ corta y fusionadas a `main` mediante PR. Y `release/vX.Y.x`, que existe
    entra desactivado, nunca acumulado en una rama paralela.
 2. **Se corta la candidata.** `git tag -a v1.4.0-rc.1` sobre el commit exacto de
    `main`. Ese es el congelamiento. `main` continúa; la candidata no.
-3. **Se construye una vez.** El workflow `release` construye la imagen desde el
-   tag y la publica en el registro. El digest resultante es la identidad del
-   artefacto.
-4. **Aceptación sobre esa imagen.** El alcance se obtiene con
+3. **Se construye y firma una vez.** El workflow `release` publica la imagen y
+   firma su digest con la identidad OIDC del propio workflow.
+4. **Se verifica antes de aceptar.** Cosign exige la identidad exacta del
+   workflow y el emisor OIDC de GitHub antes de descargar el digest.
+5. **Aceptación sobre esa imagen.** El alcance se obtiene con
    `git log v1.3.0..v1.4.0-rc.1`: un rango entre dos puntos inmutables. Las
    actas de aceptación se generan de ese rango.
-5. **Promoción.** Con la aceptación firmada, se etiqueta el **mismo commit**
+6. **Promoción.** Con la aceptación firmada, se etiqueta el **mismo commit**
    como `v1.4.0` y se despliega el **mismo digest**. Sin fusión y sin recompilar.
 
 Un caso de aceptación fallido no se parchea sobre la candidata. La corrección
@@ -84,7 +85,22 @@ con código distinto de cero, no.
 |---|---|---|
 | `scripts/release-preflight.sh` | Local y workflow `release` | Tag sin anotar, versión no canónica, o commit que no es el `origin/main` actual. |
 | `scripts/require-ci-success.sh` | Workflow `release` | Tag sobre un commit cuyo workflow `ci` no está en verde. |
+| `cosign verify` | Workflow `release` | Digest sin firma válida del workflow y tag exactos. |
 | `pre-push` (`gentleai.gatedTags`) | Máquina local | Publicación de un tag estable. Es una barrera, no un cerrojo. |
+
+### Verificación criptográfica
+
+La firma es keyless. GitHub emite un token OIDC de corta duración y Fulcio
+expide un certificado efímero. El repositorio no almacena una clave privada.
+
+El job `verify` exige esta identidad:
+
+```text
+https://github.com/DysTelefonica/access2web-blueprint/.github/workflows/release.yml@refs/tags/<tag>
+```
+
+También exige el emisor `https://token.actions.githubusercontent.com`. Verifique
+siempre el digest, nunca sólo una etiqueta mutable.
 
 ### La regla de identidad
 
@@ -119,5 +135,6 @@ producción sin validación previa. Cambia el punto de control, no el control.
 - `scripts/release-preflight.sh` — la regla de identidad, ejecutable.
 - `scripts/require-ci-success.sh` — el gate de CI verde.
 - `.github/workflows/release.yml` — construcción, publicación y verificación.
+- [Sigstore CI Quickstart](https://docs.sigstore.dev/quickstart/quickstart-ci/) — firma keyless y verificación de imágenes en GitHub Actions.
 - `docs/00-alcance-y-evidencia.md` — alcance del proyecto.
 - `CONTRIBUTING.md` — convenciones de rama, commit y PR.

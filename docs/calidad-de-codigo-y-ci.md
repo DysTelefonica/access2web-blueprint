@@ -70,7 +70,7 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 | `security.yml` | cada PR + push a main | Fast subset de seguridad: pip-audit, gitleaks, trivy config. |
 | `security-deep.yml` | semanal (cron) | Trivy filesystem + image, mutation semanal. |
 | `codeql.yml` | cada PR + push a main + semanal | Análisis semántico CodeQL del código Python en un runner hospedado. |
-| `release.yml` | tag `v*` pushed | Gate de identidad + verify checksum; ata al release pipeline. |
+| `release.yml` | tag `v*` pushed | Valida identidad, publica el digest y verifica su firma Cosign. |
 
 Los SHA de las actions se pinean vía `check_workflows.py`; actualizarlos requiere PR explícito.
 
