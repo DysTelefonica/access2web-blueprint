@@ -475,3 +475,36 @@ def test_release_e2e_generates_its_signing_secret_per_run() -> None:
     assert 'echo "::add-mask::$secret"' in release
     assert 'printf \'E2E_SECRET_KEY=%s\\n\' "$secret" >>"$GITHUB_ENV"' in release
     assert '-e SECRET_KEY="$E2E_SECRET_KEY"' in release
+
+
+def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
+    """The release identity is the signed digest, not a mutable image tag."""
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    publish = release["jobs"]["publish"]
+    verify = release["jobs"]["verify"]
+    installer = "sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6"
+
+    assert publish["permissions"]["id-token"] == "write"
+    assert "id-token" not in verify["permissions"]
+    assert publish["outputs"]["digest"] == "${{ steps.push.outputs.digest }}"
+    publish_installer = next(step for step in publish["steps"] if step.get("uses") == installer)
+    verify_installer = next(step for step in verify["steps"] if step.get("uses") == installer)
+    assert publish_installer["with"]["cosign-release"] == "v3.1.3"
+    assert verify_installer["with"]["cosign-release"] == "v3.1.3"
+
+    sign = next(step for step in publish["steps"] if step.get("name", "").startswith("Sign "))
+    signature_check = next(
+        step for step in verify["steps"] if step.get("name", "").startswith("Verify signature")
+    )
+    assert sign["env"]["DIGEST"] == "${{ steps.push.outputs.digest }}"
+    assert sign["run"] == 'cosign sign --yes "$DIGEST"'
+    assert signature_check["env"]["DIGEST"] == "${{ needs.publish.outputs.digest }}"
+    assert 'cosign verify "$DIGEST"' in signature_check["run"]
+    assert (
+        '--certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/'
+        'release.yml@refs/tags/${GITHUB_REF_NAME}"'
+    ) in signature_check["run"]
+    assert (
+        '--certificate-oidc-issuer "https://token.actions.githubusercontent.com"'
+        in signature_check["run"]
+    )

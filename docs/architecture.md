@@ -245,7 +245,7 @@ Once `scripts/check_*.py` + `.github/workflows/`:
 | security.yml | .github/workflows/ | pip-audit, gitleaks, trivy config |
 | security-deep.yml | .github/workflows/ | semanal |
 | codeql.yml | .github/workflows/ | cada PR, push a main y semanal |
-| release.yml | .github/workflows/ | tags + gate de identidad |
+| release.yml | .github/workflows/ | tags + identidad + firma keyless del digest |
 
 ## Gaps conocidos (lo que la doc dice y el código no)
 
