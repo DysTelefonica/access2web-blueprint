@@ -75,6 +75,18 @@ def _find_workflow() -> Path:
     raise AssertionError("ci.yml not found")
 
 
+def test_dependabot_covers_python_and_github_actions() -> None:
+    """Version updates must cover every dependency manifest in the repository."""
+    dependabot = yaml.safe_load(
+        (_find_workflow().parent.parent / "dependabot.yml").read_text(encoding="utf-8")
+    )
+    covered = {
+        (update["package-ecosystem"], update["directory"]) for update in dependabot["updates"]
+    }
+
+    assert covered == {("pip", "/app"), ("github-actions", "/")}
+
+
 @pytest.fixture(scope="module")
 def workflow() -> dict:
     return yaml.safe_load(_find_workflow().read_text(encoding="utf-8"))

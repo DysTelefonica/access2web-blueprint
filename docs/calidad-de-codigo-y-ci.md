@@ -46,7 +46,7 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 
 | Gate | QC | Decisión arquitectónica | Comando local |
 |---|---|---|---|
-| `check_branch_name.py` | QC-6 | Branch naming `<tipo>/<nº>-<kebab-slug>` (AGENTS.md) | `python scripts/check_branch_name.py` |
+| `check_branch_name.py` | QC-6 | Branch naming `<tipo>/<nº>-<kebab-slug>`; ramas `dependabot/*` sólo para `dependabot[bot]` | `python scripts/check_branch_name.py` |
 | `check_pr_size.py` | QC-6 | 400 líneas `additions + deletions` (CONTRIBUTING.md) | `python scripts/check_pr_size.py` |
 | `check_workflows.py` | QC-9 | Actions fijadas por SHA de 40 hex; `concurrency.group` por job (AGENTS.md) | `python scripts/check_workflows.py` |
 | `check_layers.py` | QC-2, QC-9 | `ROOT_PACKAGE = "app.src.modules"`; slicing vertical prohibido entre módulos (DA-1) | `python scripts/check_layers.py` |
@@ -71,6 +71,16 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 | `release.yml` | tag `v*` pushed | Gate de identidad + verify checksum; ata al release pipeline. |
 
 Los SHA de las actions se pinean vía `check_workflows.py`; actualizarlos requiere PR explícito.
+
+## Actualizaciones de dependencias
+
+Dependabot revisa semanalmente las dependencias Python de `app/` y las Actions
+de `.github/workflows/`. No existe una entrada npm porque el repositorio no
+contiene `package.json`.
+
+Las ramas `dependabot/pip/*` y `dependabot/github_actions/*` superan el gate de
+nombre únicamente cuando `github.actor` es `dependabot[bot]`. Un colaborador no
+puede obtener la excepción imitando el prefijo.
 
 ## Cómo correrlo en local
 
@@ -142,6 +152,7 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 ## Core invariants
 
 - **SHA de Actions pineados**: las versiones de actions de terceros en `.github/workflows/*.yml` van fijadas por SHA de 40 hex. `scripts/check_workflows.py` enforza esto y exige un `concurrency.group` por job. Actualizar requiere PR explícito.
+- **Dependabot conserva los pins**: `.github/dependabot.yml` propone cambios semanales para `app/` y GitHub Actions. Cada actualización pasa por los mismos checks protegidos que un PR humano.
 - **Wrappers prohibidos**: `|| true`, `continue-on-error`, y cualquier otro wrapper que silencie un fallo están prohibidos en `ci.yml` y en los `check_*.py`. `tests/test_ci_workflow.py` pinea el contrato.
 - **Cuatro targets auth a 100 % (DA-2, DA-4 y QC-5)**: `CredentialHasherArgon2id.hash`, `CredentialHasherArgon2id.verify`, `issue_reset_token` y `consume_reset_token`. El plugin falla el build con `session.exitstatus = 1` si cualquiera queda infracubierto.
 - **Migraciones aditivas (D82)**: cada release Alembic es aditiva. El rollback es `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. No se permiten `DROP COLUMN`, `ALTER` destructivos ni `RENAME` en la misma release.
