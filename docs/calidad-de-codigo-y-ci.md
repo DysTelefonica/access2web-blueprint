@@ -4,15 +4,15 @@
 
 **Esta guía documenta los gates de calidad y el contrato CI del MVP de plataforma. Las decisiones arquitectónicas que motivan cada gate viven en [`docs/architecture.md`](architecture.md) — aquí están los comandos, los QC-<n> que atienden, y los workflows que los orquestan.**
 
-## Sentence que organiza
+## Frase rectora
 
 > «La calidad se enforza en CI, no en revisión. Cada gate tiene un comando reproducible, un QC que documenta su contrato, y un test que pinea el wiring contra drift.» — `openspec/changes/lanzadera-mvp/design.md` §Pipeline de calidad
 
-## What this is / is not
+## Alcance
 
 | Es | No es |
 |---|---|
-| Catálogo de los 12 `check_*.py` + sus QC.<br>Contrato de los 5 workflows de `.github/`.<br>Cómo se invoca cada gate localmente. | Réplica de [`docs/architecture.md`](architecture.md) §CI gates.<br>Manual de uso de dysflow ni de las migraciones Alembic.<br>Política del revisor humano (eso vive en [`AGENTS.md`](../../AGENTS.md)). |
+| Catálogo de los 13 `check_*.py` + sus QC.<br>Contrato de los 5 workflows de `.github/`.<br>Cómo se invoca cada gate localmente. | Réplica de [`docs/architecture.md`](architecture.md) §CI gates.<br>Manual de uso de dysflow ni de las migraciones Alembic.<br>Política del revisor humano (eso vive en [`AGENTS.md`](../../AGENTS.md)). |
 
 ## Contrato global
 
@@ -21,15 +21,11 @@ PR abierto contra main
        │
        ▼
 ┌──────────────────────────────┐
-│  ci.yml (orquesta todo)      │
-│   ├─ pip-audit               │
-│   ├─ gitleaks                │
-│   ├─ trivy-config            │
-│   ├─ codeql                  │
-│   ├─ ruff                    │
-│   ├─ mypy                    │
-│   ├─ pytest --cov            │
-│   └─ scripts/check_*.py * 12 │
+│ Runners hospedados por GitHub │
+│  ├─ ci: ruff, mypy, pytest   │
+│  │  y gates de contrato      │
+│  ├─ security: tres escáneres │
+│  └─ codeql: análisis Python  │
 └──────────────────────────────┘
        │
        ▼ (revisión humana)
@@ -39,9 +35,9 @@ PR mergeado con --squash; rama remota conservada
 Tres grupos de gates:
 - **Estáticos**: `ruff`, `mypy`, `CodeQL`, `gitleaks`, `pip-audit` y `trivy-config`.
 - **Tests**: `pytest --cov` con el plugin `coverage_gate.py` (QC-5).
-- **De contrato**: los 12 `check_*.py` que pinean invariantes arquitectónicas.
+- **De contrato**: los 13 `check_*.py` que fijan invariantes arquitectónicas y operativas.
 
-## Los 12 `scripts/check_*.py`
+## Los 13 `scripts/check_*.py`
 
 Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semanalmente donde aplica. La tabla mapea el gate al QC que documenta su contrato.
 
@@ -49,14 +45,17 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 |---|---|---|---|
 | `check_branch_name.py` | QC-6 | Branch naming `<tipo>/<nº>-<kebab-slug>`; ramas `dependabot/*` sólo para `dependabot[bot]` | `python scripts/check_branch_name.py` |
 | `check_pr_size.py` | QC-6 | 400 líneas `additions + deletions` (CONTRIBUTING.md) | `python scripts/check_pr_size.py` |
-| `check_workflows.py` | QC-9 | Actions fijadas por SHA de 40 hex; `concurrency.group` por job (AGENTS.md) | `python scripts/check_workflows.py` |
+| `check_workflows.py` | QC-9 | Actions fijadas por SHA; concurrencia por job; aislamiento de PRs públicos | `python scripts/check_workflows.py` |
 | `check_layers.py` | QC-2, QC-9 | `ROOT_PACKAGE = "app.src.modules"`; slicing vertical prohibido entre módulos (DA-1) | `python scripts/check_layers.py` |
 | `check_complexity.py` | QC-1, QC-10 | Techo de complejidad ciclomática 15 (DA-1) | `python scripts/check_complexity.py` |
 | `check_dry.py` | QC-11 | DRY: no duplicación de conocimiento por módulo | `python scripts/check_dry.py` |
+| `check_decision_guards.py` | — | Las decisiones críticas conservan su gate estructural | `python scripts/check_decision_guards.py` |
 | `check_legacy_hashes.py` | QC-5, DA-13 | Pin AST rechaza `legacy_hash`, `sha256`, `migrate_password` (D88+D89) | `python scripts/check_legacy_hashes.py` |
+| `check_legacy_retirement.py` | — | Impide reintroducir rutas legacy retiradas | `python scripts/check_legacy_retirement.py` |
 | `check_mutation_sites.py` | — | Lista de sitios donde se ejecuta mutación semanal | `python scripts/check_mutation_sites.py` |
 | `check_mutation.py` | — | Corre mutación semanal; falla si la mutation score cae | `python scripts/check_mutation.py` |
 | `quality_report.py` | QC-11 | Agrega envelopes de todos los gates en `quality.report.json` | `python scripts/quality_report.py` |
+| `check_test_classification.py` | — | Cada test mantiene su categoría declarada | `python scripts/check_test_classification.py` |
 | `check_walkthrough_schema.py` | — | MUST fields del template `walkthrough.json` presentes en `docs/03-aplicaciones/*/walkthrough-*.json` (53 archivos) | `python scripts/check_walkthrough_schema.py` |
 | `app/pytest_plugin/coverage_gate.py` | QC-5 | `--cov-fail-under=69` global + cuatro targets auth exactos a 100 % | activado por `pytest --cov` |
 
@@ -66,13 +65,19 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 
 | Workflow | Cuándo corre | Qué hace |
 |---|---|---|
-| `ci.yml` | cada PR + push a main | Orquesta: pip-audit, gitleaks, trivy-config, ruff/mypy/pytest, los 13 check_*.py. |
-| `security.yml` | cada PR + push a main | Fast subset de seguridad: pip-audit, gitleaks, trivy config. |
-| `security-deep.yml` | semanal (cron) | Trivy filesystem + image, mutation semanal. |
+| `ci.yml` | cada PR + push a `main`; mutación semanal | Ejecuta revisión, ruff, mypy, pytest y gates de contrato. La mutación queda fuera de PR. |
+| `security.yml` | cada PR + push a `main` | Escaneo rápido: pip-audit, gitleaks y Trivy de configuración. |
+| `security-deep.yml` | semanal (cron) | Historial de gitleaks y análisis de la imagen con Trivy. |
 | `codeql.yml` | cada PR + push a main + semanal | Análisis semántico CodeQL del código Python en un runner hospedado. |
 | `release.yml` | tag `v*` pushed | Valida identidad, publica el digest y verifica su firma Cosign. |
 
-Los SHA de las actions se pinean vía `check_workflows.py`; actualizarlos requiere PR explícito.
+Los SHA de las actions se fijan mediante `check_workflows.py`. El mismo gate impide que un PR público alcance infraestructura propia.
+
+Todos los jobs alcanzables desde un PR usan `ubuntu-24.04`. Consulte la frontera
+de confianza y el inventario propio en [`10-runners.md`](10-runners.md).
+
+Cada concurrencia se agrupa por job y por número de PR o referencia. Una nueva
+ejecución espera a la anterior sin bloquear PRs independientes.
 
 ## Actualizaciones de dependencias
 
@@ -147,7 +152,7 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 ## Cómo añadir un nuevo gate
 
 1. Crear `scripts/check_<nombre>.py` con docstring que cite el QC + decisión.
-2. Añadirlo a la tabla §Los 12 check_*.py de este doc.
+2. Añadirlo a la tabla §Los 13 check_*.py de este doc.
 3. Añadirlo al matrix de `tests/test_ci_workflow.py` (pin AST).
 4. Cablearlo en `ci.yml` con timeout explícito.
 5. Subir un PR; el revisor valida que el gate tenga un QC documentado y un test de smoke en `tests/test_gate_smoke.py` (QC-18).
@@ -155,17 +160,21 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 ## Core invariants
 
 - **SHA de Actions pineados**: las versiones de actions de terceros en `.github/workflows/*.yml` van fijadas por SHA de 40 hex. `scripts/check_workflows.py` enforza esto y exige un `concurrency.group` por job. Actualizar requiere PR explícito.
-- **SAST semántico hospedado**: `codeql.yml` analiza Python en cada PR, tras cada push a `main` y semanalmente. Usa `ubuntu-24.04` para no ejecutar código de PRs públicos en el VPS propio.
+- **Aislamiento de PRs públicos**: cada job alcanzable desde `pull_request` usa `ubuntu-24.04`. Los runners propios quedan reservados para mutación, escaneo profundo y releases de origen confiable.
+- **SAST semántico hospedado**: `codeql.yml` analiza Python en cada PR, tras cada push a `main` y semanalmente.
 - **Dependabot conserva los pins**: `.github/dependabot.yml` propone cambios semanales para `app/` y GitHub Actions. Cada actualización pasa por los mismos checks protegidos que un PR humano.
 - **Wrappers prohibidos**: `|| true`, `continue-on-error`, y cualquier otro wrapper que silencie un fallo están prohibidos en `ci.yml` y en los `check_*.py`. `tests/test_ci_workflow.py` pinea el contrato.
 - **Cuatro targets auth a 100 % (DA-2, DA-4 y QC-5)**: `CredentialHasherArgon2id.hash`, `CredentialHasherArgon2id.verify`, `issue_reset_token` y `consume_reset_token`. El plugin falla el build con `session.exitstatus = 1` si cualquiera queda infracubierto.
 - **Migraciones aditivas (D82)**: cada release Alembic es aditiva. El rollback es `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. No se permiten `DROP COLUMN`, `ALTER` destructivos ni `RENAME` en la misma release.
-- **Mutation semanal fuera de PR**: `check_mutation.py` corre desde `security-deep.yml` por cron semanal, no por commit. Cuando la mutation score cae del umbral, el workflow falla y crea issue automático; no bloquea PRs individuales.
+- **Mutación semanal fuera de PR**: `check_mutation.py` corre desde `ci.yml` por
+  cron o ejecución manual. Una caída del umbral falla el workflow sin bloquear
+  pull requests individuales.
 
 ## Contributor checklist
 
 - [ ] Si el PR añade un `check_*.py`, el script cita el QC y la decisión D-/DA- en el docstring, y existe un test de smoke (`tests/test_gate_smoke.py`).
-- [ ] Si el PR modifica `.github/workflows/`, las Actions nuevas van pineadas por SHA de 40 hex y cada job declara `concurrency.group`.
+- [ ] Si el PR modifica `.github/workflows/`, las Actions nuevas van fijadas por SHA y cada job declara `concurrency.group`.
+- [ ] Si el workflow acepta PRs, cada job alcanzable usa una etiqueta hospedada literal.
 - [ ] Si el PR toca `pyproject.toml` (ruff/mypy/argon2), las versiones quedan pinned en `>=X,<Y+1` y `scripts/install-skills.sh` sigue corriendo.
 - [ ] Si el PR añade cobertura a `pytest --cov`, el threshold `--cov-fail-under` se mantiene o sube; nunca baja.
 - [ ] El `make lint typecheck test check-layers check-complexity check-dry check-branch-name quality-report` corre verde en local antes de push.

@@ -127,6 +127,9 @@ GitHub exige un PR actualizado con `main`, todas las conversaciones resueltas y
 estos checks en verde: `quality`, `review-budget`, `pip-audit`, `gitleaks`,
 `trivy-config` y `codeql`. No permite force-push ni borrar la rama.
 
+Todo job alcanzable desde un PR público usa un runner hospedado por GitHub. El
+gate `check_workflows.py` rechaza etiquetas propias o dinámicas en esa ruta.
+
 `merge-ready` conserva su función informativa. No es un check protegido porque
 no agrega los demás jobs y termina correctamente cuando falta una aprobación.
 
