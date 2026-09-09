@@ -86,16 +86,24 @@ make lint typecheck test check-layers check-complexity check-dry \
 
 (Nota: `make` no está disponible en Git Bash en Windows. Invocar los scripts con `python scripts/<nombre>.py` directamente.)
 
-## Lo que el revisor humano hace
+## Protección de `main`
 
-El CI no bloquea el merge automáticamente (decisión del 2026-08-10: GitHub Team cuesta $4/user/mes, no aprobado). El revisor verifica manualmente:
+`main` tiene branch protection desde el 2026-09-09. GitHub exige un PR
+actualizado, conversaciones resueltas y estos checks en verde:
 
-1. `ci / quality` verde.
-2. `ci / review-budget` verde.
-3. Si `ci / security` falla **solo** por paquetes externos sin relación con el cambio, abrir issue y mergear con un follow-up PR.
-4. Si cualquier otro check falla, pedir arreglo antes de mergear.
+| Workflow | Check requerido |
+|---|---|
+| `ci.yml` | `quality` |
+| `ci.yml` | `review-budget` |
+| `security.yml` | `pip-audit` |
+| `security.yml` | `gitleaks` |
+| `security.yml` | `trivy-config` |
 
-Detalle en [`AGENTS.md` §Hard rule del CI](../../AGENTS.md).
+La protección se aplica a administradores y bloquea force-push y borrado de
+`main`. `merge-ready` es informativo: no agrega los otros jobs y no sustituye a
+los checks protegidos.
+
+Detalle operativo en [`AGENTS.md` §Hard rule del CI](../../AGENTS.md).
 
 ## Hexagonal layer gate (QC-2, QC-9)
 
