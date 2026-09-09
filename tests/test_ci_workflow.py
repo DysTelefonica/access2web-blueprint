@@ -464,3 +464,14 @@ def test_secret_scan_proves_it_scanned_something() -> None:
         "the full-history scan must prove it had history to walk; a scan over zero "
         "commits reports clean as convincingly as one over ten thousand"
     )
+
+
+def test_release_e2e_generates_its_signing_secret_per_run() -> None:
+    """The release smoke container must not reuse a plaintext signing key."""
+    release = (_find_workflow().parent / "release.yml").read_text(encoding="utf-8")
+
+    assert not re.search(r'-e SECRET_KEY="(?!\$)[^\"]+"', release)
+    assert "secret=$(openssl rand -hex 32)" in release
+    assert 'echo "::add-mask::$secret"' in release
+    assert 'printf \'E2E_SECRET_KEY=%s\\n\' "$secret" >>"$GITHUB_ENV"' in release
+    assert '-e SECRET_KEY="$E2E_SECRET_KEY"' in release
