@@ -100,8 +100,15 @@ jobs:
           set -euo pipefail
           image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
           printf '%s' '${{ github.token }}' |
-            docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+          docker login ghcr.io -u '${{ github.actor }}' --password-stdin
           docker pull "${image}:${GITHUB_REF_NAME}"
+
+      - name: Generate the E2E signing secret
+        run: |
+          set -euo pipefail
+          secret=$(openssl rand -hex 32)
+          echo "::add-mask::$secret"
+          printf 'E2E_SECRET_KEY=%s\n' "$secret" >>"$GITHUB_ENV"
 
       - name: Start the app container
         env:
@@ -120,7 +127,7 @@ jobs:
           image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
           docker run -d --name test-app -p 8000:8000 \
             -e DATABASE_URL="sqlite+aiosqlite:///./test.db" \
-            -e SECRET_KEY="test-secret-key-for-e2e-tests-32bytes" \
+            -e SECRET_KEY="$E2E_SECRET_KEY" \
             "${image}:${GITHUB_REF_NAME}"
           # Wait for the app to be ready. Up to 30s — uvicorn is a slow-start
           # service on a cold sqlite+aiosqlite bootstrap.
