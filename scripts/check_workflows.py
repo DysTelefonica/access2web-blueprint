@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""CI gate on .github/workflows/*.yml — issues #135, #141, #152.
+"""CI gate on .github/workflows/*.yml — issues #135, #141, #152, #552.
 
-Ten checks, applied by hand across PRs #126 / #129 / #142 and now pinned
+Eleven checks, applied by hand across PRs #126 / #129 / #142 and now pinned
 by the gate in `tests/test_check_workflows.py`:
 
  1. No duplicate YAML keys (GitHub rejects them with startup_failure that
@@ -31,6 +31,9 @@ by the gate in `tests/test_check_workflows.py`:
 10. (carried from #135) Duplicate-key, timeout-minutes, host-port-fix,
     uses-not-pinned, docker-preflight, concurrency. The four added in #152
     are #6 (WARN branch), #7, #8, #9.
+11. A workflow triggered by `pull_request` may route PR-reachable jobs only
+    to literal GitHub-hosted runner labels. Self-hosted and dynamic labels are
+    rejected unless a static job condition excludes pull requests.
 
 Hard Rule 1 of the deterministic-quality-harness skill: no `|| true`, no
 `continue-on-error`. Exit 0 = clean (warnings allowed), exit 1 = any
@@ -77,8 +80,8 @@ _HOST_PORT_FIX = re.compile(r"^(?:\d{1,3}(?:\.\d{1,3}){3}|\d+):\d+$")
 
 #: Repo-approved allowlist of jobs that may safely use `cancel-in-progress: true`.
 #:
-#: Empty by design (audit 2026-08-12, umbrella #117). The runner pool is two VPS;
-#: every gate that consumed one already paid the cost. Adding a job here is a
+#: Empty by design (audit 2026-08-12, umbrella #117). Every gate that consumed
+#: a runner slot already paid the cost. Adding a job here is a
 #: deliberate decision that the in-flight work is cheap to discard — not a
 #: stylistic preference. Tests patch this set via `monkeypatch.setattr` to
 #: exercise the silent branch without modifying the source.
@@ -400,8 +403,8 @@ def _check_concurrency(doc: dict[str, Any]) -> Iterator[Finding]:
                 "warn",
                 f"jobs.{job_name}",
                 f"job `{job_name}` uses `cancel-in-progress: true`; "
-                f"cancelling discards work that already consumed one of two "
-                f"runners. Add `{job_name}` to _CANCEL_SAFE_JOBS in "
+                f"cancelling discards work that already consumed a runner "
+                f"slot. Add `{job_name}` to _CANCEL_SAFE_JOBS in "
                 f"scripts/check_workflows.py to silence this warning.",
             )
 
@@ -586,6 +589,64 @@ def _check_python_version_consistency(
 
 
 # --------------------------------------------------------------------------------------------
+# PUBLIC-PR TRUST BOUNDARY (check 11)
+# --------------------------------------------------------------------------------------------
+
+
+_HOSTED_RUNNER = re.compile(r"^(?:ubuntu|windows|macos)-[A-Za-z0-9._-]+$")
+_NON_PR_EVENT = re.compile(r"^github\.event_name\s*==\s*(['\"])(?!pull_request\1)[A-Za-z0-9_]+\1$")
+
+
+def _has_pull_request_trigger(doc: dict[str, Any]) -> bool:
+    """Return whether the workflow subscribes to `pull_request`.
+
+    PyYAML 1.1 parses the plain key `on` as boolean ``True``. Supporting both
+    representations keeps the gate correct without replacing the repository's
+    YAML parser.
+    """
+    triggers = doc.get("on", doc.get(True))
+    if isinstance(triggers, str):
+        return triggers == "pull_request"
+    if isinstance(triggers, list):
+        return "pull_request" in triggers
+    return isinstance(triggers, dict) and "pull_request" in triggers
+
+
+def _condition_excludes_pull_requests(condition: object) -> bool:
+    """Accept only simple event-name conditions that cannot match a PR."""
+    if not isinstance(condition, str):
+        return False
+    expression = condition.strip()
+    if expression.startswith("${{") and expression.endswith("}}"):
+        expression = expression[3:-2].strip()
+    if re.fullmatch(r"github\.event_name\s*!=\s*(['\"])pull_request\1", expression):
+        return True
+    terms = [term.strip() for term in expression.split("||")]
+    return bool(terms) and all(_NON_PR_EVENT.fullmatch(term) for term in terms)
+
+
+def _check_public_pr_runner_isolation(doc: dict[str, Any]) -> Iterator[Finding]:
+    """Reject PR-reachable jobs that do not use a literal hosted runner."""
+    if not _has_pull_request_trigger(doc):
+        return
+    jobs = doc.get("jobs") or {}
+    if not isinstance(jobs, dict):
+        return
+    for job_name, job_def in jobs.items():
+        if not isinstance(job_def, dict) or _condition_excludes_pull_requests(job_def.get("if")):
+            continue
+        runner = job_def.get("runs-on")
+        if isinstance(runner, str) and _HOSTED_RUNNER.fullmatch(runner):
+            continue
+        yield (
+            "error",
+            f"jobs.{job_name}.runs-on",
+            f"PR-reachable job `{job_name}` uses `{runner!r}`; public pull requests "
+            f"must run on a literal GitHub-hosted label such as `ubuntu-24.04`",
+        )
+
+
+# --------------------------------------------------------------------------------------------
 # RUN-ALL-CHECKS
 # --------------------------------------------------------------------------------------------
 
@@ -645,6 +706,11 @@ def _check_one(path: Path, doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
         yield (
             severity,
             _format_finding(path, severity, "concurrency-group", location, message),
+        )
+    for severity, location, message in _check_public_pr_runner_isolation(doc):
+        yield (
+            severity,
+            _format_finding(path, severity, "public-pr-runner", location, message),
         )
 
 

@@ -22,14 +22,11 @@ concurrency:
 
 jobs:
   gitleaks:
-    # Escaneo basado en Docker. `runs-on` es la fuente operativa del enrutado;
-    # el preflight del daemon y la prueba de lectura del workspace son
-    # obligatorios para confiar en el resultado.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
-    # Per-gate FIFO on this runner. A slow docker daemon stalls one invocation;
-    # the next waits in submission order rather than racing.
+    # Public pull requests run on an ephemeral GitHub-hosted runner. The Docker
+    # preflight and workspace liveness proof still validate the scan itself.
+    runs-on: ubuntu-24.04
     concurrency:
-      group: gate-gitleaks
+      group: gate-gitleaks-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     # gitleaks normally finishes in <1 min on the 70 MB tree. The observed 17-min
     # hang on the self-hosted runner was the case this timeout is meant to catch.
@@ -102,11 +99,10 @@ jobs:
           GITLEAKS_MIN_BYTES: "1000000"
 
   trivy-config:
-    # Escaneo basado en Docker. `runs-on` declara el enrutado vigente; el
-    # preflight del daemon sigue siendo obligatorio para confiar en el resultado.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Public pull requests run on an ephemeral GitHub-hosted runner.
+    runs-on: ubuntu-24.04
     concurrency:
-      group: gate-trivy-config
+      group: gate-trivy-config-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     timeout-minutes: 15
     steps:
@@ -130,11 +126,10 @@ jobs:
           docker run --rm             -v "$PWD:/repo"             -w /repo             aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c             config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1
 
   pip-audit:
-    # Instala un venv desechable y descarga la base de avisos. `runs-on`
-    # declara el enrutado vigente; este job no necesita Docker.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Instala un venv desechable en infraestructura aislada y hospedada.
+    runs-on: ubuntu-24.04
     concurrency:
-      group: gate-pip-audit
+      group: gate-pip-audit-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     timeout-minutes: 15
     steps:
