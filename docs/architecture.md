@@ -225,7 +225,7 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 
 ## CI gates
 
-Once `scripts/check_*.py` + `.github/workflows/`:
+Trece `scripts/check_*.py` + `.github/workflows/`:
 
 | Gate | Vive en | QC |
 |---|---|---|
@@ -234,10 +234,13 @@ Once `scripts/check_*.py` + `.github/workflows/`:
 | `check_layers.py` | scripts/ | QC-2, QC-9 |
 | `check_complexity.py` | scripts/ | QC-1, QC-10 |
 | `check_dry.py` | scripts/ | QC-11 |
+| `check_decision_guards.py` | scripts/ | Decisiones críticas |
 | `check_legacy_hashes.py` | scripts/ | DA-13 (pin AST) |
+| `check_legacy_retirement.py` | scripts/ | Retirada de rutas legacy |
 | `check_mutation_sites.py` | scripts/ | mutation semanal |
 | `check_mutation.py` | scripts/ | mutation semanal |
-| `check_workflows.py` | scripts/ | runner-pinning |
+| `check_test_classification.py` | scripts/ | Clasificación de tests |
+| `check_workflows.py` | scripts/ | Integridad YAML, pins, concurrencia y aislamiento de PRs públicos |
 | `quality_report.py` | scripts/ | QC-11 (agregador) |
 | `check_walkthrough_schema.py` | scripts/ | MUST fields del template `walkthrough.json` (53 walkthroughs) |
 | `pytest_plugin/coverage_gate.py` | app/ | QC-5 |
@@ -254,10 +257,8 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 | Gap | Impacto | Acción propuesta |
 |---|---|---|
 | `CODEBASE-GUIDE.md` y `DOCS.md` aún dicen `platform/`, pero la realidad es `app/` desde 2026-08-09. | IAs que leen CODEBASE-GUIDE antes de actuar rompen el layout actual. | Editar ambos docs para usar `app/` consistentemente. PR aparte. |
-| `docs/calidad-de-codigo-y-ci.md` está referenciado en 3 lugares pero **no existe**. | Los 12 `check_*.py` no tienen documentación centralizada. | Crear el doc perdido con esta sección §CI gates como base, o moverla. PR aparte. |
 | `openspec/changes/lanzadera-mvp/design.md` se escribió antes del rename — sigue diciendo `platform.src.modules`. | Drift entre design histórico y código actual. | PR a design.md para apuntar a `app.src.modules`. Mantener el change como histórico. |
 | `inputs/` existe en el repo pero no aparece en CODEBASE-GUIDE ni en DOCS. | IAs no saben qué va ahí. | Documentar en §Layout o eliminar si quedó vacío. |
-| `CODEBASE-GUIDE.md` lista 8 check_*.py; el repo tiene 12. | Doc desactualizada a la baja. | Sincronizar §CI gates cuando se toque CODEBASE-GUIDE. |
 | D-<n> numeración no es contigua (D36+D37 obsoletos, huecos varios). | IA que busca «todos los D» queda descolocada. | Esta tabla los cataloga con estado `vigente` u `OBSOLETO`; mantenerla viva. |
 
 ## Recommended reading path
