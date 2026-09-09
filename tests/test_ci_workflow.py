@@ -477,6 +477,12 @@ def test_release_e2e_generates_its_signing_secret_per_run() -> None:
     assert '-e SECRET_KEY="$E2E_SECRET_KEY"' in release
 
 
+def test_merge_ready_does_not_depend_on_an_ambient_checkout(workflow: dict) -> None:
+    """Hosted runners start without a repository until checkout runs."""
+    step = workflow["jobs"]["merge-ready"]["steps"][0]
+    assert 'gh pr view "$NUMBER" --repo "$GITHUB_REPOSITORY"' in step["run"]
+
+
 def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
     """The release identity is the signed digest, not a mutable image tag."""
     release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))

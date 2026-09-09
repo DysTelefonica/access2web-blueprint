@@ -43,19 +43,15 @@ env:
 
 jobs:
   review-budget:
-    # Cheap gate (PR-size + branch-name, both <1s). Runs on the self-hosted
-    # `a2w` runner (Coolify `a2w-runner-1` / `a2w-runner-2`). Antes vivía en
-    # `ubuntu-24.04` por el split del retro #117 — la contención que justificaba
-    # ese split ya no aplica (2026-08-20): corren 2 runners `a2w` en fan-out.
-    # El billing de GitHub Actions rompió el 2026-08-20 y no debe condicionar
-    # la mergeabilidad de los PRs.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Public pull requests are untrusted input. Every PR-reachable job runs on
+    # an ephemeral GitHub-hosted runner, never on repository infrastructure.
+    runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
     # Per-gate FIFO: if a `review-budget` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
     concurrency:
-      group: gate-review-budget
+      group: gate-review-budget-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     # Fail fast: branch-name + pr-size run in seconds; anything beyond 5 min is hung.
     timeout-minutes: 5
@@ -112,15 +108,12 @@ jobs:
         run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
-    # Heavy gate (ruff + mypy + pytest + 4 quality gates over the app/) — stays on
-    # the self-hosted VPS because the rest is just not worth re-pinning to a hosted
-    # image's moving target. Routing review-budget and security off the VPS is what
-    # stops this job from being the only thing the runner can run.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
-    # Per-gate FIFO on the runner (umbrella #117). Different gates are not in this
-    # group — review-budget and security can still progress while quality is running.
+    # This job executes code from public pull requests, so it must use isolated,
+    # ephemeral GitHub-hosted infrastructure.
+    runs-on: ubuntu-24.04
+    # Serialize retries of one PR/ref without blocking unrelated PRs.
     concurrency:
-      group: gate-quality
+      group: gate-quality-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     # Generous: ruff + mypy + pytest + layers + complexity + dry on the full
     # testable boundary. Below this the gate either hung (real failure) or the floor
@@ -431,9 +424,9 @@ jobs:
     if: github.event_name == 'pull_request'
     permissions:
       pull-requests: read
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    runs-on: ubuntu-24.04
     concurrency:
-      group: merge-ready-${{ github.event.pull_request.number }}
+      group: gate-merge-ready-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     timeout-minutes: 5
     steps:
@@ -446,7 +439,7 @@ jobs:
         run: |
           set -euo pipefail
           NUMBER=${{ github.event.pull_request.number }}
-          STATE=$(gh pr view "$NUMBER" --json mergeable,reviewDecision,isDraft --jq '.')
+          STATE=$(gh pr view "$NUMBER" --repo "$GITHUB_REPOSITORY" --json mergeable,reviewDecision,isDraft --jq '.')
           MERGEABLE=$(echo "$STATE" | jq -r '.mergeable')
           DRAFT=$(echo "$STATE" | jq -r '.isDraft')
           APPROVED=$(echo "$STATE" | jq -r '.reviewDecision')

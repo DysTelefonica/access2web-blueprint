@@ -21,7 +21,7 @@ jobs:
       contents: read
       security-events: write
     concurrency:
-      group: gate-codeql
+      group: gate-codeql-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     steps:
       - name: Checkout repository
@@ -35,4 +35,3 @@ jobs:
 
       - name: Analyze Python
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4.37.9
-

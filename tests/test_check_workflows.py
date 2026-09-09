@@ -873,3 +873,89 @@ jobs:
     rc, stderr = _capture(check_workflows, tmp_path / "wf")
     assert rc == 0, stderr
     assert "concurrency-group" not in stderr
+
+
+# --------------------------------------------------------------------------------------------
+# Check 11: public pull requests never reach self-hosted infrastructure
+# --------------------------------------------------------------------------------------------
+
+
+def test_public_pr_runner_accepts_literal_github_hosted_label(tmp_path: Path) -> None:
+    body = """\
+name: hosted
+on: [pull_request]
+permissions: { contents: read }
+concurrency: { group: hosted, cancel-in-progress: false }
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - run: echo ok
+"""
+    p = _write(tmp_path, "hosted.yml", body)
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 0, stderr
+    assert "public-pr-runner" not in stderr
+
+
+def test_public_pr_runner_rejects_self_hosted_job(tmp_path: Path) -> None:
+    body = """\
+name: exposed
+on: [pull_request]
+permissions: { contents: read }
+concurrency: { group: exposed, cancel-in-progress: false }
+jobs:
+  test:
+    runs-on: [self-hosted, Linux, ARM64]
+    timeout-minutes: 10
+    steps:
+      - run: echo unsafe
+"""
+    p = _write(tmp_path, "exposed.yml", body)
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 1
+    assert "public-pr-runner" in stderr
+    assert "jobs.test.runs-on" in stderr
+
+
+def test_public_pr_runner_allows_self_hosted_job_excluded_from_pr(
+    tmp_path: Path,
+) -> None:
+    body = """\
+name: mixed
+on: [pull_request, schedule, workflow_dispatch]
+permissions: { contents: read }
+jobs:
+  mutation:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: [self-hosted, Linux, ARM64]
+    concurrency: { group: mutation, cancel-in-progress: false }
+    timeout-minutes: 60
+    steps:
+      - run: echo trusted
+"""
+    p = _write(tmp_path, "mixed.yml", body)
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 0, stderr
+    assert "public-pr-runner" not in stderr
+
+
+def test_public_pr_runner_rejects_dynamic_label(tmp_path: Path) -> None:
+    body = """\
+name: dynamic
+on: [pull_request]
+permissions: { contents: read }
+concurrency: { group: dynamic, cancel-in-progress: false }
+jobs:
+  test:
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    steps:
+      - run: echo ambiguous
+"""
+    p = _write(tmp_path, "dynamic.yml", body)
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 1
+    assert "public-pr-runner" in stderr
+    assert "matrix.runner" in stderr
