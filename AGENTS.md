@@ -31,6 +31,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | **`worktree-reorg-per-project`** | **Any** worktree op en este repo: `git worktree add`, `git worktree move`, `git worktree remove`, `git worktree prune`, pre-PR cleanup, fresh project setup. El layout canónico es main en la raíz del proyecto + container hermano `<project>-worktrees\` con linked WTs adentro (v2.0). v1 está deprecated — si el proyecto está en v1, migrar a v2 antes de trabajar. Vive en `~/.config/opencode/skills/worktree-reorg-per-project/SKILL.md`. Author: ardelperal. |
 | **`architecture-guardrails`** | **Any** cambio estructural en `app/`, `tests/` u `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`docs/architecture.md`](docs/architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
 | **`documentation-alan-style`** | **Any** redacción o revisión de `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `epic.md` o `walkthrough-*.json`. Plantillas en `references/templates/`. Vive en este repo: `skills/documentation-alan-style/SKILL.md`. |
+| **`repository-delivery-governance`** | **Any** auditoría o cambio de CI/CD, política de issues o PRs, labels, branch protection, rulesets, permisos de merge, artefactos, despliegue o rollback. Vive en `~/.agents/skills/repository-delivery-governance/SKILL.md`, distribuida por `DysTelefonica/team-skills`. Si falta, deténgase y sincronice el catálogo antes de trabajar. La política específica de este repo prevalece sobre su baseline portable. |
 
 ## Project-context skills
 
@@ -43,6 +44,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | `documentation-alan-style` | Redactar o revisar docs raíz, `epic.md`, `walkthrough-*.json`. | `skills/documentation-alan-style/SKILL.md` (este repo) |
 | `architecture-guardrails` | Cambios estructurales en `app/`, `tests/`, `openspec/`; decisiones D-<n>. | `skills/architecture-guardrails/SKILL.md` (este repo) |
 | `lanzadera-testing-strategy` | Clasificar test nuevo en Categoría 1–5; revisar capa de un test; decidir mock vs. fake; debate sobre `auth_bypass`. | `skills/lanzadera-testing-strategy/SKILL.md` (este repo) |
+| `repository-delivery-governance` | Auditar o cambiar CI/CD, issues, PRs, labels, protección de ramas, permisos de merge, artefactos, despliegue o rollback. | `~/.agents/skills/repository-delivery-governance/SKILL.md` (`DysTelefonica/team-skills`) |
 
 ## Cross-cutting skills
 
@@ -99,9 +101,10 @@ El resto es configuración personal y **no está garantizada** para todo el equi
 | `worktree-reorg-per-project` | personal — no garantizada; además describe el layout de disco de un desarrollador, no una convención del proyecto |
 | `estado-planificacion-update` | personal — no garantizada |
 | `deterministic-quality-harness` | personal — no garantizada. La ruta `.opencode/skills/` que se cita más abajo **no existe en este repositorio** |
+| `repository-delivery-governance` | `DysTelefonica/team-skills` — obligatoria en su scope; si falta, deténgase y sincronice el catálogo antes de trabajar |
 | `telefonica-brand-design`, `frontend-design`, `dysflow-*`, `access-*` | externas — no garantizadas |
 
-Regla: una convención obligatoria de este repositorio no puede vivir sólo en una skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en `docs/` o en [`skills/`](skills/README.md), versionado dentro del repositorio.
+Regla: una convención obligatoria de este repositorio no puede vivir sólo en una skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en `docs/` o en [`skills/`](skills/README.md), versionado dentro del repositorio. `repository-delivery-governance` aporta el método portable de auditoría; no sustituye esas fuentes locales.
 
 Las entradas marcadas como personales se trasladan o se retiran en las entregas siguientes de #167. El contrato de `skills/` y las instrucciones de instalación para un colaborador nuevo están en [`skills/README.md`](skills/README.md).
 
