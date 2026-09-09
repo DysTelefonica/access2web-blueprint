@@ -102,7 +102,7 @@ access2web-blueprint/
 │   └── pytest_plugin/           ← coverage_gate, etc.
 ├── openspec/changes/<change>/{proposal,design,specs/*,tasks}.md
 ├── scripts/check_*.py           ← 12 quality gates (ver §CI gates)
-├── .github/workflows/{ci,security,security-deep,release}.yml
+├── .github/workflows/{ci,security,security-deep,codeql,release}.yml
 ├── data/staging/                ← binarios legacy (R2-pulled)
 └── skills/                      ← copy internalizada de skills del proyecto
 ```
@@ -244,6 +244,7 @@ Once `scripts/check_*.py` + `.github/workflows/`:
 | ci.yml | .github/workflows/ | orquesta todo por PR |
 | security.yml | .github/workflows/ | pip-audit, gitleaks, trivy config |
 | security-deep.yml | .github/workflows/ | semanal |
+| codeql.yml | .github/workflows/ | cada PR, push a main y semanal |
 | release.yml | .github/workflows/ | tags + gate de identidad |
 
 ## Gaps conocidos (lo que la doc dice y el código no)

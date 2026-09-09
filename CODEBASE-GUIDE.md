@@ -218,7 +218,7 @@ Esta guía explica ownership, flows, y guardrails. **NO duplica** la API referen
 |---|---|---|
 | [`docs/architecture.md`](docs/architecture.md) | Decisiones D-<n> y DA-<n>, layout del repo, gaps conocidos. | §Decisiones metodológicas, §Stack, §Layout. |
 | [`DOCS.md`](../DOCS.md) | Technical reference raíz: endpoints, schemas, MCP, CLI, env vars. | §Full technical reference stays in DOCS.md. |
-| [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) | Los 12 `check_*.py` + los 4 workflows de CI. | §CI gates, §Quality gates, §Estructura del repo. |
+| [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) | Los 12 `check_*.py` + los 5 workflows de CI. | §CI gates, §Quality gates, §Estructura del repo. |
 | [`docs/03-aplicaciones/<app>/epic.md`](docs/03-aplicaciones/) | Spec de migración por app + walkthroughs + capabilities. | §Recommended reading path, §Ownership de artefactos, §Cómo agregar una nueva app. |
 | [`docs/prompts/`](docs/prompts/) | Reportes al mantenedor de dysflow (WIP hasta merge upstream). | §Bugs dysflow filed, §Ownership de artefactos. |
 | [`CONTRIBUTING.md`](../CONTRIBUTING.md) | Workflow de contribución + label system + convención multi-app. | §Workflow de contribución, §Recommended reading path. |
