@@ -111,7 +111,7 @@ Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de propo
 
 1. [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) — overview + ownership + reading path.
 2. [`docs/architecture.md`](docs/architecture.md) — fuente de verdad única de la arquitectura (capas hexagonales, decisiones D-<n> cross-cutting vigentes y obsoletas, patrones transversales).
-3. [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) — gates de calidad (los 12 `check_*.py` + los 4 workflows).
+3. [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) — gates de calidad (los 12 `check_*.py` + los 5 workflows).
 4. [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow + label system + convention multi-app.
 5. Si el cambio pertenece a un OpenSpec change vivo, su `openspec/changes/<change>/design.md`.
 6. Si toca una app específica, su `docs/03-aplicaciones/<app>/epic.md`.
@@ -124,15 +124,15 @@ Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rule
 repositorio en GitHub Free. La protección se aplica también a administradores.
 
 GitHub exige un PR actualizado con `main`, todas las conversaciones resueltas y
-estos checks en verde: `quality`, `review-budget`, `pip-audit`, `gitleaks` y
-`trivy-config`. No permite force-push ni borrar la rama.
+estos checks en verde: `quality`, `review-budget`, `pip-audit`, `gitleaks`,
+`trivy-config` y `codeql`. No permite force-push ni borrar la rama.
 
 `merge-ready` conserva su función informativa. No es un check protegido porque
 no agrega los demás jobs y termina correctamente cuando falta una aprobación.
 
 Pasos del revisor antes de mergear:
 
-1. Verifique que los cinco checks protegidos pertenecen al último SHA del PR.
+1. Verifique que los seis checks protegidos pertenecen al último SHA del PR.
 2. Compruebe que las conversaciones están resueltas.
 3. Si un check falla por una dependencia externa, abra un issue y corrija el
    bloqueo antes de integrar. No eluda la protección.

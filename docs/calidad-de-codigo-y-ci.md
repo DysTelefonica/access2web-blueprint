@@ -12,7 +12,7 @@
 
 | Es | No es |
 |---|---|
-| Catálogo de los 12 `check_*.py` + sus QC.<br>Contrato de los 4 workflows de `.github/`.<br>Cómo se invoca cada gate localmente. | Réplica de [`docs/architecture.md`](architecture.md) §CI gates.<br>Manual de uso de dysflow ni de las migraciones Alembic.<br>Política del revisor humano (eso vive en [`AGENTS.md`](../../AGENTS.md)). |
+| Catálogo de los 12 `check_*.py` + sus QC.<br>Contrato de los 5 workflows de `.github/`.<br>Cómo se invoca cada gate localmente. | Réplica de [`docs/architecture.md`](architecture.md) §CI gates.<br>Manual de uso de dysflow ni de las migraciones Alembic.<br>Política del revisor humano (eso vive en [`AGENTS.md`](../../AGENTS.md)). |
 
 ## Contrato global
 
@@ -25,6 +25,7 @@ PR abierto contra main
 │   ├─ pip-audit               │
 │   ├─ gitleaks                │
 │   ├─ trivy-config            │
+│   ├─ codeql                  │
 │   ├─ ruff                    │
 │   ├─ mypy                    │
 │   ├─ pytest --cov            │
@@ -36,7 +37,7 @@ PR mergeado con --squash; rama remota conservada
 ```
 
 Tres grupos de gates:
-- **Estáticos**: `ruff`, `mypy` (de pyproject), `gitleaks`, `pip-audit`, `trivy-config`.
+- **Estáticos**: `ruff`, `mypy`, `CodeQL`, `gitleaks`, `pip-audit` y `trivy-config`.
 - **Tests**: `pytest --cov` con el plugin `coverage_gate.py` (QC-5).
 - **De contrato**: los 12 `check_*.py` que pinean invariantes arquitectónicas.
 
@@ -61,13 +62,14 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 
 > **QC mapping incompleto**: la tabla arriba es best-effort. El catálogo QC-1..QC-18 vive en `openspec/changes/lanzadera-mvp/design.md`. Este doc no es la fuente; se cruza contra el design para validar la asignación.
 
-## Los 4 workflows de `.github/workflows/`
+## Los 5 workflows de `.github/workflows/`
 
 | Workflow | Cuándo corre | Qué hace |
 |---|---|---|
 | `ci.yml` | cada PR + push a main | Orquesta: pip-audit, gitleaks, trivy-config, ruff/mypy/pytest, los 13 check_*.py. |
 | `security.yml` | cada PR + push a main | Fast subset de seguridad: pip-audit, gitleaks, trivy config. |
 | `security-deep.yml` | semanal (cron) | Trivy filesystem + image, mutation semanal. |
+| `codeql.yml` | cada PR + push a main + semanal | Análisis semántico CodeQL del código Python en un runner hospedado. |
 | `release.yml` | tag `v*` pushed | Gate de identidad + verify checksum; ata al release pipeline. |
 
 Los SHA de las actions se pinean vía `check_workflows.py`; actualizarlos requiere PR explícito.
@@ -108,6 +110,7 @@ actualizado, conversaciones resueltas y estos checks en verde:
 | `security.yml` | `pip-audit` |
 | `security.yml` | `gitleaks` |
 | `security.yml` | `trivy-config` |
+| `codeql.yml` | `codeql` |
 
 La protección se aplica a administradores y bloquea force-push y borrado de
 `main`. `merge-ready` es informativo: no agrega los otros jobs y no sustituye a
@@ -152,6 +155,7 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 ## Core invariants
 
 - **SHA de Actions pineados**: las versiones de actions de terceros en `.github/workflows/*.yml` van fijadas por SHA de 40 hex. `scripts/check_workflows.py` enforza esto y exige un `concurrency.group` por job. Actualizar requiere PR explícito.
+- **SAST semántico hospedado**: `codeql.yml` analiza Python en cada PR, tras cada push a `main` y semanalmente. Usa `ubuntu-24.04` para no ejecutar código de PRs públicos en el VPS propio.
 - **Dependabot conserva los pins**: `.github/dependabot.yml` propone cambios semanales para `app/` y GitHub Actions. Cada actualización pasa por los mismos checks protegidos que un PR humano.
 - **Wrappers prohibidos**: `|| true`, `continue-on-error`, y cualquier otro wrapper que silencie un fallo están prohibidos en `ci.yml` y en los `check_*.py`. `tests/test_ci_workflow.py` pinea el contrato.
 - **Cuatro targets auth a 100 % (DA-2, DA-4 y QC-5)**: `CredentialHasherArgon2id.hash`, `CredentialHasherArgon2id.verify`, `issue_reset_token` y `consume_reset_token`. El plugin falla el build con `session.exitstatus = 1` si cualquiera queda infracubierto.

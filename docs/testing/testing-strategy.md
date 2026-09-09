@@ -151,13 +151,13 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 | No es | Límite |
 |---|---|
 | Una copia del `apap-testing-strategy` de `ardelperal/APAP_WEB`. | Este repo tiene 50 archivos en 5 categorías, no 265 en 6; la estructura se acorta pero no se duplica. |
-| Réplica operativa de `docs/calidad-de-codigo-y-ci.md`. | Ese doc cubre los 12 `check_*.py` y los 4 workflows (operativo). Este cubre qué testear y por qué (estratégico). |
+| Réplica operativa de `docs/calidad-de-codigo-y-ci.md`. | Ese doc cubre los 12 `check_*.py` y los 5 workflows (operativo). Este cubre qué probar y por qué (estratégico). |
 | Lista exhaustiva de los 50 archivos. | La lista vive en el árbol de `tests/lanzadera/`; este doc la resume por capa. |
 | Manual de pytest, FastAPI TestClient ni Alembic. | Esos son frameworks; este doc los asume y prescribe su uso por capa. |
 
 ## Cross-references
 
-- [`docs/calidad-de-codigo-y-ci.md`](../calidad-de-codigo-y-ci.md) — los 12 gates mecánicos y los 4 workflows. **Operativo**.
+- [`docs/calidad-de-codigo-y-ci.md`](../calidad-de-codigo-y-ci.md) — los 12 gates mecánicos y los 5 workflows. **Operativo**.
 - [`docs/architecture.md`](../architecture.md) §CI gates — decisiones arquitectónicas detrás de cada gate. **Decisión**.
 - [`CODEBASE-GUIDE.md`](../../CODEBASE-GUIDE.md) — ownership, flujos y guardarraíles del monorepo. **Orientación**.
 - [`openspec/changes/lanzadera-mvp/design.md`](../../openspec/changes/lanzadera-mvp/design.md) §Pipeline de calidad — el contrato completo de los gates en el SDD original.
