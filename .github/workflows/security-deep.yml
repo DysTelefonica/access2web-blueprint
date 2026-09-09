@@ -28,10 +28,8 @@ jobs:
     # it costs is written down in #113: a hosted image is reproducible but rationed,
     # a VPS is unrationed but accumulates state nobody declares.
     #
-    # This workflow runs on the SELF-HOSTED runner (where the docker daemon is shared
-    # with Coolify/Engram/Vaultwarden/AdGuard) — unlike the per-PR `security.yml` which
-    # routes to ubuntu-24.04. The preflight below is therefore load-bearing here, not
-    # decorative; the same check in `security.yml` is defense-in-depth (#131).
+    # Este job programado se ejecuta en el runner self-hosted, cuyo daemon de
+    # Docker es compartido. El preflight inferior es obligatorio, no decorativo.
     # Per-gate FIFO matches the convention from #126: a slow daemon stalls this run;
     # the next waits in submission order rather than racing.
     concurrency:

@@ -22,12 +22,9 @@ concurrency:
 
 jobs:
   gitleaks:
-    # Docker-based scan. Runs on the self-hosted `a2w` runner (image
-    # `myoung34/github-runner:ubuntu-noble` ya trae Docker). Antes vivía en
-    # `ubuntu-24.04` por el split del retro #117/#127 — la contención que
-    # justificaba ese split ya no aplica (2026-08-20): corren 2 runners `a2w`
-    # en fan-out. El billing de GitHub Actions rompió el 2026-08-20 y no debe
-    # condicionar la mergeabilidad de los PRs.
+    # Escaneo basado en Docker. `runs-on` es la fuente operativa del enrutado;
+    # el preflight del daemon y la prueba de lectura del workspace son
+    # obligatorios para confiar en el resultado.
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     # Per-gate FIFO on this runner. A slow docker daemon stalls one invocation;
     # the next waits in submission order rather than racing.
@@ -105,12 +102,8 @@ jobs:
           GITLEAKS_MIN_BYTES: "1000000"
 
   trivy-config:
-    # Docker-based scan. Runs on the self-hosted `a2w` runner (image
-    # `myoung34/github-runner:ubuntu-noble` ya trae Docker). Antes vivía en
-    # `ubuntu-24.04` por el split del retro #127 — la contención que justificaba
-    # ese split ya no aplica (2026-08-20): corren 2 runners `a2w` en fan-out.
-    # El billing de GitHub Actions rompió el 2026-08-20 y no debe condicionar la
-    # mergeabilidad de los PRs.
+    # Escaneo basado en Docker. `runs-on` declara el enrutado vigente; el
+    # preflight del daemon sigue siendo obligatorio para confiar en el resultado.
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     concurrency:
       group: gate-trivy-config
@@ -137,12 +130,8 @@ jobs:
           docker run --rm             -v "$PWD:/repo"             -w /repo             aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c             config /repo/app/Dockerfile --severity HIGH,CRITICAL --exit-code 1
 
   pip-audit:
-    # venv install + advisory DB download — no Docker, no self-hosted infra needed.
-    # Runs on the self-hosted `a2w` runner. Antes vivía en `ubuntu-24.04` para
-    # liberar el VPS para `quality`/`mutation` (split del retro #117/#127). Hoy
-    # corren 2 runners `a2w` en fan-out y la contención que justificaba el split
-    # ya no aplica (2026-08-20). El billing de GitHub Actions rompió el
-    # 2026-08-20 y no debe condicionar la mergeabilidad de los PRs.
+    # Instala un venv desechable y descarga la base de avisos. `runs-on`
+    # declara el enrutado vigente; este job no necesita Docker.
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     concurrency:
       group: gate-pip-audit
