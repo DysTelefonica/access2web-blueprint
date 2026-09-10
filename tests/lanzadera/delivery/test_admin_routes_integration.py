@@ -8,7 +8,9 @@ container with the in-memory fakes from ``tests/lanzadera/_fakes.py``
 and exercises the routes end-to-end via FastAPI's ``TestClient``.
 
 The tests cover the W54-W62 slice:
-- ``GET /admin/users`` paginates via ``list_all_users`` (W59, #517).
+- ``GET /admin/users`` paginates via ``list_all_users`` (W59, #517);
+  gated by ``require_global_admin`` (issue #579) since it exposes every
+  user's email and name.
 - ``POST /admin/users`` creates the row via the ``create_user`` use case
   (W54, #43) and appends the audit row (DA-11).
 - ``PATCH /admin/users/{id}/disable`` flips ACTIVE → DISABLED (W54, D42).
@@ -234,12 +236,14 @@ def client(container: LanzaderaContainer):
 
 
 @pytest.mark.usefixtures("auth_session")
-def test_list_users_returns_all_users(client: TestClient, fake_fixtures: FakeFixtures):
+def test_list_users_returns_all_users(
+    client: TestClient, fake_fixtures: FakeFixtures, auth_session: dict[str, UUID]
+):
     """``GET /admin/users`` renders every seeded user in the HTML response."""
     _seed_active_user(fake_fixtures, email="alice@enterprise.test")
     _seed_active_user(fake_fixtures, email="bob@enterprise.test")
 
-    response = client.get("/admin/users")
+    response = client.get("/admin/users", headers=_auth_headers(auth_session["session_id"]))
 
     assert response.status_code == 200
     body = response.text
@@ -248,13 +252,17 @@ def test_list_users_returns_all_users(client: TestClient, fake_fixtures: FakeFix
 
 
 @pytest.mark.usefixtures("auth_session")
-def test_list_users_respects_limit_offset(client: TestClient, fake_fixtures: FakeFixtures):
+def test_list_users_respects_limit_offset(
+    client: TestClient, fake_fixtures: FakeFixtures, auth_session: dict[str, UUID]
+):
     """``limit`` and ``offset`` query params drive ``container.list_all_users``."""
     _seed_active_user(fake_fixtures, email="alice@enterprise.test")
     _seed_active_user(fake_fixtures, email="bob@enterprise.test")
     _seed_active_user(fake_fixtures, email="carol@enterprise.test")
 
-    response = client.get("/admin/users?limit=1&offset=0")
+    response = client.get(
+        "/admin/users?limit=1&offset=0", headers=_auth_headers(auth_session["session_id"])
+    )
 
     assert response.status_code == 200
     # The page renders exactly one user; the rest stay out of the slice.
@@ -271,6 +279,19 @@ def test_list_users_respects_limit_offset(client: TestClient, fake_fixtures: Fak
     assert rendered == 1
     # The "Mostrando X-Y de Z" pagination footer stays in step with the count.
     assert "de 3" in body
+
+
+def test_list_users_requires_admin_without_session(client: TestClient, fake_fixtures: FakeFixtures):
+    """Issue #579: ``GET /admin/users`` returns 401 without an auth session.
+
+    Before the fix, ``list_users`` never called ``require_global_admin``,
+    so any unauthenticated caller could read every user's email and name.
+    """
+    _seed_active_user(fake_fixtures, email="alice@enterprise.test")
+
+    response = client.get("/admin/users")
+
+    assert response.status_code == 401
 
 
 # ---------------------------------------------------------------------------
