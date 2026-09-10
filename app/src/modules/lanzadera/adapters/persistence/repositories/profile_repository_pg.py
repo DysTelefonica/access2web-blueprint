@@ -14,6 +14,7 @@ DA-12 by serialising the capabilities map atomically per call.
 """
 
 from __future__ import annotations
+
 from uuid import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
