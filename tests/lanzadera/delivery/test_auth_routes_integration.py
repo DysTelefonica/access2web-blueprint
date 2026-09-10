@@ -403,10 +403,10 @@ def test_me_returns_enriched_identity(auth_client: TestClient, fake_fixtures: Fa
     ``request.state.user_id``).
     """
     user = _seed_active_user(fake_fixtures)
-    session = _seed_session(fake_fixtures, user_id=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
     token = _mint_jwt(sub=user.id)
 
-    app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
+    _app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
     profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
     _seed_assignment(fake_fixtures, user_id=user.id, app_id=3, profile_id=profile.id)
 
@@ -518,11 +518,11 @@ def test_my_apps_returns_apps_with_profiles_and_capabilities(
 ) -> None:
     """User with one assignment gets the app + profile + capabilities."""
     user = _seed_active_user(fake_fixtures)
-    session = _seed_session(fake_fixtures, user_id=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
     # JWT sub must be user.id so that get_my_apps finds the assignment
     token = _mint_jwt(sub=user.id)
 
-    app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
+    _app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
     profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
     _seed_assignment(fake_fixtures, user_id=user.id, app_id=3, profile_id=profile.id)
 
@@ -570,7 +570,7 @@ def test_my_capabilities_returns_profile_keys(
 ) -> None:
     """User assigned to app → returns the profile's capability names."""
     user = _seed_active_user(fake_fixtures)
-    session = _seed_session(fake_fixtures, user_id=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
     # JWT sub must be user.id so effective_permissions finds the assignment
     token = _mint_jwt(sub=user.id)
 
@@ -841,7 +841,7 @@ def test_require_capability_returns_403_when_user_lacks_cap(
 ) -> None:
     """User has no assignment for app_id → 403."""
     user = _seed_active_user(fake_fixtures)
-    session = _seed_session(fake_fixtures, user_id=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
     token = _mint_jwt(sub=user.id)
 
     response = cap_client.get("/apps/7/records", headers={"Authorization": f"Bearer {token}"})
@@ -853,10 +853,10 @@ def test_require_capability_passes_when_user_has_capability(
 ) -> None:
     """User assigned to app with 'Calidad' capability → 200."""
     user = _seed_active_user(fake_fixtures)
-    session = _seed_session(fake_fixtures, user_id=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
     token = _mint_jwt(sub=user.id)
 
-    app = _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
+    _app = _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
     profile = _seed_profile(fake_fixtures, app_id=7, code="CALIDAD", capabilities={"Calidad": True})
     _seed_assignment(fake_fixtures, user_id=user.id, app_id=7, profile_id=profile.id)
 
