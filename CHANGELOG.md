@@ -17,6 +17,14 @@ Vacío. Las nuevas entregas se documentan aquí antes del siguiente release cut.
 
 - **W-TEST (#597) — HTML endpoint coverage**: 3 tests de integración para `admin_routes_misc.py`: `test_list_apps_returns_active_apps` (GET /admin/apps), `test_activate_app_returns_200` (POST /admin/apps/{id}/activate), `test_activate_app_requires_admin_without_session`. `admin_routes_misc.py` sube a cobertura 100%. 656 tests PASS.
 
+### Added
+
+- **W65 (#596) — LanzaderaContainer cleave**: ``container.py`` (197 sites) se
+  divide en 6 módulos de ≤ 100 sites. ``container.py`` es ahora un thin wrapper
+  con ``__getattr__`` que delega a tres facade classes. El contrato público
+  (``container.login()``, ``container.users``, ``container.use_cases``) se preserva.
+  Se cierra la entrada BASELINE de ``container.py`` (197 → 84). 655 tests PASS.
+
 ### Changed
 
 - **W-TEST (#598) -- seed_profiles.py split into 6 modules**: el archivo
