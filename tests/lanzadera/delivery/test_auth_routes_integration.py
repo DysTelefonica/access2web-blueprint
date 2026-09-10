@@ -664,7 +664,6 @@ from app.src.modules.lanzadera.domain.app import (  # noqa: E402
 from app.src.modules.lanzadera.domain.assignment import Assignment  # noqa: E402
 from app.src.modules.lanzadera.domain.profile import Profile  # noqa: E402
 
-
 # ---------------------------------------------------------------------------
 # require_capability gate — tests for issue #589
 # ---------------------------------------------------------------------------

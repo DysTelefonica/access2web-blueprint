@@ -35,10 +35,29 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from app.src.modules.lanzadera.domain.audit_event import AuditEvent
-from app.src.modules.lanzadera.domain.ports import AuditLog
-from app.src.modules.lanzadera.domain.ports.profile_repository import (
-    ProfileRepositoryPort,
+from app.src.modules.lanzadera.application.seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA import (
+    CALIDAD_AVISOS as _CALIDAD_AVISOS,
+)
+from app.src.modules.lanzadera.application.seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA import (
+    ECONOMIA as _ECONOMIA,
+)
+from app.src.modules.lanzadera.application.seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA import (
+    TECNICO as _TECNICO,
+)
+from app.src.modules.lanzadera.application.seed_capability_DEFAULT_ADMIN_CALIDAD import (
+    ADMIN as _ADMIN,
+)
+from app.src.modules.lanzadera.application.seed_capability_DEFAULT_ADMIN_CALIDAD import (
+    CALIDAD as _CALIDAD,
+)
+from app.src.modules.lanzadera.application.seed_capability_DEFAULT_ADMIN_CALIDAD import (
+    DEFAULT as _DEFAULT,
+)
+from app.src.modules.lanzadera.application.seed_capability_SECRETARIA_SIN_ACCESO import (
+    SECRETARIA as _SECRETARIA,
+)
+from app.src.modules.lanzadera.application.seed_capability_SECRETARIA_SIN_ACCESO import (
+    SIN_ACCESO as _SIN_ACCESO,
 )
 
 # Data modules — each ≤ 100 mutation sites (W-TEST refactor).
@@ -48,19 +67,10 @@ from app.src.modules.lanzadera.application.seed_profile_apps import (
 from app.src.modules.lanzadera.application.seed_profile_codes import (
     PROFILE_CODES as _PROFILE_CODES,
 )
-from app.src.modules.lanzadera.application.seed_capability_DEFAULT_ADMIN_CALIDAD import (
-    DEFAULT as _DEFAULT,
-    ADMIN as _ADMIN,
-    CALIDAD as _CALIDAD,
-)
-from app.src.modules.lanzadera.application.seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA import (
-    CALIDAD_AVISOS as _CALIDAD_AVISOS,
-    TECNICO as _TECNICO,
-    ECONOMIA as _ECONOMIA,
-)
-from app.src.modules.lanzadera.application.seed_capability_SECRETARIA_SIN_ACCESO import (
-    SECRETARIA as _SECRETARIA,
-    SIN_ACCESO as _SIN_ACCESO,
+from app.src.modules.lanzadera.domain.audit_event import AuditEvent
+from app.src.modules.lanzadera.domain.ports import AuditLog
+from app.src.modules.lanzadera.domain.ports.profile_repository import (
+    ProfileRepositoryPort,
 )
 
 #: Lookup table from profile code to its 6-flag capability map.
