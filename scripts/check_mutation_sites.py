@@ -178,10 +178,8 @@ BASELINE: dict[str, BaselineEntry] = {
     # / container_apps.py / a thin re-exporter) is responsible for
     # bringing the per-file count below 100 before the BASELINE expires
     # on 2027-02-13.
-    # W64 (#585): container.py is now at 197 sites after DI re-wiring.
-    "app/src/modules/lanzadera/di/container.py": (
-        BaselineEntry(sites=197, target=100, target_date="2027-02-13")
-    ),
+    # W65 (#596): container.py cleaved; now 70 sites (6 files ≤ 100).
+    # on 2027-02-13.
     # W61 (#524): app_repository_pg.py is at 145 sites because it now
     # implements 5 methods (get_by_id, list_active, list_visible_to, create,
     # update, disable) each with a session context manager block.
