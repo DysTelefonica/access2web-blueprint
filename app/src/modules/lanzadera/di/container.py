@@ -3,7 +3,7 @@
 # use case methods split to _container_facade_auth/users/apps.
 """Composition root for the lanzadera module (CA-F4, D73, DA-1).
 
-W65 (#596): ``container.py`` es un thin wrapper (~70 sitios) que
+W65 (#596): ``container.py`` es un thin wrapper (~80 sitios) que
 instancia los tres facade classes, almacena ports directas, y delega
 via ``__getattr__``:
   ``LanzaderaFacadeAuth``   — login, logout, set_password + auth ports
@@ -31,7 +31,6 @@ from app.src.modules.lanzadera.di._container_auth import build_auth_ports
 from app.src.modules.lanzadera.di._container_facade_apps import LanzaderaFacadeApps
 from app.src.modules.lanzadera.di._container_facade_auth import LanzaderaFacadeAuth
 from app.src.modules.lanzadera.di._container_facade_users import LanzaderaFacadeUsers
-from app.src.modules.lanzadera.di._container_ports import build_nonauth_ports
 from app.src.modules.lanzadera.di.use_cases import build_use_case_factories
 from app.src.modules.lanzadera.domain.ports import AuditLog, PasswordHasher
 from app.src.modules.lanzadera.domain.ports.bootstrap_admin_source import (
@@ -91,8 +90,11 @@ class LanzaderaContainer:
             session_repo=session_repo,
             jwt_signer=jwt_signer,
         )
-        ports = build_nonauth_ports(
-            session_factory=session_factory,
+        # Extract auth ports for direct container properties.
+        _session_repo = auth_ports.pop("session_repo")
+        _jwt_signer = auth_ports.pop("jwt_signer")
+
+        self._use_cases = build_use_case_factories(
             user_repo=user_repo,
             app_repo=app_repo,
             profile_repo=profile_repo,
@@ -100,20 +102,11 @@ class LanzaderaContainer:
             global_admin_repo=global_admin_repo,
             reset_token_repo=reset_token_repo,
             presence_repo=presence_repo,
-            audit=audit,
-        )
-
-        # Extract auth ports for direct container properties.
-        _session_repo = auth_ports.pop("session_repo")
-        _jwt_signer = auth_ports.pop("jwt_signer")
-        # Remaining auth port is password_hasher only.
-        ports.update(auth_ports)
-
-        self._use_cases = build_use_case_factories(
+            session_repo=_session_repo,
+            audit=audit,  # type: ignore[arg-type]
+            password_hasher=password_hasher,
             secret_manager=secret_manager,
             clock=self._clock,
-            **ports,
-            session_repo=_session_repo,
         )
 
         # Direct port properties (used by routes as kwargs to use cases).
@@ -129,7 +122,11 @@ class LanzaderaContainer:
 
         # Three facade instances — each holds the use-case dict + clock.
         self._facade_auth = LanzaderaFacadeAuth(
-            self._use_cases, self._clock, _session_repo, _jwt_signer, password_hasher
+            self._use_cases,
+            self._clock,
+            _session_repo,
+            _jwt_signer,
+            password_hasher,
         )
         self._facade_users = LanzaderaFacadeUsers(
             self._use_cases, self._clock, user_repo, global_admin_repo, audit

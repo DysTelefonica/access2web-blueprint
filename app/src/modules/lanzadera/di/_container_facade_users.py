@@ -12,11 +12,11 @@ from typing import TYPE_CHECKING, Any, cast
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from app.src.modules.lanzadera.domain.audit_log import AuditLog
-    from app.src.modules.lanzadera.domain.ports.user_repository import UserRepository
+    from app.src.modules.lanzadera.domain.ports import UserRepository
     from app.src.modules.lanzadera.domain.user import User
 
-# Runtime import for GlobalAdminRepositoryPort (used in cast() at runtime).
+# Runtime imports for ports used in cast() at runtime.
+from app.src.modules.lanzadera.domain.ports import AuditLog
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
     GlobalAdminRepositoryPort,
 )
@@ -54,7 +54,7 @@ class LanzaderaFacadeUsers:
         national_id: str,
         actor_id: UUID | None = None,
     ) -> User:
-        return await self._use_cases["create_user"](
+        return await self._use_cases["create_user"](  # type: ignore[no-any-return]
             email=email,
             name=name,
             national_id=national_id,
@@ -102,7 +102,7 @@ class LanzaderaFacadeUsers:
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[Sequence[User], int]:
-        return await self._user_repo.list_all_paginated(limit=limit, offset=offset)  # type: ignore[return-value,attr-defined]
+        return await self._user_repo.list_all_paginated(limit=limit, offset=offset)  # type: ignore[no-any-return]
 
     # -- user port accessors --------------------------------------------------
 

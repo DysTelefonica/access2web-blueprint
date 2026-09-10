@@ -13,12 +13,14 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from app.src.modules.lanzadera.domain.app import App
-    from app.src.modules.lanzadera.domain.audit_log import AuditLog
     from app.src.modules.lanzadera.domain.ports.app_repository import AppRepositoryPort
     from app.src.modules.lanzadera.domain.ports.assignment_repository import (
         AssignmentRepositoryPort,
     )
     from app.src.modules.lanzadera.domain.ports.presence_repository import PresenceRepository
+
+# Runtime import for AuditLog (avoids mypy import-not-found in TYPE_CHECKING).
+from app.src.modules.lanzadera.domain.ports import AuditLog
 
 
 class LanzaderaFacadeApps:
@@ -87,7 +89,7 @@ class LanzaderaFacadeApps:
         *,
         actor_id: UUID | None = None,
     ) -> int:
-        return await self._use_cases["bootstrap_global_admins"](
+        return await self._use_cases["bootstrap_global_admins"](  # type: ignore[no-any-return]
             actor_id=actor_id,
             now=self._clock(),
         )
@@ -103,7 +105,7 @@ class LanzaderaFacadeApps:
         correlation_id: UUID | None = None,
         module: str = "lanzadera",
     ) -> AuditLog:
-        return await self._use_cases["audit_append"](
+        return await self._use_cases["audit_append"](  # type: ignore[no-any-return]
             event_type=event_type,
             actor_id=actor_id,
             target_id=target_id,
