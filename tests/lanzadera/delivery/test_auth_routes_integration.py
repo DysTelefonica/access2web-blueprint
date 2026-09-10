@@ -656,9 +656,13 @@ def _seed_assignment(
 
 
 # Needed for the new seed helpers.
-from app.src.modules.lanzadera.domain.app import App, AppRegistrationStatus, AppTopology
-from app.src.modules.lanzadera.domain.assignment import Assignment
-from app.src.modules.lanzadera.domain.profile import Profile
+from app.src.modules.lanzadera.domain.app import (  # noqa: E402
+    App,
+    AppRegistrationStatus,
+    AppTopology,
+)
+from app.src.modules.lanzadera.domain.assignment import Assignment  # noqa: E402
+from app.src.modules.lanzadera.domain.profile import Profile  # noqa: E402
 
 
 def test_DEBUG_print_routes(auth_client: TestClient) -> None:
@@ -671,6 +675,7 @@ def test_DEBUG_print_routes(auth_client: TestClient) -> None:
 def test_DEBUG_source_contains_my_apps(auth_client: TestClient) -> None:
     """Debug: check if the auth_routes source contains my_apps."""
     import inspect
+
     from app.src.modules.lanzadera.delivery.http import auth_routes
 
     src = inspect.getsource(auth_routes.register_auth_routes)
@@ -681,8 +686,9 @@ def test_DEBUG_source_contains_my_apps(auth_client: TestClient) -> None:
 
 def test_DEBUG_call_register(auth_client: TestClient, fake_fixtures: FakeFixtures) -> None:
     """Debug: call register_auth_routes and print routes."""
-    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
     from fastapi import APIRouter
+
+    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
 
     router2 = APIRouter()
     register_auth_routes(router2, container=auth_client.app.state.container)
@@ -693,13 +699,15 @@ def test_DEBUG_call_register(auth_client: TestClient, fake_fixtures: FakeFixture
 
 def test_DEBUG_patch_then_register(auth_client: TestClient) -> None:
     """Debug: re-patch and re-register to see routes."""
-    from app.src.modules.lanzadera.delivery.http import auth_routes as _ar
     from fastapi import Request
+
+    from app.src.modules.lanzadera.delivery.http import auth_routes as _ar
 
     _ar.Request = Request  # type: ignore[attr-defined]
 
-    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
     from fastapi import APIRouter
+
+    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
 
     router3 = APIRouter()
     container = auth_client.app.state.container
@@ -717,12 +725,14 @@ def test_DEBUG_patch_then_register(auth_client: TestClient) -> None:
 def test_DEBUG_reload_and_register(auth_client: TestClient) -> None:
     """Debug: reload the module and check routes."""
     import importlib
+
     from app.src.modules.lanzadera.delivery.http import auth_routes
 
     importlib.reload(auth_routes)
 
-    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
     from fastapi import APIRouter
+
+    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
 
     router4 = APIRouter()
     container = auth_client.app.state.container
@@ -734,8 +744,9 @@ def test_DEBUG_reload_and_register(auth_client: TestClient) -> None:
 
 def test_DEBUG_source_vs_bytecode(auth_client: TestClient) -> None:
     """Debug: compare inspect.getsource with actual execution."""
-    import inspect
     import dis
+    import inspect
+
     from app.src.modules.lanzadera.delivery.http import auth_routes
 
     src = inspect.getsource(auth_routes.register_auth_routes)
@@ -760,6 +771,7 @@ def test_DEBUG_source_vs_bytecode(auth_client: TestClient) -> None:
 def test_DEBUG_raw_source(auth_client: TestClient) -> None:
     """Debug: print raw source of register_auth_routes."""
     import inspect
+
     from app.src.modules.lanzadera.delivery.http import auth_routes
 
     src = inspect.getsource(auth_routes.register_auth_routes)
@@ -769,13 +781,14 @@ def test_DEBUG_raw_source(auth_client: TestClient) -> None:
     print(f"Contains /auth/me/apps: {'/auth/me/apps' in src}")
 
     # Print the last 1000 chars
-    print(f"\nLast 1000 chars of source:")
+    print("\nLast 1000 chars of source:")
     print(src[-1000:])
 
 
 def test_DEBUG_file_mtime(auth_client: TestClient) -> None:
     """Debug: check file modification times."""
     import os
+
     from app.src.modules.lanzadera.delivery.http import auth_routes
 
     py_file = auth_routes.__file__
