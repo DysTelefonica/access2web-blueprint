@@ -476,3 +476,304 @@ def test_require_global_admin_returns_503_without_container(
         response = test_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 503
+
+
+# ---------------------------------------------------------------------------
+# GET /auth/me/apps — Issue #585
+# ---------------------------------------------------------------------------
+
+
+def test_my_apps_returns_401_without_token(auth_client: TestClient) -> None:
+    """Missing Authorization header → 401."""
+    response = auth_client.get("/auth/me/apps")
+    assert response.status_code == 401
+
+
+def test_my_apps_returns_empty_list_when_no_assignments(
+    auth_client: TestClient, fake_fixtures: FakeFixtures
+) -> None:
+    """User with no assignments gets an empty apps list."""
+    user = _seed_active_user(fake_fixtures)
+    session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=session.id)
+
+    response = auth_client.get("/auth/me/apps", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 200
+    assert response.json()["apps"] == []
+
+
+def test_my_apps_returns_apps_with_profiles_and_capabilities(
+    auth_client: TestClient, fake_fixtures: FakeFixtures
+) -> None:
+    """User with one assignment gets the app + profile + capabilities."""
+    user = _seed_active_user(fake_fixtures)
+    session = _seed_session(fake_fixtures, user_id=user.id)
+    # JWT sub must be user.id so that get_my_apps finds the assignment
+    token = _mint_jwt(sub=user.id)
+
+    app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
+    profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
+    _seed_assignment(fake_fixtures, user_id=user.id, app_id=3, profile_id=profile.id)
+
+    response = auth_client.get("/auth/me/apps", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["user_id"] == str(user.id)
+    assert len(body["apps"]) == 1
+    assert body["apps"][0]["app_id"] == 3
+    assert body["apps"][0]["app_name"] == "Expedientes"
+    assert body["apps"][0]["profile_code"] == "ADMIN"
+    assert "Calidad" in body["apps"][0]["capabilities"]
+
+
+# ---------------------------------------------------------------------------
+# GET /auth/me/apps/{app_id}/capabilities — Issue #585
+# ---------------------------------------------------------------------------
+
+
+def test_my_capabilities_returns_401_without_token(auth_client: TestClient) -> None:
+    """Missing Authorization header → 401."""
+    response = auth_client.get("/auth/me/apps/1/capabilities")
+    assert response.status_code == 401
+
+
+def test_my_capabilities_returns_empty_for_unassigned_app(
+    auth_client: TestClient, fake_fixtures: FakeFixtures
+) -> None:
+    """User not assigned to app → empty capabilities list."""
+    user = _seed_active_user(fake_fixtures)
+    session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=session.id)
+
+    response = auth_client.get(
+        "/auth/me/apps/99/capabilities", headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == 200
+    assert response.json()["capabilities"] == []
+
+
+def test_my_capabilities_returns_profile_keys(
+    auth_client: TestClient, fake_fixtures: FakeFixtures
+) -> None:
+    """User assigned to app → returns the profile's capability names."""
+    user = _seed_active_user(fake_fixtures)
+    session = _seed_session(fake_fixtures, user_id=user.id)
+    # JWT sub must be user.id so effective_permissions finds the assignment
+    token = _mint_jwt(sub=user.id)
+
+    _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
+    profile = _seed_profile(
+        fake_fixtures, app_id=7, code="CALIDAD", capabilities={"Calidad": True, "write": True}
+    )
+    _seed_assignment(fake_fixtures, user_id=user.id, app_id=7, profile_id=profile.id)
+
+    response = auth_client.get(
+        "/auth/me/apps/7/capabilities", headers={"Authorization": f"Bearer {token}"}
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["user_id"] == str(user.id)
+    assert body["app_id"] == 7
+    caps = body["capabilities"]
+    assert "Calidad" in caps
+    assert "write" in caps
+
+
+# ---------------------------------------------------------------------------
+# Additional seed helpers
+# ---------------------------------------------------------------------------
+
+
+def _seed_app(fake_fixtures: FakeFixtures, id: int, name: str, short_code: str) -> None:
+    fake_fixtures.apps.add(
+        App(
+            id=id,
+            name=name,
+            short_code=short_code,
+            deployment_topology=AppTopology.CENTRAL,
+            requires_office_presence=False,
+            registration_status=AppRegistrationStatus.ACTIVE,
+            created_at=datetime(2026, 1, 1, tzinfo=UTC),
+            updated_at=datetime(2026, 1, 1, tzinfo=UTC),
+        )
+    )
+
+
+def _seed_profile(
+    fake_fixtures: FakeFixtures,
+    app_id: int,
+    code: str,
+    capabilities: dict[str, bool],
+) -> Profile:
+    profile = Profile(
+        id=uuid4(),
+        app_id=app_id,
+        code=code,
+        name=code,
+        capabilities=capabilities,
+        active=True,
+        created_at=datetime(2026, 1, 1, tzinfo=UTC),
+        updated_at=datetime(2026, 1, 1, tzinfo=UTC),
+    )
+    fake_fixtures.profiles.add(profile)
+    return profile
+
+
+def _seed_assignment(
+    fake_fixtures: FakeFixtures,
+    user_id: UUID,
+    app_id: int,
+    profile_id: UUID,
+) -> None:
+    fake_fixtures.assignments.add(
+        Assignment(
+            id=uuid4(),
+            user_id=user_id,
+            app_id=app_id,
+            profile_id=profile_id,
+            granted_by=None,
+            granted_at=datetime(2026, 1, 1, tzinfo=UTC),
+            revoked_at=None,
+        )
+    )
+
+
+# Needed for the new seed helpers.
+from app.src.modules.lanzadera.domain.app import App, AppRegistrationStatus, AppTopology
+from app.src.modules.lanzadera.domain.assignment import Assignment
+from app.src.modules.lanzadera.domain.profile import Profile
+
+
+def test_DEBUG_print_routes(auth_client: TestClient) -> None:
+    """Debug: print registered routes."""
+    print("\nRegistered routes:")
+    for route in auth_client.app.routes:
+        print(f"  {route.path}")
+
+
+def test_DEBUG_source_contains_my_apps(auth_client: TestClient) -> None:
+    """Debug: check if the auth_routes source contains my_apps."""
+    import inspect
+    from app.src.modules.lanzadera.delivery.http import auth_routes
+    src = inspect.getsource(auth_routes.register_auth_routes)
+    print(f"\nmy_apps in source: {'my_apps' in src}")
+    print(f"my_capabilities in source: {'my_capabilities' in src}")
+    print(f"last 200 chars: {repr(src[-200:])}")
+
+
+def test_DEBUG_call_register(auth_client: TestClient, fake_fixtures: FakeFixtures) -> None:
+    """Debug: call register_auth_routes and print routes."""
+    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
+    from fastapi import APIRouter
+    
+    router2 = APIRouter()
+    register_auth_routes(router2, container=auth_client.app.state.container)
+    print("\nRoutes from register_auth_routes:")
+    for route in router2.routes:
+        print(f"  {route.path}")
+
+
+def test_DEBUG_patch_then_register(auth_client: TestClient) -> None:
+    """Debug: re-patch and re-register to see routes."""
+    from app.src.modules.lanzadera.delivery.http import auth_routes as _ar
+    from fastapi import Request
+    _ar.Request = Request  # type: ignore[attr-defined]
+    
+    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
+    from fastapi import APIRouter
+    
+    router3 = APIRouter()
+    container = auth_client.app.state.container
+    register_auth_routes(router3, container=container)
+    print("\nRoutes from re-registered router:")
+    for route in router3.routes:
+        print(f"  {route.path}")
+    
+    # Also check the _build_app function's router
+    print("\nRoutes from auth_client.app:")
+    for route in auth_client.app.routes:
+        print(f"  {route.path}")
+
+
+def test_DEBUG_reload_and_register(auth_client: TestClient) -> None:
+    """Debug: reload the module and check routes."""
+    import importlib
+    from app.src.modules.lanzadera.delivery.http import auth_routes
+    
+    importlib.reload(auth_routes)
+    
+    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
+    from fastapi import APIRouter
+    
+    router4 = APIRouter()
+    container = auth_client.app.state.container
+    register_auth_routes(router4, container=container)
+    print("\nRoutes from reload:")
+    for route in router4.routes:
+        print(f"  {route.path}")
+
+
+def test_DEBUG_source_vs_bytecode(auth_client: TestClient) -> None:
+    """Debug: compare inspect.getsource with actual execution."""
+    import inspect
+    import dis
+    from app.src.modules.lanzadera.delivery.http import auth_routes
+    
+    src = inspect.getsource(auth_routes.register_auth_routes)
+    
+    # Count @router.get occurrences in source
+    count = src.count('@router.get')
+    print(f"\n@router.get occurrences in source: {count}")
+    
+    # Also check what bytecode says
+    co = auth_routes.register_auth_routes.__code__
+    print(f"Bytecode argcount: {co.co_argcount}")
+    print(f"Bytecode nlocals: {co.co_nlocals}")
+    
+    # Print the first few bytecode instructions
+    print("\nFirst 30 bytecode instructions:")
+    for i, instr in enumerate(dis.get_instructions(auth_routes.register_auth_routes)):
+        if i >= 30:
+            break
+        print(f"  {instr.offset:4d} {instr.opname:20s} {instr.argrepr}")
+
+
+def test_DEBUG_raw_source(auth_client: TestClient) -> None:
+    """Debug: print raw source of register_auth_routes."""
+    import inspect
+    from app.src.modules.lanzadera.delivery.http import auth_routes
+    
+    src = inspect.getsource(auth_routes.register_auth_routes)
+    print(f"\nTotal source length: {len(src)}")
+    print(f"Contains my_apps: {'my_apps' in src}")
+    print(f"Contains my_capabilities: {'my_capabilities' in src}")
+    print(f"Contains /auth/me/apps: {'/auth/me/apps' in src}")
+    
+    # Print the last 1000 chars
+    print(f"\nLast 1000 chars of source:")
+    print(src[-1000:])
+
+
+def test_DEBUG_file_mtime(auth_client: TestClient) -> None:
+    """Debug: check file modification times."""
+    import os
+    import importlib
+    from app.src.modules.lanzadera.delivery.http import auth_routes
+    
+    py_file = auth_routes.__file__
+    py_stat = os.stat(py_file)
+    print(f"\n.py file mtime: {py_stat.st_mtime}")
+    
+    # Check if there's a .pyc
+    import marshal
+    pyc_file = py_file + 'c'
+    if os.path.exists(pyc_file):
+        pyc_stat = os.stat(pyc_file)
+        print(f".pyc file mtime: {pyc_stat.st_mtime}")
+        print(f".pyc older than .py: {pyc_stat.st_mtime < py_stat.st_mtime}")
+    else:
+        print("No .pyc file found")

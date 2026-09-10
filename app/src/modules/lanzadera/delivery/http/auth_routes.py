@@ -174,5 +174,67 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
             )
         return {"user_id": str(user_id)}
 
+    @router.get("/auth/me/apps", status_code=status.HTTP_200_OK, tags=["auth"])
+    async def my_apps_route(req: Request) -> dict[str, object]:
+        """Return every app the authenticated user is assigned to, with profile and capabilities.
+
+        Each entry carries ``app_id``, ``app_name``, ``app_short_code``,
+        ``profile_code``, ``profile_name``, and ``capabilities`` (sorted list
+        of capability names from the profile's JSONB map).
+
+        Returns 401 if no token is present. Returns an empty ``apps`` list
+        when the user has no live assignments.
+        """
+        user_id = getattr(req.state, "user_id", None)
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="authentication required",
+            )
+        use_cases = container.use_cases
+        apps = await use_cases["get_my_apps"](user_id=user_id)
+        return {
+            "user_id": str(user_id),
+            "apps": [
+                {
+                    "app_id": a.app_id,
+                    "app_name": a.app_name,
+                    "app_short_code": a.app_short_code,
+                    "profile_code": a.profile_code,
+                    "profile_name": a.profile_name,
+                    "capabilities": list(a.capabilities),
+                }
+                for a in apps
+            ],
+        }
+
+    @router.get(
+        "/auth/me/apps/{app_id}/capabilities",
+        status_code=status.HTTP_200_OK,
+        tags=["auth"],
+    )
+    async def my_capabilities_route(
+        req: Request,
+        app_id: int,
+    ) -> dict[str, object]:
+        """Return the capability names for the authenticated user on ``app_id``.
+
+        Returns 401 if no token is present. Returns 200 with an empty
+        ``capabilities`` list when the user has no live assignment for the app.
+        """
+        user_id = getattr(req.state, "user_id", None)
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="authentication required",
+            )
+        use_cases = container.use_cases
+        caps = await use_cases["get_my_capabilities_for_app"](user_id=user_id, app_id=app_id)
+        return {
+            "user_id": str(user_id),
+            "app_id": app_id,
+            "capabilities": list(caps),
+        }
+
 
 __all__ = ["register_auth_routes"]

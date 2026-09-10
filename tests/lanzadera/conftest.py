@@ -91,14 +91,19 @@ def fake_fixtures() -> FakeFixtures:
     test's mutations never leak into the next. The container fixture
     below reads from this bag, so any mutation the test performs on a
     fake is what the use case / HTTP route sees.
+
+    ``assignments`` is wired with ``profiles`` so ``effective_permissions``
+    (used by ``GET /auth/me/apps/{app_id}/capabilities``) can join
+    assignments - profiles - capabilities in tests.
     """
+    profiles = FakeProfileRepository()
     return FakeFixtures(
         users=FakeUserRepository(),
         apps=FakeAppRepository(),
-        assignments=FakeAssignmentRepository(),
+        assignments=FakeAssignmentRepository().with_profiles(profiles),
         global_admins=FakeGlobalAdminRepository(),
         reset_tokens=FakeResetTokenRepository(),
-        profiles=FakeProfileRepository(),
+        profiles=profiles,
         audit=FakeAuditLog(),
         secrets=FakeSecretManager(),
         hasher=FakePasswordHasher(),
