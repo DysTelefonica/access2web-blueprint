@@ -40,7 +40,7 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.reset_token_rep
 from app.src.modules.lanzadera.adapters.persistence.repositories.user_repository_pg import (
     UserRepositoryPg,
 )
-from app.src.modules.lanzadera.domain.ports import AuditLog
+from app.src.modules.lanzadera.domain.ports import AuditLog, UserRepository
 from app.src.modules.lanzadera.domain.ports.app_repository import AppRepositoryPort
 from app.src.modules.lanzadera.domain.ports.assignment_repository import (
     AssignmentRepositoryPort,
@@ -50,8 +50,6 @@ from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
 )
 from app.src.modules.lanzadera.domain.ports.presence_repository import PresenceRepository
 from app.src.modules.lanzadera.domain.ports.profile_repository import ProfileRepositoryPort
-from app.src.modules.lanzadera.domain.ports import UserRepository
-
 
 if TYPE_CHECKING:
     from app.src.modules.lanzadera.di._container_auth import AuthPorts

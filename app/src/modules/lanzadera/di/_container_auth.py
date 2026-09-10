@@ -20,7 +20,6 @@ from app.src.modules.lanzadera.domain.ports.password_hasher import PasswordHashe
 from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
 from app.src.modules.lanzadera.domain.ports.session_repository import SessionRepository
 
-
 if TYPE_CHECKING:
     from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
         AsyncSessionFactoryPort,

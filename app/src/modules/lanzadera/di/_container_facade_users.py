@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from app.src.modules.lanzadera.domain.audit_log import AuditLog
-    from app.src.modules.lanzadera.domain.user import User
     from app.src.modules.lanzadera.domain.ports.user_repository import UserRepository
+    from app.src.modules.lanzadera.domain.user import User
 
 # Runtime import for GlobalAdminRepositoryPort (used in cast() at runtime).
 from app.src.modules.lanzadera.domain.ports.global_admin_repository import (
