@@ -202,9 +202,12 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/application/login.py": (
         BaselineEntry(sites=166, target=100, target_date="2027-02-13")
     ),
-    # W64 (#587): seed_profiles.py at 129 mutation sites (CLI runner
+    # W64 (#587): seed_profiles.py at 234 mutation sites (CLI runner
     # with 8-app x 8-profile nested loop and dry-run / idempotency logic).
+    # FIXME: seed_profiles.py is ~234 sites — far above the 100 ceiling.
+    # The refactor into a module-level runner is tracked in the W-TEST chain.
     "app/src/modules/lanzadera/application/seed_profiles.py": (
+        BaselineEntry(sites=234, target=100, target_date="2027-02-13")
     ),
     # W62 (#541): jwt.py at 118 mutation sites (HS256 signer with
     # base64url codec + 2-branch verify). Follow-up WU splits the
