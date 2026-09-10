@@ -1,5 +1,7 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp W60
 # W60 (#522) — admin HTTP routes for the real-time presence slice.
+# Issue #577 — list_connected / presence_stream now call
+# require_global_admin; heartbeat is intentionally left ungated.
 """Admin HTTP route handlers for the W60 (#522) real-time presence slice.
 
 Three ``/admin/presence/...`` endpoints:
@@ -8,12 +10,18 @@ Three ``/admin/presence/...`` endpoints:
   user. The X-User-ID header stands in for ``request.state.user_id``
   until the auth middleware ships with W62; the W60 contract pins the
   behaviour behind that header so the slice is exercisable end-to-end
-  before the real auth wiring lands.
+  before the real auth wiring lands. Out of scope for issue #577: it
+  only ever reports the caller's own presence, never another user's.
 - ``GET /admin/presence`` — one-shot JSON snapshot of the currently
-  connected set.
+  connected set. Gated by ``require_global_admin`` (issue #577): it
+  lists every connected user's ``user_id`` / ``email`` / timestamps,
+  which is not the caller's own data to read without an admin session.
 - ``GET /admin/presence/stream`` — Server-Sent Events emitter that polls
   the connected set every 5 seconds and re-broadcasts it as
-  ``data: <json>\\n\\n``.
+  ``data: <json>\\n\\n``. Gated by ``require_global_admin`` (issue #577)
+  for the same reason as the one-shot snapshot above; the gate runs
+  before ``event_generator`` is created, so an unauthenticated caller
+  never opens the stream.
 
 The router is mounted directly in ``app/src/main.py`` (W60 ships its
 own ``/admin`` prefix), unlike the rest of the admin routes which
@@ -35,6 +43,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
+from app.src.modules.lanzadera.delivery.http import admin as _admin
 from app.src.modules.lanzadera.domain.presence import ConnectedUser
 
 router = APIRouter()
@@ -116,6 +125,7 @@ async def list_connected(request: Request, limit: int = 100) -> list[dict[str, o
     array via ``_serialise_user``; consumers that need a strict
     envelope can wrap the array themselves.
     """
+    await _admin.require_global_admin(request)
     container = _container(request)
     use_cases = container.use_cases  # type: ignore[attr-defined]
     users = await use_cases["get_connected_users"](limit=limit)
@@ -139,6 +149,7 @@ async def presence_stream(request: Request) -> StreamingResponse:
     ``Content-Type`` header — the live behaviour lives behind a runtime
     load test (out of scope for W60).
     """
+    await _admin.require_global_admin(request)
     container = _container(request)
     use_cases = container.use_cases  # type: ignore[attr-defined]
 
