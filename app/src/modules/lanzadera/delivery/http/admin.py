@@ -76,22 +76,22 @@ async def require_global_admin(request: Request) -> None:
 
 async def require_capability(
     request: Request,
-    *,
     capability: str,
+    app_id: int,
 ) -> None:
-    """Verify the caller holds ``capability`` for the app on ``request.app.state.app_id``.
+    """Verify the caller holds ``capability`` for ``app_id``.
 
     Usage in a route::
 
-        from fastapi import Depends
         from app.src.modules.lanzadera.delivery.http.admin import require_capability
 
-        @router.get("/apps/{app_id}/records",
-                    dependencies=[Depends(require_capability(capability="write"))])
-        async def list_records(request: Request) -> ...:
+        @router.get("/apps/{app_id}/records")
+        async def list_records(request: Request, app_id: int) -> ...:
+            await require_capability(request, capability="write", app_id=app_id)
+            ...
 
-    The admin router sets ``request.app.state.app_id`` on each mounted
-    sub-router so the capability gate knows which app the caller operates on.
+    The ``app_id`` comes from the path parameter so each route explicitly
+    declares which app it operates on.
 
     Raises HTTP 401 when no token is present. Raises HTTP 403 when the
     caller does not hold ``capability`` for the target app. Raises HTTP 503
@@ -109,13 +109,6 @@ async def require_capability(
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="container not available",
-        )
-
-    app_id = getattr(request.app.state, "app_id", None)
-    if app_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="app_id not set on request state",
         )
 
     caps = await container.use_cases["get_my_capabilities_for_app"](

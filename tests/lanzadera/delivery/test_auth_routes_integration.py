@@ -800,10 +800,6 @@ def cap_client(fake_fixtures: FakeFixtures) -> Iterator[TestClient]:
     from app.src.modules.lanzadera.delivery.http.admin import require_capability
 
     _patch_auth_routes_request_type()
-    # Also patch admin module's Request so the route handler resolves it
-    import app.src.modules.lanzadera.delivery.http.admin as _admin_mod
-    from fastapi import Request as _FastAPIRequest
-    _admin_mod.Request = _FastAPIRequest  # type: ignore[attr-defined]
 
     local_container = _build_container(fake_fixtures)
 
@@ -821,8 +817,7 @@ def cap_client(fake_fixtures: FakeFixtures) -> Iterator[TestClient]:
 
     @app.get("/apps/{app_id}/records")
     async def gated_route(request: Request, app_id: int) -> dict[str, object]:
-        request.app.state.app_id = app_id
-        await require_capability(request, capability="Calidad")
+        await require_capability(request, capability="Calidad", app_id=app_id)
         return {"app_id": app_id, "ok": True}
 
     with TestClient(app) as client:
