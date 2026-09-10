@@ -1,12 +1,19 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp
+# Issue #578 — list_audit now calls require_global_admin; it never did.
 """Admin HTTP route handlers for apps, assignments, and audit (DL2, issue #55).
 
 Four ``/admin/...`` endpoints wired to the ``LanzaderaContainer``:
 
 - ``GET    /admin/apps``          — list apps
-- ``POST   /admin/apps/{id}/activate`` — activate app
-- ``POST   /admin/assignments``  — create assignment (container.assign_profile use case)
-- ``GET    /admin/audit``         — list audit log (container.audit_repo)
+- ``POST   /admin/apps/{id}/activate`` — activate app (gated)
+- ``POST   /admin/assignments``  — create assignment (container.assign_profile use case, gated)
+- ``GET    /admin/audit``         — list audit log (container.audit_repo, gated — issue #578)
+
+``activate_app`` and ``create_assignment`` already called
+``require_global_admin`` as their first statement; ``list_audit`` did
+not, letting any unauthenticated caller read the complete audit trail
+(event type, actor, target) for every module. Issue #578 adds the same
+call to ``list_audit``, copying the pattern from its siblings above.
 
 W47 (#494) split these out of ``admin.py``; W58 (#515) wired them to the
 ``LanzaderaContainer`` instead of calling repositories directly in some cases.
@@ -72,6 +79,7 @@ def register_misc_routes(
 
     @router.get("/audit", response_class=HTMLResponse)
     async def list_audit(request: Request) -> HTMLResponse:
+        await _admin.require_global_admin(request)
         events = await container.audit_repo.list_recent()
         return templates.TemplateResponse(request, "admin/audit.html", {"events": list(events)})
 
