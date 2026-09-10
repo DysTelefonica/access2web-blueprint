@@ -178,8 +178,9 @@ BASELINE: dict[str, BaselineEntry] = {
     # / container_apps.py / a thin re-exporter) is responsible for
     # bringing the per-file count below 100 before the BASELINE expires
     # on 2027-02-13.
+    # W64 (#585): container.py is now at 197 sites after DI re-wiring.
     "app/src/modules/lanzadera/di/container.py": (
-        BaselineEntry(sites=199, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=197, target=100, target_date="2027-02-13")
     ),
     # W61 (#524): app_repository_pg.py is at 145 sites because it now
     # implements 5 methods (get_by_id, list_active, list_visible_to, create,
@@ -190,7 +191,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # W61 (#524): admin_routes_apps.py is at 151 sites because it implements
     # 4 REST endpoints (create, get, update, disable) with validation helpers.
     "app/src/modules/lanzadera/delivery/http/admin_routes_apps.py": (
-        BaselineEntry(sites=151, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=149, target=100, target_date="2027-02-13")
     ),
     # W62 (#539): login.py landed at 165 mutation sites because the
     # single function unpacks 5 dependency ports, builds the Session
@@ -200,6 +201,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # expires on 2027-02-13.
     "app/src/modules/lanzadera/application/login.py": (
         BaselineEntry(sites=166, target=100, target_date="2027-02-13")
+    ),
+    # W64 (#587): seed_profiles.py at 129 mutation sites (CLI runner
+    # with 8-app x 8-profile nested loop and dry-run / idempotency logic).
+    "app/src/modules/lanzadera/application/seed_profiles.py": (
+        BaselineEntry(sites=129, target=100, target_date="2027-02-13")
     ),
     # W62 (#541): jwt.py at 118 mutation sites (HS256 signer with
     # base64url codec + 2-branch verify). Follow-up WU splits the
@@ -214,7 +220,16 @@ BASELINE: dict[str, BaselineEntry] = {
     # mapping into a helper module to bring it below 100 before the
     # BASELINE expires on 2027-02-13.
     "app/src/modules/lanzadera/delivery/http/auth_routes.py": (
-        BaselineEntry(sites=112, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=179, target=100, target_date="2027-02-13")
+    ),
+    # W64 (#585): use_cases.py grew to 101 sites after wiring new use cases.
+    "app/src/modules/lanzadera/di/use_cases.py": (
+        BaselineEntry(sites=101, target=100, target_date="2027-02-13")
+    ),
+    # W64 (#585): assignment_repository_pg.py at 102 mutation sites
+    # (6 methods with session context manager each).
+    "app/src/modules/lanzadera/adapters/persistence/repositories/assignment_repository_pg.py": (
+        BaselineEntry(sites=102, target=100, target_date="2027-02-13")
     ),
 }
 

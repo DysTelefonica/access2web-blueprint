@@ -39,6 +39,10 @@ from app.src.modules.lanzadera.application.disable_user import disable_user
 from app.src.modules.lanzadera.application.get_connected_users import (
     get_connected_users,
 )
+from app.src.modules.lanzadera.application.get_my_apps import (
+    get_my_apps,
+    get_my_capabilities_for_app,
+)
 from app.src.modules.lanzadera.application.grant_global_admin import (
     grant_global_admin,
 )
@@ -57,6 +61,9 @@ from app.src.modules.lanzadera.application.login import (
 # W62 (#540): logout use case — inverse of login. Sits next to it
 # alphabetically (the dup-break baseline groups consecutive imports).
 from app.src.modules.lanzadera.application.logout import logout
+from app.src.modules.lanzadera.application.revoke_assignment import (
+    revoke_assignment,
+)
 from app.src.modules.lanzadera.application.revoke_global_admin import (
     revoke_global_admin,
 )
@@ -151,9 +158,24 @@ def build_use_case_factories(
             assignments=assignment_repo,
             audit=audit,
         ),
+        "revoke_assignment": functools.partial(
+            revoke_assignment,
+            assignments=assignment_repo,
+            audit=audit,
+        ),
         "list_effective_apps": functools.partial(
             list_effective_apps,
             apps=app_repo,
+            assignments=assignment_repo,
+        ),
+        "get_my_apps": functools.partial(
+            get_my_apps,
+            assignments=assignment_repo,
+            apps=app_repo,
+            profiles=profile_repo,
+        ),
+        "get_my_capabilities_for_app": functools.partial(
+            get_my_capabilities_for_app,
             assignments=assignment_repo,
         ),
         # W61 (#524): app CRUD slice — the three new partials share

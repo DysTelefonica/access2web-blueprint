@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     pass
 
 
-__all__ = ["require_global_admin"]
+__all__ = ["require_global_admin", "require_capability"]
 
 
 async def require_global_admin(request: Request) -> None:
@@ -71,4 +71,49 @@ async def require_global_admin(request: Request) -> None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="admin privileges required",
+        )
+
+
+async def require_capability(
+    request: Request,
+    capability: str,
+    app_id: int,
+) -> None:
+    """Verify the caller holds ``capability`` for ``app_id``.
+
+    Usage in a route::
+
+        from app.src.modules.lanzadera.delivery.http.admin import require_capability
+
+        @router.get("/apps/{app_id}/records")
+        async def list_records(request: Request, app_id: int) -> ...:
+            await require_capability(request, capability="write", app_id=app_id)
+            ...
+
+    The ``app_id`` comes from the path parameter so each route explicitly
+    declares which app it operates on.
+
+    Raises HTTP 401 when no token is present. Raises HTTP 403 when the
+    caller does not hold ``capability`` for the target app. Raises HTTP 503
+    when the container is not available.
+    """
+    user_id = getattr(request.state, "user_id", None)
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="authentication required",
+        )
+
+    container = getattr(request.app.state, "container", None)
+    if container is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="container not available",
+        )
+
+    caps = await container.use_cases["get_my_capabilities_for_app"](user_id=user_id, app_id=app_id)
+    if capability not in caps:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"capability '{capability}' required",
         )

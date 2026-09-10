@@ -319,10 +319,24 @@ class FakeAssignmentRepository:
     issued exactly one INSERT (DA-12 + H11: ``SinAcceso`` exclusivity
     is enforced at the application layer; the fake matches the
     lenient path used by the admin route tests).
+
+    For ``effective_permissions`` the fake uses an injected
+    ``FakeProfileRepository`` (set via ``with_profiles``) so tests
+    can verify the join through assignments - profiles - capabilities.
+    When no profile repo is injected, ``effective_permissions`` returns
+    an empty list (the ``get_my_apps`` tests inject one).
     """
 
     by_id: dict[UUID, Assignment] = field(default_factory=dict)
     create_calls: list[tuple[UUID, int, UUID]] = field(default_factory=list)
+    effective_permissions_calls: list[tuple[UUID, int]] = field(default_factory=list)
+    revoke_calls: list[tuple[UUID, int]] = field(default_factory=list)
+    _profile_repo: Any = None
+
+    def with_profiles(self, profile_repo: FakeProfileRepository) -> FakeAssignmentRepository:
+        """Inject a ``FakeProfileRepository`` so ``effective_permissions`` can join."""
+        self._profile_repo = profile_repo
+        return self
 
     def add(self, assignment: Assignment) -> None:
         self.by_id[assignment.id] = assignment
@@ -350,7 +364,24 @@ class FakeAssignmentRepository:
         return [a for a in self.by_id.values() if a.app_id == app_id and a.revoked_at is None]
 
     async def effective_permissions(self, user_id: UUID, app_id: int) -> Sequence[str]:
-        return []
+        self.effective_permissions_calls.append((user_id, app_id))
+        if self._profile_repo is None:
+            return []
+        caps: set[str] = set()
+        for a in self.by_id.values():
+            if a.user_id == user_id and a.app_id == app_id and a.revoked_at is None:
+                profile = await self._profile_repo.get_by_id(a.profile_id)
+                if profile is not None and profile.active:
+                    caps.update(profile.capabilities.keys())
+        return sorted(caps)
+
+        async def revoke(self, user_id: UUID, app_id: int, *, now: datetime) -> Assignment | None:
+            self.revoke_calls.append((user_id, app_id))
+            for a in self.by_id.values():
+                if a.user_id == user_id and a.app_id == app_id and a.revoked_at is None:
+                    a.revoked_at = now
+                    return a
+            return None
 
 
 # ---------------------------------------------------------------------------
