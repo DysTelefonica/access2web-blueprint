@@ -393,24 +393,34 @@ def test_me_returns_401_without_token(auth_client: TestClient) -> None:
     assert response.status_code == 401
 
 
-def test_me_returns_user_id_with_valid_token(
+def test_me_returns_enriched_identity(
     auth_client: TestClient, fake_fixtures: FakeFixtures
 ) -> None:
-    """Valid Bearer → 200 + body ``{"user_id": "<session_id>"}``.
+    """Valid Bearer → 200 + user identity + assigned apps.
 
-    The middleware stores ``session_id`` (the JWT ``sub``) into
-    ``request.state.user_id`` because the W62 PR-5 contract treats the
-    session id as the principal identifier (one active session per
-    browser tab; the user is implied by the session row).
+    The JWT ``sub`` must be ``user.id`` so that ``get_my_apps`` finds
+    the seeded assignments (the middleware puts ``sub`` into
+    ``request.state.user_id``).
     """
     user = _seed_active_user(fake_fixtures)
     session = _seed_session(fake_fixtures, user_id=user.id)
-    token = _mint_jwt(sub=session.id)
+    token = _mint_jwt(sub=user.id)
+
+    app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
+    profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
+    _seed_assignment(fake_fixtures, user_id=user.id, app_id=3, profile_id=profile.id)
 
     response = auth_client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
-    assert response.json() == {"user_id": str(session.id)}
+    body = response.json()
+    assert body["user_id"] == str(user.id)
+    assert body["email"] == user.email
+    assert body["name"] == user.name
+    assert len(body["apps"]) == 1
+    assert body["apps"][0]["app_id"] == 3
+    assert body["apps"][0]["profile_code"] == "ADMIN"
+    assert "Calidad" in body["apps"][0]["capabilities"]
 
 
 # ---------------------------------------------------------------------------

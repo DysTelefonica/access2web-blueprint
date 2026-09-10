@@ -160,8 +160,12 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
         return None
 
     @router.get("/auth/me", status_code=status.HTTP_200_OK, tags=["auth"])
-    async def me_route(req: Request) -> dict[str, str]:
-        """Return ``request.state.user_id`` for the authenticated caller.
+    async def me_route(req: Request) -> dict[str, object]:
+        """Return the authenticated user's identity and assigned apps.
+
+        Returns ``user_id``, ``email``, ``name``, and ``apps`` (the same
+        data that ``GET /auth/me/apps`` returns, embedded here for
+        clients that need everything in a single round-trip).
 
         Returns 401 if no token is present (the middleware leaves the
         state empty when the header is missing or the token is invalid).
@@ -172,7 +176,28 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="authentication required",
             )
-        return {"user_id": str(user_id)}
+
+        use_cases = container.use_cases
+
+        user = await container.users.get_by_id(user_id)
+        apps = await use_cases["get_my_apps"](user_id=user_id)
+
+        return {
+            "user_id": str(user_id),
+            "email": user.email if user else None,
+            "name": user.name if user else None,
+            "apps": [
+                {
+                    "app_id": a.app_id,
+                    "app_name": a.app_name,
+                    "app_short_code": a.app_short_code,
+                    "profile_code": a.profile_code,
+                    "profile_name": a.profile_name,
+                    "capabilities": list(a.capabilities),
+                }
+                for a in apps
+            ],
+        }
 
     @router.get("/auth/me/apps", status_code=status.HTTP_200_OK, tags=["auth"])
     async def my_apps_route(req: Request) -> dict[str, object]:
