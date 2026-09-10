@@ -13,7 +13,9 @@ Vacío. Las nuevas entregas se documentan aquí antes del siguiente release cut.
 ### Fixed
 
 - **seed_profiles.py corruption fix**: el archivo `app/src/modules/lanzadera/application/seed_profiles.py` tenía un bloque `_CAPABILITIES_BY_CODE` incompleto — la declaración del dict faltaba y las claves aparecían huérfanas sin indentación, causando `IndentationError` en tiempo de importación. Se reconstruye el archivo completo con la declaración `_CAPABILITIES_BY_CODE: dict[str, dict[str, bool]]` y sus 8 entries (`DEFAULT`, `ADMIN`, `CALIDAD`, `CALIDAD_AVISOS`, `TECNICO`, `ECONOMIA`, `SECRETARIA`, `SIN_ACCESO`).
-- **check_mutation_sites.py malformed BASELINE entry**: la entrada de `seed_profiles.py` en el dict `BASELINE` tenía valor `()` (tuple vacío) en vez de `BaselineEntry(...)`, lo que causaba `AttributeError: 'tuple' object has no attribute 'sites'` al ejecutar el gate. Se completa con `BaselineEntry(sites=234, target=100, target_date="2027-02-13")`. Además se añaden comentarios FIXME documentando que el archivo sigue muy por encima del ceiling y que la refactorización para reducirlo forma parte del chain W-TEST.
+- **check_mutation_sites.py malformed BASELINE entry**: la entrada de `seed_profiles.py` en el dict `BASELINE` tenía valor `()` (tuple vacío) en vez de `BaselineEntry(...)`, lo que causaba `AttributeError: 'tuple' object has no attribute 'sites'` al ejecutar el gate. Se completa con `BaselineEntry(sites=234, target=100, target_date="2027-02-13")`.
+
+- **W-TEST (#597) — HTML endpoint coverage**: 3 tests de integración para `admin_routes_misc.py`: `test_list_apps_returns_active_apps` (GET /admin/apps), `test_activate_app_returns_200` (POST /admin/apps/{id}/activate), `test_activate_app_requires_admin_without_session`. `admin_routes_misc.py` sube a cobertura 100%. 656 tests PASS.
 
 ### Changed
 
