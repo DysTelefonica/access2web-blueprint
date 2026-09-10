@@ -776,7 +776,6 @@ def test_DEBUG_raw_source(auth_client: TestClient) -> None:
 def test_DEBUG_file_mtime(auth_client: TestClient) -> None:
     """Debug: check file modification times."""
     import os
-    import importlib
     from app.src.modules.lanzadera.delivery.http import auth_routes
 
     py_file = auth_routes.__file__
@@ -784,7 +783,6 @@ def test_DEBUG_file_mtime(auth_client: TestClient) -> None:
     print(f"\n.py file mtime: {py_stat.st_mtime}")
 
     # Check if there's a .pyc
-    import marshal
 
     pyc_file = py_file + "c"
     if os.path.exists(pyc_file):
