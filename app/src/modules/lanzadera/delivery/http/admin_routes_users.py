@@ -1,9 +1,13 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.6 + lanzadera-mvp
+# Issue #579 — list_users now calls require_global_admin; it never did.
 """Admin HTTP route handlers for the user-management endpoints (DL2, issue #55).
 
-Three ``/admin/users`` endpoints wired to the ``LanzaderaContainer``:
+Three ``/admin/users`` endpoints wired to the ``LanzaderaContainer``,
+all gated by ``require_global_admin``:
 
-- ``GET    /admin/users``        — list users
+- ``GET    /admin/users``        — list users (issue #579 — every other
+  route below already called the gate; this one did not, letting an
+  unauthenticated caller read every user's email and name).
 - ``POST   /admin/users``        — create user (container.create_user use case)
 - ``PATCH  /admin/users/{id}/disable`` — disable user (container.disable_user use case)
 
@@ -42,6 +46,7 @@ def register_user_routes(
         limit: int = 50,
         offset: int = 0,
     ) -> HTMLResponse:
+        await _admin.require_global_admin(request)
         users, total = await container.list_all_users(limit=limit, offset=offset)
         return templates.TemplateResponse(
             request,
