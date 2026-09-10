@@ -16,6 +16,9 @@ The tests cover the W54-W62 slice:
 - ``PATCH /admin/users/{id}/disable`` flips ACTIVE → DISABLED (W54, D42).
 - ``POST /admin/assignments`` persists the (user, app, profile) triple
   via ``assign_profile`` (W54, D22, DA-12).
+- ``GET /admin/audit`` lists the audit log via ``container.audit_repo``
+  (issue #578); gated by ``require_global_admin`` since the endpoint
+  exposes the complete audit trail, not just the caller's own events.
 
 W62 PR-7 (#544): the ``auth_bypass`` fixture (a no-op monkeypatch of
 ``admin.require_global_admin``) is replaced by ``auth_session``, which
@@ -49,6 +52,7 @@ from starlette.responses import Response
 from app.src.modules.lanzadera.delivery.http.admin_routes import register_routes
 from app.src.modules.lanzadera.di.container import LanzaderaContainer
 from app.src.modules.lanzadera.domain.app import App, AppRegistrationStatus, AppTopology
+from app.src.modules.lanzadera.domain.audit_event import AuditEvent
 from app.src.modules.lanzadera.domain.profile import Profile
 from app.src.modules.lanzadera.domain.user import User, UserStatus
 from tests.lanzadera.conftest import FakeFixtures
@@ -452,3 +456,55 @@ def test_assign_profile_rejects_unknown_user(
     assert response.status_code in (404, 500)
     assert fake_fixtures.assignments.create_calls == []
     assert fake_fixtures.audit.entries == []
+
+
+# ---------------------------------------------------------------------------
+# GET /admin/audit — issue #578
+# ---------------------------------------------------------------------------
+
+
+def _seed_audit_event(fakes: FakeFixtures, *, event_type: str = "users.create") -> AuditEvent:
+    """Append one ``AuditEvent`` row directly to the audit fake's ``entries``."""
+    event = AuditEvent(
+        id=uuid4(),
+        event_type=event_type,
+        actor_id=uuid4(),
+        target_id="target-1",
+        module="lanzadera",
+        result="ok",
+        correlation_id=uuid4(),
+        payload={},
+        created_at=datetime.now(UTC),
+    )
+    fakes.audit.entries.append(event)
+    return event
+
+
+@pytest.mark.usefixtures("auth_session")
+def test_list_audit_returns_all_events(
+    client: TestClient, fake_fixtures: FakeFixtures, auth_session: dict[str, UUID]
+):
+    """``GET /admin/audit`` renders every seeded audit event in the HTML response."""
+    _seed_audit_event(fake_fixtures, event_type="users.create")
+    _seed_audit_event(fake_fixtures, event_type="assignments.create")
+
+    response = client.get("/admin/audit", headers=_auth_headers(auth_session["session_id"]))
+
+    assert response.status_code == 200
+    body = response.text
+    assert "users.create" in body
+    assert "assignments.create" in body
+
+
+def test_list_audit_requires_admin_without_session(client: TestClient, fake_fixtures: FakeFixtures):
+    """Issue #578: ``GET /admin/audit`` returns 401 without an auth session.
+
+    Before the fix, ``list_audit`` never called ``require_global_admin``,
+    so any unauthenticated caller could read the complete audit trail
+    (event type, actor, target) for every module.
+    """
+    _seed_audit_event(fake_fixtures)
+
+    response = client.get("/admin/audit")
+
+    assert response.status_code == 401
