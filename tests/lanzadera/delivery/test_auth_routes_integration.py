@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import pytest
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Depends, FastAPI, Request
 from fastapi.testclient import TestClient
 
 from app.src.modules.lanzadera.adapters.crypto.jwt import Hs256JwtSigner
@@ -787,3 +787,78 @@ def test_DEBUG_file_mtime(auth_client: TestClient) -> None:
         print(f".pyc older than .py: {pyc_stat.st_mtime < py_stat.st_mtime}")
     else:
         print("No .pyc file found")
+
+
+# ---------------------------------------------------------------------------
+# require_capability gate — tests for issue #589
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def cap_client(fake_fixtures: FakeFixtures) -> Iterator[TestClient]:
+    """Yield a ``TestClient`` with a route gated by ``require_capability``."""
+    from app.src.modules.lanzadera.delivery.http.admin import require_capability
+
+    _patch_auth_routes_request_type()
+    # Also patch admin module's Request so the route handler resolves it
+    import app.src.modules.lanzadera.delivery.http.admin as _admin_mod
+    from fastapi import Request as _FastAPIRequest
+    _admin_mod.Request = _FastAPIRequest  # type: ignore[attr-defined]
+
+    local_container = _build_container(fake_fixtures)
+
+    app = FastAPI()
+    app.state.container = local_container
+
+    def _now_epoch() -> int:
+        return int(local_container._clock().timestamp())
+
+    app.add_middleware(
+        AuthMiddleware,
+        jwt_signer=local_container.jwt_signer,
+        now=_now_epoch,
+    )
+
+    @app.get("/apps/{app_id}/records")
+    async def gated_route(request: Request, app_id: int) -> dict[str, object]:
+        request.app.state.app_id = app_id
+        await require_capability(request, capability="Calidad")
+        return {"app_id": app_id, "ok": True}
+
+    with TestClient(app) as client:
+        yield client
+
+
+def test_require_capability_returns_401_without_token(cap_client: TestClient) -> None:
+    """Missing token → 401."""
+    response = cap_client.get("/apps/1/records")
+    assert response.status_code == 401
+
+
+def test_require_capability_returns_403_when_user_lacks_cap(
+    cap_client: TestClient, fake_fixtures: FakeFixtures
+) -> None:
+    """User has no assignment for app_id → 403."""
+    user = _seed_active_user(fake_fixtures)
+    session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=user.id)
+
+    response = cap_client.get("/apps/7/records", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 403
+
+
+def test_require_capability_passes_when_user_has_capability(
+    cap_client: TestClient, fake_fixtures: FakeFixtures
+) -> None:
+    """User assigned to app with 'Calidad' capability → 200."""
+    user = _seed_active_user(fake_fixtures)
+    session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=user.id)
+
+    app = _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
+    profile = _seed_profile(fake_fixtures, app_id=7, code="CALIDAD", capabilities={"Calidad": True})
+    _seed_assignment(fake_fixtures, user_id=user.id, app_id=7, profile_id=profile.id)
+
+    response = cap_client.get("/apps/7/records", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200
+    assert response.json() == {"app_id": 7, "ok": True}

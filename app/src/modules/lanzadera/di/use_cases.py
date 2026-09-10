@@ -61,6 +61,9 @@ from app.src.modules.lanzadera.application.login import (
 # W62 (#540): logout use case — inverse of login. Sits next to it
 # alphabetically (the dup-break baseline groups consecutive imports).
 from app.src.modules.lanzadera.application.logout import logout
+from app.src.modules.lanzadera.application.revoke_assignment import (
+    revoke_assignment,
+)
 from app.src.modules.lanzadera.application.revoke_global_admin import (
     revoke_global_admin,
 )
