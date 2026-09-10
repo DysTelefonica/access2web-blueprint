@@ -23,9 +23,11 @@ Profile codes (from `legacy_role_map.LEGACY_ROLE_MAP`):
     SECRETARIA     — maps to legacy EsSecretaría
     SIN_ACCESO     — exclusive: blocks all access (DA-12 cortocircuito)
 
-Capability maps are intentionally empty (``{}``) per the spec:
-    > The canonical capability set per app is OPEN — the seed uses {}
-    > until product confirms the catalogue.
+Each profile carries a ``capabilities`` map of 6 legacy-role booleans:
+    admin, calidad, calidad_avisos, tecnico, economia, secretaria
+ADMIN sets all flags to ``True``; other profiles set only their own flag.
+SIN_ACCESO sets all flags to ``False`` (explicit block).
+DEFAULT is empty ``{}`` (no legacy role set).
 The JSONB contract accepts any ``str | int | bool`` values.
 """
 
@@ -56,6 +58,75 @@ _APP_CATALOGUE: list[dict[str, int | str]] = [
     {"id": 22, "name": "HPS_Solicitudes", "short_code": "HPSSOL"},
     {"id": 23, "name": "Condor", "short_code": "CONDOR"},
 ]
+
+# Capability map per profile code — 6 legacy-role booleans.
+# Reflects the legacy `TbUsuariosAplicacionesPermisos` flags for each role.
+_CAPABILITIES_BY_CODE: dict[str, dict[str, bool]] = {
+    "DEFAULT": {
+        "admin": False,
+        "calidad": False,
+        "calidad_avisos": False,
+        "tecnico": False,
+        "economia": False,
+        "secretaria": False,
+    },
+    "ADMIN": {
+        "admin": True,
+        "calidad": True,
+        "calidad_avisos": True,
+        "tecnico": True,
+        "economia": True,
+        "secretaria": True,
+    },
+    "CALIDAD": {
+        "admin": False,
+        "calidad": True,
+        "calidad_avisos": False,
+        "tecnico": False,
+        "economia": False,
+        "secretaria": False,
+    },
+    "CALIDAD_AVISOS": {
+        "admin": False,
+        "calidad": True,
+        "calidad_avisos": True,
+        "tecnico": False,
+        "economia": False,
+        "secretaria": False,
+    },
+    "TECNICO": {
+        "admin": False,
+        "calidad": False,
+        "calidad_avisos": False,
+        "tecnico": True,
+        "economia": False,
+        "secretaria": False,
+    },
+    "ECONOMIA": {
+        "admin": False,
+        "calidad": False,
+        "calidad_avisos": False,
+        "tecnico": False,
+        "economia": True,
+        "secretaria": False,
+    },
+    "SECRETARIA": {
+        "admin": False,
+        "calidad": False,
+        "calidad_avisos": False,
+        "tecnico": False,
+        "economia": False,
+        "secretaria": True,
+    },
+    "SIN_ACCESO": {
+        "admin": False,
+        "calidad": False,
+        "calidad_avisos": False,
+        "tecnico": False,
+        "economia": False,
+        "secretaria": False,
+    },
+}
 
 # Profile codes and their display names.
 _PROFILE_CODES: list[dict[str, str]] = [
@@ -104,7 +175,7 @@ async def seed_profiles(
                 app_id=app_id,
                 code=pdef["code"],
                 name=pdef["name"],
-                capabilities={},  # intentionally empty — see module docstring
+                capabilities=_CAPABILITIES_BY_CODE[pdef["code"]].copy(),
                 active=True,
                 created_at=now,
                 updated_at=now,
