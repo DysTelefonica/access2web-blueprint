@@ -2,23 +2,25 @@
 # W61 (#524) — admin JSON routes for the app catalog.
 # W62 PR-7 (#544) — replaced the X-Admin-User-ID header stub with
 # request.state.user_id populated by AuthMiddleware (PR-5).
+# Issue #576 — all four routes now call require_global_admin (PR-6) as
+# their first statement; the gate was previously never wired here.
 """Admin HTTP route handlers for the W61 (#524) app CRUD slice.
 
-Four ``/admin/apps/...`` JSON endpoints:
+Four ``/admin/apps/...`` JSON endpoints, all gated by
+``require_global_admin`` (issue #576):
 
 - ``POST   /admin/apps``               — register a new catalog row.
 - ``GET    /admin/apps/{app_id}``      — read the catalog row.
 - ``PATCH  /admin/apps/{app_id}``      — apply a partial patch.
 - ``DELETE /admin/apps/{app_id}``      — retire the row (status=retired).
 
-The destructive routes (``POST``, ``PATCH``, ``DELETE``) record the
+The destructive routes (``POST``, ``PATCH``, ``DELETE``) also record the
 audit actor from ``request.state.user_id`` populated by
 ``AuthMiddleware`` (W62 PR-5). The ``_actor_id`` helper resolves
 the value or returns ``None`` when the request carries no auth
-session — the W61 contract continues to accept a missing actor
-(rather than 401-ing) because ``require_global_admin`` (PR-6) is the
-gate that enforces presence of a global admin on the destructive
-routes; ``actor_id`` is the audit-trail field that flows into DA-11.
+session; ``require_global_admin`` (PR-6) is the gate that enforces
+presence of a global admin before any of the four handlers runs, and
+``actor_id`` is the separate audit-trail field that flows into DA-11.
 
 The router is mounted directly in ``app/src/main.py`` (W61 ships its
 own ``/admin`` prefix), mirroring the W60 presence slice. The
@@ -35,6 +37,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
 
+from app.src.modules.lanzadera.delivery.http import admin as _admin
 from app.src.modules.lanzadera.domain.app import (
     App,
     AppTopology,
@@ -108,6 +111,7 @@ async def create_app(request: Request) -> dict[str, object]:
         ``deployment_topology``      — ``"central"`` or ``"office-nas"``
         ``requires_office_presence`` — optional bool (defaults to ``False``)
     """
+    await _admin.require_global_admin(request)
     container = _container(request)
     payload = await request.json()
     name = payload.get("name")
@@ -149,6 +153,7 @@ async def create_app(request: Request) -> dict[str, object]:
 @router.get("/apps/{app_id}")
 async def get_app(request: Request, app_id: int) -> dict[str, object]:
     """Read the catalog row with ``app_id`` (404 if it does not exist)."""
+    await _admin.require_global_admin(request)
     container = _container(request)
     app_repo = container.app_repo  # type: ignore[attr-defined]
     app = await app_repo.get_by_id(app_id)
@@ -169,6 +174,7 @@ async def update_app(request: Request, app_id: int) -> dict[str, object]:
         ``deployment_topology``      — ``"central"`` or ``"office-nas"``
         ``requires_office_presence`` — bool
     """
+    await _admin.require_global_admin(request)
     container = _container(request)
     payload = await request.json()
     name: str | None = payload.get("name")
@@ -205,6 +211,7 @@ async def update_app(request: Request, app_id: int) -> dict[str, object]:
 @router.delete("/apps/{app_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def disable_app(request: Request, app_id: int) -> None:
     """Retire the catalog row with ``app_id`` (status=retired)."""
+    await _admin.require_global_admin(request)
     container = _container(request)
     _actor_id(request)
     use_cases = container.use_cases  # type: ignore[attr-defined]
