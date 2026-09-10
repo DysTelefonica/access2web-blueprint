@@ -514,9 +514,8 @@ def test_list_audit_requires_admin_without_session(client: TestClient, fake_fixt
 # GET /admin/apps — HTML list apps page (W-TEST coverage gap)
 # -----------------------------------------------------------------------
 
-def test_list_apps_returns_active_apps(
-    client: TestClient, fake_fixtures: FakeFixtures
-):
+
+def test_list_apps_returns_active_apps(client: TestClient, fake_fixtures: FakeFixtures):
     """GET /admin/apps renders every seeded active app in the HTML response.
 
     W-TEST coverage: fills the gap left by test_app_routes_integration.py
@@ -533,12 +532,10 @@ def test_list_apps_returns_active_apps(
     assert "Expedientes" in body
 
 
-
-
-
 # -----------------------------------------------------------------------
 # POST /admin/apps/{app_id}/activate — HTML activate app page (W-TEST)
 # -----------------------------------------------------------------------
+
 
 @pytest.mark.usefixtures("auth_session")
 def test_activate_app_returns_200(
