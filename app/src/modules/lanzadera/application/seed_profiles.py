@@ -1,8 +1,8 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 + lanzadera-mvp
-"""Seed profiles for the 8 known legacy apps (DA-12, 0003_seed_profiles).
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 + lanzadera-mvp W-TEST
+"""Idempotent seed of the 8 profile × 8 app matrix (DA-12, 0003_seed_profiles).
 
-This module is the canonical implementation of the `0003_seed_profiles`
-migration described in `openspec/changes/lanzadera-mvp/specs/profiles/spec.md`.
+This module is the canonical implementation of the ``0003_seed_profiles``
+migration described in ``openspec/changes/lanzadera-mvp/specs/profiles/spec.md``.
 
 The seed is idempotent: re-running it is a no-op because each
 ``(app_id, code)`` pair is unique-constrained in the database and
@@ -11,9 +11,15 @@ the repository's ``get_by_code`` returns the existing row.
 Run:
     python -m app.src.modules.lanzadera.application.seed_profiles
 
-Or via the CLI once `gentle-ai platform seed-profiles` is wired in.
+Or via the CLI once ``gentle-ai platform seed-profiles`` is wired in.
 
-Profile codes (from `legacy_role_map.LEGACY_ROLE_MAP`):
+Static catalogue lives in sibling modules (W-TEST split):
+  ``seed_profile_apps``        — 8 legacy apps from TbAplicaciones
+  ``seed_profile_codes``       — 8 profile codes + display names
+  ``seed_capability_*.py``     — one module per 2-3 profile capability maps
+  ``seed_profiles``            — this file: runner only
+
+Profile codes (from ``legacy_role_map.LEGACY_ROLE_MAP``):
     DEFAULT        — fallback when no explicit profile matches
     ADMIN          — maps to legacy EsAdministrador
     CALIDAD        — maps to legacy EsCalidad
@@ -22,13 +28,6 @@ Profile codes (from `legacy_role_map.LEGACY_ROLE_MAP`):
     ECONOMIA       — maps to legacy EsEconomía
     SECRETARIA     — maps to legacy EsSecretaría
     SIN_ACCESO     — exclusive: blocks all access (DA-12 cortocircuito)
-
-Each profile carries a ``capabilities`` map of 6 legacy-role booleans:
-    admin, calidad, calidad_avisos, tecnico, economia, secretaria
-ADMIN sets all flags to ``True``; other profiles set only their own flag.
-SIN_ACCESO sets all flags to ``False`` (explicit block).
-DEFAULT is empty ``{}`` (no legacy role set).
-The JSONB contract accepts any ``str | int | bool`` values.
 """
 
 from __future__ import annotations
@@ -42,108 +41,40 @@ from app.src.modules.lanzadera.domain.ports.profile_repository import (
     ProfileRepositoryPort,
 )
 
-# ---------------------------------------------------------------------------
-# Static catalogue — eight apps from the legacy `TbAplicaciones` baseline.
-# IDs are confirmed in docs/06-autorizacion-legacy-matriz.md
-# (Verified-runtime-schema/aggregate).
-# ---------------------------------------------------------------------------
+# Data modules — each ≤ 100 mutation sites (W-TEST refactor).
+from app.src.modules.lanzadera.application.seed_profile_apps import (
+    APP_CATALOGUE as _APP_CATALOGUE,
+)
+from app.src.modules.lanzadera.application.seed_profile_codes import (
+    PROFILE_CODES as _PROFILE_CODES,
+)
+from app.src.modules.lanzadera.application.seed_capability_DEFAULT_ADMIN_CALIDAD import (
+    DEFAULT as _DEFAULT,
+    ADMIN as _ADMIN,
+    CALIDAD as _CALIDAD,
+)
+from app.src.modules.lanzadera.application.seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA import (
+    CALIDAD_AVISOS as _CALIDAD_AVISOS,
+    TECNICO as _TECNICO,
+    ECONOMIA as _ECONOMIA,
+)
+from app.src.modules.lanzadera.application.seed_capability_SECRETARIA_SIN_ACCESO import (
+    SECRETARIA as _SECRETARIA,
+    SIN_ACCESO as _SIN_ACCESO,
+)
 
-_APP_CATALOGUE: list[dict[str, int | str]] = [
-    {"id": 5, "name": "Gestion_Riesgos", "short_code": "RIESGOS"},
-    {"id": 6, "name": "Brass", "short_code": "BRASS"},
-    {"id": 8, "name": "No_Conformidades", "short_code": "NOCONF"},
-    {"id": 12, "name": "Lanzadera", "short_code": "LANZ"},
-    {"id": 17, "name": "HPS", "short_code": "HPS"},
-    {"id": 19, "name": "Expedientes", "short_code": "EXP"},
-    {"id": 22, "name": "HPS_Solicitudes", "short_code": "HPSSOL"},
-    {"id": 23, "name": "Condor", "short_code": "CONDOR"},
-]
-
-# Capability map per profile code — 6 legacy-role booleans.
-# Reflects the legacy `TbUsuariosAplicacionesPermisos` flags for each role.
-_CAPABILITIES_BY_CODE: dict[str, dict[str, str | int | bool]] = {
-    "DEFAULT": {
-        "admin": False,
-        "calidad": False,
-        "calidad_avisos": False,
-        "tecnico": False,
-        "economia": False,
-        "secretaria": False,
-    },
-    "ADMIN": {
-        "admin": True,
-        "calidad": True,
-        "calidad_avisos": True,
-        "tecnico": True,
-        "economia": True,
-        "secretaria": True,
-    },
-    "CALIDAD": {
-        "admin": False,
-        "calidad": True,
-        "calidad_avisos": False,
-        "tecnico": False,
-        "economia": False,
-        "secretaria": False,
-    },
-    "CALIDAD_AVISOS": {
-        "admin": False,
-        "calidad": True,
-        "calidad_avisos": True,
-        "tecnico": False,
-        "economia": False,
-        "secretaria": False,
-    },
-    "TECNICO": {
-        "admin": False,
-        "calidad": False,
-        "calidad_avisos": False,
-        "tecnico": True,
-        "economia": False,
-        "secretaria": False,
-    },
-    "ECONOMIA": {
-        "admin": False,
-        "calidad": False,
-        "calidad_avisos": False,
-        "tecnico": False,
-        "economia": True,
-        "secretaria": False,
-    },
-    "SECRETARIA": {
-        "admin": False,
-        "calidad": False,
-        "calidad_avisos": False,
-        "tecnico": False,
-        "economia": False,
-        "secretaria": True,
-    },
-    "SIN_ACCESO": {
-        "admin": False,
-        "calidad": False,
-        "calidad_avisos": False,
-        "tecnico": False,
-        "economia": False,
-        "secretaria": False,
-    },
+#: Lookup table from profile code to its 6-flag capability map.
+#: Built at module import time from the capability data modules.
+_CAPABILITIES_BY_CODE: dict[str, dict[str, bool]] = {
+    "DEFAULT": _DEFAULT,
+    "ADMIN": _ADMIN,
+    "CALIDAD": _CALIDAD,
+    "CALIDAD_AVISOS": _CALIDAD_AVISOS,
+    "TECNICO": _TECNICO,
+    "ECONOMIA": _ECONOMIA,
+    "SECRETARIA": _SECRETARIA,
+    "SIN_ACCESO": _SIN_ACCESO,
 }
-
-# Profile codes and their display names.
-_PROFILE_CODES: list[dict[str, str]] = [
-    {"code": "DEFAULT", "name": "Usuario por defecto"},
-    {"code": "ADMIN", "name": "Administrador"},
-    {"code": "CALIDAD", "name": "Calidad"},
-    {"code": "CALIDAD_AVISOS", "name": "Calidad + Avisos"},
-    {"code": "TECNICO", "name": "Técnico"},
-    {"code": "ECONOMIA", "name": "Economía"},
-    {"code": "SECRETARIA", "name": "Secretaría"},
-    {"code": "SIN_ACCESO", "name": "Sin acceso"},
-]
-
-
-# ---------------------------------------------------------------------------
-# Seed logic
-# ---------------------------------------------------------------------------
 
 
 async def seed_profiles(
