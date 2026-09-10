@@ -331,7 +331,7 @@ class FakeAssignmentRepository:
     create_calls: list[tuple[UUID, int, UUID]] = field(default_factory=list)
     effective_permissions_calls: list[tuple[UUID, int]] = field(default_factory=list)
     revoke_calls: list[tuple[UUID, int]] = field(default_factory=list)
-    _profile_repo: typing.Any = None
+    _profile_repo: Any = None
 
     def with_profiles(self, profile_repo: FakeProfileRepository) -> FakeAssignmentRepository:
         """Inject a ``FakeProfileRepository`` so ``effective_permissions`` can join."""
