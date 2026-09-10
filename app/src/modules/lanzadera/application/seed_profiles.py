@@ -32,13 +32,12 @@ The JSONB contract accepts any ``str | int | bool`` values.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from app.src.modules.lanzadera.domain.ports import AuditLog, AuditLogEntry
 from app.src.modules.lanzadera.domain.ports.profile_repository import (
     ProfileRepositoryPort,
 )
-
 
 # ---------------------------------------------------------------------------
 # Static catalogue — eight apps from the legacy `TbAplicaciones` baseline.
@@ -146,10 +145,10 @@ async def _main() -> None:
     """
     import os
 
-    from app.src.modules.lanzadera.di.container import LanzaderaContainer
     from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
         AsyncSessionFactory,
     )
+    from app.src.modules.lanzadera.di.container import LanzaderaContainer
 
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
