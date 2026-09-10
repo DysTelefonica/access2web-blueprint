@@ -58,9 +58,7 @@ class TestGetMyApps:
         return FakeProfileRepository()
 
     @pytest.fixture
-    def assignment_repo(
-        self, profile_repo: FakeProfileRepository
-    ) -> FakeAssignmentRepository:
+    def assignment_repo(self, profile_repo: FakeProfileRepository) -> FakeAssignmentRepository:
         return FakeAssignmentRepository().with_profiles(profile_repo)
 
     @pytest.mark.asyncio

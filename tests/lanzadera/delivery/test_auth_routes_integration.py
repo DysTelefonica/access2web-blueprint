@@ -245,9 +245,7 @@ def _mint_jwt(*, sub: UUID, ttl_seconds: int = 3600) -> str:
     so the auth middleware's ``verify`` accepts the token.
     """
     now = int(datetime.now(UTC).timestamp())
-    return Hs256JwtSigner(_JWT_SECRET).sign(
-        {"sub": str(sub), "iat": now, "exp": now + ttl_seconds}
-    )
+    return Hs256JwtSigner(_JWT_SECRET).sign({"sub": str(sub), "iat": now, "exp": now + ttl_seconds})
 
 
 # ---------------------------------------------------------------------------
@@ -378,9 +376,7 @@ def test_logout_revokes_session_with_valid_token(
     session = _seed_session(fake_fixtures, user_id=user.id)
     token = _mint_jwt(sub=session.id)
 
-    response = auth_client.post(
-        "/auth/logout", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = auth_client.post("/auth/logout", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 204
     # Exactly one revoke call for the session id; the row stays (DA-11).
@@ -399,9 +395,7 @@ def test_me_returns_401_without_token(auth_client: TestClient) -> None:
     assert response.status_code == 401
 
 
-def test_me_returns_enriched_identity(
-    auth_client: TestClient, fake_fixtures: FakeFixtures
-) -> None:
+def test_me_returns_enriched_identity(auth_client: TestClient, fake_fixtures: FakeFixtures) -> None:
     """Valid Bearer → 200 + user identity + assigned apps.
 
     The JWT ``sub`` must be ``user.id`` so that ``get_my_apps`` finds
@@ -413,9 +407,7 @@ def test_me_returns_enriched_identity(
     token = _mint_jwt(sub=user.id)
 
     app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
-    profile = _seed_profile(
-        fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True}
-    )
+    profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
     _seed_assignment(fake_fixtures, user_id=user.id, app_id=3, profile_id=profile.id)
 
     response = auth_client.get("/auth/me", headers={"Authorization": f"Bearer {token}"})
@@ -452,9 +444,7 @@ def test_require_global_admin_returns_403_for_non_admin(
     token = _mint_jwt(sub=user.id)
     # Intentionally NOT calling ``fake_fixtures.global_admins.grant(user.id)``.
 
-    response = protected_client.get(
-        "/protected", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 403
     assert "admin" in response.json()["detail"].lower()
@@ -468,9 +458,7 @@ def test_require_global_admin_passes_for_admin(
     fake_fixtures.global_admins.members.add(user.id)
     token = _mint_jwt(sub=user.id)
 
-    response = protected_client.get(
-        "/protected", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     assert response.json() == {"ok": True}
@@ -495,9 +483,7 @@ def test_require_global_admin_returns_503_without_container(
     token = _mint_jwt(sub=user.id)
 
     with TestClient(app) as test_client:
-        response = test_client.get(
-            "/protected", headers={"Authorization": f"Bearer {token}"}
-        )
+        response = test_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 503
 
@@ -521,9 +507,7 @@ def test_my_apps_returns_empty_list_when_no_assignments(
     session = _seed_session(fake_fixtures, user_id=user.id)
     token = _mint_jwt(sub=session.id)
 
-    response = auth_client.get(
-        "/auth/me/apps", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = auth_client.get("/auth/me/apps", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     assert response.json()["apps"] == []
@@ -539,14 +523,10 @@ def test_my_apps_returns_apps_with_profiles_and_capabilities(
     token = _mint_jwt(sub=user.id)
 
     app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
-    profile = _seed_profile(
-        fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True}
-    )
+    profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
     _seed_assignment(fake_fixtures, user_id=user.id, app_id=3, profile_id=profile.id)
 
-    response = auth_client.get(
-        "/auth/me/apps", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = auth_client.get("/auth/me/apps", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     body = response.json()
@@ -699,9 +679,7 @@ def test_DEBUG_source_contains_my_apps(auth_client: TestClient) -> None:
     print(f"last 200 chars: {repr(src[-200:])}")
 
 
-def test_DEBUG_call_register(
-    auth_client: TestClient, fake_fixtures: FakeFixtures
-) -> None:
+def test_DEBUG_call_register(auth_client: TestClient, fake_fixtures: FakeFixtures) -> None:
     """Debug: call register_auth_routes and print routes."""
     from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
     from fastapi import APIRouter
@@ -866,9 +844,7 @@ def test_require_capability_returns_403_when_user_lacks_cap(
     session = _seed_session(fake_fixtures, user_id=user.id)
     token = _mint_jwt(sub=user.id)
 
-    response = cap_client.get(
-        "/apps/7/records", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = cap_client.get("/apps/7/records", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
 
 
@@ -881,13 +857,9 @@ def test_require_capability_passes_when_user_has_capability(
     token = _mint_jwt(sub=user.id)
 
     app = _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
-    profile = _seed_profile(
-        fake_fixtures, app_id=7, code="CALIDAD", capabilities={"Calidad": True}
-    )
+    profile = _seed_profile(fake_fixtures, app_id=7, code="CALIDAD", capabilities={"Calidad": True})
     _seed_assignment(fake_fixtures, user_id=user.id, app_id=7, profile_id=profile.id)
 
-    response = cap_client.get(
-        "/apps/7/records", headers={"Authorization": f"Bearer {token}"}
-    )
+    response = cap_client.get("/apps/7/records", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
     assert response.json() == {"app_id": 7, "ok": True}
