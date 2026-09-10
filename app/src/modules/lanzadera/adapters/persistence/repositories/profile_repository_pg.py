@@ -14,6 +14,7 @@ DA-12 by serialising the capabilities map atomically per call.
 """
 
 from __future__ import annotations
+from uuid import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
     Any,
@@ -79,6 +80,15 @@ class ProfileRepositoryPg:
                     PROFILES_TABLE.c.app_id == app_id,
                     PROFILES_TABLE.c.code == code,
                 )
+            )
+            row = (await session.execute(stmt)).first()
+        return _row_to_profile(row) if row is not None else None
+
+    async def get_by_id(self, profile_id: UUID) -> Profile | None:
+        """Return the profile identified by ``profile_id`` or ``None``."""
+        async with self._factory.read_only_session() as session:
+            stmt = select(PROFILES_TABLE).where(
+                PROFILES_TABLE.c.id == profile_id,
             )
             row = (await session.execute(stmt)).first()
         return _row_to_profile(row) if row is not None else None

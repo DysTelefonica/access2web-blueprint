@@ -31,10 +31,23 @@ The JSONB contract accepts any ``str | int | bool`` values.
 
 from __future__ import annotations
 
+import asyncio
+import os
+import sys
 from datetime import UTC, datetime
 from uuid import uuid4
 
-from app.src.modules.lanzadera.domain.ports import AuditLog, AuditLogEntry
+from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
+    async_session_factory,
+)
+from app.src.modules.lanzadera.adapters.persistence.repositories.audit_log_pg import (
+    AuditLogPg,
+)
+from app.src.modules.lanzadera.adapters.persistence.repositories.profile_repository_pg import (
+    ProfileRepositoryPg,
+)
+from app.src.modules.lanzadera.domain.audit_event import AuditEvent
+from app.src.modules.lanzadera.domain.ports import AuditLog
 from app.src.modules.lanzadera.domain.ports.profile_repository import (
     ProfileRepositoryPort,
 )
@@ -45,7 +58,7 @@ from app.src.modules.lanzadera.domain.ports.profile_repository import (
 # (Verified-runtime-schema/aggregate).
 # ---------------------------------------------------------------------------
 
-_APP_CATALOGUE: list[dict] = [
+_APP_CATALOGUE: list[dict[str, int | str]] = [
     {"id": 5, "name": "Gestion_Riesgos", "short_code": "RIESGOS"},
     {"id": 6, "name": "Brass", "short_code": "BRASS"},
     {"id": 8, "name": "No_Conformidades", "short_code": "NOCONF"},
@@ -57,7 +70,7 @@ _APP_CATALOGUE: list[dict] = [
 ]
 
 # Profile codes and their display names.
-_PROFILE_CODES: list[dict] = [
+_PROFILE_CODES: list[dict[str, str]] = [
     {"code": "DEFAULT", "name": "Usuario por defecto"},
     {"code": "ADMIN", "name": "Administrador"},
     {"code": "CALIDAD", "name": "Calidad"},
@@ -90,7 +103,7 @@ async def seed_profiles(
 
     created = 0
     for app in _APP_CATALOGUE:
-        app_id: int = app["id"]
+        app_id: int = app["id"]  # type: ignore[assignment]
         for pdef in _PROFILE_CODES:
             existing = await profiles.get_by_code(app_id, pdef["code"])
             if existing is not None:
@@ -113,10 +126,11 @@ async def seed_profiles(
 
     if created > 0:
         await audit.append(
-            AuditLogEntry(
+            AuditEvent(  # type: ignore[arg-type]
+                id=uuid4(),
                 event_type="profiles.seed",
                 actor_id=None,
-                target_id=None,
+                target_id="profiles.seed",
                 module="lanzadera",
                 result="success",
                 correlation_id=uuid4(),
@@ -133,45 +147,39 @@ async def seed_profiles(
 # ---------------------------------------------------------------------------
 
 
-async def _main() -> None:
-    """Build a real container and run the seed.
+async def main() -> None:
+    """Build a real session factory and run the seed.
 
-    Requires the same environment variables as the running application:
+    Requires:
         DATABASE_URL   — Postgres connection string
-        JWT_SECRET     — for JWT operations
-        SECRET_KEY     — for credential encryption
 
     Exits with code 0 on success, 1 on error.
     """
-    import os
-
-    from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
-        AsyncSessionFactory,
-    )
-    from app.src.modules.lanzadera.di.container import LanzaderaContainer
-
     database_url = os.environ.get("DATABASE_URL")
     if not database_url:
-        print("ERROR: DATABASE_URL environment variable is not set.", file=__import__("sys").stderr)
+        print(
+            "ERROR: DATABASE_URL environment variable is not set.",
+            file=sys.stderr,
+        )
         raise SystemExit(1)
 
-    print("Building container...")
-    session_factory = AsyncSessionFactory(database_url)
-    container = LanzaderaContainer(session_factory=session_factory)
+    print("Building session factory...")
+    _engine, session_factory = async_session_factory(database_url)
+
+    profile_repo = ProfileRepositoryPg(session_factory=session_factory)
+    audit_log = AuditLogPg(session_factory=session_factory)
 
     print("Seeding profiles...")
     created = await seed_profiles(
-        profiles=container.profile_repo,
-        audit=container._audit,  # type: ignore[attr-defined]
+        profiles=profile_repo,
+        audit=audit_log,  # type: ignore[arg-type]
     )
     print(f"Done. {created} profile rows created.")
 
 
 if __name__ == "__main__":
-    import asyncio
-
     try:
-        asyncio.run(_main())
-    except Exception as exc:
-        print(f"ERROR: {exc}", file=__import__("sys").stderr)
+        asyncio.run(main())
+    except Exception as exc:  # pragma: no cover
+        print(f"ERROR: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
