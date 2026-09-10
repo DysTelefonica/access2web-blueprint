@@ -111,9 +111,7 @@ async def require_capability(
             detail="container not available",
         )
 
-    caps = await container.use_cases["get_my_capabilities_for_app"](
-        user_id=user_id, app_id=app_id
-    )
+    caps = await container.use_cases["get_my_capabilities_for_app"](user_id=user_id, app_id=app_id)
     if capability not in caps:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

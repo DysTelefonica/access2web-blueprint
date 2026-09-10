@@ -177,7 +177,6 @@ class AssignmentRepositoryPg:
                 capabilities.update(caps.keys())
         return sorted(capabilities)
 
-
         async def revoke(self, user_id: UUID, app_id: int, *, now: datetime) -> Assignment | None:
             """Soft-delete the live assignment for ``(user_id, app_id)``.
 
@@ -202,7 +201,6 @@ class AssignmentRepositoryPg:
             if row is None:
                 return None
             return _row_to_assignment(row)
-
 
 
 __all__ = [

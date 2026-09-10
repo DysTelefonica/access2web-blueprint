@@ -53,9 +53,7 @@ async def revoke_assignment(
     """
     assignment = await assignments.revoke(user_id, app_id, now=now)
     if assignment is None:
-        raise ValueError(
-            f"no live assignment for user={user_id!r} app={app_id!r}"
-        )
+        raise ValueError(f"no live assignment for user={user_id!r} app={app_id!r}")
 
     await audit.append(
         AuditLogEntry(

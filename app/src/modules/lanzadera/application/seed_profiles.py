@@ -47,32 +47,33 @@ from app.src.modules.lanzadera.domain.ports.profile_repository import (
 # ---------------------------------------------------------------------------
 
 _APP_CATALOGUE: list[dict] = [
-    {"id": 5,  "name": "Gestion_Riesgos",   "short_code": "RIESGOS"},
-    {"id": 6,  "name": "Brass",             "short_code": "BRASS"},
-    {"id": 8,  "name": "No_Conformidades",  "short_code": "NOCONF"},
-    {"id": 12, "name": "Lanzadera",         "short_code": "LANZ"},
-    {"id": 17, "name": "HPS",               "short_code": "HPS"},
-    {"id": 19, "name": "Expedientes",       "short_code": "EXP"},
-    {"id": 22, "name": "HPS_Solicitudes",   "short_code": "HPSSOL"},
-    {"id": 23, "name": "Condor",            "short_code": "CONDOR"},
+    {"id": 5, "name": "Gestion_Riesgos", "short_code": "RIESGOS"},
+    {"id": 6, "name": "Brass", "short_code": "BRASS"},
+    {"id": 8, "name": "No_Conformidades", "short_code": "NOCONF"},
+    {"id": 12, "name": "Lanzadera", "short_code": "LANZ"},
+    {"id": 17, "name": "HPS", "short_code": "HPS"},
+    {"id": 19, "name": "Expedientes", "short_code": "EXP"},
+    {"id": 22, "name": "HPS_Solicitudes", "short_code": "HPSSOL"},
+    {"id": 23, "name": "Condor", "short_code": "CONDOR"},
 ]
 
 # Profile codes and their display names.
 _PROFILE_CODES: list[dict] = [
-    {"code": "DEFAULT",        "name": "Usuario por defecto"},
-    {"code": "ADMIN",         "name": "Administrador"},
-    {"code": "CALIDAD",       "name": "Calidad"},
-    {"code": "CALIDAD_AVISOS","name": "Calidad + Avisos"},
-    {"code": "TECNICO",       "name": "Técnico"},
-    {"code": "ECONOMIA",      "name": "Economía"},
-    {"code": "SECRETARIA",    "name": "Secretaría"},
-    {"code": "SIN_ACCESO",    "name": "Sin acceso"},
+    {"code": "DEFAULT", "name": "Usuario por defecto"},
+    {"code": "ADMIN", "name": "Administrador"},
+    {"code": "CALIDAD", "name": "Calidad"},
+    {"code": "CALIDAD_AVISOS", "name": "Calidad + Avisos"},
+    {"code": "TECNICO", "name": "Técnico"},
+    {"code": "ECONOMIA", "name": "Economía"},
+    {"code": "SECRETARIA", "name": "Secretaría"},
+    {"code": "SIN_ACCESO", "name": "Sin acceso"},
 ]
 
 
 # ---------------------------------------------------------------------------
 # Seed logic
 # ---------------------------------------------------------------------------
+
 
 async def seed_profiles(
     profiles: ProfileRepositoryPort,
@@ -131,6 +132,7 @@ async def seed_profiles(
 # ---------------------------------------------------------------------------
 # Standalone runner — invoke directly with Python.
 # ---------------------------------------------------------------------------
+
 
 async def _main() -> None:
     """Build a real container and run the seed.

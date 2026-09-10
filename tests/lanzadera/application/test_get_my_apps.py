@@ -24,7 +24,11 @@ from app.src.modules.lanzadera.application.get_my_apps import (
 from app.src.modules.lanzadera.domain.app import App, AppRegistrationStatus, AppTopology
 from app.src.modules.lanzadera.domain.assignment import Assignment
 from app.src.modules.lanzadera.domain.profile import Profile
-from tests.lanzadera._fakes import FakeAppRepository, FakeAssignmentRepository, FakeProfileRepository
+from tests.lanzadera._fakes import (
+    FakeAppRepository,
+    FakeAssignmentRepository,
+    FakeProfileRepository,
+)
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -137,7 +141,7 @@ class TestGetMyApps:
 
     @pytest.mark.asyncio
     async def test_skips_app_not_in_repo(
-            self,
+        self,
         assignment_repo: FakeAssignmentRepository,
         app_repo: FakeAppRepository,
         profile_repo: FakeProfileRepository,
