@@ -137,6 +137,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # W64 PR #589/#590: admin.py re-added with two gate functions
     # that share the same HTTP-exception pattern (request.state check,
     # container lookup, raise HTTPException). Same structural class.
+    "dup:110a87c35376": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:8aa3296e6ce7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:ac321e81d8c6": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:c373bbc4ef79": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:f00a3c6a5a4f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:18c76edf31fc": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W64 (#585): two persistence repo files share the same
     # import-from-sqlalchemy pattern (5 statements). Structural
