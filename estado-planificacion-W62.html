@@ -28,7 +28,7 @@
 <body>
 
 <h1>Estado Planificación Lanzadera</h1>
-<p><strong>Última actualización:</strong> 2026-09-10 · <strong>W-n delivered:</strong> W54–W59, W62 · <strong>Próximo:</strong> W-TEST (tests integración)</p>
+<p><strong>Última actualización:</strong> 2026-09-10 · <strong>W-n delivered:</strong> W54–W59, W62 · <strong>Próximo:</strong> — (W-TEST cerrado)</p>
 
 <div class="legend">
   <span><span class="dot dot-cerrado"></span> Cerrado (mergeado en main)</span>
@@ -161,8 +161,8 @@
   <tbody>
     <tr>
       <td>Test coverage W54-W62</td>
-      <td>W-TEST en curso: 653 tests pasan, coverage 84% sobre el módulo Lanzadera. test_admin_routes_integration.py cubre W54-W59; test_auth_routes_integration.py cubre W62. seed_profiles.py corrupto corregido (#595); BASELINE malformado en mutation_sites corregido (#596). seed_profiles.py sigue en 234 mutation sites (BASELINE: 234/100).</td>
-      <td>Baja — gates verdes, coverage 84%, admin_routes_misc.py 100%</td>
+      <td>W-TEST cadena cerrada: seed_profiles.py se rompe en 6 módulos (234 sitios → runner 57 + 5 datos 25-50). Todos bajo ceiling 100. dup:05d03dc1b409 BASELINE en check_dry.py. 656 tests PASS, quality report PASS.</td>
+      <td>Baja — quality report PASS; seed_profiles.py 57 sitios, módulos datos ≤ 50</td>
       <td>Baja</td>
     </tr>
     <tr>
@@ -196,6 +196,7 @@
 - **check_mutation_sites.py malformed BASELINE entry** (#596): entrada `seed_profiles.py` en `BASELINE` con valor `()` vacío — `AttributeError`. Completada con `BaselineEntry(sites=234, target=100, target_date="2027-02-13")`.
 
 ### Changed
+- W-TEST (#598): seed_profiles.py se rompe en 6 modulos (234 sitios -> runner 57 + 5 datos 25-50). Todos bajo ceiling 100. dup:05d03dc1b409 anadido a BASELINE de check_dry.py.
 - W58 (#516): Wire HTTP delivery to LanzaderaContainer use cases.
 - W59 (#518): list_users paginado con limit/offset.
 - W57 (#513): DRY baseline ratchet. Admin.py removed.
@@ -206,7 +207,7 @@
 
 <hr>
 <p style="color:#64748b;font-size:.8rem">
-  W-TEST cerrado · 656 tests PASS · coverage 84% · admin_routes_misc.py 100% · quality report PASS · 2026-09-10
+  W-TEST cerrado (#598) · seed_profiles.py split 234→57 sitios · 6 módulos bajo ceiling 100 · quality report PASS · 2026-09-10
 </p>
 </body>
 </html>

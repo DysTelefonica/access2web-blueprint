@@ -19,6 +19,22 @@ Vacío. Las nuevas entregas se documentan aquí antes del siguiente release cut.
 
 ### Changed
 
+- **W-TEST (#598) -- seed_profiles.py split into 6 modules**: el archivo
+  `app/src/modules/lanzadera/application/seed_profiles.py` (234 sitios,
+  BASELINE abierta desde W64 #587) se rompe en seis modulos siguiendo
+  el patron W48-W53: `seed_profile_apps.py` (50 sitios, 8 apps);
+  `seed_profile_codes.py` (33 sitios, 8 codigos de perfil);
+  `seed_capability_DEFAULT_ADMIN_CALIDAD.py` (37 sitios, 3 capabilities);
+  `seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA.py` (37 sitios, 3);
+  `seed_capability_SECRETARIA_SIN_ACCESO.py` (25 sitios, 2 capabilities);
+  `seed_profiles.py` (57 sitios, runner function que importa de los anteriores).
+  Los cinco modulos de datos se re-exportan como APP_CATALOGUE y
+  PROFILE_CODES. _CAPABILITIES_BY_CODE se construye al importar.
+  El ratchet de mutation sites cierra la BASELINE entry de seed_profiles.py.
+  Se anade entrada BASELINE para dup:05d03dc1b409 (coincidencia estructural
+  entre los dos modulos de capabilities: mismo bloque 5 statements
+  from __future__ + docstring + 3 dicts). 656 tests PASS, quality report PASS.
+
 - **W62 full auth flow (PR-1..PR-7)** (#537, #550): siete PRs encadenados que arman el flujo de autenticación completo para Lanzadera: SessionRepositoryPort + FakeSessionRepository (PR-1, #538); login use case + container wiring (PR-2, #545); logout use case (PR-3, #546); JWT utility HS256 stdlib + JwtSignerPort (PR-4, #547); AuthMiddleware Bearer→request.state (PR-5, #548); auth routes /auth/login, /auth/logout, /auth/me + require_global_admin real (PR-6, #549); reemplazo de stubs _actor_id + retiro de auth_bypass + auth_session fixture (PR-7, #550).
 - **W44 split coverage_gate_helpers.py** (#488): el archivo `app/pytest_plugin/coverage_gate_helpers.py` (127 sitios, BASELINE sobre el ceiling) se rompe en tres módulos cohesivos: `coverage_gate_coverage.py` (3 lookup helpers, 42 sitios), `coverage_gate_messages.py` (4 verdict builders, 26 sitios), `coverage_gate_resolution.py` (3 resolution+eval helpers, 61 sitios). Cada uno queda bien bajo el ceiling de 100 sitios, así que no requiere BASELINE entries propias. `coverage_gate.py` actualiza imports para usar los 3 módulos directamente. `tests/lanzadera/test_coverage_gate_plugin.py` actualiza los `importlib.import_module(...)` dinámicos y los accesos `_file_for_module` / `_module_covered_lines` / etc. al módulo correcto. `coverage_gate_helpers.py` desaparece; la BASELINE entry se cierra. El orchestrator en `coverage_gate.py` sigue en 109 sitios — fuera de scope de W44 (requiere un restructure de la lógica del loop).
 - **W45 extract orchestrator to coverage_gate_evaluate** (#490): el orchestrator `_enforce_critical_coverage` (52 líneas) + el helper `_resolve_target` (15 líneas) se mueven a `app/pytest_plugin/coverage_gate_evaluate.py`. `coverage_gate.py` queda con solo el entry point: `_try_import` + `_emit_verdicts` + el wrapper shim + el pytest hook + StashKey + fixture (~50 sitios). `coverage_gate_evaluate.py` tiene el orchestrator real (~62 sitios). El shim preserva la firma original `(session, coverage_data)` para compatibilidad con los tests existentes. BASELINE entry de `coverage_gate.py` se cierra. El `_try_import` se mantiene en `coverage_gate.py` y `coverage_gate_evaluate.py` lo importa lazy para que los monkey-patches de tests sigan funcionando.

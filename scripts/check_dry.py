@@ -151,6 +151,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # async fn + AuditEvent import + uuid4 prelude (5 statements).
     # Structural coincidence, not a smell.
     "dup:5172cec31ab7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W-TEST (#598): seed_capability_DEFAULT_ADMIN_CALIDAD.py and
+    # seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA.py share the same
+    # 5-statement block: from __future__ + module docstring + three dicts.
+    # Structural coincidence -- the 6-flag capability pattern repeats per
+    # profile group; duplication is in the boilerplate shape, not the data.
+    "dup:05d03dc1b409": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.
     # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring
