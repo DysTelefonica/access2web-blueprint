@@ -60,9 +60,6 @@ _APP_CATALOGUE: list[dict[str, int | str]] = [
 ]
 
 # Capability map per profile code — 6 legacy-role booleans.
-# Reflects the legacy `TbUsuariosAplicacionesPermisos` flags for each role.
-_CAPABILITIES_BY_CODE: dict[str, dict[str, str | int | bool]] = {
-    "DEFAULT": {
         "admin": False,
         "calidad": False,
         "calidad_avisos": False,
