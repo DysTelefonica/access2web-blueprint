@@ -508,3 +508,68 @@ def test_list_audit_requires_admin_without_session(client: TestClient, fake_fixt
     response = client.get("/admin/audit")
 
     assert response.status_code == 401
+
+
+# -----------------------------------------------------------------------
+# GET /admin/apps — HTML list apps page (W-TEST coverage gap)
+# -----------------------------------------------------------------------
+
+def test_list_apps_returns_active_apps(
+    client: TestClient, fake_fixtures: FakeFixtures
+):
+    """GET /admin/apps renders every seeded active app in the HTML response.
+
+    W-TEST coverage: fills the gap left by test_app_routes_integration.py
+    which tests only the REST API surface (GET /admin/apps/{id},
+    POST /admin/apps etc.) and does not render the HTML list page.
+    Covers admin_routes_misc.py lines 48-49.
+    """
+    _seed_app(fake_fixtures, app_id=19)
+
+    response = client.get("/admin/apps")
+
+    assert response.status_code == 200
+    body = response.text
+    assert "Expedientes" in body
+
+
+
+
+
+# -----------------------------------------------------------------------
+# POST /admin/apps/{app_id}/activate — HTML activate app page (W-TEST)
+# -----------------------------------------------------------------------
+
+@pytest.mark.usefixtures("auth_session")
+def test_activate_app_returns_200(
+    client: TestClient, fake_fixtures: FakeFixtures, auth_session: dict[str, UUID]
+):
+    """POST /admin/apps/{app_id}/activate renders the activation confirmation.
+
+    W-TEST coverage: fills the gap left by test_app_routes_integration.py
+    which tests only the REST API surface. Covers
+    admin_routes_misc.py lines 53-54
+    (require_global_admin + TemplateResponse).
+    """
+    _seed_app(fake_fixtures, app_id=19)
+
+    response = client.post(
+        "/admin/apps/19/activate",
+        headers=_auth_headers(auth_session["session_id"]),
+    )
+
+    assert response.status_code == 200
+    body = response.text
+    assert "19" in body
+
+
+def test_activate_app_requires_admin_without_session(
+    client: TestClient, fake_fixtures: FakeFixtures
+):
+    """POST /admin/apps/{app_id}/activate returns 401 without an auth session.
+
+    The endpoint is gated by require_global_admin (admin_routes_misc.py).
+    """
+    response = client.post("/admin/apps/19/activate")
+
+    assert response.status_code == 401
