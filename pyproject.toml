@@ -10,6 +10,12 @@
 # is the single source of truth, this file can be deleted and the CI commands
 # updated to pass `--config app/pyproject.toml` explicitly.
 
+[tool.pytest.ini_options]
+# Mirrors the async mode from `app/pyproject.toml` so that running pytest
+# directly from the repository root (without `-c app/pyproject.toml`) also
+# picks up the correct asyncio mode. CI uses `-c app/pyproject.toml`.
+asyncio_mode = "auto"
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
