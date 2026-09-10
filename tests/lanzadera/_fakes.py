@@ -330,6 +330,7 @@ class FakeAssignmentRepository:
     by_id: dict[UUID, Assignment] = field(default_factory=dict)
     create_calls: list[tuple[UUID, int, UUID]] = field(default_factory=list)
     effective_permissions_calls: list[tuple[UUID, int]] = field(default_factory=list)
+    revoke_calls: list[tuple[UUID, int]] = field(default_factory=list)
     _profile_repo: typing.Any = None
 
     def with_profiles(self, profile_repo: FakeProfileRepository) -> FakeAssignmentRepository:
@@ -373,6 +374,14 @@ class FakeAssignmentRepository:
                 if profile is not None and profile.active:
                     caps.update(profile.capabilities.keys())
         return sorted(caps)
+
+        async def revoke(self, user_id: UUID, app_id: int, *, now: datetime) -> Assignment | None:
+            self.revoke_calls.append((user_id, app_id))
+            for a in self.by_id.values():
+                if a.user_id == user_id and a.app_id == app_id and a.revoked_at is None:
+                    a.revoked_at = now
+                    return a
+            return None
 
 
 # ---------------------------------------------------------------------------

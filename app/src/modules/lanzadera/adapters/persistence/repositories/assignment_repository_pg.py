@@ -27,6 +27,7 @@ The four-method contract:
 
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
 from app.src.modules.lanzadera.adapters.persistence.repositories._pg_imports import (
@@ -175,6 +176,33 @@ class AssignmentRepositoryPg:
             if caps:
                 capabilities.update(caps.keys())
         return sorted(capabilities)
+
+
+        async def revoke(self, user_id: UUID, app_id: int, *, now: datetime) -> Assignment | None:
+            """Soft-delete the live assignment for ``(user_id, app_id)``.
+
+            Sets ``revoked_at = now`` on the row whose ``user_id`` and
+            ``app_id`` match and whose ``revoked_at`` is still ``NULL``.
+            Returns the updated row, or ``None`` if no live assignment exists.
+            """
+            async with self._factory.transaction() as session:
+                stmt = (
+                    sa.update(USER_APP_ASSIGNMENTS_TABLE)
+                    .where(
+                        sa.and_(
+                            USER_APP_ASSIGNMENTS_TABLE.c.user_id == user_id,
+                            USER_APP_ASSIGNMENTS_TABLE.c.app_id == app_id,
+                            USER_APP_ASSIGNMENTS_TABLE.c.revoked_at.is_(None),
+                        )
+                    )
+                    .values(revoked_at=now)
+                    .returning(USER_APP_ASSIGNMENTS_TABLE)
+                )
+                row = (await session.execute(stmt)).first()
+            if row is None:
+                return None
+            return _row_to_assignment(row)
+
 
 
 __all__ = [

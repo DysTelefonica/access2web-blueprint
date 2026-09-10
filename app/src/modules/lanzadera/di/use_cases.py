@@ -155,6 +155,11 @@ def build_use_case_factories(
             assignments=assignment_repo,
             audit=audit,
         ),
+        "revoke_assignment": functools.partial(
+            revoke_assignment,
+            assignments=assignment_repo,
+            audit=audit,
+        ),
         "list_effective_apps": functools.partial(
             list_effective_apps,
             apps=app_repo,

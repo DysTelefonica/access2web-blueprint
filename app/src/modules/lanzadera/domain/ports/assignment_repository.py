@@ -12,6 +12,8 @@ required to cache it per ``(user_id, app_id)`` with TTL 60 s (DA-8).
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from app.src.modules.lanzadera.domain.assignment import Assignment
 from app.src.modules.lanzadera.domain.ports._imports import (
     UUID,
@@ -40,5 +42,14 @@ class AssignmentRepositoryPort(Protocol):
 
         Result is cached per ``(user_id, app_id)`` with TTL 60 s
         (DA-8); the cache is invalidated on every mutation.
+        """
+        ...
+
+    async def revoke(self, user_id: UUID, app_id: int, *, now: datetime) -> Assignment | None:
+        """Soft-delete the live assignment for ``(user_id, app_id)``.
+
+        Sets ``revoked_at = now`` on the row whose ``user_id`` and
+        ``app_id`` match and whose ``revoked_at`` is still ``NULL``.
+        Returns the updated row, or ``None`` if no live assignment exists.
         """
         ...
