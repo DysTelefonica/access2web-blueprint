@@ -10,6 +10,11 @@ Todos los cambios relevantes del blueprint se documentan aquí. El formato sigue
 
 Vacío. Las nuevas entregas se documentan aquí antes del siguiente release cut.
 
+### Fixed
+
+- **seed_profiles.py corruption fix**: el archivo `app/src/modules/lanzadera/application/seed_profiles.py` tenía un bloque `_CAPABILITIES_BY_CODE` incompleto — la declaración del dict faltaba y las claves aparecían huérfanas sin indentación, causando `IndentationError` en tiempo de importación. Se reconstruye el archivo completo con la declaración `_CAPABILITIES_BY_CODE: dict[str, dict[str, bool]]` y sus 8 entries (`DEFAULT`, `ADMIN`, `CALIDAD`, `CALIDAD_AVISOS`, `TECNICO`, `ECONOMIA`, `SECRETARIA`, `SIN_ACCESO`).
+- **check_mutation_sites.py malformed BASELINE entry**: la entrada de `seed_profiles.py` en el dict `BASELINE` tenía valor `()` (tuple vacío) en vez de `BaselineEntry(...)`, lo que causaba `AttributeError: 'tuple' object has no attribute 'sites'` al ejecutar el gate. Se completa con `BaselineEntry(sites=234, target=100, target_date="2027-02-13")`. Además se añaden comentarios FIXME documentando que el archivo sigue muy por encima del ceiling y que la refactorización para reducirlo forma parte del chain W-TEST.
+
 ### Changed
 
 - **W62 full auth flow (PR-1..PR-7)** (#537, #550): siete PRs encadenados que arman el flujo de autenticación completo para Lanzadera: SessionRepositoryPort + FakeSessionRepository (PR-1, #538); login use case + container wiring (PR-2, #545); logout use case (PR-3, #546); JWT utility HS256 stdlib + JwtSignerPort (PR-4, #547); AuthMiddleware Bearer→request.state (PR-5, #548); auth routes /auth/login, /auth/logout, /auth/me + require_global_admin real (PR-6, #549); reemplazo de stubs _actor_id + retiro de auth_bypass + auth_session fixture (PR-7, #550).
