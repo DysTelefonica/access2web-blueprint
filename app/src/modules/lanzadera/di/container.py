@@ -45,6 +45,7 @@ if TYPE_CHECKING:
 
 def _default_clock() -> datetime:
     from datetime import UTC, datetime
+
     return datetime.now(UTC)
 
 
@@ -134,7 +135,11 @@ class LanzaderaContainer:
             self._use_cases, self._clock, user_repo, global_admin_repo, audit
         )
         self._facade_apps = LanzaderaFacadeApps(
-            self._use_cases, self._clock, app_repo, assignment_repo, audit,
+            self._use_cases,
+            self._clock,
+            app_repo,
+            assignment_repo,
+            audit,
             presence_repo,
         )
 
@@ -161,9 +166,7 @@ class LanzaderaContainer:
             return getattr(self._facade_users, name)
         if hasattr(LanzaderaFacadeApps, name):
             return getattr(self._facade_apps, name)
-        raise AttributeError(
-            f"'{type(self).__name__}' object has no attribute '{name}'"
-        )
+        raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
 
 
 __all__ = ["LanzaderaContainer"]
