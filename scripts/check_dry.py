@@ -134,19 +134,18 @@ BASELINE: dict[str, BaselineEntry] = {
     # pattern as the W40 baseline — dataclass field shape coincidence,
     # not a smell.
     "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-        # W64 PR #589/#590: admin.py re-added with two gate functions
-        # that share the same HTTP-exception pattern (request.state check,
-        # container lookup, raise HTTPException). Same structural class.
-        "dup:18c76edf31fc": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-        # W64 (#585): two persistence repo files share the same
-        # import-from-sqlalchemy pattern (5 statements). Structural
-        # coincidence — the adapter pattern repeats across repositories.
-        "dup:28415be31351": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-        # W64 (#588): revoke_assignment.py and audit_append.py share the
-        # async fn + AuditEvent import + uuid4 prelude (5 statements).
-        # Structural coincidence, not a smell.
-        "dup:5172cec31ab7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-
+    # W64 PR #589/#590: admin.py re-added with two gate functions
+    # that share the same HTTP-exception pattern (request.state check,
+    # container lookup, raise HTTPException). Same structural class.
+    "dup:18c76edf31fc": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W64 (#585): two persistence repo files share the same
+    # import-from-sqlalchemy pattern (5 statements). Structural
+    # coincidence — the adapter pattern repeats across repositories.
+    "dup:28415be31351": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W64 (#588): revoke_assignment.py and audit_append.py share the
+    # async fn + AuditEvent import + uuid4 prelude (5 statements).
+    # Structural coincidence, not a smell.
+    "dup:5172cec31ab7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.
     # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring
