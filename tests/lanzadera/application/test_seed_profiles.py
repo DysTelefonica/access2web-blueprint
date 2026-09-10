@@ -15,6 +15,7 @@ import pytest
 
 from app.src.modules.lanzadera.application.seed_profiles import (
     _APP_CATALOGUE,
+    _CAPABILITIES_BY_CODE,
     _PROFILE_CODES,
     seed_profiles,
 )
@@ -62,7 +63,8 @@ async def test_first_run_creates_all_rows() -> None:
             profile = await repo.get_by_code(app["id"], pdef["code"])
             assert profile is not None, f"Missing {app['id']}/{pdef['code']}"
             assert profile.name == pdef["name"]
-            assert profile.capabilities == {}  # intentionally empty
+            expected = _CAPABILITIES_BY_CODE[pdef["code"]].copy()
+            assert profile.capabilities == expected
             assert profile.active is True
             assert profile.created_at == now
 

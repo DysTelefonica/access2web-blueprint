@@ -5,7 +5,7 @@
 DA-12: a profile carries a JSONB-shaped `capabilities` map. Values are
 `string | number | boolean` (the schema is enforced at the persistence
 boundary in Phase 2 — `0003_seed_profiles`). The canonical capability set per
-app is OPEN (`##ABIERTO##`, gap G-2): the seed uses `{}` until product
+app is CLOSED (D-591): the seed populates 6 legacy-role booleans
 confirms the catalogue. Mutation here is for `active`, `name`, and the
 `capabilities` map, all of which evolve with the profile.
 """
