@@ -11,7 +11,7 @@ W65 (#596): cleave LanzaderaContainer by port group.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     AsyncSessionFactoryPort,
@@ -52,7 +52,7 @@ from app.src.modules.lanzadera.domain.ports.presence_repository import PresenceR
 from app.src.modules.lanzadera.domain.ports.profile_repository import ProfileRepositoryPort
 
 if TYPE_CHECKING:
-    from app.src.modules.lanzadera.di._container_auth import AuthPorts
+    pass
 
 
 def _adapter(
