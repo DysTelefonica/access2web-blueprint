@@ -31,7 +31,7 @@ from tests.lanzadera._fakes import (
 )
 
 if TYPE_CHECKING:
-    from uuid import UUID
+    pass
 
 
 # ---------------------------------------------------------------------------
