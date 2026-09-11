@@ -149,15 +149,49 @@ def _generate_apps(rng: random.Random) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 _FIRST_NAMES = [
-    "Ana", "Luis", "Carmen", "José", "Isabel", "Antonio", "Rosa", "Miguel",
-    "Lucía", "David", "Elena", "Francisco", "Patricia", "Juan", "Margarita",
-    "Carlos", "Sofía", "Pablo", "Laura", "Alberto",
+    "Ana",
+    "Luis",
+    "Carmen",
+    "José",
+    "Isabel",
+    "Antonio",
+    "Rosa",
+    "Miguel",
+    "Lucía",
+    "David",
+    "Elena",
+    "Francisco",
+    "Patricia",
+    "Juan",
+    "Margarita",
+    "Carlos",
+    "Sofía",
+    "Pablo",
+    "Laura",
+    "Alberto",
 ]
 
 _LAST_NAMES = [
-    "García", "Rodríguez", "Martínez", "López", "González", "Fernández",
-    "Pérez", "Sánchez", "Ramírez", "Torres", "Flores", "Rivera", "Gómez",
-    "Díaz", "Reyes", "Morales", "Cruz", "Romero", "Vargas", "Molina",
+    "García",
+    "Rodríguez",
+    "Martínez",
+    "López",
+    "González",
+    "Fernández",
+    "Pérez",
+    "Sánchez",
+    "Ramírez",
+    "Torres",
+    "Flores",
+    "Rivera",
+    "Gómez",
+    "Díaz",
+    "Reyes",
+    "Morales",
+    "Cruz",
+    "Romero",
+    "Vargas",
+    "Molina",
 ]
 
 
@@ -195,13 +229,13 @@ def _generate_users(rng: random.Random) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 
 FLAG_TO_CODE = {
-    "EsUsuarioAdministrador":   "ADMIN",
-    "EsUsuarioCalidad":         "CALIDAD",
-    "EsUsuarioCalidadAvisos":   "CALIDAD_AVISOS",
-    "EsUsuarioTecnico":         "TECNICO",
-    "EsUsuarioEconomia":         "ECONOMIA",
-    "EsUsuarioSecretaria":      "SECRETARIA",
-    "EsUsuarioSinAcceso":       "SIN_ACCESO",
+    "EsUsuarioAdministrador": "ADMIN",
+    "EsUsuarioCalidad": "CALIDAD",
+    "EsUsuarioCalidadAvisos": "CALIDAD_AVISOS",
+    "EsUsuarioTecnico": "TECNICO",
+    "EsUsuarioEconomia": "ECONOMIA",
+    "EsUsuarioSecretaria": "SECRETARIA",
+    "EsUsuarioSinAcceso": "SIN_ACCESO",
 }
 ALL_FLAGS = list(FLAG_TO_CODE.keys())
 LEGACY_CODES = list(FLAG_TO_CODE.values())
@@ -227,7 +261,11 @@ def _sinacceso_matrix(
     - All flags='No'/NULL → ["DEFAULT"]
     """
     if flags.get("EsUsuarioSinAcceso") == "Sí":
-        return [DEFAULT_CODE if "EsUsuarioSinAcceso" == "EsUsuarioSinAcceso" else DEFAULT_CODE]
+        return [
+            DEFAULT_CODE
+            if "EsUsuarioSinAcceso" == "EsUsuarioSinAcceso"
+            else DEFAULT_CODE
+        ]
     codes = []
     for flag, code in FLAG_TO_CODE.items():
         if flag == "EsUsuarioSinAcceso":
@@ -542,12 +580,12 @@ def main(out_dir: Path) -> None:
     assert len(users) == 156, f"Expected 156 users, got {len(users)}"
     assert len(assignments) == 622, f"Expected 622 assignments, got {len(assignments)}"
     print("\nAll checks passed.")
-    print(f"  apps={len(apps)}, users={len(users)}, profiles={len(profiles)}, "
-          f"assignments={len(assignments)}, audit_events={len(audit_events)}")
+    print(
+        f"  apps={len(apps)}, users={len(users)}, profiles={len(profiles)}, "
+        f"assignments={len(assignments)}, audit_events={len(audit_events)}"
+    )
 
 
 if __name__ == "__main__":
-    out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(
-        "data/fixtures/lanzadera"
-    )
+    out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data/fixtures/lanzadera")
     main(out)
