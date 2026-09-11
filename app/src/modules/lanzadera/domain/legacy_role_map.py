@@ -50,7 +50,7 @@ class LegacyFlags(StrEnum):
 
 
 # Mapping from each non-exclusion flag to the modern profile code.
-LEGACY_ROLE_MAP: dict[str, str] = {
+LEGACY_ROLE_MAP: dict[LegacyFlags, str] = {
     LegacyFlags.ADMINISTRADOR: "ADMIN",
     LegacyFlags.CALIDAD: "CALIDAD",
     LegacyFlags.CALIDAD_AVISOS: "CALIDAD_AVISOS",
