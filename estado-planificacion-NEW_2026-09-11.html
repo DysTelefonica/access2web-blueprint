@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado Planificación — 2026-09-11 · Expedientes next</title>
+<style>
+  :root {
+    --tf-blue:   #2563eb;
+    --tf-green:  #16a34a;
+    --tf-amber:  #ca8a04;
+    --tf-red:    #dc2626;
+    --tf-grey:   #64748b;
+    --tf-violet: #7c3aed;
+  }
+  body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { border-bottom: 3px solid var(--tf-blue); padding-bottom: .5rem; }
+  h2 { margin-top: 2rem; border-bottom: 1px solid #ccc; padding-bottom: .25rem; }
+  h3 { margin-top: 1.25rem; font-size: 1rem; color: #374151; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+  th, td { border: 1px solid #ddd; padding: .5rem .75rem; text-align: left; vertical-align: top; }
+  th { background: #f3f4f6; }
+  .cerrado { background: #dcfce7; color: #166534; }
+  .abierto { background: #fef9c3; color: #854d0e; }
+  .pendiente { background: #f1f5f9; color: #475569; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot-cerrado { background: var(--tf-green); }
+  .dot-abierto { background: var(--tf-amber); }
+  .dot-pendiente { background: var(--tf-grey); }
+  .legend { display: flex; gap: 1.5rem; margin: 1rem 0; font-size: .85rem; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: .4rem; }
+  code { background: #e5e7eb; padding: .1rem .3rem; border-radius: 3px; }
+  pre { background: #f1f5f9; padding: 1rem; overflow-x: auto; font-size: .8rem; }
+
+  /* Gantt */
+  .gantt { overflow-x: auto; }
+  .gantt table { font-size: .75rem; table-layout: fixed; }
+  .gantt th, .gantt td { padding: .25rem .3rem; vertical-align: middle; }
+  .gantt .ph { background: var(--tf-blue); color: #fff; text-align: center; font-weight: 600; }
+  .gantt .pm { background: #e0e7ff; text-align: center; font-size: .65rem; color: #3730a3; }
+  .bar { height: 14px; border-radius: 2px; display: block; }
+  .bar.done    { background: var(--tf-green); }
+  .bar.current { background: var(--tf-amber); }
+  .bar.plan   { background: #93c5fd; }
+  .bar.partial {
+    background: repeating-linear-gradient(
+      -45deg, #fbbf24, #fbbf24 4px, #fde68a 4px, #fde68a 8px
+    );
+  }
+  .bar.partial-100 {
+    background: repeating-linear-gradient(
+      -45deg, var(--tf-green), var(--tf-green) 4px, #bbf7d0 4px, #bbf7d0 8px
+    );
+  }
+  .gantt-note { font-size: .7rem; color: var(--tf-grey); margin-top: .25rem; }
+</style>
+</head>
+<body>
+
+<h1>Estado Planificación — 2026-09-11</h1>
+<p><strong>Última actualización:</strong> 2026-09-11 · <strong>Próxima app:</strong> Expedientes · <strong>Cambio vivo:</strong> <code>openspec/changes/expedientes-web-migration/</code></p>
+
+<div class="legend">
+  <span><span class="dot dot-cerrado"></span> Cerrado</span>
+  <span><span class="dot dot-abierto"></span> En curso</span>
+  <span><span class="dot dot-pendiente"></span> Pendiente</span>
+</div>
+
+<h2>Estado consolidado — Apps</h2>
+<table>
+  <thead>
+    <tr>
+      <th>App</th>
+      <th>Docs</th>
+      <th>Código</th>
+      <th>Tests</th>
+      <th>UAT</th>
+      <th>Gaps</th>
+      <th>RAG</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="cerrado">
+      <td><strong>Lanzadera</strong> (la madre)</td>
+      <td>✅ Épica + specs</td>
+      <td>✅ MVP merged</td>
+      <td>✅ 32 contract + 777 integration</td>
+      <td>⏳ Pendiente — deferred a Fase 4</td>
+      <td>G-2..G-8 (baja)</td>
+      <td>🟢 Verde · MVP cerrado; gaps son decisiones de producto/ops</td>
+    </tr>
+    <tr class="pendiente">
+      <td><strong>Expedientes</strong></td>
+      <td>✅ 63 capabilities · 49 tablas dict · 10 specs</td>
+      <td>🔲 Esqueleto vacío — F01 pendiente</td>
+      <td>🔲 Por hacer</td>
+      <td>🔲 U01–U10</td>
+      <td>6 decisiones bloqueantes (runtime)</td>
+      <td>🟡 Ámbar · docs listas; código no ha arrancado</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Fase cards — Expedientes</h2>
+
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:.75rem; margin:1rem 0;">
+  <div style="border:1px solid #ddd; border-radius:6px; padding:.75rem; background:#f0fdf4;">
+    <strong style="color:#166534;">🟢 Docs — D01–D54</strong>
+    <p style="margin:.25rem 0 0;font-size:.85rem;color:#374151;">54 work units de documentación cerradas. 63 capabilities documentadas. 49 tablas dictionary + 3 tranches field mapping. 10 specs OpenSpec.</p>
+  </div>
+  <div style="border:1px solid #ddd; border-radius:6px; padding:.75rem; background:#fef9c3;">
+    <strong style="color:#854d0e;">🟡 Foundation — F01–F04</strong>
+    <p style="margin:.25rem 0 0;font-size:.85rem;color:#374151;">Puertos, dominio, DI, schema base. F01 (#222) es el punto de entrada. Depende de #21, #31, #32 merged en main.</p>
+  </div>
+  <div style="border:1px solid #ddd; border-radius:6px; padding:.75rem; background:#f1f5f9;">
+    <strong style="color:#475569;">🔲 Producto — C+R+Q+W+E+A+T+H+Z01</strong>
+    <p style="margin:.25rem 0 0;font-size:.85rem;color:#374151;">63 verticals: CRUD lifecycle, catálogos, query services, write resilience, E2E, access control, runtime, integraciones. 43 work units.</p>
+  </div>
+  <div style="border:1px solid #ddd; border-radius:6px; padding:.75rem; background:#f1f5f9;">
+    <strong style="color:#475569;">🔲 Playwright — Z02–Z03</strong>
+    <p style="margin:.25rem 0 0;font-size:.85rem;color:#374151;">Journey tests: lifecycle+query (Z02) y writes+E2E+integrations (Z03).</p>
+  </div>
+  <div style="border:1px solid #ddd; border-radius:6px; padding:.75rem; background:#f1f5f9;">
+    <strong style="color:#475569;">🔲 Extractores — M01–M04</strong>
+    <p style="margin:.25rem 0 0;font-size:.85rem;color:#374151;">4 tranches de extractores staging + reconciliation. 49 tablas. Depende de F04+D40–D49.</p>
+  </div>
+  <div style="border:1px solid #ddd; border-radius:6px; padding:.75rem; background:#f1f5f9;">
+    <strong style="color:#475569;">🔲 UAT — U01–U10</strong>
+    <p style="margin:.25rem 0 0;font-size:.85rem;color:#374151;">10 suites: lifecycle, related-data, catalogs, query, write-resilience, E2E, access-control, runtime, integrations, retirement.</p>
+  </div>
+  <div style="border:1px solid #ddd; border-radius:6px; padding:.75rem; background:#f1f5f9;">
+    <strong style="color:#475569;">🔲 Retirement — L01</strong>
+    <p style="margin:.25rem 0 0;font-size:.85rem;color:#374151;">Puertas de retirada legacy verificables. CAP-057..063. Depende de U10.</p>
+  </div>
+</div>
+
+<h2>Gantt — H1 2026–H2 2026 (41 días)</h2>
+<div class="gantt">
+<table>
+  <thead>
+    <tr>
+      <th style="width:220px;">Fase</th>
+      <!-- Jun 1–2 -->    <th class="pm">1</th><th class="pm">2</th>
+      <!-- Jun 29–30 -->  <th class="pm">29</th><th class="pm">30</th>
+      <!-- Jul 1–31 -->  <th class="pm">1</th><th class="pm">2</th><th class="pm">3</th><th class="pm">4</th><th class="pm">5</th><th class="pm">6</th><th class="pm">7</th><th class="pm">8</th><th class="pm">9</th><th class="pm">10</th><th class="pm">11</th><th class="pm">12</th><th class="pm">13</th><th class="pm">14</th><th class="pm">15</th><th class="pm">16</th><th class="pm">17</th><th class="pm">18</th><th class="pm">19</th><th class="pm">20</th><th class="pm">21</th><th class="pm">22</th><th class="pm">23</th><th class="pm">24</th><th class="pm">25</th><th class="pm">26</th><th class="pm">27</th><th class="pm">28</th><th class="pm">29</th><th class="pm">30</th><th class="pm">31</th>
+      <!-- Ago 1–5 -->   <th class="pm">1</th><th class="pm">2</th><th class="pm">3</th><th class="pm">4</th><th class="pm">5</th>
+      <!-- Sep 1 -->     <th class="pm">1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Lanzadera MVP</td>
+      <!-- Jun 1–2: W54–W65 -->          <td colspan="2"><span class="bar done"></span></td>
+      <!-- Jun 29–Jul 31: seeds+tests --> <td colspan="33"><span class="bar done"></span></td>
+      <!-- Ago 1–5: deferred -->          <td colspan="5"><span class="bar partial-100"></span></td>
+      <!-- Sep 1 (UAT futuro) -->          <td></td>
+    </tr>
+    <tr>
+      <td>Lanzadera Gaps (G-2..G-8)</td>
+      <!-- Vacío — decisión producto/ops, no ingeniería --> <td colspan="41"></td>
+    </tr>
+    <tr>
+      <td>Expedientes Foundation (F01–F04)</td>
+      <!-- Plan arranca Sep 11+ (columna 41 = Sep 1) --> <td colspan="41"><span class="bar plan"></span></td>
+    </tr>
+    <tr>
+      <td>Expedientes Producto (C+R+Q+W+E+A+T+H)</td>
+      <td colspan="41"></td>
+    </tr>
+    <tr>
+      <td>Expedientes Extractores (M01–M04)</td>
+      <td colspan="41"></td>
+    </tr>
+    <tr>
+      <td>Expedientes UAT (U01–U10)</td>
+      <td colspan="41"></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p class="gantt-note">🟢 Done · <span style="background:#bbf7d0;padding:0 3px;border-radius:2px;">Parcialmente cerrado</span> · <span style="background:#93c5fd;padding:0 3px;border-radius:2px;">Planificado</span> · Vacío = sin actividad · Gaps Lanzadera son decisiones de producto/ops, no de ingeniería.</p>
+
+<h2>Expedientes — Primer paso ejecutable</h2>
+<table>
+  <thead>
+    <tr><th>Work unit</th><th>Issue</th><th>Descripción</th><th>Dependencias</th></tr>
+  </thead>
+  <tbody>
+    <tr class="pendiente">
+      <td><strong>F01</strong></td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/222">#222</a></td>
+      <td>Puertos y tipos en <code>modules/expedientes/ports</code>. Contratos + fakes deterministas.</td>
+      <td>#21 (hexagonal), #31 (identidad), #32 (configuración) — todas merged en main.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Gaps bloqueantes — Expedientes</h2>
+<table>
+  <thead>
+    <tr><th>Decisión</th><th>Qué</th><th>Quién decide</th><th>Impacto</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>D40–D44</td>
+      <td>Ownership, volumen y uso de las 49 tablas. Necesita evidencia runtime.</td>
+      <td>Ingeniería + producto</td>
+      <td>Bloquea schema DDL (F04, M01)</td>
+    </tr>
+    <tr>
+      <td>CPV</td>
+      <td>Normalización de códigos y dígitos.</td>
+      <td>Producto</td>
+      <td>Bloquea Q01 (CAP-016 gate)</td>
+    </tr>
+    <tr>
+      <td>Anexos</td>
+      <td>Límite de tamaño (spec deja 25 MB como pregunta abierta), retención, proveedor.</td>
+      <td>Producto + ops</td>
+      <td>Bloquea R03 (CAP-010), H06 (CAP-056)</td>
+    </tr>
+    <tr>
+      <td>FNV-1a</td>
+      <td>Golden de continuidad antes de aprobar el algoritmo de hash.</td>
+      <td>Ingeniería</td>
+      <td>Bloquea E03 (CAP-036)</td>
+    </tr>
+    <tr>
+      <td>AGEDYS</td>
+      <td>Ownership, errores, reintentos e idempotencia.</td>
+      <td>Producto</td>
+      <td>Bloquea H02 (CAP-052)</td>
+    </tr>
+    <tr>
+      <td>Batch E2E</td>
+      <td>Atomicidad, ciclo, reanudación y semántica de fallo.</td>
+      <td>Producto</td>
+      <td>Bloquea E05 (CAP-035)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Cambios desde última instantánea</h2>
+<ul>
+  <li><strong>Lanzadera MVP Seeds:</strong> ciclo TDD DA-7b completo. #626 fixtures, #630 migraciones 0003–0007, #632 contract tests (32/32). Todos merged.</li>
+  <li><strong>Expedientes:</strong> sin cambios en código. Documentación al 100% (54 WUs cerradas).</li>
+  <li><strong>Nueva fase cards:</strong> añadida sección de fase cards con RAG para Expedientes.</li>
+  <li><strong>Gantt:</strong> añadida sección Gantt con 41 day-cells según formato skill.</li>
+</ul>
+
+<h2>Próximos pasos</h2>
+<ol>
+  <li>Abrir <a href="https://github.com/DysTelefonica/access2web-blueprint/issues/222">issue #222</a> para F01 (ports). Verificar que #21, #31, #32 están merged en main.</li>
+  <li>Decidir las 6 decisiones bloqueantes (D40–D44, CPV, Anexos, FNV-1a, AGEDYS, Batch E2E) en paralelo a F01.</li>
+  <li>Encadenar F01→F02→F03→F04 en PRs independientes (cada ≤400 líneas).</li>
+</ol>
+
+<h2>CHANGELOG [Unreleased — Expedientes Migration]</h2>
+<pre>
+### Added
+- estado-planificacion-NEW_2026-09-11.html: transición a Expedientes.
+  Fase cards, Gantt de 41 días, tabla de gaps bloqueantes.
+  Primera work unit executable: F01 (#222).
+</pre>
+
+<hr>
+<p style="color:var(--tf-grey);font-size:.8rem">
+  Expedientes: docs ✅ · código 🔲 · 2026-09-11
+</p>
+</body>
+</html>
