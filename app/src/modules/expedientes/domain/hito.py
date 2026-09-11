@@ -44,6 +44,4 @@ class Hito:
             raise ValueError("fecha_hito must be a date")
         if self.garantia_fecha_fin is not None:
             if self.garantia_fecha_fin <= self.fecha_hito:
-                raise ValueError(
-                    "garantia_fecha_fin must be strictly after fecha_hito"
-                )
+                raise ValueError("garantia_fecha_fin must be strictly after fecha_hito")

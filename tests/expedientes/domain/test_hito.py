@@ -25,6 +25,7 @@ def _dt(year: int, month: int, day: int) -> datetime:
 # HitoEstado StrEnum
 # ---------------------------------------------------------------------------
 
+
 class TestHitoEstadoStrEnum:
     """Must be a StrEnum matching the Postgres enum literal values."""
 
@@ -54,6 +55,7 @@ class TestHitoEstadoStrEnum:
 # Hito construction — happy path
 # ---------------------------------------------------------------------------
 
+
 class TestHitoConstruction:
     """Minimum viable `Hito` carries identity, dates and estado."""
 
@@ -78,6 +80,7 @@ class TestHitoConstruction:
 # ---------------------------------------------------------------------------
 # Hito invariants
 # ---------------------------------------------------------------------------
+
 
 class TestHitoInvariants:
     """Domain invariants enforced at construction time (CAP-008)."""

@@ -46,8 +46,7 @@ class Expediente:
         """
         if hito.id_expediente != self.id:
             raise ValueError(
-                f"wrong Expediente {hito.id_expediente} for Hito {hito.id}; "
-                f"expected {self.id}"
+                f"wrong Expediente {hito.id_expediente} for Hito {hito.id}; expected {self.id}"
             )
         if any(h.id == hito.id for h in self._hitos):
             raise ValueError(f"Hito {hito.id} already exists in Expediente {self.id}")

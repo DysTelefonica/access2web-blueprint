@@ -23,6 +23,7 @@ def _now() -> datetime:
 # ExpedienteEstado StrEnum
 # ---------------------------------------------------------------------------
 
+
 class TestExpedienteEstadoStrEnum:
     """Must be a StrEnum so JSON serialisation round-trips."""
 
@@ -53,6 +54,7 @@ class TestExpedienteEstadoStrEnum:
 # ExpedienteTipo StrEnum
 # ---------------------------------------------------------------------------
 
+
 class TestExpedienteTipoStrEnum:
     """Must be a StrEnum matching the Postgres enum literal values."""
 
@@ -78,6 +80,7 @@ class TestExpedienteTipoStrEnum:
 # ---------------------------------------------------------------------------
 # Expediente construction — happy path
 # ---------------------------------------------------------------------------
+
 
 class TestExpedienteConstruction:
     """Minimum viable `Expediente` carries identity, tipo, estado and version."""
@@ -127,6 +130,7 @@ class TestExpedienteConstruction:
 # ---------------------------------------------------------------------------
 # Expediente invariants
 # ---------------------------------------------------------------------------
+
 
 class TestExpedienteInvariants:
     """Domain invariants enforced at construction time."""
@@ -221,6 +225,7 @@ class TestExpedienteInvariants:
 # ---------------------------------------------------------------------------
 # Equality
 # ---------------------------------------------------------------------------
+
 
 class TestExpedienteEquality:
     """Dataclass equality is field-based."""

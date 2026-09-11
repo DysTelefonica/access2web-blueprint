@@ -61,6 +61,7 @@ def _hito(
 # Hito collection — initial state
 # ---------------------------------------------------------------------------
 
+
 class TestExpedienteHitosInitialState:
     """Expediente starts with an empty hitos list."""
 
@@ -78,6 +79,7 @@ class TestExpedienteHitosInitialState:
 # ---------------------------------------------------------------------------
 # add_hito — happy path
 # ---------------------------------------------------------------------------
+
 
 class TestAddHitoHappyPath:
     """Hito added to the correct Expediente is stored in the collection."""
@@ -107,6 +109,7 @@ class TestAddHitoHappyPath:
 # add_hito — invariants
 # ---------------------------------------------------------------------------
 
+
 class TestAddHitoInvariants:
     """add_hito enforces aggregate invariants."""
 
@@ -133,6 +136,7 @@ class TestAddHitoInvariants:
 # remove_hito — happy path
 # ---------------------------------------------------------------------------
 
+
 class TestRemoveHitoHappyPath:
     """Hito removed from the collection is no longer present."""
 
@@ -156,6 +160,7 @@ class TestRemoveHitoHappyPath:
 # ---------------------------------------------------------------------------
 # remove_hito — invariants
 # ---------------------------------------------------------------------------
+
 
 class TestRemoveHitoInvariants:
     """remove_hito enforces aggregate invariants."""
