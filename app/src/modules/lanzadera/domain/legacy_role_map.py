@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp PR 2
+# HARNESS-PROVENANCE: deterministic quality-harness v1.4 + lanzadera-mvp PR 2
 # DA-1, DA-12, H11, D110 — pure domain module; only stdlib imports allowed.
 """Legacy-role mapping (lanzadera-mvp/assignments).
 
@@ -12,6 +12,12 @@ H11 (32-case matrix): the function is exercised against every
 combination of the 6 non-SinAcceso flags plus the SinAcceso override.
 D110 forbids inferring capabilities from dynamic fields; the canonical
 shape arrives in PR 3a (migration 0003).
+
+This revision adds:
+  - FLAG_TO_CODE: lower-case-key dict mirroring LEGACY_ROLE_MAP for the
+    migration seam (fixtures use lower-case column names).
+  - LEGACY_CODES: ordered list of the 7 legacy codes.
+  - resolve_profile_codes: list[str] alias of resolve_legacy_roles.
 """
 
 from __future__ import annotations
@@ -21,9 +27,12 @@ from enum import StrEnum
 __all__ = [
     "LegacyFlags",
     "LEGACY_ROLE_MAP",
+    "FLAG_TO_CODE",
+    "LEGACY_CODES",
     "DEFAULT_PROFILE_CODE",
     "SIN_ACCESO_PROFILE_CODE",
     "resolve_legacy_roles",
+    "resolve_profile_codes",
 ]
 
 
@@ -41,7 +50,7 @@ class LegacyFlags(StrEnum):
 
 
 # Mapping from each non-exclusion flag to the modern profile code.
-LEGACY_ROLE_MAP: dict[str, str] = {
+LEGACY_ROLE_MAP: dict[LegacyFlags, str] = {
     LegacyFlags.ADMINISTRADOR: "ADMIN",
     LegacyFlags.CALIDAD: "CALIDAD",
     LegacyFlags.CALIDAD_AVISOS: "CALIDAD_AVISOS",
@@ -50,9 +59,18 @@ LEGACY_ROLE_MAP: dict[str, str] = {
     LegacyFlags.SECRETARIA: "SECRETARIA",
 }
 
-# Fallback codes.
+# Lower-case-key variant for ergonomic use from the migration seam.
+# Keys match the lower-case .value of each LegacyFlags member.
+FLAG_TO_CODE: dict[str, str] = {flag.value.lower(): code for flag, code in LEGACY_ROLE_MAP.items()}
+
+# Fallback codes (defined before LEGACY_CODES that references them).
 DEFAULT_PROFILE_CODE: str = "DEFAULT"
 SIN_ACCESO_PROFILE_CODE: str = "SIN_ACCESO"
+
+# Ordered list of the seven legacy codes.
+LEGACY_CODES: list[str] = [
+    LEGACY_ROLE_MAP[flag] for flag in LegacyFlags if flag != LegacyFlags.SIN_ACCESO
+] + [SIN_ACCESO_PROFILE_CODE]
 
 
 def _flag_is_set(flags: dict[str, bool | None], name: str) -> bool:
@@ -90,8 +108,20 @@ def resolve_legacy_roles(flags: dict[str, bool | None]) -> tuple[str, ...]:
     if _flag_is_set(flags, LegacyFlags.SIN_ACCESO):
         return (SIN_ACCESO_PROFILE_CODE,)
 
-    active = tuple(LEGACY_ROLE_MAP[flag] for flag in LEGACY_ROLE_MAP if _flag_is_set(flags, flag))
+    active = tuple(
+        LEGACY_ROLE_MAP[flag]
+        for flag in LegacyFlags
+        if flag != LegacyFlags.SIN_ACCESO and _flag_is_set(flags, flag)
+    )
     if active:
         return active
 
     return (DEFAULT_PROFILE_CODE,)
+
+
+def resolve_profile_codes(flags: dict[str, bool | None]) -> list[str]:
+    """Convenience alias of ``resolve_legacy_roles`` that returns ``list[str]``.
+
+    Easier to use in the 0003 seed loop: ``for code in resolve_profile_codes(row):``.
+    """
+    return list(resolve_legacy_roles(flags))
