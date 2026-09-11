@@ -287,13 +287,9 @@ pwsh -Command "python -m http.server 8765 --directory docs/design/mockups"
 
 ## Skills de documentación
 
-3 skills creadas en `C:\Proyectos\skills\skills\` (linkeadas en opencode) que aplican los patrones de Gentleman-Programming adaptados:
+Skills internas del proyecto (versionadas en `skills/`). Cargue la pertinent antes de redactar o revisar documentación:
 
-- [`documentation-patterns`](../Proyectos/skills/skills/documentation-patterns/SKILL.md) — reglas generales para escribir docs que sirvan a IAs + humanos.
-- [`docs-index`](../Proyectos/skills/skills/docs-index/SKILL.md) — patrón `DOCS.md` raíz (este doc).
-- [`codebase-guide`](../Proyectos/skills/skills/codebase-guide/SKILL.md) — patrón `CODEBASE-GUIDE.md` (mantenedores).
-
-Las skills siguen el formato de Gentleman-Programming: frontmatter YAML, When to Use con bullets, Critical Rules numeradas, Verification checklist, Cookbook con If/Then/Example, Anti-patterns ❌, Acceptance scenarios ✅.
+- [`documentation-alan-style/SKILL.md`](skills/documentation-alan-style/SKILL.md) — tono Castellano peninsular formal, estructura, plantillas, anti-patrones. Skills sisters en `skills/`: `architecture-guardrails`, `lanzadera-testing-strategy`. Índice completo en [`skills/README.md`](skills/README.md).
 
 ---
 
