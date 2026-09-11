@@ -168,10 +168,13 @@ BASELINE: dict[str, BaselineEntry] = {
     # prelude (``3d62b08337d3`` occurrences=2 and ``25d63157feb1``
     # occurrences=3) are no longer needed; both groups report zero
     # duplicated blocks after the refactor.
+    # W65 (#596): container.py split -> _container_ports.py gets same
+    # port-adapter import block (5 statements). Structural coincidence
+    # from the adapter wiring pattern; not a smell.
+    "dup:33cdc5a80fa3": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
 }
 
-# --------------------------------------------------------------------------------------------
-# MECHANISM
+# MECHANISM# MECHANISM
 # --------------------------------------------------------------------------------------------
 
 
