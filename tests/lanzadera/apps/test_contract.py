@@ -52,7 +52,8 @@ class TestAppsFixture:
         for row in rows:
             assert isinstance(row["requires_office_presence"], bool), (
                 f"app {row['short_code']}: "
-                f"requires_office_presence must be bool, got {type(row['requires_office_presence'])}"
+                f"requires_office_presence must be bool, got "
+                f"{type(row['requires_office_presence'])}"
             )
 
     def test_no_null_required_fields(self, rows: list[dict]) -> None:
