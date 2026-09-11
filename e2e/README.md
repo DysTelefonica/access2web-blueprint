@@ -14,7 +14,9 @@ paginated, create, get, disable, revoke assignment. Routes added in
 `admin_routes_users_json.py`; helpers in `helpers/api-client.ts`; spec in
 `admin-users.spec.ts` (13 cases).
 
-**Phases 3–5 pending** (issues #606, #607, #608).
+**Phase 3 🔄 in-progress** (#606): admin-apps CRUD.
+
+**Phases 4–5 pending** (issues #607, #608).
 
 ---
 
@@ -26,7 +28,7 @@ The release gate still uses `|| true` — real wiring is issue #602 (umbrella).
 |---|---|---|---|
 | F1 | [#604](https://github.com/DysTelefonica/access2web-blueprint/issues/604) | `auth.spec.ts` — login, logout, /auth/me, /auth/me/apps, capabilities, revoke | ✅ done |
 | F2 | [#605](https://github.com/DysTelefonica/access2web-blueprint/issues/605) | `admin-users.spec.ts` — list/create/disable/assign | ✅ done |
-| F3 | [#606](https://github.com/DysTelefonica/access2web-blueprint/issues/606) | `admin-apps.spec.ts` — CRUD | ⬜ pending |
+| F3 | [#606](https://github.com/DysTelefonica/access2web-blueprint/issues/606) | `admin-apps.spec.ts` — CRUD | 🔄 in-progress |
 | F4 | [#607](https://github.com/DysTelefonica/access2web-blueprint/issues/607) | `presence.spec.ts` — heartbeat + SSE stream | ⬜ pending |
 | F5 | [#608](https://github.com/DysTelefonica/access2web-blueprint/issues/608) | `cli.spec.ts` — set-password + migrate_from_access | ⬜ pending |
 
