@@ -1,0 +1,300 @@
+/**
+ * e2e/helpers/api-client.ts
+ *
+ * Typed HTTP client for the Lanzadera API.
+ *
+ * Every method accepts an optional `token`. When provided, the request carries
+ * `Authorization: Bearer <token>`. When omitted, the request is sent unauthenticated.
+ * This makes it easy to test both authenticated and unauthenticated paths from
+ * the same helper without branching.
+ *
+ * The base URL comes from `playwright.config.ts` (`process.env.BASE_URL`), so
+ * CI and local runs use the same code path.
+ */
+
+import { BASE_URL } from "../playwright.config";
+
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly body: unknown,
+    message: string
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
+function buildUrl(path: string): string {
+  return `${BASE_URL}${path}`;
+}
+
+async function request<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  path: string,
+  token: string | null,
+  body?: unknown
+): Promise<{ status: number; data: T }> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(buildUrl(path), {
+    method,
+    headers,
+    body: body != null ? JSON.stringify(body) : undefined,
+  });
+
+  let data: T;
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    data = (await response.json()) as T;
+  } else if (response.status === 204) {
+    data = undefined as unknown as T;
+  } else {
+    data = (await response.text()) as unknown as T;
+  }
+
+  return { status: response.status, data };
+}
+
+// ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+
+/** POST /auth/login */
+export async function login(
+  email: string,
+  password: string
+): Promise<{ status: number; token?: string; session_id?: string; detail?: string }> {
+  const { status, data } = await request<{
+    token?: string;
+    session_id?: string;
+    detail?: string;
+  }>("POST", "/auth/login", null, { email, password });
+  return { status, ...(data as object) };
+}
+
+/** POST /auth/logout — 204 on success, 401 if not authenticated */
+export async function logout(token: string): Promise<{ status: number }> {
+  const { status } = await request<void>("POST", "/auth/logout", token);
+  return { status };
+}
+
+/** GET /auth/me */
+export async function getMe(
+  token: string
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>>(
+    "GET",
+    "/auth/me",
+    token
+  );
+  return { status, data };
+}
+
+/** GET /auth/me/apps */
+export async function getMyApps(
+  token: string
+): Promise<{ status: number; data?: { user_id: string; apps: unknown[] } }> {
+  const { status, data } = await request<{ user_id: string; apps: unknown[] }>(
+    "GET",
+    "/auth/me/apps",
+    token
+  );
+  return { status, data };
+}
+
+/** GET /auth/me/apps/:app_id/capabilities */
+export async function getMyCapabilities(
+  token: string,
+  appId: number
+): Promise<{
+  status: number;
+  data?: { user_id: string; app_id: number; capabilities: string[] };
+}> {
+  const { status, data } = await request<{
+    user_id: string;
+    app_id: number;
+    capabilities: string[];
+  }>(`GET`, `/auth/me/apps/${appId}/capabilities`, token);
+  return { status, data };
+}
+
+/** POST /auth/me/apps/:app_id/capabilities/revoke — revoke_assignment */
+export async function revokeAssignment(
+  token: string,
+  appId: number
+): Promise<{ status: number }> {
+  const { status } = await request<void>(
+    "POST",
+    `/auth/me/apps/${appId}/capabilities/revoke`,
+    token
+  );
+  return { status };
+}
+
+// ---------------------------------------------------------------------------
+// Admin — users
+// ---------------------------------------------------------------------------
+
+/** POST /admin/users — create a user (requires global_admin token) */
+export async function createUser(
+  adminToken: string,
+  payload: {
+    email: string;
+    name: string;
+    password: string;
+    active?: boolean;
+  }
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>>(
+    "POST",
+    "/admin/users",
+    adminToken,
+    payload
+  );
+  return { status, data };
+}
+
+/** GET /admin/users?limit=&offset= — paginated user list (requires global_admin) */
+export async function listUsers(
+  adminToken: string,
+  limit = 10,
+  offset = 0
+): Promise<{ status: number; data?: unknown[] }> {
+  const { status, data } = await request<unknown[]>(
+    "GET",
+    `/admin/users?limit=${limit}&offset=${offset}`,
+    adminToken
+  );
+  return { status, data: data ?? [] };
+}
+
+/** GET /admin/users/:id — user detail (requires global_admin) */
+export async function getUser(
+  adminToken: string,
+  userId: number
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>>(
+    "GET",
+    `/admin/users/${userId}`,
+    adminToken
+  );
+  return { status, data };
+}
+
+/** PATCH /admin/users/:id — update user (requires global_admin) */
+export async function patchUser(
+  adminToken: string,
+  userId: number,
+  patch: { active?: boolean; name?: string }
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>>(
+    "PATCH",
+    `/admin/users/${userId}`,
+    adminToken,
+    patch
+  );
+  return { status, data };
+}
+
+/** POST /admin/users/:id/assignments — assign app+profile to user */
+export async function assignProfile(
+  adminToken: string,
+  userId: number,
+  appId: number,
+  profileId: number
+): Promise<{ status: number }> {
+  const { status } = await request<void>(
+    "POST",
+    `/admin/users/${userId}/assignments`,
+    adminToken,
+    { app_id: appId, profile_id: profileId }
+  );
+  return { status };
+}
+
+/** GET /admin/users/:id/assignments */
+export async function getAssignments(
+  adminToken: string,
+  userId: number
+): Promise<{ status: number; data?: unknown[] }> {
+  const { status, data } = await request<unknown[]>(
+    "GET",
+    `/admin/users/${userId}/assignments`,
+    adminToken
+  );
+  return { status, data: data ?? [] };
+}
+
+// ---------------------------------------------------------------------------
+// Admin — apps
+// ---------------------------------------------------------------------------
+
+/** POST /admin/apps — create an app (requires global_admin) */
+export async function createApp(
+  adminToken: string,
+  payload: {
+    name: string;
+    short_code: string;
+    deployment_topology: "central" | "office-nas";
+    requires_office_presence?: boolean;
+  }
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>>(
+    "POST",
+    "/admin/apps",
+    adminToken,
+    payload
+  );
+  return { status, data };
+}
+
+/** GET /admin/apps */
+export async function listApps(
+  adminToken: string
+): Promise<{ status: number; data?: unknown[] }> {
+  const { status, data } = await request<unknown[]>("GET", "/admin/apps", adminToken);
+  return { status, data: data ?? [] };
+}
+
+/** GET /admin/apps/:id */
+export async function getApp(
+  adminToken: string,
+  appId: number
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>>(
+    "GET",
+    `/admin/apps/${appId}`,
+    adminToken
+  );
+  return { status, data };
+}
+
+/** PATCH /admin/apps/:id */
+export async function patchApp(
+  adminToken: string,
+  appId: number,
+  patch: { name?: string; deployment_topology?: string; requires_office_presence?: boolean }
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>>(
+    "PATCH",
+    `/admin/apps/${appId}`,
+    adminToken,
+    patch
+  );
+  return { status, data };
+}
+
+/** DELETE /admin/apps/:id — soft delete */
+export async function deleteApp(
+  adminToken: string,
+  appId: number
+): Promise<{ status: number }> {
+  const { status } = await request<void>("DELETE", `/admin/apps/${appId}`, adminToken);
+  return { status };
+}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Estado Planificación Lanzadera — W62 cerrado 2026-09-10</title>
+<title>Estado Planificación Lanzadera — MVP Lanzadera 100% ✅ · 2026-09-11</title>
 <style>
   body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
   h1 { border-bottom: 3px solid #2563eb; padding-bottom: .5rem; }
@@ -28,7 +28,7 @@
 <body>
 
 <h1>Estado Planificación Lanzadera</h1>
-<p><strong>Última actualización:</strong> 2026-09-10 · <strong>W-n delivered:</strong> W54–W59, W62, W65 · <strong>Próximo:</strong> W66 (cleave container.py por port group, #596)</p>
+<p><strong>Última actualización:</strong> 2026-09-11 · <strong>W-n delivered:</strong> W54–W59, W60, W61, W62, W65, W-TEST · <strong>Próximo:</strong> siguiente épica por definir</p>
 
 <div class="legend">
   <span><span class="dot dot-cerrado"></span> Cerrado (mergeado en main)</span>
@@ -105,36 +105,37 @@
       <td>✅ mergeado</td>
       <td>2026-09-10 · 6 issues: #585–#590</td>
     </tr>
-        <tr class="pendiente">
+        <tr class="cerrado">
       <td class="w">W65</td>
-      <td>refactor/lanzadera-cleave-container</td>
-      <td>Cleave LanzaderaContainer by port group: container_users.py + container_apps.py + container_auth.py + thin container.py re-exporter. Todos ≤ 100 sitios. Issue #596.</td>
-      <td>—</td>
-      <td>—</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/596">#596</a></td>
+      <td>Cleave LanzaderaContainer by port group: 197→84 sitios + 5 módulos. Todos ≤ 100.</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/599">#599</a></td>
+      <td>✅ mergeado</td>
+      <td>container.py + _container_*.py (6 módulos ≤ 100 sites)</td>
     </tr>
-<tr class="pendiente">
+<tr class="cerrado">
       <td class="w">W-TEST</td>
       <td>—</td>
-      <td>Tests de integración Lanzadera: admin routes con LanzaderaContainer + fakes (list_users paginado, create_user, disable_user, assign_profile)</td>
-      <td>—</td>
-      <td>✅ cerrado</td>
-      <td>W-TEST cerrado: 656 tests PASS, coverage 84%, admin_routes_misc.py 100%. Fixes: seed_profiles.py (#595), BASELINE (#596), HTML endpoint tests (#597).</td>
+      <td>Tests de integración Lanzadera: admin routes con LanzaderaContainer + fakes</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/595">#595</a></td>
+      <td>✅ mergeado</td>
+      <td>777 tests PASS · quality report PASS · asyncio_mode=auto</td>
     </tr>
-    <tr class="pendiente">
+    <tr class="cerrado">
       <td class="w">W60</td>
-      <td>—</td>
-      <td>Usuarios conectados SSE: real-time session presence vía Server-Sent Events</td>
-      <td>—</td>
-      <td>⬜ pendiente</td>
-      <td>Epic F19–F22 (G3)</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/522">#522</a></td>
+      <td>Real-time session presence via SSE: heartbeat, snapshot, SSE stream (5s poll)</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/523">#523</a></td>
+      <td>✅ mergeado</td>
+      <td>track_presence + get_connected_users; PresenceRepository port+adapter; fix #581</td>
     </tr>
-    <tr class="pendiente">
+    <tr class="cerrado">
       <td class="w">W61</td>
-      <td>—</td>
-      <td>App CRUD admin G2: crear/editar/desactivar aplicativos</td>
-      <td>—</td>
-      <td>⬜ pendiente</td>
-      <td>Epic F10–F13 (G2)</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/524">#524</a></td>
+      <td>App CRUD admin G2: POST/GET/PATCH/DELETE /admin/apps/{id}</td>
+      <td>cc97910</td>
+      <td>✅ mergeado</td>
+      <td>create_app + update_app + disable_app use cases; fix #580</td>
     </tr>
   </tbody>
 </table>
@@ -214,7 +215,7 @@
 
 <hr>
 <p style="color:#64748b;font-size:.8rem">
-  W65 cerrado (#596) · container.py cleaved: 197→84 sitios + 5 módulos nuevos · quality PASS · 656 tests · 6 módulos bajo ceiling 100 · quality report PASS · 2026-09-10 · W65: cleave container.py (#596)
+  Lanzadera MVP 100% ✅ · W54–W65 + W60 + W61 + W-TEST todos mergeados · main clean · 2026-09-11
 </p>
 </body>
 </html>
