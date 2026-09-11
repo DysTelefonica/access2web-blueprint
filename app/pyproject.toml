@@ -43,7 +43,7 @@ dependencies = [
     "httpx==0.28.*",               # Test client + downstream HTTP.
     "cachetools==5.*",             # TTLCache adapter (DA-8).
     "python-multipart==0.0.*",     # FastAPI form parsing.
-    "uvicorn[standard]==0.30.*",   # ASGI server for delivery.
+    "uvicorn[standard]>=0.30,<0.53",   # ASGI server for delivery.
 ]
 
 [project.optional-dependencies]
