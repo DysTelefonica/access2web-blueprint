@@ -8,8 +8,9 @@
  * can run without needing the full fixture setup (no DB migration, no seed).
  * The CI release gate runs this alongside the full suite.
  *
- * After Phase 5, when the full suite drops `|| true` from the release workflow,
- * this spec becomes redundant but stays as a fast pre-flight for local iteration.
+ * After Phase 5 the full suite is real and the release gate fails on
+ * E2E errors. This spec stays as a fast pre-flight for local iteration
+ * (e.g. `docker compose up && BASE_URL=http://localhost:8000 npx playwright test e2e/smoke.spec.ts`).
  */
 
 import { test, expect } from "@playwright/test";
