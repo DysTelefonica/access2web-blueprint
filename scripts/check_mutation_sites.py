@@ -231,6 +231,16 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/adapters/persistence/repositories/assignment_repository_pg.py": (
         BaselineEntry(sites=102, target=100, target_date="2027-02-13")
     ),
+    # W65 Phase 2 E2E (#605): main.py grew from 100 to 105 mutation sites
+    # due to wiring the new users_json_router (import + include_router).
+    # At ceiling on main (100 sites); now 5 sites over. Add to BASELINE.
+    "app/src/main.py": (BaselineEntry(sites=105, target=100, target_date="2027-02-13")),
+    # W65 Phase 2 E2E (#605): admin_routes_users_json.py at 151 mutation sites
+    # because it implements 5 REST endpoints (list, create, get, update,
+    # revoke) following the same delivery-layer pattern as admin_routes_apps.py.
+    "app/src/modules/lanzadera/delivery/http/admin_routes_users_json.py": (
+        BaselineEntry(sites=151, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------

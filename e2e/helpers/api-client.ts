@@ -147,6 +147,7 @@ export async function createUser(
   payload: {
     email: string;
     name: string;
+        national_id: string;
     password: string;
     active?: boolean;
   }
@@ -232,6 +233,20 @@ export async function getAssignments(
 }
 
 // ---------------------------------------------------------------------------
+
+    /** DELETE /admin/users/{id}/assignments/{app_id} — revoke all assignments */
+    export async function revokeUserAssignment(
+      adminToken: string,
+      userId: string,
+      appId: number
+    ): Promise<{ status: number }> {
+      const { status } = await request<void>(
+        "DELETE",
+        `/admin/users/${userId}/assignments/${appId}`,
+        adminToken
+      );
+      return { status };
+    }
 // Admin — apps
 // ---------------------------------------------------------------------------
 
