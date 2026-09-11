@@ -1,0 +1,29 @@
+{
+  "$schema": "https://docs.03-aplicaciones/lanzadera/fixtures.schema.json",
+  "description": "Lanzadera MVP synthetic fixtures derived from walkthrough documentation. No PII, no real data from the .accdb.",
+  "source": "docs/03-aplicaciones/lanzadera/data-model.md",
+  "capabilities_source": "docs/03-aplicaciones/lanzadera/capabilities.md",
+  "walkthrough_refs": [
+    "docs/03-aplicaciones/lanzadera/walkthrough-G1.json",
+    "docs/03-aplicaciones/lanzadera/walkthrough-G2.json",
+    "docs/03-aplicaciones/lanzadera/walkthrough-G3.json",
+    "docs/03-aplicaciones/lanzadera/walkthrough-G4.json",
+    "docs/03-aplicaciones/lanzadera/walkthrough-G5.json"
+  ],
+  "generator": "scripts/generate_lanzadera_fixtures.py",
+  "generator_seed": 42,
+  "cardinality": {
+    "apps": 20,
+    "users": 156,
+    "profiles": 160,
+    "assignments": 622,
+    "audit_events": 200
+  },
+  "constraints": {
+    "no_pii": true,
+    "no_legacy_hash": true,
+    "no_telemetry_columns": true,
+    "password_hash_null": true,
+    "status_password_reset_required": true
+  }
+}
