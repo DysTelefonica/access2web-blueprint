@@ -9,7 +9,7 @@ Playwright suite exercising the published Docker image of `access2web-blueprint`
 Wired in `fixtures/auth-fixture.ts` (globalSetup seeds admin + user via
 Python+argon2-cffi inside the running container).
 
-**Phase 2 ✅ PR #610 open** (CI green): admin-user CRUD — list users
+**Phase 2 ✅ merged**: admin-user CRUD — list users
 paginated, create, get, disable, revoke assignment. Routes added in
 `admin_routes_users_json.py`; helpers in `helpers/api-client.ts`; spec in
 `admin-users.spec.ts` (13 cases).
@@ -18,7 +18,7 @@ paginated, create, get, disable, revoke assignment. Routes added in
 
 **Phase 4 ✅ merged**: presence/SSE E2E.
 
-**Phase 5 🔄 in-progress** (#608): CLI E2E.
+**Phase 5 ✅ merged**: CLI E2E — docker exec CLI commands via Python module.
 
 **All phases complete.**
 
@@ -32,9 +32,9 @@ The release gate still uses `|| true` — real wiring is issue #602 (umbrella).
 |---|---|---|---|
 | F1 | [#604](https://github.com/DysTelefonica/access2web-blueprint/issues/604) | `auth.spec.ts` — login, logout, /auth/me, /auth/me/apps, capabilities, revoke | ✅ done |
 | F2 | [#605](https://github.com/DysTelefonica/access2web-blueprint/issues/605) | `admin-users.spec.ts` — list/create/disable/assign | ✅ done |
-| F3 | [#606](https://github.com/DysTelefonica/access2web-blueprint/issues/606) | `admin-apps.spec.ts` — CRUD | 🔄 in-progress |
-| F4 | [#607](https://github.com/DysTelefonica/access2web-blueprint/issues/607) | `presence.spec.ts` — heartbeat + SSE stream | 🔄 in-progress |
-| F5 | [#608](https://github.com/DysTelefonica/access2web-blueprint/issues/608) | `cli.spec.ts` — set-password + platform user CLI | 🔄 in-progress |
+| F3 | [#606](https://github.com/DysTelefonica/access2web-blueprint/issues/606) | `admin-apps.spec.ts` — CRUD | ✅ done |
+| F4 | [#607](https://github.com/DysTelefonica/access2web-blueprint/issues/607) | `presence.spec.ts` — heartbeat + SSE stream | ✅ done |
+| F5 | [#608](https://github.com/DysTelefonica/access2web-blueprint/issues/608) | `cli.spec.ts` — set-password + platform user CLI | ✅ done |
 
 Umbrella: [#602](https://github.com/DysTelefonica/access2web-blueprint/issues/602)
 
@@ -50,10 +50,10 @@ e2e/
   fixtures/
     auth-fixture.ts             ← globalSetup (alembic + seed) + token helpers
   auth.spec.ts                 ← F1: authentication flow (18 test cases)
-  admin-users.spec.ts          ← F2: admin user management (pending)
-  admin-apps.spec.ts           ← F3: admin app CRUD (pending)
-  presence.spec.ts             ← F4: real-time presence + SSE (pending)
-  cli.spec.ts                  ← F5: CLI smoke (pending)
+  admin-users.spec.ts          ← F2: admin user management (done)
+  admin-apps.spec.ts           ← F3: admin app CRUD (done)
+  presence.spec.ts             ← F4: real-time presence + SSE (done)
+  cli.spec.ts                  ← F5: CLI smoke (done)
 ```
 
 ## Prerequisites resolved by Phase 1
