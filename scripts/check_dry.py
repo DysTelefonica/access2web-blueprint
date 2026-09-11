@@ -151,6 +151,13 @@ BASELINE: dict[str, BaselineEntry] = {
     # async fn + AuditEvent import + uuid4 prelude (5 statements).
     # Structural coincidence, not a smell.
     "dup:5172cec31ab7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W65 Phase 2 E2E (#605): admin_routes_users_json.py and
+    # admin_routes_apps.py share the same module docstring + imports
+    # pattern (lines 3-28). Structural coincidence — the delivery HTTP
+    # layer always starts with docstring, __future__, uuid, fastapi,
+    # and the delivery.http admin import. Same coincidence class as the
+    # W40/W61/W64 entries.
+    "dup:3aaedade4aaa": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.
     # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring

@@ -4,15 +4,28 @@ Playwright suite exercising the published Docker image of `access2web-blueprint`
 
 ## Status
 
-**Phase 1 complete** — auth flow E2E (`auth.spec.ts`) implemented.
-See [issue #604](https://github.com/DysTelefonica/access2web-blueprint/issues/604).
+**Phase 1 ✅ merged** (`main`): auth flow — login, logout, /auth/me,
+/auth/me/apps, /auth/me/apps/:id/capabilities, POST /auth/revoke.
+Wired in `fixtures/auth-fixture.ts` (globalSetup seeds admin + user via
+Python+argon2-cffi inside the running container).
+
+**Phase 2 ✅ PR #610 open** (CI green): admin-user CRUD — list users
+paginated, create, get, disable, revoke assignment. Routes added in
+`admin_routes_users_json.py`; helpers in `helpers/api-client.ts`; spec in
+`admin-users.spec.ts` (13 cases).
+
+**Phases 3–5 pending** (issues #606, #607, #608).
+
+---
+
+The release gate still uses `|| true` — real wiring is issue #602 (umbrella).
 
 ## Phases
 
 | Phase | Issue | Spec | Status |
 |---|---|---|---|
 | F1 | [#604](https://github.com/DysTelefonica/access2web-blueprint/issues/604) | `auth.spec.ts` — login, logout, /auth/me, /auth/me/apps, capabilities, revoke | ✅ done |
-| F2 | [#605](https://github.com/DysTelefonica/access2web-blueprint/issues/605) | `admin-users.spec.ts` — list/create/disable/assign | ⬜ pending |
+| F2 | [#605](https://github.com/DysTelefonica/access2web-blueprint/issues/605) | `admin-users.spec.ts` — list/create/disable/assign | ✅ done |
 | F3 | [#606](https://github.com/DysTelefonica/access2web-blueprint/issues/606) | `admin-apps.spec.ts` — CRUD | ⬜ pending |
 | F4 | [#607](https://github.com/DysTelefonica/access2web-blueprint/issues/607) | `presence.spec.ts` — heartbeat + SSE stream | ⬜ pending |
 | F5 | [#608](https://github.com/DysTelefonica/access2web-blueprint/issues/608) | `cli.spec.ts` — set-password + migrate_from_access | ⬜ pending |

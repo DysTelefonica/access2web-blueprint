@@ -1,4 +1,5 @@
 /**
+<<<<<<< HEAD
  * e2e/helpers/api-client.ts
  *
  * Typed HTTP client for the Lanzadera API.
@@ -152,6 +153,53 @@ export async function createUser(
   }
 ): Promise<{ status: number; data?: Record<string, unknown> }> {
   const { status, data } = await request<Record<string, unknown>>(
+=======
+ * Additions to e2e/helpers/api-client.ts for Phase 2 E2E.
+ *
+ * DEPENDENCY: This file is added to the Phase 2 worktree. Phase 1
+ * (PR #609) must be merged into main before these helpers are available
+ * in the worktree. Once #609 lands, rebase this worktree onto main:
+ *
+ *   git fetch origin
+ *   git rebase origin/main
+ *
+ * Then these additions will merge cleanly with the base api-client.ts
+ * from Phase 1.
+ */
+
+// ---------------------------------------------------------------------------
+// Admin — users (JSON routes from admin_routes_users_json.py)
+// ---------------------------------------------------------------------------
+
+/** GET /admin/users?limit=&offset= — paginated user list */
+export async function listUsersAdmin(
+  adminToken: string,
+  limit = 10,
+  offset = 0
+): Promise<{
+  status: number;
+  data?: { users: unknown[]; total: number; limit: number; offset: number };
+}> {
+  const { status, data } = await request<{
+    users: unknown[];
+    total: number;
+    limit: number;
+    offset: number;
+  }>(
+    "GET",
+    `/admin/users?limit=${limit}&offset=${offset}`,
+    adminToken
+  );
+  return { status, data };
+}
+
+/** POST /admin/users — create user */
+export async function createUserAdmin(
+  adminToken: string,
+  payload: { email: string; name: string; national_id: string }
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>(
+>>>>>>> d43d973 (feat/605-admin-users-e2e: JSON admin-user routes + E2E spec)
     "POST",
     "/admin/users",
     adminToken,
@@ -160,6 +208,7 @@ export async function createUser(
   return { status, data };
 }
 
+<<<<<<< HEAD
 /** GET /admin/users?limit=&offset= — paginated user list (requires global_admin) */
 export async function listUsers(
   adminToken: string,
@@ -180,6 +229,14 @@ export async function getUser(
   userId: number
 ): Promise<{ status: number; data?: Record<string, unknown> }> {
   const { status, data } = await request<Record<string, unknown>>(
+=======
+/** GET /admin/users/{id} — user detail */
+export async function getUserAdmin(
+  adminToken: string,
+  userId: string
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>(
+>>>>>>> d43d973 (feat/605-admin-users-e2e: JSON admin-user routes + E2E spec)
     "GET",
     `/admin/users/${userId}`,
     adminToken
@@ -187,6 +244,7 @@ export async function getUser(
   return { status, data };
 }
 
+<<<<<<< HEAD
 /** PATCH /admin/users/:id — update user (requires global_admin) */
 export async function patchUser(
   adminToken: string,
@@ -194,6 +252,15 @@ export async function patchUser(
   patch: { active?: boolean; name?: string }
 ): Promise<{ status: number; data?: Record<string, unknown> }> {
   const { status, data } = await request<Record<string, unknown>>(
+=======
+/** PATCH /admin/users/{id} — update user (active=false → disable) */
+export async function updateUserAdmin(
+  adminToken: string,
+  userId: string,
+  patch: { active?: boolean; status?: string }
+): Promise<{ status: number; data?: Record<string, unknown> }> {
+  const { status, data } = await request<Record<string, unknown>(
+>>>>>>> d43d973 (feat/605-admin-users-e2e: JSON admin-user routes + E2E spec)
     "PATCH",
     `/admin/users/${userId}`,
     adminToken,
@@ -202,6 +269,7 @@ export async function patchUser(
   return { status, data };
 }
 
+<<<<<<< HEAD
 /** POST /admin/users/:id/assignments — assign app+profile to user */
 export async function assignProfile(
   adminToken: string,
@@ -232,20 +300,6 @@ export async function getAssignments(
 }
 
 // ---------------------------------------------------------------------------
-
-    /** DELETE /admin/users/{id}/assignments/{app_id} — revoke all assignments */
-    export async function revokeUserAssignment(
-      adminToken: string,
-      userId: string,
-      appId: number
-    ): Promise<{ status: number }> {
-      const { status } = await request<void>(
-        "DELETE",
-        `/admin/users/${userId}/assignments/${appId}`,
-        adminToken
-      );
-      return { status };
-    }
 // Admin — apps
 // ---------------------------------------------------------------------------
 
@@ -312,3 +366,18 @@ export async function deleteApp(
   const { status } = await request<void>("DELETE", `/admin/apps/${appId}`, adminToken);
   return { status };
 }
+=======
+/** DELETE /admin/users/{id}/assignments/{app_id} — revoke all assignments */
+export async function revokeUserAssignment(
+  adminToken: string,
+  userId: string,
+  appId: number
+): Promise<{ status: number }> {
+  const { status } = await request<void>(
+    "DELETE",
+    `/admin/users/${userId}/assignments/${appId}`,
+    adminToken
+  );
+  return { status };
+}
+>>>>>>> d43d973 (feat/605-admin-users-e2e: JSON admin-user routes + E2E spec)
