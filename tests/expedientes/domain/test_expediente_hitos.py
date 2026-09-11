@@ -43,14 +43,18 @@ def _hito(
     *,
     id: uuid4 | None = None,
     id_expediente: uuid4,
-    fecha_hito: date = _d(2026, 10, 1),
-    garantia_fecha_fin: date | None = _d(2027, 10, 2),
+    fecha_hito: date | None = None,
+    garantia_fecha_fin: date | None = None,
 ) -> Hito:
+    _fecha = fecha_hito if fecha_hito is not None else _d(2026, 10, 1)
+    _garantia = (
+        garantia_fecha_fin if garantia_fecha_fin is not None else _d(2027, 10, 2)
+    )
     return Hito(
         id=id or uuid4(),
         id_expediente=id_expediente,
-        fecha_hito=fecha_hito,
-        garantia_fecha_fin=garantia_fecha_fin,
+        fecha_hito=_fecha,
+        garantia_fecha_fin=_garantia,
         estado=ExpedienteEstado.BORRADOR,
         created_at=_dt(2026, 9, 1),
         updated_at=_dt(2026, 9, 1),
