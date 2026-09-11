@@ -18,7 +18,10 @@ import pytest
 
 FIXTURE = (
     Path(__file__).parent.parent.parent.parent
-    / "data" / "fixtures" / "lanzadera" / "audit_events.json"
+    / "data"
+    / "fixtures"
+    / "lanzadera"
+    / "audit_events.json"
 )
 EXPECTED_COUNT = 200
 ALLOWED_TYPES = {"auth.login.success", "auth.login.failure", "app.open"}
@@ -33,9 +36,7 @@ class TestAuditFixture:
         return json.loads(FIXTURE.read_text())
 
     def test_count(self, rows: list[dict]) -> None:
-        assert len(rows) == EXPECTED_COUNT, (
-            f"expected {EXPECTED_COUNT}, got {len(rows)}"
-        )
+        assert len(rows) == EXPECTED_COUNT, f"expected {EXPECTED_COUNT}, got {len(rows)}"
 
     def test_event_types_allowed(self, rows: list[dict]) -> None:
         for row in rows:
@@ -51,9 +52,7 @@ class TestAuditFixture:
 
     def test_module_lanzadera(self, rows: list[dict]) -> None:
         non_lanzadera = [r for r in rows if r.get("module") != "lanzadera"]
-        assert len(non_lanzadera) == 0, (
-            f"{len(non_lanzadera)} events with non-lanzadera module"
-        )
+        assert len(non_lanzadera) == 0, f"{len(non_lanzadera)} events with non-lanzadera module"
 
     def test_ids_unique(self, rows: list[dict]) -> None:
         ids = [r["id"] for r in rows]
@@ -61,11 +60,8 @@ class TestAuditFixture:
 
     def test_no_telemetry_columns(self, rows: list[dict]) -> None:
         # DA-11: these legacy columns must not appear.
-        forbidden = {"ssid", "bssid", "gps_lat", "gps_lon",
-                     "machine_name", "ip_address"}
+        forbidden = {"ssid", "bssid", "gps_lat", "gps_lon", "machine_name", "ip_address"}
         for row in rows:
             payload = row.get("payload", {})
             overlap = set(payload.keys()) & forbidden
-            assert len(overlap) == 0, (
-                f"event {row['id']}: telemetry fields in payload: {overlap}"
-            )
+            assert len(overlap) == 0, f"event {row['id']}: telemetry fields in payload: {overlap}"

@@ -17,8 +17,7 @@ from pathlib import Path
 import pytest
 
 FIXTURE = (
-    Path(__file__).parent.parent.parent.parent
-    / "data" / "fixtures" / "lanzadera" / "profiles.json"
+    Path(__file__).parent.parent.parent.parent / "data" / "fixtures" / "lanzadera" / "profiles.json"
 )
 
 # Expected: 1 DEFAULT + 7 legacy per app × 20 apps.
@@ -35,9 +34,7 @@ class TestProfilesFixture:
         return json.loads(FIXTURE.read_text())
 
     def test_count(self, rows: list[dict]) -> None:
-        assert len(rows) == EXPECTED_TOTAL, (
-            f"expected {EXPECTED_TOTAL}, got {len(rows)}"
-        )
+        assert len(rows) == EXPECTED_TOTAL, f"expected {EXPECTED_TOTAL}, got {len(rows)}"
 
     def test_default_profiles_per_app(self, rows: list[dict]) -> None:
         default_rows = [r for r in rows if r["code"] == "DEFAULT"]
@@ -55,9 +52,7 @@ class TestProfilesFixture:
     def test_capabilities_empty(self, rows: list[dict]) -> None:
         # G-2 ABIERTO: all seeded profiles carry {} until ABIERTO resolved.
         non_empty = [r for r in rows if r.get("capabilities") != {}]
-        assert len(non_empty) == 0, (
-            f"{len(non_empty)} profiles have non-empty capabilities (G-2)"
-        )
+        assert len(non_empty) == 0, f"{len(non_empty)} profiles have non-empty capabilities (G-2)"
 
     def test_all_active(self, rows: list[dict]) -> None:
         inactive = [r for r in rows if not r.get("active")]

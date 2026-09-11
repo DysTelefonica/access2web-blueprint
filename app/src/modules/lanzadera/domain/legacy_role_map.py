@@ -61,9 +61,7 @@ LEGACY_ROLE_MAP: dict[str, str] = {
 
 # Lower-case-key variant for ergonomic use from the migration seam.
 # Keys match the lower-case .value of each LegacyFlags member.
-FLAG_TO_CODE: dict[str, str] = {
-    flag.value.lower(): code for flag, code in LEGACY_ROLE_MAP.items()
-}
+FLAG_TO_CODE: dict[str, str] = {flag.value.lower(): code for flag, code in LEGACY_ROLE_MAP.items()}
 
 # Fallback codes (defined before LEGACY_CODES that references them).
 DEFAULT_PROFILE_CODE: str = "DEFAULT"
@@ -71,9 +69,7 @@ SIN_ACCESO_PROFILE_CODE: str = "SIN_ACCESO"
 
 # Ordered list of the seven legacy codes.
 LEGACY_CODES: list[str] = [
-    LEGACY_ROLE_MAP[flag]
-    for flag in LegacyFlags
-    if flag != LegacyFlags.SIN_ACCESO
+    LEGACY_ROLE_MAP[flag] for flag in LegacyFlags if flag != LegacyFlags.SIN_ACCESO
 ] + [SIN_ACCESO_PROFILE_CODE]
 
 

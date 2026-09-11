@@ -17,7 +17,10 @@ import pytest
 
 FIXTURE = (
     Path(__file__).parent.parent.parent.parent
-    / "data" / "fixtures" / "lanzadera" / "assignments.json"
+    / "data"
+    / "fixtures"
+    / "lanzadera"
+    / "assignments.json"
 )
 EXPECTED_ACTIVE = 622
 
@@ -37,15 +40,11 @@ class TestAssignmentsFixture:
 
     def test_no_revoked_rows(self, rows: list[dict]) -> None:
         revoked = [r for r in rows if r.get("revoked_at") is not None]
-        assert len(revoked) == 0, (
-            f"{len(revoked)} revoked rows — fixture should be all-active"
-        )
+        assert len(revoked) == 0, f"{len(revoked)} revoked rows — fixture should be all-active"
 
     def test_granted_by_null(self, rows: list[dict]) -> None:
         non_null = [r for r in rows if r.get("granted_by") is not None]
-        assert len(non_null) == 0, (
-            f"{len(non_null)} rows with granted_by set (migration seeds)"
-        )
+        assert len(non_null) == 0, f"{len(non_null)} rows with granted_by set (migration seeds)"
 
     def test_ids_unique(self, rows: list[dict]) -> None:
         ids = [r["id"] for r in rows]
@@ -59,6 +58,4 @@ class TestAssignmentsFixture:
 
     def test_profile_ids_present(self, rows: list[dict]) -> None:
         null_profile = [r for r in rows if not r.get("profile_id")]
-        assert len(null_profile) == 0, (
-            f"{len(null_profile)} assignments with NULL profile_id"
-        )
+        assert len(null_profile) == 0, f"{len(null_profile)} assignments with NULL profile_id"

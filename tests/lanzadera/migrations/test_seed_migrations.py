@@ -40,9 +40,9 @@ SCHEMA = "lanzadera"
 # Row-count expectations derived from the fixture files (deterministic seed=42).
 # ---------------------------------------------------------------------------
 EXPECTED_APPS = 20
-EXPECTED_PROFILES = 160          # 1 DEFAULT × 20 apps + 7 legacy × 20 apps
+EXPECTED_PROFILES = 160  # 1 DEFAULT × 20 apps + 7 legacy × 20 apps
 EXPECTED_USERS = 156
-EXPECTED_ASSIGNMENTS = 622       # active (revoked_at IS NULL)
+EXPECTED_ASSIGNMENTS = 622  # active (revoked_at IS NULL)
 EXPECTED_AUDIT = 200
 
 
@@ -114,8 +114,10 @@ def migrated_db(
 
 async def _admin_conn() -> asyncpg.Connection:
     return await asyncpg.connect(
-        host=PG_HOST, port=PG_PORT,
-        user=PG_USER, password=PG_PASSWORD,
+        host=PG_HOST,
+        port=PG_PORT,
+        user=PG_USER,
+        password=PG_PASSWORD,
         database="lanzadera",
     )
 
@@ -148,10 +150,7 @@ def _run_alembic(
     db_name: str,
     *args: str,
 ) -> None:
-    database_url = (
-        f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}"
-        f"@{PG_HOST}:{PG_PORT}/{db_name}"
-    )
+    database_url = f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"
     env = os.environ.copy()
     env["DATABASE_URL"] = database_url
     env["PLATFORM_SECRET_KEY"] = _FIXTURE_KEY
@@ -183,40 +182,34 @@ class TestSeedApps:
     """0002_seed_apps: exactly 20 rows in apps, all active."""
 
     async def test_row_count(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
-            count = await conn.fetchval(
-                f'SELECT COUNT(*) FROM {SCHEMA}.apps'
-            )
-            assert count == EXPECTED_APPS, (
-                f"apps: expected {EXPECTED_APPS}, got {count}"
-            )
+            count = await conn.fetchval(f"SELECT COUNT(*) FROM {SCHEMA}.apps")
+            assert count == EXPECTED_APPS, f"apps: expected {EXPECTED_APPS}, got {count}"
         finally:
             await conn.close()
 
     async def test_all_active(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             inactive = await conn.fetchval(
-                f"SELECT COUNT(*) FROM {SCHEMA}.apps"
-                " WHERE registration_status != 'active'"
+                f"SELECT COUNT(*) FROM {SCHEMA}.apps WHERE registration_status != 'active'"
             )
             assert inactive == 0, f"inactive apps: {inactive}"
         finally:
             await conn.close()
 
     async def test_sample_app(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             row = await conn.fetchrow(
-                f"SELECT name, short_code, deployment_topology"
-                f" FROM {SCHEMA}.apps LIMIT 1"
+                f"SELECT name, short_code, deployment_topology FROM {SCHEMA}.apps LIMIT 1"
             )
             assert row is not None
             assert row["short_code"] is not None
@@ -228,13 +221,11 @@ class TestSeedProfiles:
     """0003_seed_profiles: exactly 160 rows, capabilities={} provisional."""
 
     async def test_row_count(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
-            count = await conn.fetchval(
-                f'SELECT COUNT(*) FROM {SCHEMA}.profiles'
-            )
+            count = await conn.fetchval(f"SELECT COUNT(*) FROM {SCHEMA}.profiles")
             assert count == EXPECTED_PROFILES, (
                 f"profiles: expected {EXPECTED_PROFILES}, got {count}"
             )
@@ -242,14 +233,13 @@ class TestSeedProfiles:
             await conn.close()
 
     async def test_capabilities_provisional(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             # G-2: all seeded profiles carry {} until ABIERTO is resolved.
             non_empty = await conn.fetchval(
-                f"SELECT COUNT(*) FROM {SCHEMA}.profiles"
-                " WHERE capabilities != '{}'"
+                f"SELECT COUNT(*) FROM {SCHEMA}.profiles WHERE capabilities != '{{}}'"
             )
             assert non_empty == 0, f"profiles with non-empty capabilities: {non_empty}"
         finally:
@@ -260,53 +250,46 @@ class TestSeedUsers:
     """0004_seed_users: exactly 156 rows, password_hash=NULL."""
 
     async def test_row_count(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
-            count = await conn.fetchval(
-                f'SELECT COUNT(*) FROM {SCHEMA}.users'
-            )
-            assert count == EXPECTED_USERS, (
-                f"users: expected {EXPECTED_USERS}, got {count}"
-            )
+            count = await conn.fetchval(f"SELECT COUNT(*) FROM {SCHEMA}.users")
+            assert count == EXPECTED_USERS, f"users: expected {EXPECTED_USERS}, got {count}"
         finally:
             await conn.close()
 
     async def test_password_hash_null(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             with_hash = await conn.fetchval(
-                f"SELECT COUNT(*) FROM {SCHEMA}.users"
-                " WHERE password_hash IS NOT NULL"
+                f"SELECT COUNT(*) FROM {SCHEMA}.users WHERE password_hash IS NOT NULL"
             )
             assert with_hash == 0, f"users with password_hash: {with_hash}"
         finally:
             await conn.close()
 
     async def test_status_password_reset_required(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             wrong_status = await conn.fetchval(
-                f"SELECT COUNT(*) FROM {SCHEMA}.users"
-                " WHERE status != 'password_reset_required'"
+                f"SELECT COUNT(*) FROM {SCHEMA}.users WHERE status != 'password_reset_required'"
             )
             assert wrong_status == 0, f"users not in password_reset_required: {wrong_status}"
         finally:
             await conn.close()
 
     async def test_dni_encrypted_not_null(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             null_dni = await conn.fetchval(
-                f"SELECT COUNT(*) FROM {SCHEMA}.users"
-                " WHERE dni_encrypted IS NULL"
+                f"SELECT COUNT(*) FROM {SCHEMA}.users WHERE dni_encrypted IS NULL"
             )
             assert null_dni == 0, f"users with NULL dni_encrypted: {null_dni}"
         finally:
@@ -317,13 +300,12 @@ class TestSeedAssignments:
     """0005_seed_assignments: exactly 622 active rows."""
 
     async def test_row_count(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             count = await conn.fetchval(
-                f'SELECT COUNT(*) FROM {SCHEMA}.user_app_assignments'
-                ' WHERE revoked_at IS NULL'
+                f"SELECT COUNT(*) FROM {SCHEMA}.user_app_assignments WHERE revoked_at IS NULL"
             )
             assert count == EXPECTED_ASSIGNMENTS, (
                 f"active assignments: expected {EXPECTED_ASSIGNMENTS}, got {count}"
@@ -332,13 +314,13 @@ class TestSeedAssignments:
             await conn.close()
 
     async def test_granted_by_null(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             non_null = await conn.fetchval(
                 f"SELECT COUNT(*) FROM {SCHEMA}.user_app_assignments"
-                ' WHERE revoked_at IS NULL AND granted_by IS NOT NULL'
+                " WHERE revoked_at IS NULL AND granted_by IS NOT NULL"
             )
             assert non_null == 0, f"seeded rows with granted_by set: {non_null}"
         finally:
@@ -349,43 +331,37 @@ class TestSeedAudit:
     """0006_seed_audit: exactly 200 audit events, all module=lanzadera."""
 
     async def test_row_count(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
-            count = await conn.fetchval(
-                f'SELECT COUNT(*) FROM {SCHEMA}.audit'
-            )
-            assert count == EXPECTED_AUDIT, (
-                f"audit rows: expected {EXPECTED_AUDIT}, got {count}"
-            )
+            count = await conn.fetchval(f"SELECT COUNT(*) FROM {SCHEMA}.audit")
+            assert count == EXPECTED_AUDIT, f"audit rows: expected {EXPECTED_AUDIT}, got {count}"
         finally:
             await conn.close()
 
     async def test_event_types(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             rows = await conn.fetch(
-                f"SELECT DISTINCT event_type FROM {SCHEMA}.audit"
-                " ORDER BY event_type"
+                f"SELECT DISTINCT event_type FROM {SCHEMA}.audit ORDER BY event_type"
             )
             types = [r["event_type"] for r in rows]
-            assert set(types).issubset(
-                {"auth.login.success", "auth.login.failure", "app.open"}
-            ), f"unexpected event types: {types}"
+            assert set(types).issubset({"auth.login.success", "auth.login.failure", "app.open"}), (
+                f"unexpected event types: {types}"
+            )
         finally:
             await conn.close()
 
     async def test_module_lanzadera(self, migrated_db: str) -> None:
-        conn = await asyncpg.connect(host=PG_HOST, port=PG_PORT,
-                                     user=PG_USER, password=PG_PASSWORD,
-                                     database=migrated_db)
+        conn = await asyncpg.connect(
+            host=PG_HOST, port=PG_PORT, user=PG_USER, password=PG_PASSWORD, database=migrated_db
+        )
         try:
             non_lanzadera = await conn.fetchval(
-                f"SELECT COUNT(*) FROM {SCHEMA}.audit"
-                " WHERE module != 'lanzadera'"
+                f"SELECT COUNT(*) FROM {SCHEMA}.audit WHERE module != 'lanzadera'"
             )
             assert non_lanzadera == 0, f"non-lanzadera audit rows: {non_lanzadera}"
         finally:

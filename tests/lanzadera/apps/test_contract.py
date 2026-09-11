@@ -16,8 +16,7 @@ from pathlib import Path
 import pytest
 
 FIXTURE = (
-    Path(__file__).parent.parent.parent.parent
-    / "data" / "fixtures" / "lanzadera" / "apps.json"
+    Path(__file__).parent.parent.parent.parent / "data" / "fixtures" / "lanzadera" / "apps.json"
 )
 
 # Expected by the migration.
@@ -46,8 +45,7 @@ class TestAppsFixture:
         allowed = {"central", "office-nas"}
         for row in rows:
             assert row["deployment_topology"] in allowed, (
-                f"app {row['short_code']}: unknown topology "
-                f"{row['deployment_topology']!r}"
+                f"app {row['short_code']}: unknown topology {row['deployment_topology']!r}"
             )
 
     def test_requires_office_presence_boolean(self, rows: list[dict]) -> None:

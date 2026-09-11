@@ -121,9 +121,7 @@ class TestSingleFlag:
             ("Secretaría", "SECRETARIA"),
         ],
     )
-    def test_solo_una_bandera_activa(
-        self, flag_name: str, expected: str
-    ) -> None:
+    def test_solo_una_bandera_activa(self, flag_name: str, expected: str) -> None:
         f = flags(**{flag_name: "Sí"})
         assert resolve_legacy_roles(f) == (expected,)
         assert resolve_profile_codes(f) == [expected]
@@ -181,9 +179,7 @@ class TestNullVsNo:
     def test_null_es_como_no(self) -> None:
         f_null = {k: None for k in flags()}
         f_no = flags()
-        assert resolve_legacy_roles(f_null) == resolve_legacy_roles(f_no) == (
-            DEFAULT_PROFILE_CODE,
-        )
+        assert resolve_legacy_roles(f_null) == resolve_legacy_roles(f_no) == (DEFAULT_PROFILE_CODE,)
 
     def test_una_bandera_null(self) -> None:
         f = flags(Calidad=None)

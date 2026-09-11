@@ -16,8 +16,7 @@ from pathlib import Path
 import pytest
 
 FIXTURE = (
-    Path(__file__).parent.parent.parent.parent
-    / "data" / "fixtures" / "lanzadera" / "users.json"
+    Path(__file__).parent.parent.parent.parent / "data" / "fixtures" / "lanzadera" / "users.json"
 )
 EXPECTED_COUNT = 156
 
@@ -42,9 +41,7 @@ class TestUsersFixture:
 
     def test_all_password_reset_required(self, rows: list[dict]) -> None:
         wrong = [r for r in rows if r["status"] != "password_reset_required"]
-        assert len(wrong) == 0, (
-            f"{len(wrong)} users not in password_reset_required (DA-3, D89)"
-        )
+        assert len(wrong) == 0, f"{len(wrong)} users not in password_reset_required (DA-3, D89)"
 
     def test_failed_attempts_zero(self, rows: list[dict]) -> None:
         non_zero = [r for r in rows if r.get("failed_attempts", 0) != 0]
