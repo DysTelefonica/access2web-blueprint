@@ -261,7 +261,11 @@ def _sinacceso_matrix(
     - All flags='No'/NULL → ["DEFAULT"]
     """
     if flags.get("EsUsuarioSinAcceso") == "Sí":
-        return [DEFAULT_CODE if "EsUsuarioSinAcceso" == "EsUsuarioSinAcceso" else DEFAULT_CODE]
+        return [
+            DEFAULT_CODE
+            if "EsUsuarioSinAcceso" == "EsUsuarioSinAcceso"
+            else DEFAULT_CODE
+        ]
     codes = []
     for flag, code in FLAG_TO_CODE.items():
         if flag == "EsUsuarioSinAcceso":
