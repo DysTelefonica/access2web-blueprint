@@ -41,7 +41,7 @@ dependencies = [
     "fastapi==0.119.*",            # HTTP layer for delivery (Phase 5).
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
     "httpx==0.28.*",               # Test client + downstream HTTP.
-    "cachetools==5.*",             # TTLCache adapter (DA-8).
+    "cachetools>=5,<8",             # TTLCache adapter (DA-8).
     "python-multipart==0.0.*",     # FastAPI form parsing.
     "uvicorn[standard]==0.30.*",   # ASGI server for delivery.
 ]
