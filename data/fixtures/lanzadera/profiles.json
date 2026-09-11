@@ -1,0 +1,1282 @@
+[
+  {
+    "id": "739fdf0c-85fc-5297-8b9b-2de159f367be",
+    "app_id": 1,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "8dc2e2a7-eaf8-5ce6-8e55-a41474d5fb39",
+    "app_id": 1,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "7037fca6-c8e2-5c01-932e-33048b2aba97",
+    "app_id": 1,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "f8de61a6-e7e7-5dfd-8b37-56f3d8716948",
+    "app_id": 1,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "5043177f-2311-556c-9d4c-6a6ada9eafa2",
+    "app_id": 1,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "7f1718d5-83b4-54bf-8183-b0602befee4a",
+    "app_id": 1,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "5a0c9f9a-ef2d-5d97-8e83-e90d22aa7cfd",
+    "app_id": 1,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "845ada91-de6c-5523-ac06-83a8c65bf6fa",
+    "app_id": 1,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d10ae56b-0ecb-53ae-824e-70e0bffc81c9",
+    "app_id": 2,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "b858674e-c2b3-589e-8a98-1bc89949beca",
+    "app_id": 2,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "caec3aa3-db08-5d6f-a452-8038c8ef2610",
+    "app_id": 2,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "db0a6b2b-ed0f-5eb3-a1c4-c08f937fc10a",
+    "app_id": 2,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "c61133c6-23a7-5e21-a974-d070194d3422",
+    "app_id": 2,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e475326f-9336-5b24-87b0-376b8c45ea27",
+    "app_id": 2,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d2971fcf-e11e-5033-a5ca-50d1ced34feb",
+    "app_id": 2,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6b0b404a-15a0-5a80-9e64-48add4da887f",
+    "app_id": 2,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1",
+    "app_id": 3,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "11bc9b62-ac58-5b31-8e3d-0279589a8e2c",
+    "app_id": 3,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "1c94aad9-d8f8-5c7f-9847-ce31f86dae5d",
+    "app_id": 3,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "8408def1-c5b2-5b0c-aef6-bfa397aa9ed7",
+    "app_id": 3,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6cc44a3c-771e-5d43-b28f-f076e751e636",
+    "app_id": 3,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "edb3a174-e72c-586b-9827-5c16f89eb384",
+    "app_id": 3,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "81c90c65-4df4-5341-8c47-41a31c80f334",
+    "app_id": 3,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "79e7d22a-12a0-5338-bfd0-b12951207c49",
+    "app_id": 3,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "9ae14745-3111-549c-b545-1fc164ee6b70",
+    "app_id": 4,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "508611a8-92e1-515f-ba62-6d4c6db2f67f",
+    "app_id": 4,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "c00429c1-4882-5a52-8760-a9a9d804e7cb",
+    "app_id": 4,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a802a62d-5b95-59b5-ae5d-88a6e7cff86a",
+    "app_id": 4,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8",
+    "app_id": 4,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6d1e5237-1114-5789-bb21-f891377c100b",
+    "app_id": 4,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "10e646f9-4446-5bde-8de3-3a009678bd5e",
+    "app_id": 4,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d8406eee-dce0-5434-b465-1edfcb7528e0",
+    "app_id": 4,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "727e6e74-7b3b-5614-a616-be26812833d2",
+    "app_id": 5,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d56086da-4f04-50db-8855-e36b2a86f091",
+    "app_id": 5,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a5b4e1d3-f85f-5ae5-b700-150a77d4ad49",
+    "app_id": 5,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "215a2b58-59b4-5ae4-9feb-99b97e911c42",
+    "app_id": 5,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "87c1029a-fc40-5d0f-bafe-b496fc59e719",
+    "app_id": 5,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "3ca3f336-3243-5635-8531-4e229716702d",
+    "app_id": 5,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "76731c55-881f-5d91-9f01-3a3b63d00134",
+    "app_id": 5,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d5cffe94-6131-5c5e-add4-8ef106128be3",
+    "app_id": 5,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "685b9a29-b535-59c3-ba62-4d6c7edb8805",
+    "app_id": 6,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "f41887bd-fd96-5aa2-8bd8-61b54a9f3011",
+    "app_id": 6,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a01b2954-465d-5c13-892f-7b2fc7bfe526",
+    "app_id": 6,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a24d2633-c374-5ad1-b2c4-073a1df94e80",
+    "app_id": 6,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "1b70c514-80ef-51be-96a9-355548fb7bc0",
+    "app_id": 6,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "9c508835-28e4-5cf4-9384-cbf0327b8337",
+    "app_id": 6,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "3cb51668-7ba2-5d81-8741-69c85506baba",
+    "app_id": 6,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a9828c59-9219-5b19-904d-e07f11e07721",
+    "app_id": 6,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "03fc918d-6bb2-5ff1-9267-3b6c9083ab61",
+    "app_id": 7,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "42861278-1fa5-54ca-bc44-e27cbe18580a",
+    "app_id": 7,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "261a9932-97af-520e-80c4-9493d914331c",
+    "app_id": 7,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "9b13d313-fca6-5e8a-b3a4-08a3da010772",
+    "app_id": 7,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "397bfb26-3455-50f5-95d1-cbd098354660",
+    "app_id": 7,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "b338e04a-33fb-5ec5-ab9f-eeb8cf516367",
+    "app_id": 7,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "46a1688f-8105-5d99-9e65-990d9737ad88",
+    "app_id": 7,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6935940d-ac3b-5d81-83c5-c3b95b8ebb80",
+    "app_id": 7,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "bda03642-1350-5ca8-a204-388c0db548f7",
+    "app_id": 8,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e5b6061c-bed0-5a32-b571-c7b21380940d",
+    "app_id": 8,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "5eccb8eb-f8df-51c5-9d6e-eeea297527a1",
+    "app_id": 8,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "c045523d-c5ea-50a2-9ebd-5aa34e270c50",
+    "app_id": 8,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "dc2e4b2e-ae64-5c52-ac51-79b8cb3c954d",
+    "app_id": 8,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "b60b6c2d-6c1c-50c1-970b-839eedc89b45",
+    "app_id": 8,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "453dfa66-b924-55b6-bc13-85d98a8372a3",
+    "app_id": 8,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "aa449be6-598b-5b1c-a78e-38d05ec43c6b",
+    "app_id": 8,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "33d664c6-4822-5946-9e9c-289aa58665c0",
+    "app_id": 9,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "bbbba6b6-fcaa-5c7d-8438-49f2c3b38890",
+    "app_id": 9,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "47ab4bf7-d65b-5a2e-84e2-ba5206e091cb",
+    "app_id": 9,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "491569f0-4557-5773-8c50-20c853e02479",
+    "app_id": 9,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "45c9b34f-fadb-58d3-b572-bc1aeb61bc68",
+    "app_id": 9,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "c20062c7-295a-5504-8ea1-e3d4d86f4bfa",
+    "app_id": 9,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "477d0118-f5ce-54b5-a917-353ad28745c7",
+    "app_id": 9,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "805ad2bd-ca7d-5bf1-ad64-b0c76391a285",
+    "app_id": 9,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "27f8eda2-7868-5b72-8a0c-69df033367cb",
+    "app_id": 10,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "c3dc2fad-3ede-5b1e-89d5-dae0917bdd6b",
+    "app_id": 10,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79",
+    "app_id": 10,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e47760ef-60de-517f-867b-5b38c0d008de",
+    "app_id": 10,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6b2bc7fd-ba26-54d6-a7a9-b3066582937b",
+    "app_id": 10,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "9abedb92-017e-5c67-9a05-66c8cdb610fa",
+    "app_id": 10,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96",
+    "app_id": 10,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "55e5daad-4f63-55cb-b6d2-f3581d14e484",
+    "app_id": 10,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "fcdfd368-90aa-51f0-a6b7-971a393ef11a",
+    "app_id": 11,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "386262b7-6c27-53da-97d0-a3b914649c17",
+    "app_id": 11,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "33303bd5-d2cb-5d54-b72d-23b159d0e7fe",
+    "app_id": 11,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "25f8a407-98d3-5995-b1a1-f5f51e31e9ee",
+    "app_id": 11,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a16ff590-d366-5433-ae47-b0302d03ffef",
+    "app_id": 11,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6f5aebfe-d900-5c49-960a-14843fba1ce7",
+    "app_id": 11,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "5c432f1f-251b-5d02-824b-b279416bd058",
+    "app_id": 11,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "c84a2084-c98d-5209-83c4-4825d9cde1f4",
+    "app_id": 11,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "28cc6861-1656-5460-97ab-018f735cb0d3",
+    "app_id": 12,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "4bcdb28c-e6e3-5a37-97e1-6478b7dd1e5f",
+    "app_id": 12,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6552ac3e-2720-5f72-abf3-15314bd85fda",
+    "app_id": 12,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6e8b8dcd-10c3-5a05-8063-95d8b3956e57",
+    "app_id": 12,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "4cf13584-77c6-5a4c-88c5-5c7729806fe9",
+    "app_id": 12,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "2ad8b4cd-8e3c-5996-8422-b7773bd7cf42",
+    "app_id": 12,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a058e145-cba3-510c-8bd9-0bfff6a6ac1d",
+    "app_id": 12,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "81124f0a-68fd-54d4-9d11-f7ee1293c7cf",
+    "app_id": 12,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "88362397-4336-5470-a271-16bb0547f4c3",
+    "app_id": 13,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc",
+    "app_id": 13,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "dbbef051-f8d0-5e94-a1c1-e222b67a2850",
+    "app_id": 13,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "20e22c0b-7e6d-5e0c-aacf-80ba503b024e",
+    "app_id": 13,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "0168367e-1313-5e24-b898-22f1afd361e5",
+    "app_id": 13,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "945d4a30-ab3b-5012-bd26-6557ae3b5f00",
+    "app_id": 13,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "3d4e5245-0862-56d9-afcc-f037c224b86b",
+    "app_id": 13,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "80e5a086-f1dc-5a27-b92e-94e2c79be1f6",
+    "app_id": 13,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "f4f8c894-608c-5fbd-bee7-ffed018bbeda",
+    "app_id": 14,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "1b8ef12c-74bf-5fe6-a810-f3bba72210ab",
+    "app_id": 14,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "cf2589e3-ca5b-50f9-807c-4837b6b876c1",
+    "app_id": 14,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "b8af8590-d843-57b7-ae5f-4ac6ac25d704",
+    "app_id": 14,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "878abbe8-ba0f-5b40-988e-e35224e1f315",
+    "app_id": 14,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "5e191d9e-2637-5d34-afa1-f270fa61c73d",
+    "app_id": 14,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "f3162cd0-5c1a-5315-9378-06bd3347977e",
+    "app_id": 14,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "470ac6bf-901f-59af-9b2b-d961af572dfb",
+    "app_id": 14,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "616cfaa1-a138-50e6-9336-d3effc3f7414",
+    "app_id": 15,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6f997640-c924-5c5d-ac18-73660aa9f36c",
+    "app_id": 15,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "590a5865-4bcf-5322-97a9-fcdd31b5f515",
+    "app_id": 15,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "85a8234e-834b-568a-870a-74eded6fb74a",
+    "app_id": 15,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6e21aad0-6454-5e98-99fc-57b0cca30c9b",
+    "app_id": 15,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "bd08162f-2719-543e-be6d-8ae05d5dd579",
+    "app_id": 15,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d7fda6eb-279c-5f0b-bbdf-4cf0cf384374",
+    "app_id": 15,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "c181115d-2f4b-57a7-a89f-0824230ee3d4",
+    "app_id": 15,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "9c25a57c-6b44-59c0-9e09-576416202abd",
+    "app_id": 16,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "4495f433-2534-5b5f-b778-47dd44eb548f",
+    "app_id": 16,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "51bbf761-75f6-5558-bdca-3f70a7088d89",
+    "app_id": 16,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "0d5525cb-c3c0-59c0-a9d0-e7d760dcd756",
+    "app_id": 16,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6d222fff-1760-5ccc-bfc3-04ea265376c1",
+    "app_id": 16,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "7b8b7c62-a1c2-59f6-bb8b-e3a1c6daa307",
+    "app_id": 16,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "65c9ef55-15a9-5707-8f3b-798775edc3d9",
+    "app_id": 16,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e35bee96-e22b-55ee-9bee-82c3592fbb67",
+    "app_id": 16,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a0acd712-d30d-5add-85a8-81f0addfc4a8",
+    "app_id": 17,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "bff92c60-3c77-595a-a968-dea216693ef7",
+    "app_id": 17,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "10f29249-4bb2-586a-99e2-0efaef9d1f34",
+    "app_id": 17,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "cb897c62-43cd-5018-9beb-12d30e011123",
+    "app_id": 17,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "9c2c18f6-8c0d-5d41-843a-8d8144fb3024",
+    "app_id": 17,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e2f5e2f4-150f-508c-83cb-dc36eb7dfc1a",
+    "app_id": 17,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e189c937-d92a-5fbb-a81b-36c290b9c896",
+    "app_id": 17,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "1493510c-a112-5297-afd2-426589d77379",
+    "app_id": 17,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e69c6265-4b3c-538c-b02a-61f5b2460424",
+    "app_id": 18,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d",
+    "app_id": 18,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "dc97f8ba-8478-5301-9bd7-db1e8a1ce652",
+    "app_id": 18,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e632971d-5ce6-584b-a6d1-82bfe9887678",
+    "app_id": 18,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d",
+    "app_id": 18,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "0e26e2f4-e6c4-591a-8d56-5d3bc3e92fd2",
+    "app_id": 18,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "b6e764b9-5a11-5572-b1e6-93b919dc3dae",
+    "app_id": 18,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a9885ab8-7b15-5a9f-9cba-874f663fc429",
+    "app_id": 18,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "daeedd73-5833-5898-812e-c9644bc002bc",
+    "app_id": 19,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "ffeb3c7c-e2b2-5674-a8ca-002aad8226dd",
+    "app_id": 19,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "81bb9f1f-f092-5818-b595-fe5d538eb535",
+    "app_id": 19,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e8ffa9e6-94a1-5398-b937-f96ec8f3c797",
+    "app_id": 19,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "163146ba-74fa-50b9-b13a-9782230d0e5c",
+    "app_id": 19,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d96013a3-3266-5ac8-abb2-f26c53243feb",
+    "app_id": 19,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "db48e336-747f-58ef-9854-ba7de2f8ad4f",
+    "app_id": 19,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "a6ce036a-7400-5083-bff7-22fea22e80a0",
+    "app_id": 19,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "d2aa30f7-2e69-56b9-bbb4-ca2b7ce40b6d",
+    "app_id": 20,
+    "code": "DEFAULT",
+    "name": "Usuario estándar",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6882e431-cc59-5dd5-ac41-44b4d7b04cf7",
+    "app_id": 20,
+    "code": "ADMIN",
+    "name": "Perfil legacy: ADMIN",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "f6a073b9-6415-586b-9ec3-4fd5b8235bc9",
+    "app_id": 20,
+    "code": "CALIDAD",
+    "name": "Perfil legacy: CALIDAD",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "056dcfa0-7416-549a-b335-d64e5e5c8b3a",
+    "app_id": 20,
+    "code": "CALIDAD_AVISOS",
+    "name": "Perfil legacy: CALIDAD_AVISOS",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "6e5464b4-4c0f-598c-ad2e-644e79fa226e",
+    "app_id": 20,
+    "code": "TECNICO",
+    "name": "Perfil legacy: TECNICO",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "773cd40a-f952-57b1-8d3c-7d2c2f5cd5d6",
+    "app_id": 20,
+    "code": "ECONOMIA",
+    "name": "Perfil legacy: ECONOMIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "68157593-6efe-572a-bfb9-dbdcd5d5e24a",
+    "app_id": 20,
+    "code": "SECRETARIA",
+    "name": "Perfil legacy: SECRETARIA",
+    "capabilities": {},
+    "active": true
+  },
+  {
+    "id": "e797e122-18c2-5a7b-b140-8e6746d1d3b2",
+    "app_id": 20,
+    "code": "SIN_ACCESO",
+    "name": "Perfil legacy: SIN_ACCESO",
+    "capabilities": {},
+    "active": true
+  }
+]

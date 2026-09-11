@@ -1,0 +1,5600 @@
+[
+  {
+    "id": "ebec3e44-9575-516d-ba00-dbbb982d0b87",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "0ab5d564-714e-5b4f-9555-8edb74af1143",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "caec3aa3-db08-5d6f-a452-8038c8ef2610"
+  },
+  {
+    "id": "e4971e8a-b8f9-54e1-ae5b-b34d8a3caeed",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a01b2954-465d-5c13-892f-7b2fc7bfe526"
+  },
+  {
+    "id": "bfa757b0-2993-56a7-8e77-10d4c5a78f1f",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c508835-28e4-5cf4-9384-cbf0327b8337"
+  },
+  {
+    "id": "f29a9619-ba98-5745-b819-d1f8ea2b9c14",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b338e04a-33fb-5ec5-ab9f-eeb8cf516367"
+  },
+  {
+    "id": "24c815ac-0fb9-5cb1-a5b7-51408f2ec638",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "46a1688f-8105-5d99-9e65-990d9737ad88"
+  },
+  {
+    "id": "50390d5e-91b5-577e-830b-5d1718e159dc",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bda03642-1350-5ca8-a204-388c0db548f7"
+  },
+  {
+    "id": "f9bb1b28-32ae-5be9-a00e-a23be99e2195",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "491569f0-4557-5773-8c50-20c853e02479"
+  },
+  {
+    "id": "3fcb81a9-cac9-536c-861b-c028896d046f",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "3616e7b9-db68-5df3-994f-b557eaacedf0",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "20e22c0b-7e6d-5e0c-aacf-80ba503b024e"
+  },
+  {
+    "id": "7525a94e-0266-5047-82fd-fc8cf078c92c",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "945d4a30-ab3b-5012-bd26-6557ae3b5f00"
+  },
+  {
+    "id": "ab95da20-97ed-591c-8971-9189e0f2c5dc",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b8ef12c-74bf-5fe6-a810-f3bba72210ab"
+  },
+  {
+    "id": "234cc250-c3b7-5d37-bb87-252a0970e596",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b8af8590-d843-57b7-ae5f-4ac6ac25d704"
+  },
+  {
+    "id": "93224eb5-9639-505b-8201-3edc56b94c67",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5e191d9e-2637-5d34-afa1-f270fa61c73d"
+  },
+  {
+    "id": "3045ee82-a94f-5b76-9701-fc1bface20f2",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bff92c60-3c77-595a-a968-dea216693ef7"
+  },
+  {
+    "id": "23916959-a6f8-578f-931b-82feec2c4046",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb897c62-43cd-5018-9beb-12d30e011123"
+  },
+  {
+    "id": "2546ba25-bcbf-506c-8481-38de47589880",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e2f5e2f4-150f-508c-83cb-dc36eb7dfc1a"
+  },
+  {
+    "id": "051b3e6c-fd3f-55de-a714-d77068a3c853",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d"
+  },
+  {
+    "id": "1cdf2017-e8cd-5008-8d0e-200981ffc537",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc97f8ba-8478-5301-9bd7-db1e8a1ce652"
+  },
+  {
+    "id": "94e83940-5b39-5239-974b-5c5e7ad04de2",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0e26e2f4-e6c4-591a-8d56-5d3bc3e92fd2"
+  },
+  {
+    "id": "674c11e7-72a4-5bb2-b23a-98b4d0051216",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6882e431-cc59-5dd5-ac41-44b4d7b04cf7"
+  },
+  {
+    "id": "d88850f3-0110-59a5-9beb-a8eb191e2e8c",
+    "user_id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "68157593-6efe-572a-bfb9-dbdcd5d5e24a"
+  },
+  {
+    "id": "a48c5f24-c214-51c6-8eb9-897c0baa77e3",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8dc2e2a7-eaf8-5ce6-8e55-a41474d5fb39"
+  },
+  {
+    "id": "b3eecd79-d36a-5ea6-8c73-3c2130be5bcc",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7037fca6-c8e2-5c01-932e-33048b2aba97"
+  },
+  {
+    "id": "daf4ff4a-a71e-524f-8de7-a04a87d4c332",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f8de61a6-e7e7-5dfd-8b37-56f3d8716948"
+  },
+  {
+    "id": "41da5bf0-ee51-57fc-84f5-ba10b0cbff09",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8408def1-c5b2-5b0c-aef6-bfa397aa9ed7"
+  },
+  {
+    "id": "e6d1b15b-c0bd-5d4a-9c1a-c04f5ba21172",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9ae14745-3111-549c-b545-1fc164ee6b70"
+  },
+  {
+    "id": "f98ef2d3-acbb-5c19-aca7-b969f9fa0170",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3ca3f336-3243-5635-8531-4e229716702d"
+  },
+  {
+    "id": "04436628-7a7c-5fbe-a55d-b85b5936236e",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "685b9a29-b535-59c3-ba62-4d6c7edb8805"
+  },
+  {
+    "id": "b1d55c8e-b452-595f-852c-87b63b8e4568",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9b13d313-fca6-5e8a-b3a4-08a3da010772"
+  },
+  {
+    "id": "66a719e3-33ab-526b-b6d9-c22aad735750",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "397bfb26-3455-50f5-95d1-cbd098354660"
+  },
+  {
+    "id": "241e0ee6-3f6a-5d9e-ae0d-7ed0e4230cb2",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "46a1688f-8105-5d99-9e65-990d9737ad88"
+  },
+  {
+    "id": "291581d1-55d5-5542-b924-f8e0d63f9490",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bda03642-1350-5ca8-a204-388c0db548f7"
+  },
+  {
+    "id": "3ffbacc3-0347-5b0f-b81e-3b4a45b94220",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bbbba6b6-fcaa-5c7d-8438-49f2c3b38890"
+  },
+  {
+    "id": "cc6d78a7-61ef-5289-a274-aa7c5206a07b",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "491569f0-4557-5773-8c50-20c853e02479"
+  },
+  {
+    "id": "e39521ae-7f12-5e94-b62b-9b9483d8e252",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c20062c7-295a-5504-8ea1-e3d4d86f4bfa"
+  },
+  {
+    "id": "a58e5f05-98c2-554a-ad59-0c1a3d3c6aa7",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "27f8eda2-7868-5b72-8a0c-69df033367cb"
+  },
+  {
+    "id": "e0f516ab-7779-5949-863a-7761ca8e1466",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "fcdfd368-90aa-51f0-a6b7-971a393ef11a"
+  },
+  {
+    "id": "25c9856f-5af9-59d7-b446-2db719e30e90",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e8b8dcd-10c3-5a05-8063-95d8b3956e57"
+  },
+  {
+    "id": "8902f654-0b85-5d63-9cc0-1996d4bd90a6",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2ad8b4cd-8e3c-5996-8422-b7773bd7cf42"
+  },
+  {
+    "id": "60363935-6ec8-5647-bb5d-14dbcb7439db",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a058e145-cba3-510c-8bd9-0bfff6a6ac1d"
+  },
+  {
+    "id": "e40fb696-a45e-5809-a9e2-d3acd3886efd",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "0bda10b4-a833-5045-af06-e20375e46918",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dbbef051-f8d0-5e94-a1c1-e222b67a2850"
+  },
+  {
+    "id": "8956cdb7-1c61-5cab-8f09-a92399158a9f",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "945d4a30-ab3b-5012-bd26-6557ae3b5f00"
+  },
+  {
+    "id": "292537b4-ca70-5188-81ec-d8253f716b86",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3d4e5245-0862-56d9-afcc-f037c224b86b"
+  },
+  {
+    "id": "bda1922e-db5a-5f9e-ad35-c53fd384c1b5",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f4f8c894-608c-5fbd-bee7-ffed018bbeda"
+  },
+  {
+    "id": "209e79fb-9404-58a4-b332-4c789a93a1c4",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "590a5865-4bcf-5322-97a9-fcdd31b5f515"
+  },
+  {
+    "id": "c523bfa3-e8c2-5b6f-9eea-3f9f5559f3f0",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "d59b3989-1a48-599d-8f50-4b1ef89535f6",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e21aad0-6454-5e98-99fc-57b0cca30c9b"
+  },
+  {
+    "id": "e633f2c7-7eb7-5822-8023-c046ad008f59",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bd08162f-2719-543e-be6d-8ae05d5dd579"
+  },
+  {
+    "id": "8c08dfaa-976e-53d0-9894-0d025fa9b8b1",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d"
+  },
+  {
+    "id": "93208e74-5fdd-5bdd-85c5-82e5c3acbf0b",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e632971d-5ce6-584b-a6d1-82bfe9887678"
+  },
+  {
+    "id": "b386f7a6-1261-58fc-ba55-f015b68d6c86",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d"
+  },
+  {
+    "id": "bd6a3d9b-a880-5e25-8f25-a1b5704e1b41",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b6e764b9-5a11-5572-b1e6-93b919dc3dae"
+  },
+  {
+    "id": "f9760e3a-6885-503f-8ed6-7ff5e356435b",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "ffeb3c7c-e2b2-5674-a8ca-002aad8226dd"
+  },
+  {
+    "id": "5655f439-17ba-5b69-9edb-0717b246ac3f",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81bb9f1f-f092-5818-b595-fe5d538eb535"
+  },
+  {
+    "id": "eb0d51e0-797e-5b27-9eec-aaddebcb3cbb",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "163146ba-74fa-50b9-b13a-9782230d0e5c"
+  },
+  {
+    "id": "189558cc-7a48-5fb4-b261-b087499800da",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d96013a3-3266-5ac8-abb2-f26c53243feb"
+  },
+  {
+    "id": "8be2876f-c035-5a0a-93e1-f4ec5b0dbcb7",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db48e336-747f-58ef-9854-ba7de2f8ad4f"
+  },
+  {
+    "id": "c06b0fc5-a76c-5512-843e-57e41e72d2b2",
+    "user_id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d2aa30f7-2e69-56b9-bbb4-ca2b7ce40b6d"
+  },
+  {
+    "id": "1817642b-5de2-5023-a095-c3047ce7660f",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5043177f-2311-556c-9d4c-6a6ada9eafa2"
+  },
+  {
+    "id": "3924b8ad-5958-5427-9bcc-5567b8081c67",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5a0c9f9a-ef2d-5d97-8e83-e90d22aa7cfd"
+  },
+  {
+    "id": "8439812a-d6e8-5d81-a692-a3abb7117e15",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1c94aad9-d8f8-5c7f-9847-ce31f86dae5d"
+  },
+  {
+    "id": "b0b17430-f444-5d4b-8b42-c24375365659",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "edb3a174-e72c-586b-9827-5c16f89eb384"
+  },
+  {
+    "id": "45478f2e-e549-5db1-b593-4160ec6e1bdd",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8"
+  },
+  {
+    "id": "231ba039-9304-58c7-9a4e-002622a26afd",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "10e646f9-4446-5bde-8de3-3a009678bd5e"
+  },
+  {
+    "id": "bcc34b3b-a92f-55a0-9264-a51be73c9ce9",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "727e6e74-7b3b-5614-a616-be26812833d2"
+  },
+  {
+    "id": "1c12a0e5-c088-560b-849b-391064497aa7",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a01b2954-465d-5c13-892f-7b2fc7bfe526"
+  },
+  {
+    "id": "d2aef11c-d031-503d-9363-4d6e1771e978",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b70c514-80ef-51be-96a9-355548fb7bc0"
+  },
+  {
+    "id": "5e0e9ea6-9d88-5fbd-a42d-7a0e3bc630cd",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "42861278-1fa5-54ca-bc44-e27cbe18580a"
+  },
+  {
+    "id": "4a66b69d-94db-581a-b43a-db10cb21a628",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b338e04a-33fb-5ec5-ab9f-eeb8cf516367"
+  },
+  {
+    "id": "a79e03c1-ee42-5030-bf90-35b0e6934999",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc2e4b2e-ae64-5c52-ac51-79b8cb3c954d"
+  },
+  {
+    "id": "8fcbe55c-91eb-50fa-ad47-9d9eecec9cea",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bbbba6b6-fcaa-5c7d-8438-49f2c3b38890"
+  },
+  {
+    "id": "199ed206-b5e6-5449-bc8e-9f3f3af7e115",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "47ab4bf7-d65b-5a2e-84e2-ba5206e091cb"
+  },
+  {
+    "id": "ca59bb03-f6f4-55f4-b103-a38f0d6e6ed2",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "45c9b34f-fadb-58d3-b572-bc1aeb61bc68"
+  },
+  {
+    "id": "0b3a4382-6a8c-5b7f-b5f6-275278b1c609",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c3dc2fad-3ede-5b1e-89d5-dae0917bdd6b"
+  },
+  {
+    "id": "020a5a68-6483-5b1d-9b60-39d3c57c1859",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79"
+  },
+  {
+    "id": "b4e58605-a871-539b-8e58-e9994505435f",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e47760ef-60de-517f-867b-5b38c0d008de"
+  },
+  {
+    "id": "fc16bb6e-d687-5e6a-81e8-fce66b8953a6",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6552ac3e-2720-5f72-abf3-15314bd85fda"
+  },
+  {
+    "id": "9acb68ad-8d08-556b-b49b-8ca9a7cbc8b9",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e8b8dcd-10c3-5a05-8063-95d8b3956e57"
+  },
+  {
+    "id": "50f114a1-d5e0-5e6f-bb50-42b68a7c9c75",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2ad8b4cd-8e3c-5996-8422-b7773bd7cf42"
+  },
+  {
+    "id": "e07ae54f-22f4-5bcf-81bf-ae20d9a24034",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "88362397-4336-5470-a271-16bb0547f4c3"
+  },
+  {
+    "id": "bffa0fad-d58b-518f-ac2a-cd35f9fe43b5",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b8ef12c-74bf-5fe6-a810-f3bba72210ab"
+  },
+  {
+    "id": "0a10dd0a-b6a9-5591-b005-7652e3a067ab",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cf2589e3-ca5b-50f9-807c-4837b6b876c1"
+  },
+  {
+    "id": "076d3e1f-64c8-519e-b22e-e90a89153b27",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "878abbe8-ba0f-5b40-988e-e35224e1f315"
+  },
+  {
+    "id": "6233713f-81a3-56a8-9101-2320b4802904",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5e191d9e-2637-5d34-afa1-f270fa61c73d"
+  },
+  {
+    "id": "a4f6f003-4e9c-544b-8050-80dd54d1665e",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "590a5865-4bcf-5322-97a9-fcdd31b5f515"
+  },
+  {
+    "id": "995a9cca-d80e-5668-ae0b-410ee8838bb3",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e21aad0-6454-5e98-99fc-57b0cca30c9b"
+  },
+  {
+    "id": "f85dc3f8-e869-5f30-8c02-33a269f9c54c",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bd08162f-2719-543e-be6d-8ae05d5dd579"
+  },
+  {
+    "id": "c20ee5fa-3870-5f54-ac80-53b42dae2a20",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d7fda6eb-279c-5f0b-bbdf-4cf0cf384374"
+  },
+  {
+    "id": "cc5c0c86-8bac-58d5-8fe7-f30ca1a55ed0",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "51bbf761-75f6-5558-bdca-3f70a7088d89"
+  },
+  {
+    "id": "fa270aa6-4778-5fa7-b6a7-d8a172ea4019",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0d5525cb-c3c0-59c0-a9d0-e7d760dcd756"
+  },
+  {
+    "id": "eb009535-2843-5634-9a41-cbac6ab10ba8",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "65c9ef55-15a9-5707-8f3b-798775edc3d9"
+  },
+  {
+    "id": "416f86b0-dbe6-5981-9dc1-0176a0051cc9",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a0acd712-d30d-5add-85a8-81f0addfc4a8"
+  },
+  {
+    "id": "e8f5f5cb-df56-5061-886c-bfbdbbb40c0f",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d"
+  },
+  {
+    "id": "bc90f3c2-db95-5be3-9c97-2b1a51401285",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "daeedd73-5833-5898-812e-c9644bc002bc"
+  },
+  {
+    "id": "1564001c-4443-5e16-86e7-18e86cf604f7",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "056dcfa0-7416-549a-b335-d64e5e5c8b3a"
+  },
+  {
+    "id": "6aa065e7-380e-5d30-b194-17defad5689e",
+    "user_id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "773cd40a-f952-57b1-8d3c-7d2c2f5cd5d6"
+  },
+  {
+    "id": "4016bdc1-3b21-52a8-b36a-28e9cacfcd70",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "c157d3ad-a537-5603-b71c-ef5a879bb1fc",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "11bc9b62-ac58-5b31-8e3d-0279589a8e2c"
+  },
+  {
+    "id": "193f1e48-b33a-57d8-97fb-d7664f7412e3",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9ae14745-3111-549c-b545-1fc164ee6b70"
+  },
+  {
+    "id": "3b89d619-4f0f-5179-bd10-00027d355559",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "727e6e74-7b3b-5614-a616-be26812833d2"
+  },
+  {
+    "id": "e41727d9-07e3-58e8-82e5-54686e8aebfe",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a24d2633-c374-5ad1-b2c4-073a1df94e80"
+  },
+  {
+    "id": "61646381-2b62-5d78-a9b6-fda305f61e2e",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b70c514-80ef-51be-96a9-355548fb7bc0"
+  },
+  {
+    "id": "675b7f1b-3b35-5b0b-b874-b7ed24516843",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c508835-28e4-5cf4-9384-cbf0327b8337"
+  },
+  {
+    "id": "229009fd-7964-5da7-8d7a-7e1555186658",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "a793bdc9-16e4-59fb-b296-e1c66dcaf5ee",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "42861278-1fa5-54ca-bc44-e27cbe18580a"
+  },
+  {
+    "id": "bb68d41a-8c37-5054-9e34-999e19d3b88c",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "27f8eda2-7868-5b72-8a0c-69df033367cb"
+  },
+  {
+    "id": "19399d15-d4e2-5520-a202-eeb7bb4cc1fd",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "fcdfd368-90aa-51f0-a6b7-971a393ef11a"
+  },
+  {
+    "id": "d58fb26c-0ff6-54a6-a2d0-308fe15893b8",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6552ac3e-2720-5f72-abf3-15314bd85fda"
+  },
+  {
+    "id": "9e98be29-98f1-54d8-b96b-c5250133977e",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4cf13584-77c6-5a4c-88c5-5c7729806fe9"
+  },
+  {
+    "id": "9fab3633-7222-535e-92ae-89c6c3f642e8",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2ad8b4cd-8e3c-5996-8422-b7773bd7cf42"
+  },
+  {
+    "id": "403d05a8-15e2-5f44-960c-855f5fb57cf8",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a058e145-cba3-510c-8bd9-0bfff6a6ac1d"
+  },
+  {
+    "id": "98efca88-cf94-5abb-bf34-dd8d7de7ce94",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f4f8c894-608c-5fbd-bee7-ffed018bbeda"
+  },
+  {
+    "id": "6aca7850-754a-5435-8331-def5f81f4ee2",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4495f433-2534-5b5f-b778-47dd44eb548f"
+  },
+  {
+    "id": "d9ce55ec-0dbf-5d8f-b814-a3f922978e1d",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7b8b7c62-a1c2-59f6-bb8b-e3a1c6daa307"
+  },
+  {
+    "id": "81c11b91-da75-58e1-b44a-50a843b189e3",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "65c9ef55-15a9-5707-8f3b-798775edc3d9"
+  },
+  {
+    "id": "d69bc22f-e20b-56b6-805a-d37cdf42f8fd",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d"
+  },
+  {
+    "id": "88874e5d-df39-5224-8659-52ddd2c19339",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc97f8ba-8478-5301-9bd7-db1e8a1ce652"
+  },
+  {
+    "id": "41bd7704-8dd4-5aaf-82ae-cc3330f2af99",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d"
+  },
+  {
+    "id": "86df6f32-0935-5187-becb-3bead7df722d",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b6e764b9-5a11-5572-b1e6-93b919dc3dae"
+  },
+  {
+    "id": "bbc771e2-067f-53d2-a03c-6778e86ec91e",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81bb9f1f-f092-5818-b595-fe5d538eb535"
+  },
+  {
+    "id": "997c784a-adff-5c14-ad48-622eda99cc11",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e8ffa9e6-94a1-5398-b937-f96ec8f3c797"
+  },
+  {
+    "id": "f6f0735b-2507-5b12-ad73-244821490531",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d96013a3-3266-5ac8-abb2-f26c53243feb"
+  },
+  {
+    "id": "e472bcfc-2af8-5d42-8dd6-968351aed759",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db48e336-747f-58ef-9854-ba7de2f8ad4f"
+  },
+  {
+    "id": "7b8dea56-7893-5b12-aad1-5876bbe80a4d",
+    "user_id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d2aa30f7-2e69-56b9-bbb4-ca2b7ce40b6d"
+  },
+  {
+    "id": "0e7d7b3b-f248-5d03-a76d-b2a58346b071",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7037fca6-c8e2-5c01-932e-33048b2aba97"
+  },
+  {
+    "id": "f1502cf4-6af6-5684-802d-c0a3c4151a7a",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5043177f-2311-556c-9d4c-6a6ada9eafa2"
+  },
+  {
+    "id": "20a0e87c-38c3-5d66-bb13-1f8370e10e4e",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b858674e-c2b3-589e-8a98-1bc89949beca"
+  },
+  {
+    "id": "232e9f36-7f2d-53f1-83a2-8f375811d100",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e475326f-9336-5b24-87b0-376b8c45ea27"
+  },
+  {
+    "id": "08a273a4-1af5-5b88-b4a4-a23d11ad551b",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1c94aad9-d8f8-5c7f-9847-ce31f86dae5d"
+  },
+  {
+    "id": "a468ed52-b2b6-5e24-a162-2a6779926da4",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8408def1-c5b2-5b0c-aef6-bfa397aa9ed7"
+  },
+  {
+    "id": "b561836d-91c4-56b8-b5e7-808cb0f361ff",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "edb3a174-e72c-586b-9827-5c16f89eb384"
+  },
+  {
+    "id": "47c1b7c1-28c8-5c0a-868e-7649b5967f9b",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8"
+  },
+  {
+    "id": "c9883bf4-e6e8-5169-8de9-f3a4d82f74c2",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6d1e5237-1114-5789-bb21-f891377c100b"
+  },
+  {
+    "id": "dfb9093e-0c1a-50d3-b207-6386fc139ce2",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "727e6e74-7b3b-5614-a616-be26812833d2"
+  },
+  {
+    "id": "7c68deb8-6c0f-5e3c-983b-e47980ecd5ae",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "397bfb26-3455-50f5-95d1-cbd098354660"
+  },
+  {
+    "id": "0a93f56d-ed87-5ee3-84e0-968206b81fad",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c045523d-c5ea-50a2-9ebd-5aa34e270c50"
+  },
+  {
+    "id": "206a174a-198a-5c9c-91ae-d903a4cc91e2",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b60b6c2d-6c1c-50c1-970b-839eedc89b45"
+  },
+  {
+    "id": "a0b29dea-235c-5da1-99f0-6817cfedf0c0",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "47ab4bf7-d65b-5a2e-84e2-ba5206e091cb"
+  },
+  {
+    "id": "204f5c96-b3ea-5eb9-bfb4-e9df02c3fccc",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "491569f0-4557-5773-8c50-20c853e02479"
+  },
+  {
+    "id": "e2e3bdbc-c17b-57ab-9558-89b12fc59353",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "45c9b34f-fadb-58d3-b572-bc1aeb61bc68"
+  },
+  {
+    "id": "0067d154-bacb-592a-a50a-ad21b89aee8b",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9abedb92-017e-5c67-9a05-66c8cdb610fa"
+  },
+  {
+    "id": "2f1e42ca-15c2-5b4f-b247-bb9e1d6a81b8",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "fcdfd368-90aa-51f0-a6b7-971a393ef11a"
+  },
+  {
+    "id": "fd37373f-0316-5298-ac9b-6037315d61e3",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "41360076-1351-5f89-88de-4c6dfb83aca1",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "88362397-4336-5470-a271-16bb0547f4c3"
+  },
+  {
+    "id": "659b303e-7168-5f9c-9046-710f4db8e6b9",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f4f8c894-608c-5fbd-bee7-ffed018bbeda"
+  },
+  {
+    "id": "51ab5d2a-7088-5dbd-b651-806424f52041",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "efa64485-15a7-509d-9d76-4e577e8cb5cd",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d7fda6eb-279c-5f0b-bbdf-4cf0cf384374"
+  },
+  {
+    "id": "feb34ecc-117a-50fb-9ef5-08d59a0e11ea",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "ffeb3c7c-e2b2-5674-a8ca-002aad8226dd"
+  },
+  {
+    "id": "2df917e7-4244-5429-a76e-907479139bab",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81bb9f1f-f092-5818-b595-fe5d538eb535"
+  },
+  {
+    "id": "79c43bfb-6c25-506d-b66a-8adbdfff0b1e",
+    "user_id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e8ffa9e6-94a1-5398-b937-f96ec8f3c797"
+  },
+  {
+    "id": "5df778ba-cf0d-5662-ad5b-27b974cdf2a0",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f8de61a6-e7e7-5dfd-8b37-56f3d8716948"
+  },
+  {
+    "id": "8b76dfbd-0eaf-55f1-b002-9745ba826bcf",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b858674e-c2b3-589e-8a98-1bc89949beca"
+  },
+  {
+    "id": "95012671-c38a-5203-bc79-7912e53e27ab",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1"
+  },
+  {
+    "id": "e885ef54-fab8-5177-9973-1eea1fe4a2d2",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a802a62d-5b95-59b5-ae5d-88a6e7cff86a"
+  },
+  {
+    "id": "3655a77c-3755-5908-8f26-6cadb980af68",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "87c1029a-fc40-5d0f-bafe-b496fc59e719"
+  },
+  {
+    "id": "63e1e8ea-9c8b-5805-bb58-ebc4eceb0d3e",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3ca3f336-3243-5635-8531-4e229716702d"
+  },
+  {
+    "id": "733cc448-b13e-51c6-8a8a-5934d0b88146",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f41887bd-fd96-5aa2-8bd8-61b54a9f3011"
+  },
+  {
+    "id": "0074f982-a753-5a1d-9976-1d10f5317e9a",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b70c514-80ef-51be-96a9-355548fb7bc0"
+  },
+  {
+    "id": "5dd893f0-4e27-5cb2-8890-75454387b1ad",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "1d37c5bd-aa44-5bf7-bae1-4272d734fa31",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "261a9932-97af-520e-80c4-9493d914331c"
+  },
+  {
+    "id": "b326c988-066b-5bf1-948f-b1cdc3deb057",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9b13d313-fca6-5e8a-b3a4-08a3da010772"
+  },
+  {
+    "id": "ba032ac3-1b92-5614-9d0f-4b878f44f68f",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5eccb8eb-f8df-51c5-9d6e-eeea297527a1"
+  },
+  {
+    "id": "085eb6a2-d500-5a23-b76c-ac3422be41e6",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "33d664c6-4822-5946-9e9c-289aa58665c0"
+  },
+  {
+    "id": "f3c7e081-db9d-5684-b71c-f3acaed56104",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c3dc2fad-3ede-5b1e-89d5-dae0917bdd6b"
+  },
+  {
+    "id": "c0a801af-2db7-52be-9011-da8fd8353d92",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6b2bc7fd-ba26-54d6-a7a9-b3066582937b"
+  },
+  {
+    "id": "1b7cdc15-a448-5544-863c-95f376bf1331",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a16ff590-d366-5433-ae47-b0302d03ffef"
+  },
+  {
+    "id": "aa04389e-9d97-5a24-a593-c7832f05fe75",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f5aebfe-d900-5c49-960a-14843fba1ce7"
+  },
+  {
+    "id": "285e5ecf-c9a7-5f98-9671-357f9e97affa",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "88362397-4336-5470-a271-16bb0547f4c3"
+  },
+  {
+    "id": "5fcd52df-c2a3-53c6-b9f8-a2d9f4343d8f",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cf2589e3-ca5b-50f9-807c-4837b6b876c1"
+  },
+  {
+    "id": "643b24d0-65d1-5590-8ca1-68f6c7aaae1f",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5e191d9e-2637-5d34-afa1-f270fa61c73d"
+  },
+  {
+    "id": "e654313e-56e8-512f-a822-15c2cf6c814a",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f3162cd0-5c1a-5315-9378-06bd3347977e"
+  },
+  {
+    "id": "6159d266-279f-56c6-b1c0-857f0ca77d79",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f997640-c924-5c5d-ac18-73660aa9f36c"
+  },
+  {
+    "id": "8ccaf2be-3084-59ee-a562-f0ec544c1e2d",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "220f2f1e-136f-5085-a60c-09c6fdf44c17",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e21aad0-6454-5e98-99fc-57b0cca30c9b"
+  },
+  {
+    "id": "36a45057-67a2-5863-9b2e-cd318dd29738",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bd08162f-2719-543e-be6d-8ae05d5dd579"
+  },
+  {
+    "id": "6947a0f9-f4ce-5ccd-ae42-ede774e66ad9",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d7fda6eb-279c-5f0b-bbdf-4cf0cf384374"
+  },
+  {
+    "id": "21f97a86-35e7-5223-98b5-5b2087fb8ea4",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c25a57c-6b44-59c0-9e09-576416202abd"
+  },
+  {
+    "id": "71b91f0c-d0d9-50cb-89ac-6c4e774e2dc9",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a0acd712-d30d-5add-85a8-81f0addfc4a8"
+  },
+  {
+    "id": "a2e5621b-df63-5370-8169-a2f9adfc2649",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e632971d-5ce6-584b-a6d1-82bfe9887678"
+  },
+  {
+    "id": "5ad32cf9-066f-5be8-a8de-5f9da3c87bb3",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d"
+  },
+  {
+    "id": "c78deba4-d67c-5b67-84e1-71bdb2717fa6",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0e26e2f4-e6c4-591a-8d56-5d3bc3e92fd2"
+  },
+  {
+    "id": "6066f7ff-79ef-5402-a1a7-87e6ba330223",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b6e764b9-5a11-5572-b1e6-93b919dc3dae"
+  },
+  {
+    "id": "7d5c48a3-866c-5415-a45b-cd8d07b74389",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "daeedd73-5833-5898-812e-c9644bc002bc"
+  },
+  {
+    "id": "a8781552-d5ad-56ff-97db-fef3a129b6cf",
+    "user_id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d2aa30f7-2e69-56b9-bbb4-ca2b7ce40b6d"
+  },
+  {
+    "id": "41de1154-6ccd-5b80-a578-fb51446e44ce",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7037fca6-c8e2-5c01-932e-33048b2aba97"
+  },
+  {
+    "id": "ea799fab-e41c-5e4f-99a1-ce61e6e1fbb1",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5043177f-2311-556c-9d4c-6a6ada9eafa2"
+  },
+  {
+    "id": "7162969d-4a63-58c2-9442-da0e22c99bb5",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "11bc9b62-ac58-5b31-8e3d-0279589a8e2c"
+  },
+  {
+    "id": "9479f1cf-c361-54cf-bb6d-bd282496a2e8",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8408def1-c5b2-5b0c-aef6-bfa397aa9ed7"
+  },
+  {
+    "id": "c2b23c42-1d9b-5734-a3ac-cbe52ff89233",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6cc44a3c-771e-5d43-b28f-f076e751e636"
+  },
+  {
+    "id": "4daee610-64b9-51e8-9f66-aab5b633cba3",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "edb3a174-e72c-586b-9827-5c16f89eb384"
+  },
+  {
+    "id": "7d3f3cfe-0c51-536c-be2a-19619907e6fd",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a01b2954-465d-5c13-892f-7b2fc7bfe526"
+  },
+  {
+    "id": "20181a2a-c1f4-5bc9-9330-2c5d8ec63372",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "15483880-02d9-54ca-b4f6-1aca91a8682d",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "261a9932-97af-520e-80c4-9493d914331c"
+  },
+  {
+    "id": "f3211e70-2e9b-5ef4-85e5-574458f2b06e",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b338e04a-33fb-5ec5-ab9f-eeb8cf516367"
+  },
+  {
+    "id": "0a38e162-8801-5e5a-938b-a33cee89204b",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc2e4b2e-ae64-5c52-ac51-79b8cb3c954d"
+  },
+  {
+    "id": "92ca6f82-11c5-5ed7-a9e1-ae940c4428df",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bbbba6b6-fcaa-5c7d-8438-49f2c3b38890"
+  },
+  {
+    "id": "a3d1d7e1-5514-5bf6-bb41-ce716fad56a7",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "47ab4bf7-d65b-5a2e-84e2-ba5206e091cb"
+  },
+  {
+    "id": "beb9393b-0459-5945-a931-bc177816aae1",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "491569f0-4557-5773-8c50-20c853e02479"
+  },
+  {
+    "id": "e4c7f0b3-e942-5c1c-8d75-07131d2c3e32",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "477d0118-f5ce-54b5-a917-353ad28745c7"
+  },
+  {
+    "id": "41e86989-0027-5465-9364-7c320ae1838b",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9abedb92-017e-5c67-9a05-66c8cdb610fa"
+  },
+  {
+    "id": "a92229ab-0981-5961-9319-715e66e97b0f",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "25f8a407-98d3-5995-b1a1-f5f51e31e9ee"
+  },
+  {
+    "id": "6d08bd2d-1414-5c14-94f1-5fd8549fa188",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f5aebfe-d900-5c49-960a-14843fba1ce7"
+  },
+  {
+    "id": "a01d8f35-5189-57c8-8518-07300287c60b",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5c432f1f-251b-5d02-824b-b279416bd058"
+  },
+  {
+    "id": "f6f7460b-fe75-527a-86b2-e0ba075a2846",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "a7a3bea9-7574-5b15-add7-2d83cd51f6b1",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "7d60b353-9c65-50f2-90cc-2fbe67a0924d",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0168367e-1313-5e24-b898-22f1afd361e5"
+  },
+  {
+    "id": "ab0a7faf-7574-5281-b70a-7e75165f389d",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f997640-c924-5c5d-ac18-73660aa9f36c"
+  },
+  {
+    "id": "d1d923ef-7fa9-51ef-a28d-c98a87644711",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "60a27b64-8eff-542d-8d63-78f54372d518",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "51bbf761-75f6-5558-bdca-3f70a7088d89"
+  },
+  {
+    "id": "1cfbe6b3-a39a-52cb-a9bb-4624405fd36f",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bff92c60-3c77-595a-a968-dea216693ef7"
+  },
+  {
+    "id": "1c9fea2a-d6b9-55cb-a29f-90b61483e39e",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb897c62-43cd-5018-9beb-12d30e011123"
+  },
+  {
+    "id": "c0b40a6c-c86d-5638-b804-bd968a8214fe",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e2f5e2f4-150f-508c-83cb-dc36eb7dfc1a"
+  },
+  {
+    "id": "183778c1-4027-551a-ae1e-0d984b0cb553",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e189c937-d92a-5fbb-a81b-36c290b9c896"
+  },
+  {
+    "id": "ec3c5269-6e50-5868-8aee-0191d24649da",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e69c6265-4b3c-538c-b02a-61f5b2460424"
+  },
+  {
+    "id": "bb881238-e562-5a24-b1e9-1b1601aa03c8",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "163146ba-74fa-50b9-b13a-9782230d0e5c"
+  },
+  {
+    "id": "e2f1cd16-1da8-5877-8ed0-af91febd369b",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6882e431-cc59-5dd5-ac41-44b4d7b04cf7"
+  },
+  {
+    "id": "274dee74-ad11-55ac-91a9-a0b50c2c4ab1",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "773cd40a-f952-57b1-8d3c-7d2c2f5cd5d6"
+  },
+  {
+    "id": "bc6ccffe-f30e-5d71-8d52-ba4dafe69773",
+    "user_id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "68157593-6efe-572a-bfb9-dbdcd5d5e24a"
+  },
+  {
+    "id": "bf004c65-e5c7-53fc-98ff-a53f81e8b4eb",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "a375141b-f3eb-555e-8094-3d39e6717959",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "caec3aa3-db08-5d6f-a452-8038c8ef2610"
+  },
+  {
+    "id": "2bcafbfb-2899-5441-9208-08919f8ba39d",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db0a6b2b-ed0f-5eb3-a1c4-c08f937fc10a"
+  },
+  {
+    "id": "ff32e1c2-680d-5ffe-acba-40552b4580ff",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c61133c6-23a7-5e21-a974-d070194d3422"
+  },
+  {
+    "id": "8466e86e-6790-5b10-89fc-5a93e1728871",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1"
+  },
+  {
+    "id": "e24c3438-078b-5c02-87b3-e2f7d12bd91e",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8"
+  },
+  {
+    "id": "55865ee2-5e51-5131-8c77-d9bf2e6a67ee",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a5b4e1d3-f85f-5ae5-b700-150a77d4ad49"
+  },
+  {
+    "id": "ef623648-616d-5390-bbb3-5b64b2efbcb4",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "215a2b58-59b4-5ae4-9feb-99b97e911c42"
+  },
+  {
+    "id": "593a894b-6ee5-5165-b1c7-1b80c50364ca",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "03fc918d-6bb2-5ff1-9267-3b6c9083ab61"
+  },
+  {
+    "id": "758e364a-331e-532e-bd8b-fd037d02acc9",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b60b6c2d-6c1c-50c1-970b-839eedc89b45"
+  },
+  {
+    "id": "2f5b2e0b-ad05-55c4-8a42-bb689c6c553b",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "33d664c6-4822-5946-9e9c-289aa58665c0"
+  },
+  {
+    "id": "404419df-6784-585a-ba3d-edb0719b3eb9",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e47760ef-60de-517f-867b-5b38c0d008de"
+  },
+  {
+    "id": "a3946042-da88-5ad0-828d-9e3801a348ca",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96"
+  },
+  {
+    "id": "4cf004a2-4122-5d59-87b4-ead94f38403d",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5c432f1f-251b-5d02-824b-b279416bd058"
+  },
+  {
+    "id": "ddc68fbc-ba4a-5001-85a7-0543305d5df8",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "15289d98-1fab-54e6-bbe2-54ac16d100d9",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f4f8c894-608c-5fbd-bee7-ffed018bbeda"
+  },
+  {
+    "id": "e167841e-dab8-5b50-948b-2d1162dac5eb",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c25a57c-6b44-59c0-9e09-576416202abd"
+  },
+  {
+    "id": "407f11ba-87d9-5f5f-a721-9180ae4b93f6",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a0acd712-d30d-5add-85a8-81f0addfc4a8"
+  },
+  {
+    "id": "a8e50915-f888-5bf3-9936-eb162c479004",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e69c6265-4b3c-538c-b02a-61f5b2460424"
+  },
+  {
+    "id": "b43e542f-9b2b-5383-8f2f-e65e626ea64c",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "daeedd73-5833-5898-812e-c9644bc002bc"
+  },
+  {
+    "id": "b6f3394f-4651-5d4b-b948-3041a0f43b25",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e5464b4-4c0f-598c-ad2e-644e79fa226e"
+  },
+  {
+    "id": "7cc07ad5-8a44-5393-8ba0-c6b70efddc3b",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "773cd40a-f952-57b1-8d3c-7d2c2f5cd5d6"
+  },
+  {
+    "id": "e746ed1f-bd16-54be-a425-64e892bcc31a",
+    "user_id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "68157593-6efe-572a-bfb9-dbdcd5d5e24a"
+  },
+  {
+    "id": "af058803-4cec-5ad7-89e8-037d1cd7fd73",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8dc2e2a7-eaf8-5ce6-8e55-a41474d5fb39"
+  },
+  {
+    "id": "9955746b-abe1-5464-85ad-230cafdf6b0f",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7f1718d5-83b4-54bf-8183-b0602befee4a"
+  },
+  {
+    "id": "5cb63979-04bf-568c-8764-8d944c0db237",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1"
+  },
+  {
+    "id": "883ae962-2144-5ab9-b94b-88b8450b585b",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9ae14745-3111-549c-b545-1fc164ee6b70"
+  },
+  {
+    "id": "03a61438-3c06-5158-a8ab-7ad531bbb973",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "727e6e74-7b3b-5614-a616-be26812833d2"
+  },
+  {
+    "id": "652c3c48-3f2d-54c7-a07a-2891a0dd5b25",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "685b9a29-b535-59c3-ba62-4d6c7edb8805"
+  },
+  {
+    "id": "800847d1-3252-50c5-b871-fed576b0919c",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "42861278-1fa5-54ca-bc44-e27cbe18580a"
+  },
+  {
+    "id": "60822735-1f3a-59ca-8789-c4e7b21a98b5",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "261a9932-97af-520e-80c4-9493d914331c"
+  },
+  {
+    "id": "3d2f7ab7-56c0-5337-844a-75593e25a7a2",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9b13d313-fca6-5e8a-b3a4-08a3da010772"
+  },
+  {
+    "id": "a6c97eb2-04e2-5164-bc63-c0856ece1695",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "46a1688f-8105-5d99-9e65-990d9737ad88"
+  },
+  {
+    "id": "904f6a79-a088-55a5-874e-15b298fc9af4",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5eccb8eb-f8df-51c5-9d6e-eeea297527a1"
+  },
+  {
+    "id": "c354493c-e35b-5cfb-aa9a-0611136090cc",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c045523d-c5ea-50a2-9ebd-5aa34e270c50"
+  },
+  {
+    "id": "6991bd66-078f-55b4-8dc6-8013fffea07d",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "491569f0-4557-5773-8c50-20c853e02479"
+  },
+  {
+    "id": "bd6df2e6-9581-5b1a-8a68-da7c8dbf4da6",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c20062c7-295a-5504-8ea1-e3d4d86f4bfa"
+  },
+  {
+    "id": "7bf02768-2843-5e9b-8869-fc1edc8467e3",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "27f8eda2-7868-5b72-8a0c-69df033367cb"
+  },
+  {
+    "id": "f6adfe58-2e1d-518c-a923-3f8cf5e66285",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "25f8a407-98d3-5995-b1a1-f5f51e31e9ee"
+  },
+  {
+    "id": "ea469fb1-3fe1-5c3e-b100-d6291c07d9c4",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a16ff590-d366-5433-ae47-b0302d03ffef"
+  },
+  {
+    "id": "840ec165-25f6-5d03-9ea0-20c0d1016c1a",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5c432f1f-251b-5d02-824b-b279416bd058"
+  },
+  {
+    "id": "49f919f6-30f4-50b8-b85a-f06a72e9d164",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6552ac3e-2720-5f72-abf3-15314bd85fda"
+  },
+  {
+    "id": "ac7e0fcb-c97e-5c9c-8268-2f561a395f18",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a058e145-cba3-510c-8bd9-0bfff6a6ac1d"
+  },
+  {
+    "id": "f4949c3c-3c93-5918-9d80-e29d01b88902",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "945d4a30-ab3b-5012-bd26-6557ae3b5f00"
+  },
+  {
+    "id": "7d7d24b2-07c1-5f41-96ca-6abe4dd4afbc",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "878abbe8-ba0f-5b40-988e-e35224e1f315"
+  },
+  {
+    "id": "be96d8ed-bfe4-55b4-a5bc-c8958dc51616",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5e191d9e-2637-5d34-afa1-f270fa61c73d"
+  },
+  {
+    "id": "ef827e1e-adf5-54ec-8187-24033d1c3113",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f3162cd0-5c1a-5315-9378-06bd3347977e"
+  },
+  {
+    "id": "16e3a1b7-04e8-50d9-adf0-e60c6ec2f6ee",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "616cfaa1-a138-50e6-9336-d3effc3f7414"
+  },
+  {
+    "id": "23c5e477-039b-55ec-8f79-830404cab449",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7b8b7c62-a1c2-59f6-bb8b-e3a1c6daa307"
+  },
+  {
+    "id": "38b190ee-ac0d-54a9-93c8-7c862327b3cb",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81bb9f1f-f092-5818-b595-fe5d538eb535"
+  },
+  {
+    "id": "9e82562f-1625-5611-8fd8-eb4a5eb33d3f",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "163146ba-74fa-50b9-b13a-9782230d0e5c"
+  },
+  {
+    "id": "052a94e1-fddf-5e29-b610-f2aa4c83301d",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d96013a3-3266-5ac8-abb2-f26c53243feb"
+  },
+  {
+    "id": "78461903-43d8-588c-b218-ccdec5002ccc",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f6a073b9-6415-586b-9ec3-4fd5b8235bc9"
+  },
+  {
+    "id": "86ac3412-67ed-5b0b-9f0c-d423d5aa3662",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "056dcfa0-7416-549a-b335-d64e5e5c8b3a"
+  },
+  {
+    "id": "0d1a838c-3831-53d2-a9f1-03187396d71c",
+    "user_id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "68157593-6efe-572a-bfb9-dbdcd5d5e24a"
+  },
+  {
+    "id": "73956324-ece9-53e7-94a7-6d08bdbb0002",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "caec3aa3-db08-5d6f-a452-8038c8ef2610"
+  },
+  {
+    "id": "1d96a0cc-8235-59c2-84a2-ddcbd3103557",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db0a6b2b-ed0f-5eb3-a1c4-c08f937fc10a"
+  },
+  {
+    "id": "5289b703-8239-58ef-9b7f-d20b0d208e9e",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "edb3a174-e72c-586b-9827-5c16f89eb384"
+  },
+  {
+    "id": "0274f8c4-7209-5b54-bd51-66511e33a6d3",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81c90c65-4df4-5341-8c47-41a31c80f334"
+  },
+  {
+    "id": "90552008-68d5-5bd3-b72a-d95f4fb353c1",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6d1e5237-1114-5789-bb21-f891377c100b"
+  },
+  {
+    "id": "19ebe8ad-8629-5535-85f2-d79632d6f635",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "87c1029a-fc40-5d0f-bafe-b496fc59e719"
+  },
+  {
+    "id": "0257305d-42b9-5b7c-a53f-6000a5863c62",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f41887bd-fd96-5aa2-8bd8-61b54a9f3011"
+  },
+  {
+    "id": "a2bbfe1e-2fb0-513c-ac7c-b01f97666847",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a01b2954-465d-5c13-892f-7b2fc7bfe526"
+  },
+  {
+    "id": "f6bd1153-eb2a-51d5-b806-810f467349a4",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b70c514-80ef-51be-96a9-355548fb7bc0"
+  },
+  {
+    "id": "188303ee-be29-5a02-9293-b183bf384e3e",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c508835-28e4-5cf4-9384-cbf0327b8337"
+  },
+  {
+    "id": "17930934-52aa-5e5c-941d-43c858fdaa70",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "000376d4-362a-5355-9edc-246a0bca57f3",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5eccb8eb-f8df-51c5-9d6e-eeea297527a1"
+  },
+  {
+    "id": "f37437f5-9be3-5779-9489-59efa075d543",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b60b6c2d-6c1c-50c1-970b-839eedc89b45"
+  },
+  {
+    "id": "e5c01c73-0a89-52d2-889f-34f90fe06e6a",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "47ab4bf7-d65b-5a2e-84e2-ba5206e091cb"
+  },
+  {
+    "id": "1e1c92e8-3894-5cf1-bb73-9bc06bc6fa4f",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79"
+  },
+  {
+    "id": "1bd355f7-96ff-58d2-9749-b5f5af3705c1",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e47760ef-60de-517f-867b-5b38c0d008de"
+  },
+  {
+    "id": "54554f51-ca56-5f1c-a7d5-095ca45bc744",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9abedb92-017e-5c67-9a05-66c8cdb610fa"
+  },
+  {
+    "id": "764f2d31-2d3f-543d-b3a5-4fc8ece86567",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "fcdfd368-90aa-51f0-a6b7-971a393ef11a"
+  },
+  {
+    "id": "a328b907-7721-585f-a2c6-785c809219d0",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "cff1b4c7-e46c-5c8f-b379-7a1397b91d1b",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b8ef12c-74bf-5fe6-a810-f3bba72210ab"
+  },
+  {
+    "id": "7acfb553-fb23-59d2-9e9e-962617ebfdfe",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cf2589e3-ca5b-50f9-807c-4837b6b876c1"
+  },
+  {
+    "id": "a5b96324-c1c0-52bb-bcbc-dd36b5061657",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f997640-c924-5c5d-ac18-73660aa9f36c"
+  },
+  {
+    "id": "14efc8d0-eb48-5b5f-8dcd-6988e77b8a2b",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "51bbf761-75f6-5558-bdca-3f70a7088d89"
+  },
+  {
+    "id": "78e58d5e-4790-56df-8a3b-94fd6a6bc2cb",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "65c9ef55-15a9-5707-8f3b-798775edc3d9"
+  },
+  {
+    "id": "df5d2e5b-1f9c-5075-8713-b520747e7905",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "10f29249-4bb2-586a-99e2-0efaef9d1f34"
+  },
+  {
+    "id": "702c5b14-7fb5-5c17-bd7b-3d65491a2bb5",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb897c62-43cd-5018-9beb-12d30e011123"
+  },
+  {
+    "id": "588b2eab-a32e-5107-8f99-4f627d2da66e",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c2c18f6-8c0d-5d41-843a-8d8144fb3024"
+  },
+  {
+    "id": "cbfd0713-f54c-5c5e-b0f2-aa456f430dee",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e2f5e2f4-150f-508c-83cb-dc36eb7dfc1a"
+  },
+  {
+    "id": "938da15d-bb4a-5c3d-8c1b-4d8a72f5a7dc",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e69c6265-4b3c-538c-b02a-61f5b2460424"
+  },
+  {
+    "id": "792e10e1-ca6f-552a-9519-2aeeeb8bdd9d",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "ffeb3c7c-e2b2-5674-a8ca-002aad8226dd"
+  },
+  {
+    "id": "274bf80b-e8e3-5885-8230-4ff0c11927f7",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db48e336-747f-58ef-9854-ba7de2f8ad4f"
+  },
+  {
+    "id": "5293557a-8d68-5518-ac1b-afcbf280d500",
+    "user_id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "056dcfa0-7416-549a-b335-d64e5e5c8b3a"
+  },
+  {
+    "id": "2e0ccd83-fd51-5c55-b205-dbcc8aff2282",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f8de61a6-e7e7-5dfd-8b37-56f3d8716948"
+  },
+  {
+    "id": "b94ef8c7-d96b-5feb-9e6f-a5aaea4d550d",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5a0c9f9a-ef2d-5d97-8e83-e90d22aa7cfd"
+  },
+  {
+    "id": "d5e1b313-2910-5d01-8ee9-aa71a25d5765",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b858674e-c2b3-589e-8a98-1bc89949beca"
+  },
+  {
+    "id": "37d7396c-d044-58df-968c-b37f30fe06d8",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d2971fcf-e11e-5033-a5ca-50d1ced34feb"
+  },
+  {
+    "id": "c86ea5c3-8e03-51fb-ba0d-283d93332874",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1"
+  },
+  {
+    "id": "0c2780df-28c2-5d11-9cef-914a08b2f63b",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c00429c1-4882-5a52-8760-a9a9d804e7cb"
+  },
+  {
+    "id": "25585313-134d-5c0e-b31d-1767b9901a24",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8"
+  },
+  {
+    "id": "710a8766-66e0-57a8-a3c4-6e4fec5ec9d1",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f41887bd-fd96-5aa2-8bd8-61b54a9f3011"
+  },
+  {
+    "id": "b4c4c3c4-9556-51fd-90ad-8ce9a22b8a03",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b70c514-80ef-51be-96a9-355548fb7bc0"
+  },
+  {
+    "id": "65677a9c-1a2d-57d1-9eea-91564d70ece4",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "98d948fe-f0b4-5404-a2fc-cc3bfb4cfc58",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "46a1688f-8105-5d99-9e65-990d9737ad88"
+  },
+  {
+    "id": "5f5e01a7-8c1d-5b06-8b93-b43cdd1016ce",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c045523d-c5ea-50a2-9ebd-5aa34e270c50"
+  },
+  {
+    "id": "cc95cb61-979c-5e66-8481-cf605b02b96f",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bbbba6b6-fcaa-5c7d-8438-49f2c3b38890"
+  },
+  {
+    "id": "6914ea34-692c-5421-b0ac-e8f1cdddd4f1",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79"
+  },
+  {
+    "id": "56183edd-3ff4-58f6-b215-20d46bb52840",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6b2bc7fd-ba26-54d6-a7a9-b3066582937b"
+  },
+  {
+    "id": "6930996b-42fd-5e72-aa39-00ee9bbea6ed",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96"
+  },
+  {
+    "id": "24d02757-d471-5cfa-9b39-7dd65fb13e66",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "386262b7-6c27-53da-97d0-a3b914649c17"
+  },
+  {
+    "id": "41dd07a7-94a7-5072-a295-5c7bac8fa9f9",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a16ff590-d366-5433-ae47-b0302d03ffef"
+  },
+  {
+    "id": "e2c35c09-90bf-5bb8-a33b-bfb80a3c18fb",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5c432f1f-251b-5d02-824b-b279416bd058"
+  },
+  {
+    "id": "5710cb58-e33e-54d1-9312-6803f5c37018",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4bcdb28c-e6e3-5a37-97e1-6478b7dd1e5f"
+  },
+  {
+    "id": "597cf4ec-d1de-5f98-aa88-ee0d54a34ef9",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e8b8dcd-10c3-5a05-8063-95d8b3956e57"
+  },
+  {
+    "id": "56f08636-3494-5169-b914-960915cf716d",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "5b85aedf-fdce-5b9e-b393-3dcc30137b5b",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "20e22c0b-7e6d-5e0c-aacf-80ba503b024e"
+  },
+  {
+    "id": "abcb6346-8e27-5ba5-8005-4b8fe352454d",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0168367e-1313-5e24-b898-22f1afd361e5"
+  },
+  {
+    "id": "4bc13cb0-fa45-5891-9bc7-34993ffaee5f",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3d4e5245-0862-56d9-afcc-f037c224b86b"
+  },
+  {
+    "id": "50305852-daaf-57ff-8875-ed636983f128",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f4f8c894-608c-5fbd-bee7-ffed018bbeda"
+  },
+  {
+    "id": "8b65fca6-02a4-5683-afc0-5181e6463020",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "616cfaa1-a138-50e6-9336-d3effc3f7414"
+  },
+  {
+    "id": "81bdd587-8edc-5280-ade9-3ff084f4abd1",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bff92c60-3c77-595a-a968-dea216693ef7"
+  },
+  {
+    "id": "94c4feff-104b-5c6a-a8c1-68b5b48416e2",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "10f29249-4bb2-586a-99e2-0efaef9d1f34"
+  },
+  {
+    "id": "c661ba64-05c1-5e83-92ee-6ff293f911e6",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c2c18f6-8c0d-5d41-843a-8d8144fb3024"
+  },
+  {
+    "id": "9b15e0fe-3507-53d6-8f0b-1914fd253c63",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d"
+  },
+  {
+    "id": "4160e4ee-5e89-573e-ae08-b1a36f5dae9b",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0e26e2f4-e6c4-591a-8d56-5d3bc3e92fd2"
+  },
+  {
+    "id": "98b0d97a-b53b-57ed-ae90-7c8467bd0b7e",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "daeedd73-5833-5898-812e-c9644bc002bc"
+  },
+  {
+    "id": "c0232011-cdf8-5a29-8756-82762eba072d",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6882e431-cc59-5dd5-ac41-44b4d7b04cf7"
+  },
+  {
+    "id": "547d4d93-160a-552a-8176-85cfcc7edb4a",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f6a073b9-6415-586b-9ec3-4fd5b8235bc9"
+  },
+  {
+    "id": "abaf03ea-cd1e-590f-89fe-60aa3c2a61b3",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "056dcfa0-7416-549a-b335-d64e5e5c8b3a"
+  },
+  {
+    "id": "beda44d3-c817-5186-92b8-6b0eba01f860",
+    "user_id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e5464b4-4c0f-598c-ad2e-644e79fa226e"
+  },
+  {
+    "id": "db5d67a7-4753-50ad-86ac-877621215700",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "bf1fe20b-4152-5bc0-92c2-38337db1a495",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e475326f-9336-5b24-87b0-376b8c45ea27"
+  },
+  {
+    "id": "00bab6e1-0911-5c71-a71c-f11065952388",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d2971fcf-e11e-5033-a5ca-50d1ced34feb"
+  },
+  {
+    "id": "12c96a0a-af63-54a1-97fc-779096f8d637",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c00429c1-4882-5a52-8760-a9a9d804e7cb"
+  },
+  {
+    "id": "b8dd0216-4d80-5b90-ad79-1c5610b5fcd9",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a802a62d-5b95-59b5-ae5d-88a6e7cff86a"
+  },
+  {
+    "id": "b549f96c-ea4e-5ab7-9c46-98d9ce361275",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8"
+  },
+  {
+    "id": "c7acbf3d-fd49-58aa-8658-7061b8c19ce0",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "10e646f9-4446-5bde-8de3-3a009678bd5e"
+  },
+  {
+    "id": "6d8fefb3-ed70-55ca-8a4a-b96a463c0d24",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "76731c55-881f-5d91-9f01-3a3b63d00134"
+  },
+  {
+    "id": "a2de02f4-1aa9-5e4e-b379-7ee4a19602a8",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a01b2954-465d-5c13-892f-7b2fc7bfe526"
+  },
+  {
+    "id": "7a2bb55d-0e2c-5927-b384-b75f991bc1f4",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c508835-28e4-5cf4-9384-cbf0327b8337"
+  },
+  {
+    "id": "5e740938-f751-5fd5-ae35-6d38822ec1e6",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "23808f3d-5c8a-5153-94a7-bb7d5f42251d",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "42861278-1fa5-54ca-bc44-e27cbe18580a"
+  },
+  {
+    "id": "67901044-915d-5984-b5af-6e13b532a5b3",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "397bfb26-3455-50f5-95d1-cbd098354660"
+  },
+  {
+    "id": "cea573f9-4289-5f05-b54f-1fe0f1e2027d",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc2e4b2e-ae64-5c52-ac51-79b8cb3c954d"
+  },
+  {
+    "id": "92b95175-52f2-501f-b834-7ee98ee408eb",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79"
+  },
+  {
+    "id": "58e39ca5-c586-5534-987b-0e8f37c3c6e1",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e47760ef-60de-517f-867b-5b38c0d008de"
+  },
+  {
+    "id": "d406441f-9864-5d97-8c8f-31c02bfc2000",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96"
+  },
+  {
+    "id": "02b47b8a-ce06-5d10-90bc-013705a497e2",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "fcdfd368-90aa-51f0-a6b7-971a393ef11a"
+  },
+  {
+    "id": "f17296ef-e73c-511d-824d-3b6a8b9c504f",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "88362397-4336-5470-a271-16bb0547f4c3"
+  },
+  {
+    "id": "a0d92635-08d5-5d3a-af61-434577cff6f6",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "1e0fd951-33a0-501c-af08-85f09c2b18f5",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4495f433-2534-5b5f-b778-47dd44eb548f"
+  },
+  {
+    "id": "ae20042a-ab5b-5633-894a-d4fa6126cbff",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "51bbf761-75f6-5558-bdca-3f70a7088d89"
+  },
+  {
+    "id": "9e686c3d-c1a1-5a01-a587-097d93ac6c6a",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6d222fff-1760-5ccc-bfc3-04ea265376c1"
+  },
+  {
+    "id": "af2c1632-45ae-5b5e-83af-7743508f243f",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7b8b7c62-a1c2-59f6-bb8b-e3a1c6daa307"
+  },
+  {
+    "id": "0522e1ab-fe84-5276-b4b6-c8557e313a3c",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d"
+  },
+  {
+    "id": "86175654-175c-58d2-a6ca-8ab88f9ff347",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc97f8ba-8478-5301-9bd7-db1e8a1ce652"
+  },
+  {
+    "id": "27bd1f68-a104-53f6-9ba8-da030062983c",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e632971d-5ce6-584b-a6d1-82bfe9887678"
+  },
+  {
+    "id": "c76a8286-14b5-503d-a76d-d5ff67a63692",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0e26e2f4-e6c4-591a-8d56-5d3bc3e92fd2"
+  },
+  {
+    "id": "44afe6ff-1f2f-53a3-ae61-5b1ba4db79fd",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f6a073b9-6415-586b-9ec3-4fd5b8235bc9"
+  },
+  {
+    "id": "b17f1a43-a1fe-5597-b988-2ce5183aaa76",
+    "user_id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "056dcfa0-7416-549a-b335-d64e5e5c8b3a"
+  },
+  {
+    "id": "daf7f574-70ff-543e-98f4-8e25bac7a73e",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "edb3a174-e72c-586b-9827-5c16f89eb384"
+  },
+  {
+    "id": "c2ba88b9-0a3f-562c-897e-765b63ca6826",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9ae14745-3111-549c-b545-1fc164ee6b70"
+  },
+  {
+    "id": "34918535-5a03-5dda-a238-826b2a141b56",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "727e6e74-7b3b-5614-a616-be26812833d2"
+  },
+  {
+    "id": "642b0990-d639-5d3e-8cd2-021a939409ac",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "46a1688f-8105-5d99-9e65-990d9737ad88"
+  },
+  {
+    "id": "9a84601c-0809-55ef-a76b-05969991c447",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bda03642-1350-5ca8-a204-388c0db548f7"
+  },
+  {
+    "id": "7f479cb5-34cf-5da4-8ba6-4e859540903f",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "47ab4bf7-d65b-5a2e-84e2-ba5206e091cb"
+  },
+  {
+    "id": "bba33c19-e25b-5138-a9ab-a69e37548a88",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "491569f0-4557-5773-8c50-20c853e02479"
+  },
+  {
+    "id": "f3776d64-df98-5556-9938-c420d7721566",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "386262b7-6c27-53da-97d0-a3b914649c17"
+  },
+  {
+    "id": "7a757849-4a9d-5b38-b505-e7222d241bf2",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a16ff590-d366-5433-ae47-b0302d03ffef"
+  },
+  {
+    "id": "a57ed11e-a3e9-5397-89bb-04510ff76512",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f5aebfe-d900-5c49-960a-14843fba1ce7"
+  },
+  {
+    "id": "80fa629d-5d7e-5076-92cc-2caa4c992f14",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2ad8b4cd-8e3c-5996-8422-b7773bd7cf42"
+  },
+  {
+    "id": "0d7f5013-4f8a-5a3a-a4fd-e72352fe886c",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f3162cd0-5c1a-5315-9378-06bd3347977e"
+  },
+  {
+    "id": "d4fc5bc5-75c9-5dfc-9214-ad2de725d442",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "70ff04c8-0892-5aff-ac4d-83c62a7f483a",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4495f433-2534-5b5f-b778-47dd44eb548f"
+  },
+  {
+    "id": "dc3e2685-4260-55fc-a83f-50cd555da20b",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0d5525cb-c3c0-59c0-a9d0-e7d760dcd756"
+  },
+  {
+    "id": "767921a3-153e-5bed-8d2e-c30e45384bdc",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "65c9ef55-15a9-5707-8f3b-798775edc3d9"
+  },
+  {
+    "id": "6caa6309-dff3-5fc7-a7c3-73e170fc0524",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bff92c60-3c77-595a-a968-dea216693ef7"
+  },
+  {
+    "id": "24ae7a99-7fe0-52a0-a4eb-68fa6edbe66c",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "10f29249-4bb2-586a-99e2-0efaef9d1f34"
+  },
+  {
+    "id": "22aa71e0-7a51-5cb0-828d-ebc61eb636f3",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c2c18f6-8c0d-5d41-843a-8d8144fb3024"
+  },
+  {
+    "id": "03cadb42-3724-5cce-8662-facd23b4522b",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81bb9f1f-f092-5818-b595-fe5d538eb535"
+  },
+  {
+    "id": "c7f19824-4ca2-5aa6-a69e-53a8722b9440",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d96013a3-3266-5ac8-abb2-f26c53243feb"
+  },
+  {
+    "id": "33470f57-8c56-5d2b-a2db-0c0ee63f8190",
+    "user_id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d2aa30f7-2e69-56b9-bbb4-ca2b7ce40b6d"
+  },
+  {
+    "id": "3446a50d-d1ef-51ed-a554-d0e8bd9ee428",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "66596e58-33b3-58e7-a742-2ae48dcaf205",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d10ae56b-0ecb-53ae-824e-70e0bffc81c9"
+  },
+  {
+    "id": "b05de281-db9f-5a74-be92-59ce6d92b04d",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "11bc9b62-ac58-5b31-8e3d-0279589a8e2c"
+  },
+  {
+    "id": "8a403502-53e9-5d9c-b0ff-62ef44453212",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6cc44a3c-771e-5d43-b28f-f076e751e636"
+  },
+  {
+    "id": "d32ec509-5430-5fc9-a479-bcfc0729ef57",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "edb3a174-e72c-586b-9827-5c16f89eb384"
+  },
+  {
+    "id": "84d0e455-1f41-59e6-8380-7234f808cf5e",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "727e6e74-7b3b-5614-a616-be26812833d2"
+  },
+  {
+    "id": "ab26cb24-1694-5fcc-9b4c-8c1289a8e5bc",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "03fc918d-6bb2-5ff1-9267-3b6c9083ab61"
+  },
+  {
+    "id": "548410c9-e2b3-5021-81e5-1e9cbecd5bb5",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bda03642-1350-5ca8-a204-388c0db548f7"
+  },
+  {
+    "id": "1d3fa280-289d-5a04-a131-f1ba84936df7",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "491569f0-4557-5773-8c50-20c853e02479"
+  },
+  {
+    "id": "d4a85cd5-a9e5-5b44-b4fc-c3cfbfdc52bc",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9abedb92-017e-5c67-9a05-66c8cdb610fa"
+  },
+  {
+    "id": "31effd0f-fa18-5275-a593-9a73959cdb04",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "7f6d7de6-7b2f-5610-b890-500b266cce1b",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "20e22c0b-7e6d-5e0c-aacf-80ba503b024e"
+  },
+  {
+    "id": "54e0ac91-a4ba-55de-be0b-5cd4cd36c96d",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0168367e-1313-5e24-b898-22f1afd361e5"
+  },
+  {
+    "id": "057d839b-de90-5584-968c-a6d6341da7b2",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c25a57c-6b44-59c0-9e09-576416202abd"
+  },
+  {
+    "id": "4e5e4b52-6c1d-58be-9d9d-24b3351b2a47",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb897c62-43cd-5018-9beb-12d30e011123"
+  },
+  {
+    "id": "3d0b6e8c-1ef4-5cec-aa1e-457ee64fa973",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81bb9f1f-f092-5818-b595-fe5d538eb535"
+  },
+  {
+    "id": "9a142343-552a-5abc-88cf-b53e2d32a9f9",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e8ffa9e6-94a1-5398-b937-f96ec8f3c797"
+  },
+  {
+    "id": "6c759ba7-f052-5fca-bf31-f50eef047d34",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "163146ba-74fa-50b9-b13a-9782230d0e5c"
+  },
+  {
+    "id": "26a300f0-b3b4-596d-824e-699b28e01f11",
+    "user_id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db48e336-747f-58ef-9854-ba7de2f8ad4f"
+  },
+  {
+    "id": "a5b08b20-c07f-5090-959b-5e340744328f",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "2cfa1ecf-34cc-5060-a1b4-9df16714d79d",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "caec3aa3-db08-5d6f-a452-8038c8ef2610"
+  },
+  {
+    "id": "89fafe6f-f2a0-5679-9d34-30827230e3c3",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1"
+  },
+  {
+    "id": "e3e2debc-9d3d-5727-838d-e73ef95b9cd6",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d56086da-4f04-50db-8855-e36b2a86f091"
+  },
+  {
+    "id": "28ae9b50-0e74-55c3-b867-97bd1e3c4130",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "76731c55-881f-5d91-9f01-3a3b63d00134"
+  },
+  {
+    "id": "24ed7c2e-0ff7-5b93-b6a4-b3ae4d950e4e",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a24d2633-c374-5ad1-b2c4-073a1df94e80"
+  },
+  {
+    "id": "fb9e3787-5a42-5c95-94bc-897705e0d1fe",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b338e04a-33fb-5ec5-ab9f-eeb8cf516367"
+  },
+  {
+    "id": "8d5936a2-8468-55fc-ac12-4a74cdc6709f",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5eccb8eb-f8df-51c5-9d6e-eeea297527a1"
+  },
+  {
+    "id": "057186fe-1ab4-57fe-90c0-504323e462a2",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b60b6c2d-6c1c-50c1-970b-839eedc89b45"
+  },
+  {
+    "id": "1c308567-050a-5bb0-9e66-5ef8e142506a",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e47760ef-60de-517f-867b-5b38c0d008de"
+  },
+  {
+    "id": "0009870b-2b12-5695-b240-3798f457126d",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96"
+  },
+  {
+    "id": "f7f00cd8-c69b-5fa6-8e10-d55783725a05",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "25f8a407-98d3-5995-b1a1-f5f51e31e9ee"
+  },
+  {
+    "id": "bd7e1f4a-73b5-54f8-91c5-ea3971fdccc4",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a16ff590-d366-5433-ae47-b0302d03ffef"
+  },
+  {
+    "id": "7885ff30-5c84-5002-b10c-69438d5a4abe",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f5aebfe-d900-5c49-960a-14843fba1ce7"
+  },
+  {
+    "id": "ae2a5c5a-b25f-59b3-a599-8c2bc6d73515",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "46acfb22-3d93-59c8-abc2-879e94d9f839",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "f532217e-caed-5e16-804b-d55778c2620e",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dbbef051-f8d0-5e94-a1c1-e222b67a2850"
+  },
+  {
+    "id": "941334db-3997-5192-b242-92373b784dd4",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "20e22c0b-7e6d-5e0c-aacf-80ba503b024e"
+  },
+  {
+    "id": "dc771764-ab60-5b5d-a804-81b51ead3c38",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cf2589e3-ca5b-50f9-807c-4837b6b876c1"
+  },
+  {
+    "id": "5384fe32-c2cc-5a76-9345-8e6122d7a48b",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "878abbe8-ba0f-5b40-988e-e35224e1f315"
+  },
+  {
+    "id": "a1638536-2fc4-5d60-b910-7c7758901417",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c25a57c-6b44-59c0-9e09-576416202abd"
+  },
+  {
+    "id": "0fe21951-e837-5632-94ac-77edf23f1142",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a0acd712-d30d-5add-85a8-81f0addfc4a8"
+  },
+  {
+    "id": "f64f09d7-9f5e-5ee9-b4cd-f78379622484",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e69c6265-4b3c-538c-b02a-61f5b2460424"
+  },
+  {
+    "id": "d0c2b20b-499f-5860-a2cf-f736f18be15a",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "163146ba-74fa-50b9-b13a-9782230d0e5c"
+  },
+  {
+    "id": "1a91eede-52a9-58ca-97a9-7342053b6736",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d96013a3-3266-5ac8-abb2-f26c53243feb"
+  },
+  {
+    "id": "8ba5fa0d-6b5e-578d-856f-83424123bb9e",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6882e431-cc59-5dd5-ac41-44b4d7b04cf7"
+  },
+  {
+    "id": "16561f66-bfa4-51ac-8571-5eb307b16164",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f6a073b9-6415-586b-9ec3-4fd5b8235bc9"
+  },
+  {
+    "id": "dbb332ad-dff0-5a0c-9665-f048473f10bd",
+    "user_id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "773cd40a-f952-57b1-8d3c-7d2c2f5cd5d6"
+  },
+  {
+    "id": "3c282dab-4754-5f8b-8149-cc603886d7c7",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "f4ad0f41-994d-5eac-8593-683badb8ada7",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1"
+  },
+  {
+    "id": "95af4b55-f979-58d4-b897-8d143ea9f7e0",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a802a62d-5b95-59b5-ae5d-88a6e7cff86a"
+  },
+  {
+    "id": "39fe7f68-acfb-5375-8915-3f95bdca70dd",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8"
+  },
+  {
+    "id": "6ec0cd7d-879c-51d8-bd9d-d5dba5895e43",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a5b4e1d3-f85f-5ae5-b700-150a77d4ad49"
+  },
+  {
+    "id": "61c4b4c2-50ee-5d99-8dc3-3d86d91af088",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a24d2633-c374-5ad1-b2c4-073a1df94e80"
+  },
+  {
+    "id": "034840ea-2859-5d22-850d-ce01f154398f",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "b8c742af-f535-54b8-a070-b9f69f68c347",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bda03642-1350-5ca8-a204-388c0db548f7"
+  },
+  {
+    "id": "cbebf981-4eb9-52fb-b040-ff18522fdff7",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79"
+  },
+  {
+    "id": "e2ae6d73-66ae-59dc-a60b-b36e68f69b17",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9abedb92-017e-5c67-9a05-66c8cdb610fa"
+  },
+  {
+    "id": "67d6545c-99b6-5649-8f75-41d5d9bd5d21",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96"
+  },
+  {
+    "id": "a03a5601-fc94-5650-a12c-375f9823aa76",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6552ac3e-2720-5f72-abf3-15314bd85fda"
+  },
+  {
+    "id": "91ae67ea-79b1-58c9-b66b-ace21d0004ca",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4cf13584-77c6-5a4c-88c5-5c7729806fe9"
+  },
+  {
+    "id": "373aeb04-36ca-5fba-8085-4f027316d9e4",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2ad8b4cd-8e3c-5996-8422-b7773bd7cf42"
+  },
+  {
+    "id": "f3328ac1-b9f4-5af5-9025-0bfc10c8ce84",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "88362397-4336-5470-a271-16bb0547f4c3"
+  },
+  {
+    "id": "7efc36f2-de45-562a-a9d3-8aed0dab1263",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f4f8c894-608c-5fbd-bee7-ffed018bbeda"
+  },
+  {
+    "id": "1fff2bf5-38c8-5d84-911f-b9c9e162eeaa",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "b9fc57c0-3616-5c6d-a58e-870c87a945a5",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e21aad0-6454-5e98-99fc-57b0cca30c9b"
+  },
+  {
+    "id": "649a6681-25fd-53b8-95b5-16d45404067f",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4495f433-2534-5b5f-b778-47dd44eb548f"
+  },
+  {
+    "id": "0320634d-bb80-54dc-989b-4701d7b7451a",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0d5525cb-c3c0-59c0-a9d0-e7d760dcd756"
+  },
+  {
+    "id": "7d8ad8f1-d722-5543-a27a-1a8374553598",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6d222fff-1760-5ccc-bfc3-04ea265376c1"
+  },
+  {
+    "id": "6decc206-be09-5a04-be9f-d2d777c4f229",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7b8b7c62-a1c2-59f6-bb8b-e3a1c6daa307"
+  },
+  {
+    "id": "aac6fd96-1827-53d7-8c7b-5b2ec6984c5c",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d"
+  },
+  {
+    "id": "5d6005f5-3e2e-5e1d-8b4f-81e02ec995fb",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d"
+  },
+  {
+    "id": "2b11fd3b-c1d7-51d4-95db-78016d824035",
+    "user_id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "daeedd73-5833-5898-812e-c9644bc002bc"
+  },
+  {
+    "id": "1d6abd93-a99a-5df0-8fb1-185d40e54056",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f8de61a6-e7e7-5dfd-8b37-56f3d8716948"
+  },
+  {
+    "id": "c8f83c14-1964-5436-a520-5c6abc1fb620",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5043177f-2311-556c-9d4c-6a6ada9eafa2"
+  },
+  {
+    "id": "09e80ecb-46c1-5a0a-8566-3756129c77f4",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5a0c9f9a-ef2d-5d97-8e83-e90d22aa7cfd"
+  },
+  {
+    "id": "24033b10-368c-58b1-bec6-99cd29c19d50",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b858674e-c2b3-589e-8a98-1bc89949beca"
+  },
+  {
+    "id": "ee5181d4-dd69-52d5-b20a-78e026c7189c",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db0a6b2b-ed0f-5eb3-a1c4-c08f937fc10a"
+  },
+  {
+    "id": "b25ec16b-2660-5105-a444-ac6518b6fd86",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "67c948d3-5804-5de9-9bd1-4dad171f7fd1"
+  },
+  {
+    "id": "bfcac343-251d-5cac-a9c8-0732c2bb1060",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9ae14745-3111-549c-b545-1fc164ee6b70"
+  },
+  {
+    "id": "366b771e-bc69-563d-9994-9b68fb01694a",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3ca3f336-3243-5635-8531-4e229716702d"
+  },
+  {
+    "id": "4e09ef3a-7db0-5782-9058-cd2dba31a425",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a01b2954-465d-5c13-892f-7b2fc7bfe526"
+  },
+  {
+    "id": "0ff46c7e-c9e7-5bdf-a714-d9bac658b204",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a24d2633-c374-5ad1-b2c4-073a1df94e80"
+  },
+  {
+    "id": "f726fd4f-a686-5a4c-ade8-87383bf0f33e",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "42861278-1fa5-54ca-bc44-e27cbe18580a"
+  },
+  {
+    "id": "eba4bcdf-a799-588f-ba9a-69a71011ea35",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "261a9932-97af-520e-80c4-9493d914331c"
+  },
+  {
+    "id": "60f4ee7a-badd-57a1-82cb-d90cefb303ca",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "397bfb26-3455-50f5-95d1-cbd098354660"
+  },
+  {
+    "id": "8c4d2f4b-3961-58b0-a87d-be29dc817853",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b338e04a-33fb-5ec5-ab9f-eeb8cf516367"
+  },
+  {
+    "id": "7ceed432-3ecf-5cb0-aa97-d72e2077b6e6",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c045523d-c5ea-50a2-9ebd-5aa34e270c50"
+  },
+  {
+    "id": "7065b859-ac41-58c7-9b68-ec062cb7c37f",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "453dfa66-b924-55b6-bc13-85d98a8372a3"
+  },
+  {
+    "id": "a49222b2-e2d0-509f-97e3-e6323d657eb7",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "0ec7e1dc-f956-5cc9-b23a-1b850041c68a",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "88362397-4336-5470-a271-16bb0547f4c3"
+  },
+  {
+    "id": "169a5704-05ea-5d85-a3cb-9fa588c59e96",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "590a5865-4bcf-5322-97a9-fcdd31b5f515"
+  },
+  {
+    "id": "93640e8f-3e89-55d7-bc97-e160aa0771ea",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "d2aeb962-696d-5231-b5d6-271d6d2ca346",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e21aad0-6454-5e98-99fc-57b0cca30c9b"
+  },
+  {
+    "id": "7c05bc64-b212-551d-a1c2-4db7b30f6da3",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bd08162f-2719-543e-be6d-8ae05d5dd579"
+  },
+  {
+    "id": "1cd23298-d002-50fe-943f-341a07001236",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d7fda6eb-279c-5f0b-bbdf-4cf0cf384374"
+  },
+  {
+    "id": "3040acb1-13ef-5a51-b65c-7fe715dbdecd",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "4495f433-2534-5b5f-b778-47dd44eb548f"
+  },
+  {
+    "id": "1eaa25b5-2f43-568b-8fad-3f1ead2e29b7",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6d222fff-1760-5ccc-bfc3-04ea265376c1"
+  },
+  {
+    "id": "f24c2ded-afeb-5266-9388-d0cb54b62d88",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc97f8ba-8478-5301-9bd7-db1e8a1ce652"
+  },
+  {
+    "id": "0a42dd9d-b252-5c22-a28b-da7a38e0fe6f",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d"
+  },
+  {
+    "id": "51dba987-56ae-5e39-ab0d-6edfcb8d6c9f",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b6e764b9-5a11-5572-b1e6-93b919dc3dae"
+  },
+  {
+    "id": "2b7b8dfc-42d5-5215-b916-03b0b068af6e",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "db48e336-747f-58ef-9854-ba7de2f8ad4f"
+  },
+  {
+    "id": "52092574-4821-551d-8e0e-af346928e923",
+    "user_id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "773cd40a-f952-57b1-8d3c-7d2c2f5cd5d6"
+  },
+  {
+    "id": "4ce34fbf-82c6-5865-a6ec-48c1a36140b6",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "739fdf0c-85fc-5297-8b9b-2de159f367be"
+  },
+  {
+    "id": "0fda5ee5-06f3-566b-a551-b4d1e4922629",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e475326f-9336-5b24-87b0-376b8c45ea27"
+  },
+  {
+    "id": "d390f840-526e-588e-a6a1-5e2558f9abf0",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "11bc9b62-ac58-5b31-8e3d-0279589a8e2c"
+  },
+  {
+    "id": "c371cc1e-500b-5ac6-9f59-1dadfda264a3",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81c90c65-4df4-5341-8c47-41a31c80f334"
+  },
+  {
+    "id": "dbe811d1-18f7-505a-b410-5cc5f522722b",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9ae14745-3111-549c-b545-1fc164ee6b70"
+  },
+  {
+    "id": "39b32f48-f8d9-59cf-9119-38cd69608f61",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "685b9a29-b535-59c3-ba62-4d6c7edb8805"
+  },
+  {
+    "id": "4c916891-3e60-5f5b-89fc-93755144b774",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "261a9932-97af-520e-80c4-9493d914331c"
+  },
+  {
+    "id": "0fa42a43-729f-5875-be22-9bc27b7b3de7",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9b13d313-fca6-5e8a-b3a4-08a3da010772"
+  },
+  {
+    "id": "450d5a6d-484a-52f3-a973-fa38280b55ce",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "46a1688f-8105-5d99-9e65-990d9737ad88"
+  },
+  {
+    "id": "d005fbe2-23ce-5582-bc02-20175c477641",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5eccb8eb-f8df-51c5-9d6e-eeea297527a1"
+  },
+  {
+    "id": "3b7cd930-9b1e-557f-a7d7-7042c79edfba",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b60b6c2d-6c1c-50c1-970b-839eedc89b45"
+  },
+  {
+    "id": "61d13311-440e-5296-8b8d-d4ff7f70a742",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79"
+  },
+  {
+    "id": "401ebc4e-f4d3-5595-b61f-63a4a7b6b351",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e47760ef-60de-517f-867b-5b38c0d008de"
+  },
+  {
+    "id": "9610c153-0ab3-532b-8912-34a80ad2fcdf",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6b2bc7fd-ba26-54d6-a7a9-b3066582937b"
+  },
+  {
+    "id": "192ef2da-dcc4-5747-a056-21b59681139b",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9abedb92-017e-5c67-9a05-66c8cdb610fa"
+  },
+  {
+    "id": "321f195d-2934-502e-8e15-5fe6a49a18a4",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5c432f1f-251b-5d02-824b-b279416bd058"
+  },
+  {
+    "id": "8c4ef388-4e5c-5936-a827-aefc27d24765",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2ad8b4cd-8e3c-5996-8422-b7773bd7cf42"
+  },
+  {
+    "id": "f83d8dcb-bcb5-5f57-b59f-95fc5b5039ea",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "88362397-4336-5470-a271-16bb0547f4c3"
+  },
+  {
+    "id": "28647aeb-421f-579c-ab61-45ce7b2c1d97",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "616cfaa1-a138-50e6-9336-d3effc3f7414"
+  },
+  {
+    "id": "aa29297f-e806-59b9-9bc9-d7308c9a219e",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c25a57c-6b44-59c0-9e09-576416202abd"
+  },
+  {
+    "id": "e2772c2b-e3f4-5671-8ef1-adf5336eafb6",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb897c62-43cd-5018-9beb-12d30e011123"
+  },
+  {
+    "id": "0047f2ea-68a7-5374-b68a-527ceefda0c6",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e632971d-5ce6-584b-a6d1-82bfe9887678"
+  },
+  {
+    "id": "8f7f2431-ba19-5f65-8579-f31ccfd12816",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0e26e2f4-e6c4-591a-8d56-5d3bc3e92fd2"
+  },
+  {
+    "id": "903b8404-c1fe-54a5-9325-46bd6ed319e4",
+    "user_id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "68157593-6efe-572a-bfb9-dbdcd5d5e24a"
+  },
+  {
+    "id": "b33d562e-632a-570d-9d80-ed5f3a924e67",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8dc2e2a7-eaf8-5ce6-8e55-a41474d5fb39"
+  },
+  {
+    "id": "aa9a645a-9273-560b-b0a6-e9a6025d8cba",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7037fca6-c8e2-5c01-932e-33048b2aba97"
+  },
+  {
+    "id": "d932efd7-831c-5d7e-a0fb-2ea27908c695",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d10ae56b-0ecb-53ae-824e-70e0bffc81c9"
+  },
+  {
+    "id": "6e4d4ff0-d6c1-5740-b7f9-134ae369c323",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "11bc9b62-ac58-5b31-8e3d-0279589a8e2c"
+  },
+  {
+    "id": "c2687cff-2154-5fd4-958e-119cae063ea4",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1c94aad9-d8f8-5c7f-9847-ce31f86dae5d"
+  },
+  {
+    "id": "f622549b-02ab-5f77-a644-ec2baed372d6",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "508611a8-92e1-515f-ba62-6d4c6db2f67f"
+  },
+  {
+    "id": "ae472048-4d13-5730-a7cc-dff6e2882ece",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a802a62d-5b95-59b5-ae5d-88a6e7cff86a"
+  },
+  {
+    "id": "a95c0698-5be2-5f83-b0f1-bca1308680b8",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "2d7de4cb-75e7-5a2f-b9e3-81a8f49d01f8"
+  },
+  {
+    "id": "8cb158d8-c80a-5504-b00d-fa5dd58024b9",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "10e646f9-4446-5bde-8de3-3a009678bd5e"
+  },
+  {
+    "id": "1a977c57-5d7e-5be8-b939-64f5d44debc7",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a5b4e1d3-f85f-5ae5-b700-150a77d4ad49"
+  },
+  {
+    "id": "f58254ea-87f8-57ca-961e-f5d2ffe99fa0",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "87c1029a-fc40-5d0f-bafe-b496fc59e719"
+  },
+  {
+    "id": "dc38249d-02f6-5f2c-b334-197de974d51f",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "685b9a29-b535-59c3-ba62-4d6c7edb8805"
+  },
+  {
+    "id": "5297abad-bee6-5fd2-9bcb-2faa4906257a",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "03fc918d-6bb2-5ff1-9267-3b6c9083ab61"
+  },
+  {
+    "id": "d3e1d3a8-4df6-53ed-916d-23aec5cec945",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 8,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "453dfa66-b924-55b6-bc13-85d98a8372a3"
+  },
+  {
+    "id": "8e4dda95-2aa4-5516-a9a4-8f94d6dfd143",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "33d664c6-4822-5946-9e9c-289aa58665c0"
+  },
+  {
+    "id": "195455bc-a777-51c9-abc1-c6eee19641f3",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "27f8eda2-7868-5b72-8a0c-69df033367cb"
+  },
+  {
+    "id": "86112993-eabe-5f47-aa8c-41bce7e2c699",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "33303bd5-d2cb-5d54-b72d-23b159d0e7fe"
+  },
+  {
+    "id": "e84e64c1-c222-5a40-8c18-4126072d6e3d",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "25f8a407-98d3-5995-b1a1-f5f51e31e9ee"
+  },
+  {
+    "id": "b3d05f0c-a405-596f-8a73-8d90677bacf0",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f5aebfe-d900-5c49-960a-14843fba1ce7"
+  },
+  {
+    "id": "55497046-6618-5b6e-a790-018438c5766d",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5c432f1f-251b-5d02-824b-b279416bd058"
+  },
+  {
+    "id": "3905b91c-a40d-5db7-aa8d-317bb92a860e",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6e8b8dcd-10c3-5a05-8063-95d8b3956e57"
+  },
+  {
+    "id": "e0ee4dc6-7aae-5e5a-bff9-2786812a9e12",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a058e145-cba3-510c-8bd9-0bfff6a6ac1d"
+  },
+  {
+    "id": "9ef4385b-a27f-5049-9e1a-a2f135195b25",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "c82c346f-d93a-53c9-a851-84483460315f",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dbbef051-f8d0-5e94-a1c1-e222b67a2850"
+  },
+  {
+    "id": "41135772-8dc1-50f6-8f56-37f63af70048",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "945d4a30-ab3b-5012-bd26-6557ae3b5f00"
+  },
+  {
+    "id": "9b03c0db-d7cb-50a8-a05a-401cc6a6887b",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1b8ef12c-74bf-5fe6-a810-f3bba72210ab"
+  },
+  {
+    "id": "1af1f39f-8f99-5941-b240-9758cdc753f8",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cf2589e3-ca5b-50f9-807c-4837b6b876c1"
+  },
+  {
+    "id": "81070ae3-f150-5913-b56f-ff1ea47cefec",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f997640-c924-5c5d-ac18-73660aa9f36c"
+  },
+  {
+    "id": "384d0797-950e-5b5f-9806-d18ab46262d6",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d7fda6eb-279c-5f0b-bbdf-4cf0cf384374"
+  },
+  {
+    "id": "2e34e27a-efd4-5fb7-899a-c39be1b6b4a1",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0d5525cb-c3c0-59c0-a9d0-e7d760dcd756"
+  },
+  {
+    "id": "2a8c0a4b-2ca1-5ef1-8d16-b68ea151f98c",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7b8b7c62-a1c2-59f6-bb8b-e3a1c6daa307"
+  },
+  {
+    "id": "9ddf30bb-ae25-5d91-adc6-c5810124d059",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a0acd712-d30d-5add-85a8-81f0addfc4a8"
+  },
+  {
+    "id": "78a5055a-6c08-5019-a147-3dede91e7f88",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "cb7c05d4-e5dc-5ae9-8b0f-0109cfd0a91d"
+  },
+  {
+    "id": "7328c87a-7092-51bc-ab08-7e6f620422d7",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "dc97f8ba-8478-5301-9bd7-db1e8a1ce652"
+  },
+  {
+    "id": "748dcb1d-365d-573a-8d1f-98f9f3eb558d",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e632971d-5ce6-584b-a6d1-82bfe9887678"
+  },
+  {
+    "id": "3fe36e25-4b3b-5655-975c-03bd2b4de065",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6fdfa47f-9130-58f6-abf9-21293a2ea71d"
+  },
+  {
+    "id": "9dae01c7-0a19-5f8e-b198-b62bd490c3ea",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0e26e2f4-e6c4-591a-8d56-5d3bc3e92fd2"
+  },
+  {
+    "id": "4b65160f-2cd7-5cd7-938f-0d5ebaeb2c3b",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b6e764b9-5a11-5572-b1e6-93b919dc3dae"
+  },
+  {
+    "id": "200abec0-7f3e-5627-9f85-9413a5702d72",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "81bb9f1f-f092-5818-b595-fe5d538eb535"
+  },
+  {
+    "id": "9a157d14-39d7-51b1-b661-1dbdef65a757",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e8ffa9e6-94a1-5398-b937-f96ec8f3c797"
+  },
+  {
+    "id": "81f22584-1802-587b-a038-805c4246b0d9",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f6a073b9-6415-586b-9ec3-4fd5b8235bc9"
+  },
+  {
+    "id": "da3b39fa-1feb-5584-a4c9-3c4c8b61d58e",
+    "user_id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "056dcfa0-7416-549a-b335-d64e5e5c8b3a"
+  },
+  {
+    "id": "08a4a4e0-966d-53e9-88b9-13acafa6244f",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "7037fca6-c8e2-5c01-932e-33048b2aba97"
+  },
+  {
+    "id": "557e554e-b033-57b4-8a07-50f2dfb873a4",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d10ae56b-0ecb-53ae-824e-70e0bffc81c9"
+  },
+  {
+    "id": "8a05a57c-7ded-53d1-9151-2acaaf1c7327",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8408def1-c5b2-5b0c-aef6-bfa397aa9ed7"
+  },
+  {
+    "id": "696350f1-e75a-57fc-a745-284cbd57cace",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c00429c1-4882-5a52-8760-a9a9d804e7cb"
+  },
+  {
+    "id": "86061cb1-5b19-5895-9066-44ba60be20ed",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d56086da-4f04-50db-8855-e36b2a86f091"
+  },
+  {
+    "id": "5ece8204-36a2-5b06-89c5-688e0293f4fc",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a5b4e1d3-f85f-5ae5-b700-150a77d4ad49"
+  },
+  {
+    "id": "3158cc44-7d5b-5077-99d2-ee1b083b06f1",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "87c1029a-fc40-5d0f-bafe-b496fc59e719"
+  },
+  {
+    "id": "632b20cd-d1d1-5234-ad5b-ed470aee2d0c",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f41887bd-fd96-5aa2-8bd8-61b54a9f3011"
+  },
+  {
+    "id": "2c9b78d5-6467-5ed0-8742-0592bd418742",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a24d2633-c374-5ad1-b2c4-073a1df94e80"
+  },
+  {
+    "id": "0917fc06-4535-5079-8078-4e52e497cee4",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c508835-28e4-5cf4-9384-cbf0327b8337"
+  },
+  {
+    "id": "069d77b7-1ed4-5057-8261-f712047f760a",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3cb51668-7ba2-5d81-8741-69c85506baba"
+  },
+  {
+    "id": "b9e8f6a3-fb2a-57fa-90fb-91e6ff4fb85f",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "b338e04a-33fb-5ec5-ab9f-eeb8cf516367"
+  },
+  {
+    "id": "8a9ed9ef-f178-5591-9677-6c156410c9d1",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "477d0118-f5ce-54b5-a917-353ad28745c7"
+  },
+  {
+    "id": "d54434f2-13c7-5a22-96b3-5f397e4cb044",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "1a426a6e-bccc-5fbc-9d98-3569fb94fb79"
+  },
+  {
+    "id": "6807c7d0-e57f-5609-9f26-d9b5625c8ae1",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96"
+  },
+  {
+    "id": "11615ad7-67c3-5f24-8c3a-6773407e1603",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "fcdfd368-90aa-51f0-a6b7-971a393ef11a"
+  },
+  {
+    "id": "27995c32-3fdc-56a4-9699-637d4aa24294",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "58f510f8-64d0-5397-a33f-441d55e6245c",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "eec7f253-7fe3-5bc9-a72d-8f5df163821b",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 14,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "f3162cd0-5c1a-5315-9378-06bd3347977e"
+  },
+  {
+    "id": "e6fefc11-b4bc-565c-9a70-b773a50bc23d",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "85a8234e-834b-568a-870a-74eded6fb74a"
+  },
+  {
+    "id": "b00dd2f9-4273-59b2-b72f-32dc93cddd7b",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bd08162f-2719-543e-be6d-8ae05d5dd579"
+  },
+  {
+    "id": "219517d1-b4ab-5b26-84b4-62604476c2ce",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c25a57c-6b44-59c0-9e09-576416202abd"
+  },
+  {
+    "id": "35289101-9472-51cf-a7fc-5b762dca02fa",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bff92c60-3c77-595a-a968-dea216693ef7"
+  },
+  {
+    "id": "d8c38f31-6ecc-5a52-bbf4-bdcffa15363c",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "10f29249-4bb2-586a-99e2-0efaef9d1f34"
+  },
+  {
+    "id": "20f40e67-36ef-5fa1-9e4c-397344662fa3",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e69c6265-4b3c-538c-b02a-61f5b2460424"
+  },
+  {
+    "id": "56559179-5604-59b9-a031-79d388b5fe3b",
+    "user_id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "app_id": 20,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6882e431-cc59-5dd5-ac41-44b4d7b04cf7"
+  },
+  {
+    "id": "bb0d7d43-18dd-5e33-b4bb-e1775ae64e4e",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 1,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5043177f-2311-556c-9d4c-6a6ada9eafa2"
+  },
+  {
+    "id": "eb719c27-bbfb-5de8-ac53-126c03a98e56",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d10ae56b-0ecb-53ae-824e-70e0bffc81c9"
+  },
+  {
+    "id": "de5c5360-e7e2-5702-8c49-115fd763a93a",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 4,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "508611a8-92e1-515f-ba62-6d4c6db2f67f"
+  },
+  {
+    "id": "d3a5057c-1633-525c-9a39-497df31a5baa",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "87c1029a-fc40-5d0f-bafe-b496fc59e719"
+  },
+  {
+    "id": "1bdfe2a3-3326-5925-85b7-0b2c0364abc2",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "76731c55-881f-5d91-9f01-3a3b63d00134"
+  },
+  {
+    "id": "156fde04-98c2-5d3a-8e2c-9d2a683db453",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 6,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "685b9a29-b535-59c3-ba62-4d6c7edb8805"
+  },
+  {
+    "id": "f9e04727-b807-537e-a020-e679aaeaa155",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c20062c7-295a-5504-8ea1-e3d4d86f4bfa"
+  },
+  {
+    "id": "81986bc6-32a3-5cab-ae14-9336be6f109b",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 9,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "477d0118-f5ce-54b5-a917-353ad28745c7"
+  },
+  {
+    "id": "9fed4c33-6c30-5ce4-8825-899e56c2e283",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e47760ef-60de-517f-867b-5b38c0d008de"
+  },
+  {
+    "id": "fb5b9ae7-9ab8-5c59-a706-b6162a467564",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6b2bc7fd-ba26-54d6-a7a9-b3066582937b"
+  },
+  {
+    "id": "3b63db23-ed6a-5e68-97de-861db4685ba2",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 10,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8e4f495b-5d65-51ae-9ee6-bdae73ae2e96"
+  },
+  {
+    "id": "f48575f3-b9d3-5526-8ca4-50422a89ec35",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 11,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "5c432f1f-251b-5d02-824b-b279416bd058"
+  },
+  {
+    "id": "bc09d833-c20a-5cf6-bc95-d5d9fc874f45",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 12,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "28cc6861-1656-5460-97ab-018f735cb0d3"
+  },
+  {
+    "id": "bb3974bb-8d81-5fdc-97dc-e7a6f38a1e42",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "deb8d6a4-fb18-54d5-8e86-d60eae538cfc"
+  },
+  {
+    "id": "5784cbce-aa8b-5f75-a4d5-46e85e060373",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "20e22c0b-7e6d-5e0c-aacf-80ba503b024e"
+  },
+  {
+    "id": "81f667f7-6570-5ae6-9fa8-1d86203d9687",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 13,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "0168367e-1313-5e24-b898-22f1afd361e5"
+  },
+  {
+    "id": "b368f212-3225-50c4-a148-7be4adde5f5b",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "6f997640-c924-5c5d-ac18-73660aa9f36c"
+  },
+  {
+    "id": "2a73e414-2305-572b-8d49-60617d19f1ad",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "590a5865-4bcf-5322-97a9-fcdd31b5f515"
+  },
+  {
+    "id": "9dd64777-bf7a-5a48-bd22-c3cf6a5b1074",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 15,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "bd08162f-2719-543e-be6d-8ae05d5dd579"
+  },
+  {
+    "id": "58ca149b-b6d4-531c-aeaa-4d132fa18722",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 16,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "9c25a57c-6b44-59c0-9e09-576416202abd"
+  },
+  {
+    "id": "f58fbd70-15f4-589a-ad2c-0ea45b113150",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 17,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e2f5e2f4-150f-508c-83cb-dc36eb7dfc1a"
+  },
+  {
+    "id": "92ca2666-1da3-5e0f-a70a-4e9eed03698b",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 18,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "e69c6265-4b3c-538c-b02a-61f5b2460424"
+  },
+  {
+    "id": "bea26f85-ade4-591f-99b1-4797e66d7720",
+    "user_id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "app_id": 19,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "ffeb3c7c-e2b2-5674-a8ca-002aad8226dd"
+  },
+  {
+    "id": "091922f9-5367-5284-a62e-da87ad18dad6",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "caec3aa3-db08-5d6f-a452-8038c8ef2610"
+  },
+  {
+    "id": "eb46d795-ebc8-5870-81db-55a2f332047a",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "c61133c6-23a7-5e21-a974-d070194d3422"
+  },
+  {
+    "id": "45ed8f5f-2d32-53e3-8b89-b577a655f2aa",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 2,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d2971fcf-e11e-5033-a5ca-50d1ced34feb"
+  },
+  {
+    "id": "df2c7a1f-d0e8-52b1-9b26-7441b30e215d",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 3,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "8408def1-c5b2-5b0c-aef6-bfa397aa9ed7"
+  },
+  {
+    "id": "e40aaa5f-68c2-57b3-b9e2-3fa948f67dd7",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "d56086da-4f04-50db-8855-e36b2a86f091"
+  },
+  {
+    "id": "2bece623-b03f-532f-b42e-d74ff158117a",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "a5b4e1d3-f85f-5ae5-b700-150a77d4ad49"
+  },
+  {
+    "id": "f567a2d2-b028-59f5-8f58-4df5e0c6c017",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "3ca3f336-3243-5635-8531-4e229716702d"
+  },
+  {
+    "id": "c40cd5c1-7fef-57d8-8135-fbbef46d59a6",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 5,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "76731c55-881f-5d91-9f01-3a3b63d00134"
+  },
+  {
+    "id": "49922482-47af-5706-a649-9f3fc46bfb4f",
+    "user_id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "app_id": 7,
+    "granted_by": null,
+    "granted_at": "2025-06-01T00:00:00+00:00",
+    "revoked_at": null,
+    "profile_id": "397bfb26-3455-50f5-95d1-cbd098354660"
+  }
+]
