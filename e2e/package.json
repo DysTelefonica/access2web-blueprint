@@ -1,0 +1,9 @@
+{
+  "name": "access2web-blueprint-e2e",
+  "version": "0.0.0",
+  "description": "Playwright E2E suite for access2web-blueprint",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}

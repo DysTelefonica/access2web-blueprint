@@ -7,7 +7,12 @@
  *
  * Tests run against a **running Docker container** started by the release
  * workflow (`.github/workflows/release.yml::e2e`). The container exposes
- * the app on port 8000; `BASE_URL` is injected by the workflow (`--base-url`).
+ * the app on port 8000; `BASE_URL` and `TEST_CONTAINER_NAME` are injected
+ * by the workflow as env vars.
+ *
+ * The release gate runs all specs (auth, admin-users, admin-apps,
+ * admin-presence, cli, smoke) against the just-published image.
+ * Failures block the release (no `|| true`).
  *
  * ## globalSetup
  *
