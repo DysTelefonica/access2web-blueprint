@@ -126,31 +126,51 @@ BASELINE: dict[str, BaselineEntry] = {
     # W40 (#482): dataclass-field shape coincidence. Covers the 4-field
     # structural pattern still present in app.py and user.py.
     # 4-field pattern after normalisation). Same coincidence class.
-    "dup:33cfad6d55a4": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:33cfad6d55a4": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
     # W61 (#524): docstring coincidence — structural, not a smell.
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
     # @dataclass docstring coincidence (5 statements). Same structural
     # pattern as the W40 baseline — dataclass field shape coincidence,
     # not a smell.
-    "dup:7f84566161ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:7f84566161ae": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
     # W64 PR #589/#590: admin.py re-added with two gate functions
     # that share the same HTTP-exception pattern (request.state check,
     # container lookup, raise HTTPException). Same structural class.
-    "dup:110a87c35376": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:8aa3296e6ce7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:ac321e81d8c6": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:c373bbc4ef79": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:f00a3c6a5a4f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:18c76edf31fc": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:110a87c35376": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
+    "dup:8aa3296e6ce7": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
+    "dup:ac321e81d8c6": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
+    "dup:c373bbc4ef79": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
+    "dup:f00a3c6a5a4f": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
+    "dup:18c76edf31fc": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
     # W64 (#585): two persistence repo files share the same
     # import-from-sqlalchemy pattern (5 statements). Structural
     # coincidence — the adapter pattern repeats across repositories.
-    "dup:28415be31351": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:28415be31351": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
     # W64 (#588): revoke_assignment.py and audit_append.py share the
     # async fn + AuditEvent import + uuid4 prelude (5 statements).
     # Structural coincidence, not a smell.
-    "dup:5172cec31ab7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:5172cec31ab7": BaselineEntry(
+        occurrences=2, target=2, target_date="2030-01-01"
+    ),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.
     # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring
@@ -171,8 +191,10 @@ BASELINE: dict[str, BaselineEntry] = {
     # W65 (#596): container.py split -> _container_ports.py gets same
     # port-adapter import block (5 statements). Structural coincidence
     # from the adapter wiring pattern; not a smell.
-    "dup:33cdc5a80fa3": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
-    }
+    "dup:33cdc5a80fa3": BaselineEntry(
+        occurrences=3, target=3, target_date="2030-01-01"
+    ),
+}
 
 # MECHANISM# MECHANISM
 # --------------------------------------------------------------------------------------------
@@ -275,7 +297,9 @@ def collect_groups(root: Path) -> list[CloneGroup]:
                     start_line=window[0].lineno,
                     end_line=getattr(window[-1], "end_lineno", window[-1].lineno),
                 )
-                buckets.setdefault(_digest(window), []).append((occurrence, MIN_STATEMENTS))
+                buckets.setdefault(_digest(window), []).append(
+                    (occurrence, MIN_STATEMENTS)
+                )
 
     # Stable ordering: most occurrences first, then digest. Never rely on dict insertion order
     # for a verdict.
@@ -303,7 +327,9 @@ def collect_groups(root: Path) -> list[CloneGroup]:
         # duplication dozens of times. A gate that reports 333 findings for 37 real clones gets
         # switched off inside a week, and a gate that is switched off protects nothing.
         fresh: list[Occurrence] = []
-        for occurrence, _ in sorted(entries, key=lambda item: (item[0].file, item[0].start_line)):
+        for occurrence, _ in sorted(
+            entries, key=lambda item: (item[0].file, item[0].start_line)
+        ):
             if _overlaps(occurrence):
                 continue
             fresh.append(occurrence)
@@ -398,7 +424,9 @@ def build_report(root: Path, groups: list[CloneGroup], status: str) -> dict:
         "indicators": {
             "duplicate_groups": len(groups),
             "duplicated_statements": duplicated,
-            "duplicated_ratio_pct": round(100 * duplicated / total, 2) if total else 0.0,
+            "duplicated_ratio_pct": round(100 * duplicated / total, 2)
+            if total
+            else 0.0,
         },
         "ceilings": {"duplicate_groups": 0},
         "findings": [
@@ -432,7 +460,9 @@ def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser.add_argument(
+        "--json", action="store_true", help="emit the indicator envelope"
+    )
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
