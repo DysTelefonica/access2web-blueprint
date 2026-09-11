@@ -47,9 +47,7 @@ def _hito(
     garantia_fecha_fin: date | None = None,
 ) -> Hito:
     _fecha = fecha_hito if fecha_hito is not None else _d(2026, 10, 1)
-    _garantia = (
-        garantia_fecha_fin if garantia_fecha_fin is not None else _d(2027, 10, 2)
-    )
+    _garantia = garantia_fecha_fin if garantia_fecha_fin is not None else _d(2027, 10, 2)
     return Hito(
         id=id or uuid4(),
         id_expediente=id_expediente,
