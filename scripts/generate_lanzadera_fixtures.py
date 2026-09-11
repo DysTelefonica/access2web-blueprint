@@ -261,11 +261,7 @@ def _sinacceso_matrix(
     - All flags='No'/NULL → ["DEFAULT"]
     """
     if flags.get("EsUsuarioSinAcceso") == "Sí":
-        return [
-            DEFAULT_CODE
-            if "EsUsuarioSinAcceso" == "EsUsuarioSinAcceso"
-            else DEFAULT_CODE
-        ]
+        return [DEFAULT_CODE if "EsUsuarioSinAcceso" == "EsUsuarioSinAcceso" else DEFAULT_CODE]
     codes = []
     for flag, code in FLAG_TO_CODE.items():
         if flag == "EsUsuarioSinAcceso":
@@ -341,8 +337,7 @@ def _generate_assignments(
             app = next(a for a in apps if a["id"] == ai)
             # Check not already present.
             exists = any(
-                r["user_id"] == user["id"] and r["app_id"] == app["id"]
-                for r in assignments
+                r["user_id"] == user["id"] and r["app_id"] == app["id"] for r in assignments
             )
             if not exists:
                 assignments.append(
