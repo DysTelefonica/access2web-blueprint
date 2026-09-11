@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado Planificación Lanzadera — W62 cerrado 2026-09-10</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { border-bottom: 3px solid #2563eb; padding-bottom: .5rem; }
+  h2 { margin-top: 2rem; border-bottom: 1px solid #ccc; padding-bottom: .25rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+  th, td { border: 1px solid #ddd; padding: .5rem .75rem; text-align: left; vertical-align: top; }
+  th { background: #f3f4f6; }
+  .cerrado { background: #dcfce7; color: #166534; }
+  .abierto { background: #fef9c3; color: #854d0e; }
+  .pendiente { background: #f1f5f9; color: #475569; }
+  .w { font-weight: bold; color: #2563eb; }
+  .legend { display: flex; gap: 1.5rem; margin: 1rem 0; font-size: .85rem; }
+  .legend span { display: flex; align-items: center; gap: .4rem; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot-cerrado { background: #16a34a; }
+  .dot-abierto { background: #ca8a04; }
+  .dot-pendiente { background: #94a3b8; }
+  pre { background: #f1f5f9; padding: 1rem; overflow-x: auto; font-size: .8rem; }
+  code { background: #e5e7eb; padding: .1rem .3rem; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>Estado Planificación Lanzadera</h1>
+<p><strong>Última actualización:</strong> 2026-09-10 · <strong>W-n delivered:</strong> W54–W59, W62, W65 · <strong>Próximo:</strong> W66 (cleave container.py por port group, #596)</p>
+
+<div class="legend">
+  <span><span class="dot dot-cerrado"></span> Cerrado (mergeado en main)</span>
+  <span><span class="dot dot-abierto"></span> En curso / abierto</span>
+  <span><span class="dot dot-pendiente"></span> Pendiente</span>
+</div>
+
+<h2>Roadmap W-n — Lanzadera</h2>
+<table>
+  <thead>
+    <tr>
+      <th>WU</th>
+      <th>Issue</th>
+      <th>Descripción</th>
+      <th>PR(s)</th>
+      <th>Estado</th>
+      <th>Notas</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="cerrado">
+      <td class="w">W54</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/43">#43</a></td>
+      <td>Application layer: use cases create_user, disable_user, grant/revoke global_admin, assign_profile, list_effective_apps, audit_append, bootstrap_global_admins, set_password</td>
+      <td>#508</td>
+      <td>✅ mergeado</td>
+      <td>9 use cases en <code>application/</code></td>
+    </tr>
+    <tr class="cerrado">
+      <td class="w">W55</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/49">#49</a></td>
+      <td>LanzaderaContainer DI: container.py, use_cases.py, bootstrap.py, ports (SecretManager, PasswordHasher, BootstrapAdminSource)</td>
+      <td>#509 / #512</td>
+      <td>✅ mergeado</td>
+      <td>PR #512 squash-merge perdió archivos; W58 los restauró</td>
+    </tr>
+    <tr class="cerrado">
+      <td class="w">W56</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/466">#466</a></td>
+      <td>PG imports cleanup: extrae <code>typing.Any</code> de <code>_pg_imports</code>, elimina hacks DRY-breakers de adapters Postgres</td>
+      <td>#514</td>
+      <td>✅ mergeado</td>
+      <td>Baseline dup:7f84566161ae</td>
+    </tr>
+    <tr class="cerrado">
+      <td class="w">W57</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/514">#514</a></td>
+      <td>DRY baseline ratchet: NOTE dup:110a87c35376, elimina admin.py duplicado, actualiza check_dry.py</td>
+      <td>#513</td>
+      <td>✅ mergeado</td>
+      <td>DRY gate verde en main</td>
+    </tr>
+    <tr class="cerrado">
+      <td class="w">W58</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/515">#515</a></td>
+      <td>Wire HTTP delivery → LanzaderaContainer: main.py lifespan + admin routes vía container (list_users, create_user, disable_user, assign_profile, list_apps, list_audit)</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/516">#516</a></td>
+      <td>✅ mergeado</td>
+      <td>6 iteraciones CI · 7 commits · 5 fixups</td>
+    </tr>
+    <tr class="cerrado">
+      <td class="w">W59</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/517">#517</a></td>
+      <td>list_users paginado: pagination en UserRepository + container.list_users(limit, offset)</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/518">#518</a></td>
+      <td>✅ mergeado</td>
+      <td>—</td>
+    </tr>
+    <tr class="cerrado">
+      <td class="w">W62</td>
+      <td>—</td>
+      <td>Login/session management: auth flow, JWT, logout, GET /auth/me, GET /auth/me/apps, GET /auth/me/apps/{id}/capabilities, revoke_assignment, seed_profiles idempotent</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/593">#593</a></td>
+      <td>✅ mergeado</td>
+      <td>2026-09-10 · 6 issues: #585–#590</td>
+    </tr>
+        <tr class="pendiente">
+      <td class="w">W65</td>
+      <td>refactor/lanzadera-cleave-container</td>
+      <td>Cleave LanzaderaContainer by port group: container_users.py + container_apps.py + container_auth.py + thin container.py re-exporter. Todos ≤ 100 sitios. Issue #596.</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+<tr class="pendiente">
+      <td class="w">W-TEST</td>
+      <td>—</td>
+      <td>Tests de integración Lanzadera: admin routes con LanzaderaContainer + fakes (list_users paginado, create_user, disable_user, assign_profile)</td>
+      <td>—</td>
+      <td>✅ cerrado</td>
+      <td>W-TEST cerrado: 656 tests PASS, coverage 84%, admin_routes_misc.py 100%. Fixes: seed_profiles.py (#595), BASELINE (#596), HTML endpoint tests (#597).</td>
+    </tr>
+    <tr class="pendiente">
+      <td class="w">W60</td>
+      <td>—</td>
+      <td>Usuarios conectados SSE: real-time session presence vía Server-Sent Events</td>
+      <td>—</td>
+      <td>⬜ pendiente</td>
+      <td>Epic F19–F22 (G3)</td>
+    </tr>
+    <tr class="pendiente">
+      <td class="w">W61</td>
+      <td>—</td>
+      <td>App CRUD admin G2: crear/editar/desactivar aplicativos</td>
+      <td>—</td>
+      <td>⬜ pendiente</td>
+      <td>Epic F10–F13 (G2)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Roadmap — Expedientes</h2>
+<p>~50 issues abiertos (<code>app/expedientes</code>), todos <code>status:approved</code>. Ver
+<a href="https://github.com/DysTelefonica/access2web-blueprint/issues?q=is%3Aopen+label%3Aapp%2Fexpedientes">issues Expedientes en GitHub</a>.</p>
+<table>
+  <thead>
+    <tr><th>Tipo</th><th>Count</th><th>Notas</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>feat(exp)</td>
+      <td>~18</td>
+      <td>Extractor tranches, adapters (AGEDYS, HPS, Risks, NC), REST E2E, document storage, runtime policies, session audit, entity-relations, supplier-tree, etc.</td>
+    </tr>
+    <tr>
+      <td>test(exp)</td>
+      <td>~30</td>
+      <td>UAT suites: runtime, access-control, integrations, retirement, query-and-tasks, catalogs, related-data, lifecycle, write-resilience, resilience journeys, E2E export</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Gaps abiertos — Lanzadera</h2>
+<table>
+  <thead>
+    <tr><th>Gap</th><th>Descripción</th><th>Impacto</th><th>Prioridad</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Test coverage W54-W62</td>
+      <td>W-TEST cadena cerrada: seed_profiles.py se rompe en 6 módulos (234 sitios → runner 57 + 5 datos 25-50). Todos bajo ceiling 100. dup:05d03dc1b409 BASELINE en check_dry.py. 656 tests PASS, quality report PASS.</td>
+      <td>Baja — quality report PASS; seed_profiles.py 57 sitios, módulos datos ≤ 50</td>
+      <td>Baja</td>
+    </tr>
+    <tr>
+      <td>SecretManagerPort sin encrypt</td>
+      <td>El protocolo SecretManagerPort solo declara <code>get()</code>; <code>encrypt()</code> es método concreto de EnvSecretManagerAdapter</td>
+      <td>Baja — funciona runtime, type contract incompleto</td>
+      <td>Baja</td>
+    </tr>
+    <tr>
+      <td>AuditLogPg vs AuditLog type mismatch</td>
+      <td>AuditLogPg.append(AuditEvent) vs AuditLog.append(AuditLogEntry) — mismatch en el container wiring</td>
+      <td>Baja — runtime OK, mypy suprimido con type:ignore</td>
+      <td>Baja</td>
+    </tr>
+    <tr>
+      <td>Python 3.12 vs 3.14 DRY skew</td>
+      <td>check_dry.py produce digests distintos en Python 3.12 (CI) vs 3.14 (local)</td>
+      <td>Media — CI pasa pero validación local requiere /usr/bin/python3</td>
+      <td>Média</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>CHANGELOG [Unreleased]</h2>
+<pre>
+### Added
+- W62 (#593): Login+RBAC endpoints. GET /auth/me, GET /auth/me/apps, GET /auth/me/apps/{id}/capabilities, revoke_assignment, idempotent seed_profiles, require_capability gate.
+
+### Fixed
+- **seed_profiles.py corruption fix** (#595): archivo `seed_profiles.py` con bloque `_CAPABILITIES_BY_CODE` incompleto — `IndentationError` en importación. Reconstruido con `_CAPABILITIES_BY_CODE: dict[str, dict[str, bool]]` y 8 entries.
+- **check_mutation_sites.py malformed BASELINE entry** (#596): entrada `seed_profiles.py` en `BASELINE` con valor `()` vacío — `AttributeError`. Completada con `BaselineEntry(sites=234, target=100, target_date="2027-02-13")`.
+
+### Changed
+- W-TEST (#598): seed_profiles.py se rompe en 6 modulos (234 sitios -> runner 57 + 5 datos 25-50). Todos bajo ceiling 100. dup:05d03dc1b409 anadido a BASELINE de check_dry.py.
+- W58 (#516): Wire HTTP delivery to LanzaderaContainer use cases.
+- W59 (#518): list_users paginado con limit/offset.
+- W57 (#513): DRY baseline ratchet. Admin.py removed.
+- W56 (#514): PG imports cleanup.
+- W55 (#509/#512): LanzaderaContainer DI.
+- W54 (#508): Application layer. Nine use cases.
+</pre>
+
+<hr>
+<p style="color:#64748b;font-size:.8rem">
+  W65 cerrado (#596) · container.py cleaved: 197→84 sitios + 5 módulos nuevos · quality PASS · 656 tests · 6 módulos bajo ceiling 100 · quality report PASS · 2026-09-10 · W65: cleave container.py (#596)
+</p>
+</body>
+</html>

@@ -207,6 +207,15 @@ jobs:
           # NOTE: ruff format on scripts/check_mutation_sites.py runs as a separate
           # step below (post-install) so that ruff is available. Placing it here (pre-
           # pip install) would fail because ruff is not installed yet.
+          # W65 (#596): same stale cone bug for scripts/check_dry.py — also not in the
+          # PR diff and excluded by sparse-checkout; add the same belt-and-suspenders
+          # restore so ruff format --check finds the correct (merge-commit) version.
+          if [ ! -f scripts/check_dry.py ] && git show HEAD:scripts/check_dry.py >/dev/null 2>&1; then
+            mkdir -p scripts
+            blob_oid=$(git show HEAD:scripts/check_dry.py | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,scripts/check_dry.py
+            git checkout-index --force --all scripts/check_dry.py
+          fi
           if [ -f app/pyproject.toml ]; then
             python -m pip install --editable "app[dev]"
           elif [ -f pyproject.fragment.toml ]; then

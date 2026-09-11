@@ -222,4 +222,4 @@ exclude_lines = [
 
 [tool.hatch.build.targets.wheel]
 # Tests and fixtures never ship to production.
-only-include = ["src"]
+only-include = ["src"]# W65 (#596): no-op — ensures CI materialises this file
