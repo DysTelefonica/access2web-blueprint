@@ -179,6 +179,10 @@ BASELINE: dict[str, BaselineEntry] = {
     # port-adapter import block (5 statements). Structural coincidence
     # from the adapter wiring pattern; not a smell.
     "dup:33cdc5a80fa3": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
+    # F02 (#223): expediente_estado.py and user.py share the same
+    # StrEnum class docstring + members pattern (10 statements). Structural
+    # coincidence — every domain enum follows this exact shape. Not a smell.
+    "dup:6c7dc25f0c43": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
 }
 
 # MECHANISM# MECHANISM
