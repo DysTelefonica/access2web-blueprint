@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado Planificación — MVP Lanzadera Seeds · 2026-09-16</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { border-bottom: 3px solid #2563eb; padding-bottom: .5rem; }
+  h2 { margin-top: 2rem; border-bottom: 1px solid #ccc; padding-bottom: .25rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+  th, td { border: 1px solid #ddd; padding: .5rem .75rem; text-align: left; vertical-align: top; }
+  th { background: #f3f4f6; }
+  .cerrado { background: #dcfce7; color: #166534; }
+  .abierto { background: #fef9c3; color: #854d0e; }
+  .pendiente { background: #f1f5f9; color: #475569; }
+  code { background: #e5e7eb; padding: .1rem .3rem; border-radius: 3px; }
+  pre { background: #f1f5f9; padding: 1rem; overflow-x: auto; font-size: .8rem; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .dot-cerrado { background: #16a34a; }
+  .dot-abierto { background: #ca8a04; }
+  .dot-pendiente { background: #94a3b8; }
+  .legend { display: flex; gap: 1.5rem; margin: 1rem 0; font-size: .85rem; }
+  .legend span { display: flex; align-items: center; gap: .4rem; }
+</style>
+</head>
+<body>
+
+<h1>Estado Planificación — MVP Lanzadera Seeds</h1>
+<p><strong>Última actualización:</strong> 2026-09-16 · <strong>Ciclo TDD:</strong> DA-7b fixtures → 0003-0007 seeds → contract tests</p>
+
+<div class="legend">
+  <span><span class="dot dot-cerrado"></span> Cerrado (mergeado en main)</span>
+  <span><span class="dot dot-abierto"></span> En curso / abierto</span>
+  <span><span class="dot dot-pendiente"></span> Pendiente</span>
+</div>
+
+<h2>Ciclo TDD — PRs</h2>
+<table>
+  <thead>
+    <tr>
+      <th>PR</th>
+      <th>Issue</th>
+      <th>Descripción</th>
+      <th>Diff</th>
+      <th>Tests</th>
+      <th>Ruff</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="cerrado">
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/626">#626</a></td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/617">#617</a></td>
+      <td>Fixtures sintéticas desde walkthrough (DA-7b): 20 apps, 156 users, 160 profiles, 622 assignments, 200 audit events. Generador determinista seed=42.</td>
+      <td>11.432 l. <code>size:exc</code></td>
+      <td>—</td>
+      <td>✅</td>
+      <td>✅ merged</td>
+    </tr>
+    <tr class="cerrado">
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/630">#630</a></td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/621">#621</a></td>
+      <td>Migraciones 0003–0007: seed_apps, seed_profiles, seed_users (AES-256-GCM dni_encrypted), seed_assignments, seed_audit. Test de integración <code>test_seed_migrations.py</code> (APAP_INTEGRATION_ENABLED=1).</td>
+      <td>556 l. <code>size:exc</code> (test file 392 l.)</td>
+      <td>APAP_INTEGRATION_ENABLED=1 → 14 tests pass</td>
+      <td>✅</td>
+      <td>✅ merged</td>
+    </tr>
+    <tr class="cerrado">
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/pull/632">#632</a></td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/631">#631</a></td>
+      <td>Contract tests para los 5 módulos: apps (6 tests), profiles (7), users (7), assignments (6), audit (6). Total: 32 tests, todos passing.</td>
+      <td>335 l.</td>
+      <td>32/32 ✅</td>
+      <td>✅</td>
+      <td>✅ merged</td>
+    </tr>
+    <tr class="cerrado">
+      <td>stack: #627+#628+#629</td>
+      <td><a href="https://github.com/DysTelefonica/access2web-blueprint/issues/618">#618</a>, <a href="https://github.com/DysTelefonica/access2web-blueprint/issues/619">#619</a>, <a href="https://github.com/DysTelefonica/access2web-blueprint/issues/620">#620</a></td>
+      <td>Seed apps, seed_profiles+legacy_role_map, seed_users+seed_assignments. Contenido integrado en #630 (superseded by merge).</td>
+      <td>—</td>
+      <td>—</td>
+      <td>✅</td>
+      <td>✅ superseded (#630)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Evidencia TDD</h2>
+<table>
+  <thead>
+    <tr><th>PR</th><th>RED</th><th>GREEN</th><th>Notas</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>#630</td>
+      <td><code>pytest tests/lanzadera/migrations/test_seed_migrations.py</code> → 0 collected (migraciones no existían)</td>
+      <td>Migraciones escritas, mismas 14 assertions pasan</td>
+      <td>Tests de integración gated APAP_INTEGRATION_ENABLED=1</td>
+    </tr>
+    <tr>
+      <td>#632</td>
+      <td>Directorios <code>apps/</code>, <code>profiles/</code>, <code>users/</code>, <code>assignments/</code>, <code>audit/</code> → 0 collected</td>
+      <td>5 archivos <code>test_contract.py</code> escritos, 32/32 passing</td>
+      <td>Unit tests sin DB — leen fixture JSON directamente</td>
+    </tr>
+    <tr>
+      <td>#626</td>
+      <td>Fixtures no existían</td>
+      <td>Generator script + JSON outputs generados</td>
+      <td>Fixtures read-only, no hay refactor esperado</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Gaps abiertos — Lanzadera MVP</h2>
+<table>
+  <thead>
+    <tr><th>Gap</th><th>Descripción</th><th>Impacto</th><th>Próximo paso</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>G-2</td>
+      <td>Set canónico de capabilities por <code>profile_code</code>. MVP: <code>capabilities={}</code> provisional. <code>profiles/spec.md §Standard profile</code> ABIERTO.</td>
+      <td>Baja — MVP funciona con profile sin capabilities; UI de capacidades se habilita cuando se cierre G-2</td>
+      <td>Producto define capabilities mínimas por <code>ADMIN</code>, <code>CALIDAD</code>, etc.; se actualiza <code>0004_seed_profiles</code> en release posterior</td>
+    </tr>
+    <tr>
+      <td>G-4</td>
+      <td>Política de auditoría para intentos fallidos de crear admin global (severidad, notificación SOC). <code>auth-bootstrap/spec.md</code> ABIERTO.</td>
+      <td>Baja — MVP registra <code>WARN</code> en audit log; SOC notificado cuando se defina canal</td>
+      <td>Ops define canal de seguridad; se actualiza adapter de notificación</td>
+    </tr>
+    <tr>
+      <td>G-5</td>
+      <td>Política del canal de notificación al usuario (SMTP corporativo real). MVP usa cola por tabla (<code>mail_outbox</code>, DA-10).</td>
+      <td>Baja — adapter v1 funciona; swap por SMTP sin tocar dominio</td>
+      <td>IT decide SMTP; se sustituye <code>NotificationDeliveryPort</code> adapter</td>
+    </tr>
+    <tr>
+      <td>G-7</td>
+      <td>Peso de <code>SIN_ACCESO</code> en navegación del menú global. <code>assignments/spec.md</code> ABIERTO.</td>
+      <td>Baja — menú filtra apps según <code>effective_permissions</code>; <code>SIN_ACCESO</code> comportamiento exacto pendiente de UI</td>
+      <td>UX decide: app deshabilitada vs oculta</td>
+    </tr>
+    <tr>
+      <td>G-8</td>
+      <td>Retención por cumplimiento normativo (P10). MVP: 90 días hot + 1 año total (D29 provisional).</td>
+      <td>Baja — <code>AuditRetentionPort</code> declarado; política=swap sin tocar dominio</td>
+      <td>Legal/cumplimiento define retención definitiva</td>
+    </tr>
+    <tr>
+      <td>G-6</td>
+      <td>Política de expiración de contraseña configurable (D41). MVP: <code>status='password_reset_required'</code> sin caducidad.</td>
+      <td>Baja — reset flow cubre recuperación</td>
+      <td>Release posterior cuando se defina política de cumplimiento</td>
+    </tr>
+    <tr>
+      <td>#625</td>
+      <td>El <code>.accdb</code> de producción tiene contraseña; <code>pyodbc</code> necesita <code>PWD=...</code>. Post-UAT gap.</td>
+      <td>Baja — MVP no toca <code>.accdb</code> real; gap para change futuro</td>
+      <td>Post-UAT: estrategia APAP (<code>pyodbc</code> + snapshot + drift detection)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Próximos pasos</h2>
+<ol>
+  <li><strong>UAT</strong> (R-12, H13): runbook de UAT con gobernanza admin-global-only (D48). Diferido a Fase 4.</li>
+  <li><strong>Cerrar G-2</strong>: producto define capabilities mínimas por <code>profile_code</code>; se actualiza migration + tests.</li>
+  <li><strong>Decidir G-4/G-5</strong>: ops + IT definen canal de seguridad y SMTP.</li>
+  <li><strong>Post-UAT</strong>: migrate real <code>.accdb</code> con estrategia APAP (#625).</li>
+</ol>
+
+<h2>CHANGELOG [Unreleased — Lanzadera MVP Seeds]</h2>
+<pre>
+### Added
+- #630: Migraciones Alembic 0003_seed_apps, 0004_seed_profiles,
+  0005_seed_users (AES-256-GCM), 0006_seed_assignments, 0007_seed_audit.
+  Test de integración gated APAP_INTEGRATION_ENABLED=1.
+- #632: Contract tests 5 módulos — 32 tests, 335 líneas, 100% passing.
+  apps, profiles, users, assignments, audit.
+- #626: Fixtures sintéticas desde walkthrough (DA-7b). seed=42.
+  20 apps, 156 users, 160 profiles, 622 assignments, 200 audit events.
+
+### Changed
+- #630: legacy_role_map.py extendido con FLAG_TO_CODE, LEGACY_CODES,
+  resolve_profile_codes() para el seam de migración.
+- #630: 0002_seed_apps copiada de feat/618 con revision ID corregido
+  (evita conflicto con 0002_expedientes_schema ya existente en main).
+</pre>
+
+<hr>
+<p style="color:#64748b;font-size:.8rem">
+  Lanzadera MVP Seeds ✅ · Ciclo TDD DA-7b completo · 2026-09-16
+</p>
+</body>
+</html>
