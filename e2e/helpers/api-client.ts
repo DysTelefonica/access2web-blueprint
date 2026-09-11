@@ -147,6 +147,7 @@ export async function createUser(
   payload: {
     email: string;
     name: string;
+        national_id: string;
     password: string;
     active?: boolean;
   }
