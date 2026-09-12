@@ -9,7 +9,7 @@ a port through anything other than the container.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from app.src.modules.expedientes.di.config import (
     AppEnv,
@@ -17,16 +17,13 @@ from app.src.modules.expedientes.di.config import (
     ExpedientesConfig,
     ProductionFakeRefused,
 )
-
-if TYPE_CHECKING:
-    from app.src.modules.expedientes.ports.audit_log import AuditLogPort
-    from app.src.modules.expedientes.ports.catalog_repository import CatalogRepositoryPort
-    from app.src.modules.expedientes.ports.document_storage import DocumentStoragePort
-    from app.src.modules.expedientes.ports.expediente_repository import ExpedienteRepositoryPort
-    from app.src.modules.expedientes.ports.hito_repository import HitoRepositoryPort
-    from app.src.modules.expedientes.ports.notification_delivery import NotificationDeliveryPort
-    from app.src.modules.expedientes.ports.readiness import ReadinessPort
-
+from app.src.modules.expedientes.ports.audit_log import AuditLogPort
+from app.src.modules.expedientes.ports.catalog_repository import CatalogRepositoryPort
+from app.src.modules.expedientes.ports.document_storage import DocumentStoragePort
+from app.src.modules.expedientes.ports.expediente_repository import ExpedienteRepositoryPort
+from app.src.modules.expedientes.ports.hito_repository import HitoRepositoryPort
+from app.src.modules.expedientes.ports.notification_delivery import NotificationDeliveryPort
+from app.src.modules.expedientes.ports.readiness import ReadinessPort
 
 _FAKE_TYPE_MARKERS = (
     "Fake",  # tests/expedientes/adapters/_fakes.py
