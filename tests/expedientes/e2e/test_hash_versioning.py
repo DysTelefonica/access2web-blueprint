@@ -13,13 +13,11 @@ import pytest
 
 from app.src.modules.expedientes.e2e.hash_versioning import (
     FNV1A32,
-    HashAlgorithm,
     HashRegistry,
     HashVersioned,
     canonicalize,
     compute_hash,
 )
-
 
 # ---------------------------------------------------------------------------
 # Canonicalización
