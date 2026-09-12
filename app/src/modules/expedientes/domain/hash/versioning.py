@@ -6,7 +6,15 @@ implementa la infraestructura neutral que sirve para CUALQUIER
 política de hash (FNV-1a u otra). La elección del algoritmo concreto
 es decisión humana (issue #659 — FNV-1a golden o nuevo algoritmo).
 
-DA-1: pure domain — no framework imports.
+Ubicación: `app/src/modules/expedientes/domain/hash/` porque la lógica
+de canonicalización y hash es **dominio puro** (sin framework, sin
+acoplamiento a infraestructura). DA-1 estricto.
+
+Histórico: este módulo se movió de `app/src/modules/expedientes/e2e/`
+al directorio `domain/hash/` tras el primer round del CI: `e2e` no
+es una capa reconocida por `scripts/check_layers.py` (DA-1 layers:
+domain, ports, application, adapters, shared, delivery, di, migration).
+Moverlo a `domain/` cumple con el gate sin añadir capas nuevas.
 """
 
 from __future__ import annotations

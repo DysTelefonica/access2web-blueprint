@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.src.modules.expedientes.e2e.hash_versioning import (
+from app.src.modules.expedientes.domain.hash.versioning import (
     FNV1A32,
     HashRegistry,
     HashVersioned,
@@ -166,7 +166,7 @@ def test_default_registry_includes_fnv1a_32() -> None:
     default registry contains the legacy-compatible one until that
     decision lands.
     """
-    from app.src.modules.expedientes.e2e.hash_versioning import default_registry
+    from app.src.modules.expedientes.domain.hash.versioning import default_registry
 
     assert "fnv1a-32" in default_registry.names()
 
