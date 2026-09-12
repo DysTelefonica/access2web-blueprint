@@ -183,6 +183,16 @@ BASELINE: dict[str, BaselineEntry] = {
     # StrEnum class docstring + members pattern (10 statements). Structural
     # coincidence — every domain enum follows this exact shape. Not a smell.
     "dup:6c7dc25f0c43": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # F01 (#222): expediente/ports/audit_log.py and lanzadera/domain/ports/__init__.py
+    # share the same Protocol/dataclass/datetime/UUID prelude (5 statements).
+    # Structural coincidence — every port module that defines a Protocol + dataclass
+    # pair with these imports lands on this 5-statement block. Same class as the
+    # W40/W61/W64 dataclass-field shape entries above. Not a smell.
+    # `5834c710a42f` is the post-ruff-format variant of the same block (single-line
+    # list comprehension); `86de5bd4a39e` is the pre-format variant. Both register
+    # the same structural coincidence.
+    "dup:86de5bd4a39e": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:5834c710a42f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
 }
 
 # MECHANISM# MECHANISM
