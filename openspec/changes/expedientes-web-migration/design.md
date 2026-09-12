@@ -58,7 +58,7 @@ Strict TDD: unitarios de invariantes/canonicalización; integración con Postgre
 
 | Riesgo/gap | Control o decisión necesaria |
 |---|---|
-| 49 tablas y campos no revalidados | Diccionario fuente, mapping campo-a-campo, ownership, transformaciones y claves; no diseñar columnas finales antes. |
+| 49 tablas y campos no revalidados | Diccionario fuente, mapping campo-a-campo, ownership, transformaciones y claves; no diseñar columnas finales antes. Estado ejecutivo y preguntas abiertas en [`docs/03-aplicaciones/expedientes/migration/tablero-d40-d44-ownership-volumen.md`](../../../docs/03-aplicaciones/expedientes/migration/tablero-d40-d44-ownership-volumen.md). Las preguntas D40–D44 (ownership funcional, volumen real, patrón de uso, transformaciones pendientes) solo el runtime puede responderlas; el cierre requiere re-ejecutar `dysflow count_rows` y `map_form_behavior` contra el backend autoritativo (`C:\00repos\datos\Expedientes_datos.accdb`). |
 | Pérdida o duplicado | Taxonomía de rechazos, manifest/watermarks, plan y reporte de reconciliación, runbooks de ensayo/cutover/rollback. |
 | Contratos incompletos | Decidir dígito CPV, límite de anexos, atomicidad/ciclo batch, continuidad FNV, ownership/errores AGEDYS, REST E2E, retenciones/proveedor documental. |
 | Aceptación insuficiente | Matriz UAT capability→perfil→caso→evidencia y criterio de go/no-go aprobados. |
