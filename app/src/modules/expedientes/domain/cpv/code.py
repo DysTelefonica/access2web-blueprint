@@ -27,6 +27,36 @@ class CPVCodeValidationError(ValueError):
     """
 
 
+def _split_digits_and_check(raw: str) -> tuple[str, str | None]:
+    """Split ``raw`` into the 8-digit body and an optional check digit.
+
+    Returns ``(body, check_digit)``. Raises :class:`CPVCodeValidationError`
+    on malformed input.
+    """
+    body, sep, tail = raw.partition("-")
+    if not sep:
+        return body, None
+    if tail == "":
+        return body, None
+    return body, tail
+
+
+def _validate_body(body: str) -> None:
+    if not body.isdigit() or len(body) != 8:
+        raise CPVCodeValidationError(
+            f"CPV code must have exactly 8 digits, got {body!r}"
+        )
+
+
+def _validate_check_digit(check_digit: str | None) -> None:
+    if check_digit is None:
+        return
+    if not check_digit.isdigit() or len(check_digit) != 1:
+        raise CPVCodeValidationError(
+            f"CPV check digit must be exactly 1 numeric digit, got {check_digit!r}"
+        )
+
+
 @dataclass(frozen=True)
 class CPVCode:
     """A syntactically valid CPV code.
@@ -50,32 +80,11 @@ class CPVCode:
     check_digit: str | None = None
 
     def __post_init__(self) -> None:
-        raw = self.raw.strip()
+        body, check_digit = _split_digits_and_check(self.raw.strip())
+        _validate_body(body)
+        _validate_check_digit(check_digit)
 
-        if "-" in raw:
-            head, sep, tail = raw.partition("-")
-        else:
-            head, sep, tail = raw, "", ""
-
-        if sep and tail == "":
-            check_digit: str | None = None
-        elif sep:
-            check_digit = tail
-        else:
-            check_digit = None
-
-        if not head.isdigit() or len(head) != 8:
-            raise CPVCodeValidationError(f"CPV code must have exactly 8 digits, got {head!r}")
-
-        if check_digit is not None and not check_digit.isdigit():
-            raise CPVCodeValidationError(f"CPV check digit must be numeric, got {check_digit!r}")
-
-        if check_digit is not None and len(check_digit) != 1:
-            raise CPVCodeValidationError(
-                f"CPV check digit must be exactly 1 digit, got {check_digit!r}"
-            )
-
-        object.__setattr__(self, "digits", head)
+        object.__setattr__(self, "digits", body)
         object.__setattr__(self, "check_digit", check_digit)
         object.__setattr__(self, "raw", self.__str__())
 
