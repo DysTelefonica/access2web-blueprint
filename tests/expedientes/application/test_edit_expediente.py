@@ -47,7 +47,6 @@ from app.src.modules.expedientes.ports.expediente_repository import (
 )
 from app.src.modules.expedientes.ports.hito_repository import HitoRepositoryPort
 
-
 # ---------------------------------------------------------------------------
 # Doubles — minimal repos for the test
 # ---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ class _FakeExpedienteRepository(ExpedienteRepositoryPort):
         by the time we reach this method, the write is unconditional.
         """
         self.calls.append("update")
-        self.by_id[getattr(aggregate, "id")] = aggregate
+        self.by_id[aggregate.id] = aggregate
         return aggregate
 
     async def delete(self, expediente_id: Any) -> None:  # type: ignore[override]
