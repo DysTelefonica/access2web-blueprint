@@ -14,29 +14,29 @@ from tests.expedientes.adapters._fakes import (
     FakeReadiness,
 )
 
-
 # ---------------------------------------------------------------------------
 # Protocol structural checks
 # ---------------------------------------------------------------------------
+
 
 def test_all_fakes_satisfy_protocols() -> None:
     """Every fake provides the exact method set declared by its Protocol."""
     ports: list[tuple[str, object]] = [
         ("ExpedienteRepositoryPort", FakeExpedienteRepository()),
-        ("HitoRepositoryPort",       FakeHitoRepository()),
-        ("CatalogRepositoryPort",    FakeCatalogRepository()),
-        ("AuditLogPort",            FakeAuditLog()),
-        ("ReadinessPort",           FakeReadiness()),
-        ("DocumentStoragePort",     FakeDocumentStorage()),
+        ("HitoRepositoryPort", FakeHitoRepository()),
+        ("CatalogRepositoryPort", FakeCatalogRepository()),
+        ("AuditLogPort", FakeAuditLog()),
+        ("ReadinessPort", FakeReadiness()),
+        ("DocumentStoragePort", FakeDocumentStorage()),
         ("NotificationDeliveryPort", FakeNotificationDelivery()),
     ]
     methods: dict[str, list[str]] = {
         "ExpedienteRepositoryPort": ["get_by_id", "create", "update", "delete", "list_by_state"],
-        "HitoRepositoryPort":       ["get_by_expediente", "upsert", "delete"],
-        "CatalogRepositoryPort":    ["list_all", "get_by_id", "search"],
-        "AuditLogPort":            ["append", "list_for_actor"],
-        "ReadinessPort":           ["check"],
-        "DocumentStoragePort":     ["prepare_upload", "confirm_upload", "download", "delete"],
+        "HitoRepositoryPort": ["get_by_expediente", "upsert", "delete"],
+        "CatalogRepositoryPort": ["list_all", "get_by_id", "search"],
+        "AuditLogPort": ["append", "list_for_actor"],
+        "ReadinessPort": ["check"],
+        "DocumentStoragePort": ["prepare_upload", "confirm_upload", "download", "delete"],
         "NotificationDeliveryPort": ["send"],
     }
     for name, port in ports:
@@ -47,6 +47,7 @@ def test_all_fakes_satisfy_protocols() -> None:
 # ---------------------------------------------------------------------------
 # Aggregate behaviour
 # ---------------------------------------------------------------------------
+
 
 async def test_expediente_repository_round_trip() -> None:
     """create → get_by_id returns the same aggregate; calls track the operation."""

@@ -95,7 +95,11 @@ class FakeAuditLog:
 
     async def list_for_actor(self, actor_id: UUID, since: datetime) -> list[ExpedienteAuditEvent]:
         self.calls.append("list_for_actor")
-        return [e for e in self.events if e.actor_id == actor_id and (e.created_at or datetime.min) >= since]
+        return [
+            e
+            for e in self.events
+            if e.actor_id == actor_id and (e.created_at or datetime.min) >= since
+        ]
 
 
 @dataclass
@@ -105,6 +109,7 @@ class FakeReadiness:
     async def check(self) -> object:
         if self._result is None:
             from app.src.modules.expedientes.ports.readiness import ReadinessResult
+
             return ReadinessResult(ready=True, checks=[])
         return self._result
 
@@ -114,7 +119,13 @@ class FakeDocumentStorage:
     by_ref: dict[str, tuple[bytes, str, int]] = field(default_factory=dict)
     calls: list[str] = field(default_factory=list)
 
-    async def prepare_upload(self, exp_id: UUID, filename: str, content_type: str, size_bytes: int) -> str:
+    async def prepare_upload(
+        self,
+        exp_id: UUID,
+        filename: str,
+        content_type: str,
+        size_bytes: int,
+    ) -> str:
         self.calls.append("prepare_upload")
         ref = f"fake://{uuid4()}"
         self.by_ref[ref] = (b"", content_type, size_bytes)
@@ -124,6 +135,7 @@ class FakeDocumentStorage:
         self.calls.append("confirm_upload")
         _c, ct, sz = self.by_ref[ref]
         from app.src.modules.expedientes.ports.document_storage import StoredDocument
+
         return StoredDocument(storage_ref=ref, content_type=ct, size_bytes=sz)
 
     async def download(self, ref: str) -> bytes:
