@@ -82,9 +82,7 @@ class FakeCatalogRepository:
         self.calls.append("search")
         q = query.lower()
         return [
-            v
-            for v in self.entries.values()
-            if q in str(getattr(v, "descripcion", "")).lower()
+            v for v in self.entries.values() if q in str(getattr(v, "descripcion", "")).lower()
         ][:limit]
 
 
