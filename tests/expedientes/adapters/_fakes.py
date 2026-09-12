@@ -7,12 +7,11 @@ in Python). ``calls`` tracks only the method name for deterministic assertions.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-
-
-_UNCONFIGURED = object()
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
+
+_UNCONFIGURED = object()
 
 if TYPE_CHECKING:
     from app.src.modules.expedientes.ports.audit_log import ExpedienteAuditEvent
