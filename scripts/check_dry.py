@@ -193,6 +193,15 @@ BASELINE: dict[str, BaselineEntry] = {
     # the same structural coincidence.
     "dup:86de5bd4a39e": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:5834c710a42f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # F03 (#224): expediente/domain/cpv/structure.py and lanzadera/domain/legacy_role_map.py
+    # share the same StrEnum members block (5 consecutive StrEnum members).
+    # Structural coincidence — every module that declares a StrEnum with 5+
+    # members lands on this 5-statement block. Not a smell.
+    # `357571d4da4f` is the pre-ruff-format variant; `1585f49563b8` is the
+    # post-format variant. Both register the same structural coincidence
+    # (same class as the W40/W61/W64 dataclass-field shape entries).
+    "dup:357571d4da4f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:1585f49563b8": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
 }
 
 # MECHANISM# MECHANISM
