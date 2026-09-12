@@ -42,7 +42,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 from uuid import uuid4
 
 from app.src.modules.expedientes.application.edit_expediente.command import (
@@ -98,9 +98,12 @@ class ExpedienteEditService:
         """
         self._validate(command)
 
-        existing = await self._expediente_repo.get_by_id(command.expediente_id)
-        if existing is None:
+        loaded = await self._expediente_repo.get_by_id(command.expediente_id)
+        if loaded is None:
             raise ExpedienteEditValidationError(f"expediente {command.expediente_id!r} not found")
+        # The protocol returns ``object`` for portability; this use
+        # case knows the concrete type.
+        existing: Expediente = cast(Expediente, loaded)
 
         # Version check FIRST, before computing the diff. A stale
         # version is a conflict regardless of whether the supplied
