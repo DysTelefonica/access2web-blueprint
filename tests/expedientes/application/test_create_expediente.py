@@ -125,6 +125,9 @@ class _FakeAuditLog:
         self.calls.append("list_for_actor")
         return []
 
+    async def record_change(self, change: Any) -> None:  # type: ignore[override]
+        self.calls.append("record_change")
+
 
 class _FakeUoW:
     """Minimal UoW that records commit/rollback calls.
