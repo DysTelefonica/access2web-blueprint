@@ -41,7 +41,10 @@ from app.src.modules.expedientes.application.create_expediente.command import (
 from app.src.modules.expedientes.domain.expediente import Expediente
 from app.src.modules.expedientes.domain.expediente_estado import ExpedienteEstado
 from app.src.modules.expedientes.domain.hito import Hito
-from app.src.modules.expedientes.ports.audit_log import AuditLogPort
+from app.src.modules.expedientes.ports.audit_log import (
+    AuditLogPort,
+    ChangeRecord,
+)
 from app.src.modules.expedientes.ports.expediente_repository import (
     ExpedienteRepositoryPort,
 )
@@ -121,6 +124,13 @@ class ExpedienteAltaService:
                         result="ok",
                     )
                 )
+                await self._audit_log.record_change(
+                    self._change_record(
+                        expediente_id=expediente_id,
+                        actor_id=command.actor_id,
+                        created_at=created_at,
+                    )
+                )
         except ExpedienteAltaError:
             # Re-raise domain errors verbatim; only the UoW roll-back path
             # is the use case's responsibility.
@@ -180,4 +190,36 @@ class ExpedienteAltaService:
             capacidad="EXP-CAP-001",
             module="expedientes",
             result=result,
+        )
+
+    @staticmethod
+    def _change_record(
+        *,
+        expediente_id: UUID,
+        actor_id: UUID,
+        created_at: datetime,
+    ) -> ChangeRecord:
+        """Build the ``ChangeRecord`` for the alta.
+
+        CAP-001 §Camino feliz requires "último cambio" — one row in
+        ``TbCambios`` (historical log) plus one row in
+        ``TbUltimoCambio`` (marker). Both are produced by the same
+        ``record_change`` call when the adapter fans out to both
+        tables.
+
+        The change row tracks the whole aggregate, not a single
+        field, so ``nombre_campo``/``valor_inicial``/``valor_final``
+        are ``None``. Vertical C02 (edit) will set those for
+        per-field edits.
+        """
+        return ChangeRecord(
+            id=uuid4(),
+            nombre_tabla="expedientes",
+            id_expediente=expediente_id,
+            nombre_campo=None,
+            valor_inicial=None,
+            valor_final=None,
+            fecha_cambio=created_at,
+            id_usuario_cambio=actor_id,
+            accion="alta",
         )
