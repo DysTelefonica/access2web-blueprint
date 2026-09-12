@@ -9,7 +9,7 @@ a port through anything other than the container.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from app.src.modules.expedientes.di.config import (
     AppEnv,
@@ -93,13 +93,13 @@ class ExpedientesContainer:
 
         return cls(
             config=config,
-            expediente_repo=ports["expediente_repo"],
-            hito_repo=ports["hito_repo"],
-            catalog_repo=ports["catalog_repo"],
-            audit_log=ports["audit_log"],
-            readiness=ports["readiness"],
-            document_storage=ports["document_storage"],
-            notification_delivery=ports["notification_delivery"],
+            expediente_repo=cast(ExpedienteRepositoryPort, ports["expediente_repo"]),
+            hito_repo=cast(HitoRepositoryPort, ports["hito_repo"]),
+            catalog_repo=cast(CatalogRepositoryPort, ports["catalog_repo"]),
+            audit_log=cast(AuditLogPort, ports["audit_log"]),
+            readiness=cast(ReadinessPort, ports["readiness"]),
+            document_storage=cast(DocumentStoragePort, ports["document_storage"]),
+            notification_delivery=cast(NotificationDeliveryPort, ports["notification_delivery"]),
         )
 
 
