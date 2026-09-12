@@ -43,9 +43,7 @@ def _split_digits_and_check(raw: str) -> tuple[str, str | None]:
 
 def _validate_body(body: str) -> None:
     if not body.isdigit() or len(body) != 8:
-        raise CPVCodeValidationError(
-            f"CPV code must have exactly 8 digits, got {body!r}"
-        )
+        raise CPVCodeValidationError(f"CPV code must have exactly 8 digits, got {body!r}")
 
 
 def _validate_check_digit(check_digit: str | None) -> None:
