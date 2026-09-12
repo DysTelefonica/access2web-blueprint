@@ -7,6 +7,9 @@ in Python). ``calls`` tracks only the method name for deterministic assertions.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+
+
+_UNCONFIGURED = object()
 from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
@@ -106,9 +109,11 @@ class FakeAuditLog:
 
 @dataclass
 class FakeReadiness:
-    _result: object = field(default=None)
+    _result: object = field(default=_UNCONFIGURED)
 
     async def check(self) -> object:
+        if self._result is _UNCONFIGURED:
+            return None
         if self._result is None:
             from app.src.modules.expedientes.ports.readiness import ReadinessResult
 
