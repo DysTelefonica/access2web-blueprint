@@ -1,6 +1,7 @@
-"""Commands and outcomes for EXP-CAP-015..019 catalogs."""
+"""Commands and outcomes for EXP-CAP-015..024 catalogs."""
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 from uuid import UUID
 
@@ -24,6 +25,7 @@ class CatalogQuery:
     actor_id: UUID
     text: str | None
     limit: int = 20
+    fecha: date | None = None
 
 
 @dataclass(frozen=True)

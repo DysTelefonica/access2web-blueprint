@@ -27,6 +27,11 @@ CAPACIDAD_BY_TYPE: dict[str, str] = {
     "ejercitos": "EXP-CAP-017",
     "suministradores": "EXP-CAP-018",
     "lugares_ejecucion": "EXP-CAP-019",
+    "pecal": "EXP-CAP-020",
+    "racs": "EXP-CAP-021",
+    "grados": "EXP-CAP-022",
+    "organos": "EXP-CAP-023",
+    "oficinas_programa": "EXP-CAP-024",
 }
 
 
@@ -66,8 +71,14 @@ class CatalogsService:
     async def list(self, query: CatalogQuery) -> list[object]:
         self._check_actor(query.actor_id)
         try:
-            if query.text:
+            if query.text and query.fecha is not None:
+                rows = await self._catalog_repo.vigentes_search(
+                    query.text, query.fecha, limit=query.limit
+                )
+            elif query.text:
                 rows = await self._catalog_repo.search(query.text, limit=query.limit)
+            elif query.fecha is not None:
+                rows = await self._catalog_repo.list_vigentes_en(query.fecha)
             else:
                 rows = await self._catalog_repo.list_all()
         except Exception as exc:
