@@ -277,6 +277,15 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/register_suministrador/service.py": (
         BaselineEntry(sites=127, target=100, target_date="2027-02-13")
     ),
+    # Q01 (#231): CatalogsService is a thin layer over the storage
+    # port, but each per-catalog branch (comerciales, cpv, ejercitos,
+    # suministradores, lugares_ejecucion) inflates the surface with
+    # validation and audit code. Same class as the C02/C04/R03/R07
+    # baselines; splitting would duplicate the permission/error
+    # handling helpers.
+    "app/src/modules/expedientes/application/catalogs/service.py": (
+        BaselineEntry(sites=110, target=100, target_date="2027-02-13")
+    ),
     # W02 (#235): AutosaveRelatedService covers hitos, modificados and
     # anualidades inside one UoW. The three per-section validators and
     # the replay/version check are independent helpers but the
