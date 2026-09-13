@@ -210,7 +210,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # prelude. Not a smell. `1b19d75727ae` is the post-ruff-format
     # variant produced by the CI runner; the local pre-format variant
     # produces `bb7da246771c` (same shape).
-    "dup:1b19d75727ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:1b19d75727ae": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
+    "dup:bb7da246771c": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
+    # C03 (#228): application/delete_expediente/service.py and
+    # lanzadera/domain/profile.py share the same _change_record
+    # builder block (5 statements). C02 (#671) and C03 both have
+    # identical builders; the structural coincidence is the
+    # "build a ChangeRecord from the command" pattern.
+    "dup:a55d3e021093": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
 }
 
 # MECHANISM# MECHANISM
