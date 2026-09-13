@@ -220,11 +220,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # is structurally identical between delete_expediente/service.py
     # and transition_expediente/service.py. Same pattern as the
     # command prelude but at the service level.
-    "dup:01d7c6165877": BaselineEntry(occurrences=5, target=5, target_date="2027-02-13"),
+    "dup:01d7c6165877": BaselineEntry(occurrences=6, target=6, target_date="2027-02-13"),
     # R05 (#274): register_responsable / responsable service share the
     # post-format service prelude. Same structural coincidence class
     # as the existing service-prelude duplicates.
-    "dup:79d8c5976f0f": BaselineEntry(occurrences=3, target=3, target_date="2027-02-13"),
+    "dup:79d8c5976f0f": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # R07 (#276): register_suministrador service shares the
+    # post-format service prelude coincidence class.
+    "dup:bdeda8651e4e": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
     # R06 (#275): register_juridica service shares the post-format
     # service prelude coincidence class.
     "dup:948767b69655": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
@@ -249,7 +252,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # dataclass 5-line prelude. Same structural coincidence class
     # as 980edaf2dbd2 and 80e56a5fdac7 — every "child of
     # Expediente" aggregate follows this shape.
-    "dup:b2ad58dd0e2d": BaselineEntry(occurrences=5, target=5, target_date="2027-02-13"),
+    "dup:b2ad58dd0e2d": BaselineEntry(occurrences=6, target=6, target_date="2027-02-13"),
     "dup:c2ccba5c707a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # R03 (#272): anexos command/service share the
     # (frozen=True, Exception) prelude — post-ruff-format variant
@@ -265,7 +268,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # R05 (#274): register_responsable shares the dataclass prelude
     # with the existing aggregate precedents. Same structural
     # coincidence class as 980edaf2dbd2 / 80e56a5fdac7 / ab4b6562f155.
-    "dup:1221be65ecb4": BaselineEntry(occurrences=3, target=3, target_date="2027-02-13"),
+    "dup:1221be65ecb4": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # R07 (#276): juridica + suministrador domain entities share the
+    # dataclass prelude. Same structural coincidence class as
+    # 980edaf2dbd2 / 80e56a5fdac7 / 1221be65ecb4.
+    "dup:cc01bd4837a4": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
     # R06 (#275): register_juridica shares the dataclass prelude
     # with the existing aggregate precedents. Same structural
     # coincidence class as 980edaf2dbd2 / 80e56a5fdac7 / 1221be65ecb4.

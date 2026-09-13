@@ -269,6 +269,14 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/anexos/service.py": (
         BaselineEntry(sites=116, target=100, target_date="2027-02-13")
     ),
+    # R07 (#276): RegisterSuministradorService carries the tree
+    # invariant check, the parent-existence lookup and the
+    # write/audit/commit pipeline. Same class as the C02/C04/R03
+    # baselines; splitting would break the load/tree-check/commit
+    # sequence.
+    "app/src/modules/expedientes/application/register_suministrador/service.py": (
+        BaselineEntry(sites=127, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
