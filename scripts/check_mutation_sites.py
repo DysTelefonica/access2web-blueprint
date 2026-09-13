@@ -284,7 +284,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # baselines; splitting would duplicate the permission/error
     # handling helpers.
     "app/src/modules/expedientes/application/catalogs/service.py": (
-        BaselineEntry(sites=110, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=129, target=100, target_date="2027-02-13")
     ),
     # W02 (#235): AutosaveRelatedService covers hitos, modificados and
     # anualidades inside one UoW. The three per-section validators and
