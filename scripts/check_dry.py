@@ -207,9 +207,10 @@ BASELINE: dict[str, BaselineEntry] = {
     # block (5 statements: TYPE_CHECKING, Protocol, frozen dataclasses,
     # dataclass, field). Structural coincidence — every command module
     # that declares a Protocol-typed aggregate ends with this 5-line
-    # prelude. Not a smell. `bb7da246771c` is the post-ruff-format
-    # variant; the pre-format variant carries the same shape.
-    "dup:bb7da246771c": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # prelude. Not a smell. `1b19d75727ae` is the post-ruff-format
+    # variant produced by the CI runner; the local pre-format variant
+    # produces `bb7da246771c` (same shape).
+    "dup:1b19d75727ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
 }
 
 # MECHANISM# MECHANISM
