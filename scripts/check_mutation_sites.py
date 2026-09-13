@@ -277,6 +277,14 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/register_suministrador/service.py": (
         BaselineEntry(sites=127, target=100, target_date="2027-02-13")
     ),
+    # W02 (#235): AutosaveRelatedService covers hitos, modificados and
+    # anualidades inside one UoW. The three per-section validators and
+    # the replay/version check are independent helpers but the
+    # mutation count exceeds the ceiling because of the per-section
+    # construction lines. Same class as C02/C04/R03/R07.
+    "app/src/modules/expedientes/application/autosave_related/service.py": (
+        BaselineEntry(sites=166, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
