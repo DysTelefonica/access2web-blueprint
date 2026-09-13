@@ -151,7 +151,7 @@ Pasos del revisor antes de mergear:
 2. Compruebe que las conversaciones están resueltas.
 3. Si un check falla por una dependencia externa, abra un issue y corrija el
    bloqueo antes de integrar. No eluda la protección.
-4. Integre con `--squash` y conserve la rama remota.
+4. Integre con merge commit (no squash, práctica real del historial de `main`) y conserve la rama remota.
 
 Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mergear.
 

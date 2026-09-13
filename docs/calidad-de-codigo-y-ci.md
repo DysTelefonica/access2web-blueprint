@@ -140,14 +140,10 @@ checks protegidos.
 La protección se aplica a administradores y bloquea force-push y borrado de
 `main`.
 
-**Estado transicional (ver la PR que introdujo `required`):** hasta que un
-admin actualice la lista de checks requeridos de GitHub para pedir únicamente
-`ci / required`, una PR puede verse bloqueada por checks "esperados pero no
-reportados" con los nombres antiguos (`pip-audit`, `gitleaks`,
-`trivy-config`, `codeql` como workflows independientes) aunque `required` esté
-en verde — porque esos workflows ya no disparan por sí solos. El cutover debe
-hacerse solo después de confirmar que `required` está en verde en una
-ejecución real.
+El cutover a esta política ya se ejecutó (2026-09-13, PR #706): la lista de
+checks requeridos de GitHub para `main` pide únicamente `required`. Los seis
+nombres antiguos (`quality`, `review-budget`, `pip-audit`, `gitleaks`,
+`trivy-config`, `codeql`) ya no aparecen en `branches/main/protection`.
 
 Detalle operativo en [`AGENTS.md` §Hard rule del CI](../../AGENTS.md).
 
