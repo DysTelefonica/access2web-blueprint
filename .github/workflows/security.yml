@@ -5,13 +5,17 @@
 # digests pin byte-for-byte content. Resolved at adoption (2026-08-09) via the
 # Docker Hub registry API; re-resolve when bumping gitleaks or trivy.
 
+# Issue #702: made reusable (`workflow_call` only) so `ci.yml` can embed it as
+# a job (`uses: ./.github/workflows/security.yml`) and the new `required`
+# aggregator can `needs:` it — `needs:` cannot cross workflow files, but a job
+# invoked via `uses:` still reports an ordinary job result the caller can read.
+# `feat/lanzadera-mvp-tracker` (the other former `push:` trigger) is gone from
+# origin (verified via `git ls-remote --heads`), so it is dropped rather than
+# ported into `ci.yml`'s own trigger list.
 name: security
 
 on:
-  pull_request:
-  push:
-    branches: [main, feat/lanzadera-mvp-tracker]
-  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read

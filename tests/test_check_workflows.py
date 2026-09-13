@@ -181,6 +181,32 @@ jobs:
     assert "jobs.build" in stderr
 
 
+def test_timeout_minutes_exempts_reusable_workflow_call_jobs(tmp_path: Path) -> None:
+    """Issue #702: a `uses: ./...` job has no `timeout-minutes` in its schema.
+
+    GitHub rejects `timeout-minutes` on a job whose only content is a
+    reusable-workflow call, so this gate must not demand it either.
+    """
+    body = """\
+name: caller
+on: [pull_request]
+permissions: { contents: read }
+concurrency: { group: caller, cancel-in-progress: false }
+jobs:
+  security:
+    uses: ./.github/workflows/security.yml
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-security-call
+      cancel-in-progress: false
+"""
+    p = _write(tmp_path, "caller.yml", body)
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 0, stderr
+    assert "timeout-minutes" not in stderr
+
+
 # --------------------------------------------------------------------------------------------
 # Check 3: no service container fixes a host port
 # --------------------------------------------------------------------------------------------
@@ -959,3 +985,58 @@ jobs:
     assert rc == 1
     assert "public-pr-runner" in stderr
     assert "matrix.runner" in stderr
+
+
+def test_public_pr_runner_exempts_reusable_workflow_call_jobs(tmp_path: Path) -> None:
+    """Issue #702: a `uses: ./...` job has no `runs-on` in its schema.
+
+    The caller job that embeds `security.yml` / `codeql.yml` into a
+    PR-reachable `ci.yml` must not be flagged for lacking a hosted runner —
+    it has nowhere to declare one.
+    """
+    body = """\
+name: caller
+on: [pull_request]
+permissions: { contents: read }
+concurrency: { group: caller, cancel-in-progress: false }
+jobs:
+  security:
+    uses: ./.github/workflows/security.yml
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-security-call
+      cancel-in-progress: false
+"""
+    p = _write(tmp_path, "caller.yml", body)
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 0, stderr
+    assert "public-pr-runner" not in stderr
+
+
+def test_public_pr_runner_treats_workflow_call_as_pr_reachable(tmp_path: Path) -> None:
+    """Issue #702: a reusable workflow cannot see whether its caller is PR-reachable.
+
+    `security.yml` / `codeql.yml` now declare `on: workflow_call` only —
+    they no longer have their own `pull_request` trigger — but they are
+    still callable from a PR-reachable workflow, so a self-hosted job
+    inside one of them must still be rejected.
+    """
+    body = """\
+name: reusable
+on:
+  workflow_call:
+permissions: { contents: read }
+concurrency: { group: reusable, cancel-in-progress: false }
+jobs:
+  scan:
+    runs-on: [self-hosted, Linux, ARM64]
+    timeout-minutes: 10
+    steps:
+      - run: echo unsafe
+"""
+    p = _write(tmp_path, "reusable.yml", body)
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 1
+    assert "public-pr-runner" in stderr
+    assert "jobs.scan.runs-on" in stderr
