@@ -80,9 +80,7 @@ class _FakeExpedienteRepository(ExpedienteRepositoryPort):
     async def has_children(self, expediente_id: Any) -> bool:
         return False
 
-    async def list_by_state(
-        self, estado: str, limit: int, offset: int
-    ) -> tuple[list[object], int]:
+    async def list_by_state(self, estado: str, limit: int, offset: int) -> tuple[list[object], int]:
         return [], 0
 
 
@@ -107,9 +105,7 @@ class _FakeAuditLog(AuditLogPort):
         self.calls.append("append")
         self.events.append(event)
 
-    async def list_for_actor(
-        self, actor_id: Any, since: datetime
-    ) -> list[ExpedienteAuditEvent]:
+    async def list_for_actor(self, actor_id: Any, since: datetime) -> list[ExpedienteAuditEvent]:
         return []
 
     async def record_change(self, change: ChangeRecord) -> None:
@@ -196,9 +192,7 @@ def _make_command(
 ) -> ExpedienteTransitionCommand:
     return ExpedienteTransitionCommand(
         expediente_id=aggregate.id,
-        expected_version=expected_version
-        if expected_version is not None
-        else aggregate.version,
+        expected_version=expected_version if expected_version is not None else aggregate.version,
         new_tipo=new_tipo,
         new_id_expediente_padre=new_padre,
         motivo=motivo,
@@ -372,9 +366,7 @@ async def test_rejects_missing_actor() -> None:
         await _run_with_bad_actor(service, aggregate)
 
 
-async def _run_with_bad_actor(
-    service: ExpedienteTransitionService, aggregate: Expediente
-) -> None:
+async def _run_with_bad_actor(service: ExpedienteTransitionService, aggregate: Expediente) -> None:
     cmd = ExpedienteTransitionCommand(
         expediente_id=aggregate.id,
         expected_version=aggregate.version,
