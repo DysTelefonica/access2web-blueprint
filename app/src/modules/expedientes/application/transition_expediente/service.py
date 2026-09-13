@@ -43,15 +43,9 @@ from app.src.modules.expedientes.ports.hito_repository import HitoRepositoryPort
 
 # Transition matrix — the source of truth for valid type transitions.
 ALLOWED_TRANSITIONS: dict[ExpedienteTipo, frozenset[ExpedienteTipo]] = {
-    ExpedienteTipo.AM: frozenset(
-        {ExpedienteTipo.AM, ExpedienteTipo.LOTE, ExpedienteTipo.BASED}
-    ),
-    ExpedienteTipo.LOTE: frozenset(
-        {ExpedienteTipo.AM, ExpedienteTipo.LOTE, ExpedienteTipo.BASED}
-    ),
-    ExpedienteTipo.BASED: frozenset(
-        {ExpedienteTipo.AM, ExpedienteTipo.LOTE, ExpedienteTipo.BASED}
-    ),
+    ExpedienteTipo.AM: frozenset({ExpedienteTipo.AM, ExpedienteTipo.LOTE, ExpedienteTipo.BASED}),
+    ExpedienteTipo.LOTE: frozenset({ExpedienteTipo.AM, ExpedienteTipo.LOTE, ExpedienteTipo.BASED}),
+    ExpedienteTipo.BASED: frozenset({ExpedienteTipo.AM, ExpedienteTipo.LOTE, ExpedienteTipo.BASED}),
 }
 
 
@@ -71,9 +65,7 @@ class ExpedienteTransitionService:
         self._audit_log = audit_log
         self._uow_factory = uow_factory
 
-    async def execute(
-        self, command: ExpedienteTransitionCommand
-    ) -> ExpedienteTransitionResult:
+    async def execute(self, command: ExpedienteTransitionCommand) -> ExpedienteTransitionResult:
         """Run the transition end-to-end.
 
         Reads as a 5-step pipeline: validate → load+version → resolve
@@ -103,17 +95,14 @@ class ExpedienteTransitionService:
     async def _load_aggregate(self, expediente_id: Any) -> Expediente:
         loaded = await self._expediente_repo.get_by_id(expediente_id)
         if loaded is None:
-            raise ExpedienteTransitionValidationError(
-                f"expediente {expediente_id!r} not found"
-            )
+            raise ExpedienteTransitionValidationError(f"expediente {expediente_id!r} not found")
         return cast(Expediente, loaded)
 
     @staticmethod
     def _check_version(existing: Expediente, expected_version: int) -> None:
         if existing.version != expected_version:
             raise ExpedienteTransitionConflictError(
-                f"version stale: stored={existing.version}, "
-                f"incoming={expected_version}"
+                f"version stale: stored={existing.version}, incoming={expected_version}"
             )
 
     @staticmethod
@@ -124,11 +113,7 @@ class ExpedienteTransitionService:
 
         If the command did not supply a value, keep the existing one.
         """
-        new_tipo = (
-            command.new_tipo
-            if command.new_tipo is not None
-            else existing.tipo
-        )
+        new_tipo = command.new_tipo if command.new_tipo is not None else existing.tipo
         new_padre = (
             command.new_id_expediente_padre
             if command.new_id_expediente_padre is not None
@@ -137,13 +122,8 @@ class ExpedienteTransitionService:
         return new_tipo, new_padre
 
     @staticmethod
-    def _is_noop(
-        existing: Expediente, new_tipo: Any, new_padre: Any
-    ) -> bool:
-        return (
-            new_tipo == existing.tipo
-            and new_padre == existing.id_expediente_padre
-        )
+    def _is_noop(existing: Expediente, new_tipo: Any, new_padre: Any) -> bool:
+        return new_tipo == existing.tipo and new_padre == existing.id_expediente_padre
 
     @staticmethod
     def _noop_result(
@@ -165,9 +145,7 @@ class ExpedienteTransitionService:
             )
 
     @staticmethod
-    def _build_edited_aggregate(
-        existing: Expediente, new_tipo: Any, new_padre: Any
-    ) -> Expediente:
+    def _build_edited_aggregate(existing: Expediente, new_tipo: Any, new_padre: Any) -> Expediente:
         new_version = existing.version + 1
         try:
             return Expediente(
