@@ -85,9 +85,7 @@ class AutosaveRelatedService:
         if recorded is None:
             return None
         if recorded.request_signature != command.signature():
-            raise AutosaveRelatedConflictError(
-                "idempotency key reused with different payload"
-            )
+            raise AutosaveRelatedConflictError("idempotency key reused with different payload")
         return cast(AutosaveRelatedResult, recorded.result)
 
     async def _load_expediente(self, expediente_id: Any) -> Expediente:
@@ -181,9 +179,7 @@ class AutosaveRelatedService:
             except ValueError as exc:
                 raise AutosaveRelatedValidationError(str(exc)) from exc
             if mod.id_expediente != command.expediente_id:
-                raise AutosaveRelatedValidationError(
-                    "modificado references a different expediente"
-                )
+                raise AutosaveRelatedValidationError("modificado references a different expediente")
 
     @staticmethod
     def _validate_anualidades(command: AutosaveRelatedCommand) -> None:
@@ -205,6 +201,4 @@ class AutosaveRelatedService:
             except ValueError as exc:
                 raise AutosaveRelatedValidationError(str(exc)) from exc
             if anu.id_expediente != command.expediente_id:
-                raise AutosaveRelatedValidationError(
-                    "anualidad references a different expediente"
-                )
+                raise AutosaveRelatedValidationError("anualidad references a different expediente")
