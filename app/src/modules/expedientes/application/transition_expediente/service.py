@@ -16,9 +16,10 @@ DA-1: the application layer does NOT touch SQLAlchemy directly.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Any, Callable, cast
-from uuid import UUID, uuid4
+from typing import Any, cast
+from uuid import uuid4
 
 from app.src.modules.expedientes.application.transition_expediente.command import (
     ExpedienteTransitionAuthorizationError,
@@ -39,7 +40,6 @@ from app.src.modules.expedientes.ports.expediente_repository import (
     ExpedienteRepositoryPort,
 )
 from app.src.modules.expedientes.ports.hito_repository import HitoRepositoryPort
-
 
 # Transition matrix — the source of truth for valid type transitions.
 ALLOWED_TRANSITIONS: dict[ExpedienteTipo, frozenset[ExpedienteTipo]] = {
