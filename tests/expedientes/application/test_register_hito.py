@@ -33,16 +33,16 @@ class _ExpedienteRepo:
 
 class _HitoRepo:
     def __init__(self) -> None:
-        self.by_id: dict[UUID, object] = {}
+        self.by_id: dict[UUID, Any] = {}
         self.fail = False
 
     async def get_by_id(self, hito_id: UUID) -> object | None:
         return self.by_id.get(hito_id)
 
-    async def upsert(self, hito: object) -> object:
+    async def upsert(self, hito: Any) -> object:
         if self.fail:
             raise RuntimeError("database unavailable")
-        self.by_id[getattr(hito, "id")] = hito
+        self.by_id[hito.id] = hito
         return hito
 
 
@@ -114,9 +114,9 @@ async def test_registers_auditable_hito_atomically() -> None:
 
     stored = repo.by_id[command.hito_id]
     assert result.hito_id == command.hito_id
-    assert getattr(stored, "id_expediente") == expediente_id
-    assert getattr(stored, "descripcion") == "Formalización"
-    assert getattr(stored, "importe") == Decimal("1250.50")
+    assert stored.id_expediente == expediente_id
+    assert stored.descripcion == "Formalización"
+    assert stored.importe == Decimal("1250.50")
     assert len(audit.events) == len(audit.changes) == 1
     assert uow.commits == 1
 
