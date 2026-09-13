@@ -220,7 +220,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # is structurally identical between delete_expediente/service.py
     # and transition_expediente/service.py. Same pattern as the
     # command prelude but at the service level.
-    "dup:01d7c6165877": BaselineEntry(occurrences=6, target=6, target_date="2027-02-13"),
+    "dup:01d7c6165877": BaselineEntry(occurrences=7, target=7, target_date="2027-02-13"),
     # R05 (#274): register_responsable / responsable service share the
     # post-format service prelude. Same structural coincidence class
     # as the existing service-prelude duplicates.
@@ -252,7 +252,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # dataclass 5-line prelude. Same structural coincidence class
     # as 980edaf2dbd2 and 80e56a5fdac7 — every "child of
     # Expediente" aggregate follows this shape.
-    "dup:b2ad58dd0e2d": BaselineEntry(occurrences=6, target=6, target_date="2027-02-13"),
+    "dup:b2ad58dd0e2d": BaselineEntry(occurrences=7, target=7, target_date="2027-02-13"),
+    # W02 (#235): autosave_related service shares the post-format
+    # service prelude coincidence class.
+    "dup:bf7967be7149": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # W02 (#235): autosave_related command shares the dataclass
+    # prelude with transition_expediente command. Same structural
+    # coincidence class as the existing entries.
+    "dup:c865d8361321": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     "dup:c2ccba5c707a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # R03 (#272): anexos command/service share the
     # (frozen=True, Exception) prelude — post-ruff-format variant
