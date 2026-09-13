@@ -286,6 +286,13 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/catalogs/service.py": (
         BaselineEntry(sites=129, target=100, target_date="2027-02-13")
     ),
+    # E02 (#238): JsonCanonicalService renders the canonical E2E
+    # envelope; the surface is small but the helper is shared with
+    # future E03+ verticals, so ratcheting at 104 keeps the option
+    # open. Same class as the C02/C04/R03/R07/Q01 baselines.
+    "app/src/modules/expedientes/application/json_canonical/service.py": (
+        BaselineEntry(sites=104, target=100, target_date="2027-02-13")
+    ),
     # W02 (#235): AutosaveRelatedService covers hitos, modificados and
     # anualidades inside one UoW. The three per-section validators and
     # the replay/version check are independent helpers but the
