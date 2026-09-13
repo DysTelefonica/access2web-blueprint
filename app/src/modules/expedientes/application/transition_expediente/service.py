@@ -111,7 +111,7 @@ class ExpedienteTransitionService:
             )
 
         # Transition matrix check.
-        current_tipo = getattr(existing, "tipo", None)
+        current_tipo = existing.tipo
         if new_tipo not in ALLOWED_TRANSITIONS.get(current_tipo, frozenset()):
             raise ExpedienteTransitionValidationError(
                 f"transition {current_tipo} -> {new_tipo} not allowed"
@@ -119,15 +119,15 @@ class ExpedienteTransitionService:
 
         # Compute the new version. The aggregate's __post_init__ will
         # validate LOTE/BASED need a padre.
-        new_version = getattr(existing, "version", None) + 1
+        new_version = existing.version + 1
         try:
             edited = Expediente(
-                id=getattr(existing, "id", None),
+                id=existing.id,
                 tipo=new_tipo,
-                estado=getattr(existing, "estado", None),
+                estado=existing.estado,
                 version=new_version,
                 id_expediente_padre=new_padre,
-                created_at=getattr(existing, "created_at", None),
+                created_at=existing.created_at,
                 updated_at=datetime.now(UTC),
             )
         except ValueError as exc:
