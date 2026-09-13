@@ -18,6 +18,17 @@ class ExpedienteRepositoryPort(Protocol):
     async def list_by_state(
         self, estado: str, limit: int, offset: int
     ) -> tuple[list[object], int]: ...
+    async def search(
+        self,
+        *,
+        estado: str | None,
+        codigo: str | None,
+        responsable_id: object | None,
+        juridica_id: object | None,
+        suministrador_id: object | None,
+        limit: int,
+        offset: int,
+    ) -> tuple[list[object], int]: ...
     async def has_children(self, expediente_id: UUID) -> bool:
         """Return True if the expediente has children of any kind.
 
