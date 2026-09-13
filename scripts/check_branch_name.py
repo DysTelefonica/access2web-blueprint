@@ -33,7 +33,14 @@ DEPENDABOT_ACTOR = "dependabot[bot]"
 #: `chore/issue-forms-bootstrap` is the one-shot bootstrap branch that added
 #: `.github/ISSUE_TEMPLATE/`; it precedes issue creation, so it cannot carry an
 #: issue number. Allowlisted for the same reason as the tracker branch.
-ALLOWLIST = frozenset({"main", "feat/lanzadera-mvp-tracker", "chore/issue-forms-bootstrap"})
+ALLOWLIST = frozenset(
+    {
+        "main",
+        "feat/lanzadera-mvp-tracker",
+        "chore/issue-forms-bootstrap",
+        "test/w-test-cleanup",  # Legacy PR #595; predates numbered-branch enforcement.
+    }
+)
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
