@@ -18,3 +18,16 @@ class ExpedienteRepositoryPort(Protocol):
     async def list_by_state(
         self, estado: str, limit: int, offset: int
     ) -> tuple[list[object], int]: ...
+    async def has_children(self, expediente_id: UUID) -> bool:
+        """Return True if the expediente has children of any kind.
+
+        Children include: anexos (TbExpedientesAnexos), hitos
+        (TbExpedientesHitos), hijos del agregado (LOTE/BASED with
+        ``id_expediente_padre`` pointing here), and any related-data
+        vertical that lives under the expediente.
+
+        CAP-003 §Camino feliz requires "impedir pérdida de hijos".
+        The use case calls this method before delete; the caller can
+        override the check by passing ``force=True`` to the command.
+        """
+        ...
