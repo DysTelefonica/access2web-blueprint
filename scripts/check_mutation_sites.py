@@ -293,6 +293,12 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/json_canonical/service.py": (
         BaselineEntry(sites=104, target=100, target_date="2027-02-13")
     ),
+    # E04 (#240): OrdinalE2EService is a small DFS + cycle detector;
+    # the surface is in the same ratchet class as the C02/C04/R03/R07
+    # baselines (cycle walk + per-node check).
+    "app/src/modules/expedientes/application/ordinal_e2e/command.py": (
+        BaselineEntry(sites=135, target=100, target_date="2027-02-13")
+    ),
     # W02 (#235): AutosaveRelatedService covers hitos, modificados and
     # anualidades inside one UoW. The three per-section validators and
     # the replay/version check are independent helpers but the
