@@ -261,6 +261,9 @@ BASELINE: dict[str, BaselineEntry] = {
     # coincidence class as the existing entries.
     "dup:c865d8361321": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     "dup:c2ccba5c707a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # E02 (#238): json_canonical command/service share the dataclass
+    # prelude block. Same structural coincidence class as 980edaf2dbd2.
+    "dup:f64393479c82": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # R03 (#272): anexos command/service share the
     # (frozen=True, Exception) prelude — post-ruff-format variant
     # of the dataclass prelude coincidence class.
