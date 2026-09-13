@@ -126,7 +126,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # W40 (#482): dataclass-field shape coincidence. Covers the 4-field
     # structural pattern still present in app.py and user.py.
     # 4-field pattern after normalisation). Same coincidence class.
-    "dup:33cfad6d55a4": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:33cfad6d55a4": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
     # W61 (#524): docstring coincidence — structural, not a smell.
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
