@@ -230,6 +230,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # "build a ChangeRecord from the command" pattern.
     "dup:a55d3e021093": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     "dup:98e068ab206a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R02 (#271): register_modificado/command.py and domain/modificado.py
+    # share the dataclass 5-line prelude (id + id_expediente + first
+    # nullable field). Structural coincidence — every "child of
+    # Expediente" aggregate follows this shape.
+    "dup:980edaf2dbd2": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R02 (#271): post-ruff-format variant of the dataclass 5-line
+    # prelude. Same structural coincidence as 980edaf2dbd2.
+    "dup:80e56a5fdac7": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
 }
 
 # MECHANISM# MECHANISM
