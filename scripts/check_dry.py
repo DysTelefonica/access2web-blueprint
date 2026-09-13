@@ -218,6 +218,8 @@ BASELINE: dict[str, BaselineEntry] = {
     # and transition_expediente/service.py. Same pattern as the
     # command prelude but at the service level.
     "dup:01d7c6165877": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:1c5624875e59": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
+    "dup:7728ef7c3d25": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
     # C03 (#228): application/delete_expediente/service.py and
     # lanzadera/domain/profile.py share the same _change_record
     # builder block (5 statements). C02 (#671) and C03 both have
