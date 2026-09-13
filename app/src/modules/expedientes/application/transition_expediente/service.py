@@ -108,7 +108,7 @@ class ExpedienteTransitionService:
     @staticmethod
     def _resolve_target_fields(
         command: ExpedienteTransitionCommand, existing: Expediente
-    ) -> tuple[Any, Any]:
+    ) -> tuple[ExpedienteTipo, Any]:
         """Return the new ``tipo`` and ``id_expediente_padre``.
 
         If the command did not supply a value, keep the existing one.
@@ -122,12 +122,12 @@ class ExpedienteTransitionService:
         return new_tipo, new_padre
 
     @staticmethod
-    def _is_noop(existing: Expediente, new_tipo: Any, new_padre: Any) -> bool:
+    def _is_noop(existing: Expediente, new_tipo: ExpedienteTipo, new_padre: Any) -> bool:
         return new_tipo == existing.tipo and new_padre == existing.id_expediente_padre
 
     @staticmethod
     def _noop_result(
-        existing: Expediente, new_tipo: Any, new_padre: Any
+        existing: Expediente, new_tipo: ExpedienteTipo, new_padre: Any
     ) -> ExpedienteTransitionResult:
         return ExpedienteTransitionResult(
             expediente_id=existing.id,
@@ -138,14 +138,16 @@ class ExpedienteTransitionService:
         )
 
     @staticmethod
-    def _check_transition_allowed(current_tipo: Any, new_tipo: Any) -> None:
+    def _check_transition_allowed(current_tipo: ExpedienteTipo, new_tipo: ExpedienteTipo) -> None:
         if new_tipo not in ALLOWED_TRANSITIONS.get(current_tipo, frozenset()):
             raise ExpedienteTransitionValidationError(
                 f"transition {current_tipo} -> {new_tipo} not allowed"
             )
 
     @staticmethod
-    def _build_edited_aggregate(existing: Expediente, new_tipo: Any, new_padre: Any) -> Expediente:
+    def _build_edited_aggregate(
+        existing: Expediente, new_tipo: ExpedienteTipo, new_padre: Any
+    ) -> Expediente:
         new_version = existing.version + 1
         try:
             return Expediente(
@@ -237,7 +239,7 @@ class ExpedienteTransitionService:
         *,
         command: ExpedienteTransitionCommand,
         existing: Expediente,
-        new_tipo: Any,
+        new_tipo: ExpedienteTipo,
         new_padre: Any,
         modified_at: datetime,
     ) -> list[ChangeRecord]:
