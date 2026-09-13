@@ -12,6 +12,17 @@
 # `feat/lanzadera-mvp-tracker` (the other former `push:` trigger) is gone from
 # origin (verified via `git ls-remote --heads`), so it is dropped rather than
 # ported into `ci.yml`'s own trigger list.
+#
+# The workflow-level `concurrency:` block that used to sit here is gone on
+# purpose (issue #702 follow-up): inside a CALLED workflow, `github.workflow`
+# resolves to the CALLER's name — so `${{ github.workflow }}-${{ github.ref }}`
+# evaluated to the exact same group as ci.yml's own top-level concurrency
+# (`ci-<ref>`), with `cancel-in-progress: true` on both sides. That made the
+# `security` job self-cancel the instant it started (the "already running"
+# workflow it collided with was the very `ci` run calling it) — it never got
+# far enough to create a single job, let alone the three below. Each of those
+# three jobs already has its own distinct per-job `concurrency.group`, so the
+# workflow-level fallback was redundant even before this was reusable.
 name: security
 
 on:
@@ -19,10 +30,6 @@ on:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   gitleaks:
