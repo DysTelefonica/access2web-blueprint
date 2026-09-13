@@ -183,6 +183,49 @@ BASELINE: dict[str, BaselineEntry] = {
     # StrEnum class docstring + members pattern (10 statements). Structural
     # coincidence — every domain enum follows this exact shape. Not a smell.
     "dup:6c7dc25f0c43": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # F01 (#222): expediente/ports/audit_log.py and lanzadera/domain/ports/__init__.py
+    # share the same Protocol/dataclass/datetime/UUID prelude (5 statements).
+    # Structural coincidence — every port module that defines a Protocol + dataclass
+    # pair with these imports lands on this 5-statement block. Same class as the
+    # W40/W61/W64 dataclass-field shape entries above. Not a smell.
+    # `5834c710a42f` is the post-ruff-format variant of the same block (single-line
+    # list comprehension); `86de5bd4a39e` is the pre-format variant. Both register
+    # the same structural coincidence.
+    "dup:86de5bd4a39e": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:5834c710a42f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # F03 (#224): expediente/domain/cpv/structure.py and lanzadera/domain/legacy_role_map.py
+    # share the same StrEnum members block (5 consecutive StrEnum members).
+    # Structural coincidence — every module that declares a StrEnum with 5+
+    # members lands on this 5-statement block. Not a smell.
+    # `357571d4da4f` is the pre-ruff-format variant; `1585f49563b8` is the
+    # post-format variant. Both register the same structural coincidence
+    # (same class as the W40/W61/W64 dataclass-field shape entries).
+    "dup:357571d4da4f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:1585f49563b8": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # C02 (#227): application/create_expediente/command.py and
+    # application/edit_expediente/command.py share the same imports
+    # block (5 statements: TYPE_CHECKING, Protocol, frozen dataclasses,
+    # dataclass, field). Structural coincidence — every command module
+    # that declares a Protocol-typed aggregate ends with this 5-line
+    # prelude. Not a smell. `1b19d75727ae` is the post-ruff-format
+    # variant produced by the CI runner; the local pre-format variant
+    # produces `bb7da246771c` (same shape).
+    "dup:1b19d75727ae": BaselineEntry(occurrences=4, target=2, target_date="2027-02-13"),
+    "dup:bb7da246771c": BaselineEntry(occurrences=4, target=2, target_date="2027-02-13"),
+    # C03 (#228) and C04 (#229): the service prelude (5 statements:
+    # Protocol/AuditLogPort/HitoRepositoryPort/UoW/ExpedienteRepositoryPort)
+    # is structurally identical between delete_expediente/service.py
+    # and transition_expediente/service.py. Same pattern as the
+    # command prelude but at the service level.
+    "dup:01d7c6165877": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:1c5624875e59": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
+    "dup:7728ef7c3d25": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
+    # C03 (#228): application/delete_expediente/service.py and
+    # lanzadera/domain/profile.py share the same _change_record
+    # builder block (5 statements). C02 (#671) and C03 both have
+    # identical builders; the structural coincidence is the
+    # "build a ChangeRecord from the command" pattern.
+    "dup:a55d3e021093": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
 }
 
 # MECHANISM# MECHANISM
