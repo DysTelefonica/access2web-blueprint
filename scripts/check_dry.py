@@ -141,9 +141,6 @@ BASELINE: dict[str, BaselineEntry] = {
     "dup:8aa3296e6ce7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:ac321e81d8c6": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:c373bbc4ef79": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    # E05 (#241): batch_e2e command/service share the dataclass
-    # prelude block. Same structural coincidence class as 980edaf2dbd2.
-    "dup:33cfad6d55a4": BaselineEntry(occurrences=3, target=3, target_date="2027-02-13"),
     # E03 (#239): e2e_hash command/service share the dataclass prelude
     # block. Same structural coincidence class as 980edaf2dbd2.
     "dup:146e7442d16c": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
