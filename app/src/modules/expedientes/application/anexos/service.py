@@ -83,9 +83,7 @@ class AnexosService:
             retention=command.retention,
             created_at=created_at,
         )
-        anexo.record_event(
-            AnexoEvent(kind="created", at=created_at, actor_id=command.actor_id)
-        )
+        anexo.record_event(AnexoEvent(kind="created", at=created_at, actor_id=command.actor_id))
         return anexo
 
     async def delete(self, command: DeleteAnexoCommand) -> DeleteAnexoResult:
