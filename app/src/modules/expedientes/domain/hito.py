@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
 from enum import StrEnum
 from uuid import UUID
 
@@ -34,6 +35,8 @@ class Hito:
     fecha_hito: date
     garantia_fecha_fin: date | None
     estado: ExpedienteEstado
+    descripcion: str | None = None
+    importe: Decimal | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -45,3 +48,10 @@ class Hito:
         if self.garantia_fecha_fin is not None:
             if self.garantia_fecha_fin <= self.fecha_hito:
                 raise ValueError("garantia_fecha_fin must be strictly after fecha_hito")
+        if self.descripcion is not None and len(self.descripcion) > 255:
+            raise ValueError("descripcion must not exceed 255 characters")
+        if self.importe is not None:
+            if not isinstance(self.importe, Decimal):
+                raise ValueError("importe must be a Decimal")
+            if self.importe < 0:
+                raise ValueError("importe must be non-negative")
