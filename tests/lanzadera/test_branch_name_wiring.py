@@ -86,6 +86,7 @@ def test_branch_name_gate_rejects_non_conventional_branches(script: Path) -> Non
     "branch",
     (
         "dependabot/pip/app/ruff-0.15.22",
+        "dependabot/uv/app/pytest-9.0.3",
         "dependabot/github_actions/actions/checkout-8",
     ),
 )
