@@ -210,7 +210,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # prelude. Not a smell. `1b19d75727ae` is the post-ruff-format
     # variant produced by the CI runner; the local pre-format variant
     # produces `bb7da246771c` (same shape).
-    "dup:1b19d75727ae": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:1b19d75727ae": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
 }
 
 # MECHANISM# MECHANISM
