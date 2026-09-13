@@ -130,8 +130,8 @@ BASELINE: dict[str, BaselineEntry] = {
     # E07 (#243): e2e_session command/service share the dataclass
     # prelude block. Same structural coincidence class as the
     # autosave-related / C02/C04/R03/R07/Q01/E02/E04/E05/E06 baselines.
-"dup:2b7ef0bfcdf8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
-"dup:f66e7393fea8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:2b7ef0bfcdf8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:f66e7393fea8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # W61 (#524): docstring coincidence — structural, not a smell.
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
