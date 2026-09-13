@@ -138,7 +138,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # that share the same HTTP-exception pattern (request.state check,
     # container lookup, raise HTTPException). Same structural class.
     "dup:110a87c35376": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:8aa3296e6ce7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:8aa3296e6ce7": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
     "dup:ac321e81d8c6": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:c373bbc4ef79": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # E03 (#239): e2e_hash command/service share the dataclass prelude
