@@ -244,6 +244,10 @@ BASELINE: dict[str, BaselineEntry] = {
     # Expediente" aggregate follows this shape.
     "dup:b2ad58dd0e2d": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     "dup:c2ccba5c707a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R03 (#272): anexos command/service share the
+    # (frozen=True, Exception) prelude — post-ruff-format variant
+    # of the dataclass prelude coincidence class.
+    "dup:18b975f7ebc8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
 }
 
 # MECHANISM# MECHANISM
