@@ -32,6 +32,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | **`architecture-guardrails`** | **Any** cambio estructural en `app/`, `tests/` u `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`docs/architecture.md`](docs/architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
 | **`documentation-alan-style`** | **Any** redacción o revisión de `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `epic.md` o `walkthrough-*.json`. Plantillas en `references/templates/`. Vive en este repo: `skills/documentation-alan-style/SKILL.md`. |
 | **`repository-delivery-governance`** | **Any** auditoría o cambio de CI/CD, política de issues o PRs, labels, branch protection, rulesets, permisos de merge, artefactos, despliegue o rollback. Vive en `~/.agents/skills/repository-delivery-governance/SKILL.md`, distribuida por `DysTelefonica/team-skills`. Si falta, deténgase y sincronice el catálogo antes de trabajar. La política específica de este repo prevalece sobre su baseline portable. |
+| **`gentle-ai-ai-slop-discipline`** | **Any** implementación de PR (código, tests, docs). Carga la skill **antes** de escribir la primera línea y **antes** de pedir `size:exception` o merged. Las 4 preguntas self-check y las 3 firmas de AI-slop son el gate que el AI pasa sobre su propio diff antes de notificar al humano. Sin este gate, los AI-invented tests, los `object` types como placeholder, los duck-typed `hasattr` checks, y los comentarios que duplican la autoridad existente pasan como código permanente. Vive en `~/.agents/skills/gentle-ai-ai-slop-discipline/SKILL.md` (distribuida por `gentle-ai`). |
 
 ## Project-context skills
 
@@ -57,6 +58,7 @@ These skills are **mandatory** — load them before any work in their scope:
 | `maintainer-prompt-drafter` | Estructurar prompts para el mantenedor de dysflow u otro tool externo. | Gentleman-Programming |
 | `access-vba-tdd` | Tests TDD en Access/VBA. | Gentleman-Programming |
 | `access-form-ui-builder` | Perceive → act → verify loop para forms Access. | Gentleman-Programming |
+| `gentle-ai-ai-slop-discipline` | Cualquier implementación de PR — código, tests, docs. Pre-submission self-review obligatorio antes de pushear o pedir `size:exception`. | gentle-ai |
 
 > Nota: "Alan canonical examples omit YAML; this template includes it for opencode/Claude/Cursor scope filtering. Drop YAML only for byte-exact match with the AGENTS.md de Alan."
 
@@ -161,5 +163,19 @@ La skill `estado-planificacion-update` cubre el ciclo completo de vida de un ref
 5. **Verificación y archivo** (`sdd-verify`, `sdd-archive`): el HTML final muestra todos los PRs en verde, los gaps cerrados y el cierre del ciclo. Se commitea junto al último PR.
 
 El archivo `estado-planificacion-*.html` es la single source of truth visual del avance para los jefes. Cuando un agente entra al repo, debe leer el HTML más reciente antes de proponer cambios.
+
+## Hard rule — Anti-AI-slop gate antes de cualquier PR
+
+Toda implementación de un PR (código, tests, docs, configuración) pasa por el gate de la skill `gentle-ai-ai-slop-discipline` antes de pushear la rama o pedir `size:exception`. La secuencia es no negociable:
+
+1. **Cargar la skill primero.** Antes de la primera línea del diff, leer `~/.agents/skills/gentle-ai-ai-slop-discipline/SKILL.md` en su versión actual. La skill lleva changelog; saltarse la versión vigente es saltarse el gate.
+2. **Pasar las 4 preguntas self-check.** Para cada archivo nuevo o modificado, responder: ¿está en los acceptance scenarios del issue? ¿el humano puede defender cada línea como decisión propia? ¿duplica autoridad existente? ¿se va de scope? Si cualquier respuesta es «no» o «no sé», STOP. Reescribir antes de continuar.
+3. **Detectar las 3 firmas.** Prose paralelo que duplica autoridad. Claims amplios sin contrato testeable. Tests que verifican objetos AI-invented en lugar del dominio real. Cada firma detectada es deuda permanente: remover antes de commitear.
+4. **Pre-submission self-review.** Releer el diff completo. Para cada línea fuera del scope del issue: ¿por qué está aquí? Si no hay respuesta, va fuera.
+5. **AI-slop self-defense con el humano.** Antes de pushear, presentar al humano 1-3 líneas random del diff y preguntar: «¿podés defender esta línea como decisión tuya, no de la IA?». Si no, la línea se elimina.
+
+**Excepción al gate**: edición trivial puramente pasiva (typo fix, formato, link roto). Documentar en el commit por qué no aplica el gate.
+
+**`size:exception` con AI-slop no negociable**: pedir `size:exception` sin haber pasado este gate es rechazo automático. El diff grande no excusa tests AI-invented.
 
 [← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)

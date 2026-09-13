@@ -11,6 +11,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+_UNCONFIGURED = object()
+
 if TYPE_CHECKING:
     from app.src.modules.expedientes.ports.audit_log import ExpedienteAuditEvent
     from app.src.modules.expedientes.ports.document_storage import StoredDocument
@@ -56,7 +58,7 @@ class FakeHitoRepository:
 
     async def upsert(self, hito: object) -> object:
         self.calls.append("upsert")
-        eid = getattr(hito, "expediente_id", None)
+        eid = getattr(hito, "id_expediente", None)
         if eid:
             self.by_exp.setdefault(eid, []).append(hito)
         return hito
@@ -81,7 +83,9 @@ class FakeCatalogRepository:
     async def search(self, query: str, limit: int = 20) -> list[object]:
         self.calls.append("search")
         q = query.lower()
-        return [v for v in self.entries.values() if q in str(getattr(v, "descripcion", ""))][:limit]
+        return [
+            v for v in self.entries.values() if q in str(getattr(v, "descripcion", "")).lower()
+        ][:limit]
 
 
 @dataclass
@@ -95,16 +99,23 @@ class FakeAuditLog:
 
     async def list_for_actor(self, actor_id: UUID, since: datetime) -> list[ExpedienteAuditEvent]:
         self.calls.append("list_for_actor")
-        return [e for e in self.events if e.actor_id == actor_id and (e.created_at or datetime.min) >= since]
+        return [
+            e
+            for e in self.events
+            if e.actor_id == actor_id and (e.created_at or datetime.min) >= since
+        ]
 
 
 @dataclass
 class FakeReadiness:
-    _result: object = field(default=None)
+    _result: object = field(default=_UNCONFIGURED)
 
     async def check(self) -> object:
+        if self._result is _UNCONFIGURED:
+            return None
         if self._result is None:
             from app.src.modules.expedientes.ports.readiness import ReadinessResult
+
             return ReadinessResult(ready=True, checks=[])
         return self._result
 
@@ -114,7 +125,13 @@ class FakeDocumentStorage:
     by_ref: dict[str, tuple[bytes, str, int]] = field(default_factory=dict)
     calls: list[str] = field(default_factory=list)
 
-    async def prepare_upload(self, exp_id: UUID, filename: str, content_type: str, size_bytes: int) -> str:
+    async def prepare_upload(
+        self,
+        exp_id: UUID,
+        filename: str,
+        content_type: str,
+        size_bytes: int,
+    ) -> str:
         self.calls.append("prepare_upload")
         ref = f"fake://{uuid4()}"
         self.by_ref[ref] = (b"", content_type, size_bytes)
@@ -124,6 +141,7 @@ class FakeDocumentStorage:
         self.calls.append("confirm_upload")
         _c, ct, sz = self.by_ref[ref]
         from app.src.modules.expedientes.ports.document_storage import StoredDocument
+
         return StoredDocument(storage_ref=ref, content_type=ct, size_bytes=sz)
 
     async def download(self, ref: str) -> bytes:
