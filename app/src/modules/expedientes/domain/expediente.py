@@ -6,7 +6,7 @@ DA-1: pure domain — no framework imports.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 
 from app.src.modules.expedientes.domain.expediente_estado import ExpedienteEstado
@@ -29,6 +29,8 @@ class Expediente:
     estado: ExpedienteEstado
     version: int
     id_expediente_padre: UUID | None = None
+    fecha_inicio_contrato: date | None = None
+    fecha_fin_contrato: date | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
     _hitos: list[Hito] = field(default_factory=list)
@@ -68,3 +70,9 @@ class Expediente:
             raise ValueError("version must be >= 1")
         if self.tipo.value in ("LOTE", "BASED") and self.id_expediente_padre is None:
             raise ValueError(f"tipo={self.tipo.value} requires id_expediente_padre")
+        if (
+            self.fecha_inicio_contrato is not None
+            and self.fecha_fin_contrato is not None
+            and self.fecha_inicio_contrato > self.fecha_fin_contrato
+        ):
+            raise ValueError("fecha_inicio_contrato must be before fecha_fin_contrato")

@@ -17,6 +17,7 @@ DA-1: the application layer does NOT touch SQLAlchemy directly.
 from __future__ import annotations
 
 from collections.abc import Callable
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Any, cast
 from uuid import uuid4
@@ -150,13 +151,11 @@ class ExpedienteTransitionService:
     ) -> Expediente:
         new_version = existing.version + 1
         try:
-            return Expediente(
-                id=existing.id,
+            return replace(
+                existing,
                 tipo=new_tipo,
-                estado=existing.estado,
                 version=new_version,
                 id_expediente_padre=new_padre,
-                created_at=existing.created_at,
                 updated_at=datetime.now(UTC),
             )
         except ValueError as exc:

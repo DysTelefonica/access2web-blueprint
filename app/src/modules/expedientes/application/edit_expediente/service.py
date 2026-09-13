@@ -129,23 +129,8 @@ class ExpedienteEditService:
                 fields_changed=(),
             )
 
-        # Validate invariants (LOTE/BASED need padre, etc.) via the
-        # aggregate's __post_init__.
-        try:
-            # ``replace`` doesn't run ``__post_init__`` automatically
-            # on a frozen dataclass; the explicit constructor call does.
-            edited = Expediente(
-                id=edited.id,
-                tipo=edited.tipo,
-                estado=edited.estado,
-                version=edited.version,
-                id_expediente_padre=edited.id_expediente_padre,
-                created_at=edited.created_at,
-                updated_at=edited.updated_at,
-            )
-        except ValueError as exc:
-            raise ExpedienteEditValidationError(str(exc)) from exc
-
+        # ``dataclasses.replace`` invokes ``__post_init__``, so the
+        # aggregate invariants were already checked by ``_apply_edit``.
         modified_at = datetime.now(UTC)
 
         try:
