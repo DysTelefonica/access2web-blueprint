@@ -260,6 +260,15 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/delivery/http/admin_routes_users_json.py": (
         BaselineEntry(sites=151, target=100, target_date="2027-02-13")
     ),
+    # R03 (#272): AnexosService carries the size-limit and retention
+    # checks, the UoW transactions, and the audit-evidence wiring for
+    # both create and delete paths. Splitting now would either break
+    # the load/audit/commit pipeline or split a 5-line enforce into
+    # helpers whose only purpose is to drop the mutation count below
+    # the ceiling. Same class as the C02/C04 baselines.
+    "app/src/modules/expedientes/application/anexos/service.py": (
+        BaselineEntry(sites=116, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
