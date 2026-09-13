@@ -243,7 +243,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # shape, so a follow-up extraction is better than a one-off.
     "app/src/modules/expedientes/application/edit_expediente/service.py": (
         BaselineEntry(sites=160, target=100, target_date="2027-02-13")
-    ),
+        ),
+        # C04 (#229): transition_expediente/service.py is at 180
+        # mutation sites after splitting execute() into helpers
+        # to keep complexity under the ceiling (10). The 4-step
+        # pipeline cannot be split without breaking the unit.
+        "app/src/modules/expedientes/application/transition_expediente/service.py": (
+            BaselineEntry(sites=180, target=100, target_date="2027-02-13")
+        ),
     # W65 Phase 2 E2E (#605): admin_routes_users_json.py at 151 mutation sites
     # because it implements 5 REST endpoints (list, create, get, update,
     # revoke) following the same delivery-layer pattern as admin_routes_apps.py.
