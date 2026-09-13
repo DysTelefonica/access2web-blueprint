@@ -202,6 +202,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # (same class as the W40/W61/W64 dataclass-field shape entries).
     "dup:357571d4da4f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:1585f49563b8": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # C02 (#227): application/create_expediente/command.py and
+    # application/edit_expediente/command.py share the same imports
+    # block (5 statements: TYPE_CHECKING, Protocol, frozen dataclasses,
+    # dataclass, field). Structural coincidence — every command module
+    # that declares a Protocol-typed aggregate ends with this 5-line
+    # prelude. Not a smell. `bb7da246771c` is the post-ruff-format
+    # variant; the pre-format variant carries the same shape.
+    "dup:bb7da246771c": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
 }
 
 # MECHANISM# MECHANISM
