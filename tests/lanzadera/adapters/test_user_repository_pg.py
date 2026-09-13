@@ -118,6 +118,7 @@ async def repo_and_engine() -> AsyncIterator[tuple[UserRepositoryPg, Any]]:
     await engine.dispose()
 
 
+@pytest.mark.integration
 async def test_user_repository_pg_round_trip(repo_and_engine: Any) -> None:
     """End-to-end: create → get_by_email → update_status → update_password → get_by_id."""
     repo, _engine = repo_and_engine
