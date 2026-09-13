@@ -220,7 +220,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # is structurally identical between delete_expediente/service.py
     # and transition_expediente/service.py. Same pattern as the
     # command prelude but at the service level.
-    "dup:01d7c6165877": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:01d7c6165877": BaselineEntry(occurrences=3, target=3, target_date="2027-02-13"),
     "dup:1c5624875e59": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
     "dup:7728ef7c3d25": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
     # C03 (#228): application/delete_expediente/service.py and
@@ -242,12 +242,23 @@ BASELINE: dict[str, BaselineEntry] = {
     # dataclass 5-line prelude. Same structural coincidence class
     # as 980edaf2dbd2 and 80e56a5fdac7 — every "child of
     # Expediente" aggregate follows this shape.
-    "dup:b2ad58dd0e2d": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:b2ad58dd0e2d": BaselineEntry(occurrences=3, target=3, target_date="2027-02-13"),
     "dup:c2ccba5c707a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # R03 (#272): anexos command/service share the
     # (frozen=True, Exception) prelude — post-ruff-format variant
     # of the dataclass prelude coincidence class.
     "dup:18b975f7ebc8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R04 (#273): register_anualidad shares the dataclass prelude
+    # with the existing aggregate precedents. Same structural
+    # coincidence class as 980edaf2dbd2 / 80e56a5fdac7.
+    "dup:ab4b6562f155": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R04 (#273): anualidad command/service + domain module share
+    # the dataclass prelude block.
+    "dup:d11d3e80ae36": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R04 (#273): post-ruff-format variant of the dataclass 5-line
+    # prelude coincidence class. Same shape as 01d7c6165877 but the
+    # service modules are smaller.
+    "dup:824ef3f3e298": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
 }
 
 # MECHANISM# MECHANISM
