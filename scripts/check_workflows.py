@@ -7,7 +7,9 @@ by the gate in `tests/test_check_workflows.py`:
  1. No duplicate YAML keys (GitHub rejects them with startup_failure that
     silently disappears from the rollup).
  2. Every job declares timeout-minutes (GitHub default is 360 minutes — the
-    exact failure mode that hit security-deep until PR #131 fixed it).
+    exact failure mode that hit security-deep until PR #131 fixed it). A job
+    that calls a reusable workflow (`uses: ./...`, issue #702) is exempt —
+    GitHub's schema for that job shape has no `timeout-minutes` at all.
  3. No service container fixes a host port (ports: - 5432:5432 silently
     shares a DB between runners; vacuous today, future-proofs the next
     person who adds a service).
@@ -31,9 +33,14 @@ by the gate in `tests/test_check_workflows.py`:
 10. (carried from #135) Duplicate-key, timeout-minutes, host-port-fix,
     uses-not-pinned, docker-preflight, concurrency. The four added in #152
     are #6 (WARN branch), #7, #8, #9.
-11. A workflow triggered by `pull_request` may route PR-reachable jobs only
-    to literal GitHub-hosted runner labels. Self-hosted and dynamic labels are
-    rejected unless a static job condition excludes pull requests.
+11. A workflow triggered by `pull_request` (or callable via `workflow_call`,
+    issue #702 — a reusable workflow's file cannot see whether its caller is
+    PR-reachable, so it is treated the same way) may route PR-reachable jobs
+    only to literal GitHub-hosted runner labels. Self-hosted and dynamic
+    labels are rejected unless a static job condition excludes pull
+    requests. A job that calls a reusable workflow (`uses: ./...`) has no
+    `runs-on` of its own and is exempt; the called workflow's jobs are
+    checked when that file is scanned.
 
 Hard Rule 1 of the deterministic-quality-harness skill: no `|| true`, no
 `continue-on-error`. Exit 0 = clean (warnings allowed), exit 1 = any
@@ -247,12 +254,23 @@ Finding = tuple[str, str, str]
 
 
 def _check_timeout_minutes(doc: dict[str, Any]) -> Iterator[Finding]:
-    """Yield a violation for every job missing `timeout-minutes`."""
+    """Yield a violation for every job missing `timeout-minutes`.
+
+    Issue #702: a job that calls a reusable workflow (`uses: ./...`) is
+    schema-exempt from `timeout-minutes` — GitHub's reusable-workflow-call
+    job shape does not accept it at all (it has no `runs-on`, `steps`,
+    `env` or `timeout-minutes`; only `name`, `needs`, `permissions`, `if`,
+    `uses`, `with`, `secrets`, `strategy` and `concurrency`). The reusable
+    workflow's own jobs declare their own timeouts and are checked when
+    that file is scanned.
+    """
     jobs = doc.get("jobs") or {}
     if not isinstance(jobs, dict):
         return
     for job_name, job_def in jobs.items():
         if not isinstance(job_def, dict):
+            continue
+        if "uses" in job_def:
             continue
         if "timeout-minutes" in job_def:
             continue
@@ -597,19 +615,30 @@ _HOSTED_RUNNER = re.compile(r"^(?:ubuntu|windows|macos)-[A-Za-z0-9._-]+$")
 _NON_PR_EVENT = re.compile(r"^github\.event_name\s*==\s*(['\"])(?!pull_request\1)[A-Za-z0-9_]+\1$")
 
 
-def _has_pull_request_trigger(doc: dict[str, Any]) -> bool:
-    """Return whether the workflow subscribes to `pull_request`.
+def _is_pr_reachable_workflow(doc: dict[str, Any]) -> bool:
+    """Return whether the workflow can execute as part of a public PR run.
 
     PyYAML 1.1 parses the plain key `on` as boolean ``True``. Supporting both
     representations keeps the gate correct without replacing the repository's
     YAML parser.
+
+    Issue #702: a workflow triggered only by `workflow_call` (a reusable
+    workflow, e.g. `security.yml` / `codeql.yml` after being embedded into
+    `ci.yml`) declares no `pull_request` trigger of its own, yet its jobs
+    still run inside a public PR whenever its caller is PR-reachable — and a
+    reusable workflow's file cannot see who calls it. Fail closed: treat
+    `workflow_call` the same as `pull_request` for this check, since the
+    opposite assumption (an uncalled, therefore safe, reusable workflow) is
+    exactly the gap a self-hosted runner slipping into a PR path would need.
     """
     triggers = doc.get("on", doc.get(True))
     if isinstance(triggers, str):
-        return triggers == "pull_request"
+        return triggers in ("pull_request", "workflow_call")
     if isinstance(triggers, list):
-        return "pull_request" in triggers
-    return isinstance(triggers, dict) and "pull_request" in triggers
+        return "pull_request" in triggers or "workflow_call" in triggers
+    return isinstance(triggers, dict) and (
+        "pull_request" in triggers or "workflow_call" in triggers
+    )
 
 
 def _condition_excludes_pull_requests(condition: object) -> bool:
@@ -626,14 +655,24 @@ def _condition_excludes_pull_requests(condition: object) -> bool:
 
 
 def _check_public_pr_runner_isolation(doc: dict[str, Any]) -> Iterator[Finding]:
-    """Reject PR-reachable jobs that do not use a literal hosted runner."""
-    if not _has_pull_request_trigger(doc):
+    """Reject PR-reachable jobs that do not use a literal hosted runner.
+
+    Issue #702: a job that calls a reusable workflow (`uses: ./...`) has no
+    `runs-on` at all — GitHub's schema for that job shape does not accept
+    it — so it is exempt here. Isolation for the reusable workflow's actual
+    steps is enforced when that file is scanned on its own, via
+    `_is_pr_reachable_workflow` now also treating `workflow_call` as
+    PR-reachable.
+    """
+    if not _is_pr_reachable_workflow(doc):
         return
     jobs = doc.get("jobs") or {}
     if not isinstance(jobs, dict):
         return
     for job_name, job_def in jobs.items():
         if not isinstance(job_def, dict) or _condition_excludes_pull_requests(job_def.get("if")):
+            continue
+        if "uses" in job_def:
             continue
         runner = job_def.get("runs-on")
         if isinstance(runner, str) and _HOSTED_RUNNER.fullmatch(runner):
