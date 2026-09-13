@@ -24,7 +24,7 @@ import sys
 # --------------------------------------------------------------------------------------------
 
 PATTERN = re.compile(r"^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$")
-DEPENDABOT_PATTERN = re.compile(r"^dependabot/(pip|github_actions)/[a-zA-Z0-9._/-]+$")
+DEPENDABOT_PATTERN = re.compile(r"^dependabot/(pip|uv|github_actions)/[a-zA-Z0-9._/-]+$")
 DEPENDABOT_ACTOR = "dependabot[bot]"
 
 #: Long-lived branches that predate or transcend the convention.

@@ -11,6 +11,8 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+_UNCONFIGURED = object()
+
 if TYPE_CHECKING:
     from app.src.modules.expedientes.ports.audit_log import ExpedienteAuditEvent
     from app.src.modules.expedientes.ports.document_storage import StoredDocument
@@ -56,7 +58,7 @@ class FakeHitoRepository:
 
     async def upsert(self, hito: object) -> object:
         self.calls.append("upsert")
-        eid = getattr(hito, "expediente_id", None)
+        eid = getattr(hito, "id_expediente", None)
         if eid:
             self.by_exp.setdefault(eid, []).append(hito)
         return hito
@@ -81,7 +83,9 @@ class FakeCatalogRepository:
     async def search(self, query: str, limit: int = 20) -> list[object]:
         self.calls.append("search")
         q = query.lower()
-        return [v for v in self.entries.values() if q in str(getattr(v, "descripcion", ""))][:limit]
+        return [
+            v for v in self.entries.values() if q in str(getattr(v, "descripcion", "")).lower()
+        ][:limit]
 
 
 @dataclass
@@ -104,9 +108,11 @@ class FakeAuditLog:
 
 @dataclass
 class FakeReadiness:
-    _result: object = field(default=None)
+    _result: object = field(default=_UNCONFIGURED)
 
     async def check(self) -> object:
+        if self._result is _UNCONFIGURED:
+            return None
         if self._result is None:
             from app.src.modules.expedientes.ports.readiness import ReadinessResult
 
