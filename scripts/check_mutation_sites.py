@@ -299,6 +299,12 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/ordinal_e2e/command.py": (
         BaselineEntry(sites=135, target=100, target_date="2027-02-13")
     ),
+    # E07 (#243): E2ESessionService is a small state machine with
+    # open/resume/close branches. Same ratchet class as the
+    # C02/C04/R03/R07/Q01/E02/E04/E05/E06 baselines.
+    "app/src/modules/expedientes/application/e2e_session/service.py": (
+        BaselineEntry(sites=128, target=100, target_date="2027-02-13")
+    ),
     # W02 (#235): AutosaveRelatedService covers hitos, modificados and
     # anualidades inside one UoW. The three per-section validators and
     # the replay/version check are independent helpers but the
