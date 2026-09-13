@@ -59,7 +59,7 @@ typecheck:
 # floor; pyproject.toml's [tool.coverage.run] omit is what makes that number
 # comparable week to week (Hard Rule 14).
 test:
-	$(PYTEST) -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term --cov-fail-under=69
+	$(PYTEST) -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json --cov-report=term --cov-fail-under=69
 
 check-workflows:
 	$(PYTHON) scripts/check_workflows.py

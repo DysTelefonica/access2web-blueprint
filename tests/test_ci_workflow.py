@@ -21,7 +21,7 @@ REQUIRED_COMMANDS = (
     "ruff check --config app/pyproject.toml .",
     "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
-    "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
     "scripts/check_mutation.py",

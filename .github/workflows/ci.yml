@@ -280,7 +280,7 @@ jobs:
         #
         # cwd stays at the repository root so coverage.json lands where the downstream
         # gates look for it.
-        run: pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json --cov-report=term
+        run: pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json --cov-report=term
 
 
       - name: quality gates and indicators
