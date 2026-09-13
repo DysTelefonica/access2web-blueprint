@@ -139,22 +139,25 @@ jobs:
             sleep 1
           done
 
-      - name: Run Playwright E2E tests
+      - name: Install Playwright dependencies
+        working-directory: e2e
         run: |
           set -euo pipefail
-          # Install Playwright if needed
-          npx playwright install --with-deps chromium
-          # Run smoke tests against localhost:8000.
-          #
-          # The `|| true` is the documented exception: e2e in a release
-          # gate requires a properly configured test environment (DB
-          # fixtures, auth secrets, a stable selector map) that the
-          # placeholder e2e/ tree does not yet provide. The job reports
-          # but does not fail until the TODO in e2e/README.md is closed.
+          npm ci
+
+      - name: Install Chromium browser
+        run: |
+          set -euo pipefail
+          npx playwright install chromium
+
+      - name: Run Playwright E2E tests
+        env:
+          BASE_URL: http://localhost:8000
+          TEST_CONTAINER_NAME: test-app
+        run: |
+          set -euo pipefail
           npx playwright test e2e/ \
-            --config=e2e/playwright.config.ts \
-            --base-url=http://localhost:8000 \
-            || true
+            --config=e2e/playwright.config.ts
 
       - name: Stop container
         run: docker stop test-app || true

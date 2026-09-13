@@ -21,7 +21,7 @@ await tools.dysflow.get_capabilities({});
 await tools.dysflow.list_objects({ outputMode: "summary" });
 ```
 
-Si los tres comandos devuelven respuesta sin error, el repo está listo para trabajar.
+Si los tres comandos devuelven respuesta sin error, el repo está operativo.
 
 ## Documentation
 
@@ -96,8 +96,8 @@ access2web-blueprint/
 
 ## Next steps
 
-1. **Lee [DOCS.md](DOCS.md)** si quiere el technical reference completo (8 apps, stack pinned, decisiones D1-D178).
-2. **Lee [CODEBASE-GUIDE.md](CODEBASE-GUIDE.md)** si va a tocar código, abrir un PR o agregar una nueva app.
+1. **Lea [DOCS.md](DOCS.md)** si desea el technical reference completo (8 apps, stack pinned, decisiones D1-D178).
+2. **Lea [CODEBASE-GUIDE.md](CODEBASE-GUIDE.md)** si va a tocar código, abrir un PR o agregar una nueva app.
 3. **Lee [CONTRIBUTING.md](CONTRIBUTING.md)** antes de abrir un issue; el workflow CI exige rama `<tipo>/<nº issue>-<slug>` y PR ≤ 400 líneas.
 4. **Lee [docs/architecture.md](docs/architecture.md)** si va a implementar el MVP de plataforma; las decisiones D-<n> son vinculantes.
 5. **Arranca con un walkthrough** de la app que le interese (`docs/03-aplicaciones/<app>/epic.md`).

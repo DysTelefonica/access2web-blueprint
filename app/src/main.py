@@ -223,8 +223,12 @@ async def _register_admin_routes() -> None:
     from app.src.modules.lanzadera.delivery.http.admin_routes_apps import (
         router as apps_router,
     )
+    from app.src.modules.lanzadera.delivery.http.admin_routes_users_json import (
+        router as users_json_router,
+    )
 
     app.include_router(apps_router, prefix="/admin", tags=["apps"])
+    app.include_router(users_json_router, prefix="/admin", tags=["admin-users-json"])
     app.include_router(admin_router)
     # W62 PR-6: mount the three auth routes (``/auth/login``,
     # ``/auth/logout``, ``/auth/me``). The router is created with the

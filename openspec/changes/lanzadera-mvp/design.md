@@ -128,9 +128,7 @@ access2web-blueprint/
 │       ├── check_pr_size.py          # QC-6
 │       ├── check_branch_name.py      # QC-6
 │       ├── check_crap.py             # QC-11
-│       ├── check_dry.py              # QC-11
-│       ├── quality_report.py         # QC-11 — agrega envelopes
-│       └── migrate_from_access.py    # one-shot Dysflow → fixtures JSON
+│       └── check_dry.py              # QC-11
 ├── .github/workflows/
 │   ├── ci.yml                        # todos los gates por PR
 │   ├── security.yml                  # pip-audit, gitleaks, trivy config
@@ -333,7 +331,7 @@ Cada riesgo declara severidad, mitigación y gate que la enforce. La tabla se cr
 | ID | Riesgo | Mitigación | Gate |
 |---|---|---|---|
 | R-1 (H1) | El legacy almacena `Password` en texto plano (SHA256-hex sin sal confirmado por `integrations-security.md`); un adapter de verificación legacy reintroduciría un algoritmo de_hash sin sal. | D89 descarta hashes legacy; DA-3 prohíbe la columna `legacy_hash`; DA-13 pinea la ausencia vía AST. | `test_no_legacy_compat.py` + `coverage_gate` CRITICAL_HELPERS. |
-| R-2 (H2) | Los binarios `.accdb` no viven en staging dentro del repo; `migrate_from_access.py` puede correr contra un `.accdb` distinto del baseline. | `migrate_from_access.py` documenta el SHA256 esperado del `.accdb` y aborta si no coincide; el comando vive en `Makefile` con `make migrate-fixtures`. | Smoke test del script en CI con fixture versionado. |
+| R-2 (H2) | Los binarios `.accdb` no viven en staging; la estrategia fixtures derivadas del walkthrough elimina el riesgo de correr contra un `.accdb` distinto. | Fixtures sintéticas versionadas; cardinalidades verificadas. | Tests de cardinalidad. |
 | R-3 (H3) | `codegraph-vba` no indexa Lanzadera en algunos worktrees (cross-project noise). | Cada worktree Lanzadera tiene su propio `.codegraph-vba/`; el MVP web no depende de la indexación VBA; el walkthrough v4 cubre 28/28 forms. | Verificación runtime al abrir worktree. |
 | R-4 (H4) | Sincronización manual de datos comunes al NAS oficina (gap P-21). | Aceptado no bloqueante; apps office-only consultan snapshot; procedimiento operativo documentado en `docs/operacion/sync-nas-oficina.md` (pendiente `sdd-apply`). | Ninguno en MVP; H4 cierra en Fase 4. |
 | R-5 (H5) | Topología de despliegue ABIERTA (D75). | Salvaguardada por D74 (no Kubernetes prematuro), D76 (PostgreSQL gestionado preferido). | Ninguno en MVP; H5 cierra cuando IT defina cloud. |
@@ -382,7 +380,7 @@ Objetivo: el sistema corre end-to-end en local con `docker-compose up`. Tickets:
 - Implementar `MailQueueTableAdapter` (DA-10) + `TtlCacheAdapter` (DA-8) + `AssumeInOfficeAdapter` (DA-9) + `EnvAdminSourceAdapter` + `BootstrapAdapter` (DA-6).
 - Delivery HTMX: rutas FastAPI por sub-spec (users, apps, profiles, assignments, global_admins, audit). Templates Jinja async + Alpine.js (D67).
 - CLI `gentle-ai platform user ...` con subcomandos `set-password`, `grant-global-admin`, `revoke-global-admin`, `list-apps`, `assign-profile` (D25, D26, D91).
-- `scripts/migrate_from_access.py` one-shot Dysflow → fixtures JSON; ejecutable en local y en CI con `make migrate-fixtures` (DA-7).
+- Fixtures sintéticas derivadas del walkthrough: `data/fixtures/lanzadera/apps.json`, `users.json`, `assignments.json`, `audit_events.json` — construidas desde `docs/03-aplicaciones/lanzadera/data-model.md` y los walkthrough-G*.json. Sin Dysflow, sin pyodbc, sin tocar el `.accdb` real (DA-7b).
 
 Salida de fase: smoke E2E en local — login con `set-password`, asignación de profile, reset flow end-to-end.
 
@@ -419,7 +417,7 @@ Gaps cerrados por este diseño: G-1 (DA-3), G-3 (DA-7). G-2, G-4, G-5, G-6, G-7,
 `Sdd-tasks` puede arrancar sin bloqueos. Los elementos que requiere son:
 
 1. Confirmación de que `pyproject.toml` declara los pins exactos (`argon2-cffi==25.1.0`, `cachetools==5.x`, `sqlalchemy==2.0.x`, `alembic==1.13+`, `asyncpg==0.30+`, `fastapi==0.119+`, `jinja2==3.1+`, `htmx==2.0.4`, `alpinejs==3.15+`).
-2. Disponibilidad de la fixture `TbAplicaciones.json`, `tbUsuarios.json`, `TbUsuariosAplicacionesPermisos.json`, `TbConexiones.json`, `TbAplicacionesAperturas.json` con SHA256 documentado, producidas por `scripts/migrate_from_access.py` desde `C:\00repos\datos\Lanzadera_Datos.accdb` (H2, R-2).
+2. Las fixtures sintéticas de Lanzadera (`data/fixtures/lanzadera/`) se derivan de `docs/03-aplicaciones/lanzadera/data-model.md` y los walkthrough-G*.json. No se necesita el `.accdb` real para construir las migraciones ni los tests. Los seeds cubren la cardinalidad documentada (20 apps con IDs 1-20, 156 users, 622 assignments con la matriz de 7 flags). El archivo `data/fixtures/lanzadera/METADATA.json` registra la fuente documental de cada fixture.
 3. Cierre del G-2 (capacidades mínimas por `profile_code`) por el equipo de producto antes de la migración 0003, o aceptación de sembrar `capabilities={}` provisional y dejar la canonicalización para una release posterior.
 4. Confirmación del environment variable `GLOBAL_ADMIN_EMAILS` con al menos un email válido antes del primer arranque del MVP (DA-5 + DA-6 + D91).
 
@@ -538,11 +536,8 @@ Las firmas aquí declaradas son el contrato que `sdd-tasks` debe implementar tes
 La ejecución local y en CI sigue el mismo orden. Cada comando es idempotente en su tramo: re-correr no rompe datos ya migrados, pero aborta ante una desviación del SHA256 de la fixture.
 
 ```bash
-# 1. Generar fixtures desde el .accdb (sólo local con Dysflow; CI consume fixtures versionadas)
-python scripts/migrate_from_access.py \
-    --accdb "C:/00repos/datos/Lanzadera_Datos.accdb" \
-    --out platform/tests/fixtures/ \
-    --expected-sha256 "<registrado en docs/03-aplicaciones/lanzadera/data-model.md>"
+# 1. Las fixtures ya están en data/fixtures/lanzadera/ (derivadas del walkthrough;
+#    ver §Decisión DA-7b). Si se actualizan, regenerar desde la documentación.
 
 # 2. Levantar Postgres + MinIO
 docker compose up -d postgres
@@ -599,7 +594,7 @@ Ninguna variable contiene secretos sin cifrar. `PLATFORM_SECRET_KEY` se inyecta 
 | `app.src.main:bootstrap` | lifecycle | Se ejecuta al arrancar el proceso; llama al `BootstrapAdapter` (DA-6) y al `MailQueueTableAdapter.purge_expired` en background. |
 | `gentle-ai platform user ...` | CLI | Subcomandos: `set-password`, `grant-global-admin`, `revoke-global-admin`, `list-apps`, `assign-profile`. Acceso restringido a global admin (D25); secretos vía variables de entorno (CA-S4). |
 | `alembic upgrade head` | migration | Aplica 0001-0006; cada migración en su propio down-grade explícito. |
-| `python scripts/migrate_from_access.py` | one-shot | Genera fixtures JSON desde el `.accdb` con Dysflow read-only (R-2). |
+| *fixtures en `data/fixtures/lanzadera/`* | data | Fixtures sintéticas derivadas del walkthrough; sin Dysflow ni pyodbc (DA-7b). |
 
 ### Quick map inverso del módulo
 
@@ -654,6 +649,61 @@ Las ocho convenciones de `docs/calidad-de-codigo-y-ci.md` §Convenciones operati
 - [ ] Los doce quality gates aparecen wired en `ci.yml`, pinned por `tests/test_ci_workflow.py` y commiteados antes del primer `git commit` de código de aplicación.
 - [ ] El tono es Castellano peninsular formal en el cuerpo narrativo; inglés en nombres de archivo, código y secciones técnicas.
 - [ ] No se crean archivos `tasks.md` ni `archive.md` en este `change` (los abren `sdd-tasks` y `sdd-archive`).
+
+## Decisión DA-7b — Fixtures derivadas del walkthrough (sin Dysflow, sin pyodbc)
+
+> **Elegida**: opción 2 — fixtures derivadas de la documentación del walkthrough.
+> **Descartada**: opción 1 (pyodbc + Access Driver) — innecesaria para el alcance del MVP.
+
+### Rationale
+
+El walkthrough de Lanzadera ya produjo documentación suficiente para construir fixtures sintéticas:
+
+- `docs/03-aplicaciones/lanzadera/data-model.md` con el schema completo y cardinalidades (20 apps, 156 users, 622 assignments).
+- `docs/03-aplicaciones/lanzadera/capabilities.md` con la clasificación de capacidades y disposición.
+- Walkthroughs G1-G5 con el inventario de 28 forms.
+
+Esa documentación es suficiente para construir fixtures que cubran todos los seeds del MVP.
+
+### Cobertura de las fixtures
+
+| Fixture | Origen | Cardinalidad |
+|---|---|---|
+| `apps.json` | `data-model.md` §TbAplicaciones | 20 filas; IDs 1-20 |
+| `users.json` | `data-model.md` §tbUsuarios | 156 filas; `password_hash=NULL` |
+| `profiles.json` | `data-model.md` §TbAplicacionesPerfiles + legacy codes | ≥1 profile por app |
+| `assignments.json` | `data-model.md` §TbUsuariosAplicacionesPermisos | 622 filas; regla `SinAcceso` exclusivo |
+| `audit_events.json` | `data-model.md` §TbConexiones + §TbAplicacionesAperturas | ~200 eventos sin telemetría |
+
+### Forma física
+
+```
+data/fixtures/lanzadera/
+├── METADATA.json          # fuente documental, walkthrough SHA
+├── apps.json              # 20 apps
+├── users.json             # 156 users (sintéticos)
+├── profiles.json           # profiles por app
+├── assignments.json        # 622 rows con 7 flags
+└── audit_events.json      # ~200 eventos sin telemetría
+```
+
+`METADATA.json` declara `"source": "docs/03-aplicaciones/lanzadera/data-model.md"`. No declara SHA del `.accdb` porque no se accede a él.
+
+### Qué NO se necesita
+
+- `scripts/migrate_from_access.py` — eliminado.
+- Dysflow MCP — usado una vez para el walkthrough; no se vuelve a invocar.
+- pyodbc / Access Driver — fuera de scope para el MVP.
+
+### Gap post-MVP — lectura del `.accdb` con contraseña
+
+El `.accdb` de producción de Lanzadera tiene contraseña. Cuando se necesite la migración real de datos (post-UAT, change futuro), el executor de lectura del `.accdb` debe poder autenticarse contra el Access Driver con esa contraseña. El stack de APAP resuelve esto con `pyodbc` + connection string con `PWD=...`. El gap técnico exacto (pydantic no maneja la contraseña del Access Driver) se registra en #625.
+
+Issue de tracking: #625. Este MVP no bloquea esa decisión — las fixtures sintéticas permiten operar sin el `.accdb` real.
+
+### Migración real futura
+
+La migración de datos del `.accdb` de producción es un change futuro (después de UAT). Ese change usará la estrategia APAP (pyodbc + snapshot + drift detection) si el scope lo justifica.
 
 ## Siguiente paso
 

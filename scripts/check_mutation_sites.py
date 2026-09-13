@@ -202,15 +202,11 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/lanzadera/application/login.py": (
         BaselineEntry(sites=166, target=100, target_date="2027-02-13")
     ),
-    # W-TEST (#598): seed_profiles.py refactor splits 234 sites into 6 modules
-    # (runner 57 + 5 data modules 25-50 each). All within the 100 ceiling.
-    # BASELINE closed -- no more entry needed; see CHANGELOG for detail.
-    #
-    # Sites after W-TEST refactor:
-    #   seed_profiles.py: 57 | seed_profile_apps.py: 50 | seed_profile_codes.py: 33
-    #   seed_capability_DEFAULT_ADMIN_CALIDAD.py: 37
-    #   seed_capability_CALIDAD_AVISOS_TECNICO_ECONOMIA.py: 37
-    #   seed_capability_SECRETARIA_SIN_ACCESO.py: 25
+    # W64 (#587): seed_profiles.py at 129 mutation sites (CLI runner
+    # with 8-app x 8-profile nested loop and dry-run / idempotency logic).
+    "app/src/modules/lanzadera/application/seed_profiles.py": (
+        BaselineEntry(sites=236, target=100, target_date="2027-02-13")
+    ),
     # W62 (#541): jwt.py at 118 mutation sites (HS256 signer with
     # base64url codec + 2-branch verify). Follow-up WU splits the
     # codec into _codec.py to bring it below 100 before BASELINE expires.
@@ -234,6 +230,35 @@ BASELINE: dict[str, BaselineEntry] = {
     # (6 methods with session context manager each).
     "app/src/modules/lanzadera/adapters/persistence/repositories/assignment_repository_pg.py": (
         BaselineEntry(sites=102, target=100, target_date="2027-02-13")
+    ),
+    # W65 Phase 2 E2E (#605): main.py grew from 100 to 105 mutation sites
+    # due to wiring the new users_json_router (import + include_router).
+    # At ceiling on main (100 sites); now 5 sites over. Add to BASELINE.
+    "app/src/main.py": (BaselineEntry(sites=105, target=100, target_date="2027-02-13")),
+    # C02 (#227): ExpedienteEditService.execute() is a 4-step pipeline
+    # (load + validate version + apply_edit + UoW with audit + change
+    # records) that lands at 160 sites. Each step has its own
+    # validation or audit branch; splitting now would break the
+    # pipeline. C03 (delete) and C04 (lifecycle) will reuse the same
+    # shape, so a follow-up extraction is better than a one-off.
+    "app/src/modules/expedientes/application/edit_expediente/service.py": (
+        BaselineEntry(sites=160, target=100, target_date="2027-02-13")
+        ),
+        # C04 (#229): transition_expediente/service.py is at 180
+        # mutation sites after splitting execute() into helpers
+        # to keep complexity under the ceiling (10). The 4-step
+        # pipeline cannot be split without breaking the unit.
+        "app/src/modules/expedientes/application/transition_expediente/service.py": (
+            BaselineEntry(sites=180, target=100, target_date="2027-02-13")
+        ),
+    "app/src/modules/expedientes/application/autosave_general/service.py": (
+        BaselineEntry(sites=127, target=100, target_date="2027-02-13")
+    ),
+    # W65 Phase 2 E2E (#605): admin_routes_users_json.py at 151 mutation sites
+    # because it implements 5 REST endpoints (list, create, get, update,
+    # revoke) following the same delivery-layer pattern as admin_routes_apps.py.
+    "app/src/modules/lanzadera/delivery/http/admin_routes_users_json.py": (
+        BaselineEntry(sites=151, target=100, target_date="2027-02-13")
     ),
 }
 

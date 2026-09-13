@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "name": "Expedientes",
+    "short_code": "EXP",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 2,
+    "name": "Condor",
+    "short_code": "COND",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 3,
+    "name": "HPS — Hoja de Presencia y Seguimiento",
+    "short_code": "HPS",
+    "deployment_topology": "office-nas",
+    "requires_office_presence": true
+  },
+  {
+    "id": 4,
+    "name": "NC — Nóminas y Contracts",
+    "short_code": "NC",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 5,
+    "name": "Brass — Bienes y Activos",
+    "short_code": "BRASS",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 6,
+    "name": "AGEDO — Gestión Técnica",
+    "short_code": "AGEDO",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 7,
+    "name": "SIGED — Sistema de Gestión Documental",
+    "short_code": "SIGED",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 8,
+    "name": "TESO — Tesorería y Caja",
+    "short_code": "TESO",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 9,
+    "name": "RRHH — Recursos Humanos",
+    "short_code": "RRHH",
+    "deployment_topology": "office-nas",
+    "requires_office_presence": true
+  },
+  {
+    "id": 10,
+    "name": "ALMACÉN — Gestión de Inventario",
+    "short_code": "ALM",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 11,
+    "name": "FACTU — Facturación y Cobros",
+    "short_code": "FACTU",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 12,
+    "name": "AUX — Módulo Auxiliar",
+    "short_code": "AUX",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 13,
+    "name": "COMPRAS — Gestión de Proveedores",
+    "short_code": "COMPRAS",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 14,
+    "name": "REPORTES — Informes de Gestión",
+    "short_code": "REPORTES",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 15,
+    "name": "CALID — Control de Calidad",
+    "short_code": "CALID",
+    "deployment_topology": "office-nas",
+    "requires_office_presence": true
+  },
+  {
+    "id": 16,
+    "name": "SOCIOS — Gestión de Socios",
+    "short_code": "SOCIOS",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 17,
+    "name": "TALLER — Órdenes de Trabajo",
+    "short_code": "TALLER",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 18,
+    "name": "TRAMIT — Tramitación Administrativa",
+    "short_code": "TRAMIT",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 19,
+    "name": "AUTO — Automatizaciones",
+    "short_code": "AUTO",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  },
+  {
+    "id": 20,
+    "name": "ENCUEST — Encuestas y Feedback",
+    "short_code": "ENCUEST",
+    "deployment_topology": "central",
+    "requires_office_presence": false
+  }
+]

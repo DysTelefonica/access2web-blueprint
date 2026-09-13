@@ -1,0 +1,1562 @@
+[
+  {
+    "id": "2ed7b964-f220-523a-b6ba-1d70a7e2a066",
+    "email": "user001@synthetic.lanzadera",
+    "name": "Ana García",
+    "dni": "000020-l",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "88f5fd43-8a21-51d4-a496-e11d5453d683",
+    "email": "user002@synthetic.lanzadera",
+    "name": "Luis García",
+    "dni": "000027-\\",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "21855c1a-ac58-573f-8971-1de29967c2a9",
+    "email": "user003@synthetic.lanzadera",
+    "name": "Carmen García",
+    "dni": "000034-c",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "87a53430-36c0-5e0b-8e1c-1e52dbca86c8",
+    "email": "user004@synthetic.lanzadera",
+    "name": "José García",
+    "dni": "000041-j",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "50f92bde-15b6-500e-b2d8-56368a1a74f6",
+    "email": "user005@synthetic.lanzadera",
+    "name": "Isabel García",
+    "dni": "000048-Z",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e5db040f-ffdd-5191-901a-95abed3fd08c",
+    "email": "user006@synthetic.lanzadera",
+    "name": "Antonio García",
+    "dni": "000055-a",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "4492833a-012e-5242-9c12-540fef9313cc",
+    "email": "user007@synthetic.lanzadera",
+    "name": "Rosa García",
+    "dni": "000062-h",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "9658d267-a0fc-5151-9f97-01ca1303b081",
+    "email": "user008@synthetic.lanzadera",
+    "name": "Miguel García",
+    "dni": "000069-X",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "5b334ed2-b38d-5eaa-8028-756acc6bf1e7",
+    "email": "user009@synthetic.lanzadera",
+    "name": "Lucía García",
+    "dni": "000076-_",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "afea93e5-c0ae-54a0-89b3-b95b1c866508",
+    "email": "user010@synthetic.lanzadera",
+    "name": "David García",
+    "dni": "000083-f",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e460e288-e4b1-5391-9d17-ea2c396d7f92",
+    "email": "user011@synthetic.lanzadera",
+    "name": "Elena García",
+    "dni": "000090-m",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "48757486-5c9e-5383-b505-c545fb1f448c",
+    "email": "user012@synthetic.lanzadera",
+    "name": "Francisco García",
+    "dni": "000097-]",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "7f0083f4-2c1b-5a2f-b872-808bc6b80dc7",
+    "email": "user013@synthetic.lanzadera",
+    "name": "Patricia García",
+    "dni": "000104-d",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "06fff041-067b-5fa6-8c3e-9216ce15636a",
+    "email": "user014@synthetic.lanzadera",
+    "name": "Juan García",
+    "dni": "000111-k",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "6f1f3beb-89c7-5ca8-b84a-f205649f70ae",
+    "email": "user015@synthetic.lanzadera",
+    "name": "Margarita García",
+    "dni": "000118-[",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "50bb70ed-071e-539e-9a6c-12b57d74f93c",
+    "email": "user016@synthetic.lanzadera",
+    "name": "Carlos García",
+    "dni": "000125-b",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "f239dec3-0ec2-54d0-a88d-8ef75b2bb50b",
+    "email": "user017@synthetic.lanzadera",
+    "name": "Sofía García",
+    "dni": "000132-i",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "49e15915-bc44-5b16-b550-741989bd9713",
+    "email": "user018@synthetic.lanzadera",
+    "name": "Pablo García",
+    "dni": "000139-Y",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e55efa47-80bd-51e6-8d51-7346f28f6f6b",
+    "email": "user019@synthetic.lanzadera",
+    "name": "Laura García",
+    "dni": "000146-`",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "fa23d3af-4249-5ffc-a0ca-dfc8de9162f1",
+    "email": "user020@synthetic.lanzadera",
+    "name": "Alberto García",
+    "dni": "000153-g",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "44e7c95b-8813-56b8-955c-d88a449a3b7a",
+    "email": "user021@synthetic.lanzadera",
+    "name": "Ana Rodríguez",
+    "dni": "000160-n",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "cb671c66-d23a-5407-b9b5-1af50cb5ab31",
+    "email": "user022@synthetic.lanzadera",
+    "name": "Luis Rodríguez",
+    "dni": "000167-^",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "bce13eeb-6bff-5b1b-a4c7-f7192bff2503",
+    "email": "user023@synthetic.lanzadera",
+    "name": "Carmen Rodríguez",
+    "dni": "000174-e",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "16406dd5-5bf4-59fd-9101-68c43cb0574c",
+    "email": "user024@synthetic.lanzadera",
+    "name": "José Rodríguez",
+    "dni": "000181-l",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "4e41f43f-f7d8-58ac-9e91-35207cca4f98",
+    "email": "user025@synthetic.lanzadera",
+    "name": "Isabel Rodríguez",
+    "dni": "000188-\\",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2e12f0e9-e8c6-56e6-a6d0-a9e9ddccdc8d",
+    "email": "user026@synthetic.lanzadera",
+    "name": "Antonio Rodríguez",
+    "dni": "000195-c",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "c0dac6c4-95d0-50d0-9001-79447af33bd3",
+    "email": "user027@synthetic.lanzadera",
+    "name": "Rosa Rodríguez",
+    "dni": "000202-j",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "016313bb-78a4-5637-882e-30fcdb7332a6",
+    "email": "user028@synthetic.lanzadera",
+    "name": "Miguel Rodríguez",
+    "dni": "000209-Z",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "346d0101-4cae-5620-ade6-6a5bd2866e63",
+    "email": "user029@synthetic.lanzadera",
+    "name": "Lucía Rodríguez",
+    "dni": "000216-a",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "6a57248a-bddd-50a7-831d-cd3836b95743",
+    "email": "user030@synthetic.lanzadera",
+    "name": "David Rodríguez",
+    "dni": "000223-h",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "b937c5ba-3be5-5707-b787-3c524f464960",
+    "email": "user031@synthetic.lanzadera",
+    "name": "Elena Rodríguez",
+    "dni": "000230-X",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "25b58f0a-86d4-5396-bdaa-463492ccfa23",
+    "email": "user032@synthetic.lanzadera",
+    "name": "Francisco Rodríguez",
+    "dni": "000237-_",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "f29c3166-1796-5c3c-8b0c-4d3bda6b25a6",
+    "email": "user033@synthetic.lanzadera",
+    "name": "Patricia Rodríguez",
+    "dni": "000244-f",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "80838eca-9f02-5075-a3e2-9cac931eb31b",
+    "email": "user034@synthetic.lanzadera",
+    "name": "Juan Rodríguez",
+    "dni": "000251-m",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "216ce046-77db-51fa-8315-f0726df25d99",
+    "email": "user035@synthetic.lanzadera",
+    "name": "Margarita Rodríguez",
+    "dni": "000258-]",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "4af4de57-7c8a-5326-b219-b2122fe159f2",
+    "email": "user036@synthetic.lanzadera",
+    "name": "Carlos Rodríguez",
+    "dni": "000265-d",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "89ab3bb5-9d27-5c13-a9a9-59216100ea51",
+    "email": "user037@synthetic.lanzadera",
+    "name": "Sofía Rodríguez",
+    "dni": "000272-k",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "c4bbdcbf-31b2-564b-b06b-88dad220a184",
+    "email": "user038@synthetic.lanzadera",
+    "name": "Pablo Rodríguez",
+    "dni": "000279-[",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "cd58372a-09bc-587c-9e34-1aed7f05572a",
+    "email": "user039@synthetic.lanzadera",
+    "name": "Laura Rodríguez",
+    "dni": "000286-b",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "cf69b4a5-9b0f-5eeb-8271-48dbb2e8e1d2",
+    "email": "user040@synthetic.lanzadera",
+    "name": "Alberto Rodríguez",
+    "dni": "000293-i",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "6671e533-dc40-5c52-b2f7-8b5898ef1799",
+    "email": "user041@synthetic.lanzadera",
+    "name": "Ana Martínez",
+    "dni": "000300-Y",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "8726995a-4513-5645-ba7a-122c2bdb6ff4",
+    "email": "user042@synthetic.lanzadera",
+    "name": "Luis Martínez",
+    "dni": "000307-`",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "f1ce883a-c4b2-50b4-b1ed-9815f75b44c1",
+    "email": "user043@synthetic.lanzadera",
+    "name": "Carmen Martínez",
+    "dni": "000314-g",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "0fe6b211-875b-5ad7-afcf-61cc66182052",
+    "email": "user044@synthetic.lanzadera",
+    "name": "José Martínez",
+    "dni": "000321-n",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "a849c843-0ee6-5daf-abe1-bebc20d224fe",
+    "email": "user045@synthetic.lanzadera",
+    "name": "Isabel Martínez",
+    "dni": "000328-^",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "ca152760-8327-5a01-a505-ccd79c0f34af",
+    "email": "user046@synthetic.lanzadera",
+    "name": "Antonio Martínez",
+    "dni": "000335-e",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "8c8c7604-2766-57fe-be03-49487f8fd2ce",
+    "email": "user047@synthetic.lanzadera",
+    "name": "Rosa Martínez",
+    "dni": "000342-l",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "73ab016f-cf2a-563e-99a9-7c5426bad629",
+    "email": "user048@synthetic.lanzadera",
+    "name": "Miguel Martínez",
+    "dni": "000349-\\",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "964b1173-6048-564b-a590-3637cf27cb8e",
+    "email": "user049@synthetic.lanzadera",
+    "name": "Lucía Martínez",
+    "dni": "000356-c",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "7d2ef5fd-b245-5c4f-95a7-1af2339cc559",
+    "email": "user050@synthetic.lanzadera",
+    "name": "David Martínez",
+    "dni": "000363-j",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "80e6d804-611f-5ef1-9a07-46f7e0bd9219",
+    "email": "user051@synthetic.lanzadera",
+    "name": "Elena Martínez",
+    "dni": "000370-Z",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "05a464d6-1648-5948-9c26-5f6edf5d5618",
+    "email": "user052@synthetic.lanzadera",
+    "name": "Francisco Martínez",
+    "dni": "000377-a",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "47a2f6be-3cd9-54ea-b536-1c22e1652c08",
+    "email": "user053@synthetic.lanzadera",
+    "name": "Patricia Martínez",
+    "dni": "000384-h",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "d02a5862-14d4-5ada-adfe-b7aea287c721",
+    "email": "user054@synthetic.lanzadera",
+    "name": "Juan Martínez",
+    "dni": "000391-X",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "fb23c13d-1c54-56a0-8d05-532f911ac3d7",
+    "email": "user055@synthetic.lanzadera",
+    "name": "Margarita Martínez",
+    "dni": "000398-_",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "f95d96a6-9327-53bb-be6e-e0dd34dc5d94",
+    "email": "user056@synthetic.lanzadera",
+    "name": "Carlos Martínez",
+    "dni": "000405-f",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "8aa4fa15-6cc5-5981-a828-5353e35ec092",
+    "email": "user057@synthetic.lanzadera",
+    "name": "Sofía Martínez",
+    "dni": "000412-m",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "c311b80e-68dc-5f38-8a91-ca24562e1d45",
+    "email": "user058@synthetic.lanzadera",
+    "name": "Pablo Martínez",
+    "dni": "000419-]",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e3d27a1d-449a-5264-b331-c576079ed13f",
+    "email": "user059@synthetic.lanzadera",
+    "name": "Laura Martínez",
+    "dni": "000426-d",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "a249244e-0215-5d11-aaa5-7f9bb0016758",
+    "email": "user060@synthetic.lanzadera",
+    "name": "Alberto Martínez",
+    "dni": "000433-k",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "1ee42ba4-c7bf-5416-860b-0995d6d68b7c",
+    "email": "user061@synthetic.lanzadera",
+    "name": "Ana López",
+    "dni": "000440-[",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "796f953c-e9fa-5e56-baac-94e538fcf721",
+    "email": "user062@synthetic.lanzadera",
+    "name": "Luis López",
+    "dni": "000447-b",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "3409d178-0bb5-5adb-a4b1-2916f279c2a4",
+    "email": "user063@synthetic.lanzadera",
+    "name": "Carmen López",
+    "dni": "000454-i",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "94ca65cd-da20-5ecc-8c8b-2bd02304561a",
+    "email": "user064@synthetic.lanzadera",
+    "name": "José López",
+    "dni": "000461-Y",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "f9593eeb-4012-5c60-ba4d-1c0794acabf1",
+    "email": "user065@synthetic.lanzadera",
+    "name": "Isabel López",
+    "dni": "000468-`",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "03e2738a-0a9e-571c-b49f-b4292dbcd839",
+    "email": "user066@synthetic.lanzadera",
+    "name": "Antonio López",
+    "dni": "000475-g",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "eda0429b-8bf0-55c4-b970-b10b71226e98",
+    "email": "user067@synthetic.lanzadera",
+    "name": "Rosa López",
+    "dni": "000482-n",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "9fea849d-0dfe-568a-a350-d6b97c83f66f",
+    "email": "user068@synthetic.lanzadera",
+    "name": "Miguel López",
+    "dni": "000489-^",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "b54e2e17-593d-51cc-bdf6-e1d7c90de531",
+    "email": "user069@synthetic.lanzadera",
+    "name": "Lucía López",
+    "dni": "000496-e",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "449a3bdb-3936-5f4c-abb3-f9d9cffeebd0",
+    "email": "user070@synthetic.lanzadera",
+    "name": "David López",
+    "dni": "000503-l",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "a4efbd3b-b1db-5b0b-82b0-de5d1a6922f3",
+    "email": "user071@synthetic.lanzadera",
+    "name": "Elena López",
+    "dni": "000510-\\",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "bebc4dda-3a9c-5d17-ae73-82be2068f8da",
+    "email": "user072@synthetic.lanzadera",
+    "name": "Francisco López",
+    "dni": "000517-c",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2a5c2b46-8df2-539e-89cb-23bac8880b70",
+    "email": "user073@synthetic.lanzadera",
+    "name": "Patricia López",
+    "dni": "000524-j",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "9c0b7afe-6683-55a2-86f7-7ac704cd2608",
+    "email": "user074@synthetic.lanzadera",
+    "name": "Juan López",
+    "dni": "000531-Z",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "9fc7eab4-aa8e-5167-bf27-a01ca4bec830",
+    "email": "user075@synthetic.lanzadera",
+    "name": "Margarita López",
+    "dni": "000538-a",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2c5d2f21-b93a-5b46-8efe-b7c3436e9718",
+    "email": "user076@synthetic.lanzadera",
+    "name": "Carlos López",
+    "dni": "000545-h",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "ab643399-05c5-5ce6-8e22-13337955f9c1",
+    "email": "user077@synthetic.lanzadera",
+    "name": "Sofía López",
+    "dni": "000552-X",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "4c81ed6a-cc9b-5003-9914-06ce829cfc57",
+    "email": "user078@synthetic.lanzadera",
+    "name": "Pablo López",
+    "dni": "000559-_",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "fbec04b2-e007-53ef-a54f-93307d596790",
+    "email": "user079@synthetic.lanzadera",
+    "name": "Laura López",
+    "dni": "000566-f",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2f676b81-0ff6-515b-a246-56b6452a76eb",
+    "email": "user080@synthetic.lanzadera",
+    "name": "Alberto López",
+    "dni": "000573-m",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "5cdee7ca-90dd-5723-abe4-8a9984ca0bac",
+    "email": "user081@synthetic.lanzadera",
+    "name": "Ana González",
+    "dni": "000580-]",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2120b47f-3430-50ee-9ac2-8965933fccec",
+    "email": "user082@synthetic.lanzadera",
+    "name": "Luis González",
+    "dni": "000587-d",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "c6d578e3-876b-501a-b44e-e2dd8829135d",
+    "email": "user083@synthetic.lanzadera",
+    "name": "Carmen González",
+    "dni": "000594-k",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "55bd220a-7aa0-56c4-bd62-1fd0c2936738",
+    "email": "user084@synthetic.lanzadera",
+    "name": "José González",
+    "dni": "000601-[",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "8d3c6feb-2be7-585e-be62-dc34cafdab98",
+    "email": "user085@synthetic.lanzadera",
+    "name": "Isabel González",
+    "dni": "000608-b",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "cf9749fe-c8f2-50d8-aeb3-3a9b558b2cc5",
+    "email": "user086@synthetic.lanzadera",
+    "name": "Antonio González",
+    "dni": "000615-i",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "233d61d5-6587-5dc3-842f-84b1661ce6a6",
+    "email": "user087@synthetic.lanzadera",
+    "name": "Rosa González",
+    "dni": "000622-Y",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "33b21aaa-37fd-59b6-9098-f674899603b0",
+    "email": "user088@synthetic.lanzadera",
+    "name": "Miguel González",
+    "dni": "000629-`",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "624a966a-6797-5968-82b2-2d1160cf38b7",
+    "email": "user089@synthetic.lanzadera",
+    "name": "Lucía González",
+    "dni": "000636-g",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "baec4689-f621-51e4-a1aa-6f9147e3870e",
+    "email": "user090@synthetic.lanzadera",
+    "name": "David González",
+    "dni": "000643-n",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "528e2f84-0ef7-50eb-b9dc-47ef425791af",
+    "email": "user091@synthetic.lanzadera",
+    "name": "Elena González",
+    "dni": "000650-^",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "1eff9a96-d3cc-5bc0-9614-2084a9dc8a47",
+    "email": "user092@synthetic.lanzadera",
+    "name": "Francisco González",
+    "dni": "000657-e",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "3fc0767c-d1fb-561d-9dfd-0c9bb0975b91",
+    "email": "user093@synthetic.lanzadera",
+    "name": "Patricia González",
+    "dni": "000664-l",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "5cdea98a-bda1-5a3e-bdd6-7a2d160810d1",
+    "email": "user094@synthetic.lanzadera",
+    "name": "Juan González",
+    "dni": "000671-\\",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "04ea3b40-c8fd-584c-8f29-7ff44af16f6a",
+    "email": "user095@synthetic.lanzadera",
+    "name": "Margarita González",
+    "dni": "000678-c",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "b0c32bed-e756-5645-95b3-e2fe5f3bffee",
+    "email": "user096@synthetic.lanzadera",
+    "name": "Carlos González",
+    "dni": "000685-j",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "f71d7a14-b0bb-57a4-bec4-dff8dded9444",
+    "email": "user097@synthetic.lanzadera",
+    "name": "Sofía González",
+    "dni": "000692-Z",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "bd4f6018-7238-5a25-82fc-ab3d637721eb",
+    "email": "user098@synthetic.lanzadera",
+    "name": "Pablo González",
+    "dni": "000699-a",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "a9e71e7a-a37a-513d-b9cf-ec1c5068bfde",
+    "email": "user099@synthetic.lanzadera",
+    "name": "Laura González",
+    "dni": "000706-h",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "46bc4799-b4fe-5cad-a20e-ca7c1209b257",
+    "email": "user100@synthetic.lanzadera",
+    "name": "Alberto González",
+    "dni": "000713-X",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "b010d851-af36-5c0c-9453-3e54817a9579",
+    "email": "user101@synthetic.lanzadera",
+    "name": "Ana Fernández",
+    "dni": "000720-_",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "26895448-676e-5422-b368-fdd43a7498b8",
+    "email": "user102@synthetic.lanzadera",
+    "name": "Luis Fernández",
+    "dni": "000727-f",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "dfccc94d-d636-5e55-911d-fd7fd4f0bed2",
+    "email": "user103@synthetic.lanzadera",
+    "name": "Carmen Fernández",
+    "dni": "000734-m",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "b9f00448-ae2d-5402-95b8-b9d1d47a0f0c",
+    "email": "user104@synthetic.lanzadera",
+    "name": "José Fernández",
+    "dni": "000741-]",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "481d926a-578f-5a46-860d-5cc8fbc24eb3",
+    "email": "user105@synthetic.lanzadera",
+    "name": "Isabel Fernández",
+    "dni": "000748-d",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "fe4ff4b6-47e4-5682-906e-8bc88ded48b2",
+    "email": "user106@synthetic.lanzadera",
+    "name": "Antonio Fernández",
+    "dni": "000755-k",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "55fa42b1-72e5-5f9e-b736-03295cb55fe3",
+    "email": "user107@synthetic.lanzadera",
+    "name": "Rosa Fernández",
+    "dni": "000762-[",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "adaa8e6f-660b-552a-a3dc-0ad080937e1c",
+    "email": "user108@synthetic.lanzadera",
+    "name": "Miguel Fernández",
+    "dni": "000769-b",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "9f673eee-356a-56ec-b56c-6e096e0c0841",
+    "email": "user109@synthetic.lanzadera",
+    "name": "Lucía Fernández",
+    "dni": "000776-i",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "bfa3a504-a65c-5d88-82a3-4002d7b19cb0",
+    "email": "user110@synthetic.lanzadera",
+    "name": "David Fernández",
+    "dni": "000783-Y",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "ba054d49-80e1-5cd2-8a7a-0c128c896ab2",
+    "email": "user111@synthetic.lanzadera",
+    "name": "Elena Fernández",
+    "dni": "000790-`",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "5dcaa628-700a-5f45-9da7-b130f3767a65",
+    "email": "user112@synthetic.lanzadera",
+    "name": "Francisco Fernández",
+    "dni": "000797-g",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "927c47c0-fae3-560b-bf92-0a31f2e323db",
+    "email": "user113@synthetic.lanzadera",
+    "name": "Patricia Fernández",
+    "dni": "000804-n",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "f4b9f854-2372-57d0-a947-f9bdd7a8e035",
+    "email": "user114@synthetic.lanzadera",
+    "name": "Juan Fernández",
+    "dni": "000811-^",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "b52c6037-f02b-52ae-860c-3afed8d231d4",
+    "email": "user115@synthetic.lanzadera",
+    "name": "Margarita Fernández",
+    "dni": "000818-e",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "4c8002bd-ef74-5bc8-bace-4b2312eb2b44",
+    "email": "user116@synthetic.lanzadera",
+    "name": "Carlos Fernández",
+    "dni": "000825-l",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "d67c39c3-9ad5-576f-85ce-346bc7c190fe",
+    "email": "user117@synthetic.lanzadera",
+    "name": "Sofía Fernández",
+    "dni": "000832-\\",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2ecdb150-9578-54c7-ba76-3916c376789b",
+    "email": "user118@synthetic.lanzadera",
+    "name": "Pablo Fernández",
+    "dni": "000839-c",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "bf38df67-e4b0-5c3f-b82e-25ae4dc07bc6",
+    "email": "user119@synthetic.lanzadera",
+    "name": "Laura Fernández",
+    "dni": "000846-j",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "7694aeb1-aa20-565d-b1b2-b72f44b1d35b",
+    "email": "user120@synthetic.lanzadera",
+    "name": "Alberto Fernández",
+    "dni": "000853-Z",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "75100d79-4ca7-5207-b724-bf5f0fe7b052",
+    "email": "user121@synthetic.lanzadera",
+    "name": "Ana Pérez",
+    "dni": "000860-a",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "9b886e09-f2fe-5ecb-8a17-e53d9daec392",
+    "email": "user122@synthetic.lanzadera",
+    "name": "Luis Pérez",
+    "dni": "000867-h",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e3d6c79e-5d68-508b-a0ef-91ba32fecae8",
+    "email": "user123@synthetic.lanzadera",
+    "name": "Carmen Pérez",
+    "dni": "000874-X",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "86285d89-ee1a-514b-8708-0835dd7b6fa7",
+    "email": "user124@synthetic.lanzadera",
+    "name": "José Pérez",
+    "dni": "000881-_",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "d6b26ff2-0aba-59db-9ea4-32a4039a6ced",
+    "email": "user125@synthetic.lanzadera",
+    "name": "Isabel Pérez",
+    "dni": "000888-f",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "4675cfa1-d3b6-5ee9-801c-52d7e1ef0f6d",
+    "email": "user126@synthetic.lanzadera",
+    "name": "Antonio Pérez",
+    "dni": "000895-m",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "eec662b4-2e9a-53d7-8e60-5cb0bb03932e",
+    "email": "user127@synthetic.lanzadera",
+    "name": "Rosa Pérez",
+    "dni": "000902-]",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "76e0265b-b55f-5192-a8ab-40c610c18688",
+    "email": "user128@synthetic.lanzadera",
+    "name": "Miguel Pérez",
+    "dni": "000909-d",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "6a08e3d2-6054-53c3-87cd-5b5fe6b3c37a",
+    "email": "user129@synthetic.lanzadera",
+    "name": "Lucía Pérez",
+    "dni": "000916-k",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "cde8450c-4be6-5fe1-b618-a600608723b3",
+    "email": "user130@synthetic.lanzadera",
+    "name": "David Pérez",
+    "dni": "000923-[",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "bc4fefae-3167-5f66-b4fd-5b88198dfb08",
+    "email": "user131@synthetic.lanzadera",
+    "name": "Elena Pérez",
+    "dni": "000930-b",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2df841e9-dae5-5b3c-9270-5c78aafa6d6a",
+    "email": "user132@synthetic.lanzadera",
+    "name": "Francisco Pérez",
+    "dni": "000937-i",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "5a0c7299-8fea-5902-85a7-57423019b462",
+    "email": "user133@synthetic.lanzadera",
+    "name": "Patricia Pérez",
+    "dni": "000944-Y",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "a7a7c372-2e82-569b-866f-5405a0bc4f4a",
+    "email": "user134@synthetic.lanzadera",
+    "name": "Juan Pérez",
+    "dni": "000951-`",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e0890f4e-869a-59ec-a1a3-295b5d40689b",
+    "email": "user135@synthetic.lanzadera",
+    "name": "Margarita Pérez",
+    "dni": "000958-g",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "d42dab9c-f7d1-524f-bde7-aaecfa376eea",
+    "email": "user136@synthetic.lanzadera",
+    "name": "Carlos Pérez",
+    "dni": "000965-n",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "879965da-f3b3-5978-88d8-1f3bcc9b0ad7",
+    "email": "user137@synthetic.lanzadera",
+    "name": "Sofía Pérez",
+    "dni": "000972-^",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "20a3852e-e264-54b3-b085-46247381a95e",
+    "email": "user138@synthetic.lanzadera",
+    "name": "Pablo Pérez",
+    "dni": "000979-e",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "c7e12b4c-db2a-5850-93b3-ece4b0e1e55f",
+    "email": "user139@synthetic.lanzadera",
+    "name": "Laura Pérez",
+    "dni": "000986-l",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "fab06641-a32e-5cc2-9123-7e67e66737c6",
+    "email": "user140@synthetic.lanzadera",
+    "name": "Alberto Pérez",
+    "dni": "000993-\\",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "a02f3ee7-257f-549e-bb43-1ac04f8f319d",
+    "email": "user141@synthetic.lanzadera",
+    "name": "Ana Sánchez",
+    "dni": "001000-c",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e4f9420b-bef6-5b77-8448-98a918d7bcf4",
+    "email": "user142@synthetic.lanzadera",
+    "name": "Luis Sánchez",
+    "dni": "001007-j",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "196ed292-83ea-5a7a-93b3-30d9cab677bf",
+    "email": "user143@synthetic.lanzadera",
+    "name": "Carmen Sánchez",
+    "dni": "001014-Z",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "9c4ca87b-1703-5d49-862e-2d0280f48bf9",
+    "email": "user144@synthetic.lanzadera",
+    "name": "José Sánchez",
+    "dni": "001021-a",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "ab0d03fd-738e-56af-aadb-c8e5260770cc",
+    "email": "user145@synthetic.lanzadera",
+    "name": "Isabel Sánchez",
+    "dni": "001028-h",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "dfd68a1b-4b5b-585a-bd4a-ce28ac7f3aa5",
+    "email": "user146@synthetic.lanzadera",
+    "name": "Antonio Sánchez",
+    "dni": "001035-X",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "e096ce44-d4c8-51b1-8e08-aca6c3bcdd33",
+    "email": "user147@synthetic.lanzadera",
+    "name": "Rosa Sánchez",
+    "dni": "001042-_",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "69e35efe-602d-57e0-9165-ae5c99ca6cc7",
+    "email": "user148@synthetic.lanzadera",
+    "name": "Miguel Sánchez",
+    "dni": "001049-f",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "2eddcf62-3401-5184-b987-1aadd7391bf8",
+    "email": "user149@synthetic.lanzadera",
+    "name": "Lucía Sánchez",
+    "dni": "001056-m",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "b15b68e6-f710-57a4-be92-7ba2ef75fe2e",
+    "email": "user150@synthetic.lanzadera",
+    "name": "David Sánchez",
+    "dni": "001063-]",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "3b302e9a-cf16-5463-a99c-bbca90500d80",
+    "email": "user151@synthetic.lanzadera",
+    "name": "Elena Sánchez",
+    "dni": "001070-d",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "80de38a7-7554-52c9-8be0-d96b3a9d860b",
+    "email": "user152@synthetic.lanzadera",
+    "name": "Francisco Sánchez",
+    "dni": "001077-k",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "ac5ab6b1-ac5d-574f-98cf-94d933548113",
+    "email": "user153@synthetic.lanzadera",
+    "name": "Patricia Sánchez",
+    "dni": "001084-[",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "20a6d293-939c-500c-b184-da8fce6c8978",
+    "email": "user154@synthetic.lanzadera",
+    "name": "Juan Sánchez",
+    "dni": "001091-b",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "1e3f4e40-76f4-535d-b2ca-18e6d2658f9d",
+    "email": "user155@synthetic.lanzadera",
+    "name": "Margarita Sánchez",
+    "dni": "001098-i",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  },
+  {
+    "id": "da8cc002-db46-5c66-a511-96f6814b4ac1",
+    "email": "user156@synthetic.lanzadera",
+    "name": "Carlos Sánchez",
+    "dni": "001105-Y",
+    "status": "password_reset_required",
+    "failed_attempts": 0,
+    "created_at": "2026-01-01T00:00:00+00:00",
+    "updated_at": "2026-01-01T00:00:00+00:00"
+  }
+]

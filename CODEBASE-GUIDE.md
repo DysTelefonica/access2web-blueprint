@@ -67,7 +67,7 @@ Legacy apps (Access/VBA)         Este monorepo                          Apps web
 | Modificar un walkthrough             | `docs/03-aplicaciones/<app>/walkthrough-*.json`         | Esta guía → "Walkthrough patterns" abajo                     |
 | Documentar un bug de dysflow          | [docs/prompts/prompt-ia-mantenedora-dysflow-round-*.md](../docs/prompts/) | [issues filed](#bugs-dysflow-filed) en DysTelefonica/dysflow |
 | Diseñar UI/UX de una app             | [docs/design/mockups/](../docs/design/mockups/)         | Skills `telefonica-brand-design` + `frontend-design`         |
-| Escribir docs (estilo y formato)     | Skill `documentation-patterns`                          | Skill `docs-index` + `codebase-guide`                         |
+| Escribir docs (estilo y formato)     | [`documentation-alan-style`](skills/documentation-alan-style/SKILL.md) | [`skills/README.md`](skills/README.md) — índice de skills del proyecto |
 | Configurar quality gates del MVP    | [docs/calidad-de-codigo-y-ci](../docs/calidad-de-codigo-y-ci.md) | Esta guía → "Estructura del repo" + `pyproject.toml`          |
 | Hacer un PR                          | [CONTRIBUTING](../CONTRIBUTING.md)                       | Esta guía → "Workflow de contribución" abajo                  |
 
@@ -125,7 +125,7 @@ raíz/
 | Código de plataforma | `app/src/modules/<app>/` | Platform team | Se queda en este monorepo. |
 | Migraciones Alembic | `app/migrations/versions/` | Platform team | Se queda en este monorepo (Expand & Contract, D82). |
 | Quality gates + CI | [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) + `.github/workflows/` | Platform team | El doc se mantiene; los workflows viven en `.github/`. |
-| Skills de opencode | `C:\Proyectos\skills\skills\` | El user | NO se mueven; trascienden este repo. |
+| Skills del proyecto | `skills/` | Contribuidores | Se instalan con `scripts/install-skills.sh`; la originals viven aquí, versionadas con el código. |
 
 ## Walkthrough patterns
 
@@ -136,7 +136,7 @@ raíz/
 | **v3** | NC, GR (pre-fix #1407) | `analyze_form_layout` SKIPPED, `form_list_controls` + lint manual de geometry | `tool_warnings: ["map_form_behavior: --json rejected (bug #1408)"]` |
 | **v4** | Lanzaderas, Expedientes (post-fix #1407) | `analyze_form_layout` ✅, `map_form_behavior` con `autoFetchCodeGraph:false`, `verify_form_bindings` SKIPPED | `tool_warnings: ["verify_form_bindings: RESULT_CONTRACT_VIOLATION (issue #1412)"]` |
 
-**Schema por form** (ver [skill `documentation-patterns`](../Proyectos/skills/skills/documentation-patterns/SKILL.md) para detalles):
+**Schema por form** (ver [`documentation-alan-style`](skills/documentation-alan-style/SKILL.md) para detalles):
 
 ```json
 {
@@ -160,8 +160,8 @@ raíz/
 Si en el futuro se agrega una novena app (no aplica ahora, las 8 están cerradas), los pasos son:
 
 1. **Crear carpeta** `docs/03-aplicaciones/<nueva-app>/`.
-2. **Walkthrough**: lanzar 5 sub-agentes en paralelo con método v4 (5 grupos de forms), siguiendo [skill `documentation-patterns`](../Proyectos/skills/skills/documentation-patterns/SKILL.md) y el patrón de las 8 épicas existentes.
-3. **Crear `epic.md`** siguiendo la estructura de 7 secciones + 2 anexos + checklist. Ver [skill `docs-index`](../Proyectos/skills/skills/docs-index/SKILL.md).
+2. **Walkthrough**: lanzar 5 sub-agentes en paralelo con método v4 (5 grupos de forms), siguiendo [`documentation-alan-style`](skills/documentation-alan-style/SKILL.md) y el patrón de las 8 épicas existentes.
+3. **Crear `epic.md`** siguiendo la estructura de 7 secciones + 2 anexos + checklist. Ver [`documentation-alan-style`](skills/documentation-alan-style/SKILL.md).
 4. **Crear walkthrough-*.json** (5 archivos, 1 por grupo).
 5. **Crear PR** con el título `docs(<app>): add epic - <N>/<N> forms walkthroughed via method v<N>`.
 6. **Mergear con `--squash --delete-branch`** (vía `gh pr merge`).
@@ -185,7 +185,7 @@ Ver [CONTRIBUTING](../CONTRIBUTING.md) para:
 
 ## Full technical reference stays in DOCS.md
 
-Esta guía explica ownership, flows, y guardrails. **NO duplica** la API reference completa. Para endpoints, schemas, MCP parameters, y CLI flags, usá [DOCS.md](../DOCS.md).
+Esta guía explica ownership, flows, y guardrails. **NO duplica** la API reference completa. Para endpoints, schemas, MCP parameters, y CLI flags, use [DOCS.md](../DOCS.md).
 
 ## What this is
 

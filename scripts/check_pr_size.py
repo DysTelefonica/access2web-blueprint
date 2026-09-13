@@ -35,6 +35,7 @@ EXCLUDED_SUFFIXES = ("uv.lock", "poetry.lock", "package-lock.json", "pnpm-lock.y
 
 OVERRIDE_MARKER = "size:exception"
 OVERRIDE_REASON = re.compile(r"^\s*size-exception-reason:\s*(?P<reason>\S.*)$", re.MULTILINE)
+OVERRIDE_MARKER_RE = re.compile(r"^\s*.*size:exception", re.MULTILINE)
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -73,7 +74,7 @@ def changed_lines(base_ref: str) -> tuple[int, list[tuple[str, int]]]:
 
 def override_reason(pr_body: str) -> str | None:
     """Return the stated reason when a valid override is present, else ``None``."""
-    if OVERRIDE_MARKER not in pr_body:
+    if not OVERRIDE_MARKER_RE.search(pr_body):
         return None
     match = OVERRIDE_REASON.search(pr_body)
     return match.group("reason").strip() if match else None

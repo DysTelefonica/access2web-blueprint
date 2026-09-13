@@ -1,0 +1,7 @@
+{
+  "extends": "@playwright/test/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true
+  }
+}
