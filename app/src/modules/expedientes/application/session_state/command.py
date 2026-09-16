@@ -1,12 +1,8 @@
-"""Commands and outcomes for EXP-CAP-045 Estado de sesión adapter."""
-
-from __future__ import annotations
+"""Commands and outcomes for EXP-CAP-045 Estado de sesión adapter (A03)."""
 
 from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
-
-EXPEDIENTES_APP_ID: int = 19
 
 
 class SessionStateError(Exception):
@@ -33,11 +29,10 @@ class SessionState:
     actor_id: UUID
     session_id: UUID
     bound_at: datetime
-    app_id: int = EXPEDIENTES_APP_ID
+    app_id: int = 19  # canonical expedientes app id (see _evidence.py)
 
 
 __all__ = [
-    "EXPEDIENTES_APP_ID",
     "SessionStateAuthorizationError",
     "SessionStateCommand",
     "SessionStateError",
