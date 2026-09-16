@@ -10,8 +10,10 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from app.src.modules.expedientes.application.session_state.command import (
+from app.src.modules.expedientes.application.session_state._evidence import (
     EXPEDIENTES_APP_ID,
+)
+from app.src.modules.expedientes.application.session_state.command import (
     SessionState,
     SessionStateAuthorizationError,
     SessionStateCommand,
