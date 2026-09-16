@@ -70,9 +70,7 @@ async def test_loaded_returns_principal_with_permissions() -> None:
 
 async def test_deny_when_lanzadera_returns_principal_with_no_permissions() -> None:
     actor = uuid4()
-    principal = Principal(
-        user_id=actor, app_id=EXPEDIENTES_APP_ID, permissions=frozenset()
-    )
+    principal = Principal(user_id=actor, app_id=EXPEDIENTES_APP_ID, permissions=frozenset())
     lanzadera = _FakeLanzadera(principal_to_return=principal)
     service, audit = _make_service(lanzadera=lanzadera)
 
