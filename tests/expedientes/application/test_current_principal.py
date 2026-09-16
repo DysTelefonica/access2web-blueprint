@@ -8,9 +8,9 @@ from uuid import UUID, uuid4
 import pytest
 
 from app.src.modules.expedientes.application.current_principal.command import (
+    EXPEDIENTES_APP_ID,
     CurrentPrincipalAuthorizationError,
     CurrentPrincipalCommand,
-    EXPEDIENTES_APP_ID,
     Principal,
 )
 from app.src.modules.expedientes.application.current_principal.service import (
