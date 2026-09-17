@@ -306,10 +306,19 @@ jobs:
       # `quality` check is now driven by the script-level exit code.
 
   mutation:
-    # Scheduled and manual only. THIS IS THE ONE JOB THE SKILL COULD NOT EXECUTE END TO END —
+    # Scheduled, manual and on tag push (XCUT #703). THIS IS THE ONE JOB THE SKILL COULD NOT EXECUTE END TO END —
     # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
     # session needs the mutation runner on a real codebase. Verify it once on adoption.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    # The tag-push branch is the XCUT #703 contract: a release cannot publish unless
+    # mutation testing has run on the exact bytes of the tag. Costs ~60 min on the
+    # self-hosted `a2w` runner; the release path accepts that latency to keep the
+    # fail-closed guarantee (alternative was a preflight lookup of a recent manual
+    # run, which relies on operational discipline).
+    # NOTE: the `if` uses the simple `!= 'pull_request'` exclusion accepted by
+    # `scripts/check_workflows.py::_condition_excludes_pull_requests` — this is
+    # what makes a self-hosted runner safely PR-reachable on push, schedule and
+    # workflow_dispatch without exposing the runner to PR-originated code.
+    if: github.event_name != 'pull_request'
     runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
     # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
     # succession serialize rather than racing cosmic-ray's sqlite (umbrella #117).
