@@ -4,8 +4,6 @@
 docstring there for the DRY-ratchet rationale (``dup:79d8c5976f0f``).
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Literal

@@ -4,8 +4,6 @@ Canonical home for ``EXPEDIENTES_APP_ID = 19``; keeps ``command.py`` free of
 cross-file duplication (check_dry BASELINE ``dup:79d8c5976f0f``).
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
