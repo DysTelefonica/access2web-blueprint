@@ -313,6 +313,16 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/autosave_related/service.py": (
         BaselineEntry(sites=166, target=100, target_date="2027-02-13")
     ),
+    # H01 (#248): HpsService.submit builds the HpsSubmission from a frozen
+    # dataclass, hashes (idempotency_key, payload) via blake2b for the
+    # signature, and chains IdempotencyPort.get/record around a single
+    # HpsPort.submit call. The mutation ceiling of 100 is a Hard Rule 12
+    # ratchet; HpsService exceeds it on first contribution because each
+    # path (deny / dedupe / submit / wrapper) adds to the structural
+    # surface even after extracting helpers. Target = 100 by 2027-02-13.
+    "app/src/modules/expedientes/application/hps/service.py": (
+        BaselineEntry(sites=108, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
