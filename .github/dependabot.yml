@@ -28,3 +28,17 @@ updates:
       - type:chore
     commit-message:
       prefix: ci(platform)
+
+  - package-ecosystem: npm
+    directory: /e2e
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:45"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - type:chore
+    commit-message:
+      prefix: chore(e2e)
