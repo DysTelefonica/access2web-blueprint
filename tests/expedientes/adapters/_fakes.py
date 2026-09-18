@@ -87,6 +87,17 @@ class FakeCatalogRepository:
             v for v in self.entries.values() if q in str(getattr(v, "descripcion", "")).lower()
         ][:limit]
 
+    async def list_vigentes_en(self, fecha: object) -> list[object]:
+        self.calls.append("list_vigentes_en")
+        return list(self.entries.values())
+
+    async def vigentes_search(self, query: str, fecha: object, limit: int = 20) -> list[object]:
+        self.calls.append("vigentes_search")
+        q = query.lower()
+        return [
+            v for v in self.entries.values() if q in str(getattr(v, "descripcion", "")).lower()
+        ][:limit]
+
 
 @dataclass
 class FakeAuditLog:

@@ -86,6 +86,7 @@ con código distinto de cero, no.
 | `scripts/release-preflight.sh` | Local y workflow `release` | Tag sin anotar, versión no canónica, o commit que no es el `origin/main` actual. |
 | `scripts/require-ci-success.sh` | Workflow `release` | Tag sobre un commit cuyo workflow `ci` no está en verde. |
 | `cosign verify` | Workflow `release` | Digest sin firma válida del workflow y tag exactos. |
+| Job `mutation` en `ci.yml` (XCUT #703) | Workflow `ci` sobre tag push | Tag sobre un commit cuyo `mutation` no ha corrido en verde para ese SHA. ~60 min al critical path del release sobre el runner `a2w`. |
 | `pre-push` (`gentleai.gatedTags`) | Máquina local | Publicación de un tag estable. Es una barrera, no un cerrojo. |
 
 ### Verificación criptográfica

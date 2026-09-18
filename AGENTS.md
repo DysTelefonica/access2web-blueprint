@@ -116,7 +116,7 @@ Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de propo
 
 1. [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) — overview + ownership + reading path.
 2. [`docs/architecture.md`](docs/architecture.md) — fuente de verdad única de la arquitectura (capas hexagonales, decisiones D-<n> cross-cutting vigentes y obsoletas, patrones transversales).
-3. [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) — gates de calidad (los 12 `check_*.py` + los 5 workflows).
+3. [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) — gates de calidad (los 14 `check_*.py` + los 5 workflows).
 4. [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow + label system + convention multi-app.
 5. Si el cambio pertenece a un OpenSpec change vivo, su `openspec/changes/<change>/design.md`.
 6. Si toca una app específica, su `docs/03-aplicaciones/<app>/epic.md`.
@@ -128,23 +128,30 @@ Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rule
 `main` tiene branch protection desde el 2026-09-09, tras hacer público el
 repositorio en GitHub Free. La protección se aplica también a administradores.
 
-GitHub exige un PR actualizado con `main`, todas las conversaciones resueltas y
-estos checks en verde: `quality`, `review-budget`, `pip-audit`, `gitleaks`,
-`trivy-config` y `codeql`. No permite force-push ni borrar la rama.
+GitHub exige un PR actualizado con `main`, todas las conversaciones resueltas
+y (tras issue #702) un único check en verde: `required`. Ese job agrega
+(`needs:`) `review-budget`, `quality`, `security` y `codeql` — los dos
+últimos invocan `security.yml`/`codeql.yml` como jobs `uses:` porque
+`needs:` no cruza archivos de workflow — y falla cerrado ante cualquier job
+faltante, en `failure`, o en un `skipped` no permitido para ese evento
+(`scripts/check_required_jobs.py`). No permite force-push ni borrar la rama.
 
 Todo job alcanzable desde un PR público usa un runner hospedado por GitHub. El
-gate `check_workflows.py` rechaza etiquetas propias o dinámicas en esa ruta.
+gate `check_workflows.py` rechaza etiquetas propias o dinámicas en esa ruta;
+un job que solo invoca un reusable workflow (`uses:`) no declara `runs-on` y
+está exento de ese check puntual — el reusable workflow invocado sigue esa
+misma regla cuando se lo analiza por su cuenta.
 
-`merge-ready` conserva su función informativa. No es un check protegido porque
-no agrega los demás jobs y termina correctamente cuando falta una aprobación.
+`merge-ready` fue retirado (issue #702): quedaba completamente superado por
+`required`, que sí bloquea el merge.
 
 Pasos del revisor antes de mergear:
 
-1. Verifique que los seis checks protegidos pertenecen al último SHA del PR.
+1. Verifique que `required` pertenece al último SHA del PR.
 2. Compruebe que las conversaciones están resueltas.
 3. Si un check falla por una dependencia externa, abra un issue y corrija el
    bloqueo antes de integrar. No eluda la protección.
-4. Integre con `--squash` y conserve la rama remota.
+4. Integre con merge commit (no squash, práctica real del historial de `main`) y conserve la rama remota.
 
 Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mergear.
 

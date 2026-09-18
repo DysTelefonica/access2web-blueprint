@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 WORKFLOW = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "codeql.yml"
-CODEQL_ACTION_SHA = "cdf488f595d80d6e07e03d4674febd5ab45fa938"
+CODEQL_ACTION_SHA = "b96794f015dfd88f77b49b1c93e0fa7110f94c63"
 
 
 def _load_workflow() -> dict:
@@ -15,14 +15,23 @@ def _triggers(workflow: dict) -> dict:
     return workflow.get("on", workflow.get(True, {}))
 
 
-def test_codeql_scans_python_on_pr_push_and_schedule() -> None:
+def test_codeql_scans_python_via_reusable_workflow_call() -> None:
+    """Issue #702: codeql.yml is `on: workflow_call` only.
+
+    It no longer has independent `pull_request`/`push`/`schedule`/
+    `workflow_dispatch` triggers of its own — it is invoked as a job
+    (`uses: ./.github/workflows/codeql.yml`) from `ci.yml`, which is what
+    lets the `required` aggregator `needs:` it (`needs:` cannot cross
+    workflow files, but a job invoked via `uses:` still reports an
+    ordinary job result). `ci.yml`'s own triggers (pull_request, push to
+    main, weekly schedule, workflow_dispatch) are what now drive when this
+    analysis actually runs.
+    """
     workflow = _load_workflow()
     triggers = _triggers(workflow)
     job = workflow["jobs"]["codeql"]
 
-    assert {"pull_request", "push", "schedule", "workflow_dispatch"} <= set(triggers)
-    assert triggers["pull_request"]["branches"] == ["main"]
-    assert triggers["push"]["branches"] == ["main"]
+    assert set(triggers) == {"workflow_call"}
     assert job["runs-on"] == "ubuntu-24.04"
     assert job["permissions"]["security-events"] == "write"
 

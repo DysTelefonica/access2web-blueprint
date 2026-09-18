@@ -53,6 +53,7 @@ def test_tracker_branch_is_allowlisted(script: Path) -> None:
     # strategy places it in the ALLOWLIST, not in the convention match (it has
     # no `<n>-` prefix). Pin the contract.
     assert "feat/lanzadera-mvp-tracker" in module.ALLOWLIST
+    assert "test/w-test-cleanup" in module.ALLOWLIST
     assert "main" in module.ALLOWLIST
 
 

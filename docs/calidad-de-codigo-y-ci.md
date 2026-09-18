@@ -12,7 +12,7 @@
 
 | Es | No es |
 |---|---|
-| Catálogo de los 13 `check_*.py` + sus QC.<br>Contrato de los 5 workflows de `.github/`.<br>Cómo se invoca cada gate localmente. | Réplica de [`docs/architecture.md`](architecture.md) §CI gates.<br>Manual de uso de dysflow ni de las migraciones Alembic.<br>Política del revisor humano (eso vive en [`AGENTS.md`](../../AGENTS.md)). |
+| Catálogo de los 14 `check_*.py` + sus QC.<br>Contrato de los 5 workflows de `.github/`.<br>Cómo se invoca cada gate localmente. | Réplica de [`docs/architecture.md`](architecture.md) §CI gates.<br>Manual de uso de dysflow ni de las migraciones Alembic.<br>Política del revisor humano (eso vive en [`AGENTS.md`](../../AGENTS.md)). |
 
 ## Contrato global
 
@@ -35,9 +35,9 @@ PR mergeado con --squash; rama remota conservada
 Tres grupos de gates:
 - **Estáticos**: `ruff`, `mypy`, `CodeQL`, `gitleaks`, `pip-audit` y `trivy-config`.
 - **Tests**: `pytest --cov` con el plugin `coverage_gate.py` (QC-5).
-- **De contrato**: los 13 `check_*.py` que fijan invariantes arquitectónicas y operativas.
+- **De contrato**: los 14 `check_*.py` que fijan invariantes arquitectónicas y operativas.
 
-## Los 13 `scripts/check_*.py`
+## Los 14 `scripts/check_*.py`
 
 Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semanalmente donde aplica. La tabla mapea el gate al QC que documenta su contrato.
 
@@ -57,6 +57,7 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 | `quality_report.py` | QC-11 | Agrega envelopes de todos los gates en `quality.report.json` | `python scripts/quality_report.py` |
 | `check_test_classification.py` | — | Cada test mantiene su categoría declarada | `python scripts/check_test_classification.py` |
 | `check_walkthrough_schema.py` | — | MUST fields del template `walkthrough.json` presentes en `docs/03-aplicaciones/*/walkthrough-*.json` (53 archivos) | `python scripts/check_walkthrough_schema.py` |
+| `check_required_jobs.py` | — | Aggregator determinístico (issue #702): falla cerrado si falta un job requerido, si termina distinto de `success`, o si un `skipped` no está permitido para el evento | corre dentro del job `required` de `ci.yml`, con `CI_NEEDS_JSON`/`CI_EVENT_NAME` |
 | `app/pytest_plugin/coverage_gate.py` | QC-5 | `--cov-fail-under=69` global + cuatro targets auth exactos a 100 % | activado por `pytest --cov` |
 
 > **QC mapping incompleto**: la tabla arriba es best-effort. El catálogo QC-1..QC-18 vive en `openspec/changes/lanzadera-mvp/design.md`. Este doc no es la fuente; se cruza contra el design para validar la asignación.
@@ -65,13 +66,19 @@ Estos viven en `scripts/check_*.py` y se invocan desde `ci.yml` por PR, y semana
 
 | Workflow | Cuándo corre | Qué hace |
 |---|---|---|
-| `ci.yml` | cada PR + push a `main`; mutación semanal | Ejecuta revisión, ruff, mypy, pytest y gates de contrato. La mutación queda fuera de PR. |
-| `security.yml` | cada PR + push a `main` | Escaneo rápido: pip-audit, gitleaks y Trivy de configuración. |
+| `ci.yml` | cada PR + push a `main`; mutación semanal | Ejecuta revisión, ruff, mypy, pytest y gates de contrato; embebe `security.yml` y `codeql.yml` como jobs (`uses:`) y agrega su resultado en `required`. La mutación queda fuera de PR. |
+| `security.yml` | `workflow_call` (invocado desde `ci.yml`) | Escaneo rápido: pip-audit, gitleaks y Trivy de configuración. Ya no tiene triggers propios (issue #702). |
 | `security-deep.yml` | semanal (cron) | Historial de gitleaks y análisis de la imagen con Trivy. |
-| `codeql.yml` | cada PR + push a main + semanal | Análisis semántico CodeQL del código Python en un runner hospedado. |
+| `codeql.yml` | `workflow_call` (invocado desde `ci.yml`) | Análisis semántico CodeQL del código Python en un runner hospedado. Ya no tiene triggers propios (issue #702); hereda la cadencia de `ci.yml` (cada PR, cada push a `main` y semanal). |
 | `release.yml` | tag `v*` pushed | Valida identidad, publica el digest y verifica su firma Cosign. |
 
-Los SHA de las actions se fijan mediante `check_workflows.py`. El mismo gate impide que un PR público alcance infraestructura propia.
+`security.yml` y `codeql.yml` son reusable workflows (`on: workflow_call` únicamente):
+`needs:` no cruza archivos de workflow, así que la única forma de que un job
+agregador dependa de sus resultados es invocarlos como jobs (`uses: ./.github/
+workflows/security.yml`) directamente dentro de `ci.yml` — un job invocado así
+conserva su propio id y su propio `result`, exactamente como cualquier otro job.
+
+Los SHA de las actions se fijan mediante `check_workflows.py`. El mismo gate impide que un PR público alcance infraestructura propia. Un job que solo invoca un reusable workflow (`uses:`) no declara `runs-on` ni `timeout-minutes` — el esquema de GitHub no los admite en esa forma — así que `check_workflows.py` los exime de esos dos checks puntuales; todo lo demás (SHA pinning, concurrencia, runner hospedado en los jobs *internos*) se sigue verificando cuando se analiza `security.yml` / `codeql.yml` por su cuenta.
 
 Todos los jobs alcanzables desde un PR usan `ubuntu-24.04`. Consulte la frontera
 de confianza y el inventario propio en [`10-runners.md`](10-runners.md).
@@ -106,20 +113,37 @@ make lint typecheck test check-layers check-complexity check-dry \
 ## Protección de `main`
 
 `main` tiene branch protection desde el 2026-09-09. GitHub exige un PR
-actualizado, conversaciones resueltas y estos checks en verde:
+actualizado y conversaciones resueltas. El check requerido, tras issue #702,
+es uno solo:
 
 | Workflow | Check requerido |
 |---|---|
-| `ci.yml` | `quality` |
-| `ci.yml` | `review-budget` |
-| `security.yml` | `pip-audit` |
-| `security.yml` | `gitleaks` |
-| `security.yml` | `trivy-config` |
-| `codeql.yml` | `codeql` |
+| `ci.yml` | `required` |
+
+`required` (issue #702) es un job agregador (`if: always()`) que depende
+(`needs:`) de `review-budget`, `quality`, `security` y `codeql` — los dos
+últimos son los jobs `uses:` que embeben `security.yml` / `codeql.yml` dentro
+de `ci.yml` (ver §"Los 5 workflows"). Corre `scripts/check_required_jobs.py`
+con `CI_NEEDS_JSON: ${{ toJSON(needs) }}`: falla si falta alguno de esos
+cuatro jobs, si el evento disparador no está en su mapa de skips permitidos, o
+si algún job termina en algo distinto de `success` (o de un `skipped`
+explícitamente permitido para ese evento — p. ej. `review-budget` fuera de un
+`pull_request`). `mutation` queda fuera a propósito: es solo
+schedule/`workflow_dispatch` y nunca formó parte de la protección de rama.
+
+Esto retira los seis checks sueltos anteriores (`quality`, `review-budget`,
+`pip-audit`, `gitleaks`, `trivy-config`, `codeql`) y el job `merge-ready`, que
+quedaba completamente superado por `required` — nunca bloqueaba nada por sí
+mismo, solo repetía `mergeable`/`reviewDecision`, que GitHub ya deriva de los
+checks protegidos.
 
 La protección se aplica a administradores y bloquea force-push y borrado de
-`main`. `merge-ready` es informativo: no agrega los otros jobs y no sustituye a
-los checks protegidos.
+`main`.
+
+El cutover a esta política ya se ejecutó (2026-09-13, PR #706): la lista de
+checks requeridos de GitHub para `main` pide únicamente `required`. Los seis
+nombres antiguos (`quality`, `review-budget`, `pip-audit`, `gitleaks`,
+`trivy-config`, `codeql`) ya no aparecen en `branches/main/protection`.
 
 Detalle operativo en [`AGENTS.md` §Hard rule del CI](../../AGENTS.md).
 
@@ -152,7 +176,7 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 ## Cómo añadir un nuevo gate
 
 1. Crear `scripts/check_<nombre>.py` con docstring que cite el QC + decisión.
-2. Añadirlo a la tabla §Los 13 check_*.py de este doc.
+2. Añadirlo a la tabla §Los 14 check_*.py de este doc.
 3. Añadirlo al matrix de `tests/test_ci_workflow.py` (pin AST).
 4. Cablearlo en `ci.yml` con timeout explícito.
 5. Subir un PR; el revisor valida que el gate tenga un QC documentado y un test de smoke en `tests/test_gate_smoke.py` (QC-18).
