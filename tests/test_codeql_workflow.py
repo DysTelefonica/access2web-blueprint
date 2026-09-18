@@ -3,7 +3,7 @@ from pathlib import Path
 import yaml
 
 WORKFLOW = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "codeql.yml"
-CODEQL_ACTION_SHA = "cdf488f595d80d6e07e03d4674febd5ab45fa938"
+CODEQL_ACTION_SHA = "b96794f015dfd88f77b49b1c93e0fa7110f94c63"
 
 
 def _load_workflow() -> dict:
