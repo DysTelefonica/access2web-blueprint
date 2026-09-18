@@ -133,6 +133,10 @@ BASELINE: dict[str, BaselineEntry] = {
     "dup:2b7ef0bfcdf8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     "dup:f66e7393fea8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # W61 (#524): docstring coincidence — structural, not a smell.
+    # H01 (#248): hps/_evidence.py shares the docstring + 4-imports prelude with
+    # runtime_policies/_evidence.py after the A04+R04 fix landed
+    # `from collections.abc import Mapping` in both files. Two-occurrence tolerated.
+    "dup:8e45c279d045": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
     # @dataclass docstring coincidence (5 statements). Same structural
