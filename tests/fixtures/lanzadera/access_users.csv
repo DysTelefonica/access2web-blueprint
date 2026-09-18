@@ -1,0 +1,7 @@
+email,password_hash,legacy_id
+admin@empresa.com,5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8,1
+user1@empresa.com,6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b,2
+user2@empresa.com,d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35,3
+broken@example.com,NOT_A_VALID_HASH,4
+short@example.com,abc123,5
+empty@example.com,,6
