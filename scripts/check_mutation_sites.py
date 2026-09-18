@@ -323,6 +323,14 @@ BASELINE: dict[str, BaselineEntry] = {
     "app/src/modules/expedientes/application/hps/service.py": (
         BaselineEntry(sites=108, target=100, target_date="2027-02-13")
     ),
+    # M02 + M03 (#258 #259): Extractor.run_once handles each table with
+    # watermark filtering, writes staging rows, and updates watermarks.
+    # The 49-table dataset iteration plus the two-strata helper methods
+    # (dataclass, for row count) push the structural surface above the
+    # 100-site ceiling on first contribution. Target = 100 by 2027-02-13.
+    "app/src/modules/expedientes/migration/extractor.py": (
+        BaselineEntry(sites=137, target=100, target_date="2027-02-13")
+    ),
 }
 
 # --------------------------------------------------------------------------------------------
