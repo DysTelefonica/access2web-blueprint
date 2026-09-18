@@ -126,8 +126,17 @@ BASELINE: dict[str, BaselineEntry] = {
     # W40 (#482): dataclass-field shape coincidence. Covers the 4-field
     # structural pattern still present in app.py and user.py.
     # 4-field pattern after normalisation). Same coincidence class.
-    "dup:33cfad6d55a4": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:33cfad6d55a4": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
+    # E07 (#243): e2e_session command/service share the dataclass
+    # prelude block. Same structural coincidence class as the
+    # autosave-related / C02/C04/R03/R07/Q01/E02/E04/E05/E06 baselines.
+    "dup:2b7ef0bfcdf8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:f66e7393fea8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # W61 (#524): docstring coincidence — structural, not a smell.
+    # H01 (#248): hps/_evidence.py shares the docstring + 4-imports prelude with
+    # runtime_policies/_evidence.py after the A04+R04 fix landed
+    # `from collections.abc import Mapping` in both files. Two-occurrence tolerated.
+    "dup:8e45c279d045": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
     # @dataclass docstring coincidence (5 statements). Same structural
@@ -138,9 +147,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # that share the same HTTP-exception pattern (request.state check,
     # container lookup, raise HTTPException). Same structural class.
     "dup:110a87c35376": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
-    "dup:8aa3296e6ce7": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:8aa3296e6ce7": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
     "dup:ac321e81d8c6": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:c373bbc4ef79": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # E03 (#239): e2e_hash command/service share the dataclass prelude
+    # block. Same structural coincidence class as 980edaf2dbd2.
+    "dup:146e7442d16c": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     "dup:f00a3c6a5a4f": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:18c76edf31fc": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W64 (#585): two persistence repo files share the same
@@ -158,6 +170,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # and the delivery.http admin import. Same coincidence class as the
     # W40/W61/W64 entries.
     "dup:3aaedade4aaa": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:c146aa3ae961": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.
     # W58 (#515) BASELINE retire: ``dup:c2ebd0b393d8`` was the docstring
@@ -179,10 +192,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # port-adapter import block (5 statements). Structural coincidence
     # from the adapter wiring pattern; not a smell.
     "dup:33cdc5a80fa3": BaselineEntry(occurrences=3, target=3, target_date="2030-01-01"),
+    "dup:537ffba3ba83": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # F02 (#223): expediente_estado.py and user.py share the same
     # StrEnum class docstring + members pattern (10 statements). Structural
     # coincidence — every domain enum follows this exact shape. Not a smell.
     "dup:6c7dc25f0c43": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    "dup:e60cd21f37fd": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # F01 (#222): expediente/ports/audit_log.py and lanzadera/domain/ports/__init__.py
     # share the same Protocol/dataclass/datetime/UUID prelude (5 statements).
     # Structural coincidence — every port module that defines a Protocol + dataclass
@@ -217,7 +232,17 @@ BASELINE: dict[str, BaselineEntry] = {
     # is structurally identical between delete_expediente/service.py
     # and transition_expediente/service.py. Same pattern as the
     # command prelude but at the service level.
-    "dup:01d7c6165877": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:01d7c6165877": BaselineEntry(occurrences=8, target=8, target_date="2027-02-13"),
+    # R05 (#274): register_responsable / responsable service share the
+    # post-format service prelude. Same structural coincidence class
+    # as the existing service-prelude duplicates.
+    "dup:79d8c5976f0f": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # R07 (#276): register_suministrador service shares the
+    # post-format service prelude coincidence class.
+    "dup:bdeda8651e4e": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # R06 (#275): register_juridica service shares the post-format
+    # service prelude coincidence class.
+    "dup:948767b69655": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     "dup:1c5624875e59": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
     "dup:7728ef7c3d25": BaselineEntry(occurrences=3, target=2, target_date="2027-02-13"),
     # C03 (#228): application/delete_expediente/service.py and
@@ -226,6 +251,58 @@ BASELINE: dict[str, BaselineEntry] = {
     # identical builders; the structural coincidence is the
     # "build a ChangeRecord from the command" pattern.
     "dup:a55d3e021093": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:98e068ab206a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R02 (#271): register_modificado/command.py and domain/modificado.py
+    # share the dataclass 5-line prelude (id + id_expediente + first
+    # nullable field). Structural coincidence — every "child of
+    # Expediente" aggregate follows this shape.
+    "dup:980edaf2dbd2": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R02 (#271): post-ruff-format variant of the dataclass 5-line
+    # prelude. Same structural coincidence as 980edaf2dbd2.
+    "dup:80e56a5fdac7": BaselineEntry(occurrences=6, target=6, target_date="2027-02-13"),
+    # R03 (#272): Anexo use case + domain entity share the
+    # dataclass 5-line prelude. Same structural coincidence class
+    # as 980edaf2dbd2 and 80e56a5fdac7 — every "child of
+    # Expediente" aggregate follows this shape.
+    "dup:b2ad58dd0e2d": BaselineEntry(occurrences=8, target=8, target_date="2027-02-13"),
+    # W02 (#235): autosave_related service shares the post-format
+    # service prelude coincidence class.
+    "dup:bf7967be7149": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # W02 (#235): autosave_related command shares the dataclass
+    # prelude with transition_expediente command. Same structural
+    # coincidence class as the existing entries.
+    "dup:c865d8361321": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:c2ccba5c707a": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # E02 (#238): json_canonical command/service share the dataclass
+    # prelude block. Same structural coincidence class as 980edaf2dbd2.
+    "dup:f64393479c82": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R03 (#272): anexos command/service share the
+    # (frozen=True, Exception) prelude — post-ruff-format variant
+    # of the dataclass prelude coincidence class.
+    "dup:18b975f7ebc8": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R04 (#273): register_anualidad shares the dataclass prelude
+    # with the existing aggregate precedents. Same structural
+    # coincidence class as 980edaf2dbd2 / 80e56a5fdac7.
+    "dup:ab4b6562f155": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R04 (#273): anualidad command/service + domain module share
+    # the dataclass prelude block.
+    "dup:d11d3e80ae36": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # R05 (#274): register_responsable shares the dataclass prelude
+    # with the existing aggregate precedents. Same structural
+    # coincidence class as 980edaf2dbd2 / 80e56a5fdac7 / ab4b6562f155.
+    "dup:1221be65ecb4": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # R07 (#276): juridica + suministrador domain entities share the
+    # dataclass prelude. Same structural coincidence class as
+    # 980edaf2dbd2 / 80e56a5fdac7 / 1221be65ecb4.
+    "dup:cc01bd4837a4": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # R06 (#275): register_juridica shares the dataclass prelude
+    # with the existing aggregate precedents. Same structural
+    # coincidence class as 980edaf2dbd2 / 80e56a5fdac7 / 1221be65ecb4.
+    "dup:9b313fc99bc1": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    # R04 (#273): post-ruff-format variant of the dataclass 5-line
+    # prelude coincidence class. Same shape as 01d7c6165877 but the
+    # service modules are smaller.
+    "dup:824ef3f3e298": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
 }
 
 # MECHANISM# MECHANISM

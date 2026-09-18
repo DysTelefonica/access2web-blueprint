@@ -21,12 +21,13 @@ REQUIRED_COMMANDS = (
     "ruff check --config app/pyproject.toml .",
     "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
-    "pytest -c app/pyproject.toml --rootdir=app --cov --cov-report=json:coverage.json",
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
     "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
     "python scripts/check_branch_name.py",
+    "python scripts/check_required_jobs.py",
 )
 
 #: Gates CI runs that `make verify` deliberately does not (Hard Rule 19).
@@ -41,6 +42,9 @@ VERIFY_EXCLUSIONS = (
     "pip-audit",  # network: advisory database
     "gitleaks",  # docker
     "trivy",  # docker
+    # needs the real `needs:` context (toJSON(needs)) from a GitHub Actions
+    # run; there is nothing meaningful to feed it on a workstation (#702).
+    "python scripts/check_required_jobs.py",
 )
 
 #: The code gates, in the order they must run. Deduplication moves code, which changes
@@ -84,7 +88,7 @@ def test_dependabot_covers_python_and_github_actions() -> None:
         (update["package-ecosystem"], update["directory"]) for update in dependabot["updates"]
     }
 
-    assert covered == {("pip", "/app"), ("github-actions", "/")}
+    assert covered == {("pip", "/app"), ("github-actions", "/"), ("npm", "/e2e")}
 
 
 @pytest.fixture(scope="module")
@@ -477,10 +481,33 @@ def test_release_e2e_generates_its_signing_secret_per_run() -> None:
     assert '-e SECRET_KEY="$E2E_SECRET_KEY"' in release
 
 
-def test_merge_ready_does_not_depend_on_an_ambient_checkout(workflow: dict) -> None:
-    """Hosted runners start without a repository until checkout runs."""
-    step = workflow["jobs"]["merge-ready"]["steps"][0]
-    assert 'gh pr view "$NUMBER" --repo "$GITHUB_REPOSITORY"' in step["run"]
+def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
+    workflow: dict,
+) -> None:
+    """Issue #702: `required` is the deterministic replacement for `merge-ready`.
+
+    `needs:` cannot cross workflow files, so `security` and `codeql` are
+    embedded as `uses: ./.github/workflows/*.yml` calls directly inside
+    ci.yml — from GitHub's perspective those are still ordinary job ids the
+    aggregator can depend on and read `needs.<id>.result` from. `mutation`
+    stays out on purpose: it is schedule/workflow_dispatch-only and was
+    never part of branch protection.
+    """
+    jobs = workflow["jobs"]
+    assert "merge-ready" not in jobs, "merge-ready was fully superseded by `required`"
+
+    required = jobs["required"]
+    assert required["if"] == "always()"
+    assert required["needs"] == ["review-budget", "quality", "security", "codeql"]
+
+    assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
+    assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
+    assert jobs["codeql"]["permissions"]["security-events"] == "write"
+
+    step = required["steps"][-1]
+    assert step["run"] == "python scripts/check_required_jobs.py"
+    assert step["env"]["CI_NEEDS_JSON"] == "${{ toJSON(needs) }}"
+    assert step["env"]["CI_EVENT_NAME"] == "${{ github.event_name }}"
 
 
 def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
