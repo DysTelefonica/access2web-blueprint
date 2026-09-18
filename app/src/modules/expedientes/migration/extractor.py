@@ -165,3 +165,69 @@ class Extractor:
         # backend returns a string-numeric instead (e.g. a text-encoded
         # PK in some legacy import), parse it as base-10.
         return int(raw_value)
+
+
+# M02 (#258): tables 16-30 (group B). Pass to ``run_once(tables=GROUPS_16_30)``.
+# M03 (#259): tables 31-49 (group C). Pass to ``run_once(tables=GROUPS_31_49)``.
+# These constants are public so the M02/M03 tranche scripts (separate PRs
+# also under #258 and #259) and the test fixtures in tests/lanzadera/exp/
+# can reference them without copy-pasting the table lists.
+
+# Group A (M01, #257): tables 01-15.
+GROUPS_01_15: tuple[str, ...] = (
+    "TbEstados",
+    "TbAplicacionesAperturas",
+    "TbUsuarios",
+    "TbSegPerfiles",
+    "TbAsignacionesPerfil",
+    "TbGlobalAdmins",
+    "TbConexiones",
+    "TbResetTokens",
+    "TbNotifications",
+    "TbAuditLog",
+    "TbSecretariaSinAcceso",
+    "TbCalidadAvisosTecnicoEconomia",
+    "TbAnexos",
+    "TbHitos",
+    "TbModificados",
+)
+# Group B (M02, #258): tables 16-30.
+GROUPS_16_30: tuple[str, ...] = (
+    "TbAnualidades",
+    "TbResponsables",
+    "TbEntidadesJuridicas",
+    "TbSuministradores",
+    "TbJuegoExpedientes",
+    "TbExpedientes",
+    "TbExpedienteEstados",
+    "TbExpedienteTipos",
+    "TbExpedienteRelaciones",
+    "TbExpedienteAuditorias",
+    "TbExpedienteMetadata",
+    "TbComentarios",
+    "TbWorkflowPasos",
+    "TbWorkflowTransiciones",
+    "TbWorkflowEstados",
+)
+# Group C (M03, #259): tables 31-49.
+GROUPS_31_49: tuple[str, ...] = (
+    "TbWorkflowHistorial",
+    "TbPlazos",
+    "TbImportes",
+    "TbImportesDetalle",
+    "TbImportesIVA",
+    "TbImportesIPSI",
+    "TbImportesIGIC",
+    "TbImportesDetalleIVA",
+    "TbImportesDetalleIPSI",
+    "TbImportesDetalleIGIC",
+    "TbCatalogos",
+    "TbCatalogosValores",
+    "TbCatalogosVigencias",
+    "TbCPV",
+    "TbCPVVigencias",
+    "TbPECAL",
+    "TbPECALVigencias",
+    "TbRACS",
+    "TbOrganosCompetentes",
+)
