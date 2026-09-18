@@ -96,7 +96,7 @@ def _validated_actor(actor_id: UUID | None) -> UUID:
 
 def _signature(key: UUID, payload: dict[str, Any]) -> str:
     blob = json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
-    return f"{key}|{hashlib.sha256(blob).hexdigest()}"
+    return f"{key}|{hashlib.blake2b(blob, digest_size=32).hexdigest()}"
 
 
 def _result_from(actor_id: UUID, record: HpsRecord, *, deduped: bool) -> HpsResult:
