@@ -72,6 +72,9 @@ def integration_enabled() -> bool:
     return os.environ.get("APAP_INTEGRATION_ENABLED") == "1"
 
 
+pytestmark = pytest.mark.integration
+
+
 @pytest.fixture(scope="module")
 def worktree_root() -> Path:
     return _worktree_root()

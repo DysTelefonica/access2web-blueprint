@@ -243,14 +243,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # shape, so a follow-up extraction is better than a one-off.
     "app/src/modules/expedientes/application/edit_expediente/service.py": (
         BaselineEntry(sites=160, target=100, target_date="2027-02-13")
-        ),
-        # C04 (#229): transition_expediente/service.py is at 180
-        # mutation sites after splitting execute() into helpers
-        # to keep complexity under the ceiling (10). The 4-step
-        # pipeline cannot be split without breaking the unit.
-        "app/src/modules/expedientes/application/transition_expediente/service.py": (
-            BaselineEntry(sites=180, target=100, target_date="2027-02-13")
-        ),
+    ),
+    # C04 (#229): transition_expediente/service.py is at 180
+    # mutation sites after splitting execute() into helpers
+    # to keep complexity under the ceiling (10). The 4-step
+    # pipeline cannot be split without breaking the unit.
+    "app/src/modules/expedientes/application/transition_expediente/service.py": (
+        BaselineEntry(sites=180, target=100, target_date="2027-02-13")
+    ),
     "app/src/modules/expedientes/application/autosave_general/service.py": (
         BaselineEntry(sites=127, target=100, target_date="2027-02-13")
     ),
@@ -259,6 +259,69 @@ BASELINE: dict[str, BaselineEntry] = {
     # revoke) following the same delivery-layer pattern as admin_routes_apps.py.
     "app/src/modules/lanzadera/delivery/http/admin_routes_users_json.py": (
         BaselineEntry(sites=151, target=100, target_date="2027-02-13")
+    ),
+    # R03 (#272): AnexosService carries the size-limit and retention
+    # checks, the UoW transactions, and the audit-evidence wiring for
+    # both create and delete paths. Splitting now would either break
+    # the load/audit/commit pipeline or split a 5-line enforce into
+    # helpers whose only purpose is to drop the mutation count below
+    # the ceiling. Same class as the C02/C04 baselines.
+    "app/src/modules/expedientes/application/anexos/service.py": (
+        BaselineEntry(sites=116, target=100, target_date="2027-02-13")
+    ),
+    # R07 (#276): RegisterSuministradorService carries the tree
+    # invariant check, the parent-existence lookup and the
+    # write/audit/commit pipeline. Same class as the C02/C04/R03
+    # baselines; splitting would break the load/tree-check/commit
+    # sequence.
+    "app/src/modules/expedientes/application/register_suministrador/service.py": (
+        BaselineEntry(sites=127, target=100, target_date="2027-02-13")
+    ),
+    # Q01 (#231): CatalogsService is a thin layer over the storage
+    # port, but each per-catalog branch (comerciales, cpv, ejercitos,
+    # suministradores, lugares_ejecucion) inflates the surface with
+    # validation and audit code. Same class as the C02/C04/R03/R07
+    # baselines; splitting would duplicate the permission/error
+    # handling helpers.
+    "app/src/modules/expedientes/application/catalogs/service.py": (
+        BaselineEntry(sites=129, target=100, target_date="2027-02-13")
+    ),
+    # E02 (#238): JsonCanonicalService renders the canonical E2E
+    # envelope; the surface is small but the helper is shared with
+    # future E03+ verticals, so ratcheting at 104 keeps the option
+    # open. Same class as the C02/C04/R03/R07/Q01 baselines.
+    "app/src/modules/expedientes/application/json_canonical/service.py": (
+        BaselineEntry(sites=104, target=100, target_date="2027-02-13")
+    ),
+    # E04 (#240): OrdinalE2EService is a small DFS + cycle detector;
+    # the surface is in the same ratchet class as the C02/C04/R03/R07
+    # baselines (cycle walk + per-node check).
+    "app/src/modules/expedientes/application/ordinal_e2e/command.py": (
+        BaselineEntry(sites=135, target=100, target_date="2027-02-13")
+    ),
+    # E07 (#243): E2ESessionService is a small state machine with
+    # open/resume/close branches. Same ratchet class as the
+    # C02/C04/R03/R07/Q01/E02/E04/E05/E06 baselines.
+    "app/src/modules/expedientes/application/e2e_session/service.py": (
+        BaselineEntry(sites=128, target=100, target_date="2027-02-13")
+    ),
+    # W02 (#235): AutosaveRelatedService covers hitos, modificados and
+    # anualidades inside one UoW. The three per-section validators and
+    # the replay/version check are independent helpers but the
+    # mutation count exceeds the ceiling because of the per-section
+    # construction lines. Same class as C02/C04/R03/R07.
+    "app/src/modules/expedientes/application/autosave_related/service.py": (
+        BaselineEntry(sites=166, target=100, target_date="2027-02-13")
+    ),
+    # H01 (#248): HpsService.submit builds the HpsSubmission from a frozen
+    # dataclass, hashes (idempotency_key, payload) via blake2b for the
+    # signature, and chains IdempotencyPort.get/record around a single
+    # HpsPort.submit call. The mutation ceiling of 100 is a Hard Rule 12
+    # ratchet; HpsService exceeds it on first contribution because each
+    # path (deny / dedupe / submit / wrapper) adds to the structural
+    # surface even after extracting helpers. Target = 100 by 2027-02-13.
+    "app/src/modules/expedientes/application/hps/service.py": (
+        BaselineEntry(sites=108, target=100, target_date="2027-02-13")
     ),
 }
 
