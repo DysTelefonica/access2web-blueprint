@@ -88,7 +88,7 @@ def test_dependabot_covers_python_and_github_actions() -> None:
         (update["package-ecosystem"], update["directory"]) for update in dependabot["updates"]
     }
 
-    assert covered == {("pip", "/app"), ("github-actions", "/")}
+    assert covered == {("pip", "/app"), ("github-actions", "/"), ("npm", "/e2e")}
 
 
 @pytest.fixture(scope="module")
