@@ -39,8 +39,8 @@ def test_tranche_constants_match_source_plan() -> None:
 def test_tranche_subset_extraction_writes_only_targeted_tables() -> None:
     """Calling run_once(tables=GROUPS_16_30) only writes rows from those 15 tables."""
     from app.src.modules.expedientes.migration.extractor import (
-        Extractor,
         GROUPS_16_30,
+        Extractor,
     )
     from tests.lanzadera.exp.test_extractor import (
         FakeBackend,
@@ -62,8 +62,8 @@ def test_tranche_subset_extraction_writes_only_targeted_tables() -> None:
 def test_tranche_subsequent_run_is_idempotent() -> None:
     """Running a tranche twice produces zero rows on the second run (D-EXP-9)."""
     from app.src.modules.expedientes.migration.extractor import (
-        Extractor,
         GROUPS_31_49,
+        Extractor,
     )
     from tests.lanzadera.exp.test_extractor import (
         FakeBackend,
