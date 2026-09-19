@@ -39,6 +39,11 @@ ALLOWLIST = frozenset(
         "feat/lanzadera-mvp-tracker",
         "chore/issue-forms-bootstrap",
         "test/w-test-cleanup",  # Legacy PR #595; predates numbered-branch enforcement.
+        # Fleet automation (personal-skills sync) issues PRs to
+        # \`skill-fleet/access2web-blueprint\`; pre-existed the
+        # numbered-branch convention and the fleet pushes the same
+        # branch name on every run. Issue #749.
+        "skill-fleet/access2web-blueprint",
     }
 )
 
