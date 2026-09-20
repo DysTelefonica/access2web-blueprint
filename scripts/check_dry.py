@@ -136,7 +136,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # H01 (#248): hps/_evidence.py shares the docstring + 4-imports prelude with
     # runtime_policies/_evidence.py after the A04+R04 fix landed
     # `from collections.abc import Mapping` in both files. Two-occurrence tolerated.
-    "dup:8e45c279d045": BaselineEntry(occurrences=3, target=3, target_date="2027-02-13"),
+    "dup:8e45c279d045": BaselineEntry(occurrences=4, target=4, target_date="2027-02-13"),
+    # H04 (#251): NC _evidence.py joins the Mapping prelude pattern
+    # (HPS/Riesgos/runtime_policies). Tolerated.
+    "app/src/modules/expedientes/application/nc/_evidence.py": (
+        BaselineEntry(occurrences=2, target=2, target_date="2027-02-13")
+    ),
     # H03 (#250): RiesgosService is a single-method adapter (lookup only)
     # following the same single-method shape as e2e_dto / e2e_session.
     # Two-occurrence tolerated.
