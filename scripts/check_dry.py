@@ -145,7 +145,10 @@ BASELINE: dict[str, BaselineEntry] = {
     # H03 (#250): RiesgosService is a single-method adapter (lookup only)
     # following the same single-method shape as e2e_dto / e2e_session.
     # Two-occurrence tolerated.
-    "dup:25647718ff2c": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
+    "dup:25647718ff2c": BaselineEntry(occurrences=3, target=3, target_date="2027-02-13"),
+    # H04 (#251): NC ports/nc.py shares the 5-statement prelude block
+    # with hps.py and riesgos.py. Tolerated.
+    "dup:2b4255366ee6": BaselineEntry(occurrences=2, target=2, target_date="2027-02-13"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W61 (#524): dup:7f84566161ae reappears as app.py + user.py
     # @dataclass docstring coincidence (5 statements). Same structural
