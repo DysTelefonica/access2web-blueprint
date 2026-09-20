@@ -66,7 +66,7 @@ class RiesgosService:
 def _validated_actor(actor_id: UUID | None) -> UUID:
     if actor_id is None or actor_id == UUID(int=0):
         raise RiesgosAuthorizationError("actor_id is required (deny-by-default)")
-    return actor_id  # type: ignore[return-value]
+    return actor_id
 
 
 __all__ = ["RiesgosProject", "RiesgosService"]
