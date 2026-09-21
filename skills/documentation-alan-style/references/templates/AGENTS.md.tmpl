@@ -6,28 +6,31 @@ alwaysApply: true
 
 # <Repo> — Agent Skills Index
 
-Cuando trabaje en este proyecto, cargue la skill relevante ANTES de escribir código o documentación.
+When working on this project, load the relevant skill(s) BEFORE writing any code or docs.
 
-## How to use
+## How to Use
 
-<!-- HOW_TO_USE_4_STEPS: 4 pasos numerados. -->
+<!-- HOW_TO_USE_4_STEPS: 4 pasos numerados. ≤ 5 pasos máximo. -->
 
-1. Revise la columna «trigger» para identificar las skills que aplican a la tarea
-2. Cargue la skill leyendo el `SKILL.md` en la ruta indicada
-3. Siga TODOS los patrones y reglas de la skill cargada
-4. Varias skills pueden aplicar simultáneamente; cárguelas todas
+1. Revise la columna «trigger» para encontrar skills que coincidan con la tarea actual
+2. Load the skill by reading the SKILL.md file at the listed path
+3. Follow ALL patterns and rules from the loaded skill
+4. Multiple skills can apply simultaneously
 
 ## Mandatory skills
 
-<!-- SHOULD: incluir solo si hay skills obligatorios. Marcar con **Cualquier**. -->
+<!-- SHOULD: incluir solo si hay skills obligatorios. Marcados con bold o **Any**. -->
 
-| Skill | Cuándo cargarla |
+These skills are **mandatory** — load them before any work in their scope:
+
+| Skill | Mandatory for |
 |---|---|
-| `<skill>` | **Cualquier** trabajo en su ámbito |
+| `<skill>` | **Any** ... |
+| `<skill>` | **Any** ... |
 
 ## Project-context skills
 
-<!-- SKILL_TRIGGER_PATH_TABLE: tabla Skill / Trigger / Path. Las rutas deben existir en el repo. -->
+<!-- SKILL_TRIGGER_PATH_TABLE: tabla Skill / Trigger / Path. Paths verificables con ls. -->
 
 | Skill | Trigger | Path |
 |---|---|---|
@@ -37,8 +40,12 @@ Cuando trabaje en este proyecto, cargue la skill relevante ANTES de escribir có
 
 | Skill | Trigger | Origen |
 |---|---|---|
-| `<skill>` | <trigger> | `<owner>/<repo>` |
+| `<skill>` | <trigger> | Gentleman-Programming/<repo> |
 
-Si una IA escribe código o documentación en este repo sin cargar las skills relevantes, está trabajando a ciegas.
+## Reinforcement
 
-[← Inicio](README.md) · [DOCS.md →](DOCS.md)
+Si una IA escribe código o docs en este repo sin cargar las skills relevantes, está trabajando a ciegas.
+
+> Nota: "Alan canonical examples omit YAML; this template includes it for opencode/Claude/Cursor scope filtering. Drop YAML only for byte-exact match with the AGENTS.md de Alan."
+
+[← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)

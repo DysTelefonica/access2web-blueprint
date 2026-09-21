@@ -1,8 +1,10 @@
-[← Inicio](../README.md)
+[← Back to README](../README.md)
 
-# <Repo> — Codebase Guide
+# <Repo> Codebase Guide
 
-<opening: qué cubre esta guía, en una frase ≤ 200 caracteres.>
+**This guide is for maintainers and contributors who need to understand where <repo> responsibilities live, which invariants are non-negotiable, and which file to open when something needs to change.**
+
+<opening paragraph: qué es el repo y qué cubre esta guía, ≤ 200 caracteres>
 
 ## 90-second mental model
 
@@ -21,16 +23,14 @@
 <storage / external>
 ```
 
-<!-- SENTENCE_THAT_ORGANIZES: la frase que estructura todo el repo. -->
-
-> **<The sentence that organizes the whole repo.>**
+> **<The sentence that organizes the whole repo>**
 
 ## Recommended reading path
 
-<!-- RECOMMENDED_READING_PATH: 5-8 pasos. Una página por paso. -->
+<!-- RECOMMENDED_READING_PATH: 5-8 steps. Una página por step. -->
 
-| Step | Page | Léalo cuando... |
-|---|---|---|
+| Step | Page | Read this when... |
+|------|------|---------------------|
 | 1 | [Mental Model](codebase/mental-model.md) | Necesita la forma del producto antes de abrir código |
 | 2 | [Repository Map](codebase/repository-map.md) | Necesita decidir qué paquete es dueño del cambio |
 | 3 | ... | ... |
@@ -41,8 +41,16 @@
 
 | Si necesita... | Abra primero | Y luego consulte |
 |---|---|---|
-| Entender el producto en 5 min | `README.md` | Esta guía |
-| Cambiar <módulo> | `<path>` | [Memory Core](codebase/memory-core.md) |
+| Understand the product in 5 min | `README.md` | This guide |
+| Change <module> | `<path>` | [Memory Core](codebase/memory-core.md) |
 | ... | ... | ... |
 
+## Subsección: ownership y guardrails
+
+<Contenido sobre ownership, flows, no API.>
+
+---
+
 [Next: Mental Model →](codebase/mental-model.md)
+
+<!-- SHOULD: tabla "What this is / is not" (2 columnas) + sección "Existing references" con links a docs ya existentes. -->
