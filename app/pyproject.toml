@@ -72,6 +72,13 @@ line-length = 100
 target-version = "py312"
 extend-exclude = [
     ".git",
+    # Catalog-distributed content, not project code. The skills arrive whole
+    # from DysTelefonica/team-skills and are versioned there; the quality job
+    # walks from the repo root, so without this entry `ruff format --check`
+    # reports the vendored Python as unformatted. Reformatting it would couple
+    # this repo to the catalog's formatting and be undone by the next
+    # propagation. Same boundary as APAP_WEB (ardelperal/APAP_WEB#839).
+    "skills/",
     ".venv",
     "venv",
     "build",
