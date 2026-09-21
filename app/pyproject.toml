@@ -37,7 +37,7 @@ dependencies = [
     "cryptography>=50.0,<51",      # AES-GCM for NationalIdCipher (CA-S4). Pinned above the 49.0.0 CVE floor (PYSEC-2026-3553/3554) and the 48.0.1 floor (GHSA-537c-gmf6-5ccf).
     "sqlalchemy==2.0.*",           # Core ORM for adapters (Phase 4).
     "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
-    "asyncpg==0.30.*",             # Postgres driver for SQLAlchemy (Phase 4).
+    "asyncpg>=0.30,<0.32",             # Postgres driver for SQLAlchemy (Phase 4).
     "fastapi==0.121.*",
     "starlette>=0.50,<0.51",
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
