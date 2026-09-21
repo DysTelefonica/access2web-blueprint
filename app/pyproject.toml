@@ -128,6 +128,28 @@ module = "tests.fixtures.*"
 ignore_errors = true
 
 [tool.pytest.ini_options]
+# Catalog-distributed content is not this repo's test suite. The quality job
+# runs `pytest -c app/pyproject.toml --rootdir=app` from the repo root, so it
+# collected skills/deterministic-quality-harness/tests/ - contract tests that
+# assert properties of the HOST repo (which gates ci.yml wires, whether every
+# gate script on disk is wired). Those assertions belong to the skill's
+# authoring repo, not here; running them here fails the gate for content this
+# repo does not own. Same boundary as the ruff extend-exclude in this file.
+#
+# pytest's own defaults are restated because setting `norecursedirs` replaces
+# them rather than extending them.
+norecursedirs = [
+    "skills",
+    "*.egg",
+    ".*",
+    "_darcs",
+    "build",
+    "CVS",
+    "dist",
+    "node_modules",
+    "venv",
+    "{arch}",
+]
 # `-p no:randomly` pins test execution order. Randomised order is a good way to
 # FIND order dependencies and a terrible property for a gate: the same commit
 # passes and fails depending on a seed nobody recorded.
