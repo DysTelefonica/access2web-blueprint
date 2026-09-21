@@ -39,7 +39,7 @@ dependencies = [
     "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
     "asyncpg==0.30.*",             # Postgres driver for SQLAlchemy (Phase 4).
     "fastapi==0.121.*",
-    "starlette>=0.50,<0.51",
+    "starlette>=0.50,<1.7",
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
     "httpx==0.28.*",               # Test client + downstream HTTP.
