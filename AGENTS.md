@@ -187,7 +187,7 @@ Toda implementación de un PR (código, tests, docs, configuración) pasa por el
 
 [← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)
 
-<!-- personal-skills:slice:access2web-blueprint @ vae17553 -->
+<!-- personal-skills:slice:access2web-blueprint @ v93d973f -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -273,4 +273,61 @@ Procedimiento de validación periódica (mensual o por release de skill fuente):
 - "PR con 600 líneas porque el feature lo requiere" — partir primero, encadenar después; `size:exception` es el último recurso, no la primera opción.
 - "Mergear con CI rojo aunque el rojo parezca trivial" — la trivialidad la decide el revisor, no el autor.
 - "Esperar a que el reviewer apruebe manualmente aunque todos los checks estén verdes" en proyectos con auto-merge standing explícito — revisar la sección de revocación de `merge-workflow.md §15.6` antes de saltarse el gate.
+
+# Fragment access2web-blueprint — convenciones operacionales del repo
+
+Este fragment SOBREESCRIBE / AMPLÍA las reglas del partial `web` con convenciones específicas de este consumer. Si una regla entra en conflicto con el partial, prevalece este fragment por ser consumer-specific. Las reglas del partial no se duplican aquí; este fragment solo añade lo que el partial no cubre.
+
+## §F.1 Capas de documentación del repo
+
+La documentación tiene tres capas. Confundirlas es el error más caro de este repo.
+
+| Capa | Ubicación | Quién la mantiene |
+|---|---|---|
+| Narrativa del producto | `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `docs/` | Una persona, cuando cambia el enfoque |
+| Contrato vivo de capacidades | `openspec/specs/` | La fase `archive` lo genera mecánicamente |
+| Historia del porqué | `openspec/changes/archive/` | Inmutable. Nadie la escribe. |
+
+**Regla crítica:** nunca redactar a mano en `openspec/specs/`. Esa capa se genera al archivar un change; escribirla directamente rompe la trazabilidad.
+
+## §F.2 Front-door de lectura
+
+Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de proponer una decisión arquitectónica nueva (D-<n>), leer en este orden:
+
+1. `AGENTS.md` — alcance del repo y skills disponibles
+2. `CODEBASE-GUIDE.md` — overview, ownership, reading path raíz
+3. `docs/architecture.md` — fuente de verdad única arquitectónica
+4. `CONTRIBUTING.md` — workflow de contribución + convention multi-app + label system
+5. `openspec/changes/<change>/design.md` (si el cambio pertenece a un change vivo)
+6. `docs/03-aplicaciones/<app>/epic.md` (si toca una app específica)
+
+Saltarse cualquiera deja a la IA operando contra arquitectura obsoleta.
+
+## §F.3 Capas enforced por gate
+
+`scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `ALLOWED_IMPORTS` y `PURE_LAYERS = {domain, ports, application}` (DA-1). Mover un adapter a la capa equivocada es un gate failure, no un estilo. Esquivar el gate con `|| true` está prohibido por `tests/test_ci_workflow.py`.
+
+## §F.4 Reglas de decisiones arquitectónicas (D-<n>)
+
+- Toda D-<n> tiene estado: `vigente` u `OBSOLETO`. Las obsoletas se reemplazan, no se duplican.
+- Buscar en `docs/architecture.md` §Decisiones arquitectónicas D-<n> cross-cutting vigentes antes de proponer una nueva.
+- Las decisiones cross-cutting se promueven a `docs/architecture.md` con estado `vigente`. NO se quedan en `app/src/modules/<app>/`.
+- Las D-<n> no se inventan. Si la decisión es nueva y cross-cutting, abrir issue `##ABIERTO##` en `openspec/changes/<change>/design.md` y bloquear el código hasta que la design doc declare la D-<n>.
+
+## §F.5 Regeneración de walkthroughs
+
+`docs/03-aplicaciones/<app>/walkthrough-*.json` se regenera con dysflow + codegraph-vba. Cambios "manuales" del JSON quedan desincronizados con la realidad del binario. No editar a mano.
+
+## §F.6 Convención multi-app en commits
+
+El prefijo de commit identifica la app afectada: `fix(expedientes): ...`, `docs(lanzadera): ...`, `chore(platform): ...`. Conventional commit con placeholder `(app)` literal se considera violación de convention (ver `CONTRIBUTING.md` §Convención multi-app). El scope del commit debe ser siempre una sola app o plataforma; los commits cross-cutting van a `platform/` o `chore(platform):`.
+
+## §F.7 Skills locales no distribuidas por catalog
+
+Este repo mantiene dos skills propias que **no están en el catalog** y no se sobrescriben en propagación:
+
+- `skills/architecture-guardrails/` — front-door de lectura, gates de arquitectura, D-<n> management. Se carga antes de cualquier cambio estructural.
+- `skills/documentation-alan-style/` — formato documental (Castellano peninsular, sentence case, sin emojis). El catalog tiene su propia `documentation-alan-style` que SOBREESCRIBE esta local; la divergencia histórica entre ambas se cierra tras la primera propagación exitosa.
+
+Si una IA llega al repo y NO ve `architecture-guardrails` cargada, está operando contra arquitectura obsoleta.
 <!-- /personal-skills:slice:access2web-blueprint -->
