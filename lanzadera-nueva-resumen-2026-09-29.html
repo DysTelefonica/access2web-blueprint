@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lanzadera nueva — Resumen ejecutivo · 2026-09-29</title>
+<style>
+  :root {
+    --fg: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #ffffff;
+    --soft: #f9fafb;
+    --accent: #2563eb;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --amber: #ca8a04;
+    --amber-bg: #fef9c3;
+    --red: #dc2626;
+    --red-bg: #fee2e2;
+    --slate: #475569;
+    --slate-bg: #f1f5f9;
+  }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 1100px; margin: 2rem auto; padding: 0 1rem; color: var(--fg); line-height: 1.5; }
+  h1 { border-bottom: 3px solid var(--accent); padding-bottom: .5rem; font-size: 1.75rem; }
+  h2 { margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: .3rem; font-size: 1.3rem; color: #111827; }
+  h3 { margin-top: 1.5rem; font-size: 1.05rem; color: #111827; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .9rem; }
+  th, td { border: 1px solid var(--border); padding: .5rem .75rem; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  code { background: #e5e7eb; padding: .1rem .3rem; border-radius: 3px; font-size: .85em; }
+  pre { background: var(--slate-bg); padding: 1rem; overflow-x: auto; font-size: .8rem; border-radius: 4px; }
+  blockquote.lead { border-left: 4px solid var(--accent); background: var(--soft); padding: .75rem 1rem; margin: 1rem 0; font-style: normal; }
+  blockquote.lead strong { color: var(--accent); }
+  .pill { display: inline-block; padding: .15rem .55rem; border-radius: 9999px; font-size: .75rem; font-weight: 600; }
+  .pill-green { background: var(--green-bg); color: var(--green); }
+  .pill-amber { background: var(--amber-bg); color: var(--amber); }
+  .pill-red { background: var(--red-bg); color: var(--red); }
+  .pill-slate { background: var(--slate-bg); color: var(--slate); }
+  .meta { color: var(--muted); font-size: .85rem; margin-top: -.5rem; }
+  .legend { display: flex; gap: 1.25rem; margin: 1rem 0; font-size: .85rem; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: .4rem; }
+  .legend .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+  .legend .dot-green { background: var(--green); }
+  .legend .dot-amber { background: var(--amber); }
+  .legend .dot-red { background: var(--red); }
+  .legend .dot-slate { background: var(--slate); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+  .footer { color: var(--muted); font-size: .8rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  ul.compact { margin: .25rem 0 .75rem 0; padding-left: 1.25rem; }
+  ul.compact li { margin: .15rem 0; }
+  .ascii-flow { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; background: var(--slate-bg); padding: 1rem; font-size: .8rem; line-height: 1.4; white-space: pre; overflow-x: auto; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1rem 0; }
+  @media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+  .card { background: var(--soft); border: 1px solid var(--border); border-radius: 6px; padding: 1rem 1.25rem; }
+  .card h3 { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<h1>Lanzadera nueva — Resumen ejecutivo</h1>
+<p class="meta">Fecha del resumen: <strong>2026-09-29</strong> · Fuentes: <code>docs/03-aplicaciones/lanzadera/</code>, <code>docs/01-inventario-aplicaciones.md</code>, OpenSpec <code>lanzadera-mvp</code> y <code>legacy-ecosystem-discovery</code>, Engram (project <code>access2web-blueprint</code>).</p>
+
+<blockquote class="lead">
+  <strong>Frase que organiza:</strong> Lanzadera es la madre. Ahí nacen usuarios, aplicativos y permisos. Las otras 7 aplicaciones son consumidoras. La Lanzadera nueva preserva ese núcleo, retira los mecanismos desktop que ya no pintan nada, y entrega el catálogo de plataforma como un servicio web permission-aware.
+</blockquote>
+
+<div class="legend">
+  <span><span class="dot dot-green"></span> Cerrado / mergeado</span>
+  <span><span class="dot dot-amber"></span> En curso</span>
+  <span><span class="dot dot-red"></span> Bloqueado / riesgo</span>
+  <span><span class="dot dot-slate"></span> Pendiente</span>
+</div>
+
+<h2>1. Implicaciones de la nueva Lanzadera</h2>
+
+<div class="grid-2">
+  <div class="card">
+    <h3>Qué cambia</h3>
+    <ul class="compact">
+      <li>Mecanismo desktop retirado: <code>Shell</code>, <code>/cmd</code>, copia a UNC, ejecutable Access.</li>
+      <li>Login SHA-256 sustituido por <strong>Argon2id RFC 9106 low-memory</strong>; los hashes legacy se conservan y se hace rehash transparente al primer login exitoso.</li>
+      <li>Auditoría migrada a eventos canónicos atómicos (<code>auth.login.success</code>, <code>auth.login.failure</code>, <code>app.open</code>, <code>auth.bootstrap.set_password</code>); un insert de audit fallido hace rollback de la mutación.</li>
+      <li>Catálogo y permisos rediseñados como servicio hexagonal: <code>apps</code>, <code>users</code>, <code>profiles</code>, <code>assignments</code>, <code>auth</code>, <code>global_admins</code>, <code>audit</code>.</li>
+      <li>Distinción oficina/fuera de oficina <strong>retirada</strong>; el control pre-producción pasa al ciclo UAT moderno.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Qué se preserva</h3>
+    <ul class="compact">
+      <li>Identidad, registro de usuarios y permisos por aplicación (<strong>D5</strong>: la web mantiene paridad funcional y nunca reduce cobertura).</li>
+      <li>Catálogo de aplicativos con identificadores semánticos; los IDs de <code>TbAplicaciones</code> siguen siendo referencia de migración.</li>
+      <li>Activación/desactivación de usuarios y roles por aplicación — reservado al administrador global.</li>
+      <li>Suplantación de identidad para pruebas — solo administrador global, con doble identidad auditada.</li>
+      <li>Cambio de permisos y notificación al usuario — sin correo automático; lo dispara un admin autorizado.</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Stack objetivo</h3>
+<table>
+  <thead>
+    <tr><th>Capa</th><th>Tecnología</th><th>Decisión</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Backend</td><td>Python 3.12+ · FastAPI 0.119+ · SQLAlchemy 2.0 · Alembic 1.13+ · asyncpg 0.30+</td><td>D66</td></tr>
+    <tr><td>Frontend</td><td>HTMX 2.0.4 + Jinja2 3.1+ + Alpine.js 3.15+</td><td>D67</td></tr>
+    <tr><td>Persistencia</td><td>PostgreSQL compartido, esquema por módulo, Expand and Contract backward-compatible</td><td>D14, D82</td></tr>
+    <tr><td>Forma destino</td><td>Hexagonal global, módulo dentro del monolito modular</td><td>D8, D68</td></tr>
+    <tr><td>Almacenamiento</td><td>Object storage S3-compatible (MinIO / Azure Blob) con versioning y virus scan</td><td>D16</td></tr>
+    <tr><td>Secretos</td><td>Secret manager externo</td><td>D9, D10</td></tr>
+  </tbody>
+</table>
+
+<h3>Invariantes que el producto no puede romper</h3>
+<ul>
+  <li><strong>D5 — paridad funcional</strong>: la migración web no reduce cobertura sobre el legacy.</li>
+  <li><strong>D55 — telemetría sensible prohibida</strong>: nunca se persisten <code>ssid</code>, <code>bssid</code>, <code>coordinates</code>, <code>machine_name</code>, <code>ip_address</code> en logs estructurados ni en argumentos CLI. El check <code>scripts/check_legacy_hashes.py</code> lo pinea.</li>
+  <li><strong>DA-11 — audit atómico</strong>: cada evento canónico se persiste en la misma transacción que la mutación; si el insert de audit falla, la mutación hace rollback.</li>
+  <li><strong>DA-12 — mapping legacy → profiles exclusivo</strong>: la tabla inmutable que traduce perfiles legacy a roles nuevos usa <code>SinAcceso</code> cuando no hay match; ningún otro fallback está permitido.</li>
+  <li><strong>D88 + D89 — hash heredado sin sal prohibido</strong>: la columna <code>legacy_hash</code> no existe; los passwords migrados van con <code>password_hash = NULL</code>. Argon2id perfil <code>RFC_9106_LOW_MEMORY</code> con cobertura 100&nbsp;% en los <code>CRITICAL_HELPERS</code> (QC-5).</li>
+</ul>
+
+<hr>
+
+<h2>2. Aplicativos que la nueva Lanzadera va a integrar</h2>
+
+<p>La Lanzadera es el origen de identidad y permisos. Las 8 aplicaciones del alcance se dividen en la propia Lanzadera y 7 consumidoras declaradas. El árbol de dependencias queda así:</p>
+
+<div class="ascii-flow">
+                       +---------------------+
+                       |     Lanzadera       |
+                       |  (nueva, web hexa)  |
+                       +----------+----------+
+                                  |
+        identidad + permisos + catálogo (TbAplicaciones / TbUsuariosAplicacionesPermisos)
+                                  |
+   +-------+-------+-------+-------+-------+-------+-------+
+   |       |       |       |       |       |       |       |
++--+--+ +--+--+ +--+--+ +--+--+ +--+--+ +--+--+ +--+--+
+| HPS | |HPS  | |Condor| |Brass| |Gest.| | No  | |Exp. |
+|     | |Solic| |      | |     | |Ries.| |Conf.| |     |
++-----+ +-----+ +------+ +-----+ +-----+ +-----+ +-----+
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Aplicación</th>
+      <th>Rol respecto a Lanzadera</th>
+      <th>Snapshot staging</th>
+      <th>Estado del descubrimiento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Lanzadera</strong></td>
+      <td>Origen — núcleo de plataforma (la app que migra)</td>
+      <td><code>data/staging/lanzaderas/</code></td>
+      <td><span class="pill pill-green">Lote 1 cerrado</span> · walkthrough G1-G5 · MVP admin merged</td>
+    </tr>
+    <tr>
+      <td><strong>HPS</strong></td>
+      <td>Consumidora — primer adaptador externo (CAP-051 H01)</td>
+      <td><code>data/staging/hps/</code></td>
+      <td><span class="pill pill-green">H01 shipped</span> · PR #731 en main (commit <code>5bd4128</code>)</td>
+    </tr>
+    <tr>
+      <td><strong>HPS Solicitudes</strong></td>
+      <td>Consumidora — entrada al flujo HPS</td>
+      <td><code>data/staging/hps-solicitudes/</code></td>
+      <td><span class="pill pill-slate">Snapshot completo</span> · discovery funcional pendiente</td>
+    </tr>
+    <tr>
+      <td><strong>Condor</strong></td>
+      <td>Consumidora — default del runtime Dysflow</td>
+      <td><code>data/staging/condor/</code></td>
+      <td><span class="pill pill-slate">Snapshot completo</span> · discovery funcional pendiente</td>
+    </tr>
+    <tr>
+      <td><strong>Brass</strong></td>
+      <td>Consumidora — no tiene backend separado (mismo <code>.accdb</code>)</td>
+      <td><code>data/staging/brass/</code></td>
+      <td><span class="pill pill-slate">Snapshot completo</span> · discovery funcional pendiente</td>
+    </tr>
+    <tr>
+      <td><strong>Gestion_Riesgos</strong></td>
+      <td>Consumidora — acoplamiento declarado vía <code>getdbLanzadera()</code> (D86/D87)</td>
+      <td><code>data/staging/gestion-riesgos/</code></td>
+      <td><span class="pill pill-green">Lote 3 cerrado</span> · D88 queja del árbol caracterizada · Dysflow pendiente 2.ª pasada</td>
+    </tr>
+    <tr>
+      <td><strong>No Conformidades</strong></td>
+      <td>Consumidora — mismo patrón <code>getdbLanzadera()</code> que Gestion_Riesgos (D86)</td>
+      <td><code>data/staging/no-conformidades/</code></td>
+      <td><span class="pill pill-slate">Inventario Dysflow pendiente</span></td>
+    </tr>
+    <tr>
+      <td><strong>Expedientes</strong></td>
+      <td>Consumidora — backend autoritativo bajo <code>C:\00repos\datos</code></td>
+      <td><code>data/staging/expedientes/</code></td>
+      <td><span class="pill pill-green">Lote 2 cerrado</span> · Dysflow read-only</td>
+    </tr>
+  </tbody>
+</table>
+
+<p class="meta">APAP / APAP_WEB no aparecen en esta tabla — son un proyecto aparte que también consume Lanzadera, pero no están en el alcance del blueprint 8-apps.</p>
+
+<hr>
+
+<h2>3. Estudio previo de capacidades (qué se buscó, qué se encontró)</h2>
+
+<h3>3.1 Lo que se hizo</h3>
+<ul>
+  <li><strong>Walkthrough G1-G5 con método v4</strong> (5 tools por form: <code>codegraph_explore</code> + <code>analyze_form_ui</code> + <code>analyze_form_layout</code> + <code>map_form_behavior</code> + <code>verify_form_bindings</code>). Cobertura: <strong>28/28 forms</strong>.</li>
+  <li><strong>Inspección Dysflow</strong> del binario Lanzadera (<code>00_LANZADERA/staging</code> como baseline, <code>00_main</code> como comparación publicada). Configuración <code>.dysflow/project.json</code> creada en segunda pasada con <code>setup_project</code> autorizado (<code>projectId: 00-lanzadera-staging</code>, <code>allowWrites: true</code>).</li>
+  <li><strong>CodeGraph-VBA</strong> con índice independiente en <code>staging</code> y <code>00_main</code>. Confirmación estática de login, permisos, administración, navegación y lanzamiento.</li>
+  <li><strong>Inspección del backend compartido</strong> <code>C:\00repos\datos\Lanzadera_Datos.accdb</code>: 35 tablas, 156 usuarios activos, 622 permisos.</li>
+  <li><strong>Issues Dysflow filed</strong>: <a href="https://github.com/DysTelefonica/dysflow/issues/1407">#1407</a> cerrado en 2.36.2; <a href="https://github.com/DysTelefonica/dysflow/issues/1408">#1408</a> y <a href="https://github.com/DysTelefonica/dysflow/issues/1412">#1412</a> abiertos como <code>skipped_tool_broken</code> con workaround aplicado.</li>
+</ul>
+
+<h3>3.2 Capacidades detectadas (15) y su disposición final</h3>
+<table>
+  <thead>
+    <tr><th>Capacidad</th><th>Evidencia de uso</th><th>Disposición final</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Autenticación y sesión</td><td>10.360 conexiones (última 2024-02-02)</td><td>Preservar y modernizar — Argon2id RFC 9106</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Alta, baja y perfil de usuario</td><td>Sin métrica agregada</td><td>Preservar — núcleo de plataforma</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Reset y cambio de contraseña</td><td>455 entradas (última 2026-05-11)</td><td>Preservar — Argon2id + flujo reset</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Catálogo de aplicaciones</td><td>20 entradas, 11 con aperturas</td><td>Preservar contratos semánticos</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Visibilidad por ubicación y estado</td><td>Flags estáticos sin uso medido</td><td>Retirar distinción oficina/fuera</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Lanzamiento y paso de identidad</td><td>11 apps, 1.737 aperturas</td><td>Retirar mecanismo desktop; menú web permission-aware</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Asignación usuario-aplicación</td><td>18 apps, 610 asignaciones</td><td>Fusionar como servicio compartido</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Roles y permisos granulares</td><td>610 asignaciones</td><td>Modernizar enforcement server-side</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Administrador global</td><td>Política estática</td><td>Preservar y modernizar enforcement</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Menús por perfil</td><td>Navegación estática</td><td>Mantener contrato, modernizar implementación</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Contenido formativo (vídeos, cuestionarios)</td><td>138 visionados (último 2023-12-05)</td><td>Retirar del producto web</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Conexiones y auditoría</td><td>10.360 conexiones</td><td>Preservar y modernizar — eventos canónicos atómicos</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Cola de correo</td><td>1.042 registros (último 2023-04-27)</td><td>Reemplazar por servicio unificado de notificaciones</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Configuración de backend/entorno</td><td>Sin telemetría</td><td>Retirar — externalizar a adapters hexagonales</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+    <tr><td>Tareas, batch y exportaciones</td><td>41/156 usuarios marcados</td><td>Fusionar con scheduler compartido</td><td><span class="pill pill-green">Aprobado</span></td></tr>
+  </tbody>
+</table>
+
+<h3>3.3 Hallazgos críticos del inventario real (segunda pasada Dysflow, 2026-08-05)</h3>
+<ul>
+  <li>Datos personales explícitos en <code>tbUsuarios</code>: <code>Matricula_DNI</code>, <code>Nombre</code>, <code>DirCorreo</code>, <code>telfijo</code>, <code>telmovil</code>. 156 filas. Mismo riesgo que HPS (D92) y HPS_Solicitudes (D98).</li>
+  <li>Booleans mixtos: <code>SeLogean</code>, <code>ParaTareasProgramadas</code>, <code>Autorizador</code> son <code>YesNo</code>; <code>EmplazamientoExterno</code>, <code>UsuarioDeGestionRiesgos</code>, <code>UsuariosI3D</code> son <code>Text 2</code>. Inconsistencia.</li>
+  <li>Naming inconsistente: <code>tbUsuarios</code> (minúscula) vs <code>TbAplicaciones</code> (mayúscula); typo <code>TbCuestionaroRespuestas</code>.</li>
+  <li>Cross-app flags en <code>tbUsuarios</code>: <code>UsuarioDeGestionRiesgos</code>, <code>UsuariosI3D</code>.</li>
+</ul>
+
+<hr>
+
+<h2>4. Avance realizado (lo que ya está mergeado en <code>main</code>)</h2>
+
+<table>
+  <thead>
+    <tr><th>Lote / Workstream</th><th>PR / Commit</th><th>Resultado</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>W60 — SSE presence (heartbeat, snapshot, stream)</td>
+      <td>#523 + fix #581</td>
+      <td>Indicadores de presencia conectados</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>W61 — App CRUD (POST/GET/PATCH/DELETE)</td>
+      <td>cc97910 + fix #580</td>
+      <td>Catálogo de aplicativos editable vía web</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>W62 — Auth flow (login + reset + bootstrap)</td>
+      <td>PR-1..PR-7</td>
+      <td>Flujo de autenticación web end-to-end</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>W65 — Container cleave (#596)</td>
+      <td>#596 → 6 módulos</td>
+      <td><code>container.py</code> 197 sitios → 84; 6 módulos ≤ 100 sitios</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>W-TEST — Tests de integración</td>
+      <td>#720 (A03 CAP-045)</td>
+      <td>Patrón CurrentPrincipal + tests pytest verde</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>Seeds cycle (DA-7b → migraciones 0003-0007)</td>
+      <td>#626 fixtures · #630 migraciones · #632 contract tests</td>
+      <td>20 apps, 156 users, 160 profiles, 622 assignments, 200 audit events. 32 contract tests verde.</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>Specs SDD producidas</td>
+      <td><code>sdd/lanzadera-mvp/spec</code></td>
+      <td>7 capabilities bajo <code>lanzadera-admin</code></td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>Proposal OpenSpec</td>
+      <td><code>openspec/changes/lanzadera-mvp/proposal.md</code></td>
+      <td>Alcance, criterios de aceptación (CA-F1..F7, CA-S1..S5)</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>UAT U02 (related-data) y U08 (runtime)</td>
+      <td>#738 (d61ce29), #779 (c81a882)</td>
+      <td>Lanes related-data y runtime-policy cerradas</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>H01 — HPS adapter (primer consumidor externo)</td>
+      <td>#731 (5bd4128)</td>
+      <td>CAP-051 — HPS Plataforma de Contratación del Sector Público</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+    <tr>
+      <td>Test-rot repair main</td>
+      <td>#1045 (c8e9f0a)</td>
+      <td>Full pytest scope deterministically green</td>
+      <td><span class="pill pill-green">Merged</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Alcance del MVP Lanzadera admin (ya en producción web)</h3>
+<ul>
+  <li><strong>7 capabilities</strong> bajo <code>lanzadera-admin</code>: users, apps, profiles, assignments, auth (Argon2id + reset flow + sin legacy; D88-D91), global_admins (BootstrapAdapter + CLI), audit (auth + app-open events, sin telemetría).</li>
+  <li><strong>5 migraciones Alembic</strong> aditivas: <code>seed_apps</code>, <code>seed_profiles</code>, <code>seed_users</code> (AES-256-GCM <code>dni_encrypted</code>), <code>seed_assignments</code>, <code>seed_audit</code>.</li>
+  <li><strong>32 contract tests</strong> (apps 6 · profiles 7 · users 7 · assignments 6 · audit 6), todos passing.</li>
+  <li><strong>Endpoint admin</strong> registrado en <code>app/src/modules/lanzadera/</code> con migración Alembic aditiva (D82).</li>
+  <li><strong>BootstrapAdapter</strong> idempotente sobre <code>GLOBAL_ADMIN_EMAILS</code> (DA-5, DA-6).</li>
+  <li><strong>Servicio unificado de notificaciones</strong> vía <code>mail_outbox</code> consumido por dispatcher externo cada ~5 min.</li>
+</ul>
+
+<hr>
+
+<h2>5. Trabajo pendiente (lo que falta para cerrar la migración)</h2>
+
+<h3>5.1 Hallazgos críticos abiertos (D155 – D167)</h3>
+<table>
+  <thead>
+    <tr><th>ID</th><th>Hallazgo</th><th>Mitigación propuesta</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>D155</td><td>5 hallazgos críticos en G4 (ActiveX legacy OCX, reach-up-to-grandparent coupling, twin forms confusos, 0 test coverage, false-positive overlaps)</td><td>Walkthrough v4 aplicado tras fix <code>analyze_form_layout</code> (#1407 cerrado); gaps restantes en <code>skipped_tool_broken</code></td><td><span class="pill pill-amber">En curso</span></td></tr>
+    <tr><td>D156</td><td>Binarios <code>.accdb</code> Lanzadera <strong>NO</strong> staging en este repo, sólo source tree exportado</td><td>Decisión pendiente: regenerar snapshot o seguir con source-only</td><td><span class="pill pill-amber">En curso</span></td></tr>
+    <tr><td>D157</td><td>codegraph-vba NO indexa el subdir <code>lanzaderas</code> (project context defaulted a <code>no-conformidades</code>)</td><td>Workaround: blast radius declara cross-project noise (Brass / Condor)</td><td><span class="pill pill-amber">En curso</span></td></tr>
+    <tr><td>D158</td><td>ActiveX MSComctlLib.TreeCtrl.2 + ImageListCtrl.2</td><td>Sustituir por <code>react-arborist</code> (TreeView) + componente ImageList propio. Eliminar OCX.</td><td><span class="pill pill-slate">Pendiente</span></td></tr>
+    <tr><td>D161</td><td>Global state coupling (<code>m_ObjVideoActivo</code>, <code>m_ObjAplicacionActivo</code>)</td><td>Request-scoped services / Context API. Pre-requisito para hacer tests.</td><td><span class="pill pill-slate">Pendiente</span></td></tr>
+    <tr><td>D163</td><td>WIP forms G5 — <code>Form_FormObtenerContraseña</code> con orphan event bindings</td><td>Auditar handlers huérfanos y reescribir bindings limpios</td><td><span class="pill pill-slate">Pendiente</span></td></tr>
+    <tr><td>D167</td><td><code>Form_Formulario1</code> colisión de nombre — devuelve el form Firebase demo de Expedientes</td><td>Reconciliar nomenclatura o aislar como artefacto</td><td><span class="pill pill-slate">Pendiente</span></td></tr>
+    <tr><td>D174</td><td><code>frmBusy</code> modal anti-spam</td><td>Sustituir por <code>useTransition</code> + <code>aria-busy</code>; eliminar el form completo</td><td><span class="pill pill-slate">Pendiente</span></td></tr>
+  </tbody>
+</table>
+
+<h3>5.2 Tickets derivables (TK-LZ-1 .. TK-LZ-18)</h3>
+<p>La épica declara 18 tickets por derivar a partir del scope F1-F28. Su redacción fina y orden de ataque están en <code>docs/03-aplicaciones/lanzadera/epic.md</code> §7.</p>
+
+<h3>5.3 Features aún no migradas (F1-F28)</h3>
+<p>Las 28 features se reparten en 5 dominios. Estado del MVP admin cubre el subconjunto core; las features restantes (especialmente G4 Vídeos, que está retirado) y los cross-cutting G5 son las que quedan abiertas:</p>
+<table>
+  <thead>
+    <tr><th>Dominio</th><th>Features</th><th>Estado de migración</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>G1 — Login + Menús + Perfil</td><td>F1-F5</td><td><span class="pill pill-green">Cubierto por W62 + W60</span></td></tr>
+    <tr><td>G2 — Aplicaciones</td><td>F6-F12</td><td><span class="pill pill-amber">CRUD básico en W61; visibilidad oficina/fuera retirada</span></td></tr>
+    <tr><td>G3 — Usuarios</td><td>F13-F18</td><td><span class="pill pill-amber">CRUD básico; A02/A03 current-principal + session-state shipped; usuarios conectados en producción</span></td></tr>
+    <tr><td>G4 — Vídeos</td><td>F19-F25</td><td><span class="pill pill-slate">Retirado del producto web (no migra)</span></td></tr>
+    <tr><td>G5 — Cross-cutting</td><td>F26-F28</td><td><span class="pill pill-red">WIP / placeholders — D163 / D167</span></td></tr>
+  </tbody>
+</table>
+
+<h3>5.4 Adoptantes pendientes</h3>
+<p>De las 7 consumidoras declaradas, sólo <strong>HPS</strong> tiene su adaptador Lanzadera integrado en main (H01, PR #731). Quedan por integrar:</p>
+<ul>
+  <li>HPS Solicitudes — snapshot completo, discovery funcional pendiente.</li>
+  <li>Condor — snapshot completo, discovery funcional pendiente.</li>
+  <li>Brass — snapshot completo (no tiene backend separado), discovery funcional pendiente.</li>
+  <li>Gestion_Riesgos — D88 queja del árbol caracterizada; Dysflow pendiente para segunda pasada.</li>
+  <li>No Conformidades — inventario Dysflow pendiente.</li>
+  <li>Expedientes — discovery técnico cerrado; Dysflow read-only; sin adapter Lanzadera aún.</li>
+</ul>
+
+<hr>
+
+<h2>6. Riesgos dominantes</h2>
+<table>
+  <thead>
+    <tr><th>Riesgo</th><th>Impacto</th><th>Mitigación</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>CodeGraph-VBA no indexa <code>lanzaderas</code></strong> (D157)</td><td>El blast radius declara cross-project noise con Brass / Condor; llamadas cross-app se infieren por nombre, no por grafo</td><td>Documentar la limitación en cada PR que toque cross-app; validar manualmente cuando aplique</td></tr>
+    <tr><td><strong>Binarios <code>.accdb</code> NO staging</strong> (D156)</td><td>Dysflow no puede auditar drift binario sobre Lanzadera; sólo se audita el source tree</td><td>Regenerar snapshot o aceptar source-only como baseline</td></tr>
+    <tr><td><strong>Two issues Dysflow abiertas</strong> (#1408, #1412)</td><td>Bloquean la 2.ª pasada de walkthrough sobre G4 (vídeos) y sobre inventory de No Conformidades</td><td>Esperar fix upstream o aplicar workaround <code>skipped_tool_broken</code> documentado</td></tr>
+    <tr><td><strong>Colisión de nombre Form_Formulario1</strong> (D167)</td><td>Devuelve form Firebase demo de Expedientes en lugar del esperado en Lanzadera</td><td>Reconciliar nomenclatura antes de migrar G5</td></tr>
+    <tr><td><strong>0 test coverage</strong> sobre los WIP forms G5</td><td>Riesgo de regresión silenciosa al migrar <code>Form_FormObtenerContraseña</code> y <code>Form_Formulario1</code></td><td>Añadir fixtures sintéticas antes de cualquier PR</td></tr>
+    <tr><td><strong>Datos personales en <code>tbUsuarios</code></strong></td><td>156 filas con DNI, nombre, correo y teléfonos — mismo riesgo que HPS (D92) y HPS_Solicitudes (D98)</td><td>Aplicar minimización y cifrado en migración (AES-256-GCM ya en uso para <code>dni_encrypted</code>)</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<h2>7. Resumen ejecutivo en una tabla</h2>
+<table>
+  <thead>
+    <tr><th>Dimensión</th><th>Estado</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Implicaciones</td><td>Migración completa Access/VBA → web hexagonal; núcleo de identidad, permisos y catálogo preservado; mecanismo desktop retirado.</td></tr>
+    <tr><td>Aplicativos a integrar</td><td>Lanzadera + 7 consumidoras (HPS, HPS Solicitudes, Condor, Brass, Gestion_Riesgos, No Conformidades, Expedientes). H01 HPS ya en main; las 6 restantes pendientes de adapter.</td></tr>
+    <tr><td>Estudio previo</td><td>Walkthrough G1-G5 (28/28 forms) + inventario Dysflow + CodeGraph-VBA + 15 capacidades detectadas + 10 disposiciones finales aprobadas.</td></tr>
+    <tr><td>Avance realizado</td><td>MVP Lanzadera admin merged (W60/W61/W62/W65/W-TEST) · seeds cycle (PR #626/#630/#632) · 5 migraciones Alembic · 32 contract tests · H01 HPS shipped · main pytest green.</td></tr>
+    <tr><td>Trabajo pendiente</td><td>18 tickets TK-LZ-1..18 · 8 hallazgos críticos D155-D174 · 6 adoptantes pendientes · G4 vídeos retirado (no migra) · G5 cross-cutting con WIP forms.</td></tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  <p><strong>Fuentes consultadas</strong>:</p>
+  <ul>
+    <li><code>docs/01-inventario-aplicaciones.md</code></li>
+    <li><code>docs/02-topologia-ecosistema/lanzadera-identidad-permisos.md</code></li>
+    <li><code>docs/03-aplicaciones/lanzadera/README.md</code>, <code>capabilities.md</code>, <code>epic.md</code>, <code>data-model.md</code></li>
+    <li><code>openspec/changes/lanzadera-mvp/</code> (proposal.md, design.md, tasks.md, specs/)</li>
+    <li><code>openspec/changes/legacy-ecosystem-discovery/exploration.md</code></li>
+    <li><code>estado-planificacion-MVP-lanzadera-seeds.html</code></li>
+    <li>Engram (project <code>access2web-blueprint</code>): observaciones sobre W60/W61/W65/W-TEST, A01-A03, U02/U07/U08, H01 HPS, test-rot repair</li>
+  </ul>
+  <p>Versión 1 · generada el 2026-09-29.</p>
+</div>
+
+</body>
+</html>
