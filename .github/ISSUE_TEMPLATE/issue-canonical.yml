@@ -1,0 +1,69 @@
+name: Issue canónica
+description: Contrato canónico de issue para todo cambio en este repositorio. Las seis secciones son obligatorias.
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Contrato canónico de issue.**
+
+        Las seis secciones de este formulario son obligatorias. Cualquier
+        mantenedor del repositorio con rol de administración aplica
+        `status:approved` tras la revisión; ninguna rama ni PR se crea sin una
+        issue con `status:approved`. Ningún agente aplica `status:approved` ni
+        mergea.
+
+        El número de issue debe aparecer en el nombre de la rama:
+        `<tipo>/<nº issue>-<slug en kebab-case>`, con
+        `feat|fix|refactor|docs|ci|test|chore`; lo valida
+        `scripts/check_branch_name.py`.
+
+        La dimensión de aplicación se etiqueta con `app/<slug>` y se anuncia en
+        el prefijo del título.
+
+        El merge entra por el camino del host: el ruleset
+        `main-maintainers-and-admins-merge` solo deja actualizar la rama por
+        defecto a los mantenedores y administradores, y solo mediante un PR con
+        el check requerido en verde.
+  - type: textarea
+    id: problema-y-contexto
+    attributes:
+      label: Problema y contexto
+      description: Qué problema se resuelve y por qué es relevante ahora. Estado actual frente al estado esperado.
+    validations:
+      required: true
+  - type: textarea
+    id: evidencia-verificable
+    attributes:
+      label: Evidencia verificable
+      description: Datos que sustentan el problema — capturas, logs, salida de comandos, referencias a ficheros y líneas, métricas. Sin evidencia verificable la issue no se aprueba.
+    validations:
+      required: true
+  - type: textarea
+    id: alcance-y-no-objetivos
+    attributes:
+      label: Alcance y no objetivos
+      description: "Qué entra en esta issue y, de forma explícita, qué queda fuera (no objetivos). Una issue atómica: la cambia una persona, la cierra un PR."
+    validations:
+      required: true
+  - type: textarea
+    id: criterios-de-aceptacion
+    attributes:
+      label: Criterios de aceptación
+      description: Lista comprobable de condiciones de aceptación. Cada criterio debe poder validarse con un comando, un test o una observación directa.
+    validations:
+      required: true
+  - type: textarea
+    id: plan-de-validacion
+    attributes:
+      label: Plan de validación
+      description: Cómo se valida el cambio — tests de pytest que se añaden o se ejecutan (make test), los scripts/check_*.py que aplican, la verificación manual y el resultado esperado de cada paso.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencias-y-riesgos
+    attributes:
+      label: Dependencias y riesgos
+      description: Issues, sistemas o personas de las que depende este cambio, y riesgos conocidos (incluida cualquier excepción al presupuesto de revisión prevista).
+    validations:
+      required: true
