@@ -416,9 +416,8 @@ def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
 
 # --- Reparto del dominio entre los jobs de la matriz (#785) ---------------------------------
 #
-# Medido el 2026-10-07: el dominio (1129 mutantes) en un solo job pide 38-113 h, más que el
-# techo de un job hospedado. La matriz parte el dominio en tramos deterministas y el job final
-# fusiona las sesiones. Estos tests fijan el reparto y el fallo cerrado del gate multi-sesión.
+# El dominio (1129 mutantes) no cabe en un job. La matriz lo parte en tramos
+# deterministas y el job final fusiona las sesiones.
 
 MUTATION_DOMAIN_COUNTS = {
     "app/src/modules/expedientes/domain/anexo/retention.py": 116,
