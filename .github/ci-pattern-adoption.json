@@ -88,7 +88,11 @@
         "skills/"
       ],
       "host_labels": ".github/host-labels-snapshot.json",
-      "removal_confirmed": true
+      "removal_confirmed": true,
+      "deploy_binding": {
+        "applicable": false,
+        "reason": "El repositorio no aloja ningún mecanismo de despliegue: docs/11-releases.md se declara «No es: una guía de despliegue en producción», release.yml publica la imagen y verifica su firma sin desplegar, y no existe ninguna etiqueta ni release. Sin deploy no hay evidencia que registrar por SHA desplegado, así que el binding evidencia↔deploy no se instala (G4.5)."
+      }
     }
   }
 }
