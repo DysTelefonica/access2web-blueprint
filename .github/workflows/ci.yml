@@ -309,20 +309,18 @@ jobs:
       # `quality` check is now driven by the script-level exit code.
 
   mutation:
-    # Scheduled, manual and on tag push (XCUT #703). Runner hospedado ARM: el
-    # repositorio es público y no consume los runners propios del VPS.
-    # El dominio se parte en 10 tramos deterministas (scripts/mutation_shards.py):
-    # la sesión entera —1129 mutantes— pide 38-113 h y no cabe en un job.
-    # The tag-push branch is the XCUT #703 contract: a release cannot publish
-    # unless mutation testing has run on the exact bytes of the tag.
+    # Scheduled, manual and on tag push (XCUT #703): a release cannot publish
+    # without mutation testing on the tag's bytes. Runner hospedado ARM (repo
+    # público). El dominio se parte en 10 tramos deterministas
+    # (scripts/mutation_shards.py): 1129 mutantes enteros piden 38-113 h; el
+    # peor tramo medido, 116 x 52 s ≈ 1,7 h.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04-arm
-    # El peor tramo medido: 116 mutantes x 52 s ≈ 1,7 h. El techo deja margen.
     timeout-minutes: 150
     # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
     # succession serialize rather than racing cosmic-ray's sqlite (umbrella #117).
     concurrency:
-      group: gate-mutation
+      group: gate-mutation-${{ matrix.shard }}
       cancel-in-progress: false
     strategy:
       fail-fast: false

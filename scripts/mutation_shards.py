@@ -1,22 +1,16 @@
 #!/usr/bin/env python3
 """Reparto del dominio de mutación entre los jobs de la matriz (#785).
 
-El dominio —los dos directorios `domain/` que declara
-`docs/quality/cosmic-ray.toml`— tiene 1129 mutantes y la sesión entera no cabe
-en un job: medido, entre 38 y 113 h. Este script lee una sesión de
-`cosmic-ray init` y reparte sus módulos en tramos deterministas con greedy LPT
-(el módulo con más mutantes va al tramo menos cargado, con desempate por índice
-y por ruta): la misma sesión produce siempre el mismo reparto, y cada tramo
-queda en 111-116 mutantes.
-
-Cada job de la matriz hace su propio `init` sobre el config compartido —3,7 s,
-no hay estado que compartir— y este script le escribe el config de su tramo. El
-job final fusiona las sesiones y `check_mutation.py` falla cerrado si falta
-alguna.
+El dominio tiene 1129 mutantes y la sesión entera no cabe en un job (38-113 h
+medidas). Este script reparte los módulos de una sesión de `cosmic-ray init` en
+tramos deterministas con greedy LPT —el mayor al tramo menos cargado, desempate
+por índice y ruta— y escribe el config de un tramo con el `test-command`,
+timeout y exclusiones del config compartido. Cada job hace su propio `init`
+(3,7 s) y el job final fusiona las sesiones.
 
 Uso:
-    python scripts/mutation_shards.py --session mutation-session.sqlite --shards 10 --summary
-    python scripts/mutation_shards.py --session mutation-session.sqlite --index 3 --out shard.toml
+    python scripts/mutation_shards.py --session s.sqlite --shards 10 --summary
+    python scripts/mutation_shards.py --session s.sqlite --index 3 --out shard.toml
 """
 
 from __future__ import annotations
