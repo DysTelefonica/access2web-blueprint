@@ -309,28 +309,25 @@ jobs:
       # `quality` check is now driven by the script-level exit code.
 
   mutation:
-    # Scheduled, manual and on tag push (XCUT #703). THIS IS THE ONE JOB THE SKILL COULD NOT EXECUTE END TO END —
-    # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
-    # session needs the mutation runner on a real codebase. Verify it once on adoption.
-    # The tag-push branch is the XCUT #703 contract: a release cannot publish unless
-    # mutation testing has run on the exact bytes of the tag. Costs ~60 min on the
-    # GitHub-hosted ARM runner; this repository is public and does not consume the
-    # VPS' own runners. The release path accepts that latency to keep the
-    # fail-closed guarantee (alternative was a preflight lookup of a recent manual
-    # run, which relies on operational discipline).
-    # NOTE: the `if` keeps this slow weekly gate and the release contract out of the
-    # pull-request path; it is not a per-PR check.
+    # Scheduled, manual and on tag push (XCUT #703). Runner hospedado ARM: el
+    # repositorio es público y no consume los runners propios del VPS.
+    # El dominio se parte en 10 tramos deterministas (scripts/mutation_shards.py):
+    # la sesión entera —1129 mutantes— pide 38-113 h y no cabe en un job.
+    # The tag-push branch is the XCUT #703 contract: a release cannot publish
+    # unless mutation testing has run on the exact bytes of the tag.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04-arm
+    # El peor tramo medido: 116 mutantes x 52 s ≈ 1,7 h. El techo deja margen.
+    timeout-minutes: 150
     # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
     # succession serialize rather than racing cosmic-ray's sqlite (umbrella #117).
     concurrency:
       group: gate-mutation
       cancel-in-progress: false
-    # cosmic-ray on the declared testable boundary is intentionally slow. The
-    # timeout is loose — Hard Rule 18 says the runner's exit code is not the
-    # verdict; check_mutation.py is.
-    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
