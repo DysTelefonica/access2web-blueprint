@@ -12,6 +12,7 @@
         {"artifact": ".github/ISSUE_TEMPLATE/docs.yml (formulario de documentación y épicas; lo sustituye el formulario canónico del patrón en la fase 3)", "disposition": "retired", "path": ".github/ISSUE_TEMPLATE/docs.yml"},
         {"artifact": ".github/ISSUE_TEMPLATE/feature.yml (formulario de capacidad nueva por aplicación; lo sustituye el formulario canónico del patrón en la fase 3, y la dimensión de aplicación sobrevive como etiqueta app/<slug> y prefijo de título)", "disposition": "retired", "path": ".github/ISSUE_TEMPLATE/feature.yml"},
         {"artifact": ".github/dependabot.yml", "disposition": "adopted", "target": ".github/dependabot.yml"},
+        {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
         {"artifact": "scripts/check_branch_name.py", "disposition": "adopted", "target": "scripts/check_branch_name.py"},
@@ -97,6 +98,12 @@
     "1": {
       "evidence": {
         "path": "docs/adopcion-fase-1-evidencia-propagacion.md"
+      }
+    },
+    "2": {
+      "env_isolation": {
+        "root": "tests",
+        "allowlist": ".github/env-isolation-allowlist.json"
       }
     }
   }
