@@ -1,0 +1,21 @@
+[
+ {
+  "_links": {
+   "html": {
+    "href": "https://github.com/DysTelefonica/access2web-blueprint/rules/22639729"
+   },
+   "self": {
+    "href": "https://api.github.com/repos/DysTelefonica/access2web-blueprint/rulesets/22639729"
+   }
+  },
+  "created_at": "2026-09-09T12:30:42.441Z",
+  "enforcement": "active",
+  "id": 22639729,
+  "name": "main-maintainers-and-admins-merge",
+  "node_id": "RRS_lACqUmVwb3NpdG9yec5O2IwlzgFZdHE",
+  "source": "DysTelefonica/access2web-blueprint",
+  "source_type": "Repository",
+  "target": "branch",
+  "updated_at": "2026-09-09T12:32:28.867Z"
+ }
+]
