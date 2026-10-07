@@ -17,6 +17,7 @@
         {"artifact": ".github/dependabot.yml", "disposition": "adopted", "target": ".github/dependabot.yml"},
         {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
+        {"artifact": ".github/required-jobs-policy.json", "disposition": "adopted", "target": ".github/required-jobs-policy.json"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
         {"artifact": "scripts/check_branch_name.py", "disposition": "adopted", "target": "scripts/check_branch_name.py"},

@@ -1,0 +1,26 @@
+{
+  "codeql": {
+    "outputs": {},
+    "result": "success"
+  },
+  "mutation": {
+    "outputs": {},
+    "result": "skipped"
+  },
+  "quality": {
+    "outputs": {},
+    "result": "success"
+  },
+  "required": {
+    "outputs": {},
+    "result": "success"
+  },
+  "review-budget": {
+    "outputs": {},
+    "result": "success"
+  },
+  "security": {
+    "outputs": {},
+    "result": "success"
+  }
+}
