@@ -74,7 +74,7 @@ host.
 
 ## Referencias
 
-- [`calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) — contrato de gates y
+- [`architecture.md`](../architecture.md) §CI gates — contrato de gates y
   protección de `main`.
 - `oracle-vps-github-runners` — procedimiento operativo general para runners.
 - Issues #117, #130, #131, #135 y #552 — evolución del enrutado y sus gates.

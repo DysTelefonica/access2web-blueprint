@@ -79,7 +79,7 @@ Esta propuesta NO describe la migración de los otros siete módulos (Expediente
 
 ## Decisiones arquitectónicas heredadas
 
-Las decisiones D5–D87 y QC-1 a QC-9 son el contrato que este cambio materializa. La tabla resume las más relevantes para el MVP y dónde se aplica cada una. El detalle vive en `docs/08-decisiones-y-preguntas-abiertas.md`, `docs/09-arquitectura-objetivo-y-principios.md` y `docs/calidad-de-codigo-y-ci.md`.
+Las decisiones D5–D87 y QC-1 a QC-9 son el contrato que este cambio materializa. La tabla resume las más relevantes para el MVP y dónde se aplica cada una. El detalle vive en `docs/08-decisiones-y-preguntas-abiertas.md`, `docs/09-arquitectura-objetivo-y-principios.md` y `docs/architecture.md` §CI gates.
 
 | # | Decisión | Razón | Aplicación en el MVP |
 |---|---|---|---|
@@ -117,7 +117,7 @@ Las decisiones D5–D87 y QC-1 a QC-9 son el contrato que este cambio materializ
 
 | # | Decisión | Aplicación |
 |---|---|---|
-| QC-1 | Set MVP derivado de APAP_WEB con exclusiones justificadas | 12 gates en CI; exclusiones en `docs/calidad-de-codigo-y-ci.md` |
+| QC-1 | Set MVP derivado de APAP_WEB con exclusiones justificadas | 12 gates en CI; exclusiones en `docs/architecture.md` §CI gates |
 | QC-2 | Hexagonal layer gate desde el primer slice | `scripts/check_layers.py` corre el día 0 |
 | QC-3 | ruff `E,F,W,I,UP,B` desde día uno, sin ratchet | `pyproject.toml` con pin exacto `ruff==0.15.21` |
 | QC-4 | mypy strict con `ignore-without-code` | `pyproject.toml` `[tool.mypy]` con código exigido |

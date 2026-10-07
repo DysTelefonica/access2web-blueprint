@@ -123,5 +123,5 @@ Esta skill se audita a sí misma contra el rubric de `skill-style-guide` HR-1..H
 - [`docs/testing/epic.md`](../../docs/testing/epic.md) — la epic del proyecto testing-strategy (D-1..D-7).
 - [`tests/lanzadera/_fakes.py`](../../tests/lanzadera/_fakes.py) — los fakes compartidos (HR-2).
 - [`tests/lanzadera/_presence_fakes.py`](../../tests/lanzadera/_presence_fakes.py) — fakes especializados de presence.
-- [`docs/calidad-de-codigo-y-ci.md`](../../docs/calidad-de-codigo-y-ci.md) §Hexagonal layer gate — la pureza de capa que HR-1 enforce.
+- [`docs/architecture.md`](../../docs/architecture.md) §Patrón hexagonal (DA-1) — la pureza de capa que HR-1 enforce.
 - [`docs/architecture.md`](../../docs/architecture.md) — fuente de verdad única de las decisiones D-n referenciadas.

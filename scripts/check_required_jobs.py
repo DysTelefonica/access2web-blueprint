@@ -8,7 +8,7 @@ list back to the actual workflows. Renaming or deleting a job silently
 desynchronizes it from reality.
 
 Adapted from `ardelperal/APAP_WEB`'s `scripts/check_required_jobs.py`
-(issue #766), which this repo's `docs/calidad-de-codigo-y-ci.md` names as
+(issue #766), which this repo's `docs/architecture.md` §CI gates names as
 the validated reference implementation. The event set differs, so the
 adaptation is not a byte-for-byte copy:
 

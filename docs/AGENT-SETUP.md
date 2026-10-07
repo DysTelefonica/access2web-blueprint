@@ -1,4 +1,4 @@
-[← Back to calidad-de-codigo-y-ci.md](calidad-de-codigo-y-ci.md)
+[← Back to architecture.md](architecture.md)
 
 # access2web-blueprint — Agent Setup
 
@@ -65,7 +65,7 @@ codegraph.codegraph_explore({ query: "LeeConfiguracionLocal", projectPath: "C:/0
 
 ## Navigation
 
-Previous: [calidad-de-codigo-y-ci.md](calidad-de-codigo-y-ci.md) | Next: [CODEBASE-GUIDE](../CODEBASE-GUIDE.md)
+Previous: [architecture.md](architecture.md) | Next: [CODEBASE-GUIDE](../CODEBASE-GUIDE.md)
 
 ---
 
