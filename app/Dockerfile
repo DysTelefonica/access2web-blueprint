@@ -27,10 +27,14 @@ RUN apt-get update \
         libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the package definition first so the wheel cache is reusable.
-COPY pyproject.toml ./
+# Copy the package definition and the README the metadata reads, plus the package
+# source hatchling ships. `readme = "README.md"` in pyproject.toml is a file the
+# backend opens while generating metadata: without it the build dies with
+# "Readme file does not exist: README.md" and no image is produced (#772).
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
 
-# Install runtime + dev dependencies into a virtualenv at /opt/venv.
+# Install the project and its runtime dependencies into a virtualenv at /opt/venv.
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip==24.2 \
     && /opt/venv/bin/pip install --no-cache-dir .
@@ -46,14 +50,20 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     PIP_NO_CACHE_DIR=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONHASHSEED=random
+    PYTHONHASHSEED=random \
+    PYTHONPATH="/app"
 
 # `appuser` exists on the base image; we just assign a non-root UID.
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin appuser
 
 WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
-COPY src/ /app/src/
+# The application imports itself as `app.src...` and the CMD below resolves
+# `app.src.main:app`, so sys.path needs a directory that holds an `app` package
+# with `src` inside it: the source goes to /app/app/src and PYTHONPATH is /app.
+# Copying it to /app/src (the previous layout) made the CMD fail with
+# "No module named 'app'" (#772).
+COPY src/ /app/app/src/
 
 USER appuser
 
