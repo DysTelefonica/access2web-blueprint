@@ -40,14 +40,10 @@ CHAIN_FIELDS = (
 
 
 def test_issue_form_declares_the_six_canonical_sections_in_order() -> None:
-    body = yaml.safe_load(
-        (ISSUE_DIR / "issue-canonical.yml").read_text(encoding="utf-8")
-    )["body"]
+    body = yaml.safe_load((ISSUE_DIR / "issue-canonical.yml").read_text(encoding="utf-8"))["body"]
     fields = [block for block in body if block["type"] == "textarea"]
 
-    assert [block["attributes"]["label"] for block in fields] == list(
-        CANONICAL_SECTIONS
-    )
+    assert [block["attributes"]["label"] for block in fields] == list(CANONICAL_SECTIONS)
     assert all(block["validations"]["required"] for block in fields)
 
 
