@@ -653,10 +653,20 @@ _FIRST_TOKEN = re.compile(r"^\s*([A-Za-z0-9_./$@{}\-]+)")
 
 
 def _invoked_binaries(run_blocks: list[str]) -> set[str]:
-    """Primer token de cada línea de comando; sin asignaciones ni comentarios."""
+    """Primer token de cada línea de comando; sin asignaciones ni comentarios.
+
+    Las continuaciones de línea (barra invertida final) se unen antes del primer token: una
+    bandera de la línea siguiente no es un binario.
+    """
     tokens: set[str] = set()
     for block in run_blocks:
+        logical: list[str] = []
         for line in block.splitlines():
+            if logical and logical[-1].endswith("\\"):
+                logical[-1] = logical[-1][:-1].rstrip() + " " + line.strip()
+            else:
+                logical.append(line)
+        for line in logical:
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
@@ -726,10 +736,11 @@ def test_mutation_job_installs_every_tool_and_config_its_steps_invoke(
         "el job `mutation` no pasa ningún config `.toml` a la herramienta: este "
         "test dejó de medir las rutas"
     )
+    generated = set(re.findall(r"--out\s+([\w./-]+\.toml)", " ".join(blocks)))
     for rel in sorted(configs):
-        assert (root / rel).is_file(), (
+        assert (root / rel).is_file() or rel in generated, (
             f"el job `mutation` pasa `{rel}` a la herramienta pero el fichero no "
-            f"existe en el árbol (#785)"
+            f"existe en el árbol y ningún paso lo genera (#785)"
         )
 
 

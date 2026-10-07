@@ -402,22 +402,50 @@ jobs:
             exit 1
           fi
 
-      - name: run mutants
-        # The runner's own exit code is not the verdict: it reports success for a run in which
-        # nothing executed. check_mutation.py is what decides (Hard Rule 18).
+      - name: mutar el tramo
+        # Cada job mide el reparto con su propio `init` (3,7 s) y ejecuta solo su
+        # tramo; el reparto es determinista, así que los diez jobs coinciden.
         run: |
+          set -euo pipefail
           cosmic-ray init docs/quality/cosmic-ray.toml mutation-session.sqlite
-          cosmic-ray exec docs/quality/cosmic-ray.toml mutation-session.sqlite
+          python scripts/mutation_shards.py --session mutation-session.sqlite \
+            --shards 10 --index ${{ matrix.shard }} --out shard.toml
+          cosmic-ray exec shard.toml shard-session.sqlite
 
-      - name: mutation ratchet
-        run: ${{ steps.setup-python.outputs.pythonLocation }}/bin/python3 scripts/check_mutation.py mutation-session.sqlite
+      - name: publicar la sesión del tramo
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-session-${{ matrix.shard }}
+          path: shard-session.sqlite
+          if-no-files-found: error
 
-      # The mutation-session sqlite blob previously published as an
-      # `actions/upload-artifact` step here is intentionally removed;
-      # see the matching comment in the `quality` job. The
-      # `python scripts/check_mutation.py` step exits with the ratchet
-      # verdict; that exit code (no `continue-on-error`, no `|| true`) is
-      # the gate.
+  mutation-ratchet:
+    # Fusiona las sesiones de la matriz y da el veredicto. Falla cerrado si
+    # falta un tramo (`--shards 10`) o si alguno no midió nada.
+    needs: mutation
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    concurrency:
+      group: gate-mutation-ratchet
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.11"
+
+      - name: bajar las sesiones de los tramos
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: mutation-session-*
+          path: sessions
+
+      # `check_mutation.py` es stdlib a propósito: el veredicto no necesita el
+      # toolchain de mutación, solo las sesiones.
+      - name: veredicto sobre las sesiones fusionadas
+        run: python scripts/check_mutation.py sessions/*/*.sqlite --shards 10
 
   security:
     # Issue #702: security.yml is now `on: workflow_call` only (no
