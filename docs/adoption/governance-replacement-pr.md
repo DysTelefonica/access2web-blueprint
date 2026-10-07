@@ -57,6 +57,8 @@ Lo que **no** se retira y conviene saber: `size:exception` se conserva (decisió
 
 `phases."3".pattern_paths` declara los seis ficheros del manifiesto; el gate comprueba que cada uno está cubierto por él y que su sha256 coincide con el árbol.
 
+El contrato de las dos plantillas queda fijado por `tests/test_governance_templates.py`: las seis secciones del formulario con sus nombres y en su orden, el `config.yml` sin formulario en blanco, y el bloque `Chain Context` con sus ocho campos y un único marcador. Ese test encontró, al escribirlo, que el comentario de la plantilla llevaba un segundo marcador y que eso habría hecho fallar HR-54 a cualquier PR que conservara el comentario.
+
 ## Desviaciones conscientes respecto de la adopción de referencia
 
 | Desviación | Por qué |
