@@ -260,6 +260,23 @@ def verify_commands() -> str:
     return blob
 
 
+def _local_preflight() -> str:
+    """El texto del preflight local, donde vive la única lista de gates."""
+    path = _find_makefile().parent / "scripts" / "local-preflight.sh"
+    assert path.is_file(), f"{path} no existe: `make verify` delega en él (Hard Rule 19)"
+    return path.read_text(encoding="utf-8")
+
+
+def _local_preflight_commands() -> list[str]:
+    """Los comandos del preflight, en orden y sin comentarios ni `set -`."""
+    commands: list[str] = []
+    for raw in _local_preflight().splitlines():
+        line = raw.strip()
+        if line and not line.startswith("#") and not line.startswith("set -"):
+            commands.append(" ".join(line.split()))
+    return commands
+
+
 def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     """Hard Rule 19: one command must equal green.
 
@@ -271,25 +288,55 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     VERIFY_EXCLUSIONS — an absence that is written down is a decision, and an
     absence that is not is a hole.
     """
-    expected = [
+    # 1. `make verify` no tiene su propia lista: delega en el script.
+    assert "scripts/local-preflight.sh" in verify_commands, (
+        "`make verify` does not delegate to scripts/local-preflight.sh: the canonical "
+        "list of gates must live in exactly one place (Hard Rule 19)."
+    )
+
+    # 2. El script corre los mismos gates que CI, en el mismo orden.
+    expected: list[str] = []
+    for command in REQUIRED_COMMANDS:
+        if command in VERIFY_EXCLUSIONS:
+            continue
+        if command.removeprefix("python ") in [
+            v.removeprefix("python ") for v in VERIFY_EXCLUSIONS
+        ]:
+            continue
+        if command not in expected:
+            expected.append(command)
+
+    script = " ".join(_local_preflight_commands())
+    positions = [script.find(" ".join(command.split())) for command in expected]
+    assert -1 not in positions, (
+        "ci.yml gates a pull request on "
+        f"{[c for c, pos in zip(expected, positions, strict=True) if pos == -1]}, but the local "
+        "preflight never runs them. Add the gate to scripts/local-preflight.sh, in the "
+        "same order ci.yml runs it (Hard Rule 19)."
+    )
+    assert positions == sorted(positions), (
+        "the local preflight runs the CI gates in a different order: the sequence is "
+        "part of the contract (complexity and coverage depend on it)."
+    )
+
+    # 3. Y no corre ningún gate que no esté declarado: cada línea del script es
+    #    uno de los gates esperados.
+    allowed = set()
+    for command in expected:
+        normalized = " ".join(command.split())
+        allowed |= {normalized, normalized.removeprefix("python "), f"python {normalized}"}
+    extra = [
         command
-        for command in REQUIRED_COMMANDS
-        if command not in VERIFY_EXCLUSIONS
-        and command.removeprefix("python ")
-        not in [v.removeprefix("python ") for v in VERIFY_EXCLUSIONS]
+        for command in _local_preflight_commands()
+        if not any(
+            " ".join(command.split()) == candidate
+            or " ".join(command.split()).startswith(candidate)
+            for candidate in allowed
+        )
     ]
-    # Strip prefix before comparison so commands (now without `python ` prefix)
-    # match VERIFY_EXCLUSIONS entries (which keep the prefix for compatibility).
-    missing = [
-        command
-        for command in expected
-        if command.removeprefix("python ") not in verify_commands.replace("python -m ", "")
-        and command not in verify_commands
-    ]
-    assert not missing, (
-        f"ci.yml gates a pull request on {missing}, but `make verify` never runs them. "
-        "Add a target per gate and list it in the `verify` prerequisites, in the same "
-        "order ci.yml runs it (Hard Rule 19)."
+    assert not extra, (
+        f"the local preflight runs commands that are not in the CI gate contract: {extra}. "
+        "Either wire them in ci.yml or record the decision in VERIFY_EXCLUSIONS."
     )
 
 

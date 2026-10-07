@@ -18,6 +18,8 @@
         {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
         {"artifact": ".github/required-jobs-policy.json", "disposition": "adopted", "target": ".github/required-jobs-policy.json"},
+        {"artifact": ".github/local-ci-parity-policy.json", "disposition": "adopted", "target": ".github/local-ci-parity-policy.json"},
+        {"artifact": "scripts/local-preflight.sh", "disposition": "adopted", "target": "scripts/local-preflight.sh"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
         {"artifact": "scripts/check_branch_name.py", "disposition": "adopted", "target": "scripts/check_branch_name.py"},
@@ -127,6 +129,60 @@
       "evidence": {
         "path": "docs/adoption/governance-replacement-pr.md"
       }
+    },
+    "4": {
+      "gates": [
+        {
+          "args": [
+            "--contract",
+            "@.github/host-contract.json",
+            "--snapshot",
+            "repo=@docs/adoption/repo.json",
+            "--snapshot",
+            "labels=@docs/adoption/labels.json",
+            "--snapshot",
+            "branch-protection=@docs/adoption/branch-protection.json",
+            "--snapshot",
+            "rulesets=@docs/adoption/rulesets.json"
+          ],
+          "gate": "host-readback"
+        },
+        {
+          "args": [
+            "--policy",
+            "@.github/required-jobs-policy.json",
+            "--event",
+            "pull_request",
+            "--needs-file",
+            "@.github/needs/needs.json"
+          ],
+          "gate": "required-jobs"
+        },
+        {
+          "args": [
+            "--repo",
+            "@.",
+            "--policy",
+            "@.github/local-ci-parity-policy.json"
+          ],
+          "gate": "local-ci-parity"
+        },
+        {
+          "args": [
+            "--workflow",
+            "@.github/workflows/ci.yml",
+            "--base-branch",
+            "main",
+            "--required-jobs",
+            "@.github/required-jobs-policy.json"
+          ],
+          "gate": "workflow-policy"
+        },
+        {
+          "args": [],
+          "gate": "hr-matrix"
+        }
+      ]
     }
   }
 }

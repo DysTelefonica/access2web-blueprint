@@ -80,7 +80,19 @@ quality-report:
 #
 # Adding a gate to ci.yml without adding it here fails the parity test. That is
 # the only reason the two lists will still match a year from now.
-verify: format lint typecheck test check-workflows quality-report
+# verify — THE definition of green (Hard Rule 19), delegando en la única
+# lista de comandos: scripts/local-preflight.sh, con los mismos gates y el
+# mismo orden que el job `quality` de ci.yml. Los targets de arriba quedan
+# como atajos por gate; la lista canónica no vive en dos sitios.
+#
+# Deliberately NOT included, each for a reason that is pinned by
+# test_make_verify_excludes_what_a_workstation_cannot_run:
+#   - check_pr_size / check_branch_name  need the PR payload (merge-base, labels)
+#   - check_mutation + cosmic-ray        weekly schedule; far too slow per PR
+#   - pip-audit / gitleaks / trivy       Docker- and network-dependent scanners
+#   - check_required_jobs                needs the real toJSON(needs) of a run
+verify:
+	@bash scripts/local-preflight.sh
 	@echo "verify: all CI pull-request gates passed."
 
 # Slow, scheduled, and Linux-only in most setups. Kept out of `verify` on
