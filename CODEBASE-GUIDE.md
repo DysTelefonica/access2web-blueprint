@@ -53,7 +53,7 @@ Legacy apps (Access/VBA)         Este monorepo                          Apps web
 | 6    | [CONTRIBUTING](../CONTRIBUTING.md) | Vas a hacer un PR o agregar un artefacto nuevo |
 | 7    | [docs/prompts/](../docs/prompts/) | Necesita escribir un issue o prompt a un mantenedor de dysflow |
 | 8    | [openspec/](../openspec/) | Está planeando una feature SDD o un cambio mayor |
-| 9    | [docs/calidad-de-codigo-y-ci](../docs/calidad-de-codigo-y-ci.md) | Está arrancando el MVP de plataforma y necesita configurar los quality gates |
+| 9    | [docs/architecture.md](../docs/architecture.md) §CI gates | Está arrancando el MVP de plataforma y necesita configurar los quality gates |
 
 ## Quick map: if you need X, read Y
 
@@ -68,7 +68,7 @@ Legacy apps (Access/VBA)         Este monorepo                          Apps web
 | Documentar un bug de dysflow          | [docs/prompts/prompt-ia-mantenedora-dysflow-round-*.md](../docs/prompts/) | [issues filed](#bugs-dysflow-filed) en DysTelefonica/dysflow |
 | Diseñar UI/UX de una app             | [docs/design/mockups/](../docs/design/mockups/)         | Skills `telefonica-brand-design` + `frontend-design`         |
 | Escribir docs (estilo y formato)     | [`documentation-alan-style`](skills/documentation-alan-style/SKILL.md) | [`skills/README.md`](skills/README.md) — índice de skills del proyecto |
-| Configurar quality gates del MVP    | [docs/calidad-de-codigo-y-ci](../docs/calidad-de-codigo-y-ci.md) | Esta guía → "Estructura del repo" + `pyproject.toml`          |
+| Configurar quality gates del MVP    | [docs/architecture.md](../docs/architecture.md) §CI gates | Esta guía → "Estructura del repo" + `pyproject.toml`          |
 | Hacer un PR                          | [CONTRIBUTING](../CONTRIBUTING.md)                       | Esta guía → "Workflow de contribución" abajo                  |
 
 ## Estructura del repo
@@ -83,7 +83,6 @@ raíz/
 ├── CHANGELOG.md                       ← cambios por versión
 ├── docs/                              ← docs por audiencia
 │   ├── AGENT-SETUP.md                 ← setup por agente
-│   ├── calidad-de-codigo-y-ci.md      ← quality gates del MVP de plataforma
 │   └── 03-aplicaciones/               ← 1 carpeta por app legacy
 │       ├── <app>/
 │       │   ├── epic.md                ← spec de migración
@@ -121,10 +120,10 @@ raíz/
 | Mockups UI | `docs/design/mockups/` | UX/Research team | Se queda; la UI real va en `app/src/modules/<app>/ui/`. |
 | Bugs dysflow | `docs/prompts/` + issues en DysTelefonica | Mantenedor dysflow | Issues NO se mueven; los prompts son el reporte local. |
 | Binarios legacy | `data/staging/<app>/` (R2-pulled) | Infra team | NO se commitean; quedan en R2 hasta el cut-over. |
-| Decisiones D1-D82 + QC-1 a QC-9 | `epic.md` per-app + cross-cutting en DOCS + [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) | Research team + Platform team | Per-app se mantienen; cross-cutting en DOCS; quality gates en su propio doc. |
+| Decisiones D1-D82 + QC-1 a QC-9 | `epic.md` per-app + cross-cutting en DOCS + [`docs/architecture.md`](docs/architecture.md) | Research team + Platform team | Per-app se mantienen; cross-cutting en DOCS; quality gates en §CI gates. |
 | Código de plataforma | `app/src/modules/<app>/` | Platform team | Se queda en este monorepo. |
 | Migraciones Alembic | `app/migrations/versions/` | Platform team | Se queda en este monorepo (Expand & Contract, D82). |
-| Quality gates + CI | [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) + `.github/workflows/` | Platform team | El doc se mantiene; los workflows viven en `.github/`. |
+| Quality gates + CI | [`docs/architecture.md`](docs/architecture.md) §CI gates + `.github/workflows/` | Platform team | El doc se mantiene; los workflows viven en `.github/`. |
 | Skills del proyecto | `skills/` | Contribuidores | Se instalan con `scripts/install-skills.sh`; la originals viven aquí, versionadas con el código. |
 
 ## Walkthrough patterns
@@ -166,7 +165,7 @@ Si en el futuro se agrega una novena app (no aplica ahora, las 8 están cerradas
 5. **Crear PR** con el título `docs(<app>): add epic - <N>/<N> forms walkthroughed via method v<N>`.
 6. **Mergear con `--squash --delete-branch`** (vía `gh pr merge`).
 7. **Actualizar este CODEBASE-GUIDE** agregando la fila en la tabla "The 8 Apps" del DOCS.
-8. **Crear `app/src/modules/<nueva-app>/`** con su esqueleto hexagonal (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`). Ver [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md) §Hexagonal layer gate para el contrato arquitectónico.
+8. **Crear `app/src/modules/<nueva-app>/`** con su esqueleto hexagonal (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`). Ver [`docs/architecture.md`](docs/architecture.md) §Patrón hexagonal (DA-1) para el contrato arquitectónico.
 
 ## Workflow de contribución
 
@@ -201,7 +200,7 @@ Esta guía explica ownership, flows, y guardrails. **NO duplica** la API referen
 |---|---|
 | La fuente de verdad arquitectónica. | Las decisiones D-<n> y DA-<n> viven en [`docs/architecture.md`](docs/architecture.md); este doc sólo las referencia. |
 | La referencia técnica de endpoints, schemas o CLI flags. | [`DOCS.md`](../DOCS.md) es la technical reference raíz. |
-| El manual de uso de los `check_*.py`. | [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) describe los 14 gates; este doc sólo nombra cuál aplica a qué artefacto. |
+| El manual de uso de los `check_*.py`. | [`docs/architecture.md`](docs/architecture.md) §CI gates mapea los gates; el manual de uso vive en el docstring de cada script, y este doc sólo nombra cuál aplica a qué artefacto. |
 | Una guía de estilo de código o convención de naming. | [`CONTRIBUTING.md`](../CONTRIBUTING.md) §Convención multi-app + `pyproject.fragment.toml` + ruff/mypy config. |
 
 ## Core invariants
@@ -218,7 +217,7 @@ Esta guía explica ownership, flows, y guardrails. **NO duplica** la API referen
 |---|---|---|
 | [`docs/architecture.md`](docs/architecture.md) | Decisiones D-<n> y DA-<n>, layout del repo, gaps conocidos. | §Decisiones metodológicas, §Stack, §Layout. |
 | [`DOCS.md`](../DOCS.md) | Technical reference raíz: endpoints, schemas, MCP, CLI, env vars. | §Full technical reference stays in DOCS.md. |
-| [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) | Los 14 `check_*.py` + los 5 workflows de CI. | §CI gates, §Quality gates, §Estructura del repo. |
+| [`docs/architecture.md`](docs/architecture.md) | Los `check_*.py` + los workflows de CI. | §CI gates, §Patrón hexagonal, §Core invariants. |
 | [`docs/03-aplicaciones/<app>/epic.md`](docs/03-aplicaciones/) | Spec de migración por app + walkthroughs + capabilities. | §Recommended reading path, §Ownership de artefactos, §Cómo agregar una nueva app. |
 | [`docs/prompts/`](docs/prompts/) | Reportes al mantenedor de dysflow (WIP hasta merge upstream). | §Bugs dysflow filed, §Ownership de artefactos. |
 | [`CONTRIBUTING.md`](../CONTRIBUTING.md) | Workflow de contribución + label system + convención multi-app. | §Workflow de contribución, §Recommended reading path. |

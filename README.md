@@ -33,7 +33,7 @@ Si los tres comandos devuelven respuesta sin error, el repo está operativo.
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribuidores | Va a abrir un issue o un PR |
 | [CHANGELOG.md](CHANGELOG.md) | Usuarios | Quiere saber qué cambió entre versiones |
 | [docs/architecture.md](docs/architecture.md) | Arquitectos, IAs | Va a tocar código de plataforma o necesita una decisión D-<n> |
-| [docs/calidad-de-codigo-y-ci.md](docs/calidad-de-codigo-y-ci.md) | Plataforma team | Arranca el MVP y necesita los 12 quality gates |
+| [docs/architecture.md](docs/architecture.md) §CI gates | Plataforma team | Arranca el MVP y necesita los quality gates |
 | [docs/03-aplicaciones/](docs/03-aplicaciones/) | Research, mantenedores | Necesita entender una app legacy concreta |
 | [skills/README.md](skills/README.md) | Contribuidores nuevos | Necesita instalar las skills del proyecto |
 
@@ -75,7 +75,6 @@ access2web-blueprint/
 │   ├── 09-arquitectura-objetivo-y-principios.md
 │   ├── AGENT-SETUP.md                 # setup por agente (Claude, OpenCode, …)
 │   ├── architecture.md                # fuente de verdad única arquitectónica
-│   ├── calidad-de-codigo-y-ci.md      # 12 quality gates + 4 workflows
 │   ├── design/mockups/                # mockups Mistica autocontenidos
 │   └── prompts/                       # reportes al mantenedor de dysflow
 ├── app/                                # MVP Lanzadera — Python hexagonal (desde 2026-08-09)

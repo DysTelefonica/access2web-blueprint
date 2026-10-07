@@ -26,7 +26,7 @@ Do **not** load this skill for:
 
 ## Hard Rules
 
-1. **Front-door antes de tocar código.** Lea, en este orden: `AGENTS.md` → `CODEBASE-GUIDE.md` → `docs/architecture.md` → `CONTRIBUTING.md` → `docs/calidad-de-codigo-y-ci.md` → `openspec/changes/<change>/design.md` (si el cambio pertenece a un change vivo) → `docs/03-aplicaciones/<app>/epic.md` (si toca una app específica). Saltarse cualquiera de estos pasos deja a la IA operando contra arquitectura obsoleta.
+1. **Front-door antes de tocar código.** Lea, en este orden: `AGENTS.md` → `CODEBASE-GUIDE.md` → `docs/architecture.md` → `CONTRIBUTING.md` → `openspec/changes/<change>/design.md` (si el cambio pertenece a un change vivo) → `docs/03-aplicaciones/<app>/epic.md` (si toca una app específica). Saltarse cualquiera de estos pasos deja a la IA operando contra arquitectura obsoleta.
 2. **Toda D-<n> tiene estado.** `vigente` u `OBSOLETO`. Las obsoletas se reemplazan, no se duplican. Buscar en `docs/architecture.md` §Decisiones arquitectónicas D-<n> cross-cutting vigentes antes de proponer una nueva.
 3. **Capas enforced por gate.** `scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `ALLOWED_IMPORTS` y `PURE_LAYERS = {domain, ports, application}` (DA-1). Mover un adapter a la capa equivocada es un gate failure, no un estilo.
 4. **Cross-cutting se promote, no se filtra.** Si una decisión afecta a más de una app o a la plataforma entera, no se queda en `app/src/modules/<app>/`: aparece en `docs/architecture.md` §Decisiones y se etiqueta `cross-cutting` en su issue. Las apps restantes la leen desde allí.
@@ -71,7 +71,7 @@ Antes de considerar cerrado cualquier trabajo que toque `app/`, `openspec/` o `d
 - `docs/architecture.md` — fuente de verdad única de la arquitectura del monorepo. Léalo primero.
 - `CODEBASE-GUIDE.md` — overview, ownership, reading path raíz.
 - `CONTRIBUTING.md` — workflow de contribución + convention multi-app + label system.
-- `docs/calidad-de-codigo-y-ci.md` — gates de calidad (los 12 `check_*.py` + los 4 workflows).
+- `docs/architecture.md` §CI gates — los `check_*.py` y los workflows que los invocan.
 - `openspec/changes/lanzadera-mvp/design.md` — DA-1..DA-13 vigentes mientras el change esté vivo.
 - `docs/03-aplicaciones/<app>/epic.md` — por-app; una epic por cada una de las 8 apps legadas.
 - `AGENTS.md` §Skills — tabla de skills obligatorias y cross-cutting.

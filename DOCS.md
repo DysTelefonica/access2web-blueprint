@@ -30,7 +30,7 @@ This is the complete technical reference for the blueprint. For getting started,
 |---|---|
 | El mapa de ownership, flows y guardrails para mantenedores. | [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) es la guía de ownership + reading path + cómo agregar una app nueva. |
 | La fuente de verdad de las decisiones arquitectónicas D-<n> y DA-<n>. | [`docs/architecture.md`](docs/architecture.md) cataloga decisiones vigentes y obsoletas con paths; este doc sólo las referencia en `§Decisiones metodológicas`. |
-| El manual de los 12 `check_*.py` y los 4 workflows de CI. | [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) describe cada gate; este doc sólo lista dónde se orquestan. |
+| El manual de los 12 `check_*.py` y los 4 workflows de CI. | [`docs/architecture.md`](docs/architecture.md) §CI gates mapea qué gate aplica a qué decisión; el manual de uso vive en el docstring de cada script, y este doc sólo lista dónde se orquestan. |
 | El walkthrough por form individual. | Cada `walkthrough-*.json` por app vive en `docs/03-aplicaciones/<app>/walkthrough-*.json`; este doc sólo explica el método v3/v4. |
 
 ---
@@ -56,7 +56,7 @@ For other docs:
 | [README](README.md)                                         | Overview de 5 minutos: qué es esto, para quién, cómo empezar.                                               |
 | [Agent Setup](docs/AGENT-SETUP.md)                          | Configuración de agentes (Claude, OpenCode, Gemini, Codex) para trabajar en este repo.                      |
 | [Codebase Guide](CODEBASE-GUIDE.md)                          | Para mantenedores: 90-second mental model, ownership de artefactos, quick map inverso.                     |
-| [Calidad de código y CI](docs/calidad-de-codigo-y-ci.md)     | Quality gates del MVP de plataforma: hexagonal layer gate, ruff, mypy, security scanning, plan día 0-6.     |
+| [Architecture §CI gates](docs/architecture.md)               | Quality gates del MVP: hexagonal layer gate, ruff, mypy, security scanning; los workflows en `.github/workflows/`. |
 | [CONTRIBUTING](CONTRIBUTING.md)                             | Workflow de contribución, conventional commits, label system.                                                |
 | [CHANGELOG](CHANGELOG.md)                                   | Cambios por versión del blueprint (cierre de épicas, PRs merged, etc.).                                     |
 | [Lanzadera Epic](docs/03-aplicaciones/lanzadera/epic.md)    | Épica de Lanzadera — la madre (users + apps + permissions). 28 forms walkthroughed.                      |
@@ -81,7 +81,7 @@ For other docs:
 | Especificación de cada épica de migración (`epic.md` por app). | Specs de producto post-cut-over (viven aquí mismo). |
 | Mockups UI base con Mistica design system para validar look & feel. | UI final de cada app (se construye aquí mismo en `app/src/modules/<app>/ui/`). |
 | Código de la plataforma web hexagonal (desde MVP Lanzadera, en `app/`). | Código de dysflow (es de Gentleman-Programming). |
-| Quality gates y CI del MVP (ver [`docs/calidad-de-codigo-y-ci.md`](calidad-de-codigo-y-ci.md)). | CI/CD de cada app legada. |
+| Quality gates y CI del MVP (ver [`docs/architecture.md`](docs/architecture.md) §CI gates). | CI/CD de cada app legada. |
 | Mantenimiento de issues dysflow (#1407 cerrado, #1408/#1412 abiertos). | — |
 
 **Lifecycle** de un artefacto de este monorepo:

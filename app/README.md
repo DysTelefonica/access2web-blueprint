@@ -35,7 +35,7 @@ See `openspec/changes/lanzadera-mvp/{proposal,specs,design,tasks}.md` for the ch
 | Need | Open |
 |---|---|
 | Local setup | `docker-compose.yml` at the worktree root |
-| Quality gates contract | `docs/calidad-de-codigo-y-ci.md` |
+| Quality gates contract | `docs/architecture.md` §CI gates |
 | Architectural decisions | `openspec/changes/lanzadera-mvp/design.md` |
 | Gate scripts | `scripts/check_*.py` at the worktree root |
 | Coverage gate plugin | `platform/pytest_plugin/coverage_gate.py` |
