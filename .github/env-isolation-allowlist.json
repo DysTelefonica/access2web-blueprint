@@ -1,0 +1,6 @@
+{
+  "note": "Contrato de aislamiento del entorno de la suite (HR-28). La suite vive en tests/ (declarada en app/pyproject.toml, testpaths) y el gate la escanea con --root tests. Esta lista es el conjunto completo de variables que la suite lee hoy: un único interruptor de integración. Con la lista vacía el gate nombra 4 lecturas y ninguna más. Nada de app/src entra aquí: DATABASE_URL, FERNET_KEY, SECRET_KEY y GLOBAL_ADMIN_EMAILS son configuración de la aplicación, no contrato de la suite, y la suite no las lee.",
+  "env_vars": [
+    "APAP_INTEGRATION_ENABLED"
+  ]
+}
