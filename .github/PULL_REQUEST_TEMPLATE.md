@@ -13,9 +13,9 @@ Closes #
 ## Chain Context
 
 <!-- Obligatoria en la punta de una cadena y en todo PR con `chain:partial`
-     (HR-54 del patrón): los ocho campos son dato y el diagrama lleva
-     exactamente un 📍. Un PR suelto declara `position: 1/1` y
-     `depends-on: none`. -->
+     (HR-54 del patrón): los ocho campos son dato y el diagrama de abajo lleva
+     el marcador del PR actual una sola vez. Un PR suelto declara
+     `position: 1/1` y `depends-on: none`. -->
 
 - chain:
 - position:
