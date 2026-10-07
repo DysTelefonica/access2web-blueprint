@@ -289,7 +289,7 @@ jobs:
       - name: quality gates and indicators
         # Runs layers -> complexity -> DRY in that fixed order, writes
         # quality-report.json, and renders the indicator table into the job summary.
-        run: ${{ steps.setup-python.outputs.pythonLocation }}/bin/python3 scripts/quality_report.py
+        run: python scripts/quality_report.py
 
       # The `actions/upload-artifact` step that previously published
       # `quality-report.json` as a downloadable blob is intentionally

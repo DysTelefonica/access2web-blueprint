@@ -1,0 +1,41 @@
+{
+  "ci": {
+    "job": "quality",
+    "workflow": ".github/workflows/ci.yml"
+  },
+  "exclusions": [
+    {
+      "command": "git *",
+      "reason": "el paso de instalacion hace sparse-checkout, hash-object y index para reconstruir el blob de la rama base antes de instalar: es mecanica del runner y de la red, no un gate que una estacion pueda correr",
+      "side": "ci"
+    },
+    {
+      "command": "mkdir -p",
+      "reason": "crea el directorio donde el paso de instalacion reconstruye ese blob",
+      "side": "ci"
+    },
+    {
+      "command": "show HEAD:*",
+      "reason": "lectura del blob de la rama base que hace el paso de instalacion para el formateo de scripts",
+      "side": "ci"
+    },
+    {
+      "command": "python -m*",
+      "reason": "instalacion de la toolchain desde app/requirements-dev.lock con hashes; en la estacion el entorno ya esta montado y el preflight no instala nada",
+      "side": "ci"
+    },
+    {
+      "command": "elif [",
+      "reason": "rama de diagnostico del mismo paso de instalacion (chain hole de #117): no es un gate",
+      "side": "ci"
+    },
+    {
+      "command": ":",
+      "reason": "no-op de las ramas condicionales del paso de instalacion, ya excluido por sus comandos",
+      "side": "ci"
+    }
+  ],
+  "local": {
+    "entrypoint": "scripts/local-preflight.sh"
+  }
+}
