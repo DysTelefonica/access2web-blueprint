@@ -40,6 +40,8 @@ Lo que exige cada gate del patrón, y por eso está donde está:
 
 Ningún agente aplica etiquetas ni borra etiquetas en este repositorio: los comandos van en el cuerpo del PR para que los ejecute un mantenedor.
 
+Cada entrada de etiqueta retirada lleva además su campo `label` en el contrato: el propagador del catálogo decide las retiradas **solo por datos estructurados** (el `path` `.agents/skills/<x>`, el campo `skill` o el campo `label`) y falla cerrado cuando una entrada `retired` solo tiene prosa en `artifact` (`DysTelefonica/team-skills#373`). Comprobado con el propagador de `team-skills` `main`: con el campo, la corrida en seco termina en 0; sin él, aborta nombrando el identificador estructurado.
+
 Lo que **no** se retira y conviene saber: `size:exception` se conserva (decisión ratificada 4: el gate de tamaño del repositorio exige la etiqueta además del campo de datos, y retirarla obligaría a cambiar ese gate). Las etiquetas de producto (`app/<slug>`, `cross-cutting`, `epic:*`, `dependencies`, `python:uv`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` y las `status:*`) se conservan.
 
 ## Qué instala esta fase
