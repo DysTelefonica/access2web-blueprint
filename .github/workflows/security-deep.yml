@@ -22,14 +22,11 @@ concurrency:
 
 jobs:
   gitleaks-history:
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
-    # Hard Rule 15 asks for an exact runner, and these labels name one specific
-    # machine — the Oracle VPS, registered as a2w-oracle-vps. What that buys and what
-    # it costs is written down in #113: a hosted image is reproducible but rationed,
-    # a VPS is unrationed but accumulates state nobody declares.
-    #
-    # Este job programado se ejecuta en el runner self-hosted, cuyo daemon de
-    # Docker es compartido. El preflight inferior es obligatorio, no decorativo.
+    # ARM64 hospedado: el digest pinneado de gitleaks es un índice OCI con amd64
+    # y arm64, y este repositorio público no consume los runners propios del VPS
+    # (#800). El daemon de Docker es el del propio runner, así que el preflight
+    # inferior sigue siendo obligatorio, no decorativo.
+    runs-on: ubuntu-24.04-arm
     # Per-gate FIFO matches the convention from #126: a slow daemon stalls this run;
     # the next waits in submission order rather than racing.
     concurrency:
@@ -82,8 +79,8 @@ jobs:
           exit "$status"
 
   trivy-image:
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
-    # Same self-hosted rationale as gitleaks-history above (#131).
+    # Misma etiqueta hospedada que el escaneo de historial, por el mismo motivo (#800).
+    runs-on: ubuntu-24.04-arm
     concurrency:
       group: gate-trivy-image
       cancel-in-progress: false
