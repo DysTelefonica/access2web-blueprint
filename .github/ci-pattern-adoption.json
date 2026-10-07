@@ -109,6 +109,23 @@
         "root": "tests",
         "allowlist": ".github/env-isolation-allowlist.json"
       }
+    },
+    "3": {
+      "pattern_paths": [
+        ".github/ISSUE_TEMPLATE/config.yml",
+        ".github/ISSUE_TEMPLATE/issue-canonical.yml",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+        ".github/env-isolation-allowlist.json",
+        ".github/host-contract.json",
+        ".github/host-labels-snapshot.json"
+      ],
+      "host_snapshots": {
+        "branch-protection": "docs/adoption/branch-protection.json",
+        "rulesets": "docs/adoption/rulesets.json"
+      },
+      "evidence": {
+        "path": "docs/adoption/governance-replacement-pr.md"
+      }
     }
   }
 }

@@ -116,7 +116,7 @@ Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de propo
 
 1. [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) — overview + ownership + reading path.
 2. [`docs/architecture.md`](docs/architecture.md) — fuente de verdad única de la arquitectura (capas hexagonales, decisiones D-<n> cross-cutting vigentes y obsoletas, patrones transversales).
-3. [`docs/calidad-de-codigo-y-ci.md`](docs/calidad-de-codigo-y-ci.md) — gates de calidad (los 14 `check_*.py` + los 5 workflows).
+3. Los gates de calidad: los 14 `scripts/check_*.py` y los 5 workflows que los invocan.
 4. [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow + label system + convention multi-app.
 5. Si el cambio pertenece a un OpenSpec change vivo, su `openspec/changes/<change>/design.md`.
 6. Si toca una app específica, su `docs/03-aplicaciones/<app>/epic.md`.
@@ -154,6 +154,18 @@ Pasos del revisor antes de mergear:
 4. Integre con merge commit (no squash, práctica real del historial de `main`) y conserve la rama remota.
 
 Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mergear.
+
+## Hard rule — flujo de entrega y merge gobernado
+
+Toda entrega pasa por una issue canónica y un PR; el merge lo lanza un mantenedor por el camino del host.
+
+- **Issue.** El formulario canónico (`.github/ISSUE_TEMPLATE/issue-canonical.yml`) tiene seis secciones obligatorias: `Problema y contexto`, `Evidencia verificable`, `Alcance y no objetivos`, `Criterios de aceptación`, `Plan de validación` y `Dependencias y riesgos`. Cualquier mantenedor del repositorio con rol de administración aplica `status:approved` tras la revisión, incluso sobre su propia issue; ninguna rama ni PR se crea sin esa etiqueta.
+- **Rama.** `<tipo>/<nº issue>-<slug>` con `feat|fix|refactor|docs|ci|test|chore`; lo valida `scripts/check_branch_name.py`.
+- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`, la sección `Chain Context` en la punta de una cadena o con `chain:partial`, la sección de los tests que prueban el cierre cuando el PR cierra una issue, y el campo `size-exception-reason:` en una sola línea con la etiqueta `size:exception` si el diff supera las 400 líneas.
+- **Check requerido.** `required` debe estar en verde contra la base actual; si la base avanzó, se sincroniza con un merge de la rama base y se vuelve a ejecutar el CI.
+- **Merge.** Lo lanza un mantenedor por el camino del host: el ruleset `main-maintainers-and-admins-merge` solo deja actualizar `main` a los mantenedores y administradores, y solo mediante un PR. **Ningún agente mergea ni aplica `status:approved`.**
+- **Rama remota.** Se conserva tras el merge; nunca se borra.
+- **Documentación.** Vive en el repositorio, bajo `docs/`.
 
 ## Refuerzo
 

@@ -1,0 +1,11 @@
+{
+  "files": {
+    ".github/ISSUE_TEMPLATE/config.yml": "sha256:8b09e7df09fc7534371988062769ee427af2954a02c04c763e8a8005be0f2be4",
+    ".github/ISSUE_TEMPLATE/issue-canonical.yml": "sha256:0625d0b26a3d97d3a788d2142feaf9ecee86eb7a99023e7a82f8a280c8134198",
+    ".github/PULL_REQUEST_TEMPLATE.md": "sha256:8f78c5ae994ba1ff8d9950fe363869e3de9c693ecf959c6f942367b8ebe5a312",
+    ".github/env-isolation-allowlist.json": "sha256:2c2ea07677298153735b6ccdd527e1b215fa3b254799aed64e9d4a13183ec0a9",
+    ".github/host-contract.json": "sha256:d3878b93aea923ea46d8d68d75581be5be36b602acc068fa8754b4dea3040b98",
+    ".github/host-labels-snapshot.json": "sha256:09fe2ba60e590b3f61d469427e0137e84ad76a9d952f33665c953db1ed031b8b"
+  },
+  "schema_version": 1
+}
