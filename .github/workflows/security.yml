@@ -160,7 +160,7 @@ jobs:
           set -euo pipefail
           python -m venv .venv-audit
           .venv-audit/bin/python -m pip install --quiet --upgrade pip==26.2.1
-          .venv-audit/bin/python -m pip install --quiet "app[dev]"
+          .venv-audit/bin/python -m pip install --quiet --require-hashes --requirement app/requirements-dev.lock
           .venv-audit/bin/python -m pip install --quiet pip-audit==2.9.0
 
           # Liveness before reporting (Hard Rule 18). Two defects made this job

@@ -37,7 +37,7 @@ aparece. La suite no lee configuración de la aplicación.
 |---|---|---|
 | Intérprete del runner | `3.12.11` | `.github/workflows/ci.yml` (`env.PYTHON_VERSION`), usado por `actions/setup-python` |
 | Intérprete del worktree | `3.12.11` | `app/.python-version` (era `3.12`, nivel menor; se alinea en este PR porque el propio repositorio trata un cambio de parche como un veredicto distinto) |
-| Dependencias | `python -m pip install --editable "app[dev]"` sobre `app/pyproject.toml`, con `app/uv.lock` versionado | Paso `install` del job `unit` de `ci.yml` |
+| Dependencias | `python -m pip install --require-hashes --requirement app/requirements-dev.lock`, generado desde `app/uv.lock` con sus hashes | Paso `install` de los jobs de `ci.yml` |
 | Medición local | `make test` (`pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-fail-under=69`) | `Makefile` |
 
 Premisa declarada: una cifra medida en local solo es comparable con el runner si

@@ -369,26 +369,52 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
 
 
 def _install_blocks(run_blocks: list[str]) -> list[str]:
-    """Run blocks that target the platform project for `pip install`.
+    """Run blocks that install the pinned toolchain for `pip install`.
 
     An install block is any run block that combines `pip install` with the
-    `app[dev]` editable target — this is what every quality, mutation, and
-    security job calls when wiring the project into the runner's venv.
+    hash-pinned requirements file generated from `app/uv.lock` — this is what
+    every quality and mutation job calls when wiring the project's toolchain
+    into the runner's interpreter. The install no longer uses an editable
+    `app[dev]` target: the project is imported through pytest's `pythonpath`
+    and mypy's `--explicit-package-bases`, and the pattern's structural gate
+    only verifies pins it can read (HR-26).
     """
-    return [block for block in run_blocks if "pip install" in block and "app[dev]" in block]
+    return [
+        block
+        for block in run_blocks
+        if "pip install" in block and "app/requirements-dev.lock" in block
+    ]
+
+
+def test_every_setup_python_step_pins_the_same_literal(workflow: dict) -> None:
+    """HR-26: el gate estructural solo puede leer un literal, no una expresión.
+
+    Cada `actions/setup-python` lleva la versión exacta escrita en el paso —lo
+    que el gate del patrón verifica— y ese literal tiene que ser el mismo que
+    la variable declarada en `env`, para que el valor no derive en dos sitios.
+    """
+    declared = workflow["env"]["PYTHON_VERSION"]
+    steps = [s for j in workflow["jobs"].values() for s in j.get("steps", [])]
+    setup = [s for s in steps if str(s.get("uses", "")).startswith("actions/setup-python@")]
+
+    assert setup, "no actions/setup-python step found"
+    for step in setup:
+        assert step["with"]["python-version"] == declared, (
+            f"setup-python declares {step['with']['python-version']!r} and env declares {declared!r}"
+        )
 
 
 def test_install_step_defends_against_missing_pyproject(run_blocks: list[str]) -> None:
     """F2 of #117: a chain that ships pyproject.fragment.toml without
     app/pyproject.toml must NOT fail with a cryptic pip error.
 
-    Every install step targeting `app[dev]` MUST guard the install with a
+    Every install step targeting the pinned toolchain MUST guard the install with a
     file existence check, harden the shell with `set -euo pipefail`, exit
     non-zero on the failure path, and reference issue #117 in the diagnostic
     so an operator staring at a red job can recognise the chain-hole shape.
     """
     installs = _install_blocks(run_blocks)
-    assert installs, "no run block installs app[dev] — this test is stale"
+    assert installs, "no run block installs the pinned toolchain — this test is stale"
 
     for i, block in enumerate(installs, start=1):
         # Defensive guard: prove the project exists before pip sees it.
@@ -423,7 +449,7 @@ def test_install_step_reports_chain_hole_when_fragment_only(
     chain-hole shape and link the failure back to the umbrella issue.
     """
     installs = _install_blocks(run_blocks)
-    assert installs, "no run block installs app[dev] — this test is stale"
+    assert installs, "no run block installs the pinned toolchain — this test is stale"
     for i, block in enumerate(installs, start=1):
         assert "pyproject.fragment.toml" in block, (
             f"install step #{i} does not mention pyproject.fragment.toml: {block}"
@@ -497,7 +523,13 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert "merge-ready" not in jobs, "merge-ready was fully superseded by `required`"
 
     required = jobs["required"]
-    assert required["if"] == "always()"
+    # El `if` conserva la semántica de `always()` —un dependency saltado no
+    # salta este check, que es el requerido de la protección de rama— con la
+    # forma que el gate del patrón puede probar (HR-30): comparaciones de
+    # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
+    assert required["if"] == (
+        "(github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()"
+    )
     assert required["needs"] == ["review-budget", "quality", "security", "codeql"]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"

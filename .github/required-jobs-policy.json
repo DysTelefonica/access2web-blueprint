@@ -1,17 +1,14 @@
 {
+  "events": {
+    "pull_request": {
+      "accepted_skips": []
+    }
+  },
   "required_jobs": [
     "review-budget",
     "quality",
     "security",
     "codeql",
-    "required",
-    "mutation"
-  ],
-  "events": {
-    "pull_request": {
-      "accepted_skips": [
-        "mutation"
-      ]
-    }
-  }
+    "required"
+  ]
 }

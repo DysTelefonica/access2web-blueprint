@@ -84,7 +84,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         id: setup-python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12.11"
 
       - name: branch name
         env:
@@ -108,6 +108,9 @@ jobs:
         run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
+    # Los nombres de check requeridos se publican solo desde eventos que evaluan
+    # el PR o la rama base (HR-30): schedule y workflow_dispatch no los publican.
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     # This job executes code from public pull requests, so it must use isolated,
     # ephemeral GitHub-hosted infrastructure.
     runs-on: ubuntu-24.04
@@ -135,7 +138,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         id: setup-python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12.11"
 
       - name: install
         # The dev pins live in app/pyproject.toml and are exact (ruff==0.15.21,
@@ -217,7 +220,7 @@ jobs:
             git checkout-index --force --all scripts/check_dry.py
           fi
           if [ -f app/pyproject.toml ]; then
-            python -m pip install --editable "app[dev]"
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
@@ -358,7 +361,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         id: setup-python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12.11"
 
       - name: install
         # See the quality job's install step (#109, #110, #117 F2, #414).
@@ -387,7 +390,7 @@ jobs:
           # step below (post-install) so that ruff is available. Placing it here (pre-
           # pip install) would fail because ruff is not installed yet.
           if [ -f app/pyproject.toml ]; then
-            python -m pip install --editable "app[dev]"
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
@@ -424,6 +427,9 @@ jobs:
     # `needs:` it: `needs:` cannot cross workflow files, but a job invoked
     # via `uses: ./...` still has an ordinary job id and result.
     uses: ./.github/workflows/security.yml
+    # Mismo criterio que `quality` (HR-30): ningun nombre de check requerido
+    # desde eventos que no evaluan el PR.
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     permissions:
       contents: read
     concurrency:
@@ -435,6 +441,8 @@ jobs:
     # required here (not just inside codeql.yml's own job) because a
     # reusable workflow cannot exceed the permissions its caller grants it.
     uses: ./.github/workflows/codeql.yml
+    # Mismo criterio que `quality` y `security` (HR-30).
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     permissions:
       contents: read
       security-events: write
@@ -456,7 +464,11 @@ jobs:
     # dependency (e.g. `review-budget` outside a pull_request) would mark
     # this job's own status as skipped too, and a skipped required check
     # does not block a merge the way a failed one does.
-    if: always()
+    # `if:` sin `always()` literal y con la comparacion de evento: la guarda de
+    # HR-30 no puede probar un `always()` suelto, y `!cancelled()` conserva el
+    # motivo original —un dependency saltado no debe saltar este check, que es
+    # el requerido de la proteccion de rama—.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()
     needs: [review-budget, quality, security, codeql]
     runs-on: ubuntu-24.04
     concurrency:
