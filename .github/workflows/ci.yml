@@ -405,6 +405,7 @@ jobs:
           cosmic-ray init docs/quality/cosmic-ray.toml mutation-session.sqlite
           python scripts/mutation_shards.py --session mutation-session.sqlite \
             --shards 10 --index ${{ matrix.shard }} --out shard.toml
+          cosmic-ray init shard.toml shard-session.sqlite
           cosmic-ray exec shard.toml shard-session.sqlite
 
       - name: publicar la sesión del tramo
