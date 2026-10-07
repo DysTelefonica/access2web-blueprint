@@ -15,6 +15,7 @@
         {"artifact": ".github/ISSUE_TEMPLATE/config.yml", "disposition": "adopted", "target": ".github/ISSUE_TEMPLATE/config.yml"},
         {"artifact": ".github/PULL_REQUEST_TEMPLATE.md", "disposition": "adopted", "target": ".github/PULL_REQUEST_TEMPLATE.md"},
         {"artifact": ".github/dependabot.yml", "disposition": "adopted", "target": ".github/dependabot.yml"},
+        {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
