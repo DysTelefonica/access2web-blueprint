@@ -187,7 +187,7 @@ Toda implementación de un PR (código, tests, docs, configuración) pasa por el
 
 [← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)
 
-<!-- personal-skills:slice:access2web-blueprint @ v0092651 -->
+<!-- personal-skills:slice:access2web-blueprint @ veaf74c8 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -195,6 +195,27 @@ Toda implementación de un PR (código, tests, docs, configuración) pasa por el
 > Aplica a todo `primary_type: web` del catálogo. Las invariantes de ciclo de vida de PR aquí enunciadas se complementan con las skills universalmente activas — véase `personal-skills/AGENTS.md` raíz para el sistema de propagación, `propagate-team-skills.ps1` para la mecánica de distribución, y el bloque de partials específicos del consumer para las convenciones del proyecto concreto.
 >
 > Este partial enuncia invariantes. Los procedimientos asociados viven en sus skills respectivas — no se duplican aquí.
+
+### Arranque (invariante)
+
+- **Ningún trabajo empieza sin sincronizar la rama base.** Antes de leer, decidir o tocar un fichero: `git fetch origin && git switch <active_branch> && git pull --ff-only`. Un checkout atrasado muestra gobernanza, CI y skills que **ya no rigen**.
+- **Señal de alarma, no conclusión.** Si un documento o fichero citado por la gobernanza del consumer **parece no existir**, o **contradice** el modelo vigente, la lectura correcta es "estoy en un checkout atrasado": sincronizar y volver a mirar. Nunca "el repo tiene un hueco" ni "la regla cambió sin avisar".
+- **Gobernanza viva, no copiada.** Las issues se leen del tracker (`gh issue view <n>`), nunca de una copia pegada; el `AGENTS.md` y el documento de flujo del consumer se leen **en el SHA sincronizado**.
+- **El workspace del runner de CI no es un clon de desarrollo.** Se trabaja en un worktree o clon propio (ver §Worktree y rama remota).
+- **Una copia global de skill desactualizada tapa la del repo** (ver §Carga de skills): si una skill del repo contradice a la global, gana la del repo, y la global está pidiendo actualización.
+
+### Skill Registry Protocol (MANDATORY)
+
+La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el registro generado — `.atl/skill-registry.md`, refrescado por la skill `skill-registry` (`gentle-ai skill-registry refresh`) — es la fuente de verdad de descubrimiento. Una regla que existe y está indexada pero que ninguna sesión carga no gobierna nada: este protocolo convierte el índice en despacho.
+
+1. **READ** — antes de escribir o revisar código, CI o documentación, lea `.atl/skill-registry.md` (o el índice de skills del repo).
+2. **MATCH** — contraste la tarea contra la columna `Trigger / description` de las skills candidatas.
+3. **LOAD** — lea íntegros los `SKILL.md` que matcheen ANTES de actuar.
+4. **DELEGATE** — al delegar a un subagente, pase las rutas exactas de los `SKILL.md` bajo un encabezado `## Skills to load before work` en la tarea. Un nombre en prosa no basta: el subagente no debe tener que adivinar ni redescubrir (eso produce el degradado `fallback-registry`).
+5. **GAP** — si ninguna skill matchea y la tarea toca CI/PRs, releases, la flota de runners o la adopción de un repositorio nuevo, es un gap de orquestación: dígalo explícitamente en vez de proceder de memoria.
+
+- **Deriva índice/registro.** La tabla del `AGENTS.md` es la puerta del contribuyente; el registro es la verdad operativa. Que una skill no aparezca en la tabla no autoriza concluir «no aplica»: autoriza buscarla en el registro (`skill-registry` / `gentle-ai skill-registry refresh`).
+- **Frescura del registro.** Si `.atl/skill-registry.md` es anterior al último cambio de skills, está stale: refresque el registro antes de delegar.
 
 ### Forma del ciclo
 
@@ -213,7 +234,7 @@ Toda implementación de un PR (código, tests, docs, configuración) pasa por el
 ### Worktree y rama remota
 
 - El **worktree local** se elimina tras el merge, vía `git worktree remove <path>` + `git worktree prune`. Mecánica detallada en `worktree-reorg-per-project` Phase 3.
-- La **rama remota** se conserva tras el merge. Nunca `git push origin --delete <rama>`. La granularidad por unidad de trabajo se preserva precisamente porque las ramas quedan referenciables desde el historial de PRs.
+- La **rama remota** se conserva tras el merge. Nunca `git push origin --delete <rama>`. La granularidad por unidad de trabajo se preserva precisamente porque las ramas quedan referenciables desde el historial de PRs. Conservarla permite seguir o revertir con exactitud algo que se hizo, y su aparente ruido en la lista de ramas no justifica perder esa trazabilidad.
 - La estrategia de merge (`--squash` o `--no-ff`) es decisión del consumer; ambas son válidas. La **invariante** es que la rama remota sobreviva al merge, no la forma concreta del commit en `main`.
 
 ### Disciplina de revisión
@@ -225,7 +246,7 @@ Toda implementación de un PR (código, tests, docs, configuración) pasa por el
 
 ### Anti-slop y atribución
 
-- Anti-slop y anti-sobreingeniería de IA se delegan a la skill T1 upstream `gentle-ai-ai-slop-discipline` (4 preguntas, 3 firmas, scope boundary guard para subagentes). El partial no redefine las firmas — el consumer que adopte la skill las aplica automáticamente al revisar PRs.
+- Anti-slop y anti-sobreingeniería de IA se delegan a la skill del catálogo `ai-slop-discipline` (comprobación de 23 puntos, 3 firmas, límite de delegación para subagentes). El partial no redefine la disciplina — el consumer que adopte la skill la aplica automáticamente antes de cualquier cambio.
 - **Sin atribución de IA en commits**: no se añade `Co-Authored-By: ... <AI>` ni equivalente. Esta regla vive también en `personal-skills/AGENTS.md` raíz de la flota; el partial la refleja para que sea visible en el slice de web.
 - Mensajes de commit en conventional commits. Castellano peninsular formal (usted) en artefactos documentales raíz; inglés en código, comentarios, mensajes de commit y PR bodies.
 
@@ -233,6 +254,11 @@ Toda implementación de un PR (código, tests, docs, configuración) pasa por el
 
 - Si el consumer tiene índice CodeGraph (`.codegraph/` presente), el workflow sigue `engineering-workflow` líneas 64-71: `codegraph init` antes del primer edit, `codegraph_explore` antes de cualquier grep/read/glob amplio. No se reinventa aquí.
 - Si el consumer no soporta CodeGraph, el preflight se omite sin romper invariante — la regla es "usar CodeGraph cuando esté disponible", no "requerir CodeGraph siempre".
+
+### `ci-pattern` — a demanda, salvo `governance: ci-pattern` en el registro
+
+- Por defecto, `ci-pattern` — **a demanda, no se carga por defecto.** El patrón de gobierno de CI (gates deterministas, presupuesto de revisión, evidencia por SHA, cadenas de PRs, protocolo de adopción/porting) no llega a este repositorio por propagación ni debe asumirse presente ni vendorizarse. Se invoca por CLI cuando la tarea sea adoptar el patrón en un repositorio nuevo o auditar el CI: `python3 ~/.agents/skills/ci-pattern/assets/bin/ci-pattern verify|status|params validate|manifest show` (contrato: `~/.agents/skills/ci-pattern/references/cli-spec.md`).
+- Excepción: si `fleet/registry.json` declara `governance: ci-pattern` para el repo, la skill SÍ llega propagada — partial de gobierno dentro del bloque del slice y copia en `.agents/skills/ci-pattern/`, con las skills declaradas en `fleet/governance-tiers.json`. Vendorizarla a mano en `skills/` sigue prohibido.
 
 ### Divergencias documentadas (no son invariantes)
 
@@ -254,9 +280,11 @@ Cada invariante de este partial se ancla a una skill específica del catálogo o
 - 400 líneas + `size:exception` → `deterministic-quality-harness` Decision Gate línea 56; upstream `chained-pr` HR-1 línea 16.
 - Rojo en CI pisa todo → `repository-delivery-governance` HR-7; upstream `engineering-workflow` línea 79.
 - Rama remota preservada, WT local delete post-merge → `worktree-reorg-per-project` Phase 3.
-- Anti-slop → upstream `gentle-ai-ai-slop-discipline` (T1 universal).
+- Anti-slop → `ai-slop-discipline` (catálogo, T1 universal).
 - CodeGraph preflight → upstream `engineering-workflow` líneas 64-71; `codegraph-usage` HR-1, HR-2.
 - Conventional commits + castellano peninsular en artefactos + sin atribución IA → `personal-skills/AGENTS.md` raíz de flota.
+- Skill Registry Protocol (READ/MATCH/LOAD/DELEGATE/GAP + deriva índice/registro + frescura) → upstream `gentle-ai` `internal/assets/skills/_shared/odd-orchestrator-sections.md:183-201`, adaptado vía `gentle-ai-governance-dispatch.md` (adopciones 1-3 del informe de gobernanza 2026-10-02).
+- Arranque sin checkout atrasado (sincronizar la rama base antes de leer, decidir o tocar) → `personal-skills/AGENTS.md` raíz de flota (§Lectura obligatoria). Invariante de flota sin skill fuente.
 
 ### Cómo auditar este partial usted mismo
 
@@ -268,6 +296,10 @@ Procedimiento de validación periódica (mensual o por release de skill fuente):
 
 ### Antipatrones
 
+- "Vendorizar `ci-pattern` en `skills/ci-pattern/` del consumer (genera drift: 3 PRs de sync en un día) → usarlo por CLI a demanda" — la skill vive fuera del catálogo `skills/`; el propagador solo la copia al tier declarado en `fleet/governance-tiers.json`, nunca a mano (CLI o tier, según `governance` en el registro).
+- "El documento no existe / la regla cambió" concluido desde el checkout local sin haber sincronizado la rama base — primero `git pull --ff-only`, después la conclusión.
+- "Delegar mencionando la skill por nombre en prosa, sin rutas exactas bajo `## Skills to load before work`" — el subagente redescubre, cae en `fallback-registry` y opera de memoria.
+- "No está en la tabla del AGENTS.md, luego no aplica" — la tabla es un subconjunto curado; la ausencia solo autoriza una búsqueda en el registro, nunca una conclusión.
 - "Esperar a que CI esté verde para mergear" sin rebasear contra la base actual — el verde contra base obsoleta es stale-green.
 - "Borrar la rama remota post-merge porque ya está mergeada" — destruye la granularidad por unidad de trabajo que el flujo pretende crear.
 - "PR con 600 líneas porque el feature lo requiere" — partir primero, encadenar después; `size:exception` es el último recurso, no la primera opción.
@@ -282,7 +314,7 @@ Al buscar una skill de este catálogo, resuelva en este orden:
 2. Repo: `.agents/skills/` del consumer, materializada desde `.team-skills.yaml` por `scripts/refresh-team-skills.ps1` (vía rama `skill-fleet/<name>`).
 3. Catálogo: `skills/<nombre>/SKILL.md` de personal-skills.
 
-Referencias por nombre, nunca por ruta absoluta. Nota de precedencia: pi nativo conserva la primera copia encontrada (gana la global), mientras que el registry de gentle-pi prefiere la copia del repo; una copia global desactualizada tapa la del repo en pi, así que las copias globales deben seguir al catálogo. Si una skill citada en este partial no resuelve en ninguno de los tres niveles, repórtelo: falta declararla en `.team-skills.yaml` del consumer.
+Referencias por nombre en prosa; ruta absoluta exacta en la delegación: al pasar una tarea a un subagente, copie la ruta del `SKILL.md` desde el registro bajo `## Skills to load before work` (ver §Skill Registry Protocol). La regla anti-ruta-absoluta gobierna el texto de skills y docs — las rutas varían por máquina — no la delegación, donde la ruta exacta es obligatoria. Nota de precedencia: pi nativo conserva la primera copia encontrada (gana la global), mientras que el registry de gentle-pi prefiere la copia del repo; una copia global desactualizada tapa la del repo en pi, así que las copias globales deben seguir al catálogo. Si una skill citada en este partial no resuelve en ninguno de los tres niveles, repórtelo: falta declararla en `.team-skills.yaml` del consumer.
 
 # Fragment access2web-blueprint — convenciones operacionales del repo
 
