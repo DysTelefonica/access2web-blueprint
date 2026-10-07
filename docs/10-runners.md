@@ -44,7 +44,6 @@ infraestructura autorizado.
 
 | Workflow | Jobs | Entrada confiable |
 |---|---|---|
-| `ci.yml` | `mutation` | Programación semanal o ejecución manual |
 | `security-deep.yml` | Todos | Programación semanal o ejecución manual |
 | `release.yml` | Todos | Tag `v*` creado por un mantenedor |
 
