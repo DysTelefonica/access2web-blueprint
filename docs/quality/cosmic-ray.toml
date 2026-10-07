@@ -1,0 +1,41 @@
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/cosmic-ray.toml
+# Copia del asset de la skill para este repositorio. El bloque de configuración
+# es lo único que se ajusta aquí.
+#
+# El objetivo es el DOMINIO, no `app` entero. Medido el 2026-10-07 con
+# `cosmic-ray init` sobre este árbol: `module-path = "app"` genera 7905 mutantes
+# en 210 módulos, y a 17-52 s por mutante la sesión pide entre 38 y 113 horas,
+# más que el techo de 6 h de un job hospedado. Los dos directorios `domain/` son
+# 1129 mutantes en 34 módulos.
+#
+# `module-path` es una lista explícita: cosmic-ray acepta cualquier valor que no
+# sea una cadena (`cosmic_ray/cli.py` recorre la lista). `excluded-modules`
+# declara además las áreas que quedan fuera —migraciones, el plugin de cobertura
+# del arnés y el composition root— para que ampliar el objetivo no las meta en
+# silencio.
+#
+# `timeout` por mutante: la suite del `test-command` tarda 39,7-95,5 s en la
+# máquina de desarrollo, así que el valor del asset (30 s) cortaba a los
+# supervivientes y cosmic-ray los marcaba INCOMPETENT en vez de SURVIVED. 120 s
+# cubre la medición más lenta con margen.
+#
+# `test-command` corre la suite SIN cobertura: los `addopts` de
+# `app/pyproject.toml` traen `--cov-fail-under=69` y la suite sin cobertura no
+# llega al piso, así que sin `--no-cov` cada mutante contaría como «killed» por
+# el umbral de cobertura y no por un test (un verde vacío).
+
+[cosmic-ray]
+module-path = [
+    "app/src/modules/expedientes/domain",
+    "app/src/modules/lanzadera/domain",
+]
+timeout = 120.0
+excluded-modules = [
+    "app/migrations/**/*.py",
+    "app/pytest_plugin/**/*.py",
+    "app/src/modules/*/di/**/*.py",
+]
+test-command = "python -m pytest -c app/pyproject.toml --rootdir=app -m 'not integration' --no-cov -q"
+
+[cosmic-ray.distributor]
+name = "local"

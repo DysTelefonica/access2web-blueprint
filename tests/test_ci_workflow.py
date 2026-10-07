@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -619,4 +620,168 @@ def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
     assert (
         '--certificate-oidc-issuer "https://token.actions.githubusercontent.com"'
         in signature_check["run"]
+    )
+
+
+#: Herramientas que no provee el install del job `mutation`: las pone el runner
+#: (`python`, `git`) o son construcciones del shell. Cualquier otro primer token
+#: de un `run:` del job tiene que estar declarado en las extras `dev` del
+#: proyecto y presente en su lock, porque es el install del job quien lo trae.
+#: (#785: el paso `run mutants` moría con exit 127 —`cosmic-ray: command not
+#: found`— porque el pin vivía en el asset de la skill y nunca se consolidó en
+#: `app/pyproject.toml`.)
+RUNNER_PROVIDED_BINARIES = frozenset(
+    {
+        "python",
+        "python3",
+        "git",
+        "mkdir",
+        "echo",
+        "exit",
+        "test",
+        "set",
+        "if",
+        "then",
+        "elif",
+        "else",
+        "fi",
+        ":",
+    }
+)
+
+_FIRST_TOKEN = re.compile(r"^\s*([A-Za-z0-9_./$@{}\-]+)")
+
+
+def _invoked_binaries(run_blocks: list[str]) -> set[str]:
+    """Primer token de cada línea de comando; sin asignaciones ni comentarios."""
+    tokens: set[str] = set()
+    for block in run_blocks:
+        for line in block.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            first = stripped.split()[0]
+            if "=" in first:  # asignación (`blob_oid=$(...)`)
+                continue
+            match = _FIRST_TOKEN.match(stripped)
+            if match is None:
+                continue
+            token = match.group(1)
+            if token.startswith("${{") or token.endswith("/bin/python3"):
+                token = "python"
+            tokens.add(token)
+    return tokens
+
+
+def test_mutation_job_installs_every_tool_and_config_its_steps_invoke(
+    workflow: dict,
+) -> None:
+    """#785: el install del job debe proveer lo que el job invoca.
+
+    El paso `run mutants` ejecutaba `cosmic-ray` sobre un binario que el install
+    nunca instaló y sobre un config que no existía en el árbol. El job murió con
+    exit 127 durante ocho semanas sin que ningún gate lo notara, porque su
+    código de salida no es el verdicto (`check_mutation.py` lo es) y el ratchet
+    quedaba en `skipped`. Este test ata los dos extremos: lo que el job ejecuta
+    y lo que su install provee, más las rutas que le pasa.
+    """
+    job = workflow["jobs"]["mutation"]
+    blocks = [step["run"] for step in job["steps"] if "run" in step]
+
+    external: set[str] = set()
+    tool_blocks: list[str] = []
+    for block in blocks:
+        found = _invoked_binaries([block]) - RUNNER_PROVIDED_BINARIES
+        if found:
+            external |= found
+            tool_blocks.append(block)
+
+    assert external, (
+        "el job `mutation` no invoca ningún binario fuera de los que provee el "
+        "runner: este test dejó de medir lo que el install tiene que instalar"
+    )
+
+    root = _find_makefile().parent
+    dev = (
+        (root / "app" / "pyproject.toml")
+        .read_text(encoding="utf-8")
+        .partition("dev = [")[2]
+        .partition("]")[0]
+    )
+    lock = (root / "app" / "requirements-dev.lock").read_text(encoding="utf-8")
+
+    for binary in sorted(external):
+        assert f'"{binary}==' in dev, (
+            f"el job `mutation` invoca `{binary}` pero `app/pyproject.toml` no lo "
+            f"declara en las extras `dev`: su install no lo provee (#785)"
+        )
+        assert f"{binary}==" in lock, (
+            f"`{binary}` está en las extras `dev` pero no en "
+            f"`app/requirements-dev.lock`: el install `--require-hashes` del job no "
+            f"lo instala (#785)"
+        )
+
+    configs = {token for block in tool_blocks for token in re.findall(r"[\w./-]+\.toml\b", block)}
+    assert configs, (
+        "el job `mutation` no pasa ningún config `.toml` a la herramienta: este "
+        "test dejó de medir las rutas"
+    )
+    for rel in sorted(configs):
+        assert (root / rel).is_file(), (
+            f"el job `mutation` pasa `{rel}` a la herramienta pero el fichero no "
+            f"existe en el árbol (#785)"
+        )
+
+
+#: Dominio declarado del job `mutation`: los dos directorios `domain/` del
+#: monorepo. Medido el 2026-10-07: mutar `app/` entero genera 7905 mutantes y la
+#: sesión no cabe en el techo de 6 h de un job hospedado; el dominio son 1129.
+MUTATION_DOMAIN_TARGETS = (
+    "app/src/modules/expedientes/domain",
+    "app/src/modules/lanzadera/domain",
+)
+
+#: Áreas del árbol que quedan fuera del objetivo. Con la lista de arriba ya no
+#: están en juego; se declaran para que ampliar `module-path` no las meta en
+#: silencio (migraciones, el plugin de cobertura del arnés y el composition root).
+MUTATION_EXCLUDED_AREAS = ("app/migrations/", "app/pytest_plugin/", "/di/")
+
+
+def test_mutation_config_targets_only_the_domain() -> None:
+    """#785: el objetivo del job `mutation` es el dominio, con timeout real.
+
+    El config del PR apuntaba a `app` entero y a 30 s por mutante. La suite del
+    `test-command` tarda 39,7-95,5 s en esta máquina, así que un superviviente se
+    cortaba y cosmic-ray lo marcaba INCOMPETENT en vez de SURVIVED. Este test ata
+    las tres piezas: el objetivo, las exclusiones y el timeout.
+    """
+    root = _find_makefile().parent
+    config = tomllib.loads(
+        (root / "docs" / "quality" / "cosmic-ray.toml").read_text(encoding="utf-8")
+    )
+    ray = config["cosmic-ray"]
+
+    targets = ray.get("module-path")
+    assert isinstance(targets, list), (
+        "`module-path` debe ser la lista explícita de los directorios del dominio: "
+        "una ruta ancha (p. ej. `app`) mete migraciones, el plugin de cobertura y "
+        "el DI, y la sesión no cabe en un job (#785)"
+    )
+    assert tuple(targets) == MUTATION_DOMAIN_TARGETS, (
+        f"el objetivo declarado es {MUTATION_DOMAIN_TARGETS}, no {tuple(targets)}"
+    )
+    for rel in targets:
+        assert (root / rel).is_dir(), f"el objetivo declarado no existe: {rel}"
+
+    excluded = ray.get("excluded-modules") or []
+    for area in MUTATION_EXCLUDED_AREAS:
+        assert any(area in pattern for pattern in excluded), (
+            f"`excluded-modules` no declara el área {area!r}: ampliar `module-path` "
+            "la metería en el objetivo sin que ningún gate lo note"
+        )
+
+    assert float(ray["timeout"]) >= 120.0, (
+        f"timeout por mutante {ray['timeout']!r}: la suite del `test-command` tarda "
+        "39,7-95,5 s, así que por debajo de ~120 s un superviviente se marca "
+        "INCOMPETENT y el run sale degenerado (#785)"
     )
