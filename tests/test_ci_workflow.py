@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -730,3 +731,57 @@ def test_mutation_job_installs_every_tool_and_config_its_steps_invoke(
             f"el job `mutation` pasa `{rel}` a la herramienta pero el fichero no "
             f"existe en el árbol (#785)"
         )
+
+
+#: Dominio declarado del job `mutation`: los dos directorios `domain/` del
+#: monorepo. Medido el 2026-10-07: mutar `app/` entero genera 7905 mutantes y la
+#: sesión no cabe en el techo de 6 h de un job hospedado; el dominio son 1129.
+MUTATION_DOMAIN_TARGETS = (
+    "app/src/modules/expedientes/domain",
+    "app/src/modules/lanzadera/domain",
+)
+
+#: Áreas del árbol que quedan fuera del objetivo. Con la lista de arriba ya no
+#: están en juego; se declaran para que ampliar `module-path` no las meta en
+#: silencio (migraciones, el plugin de cobertura del arnés y el composition root).
+MUTATION_EXCLUDED_AREAS = ("app/migrations/", "app/pytest_plugin/", "/di/")
+
+
+def test_mutation_config_targets_only_the_domain() -> None:
+    """#785: el objetivo del job `mutation` es el dominio, con timeout real.
+
+    El config del PR apuntaba a `app` entero y a 30 s por mutante. La suite del
+    `test-command` tarda 39,7-95,5 s en esta máquina, así que un superviviente se
+    cortaba y cosmic-ray lo marcaba INCOMPETENT en vez de SURVIVED. Este test ata
+    las tres piezas: el objetivo, las exclusiones y el timeout.
+    """
+    root = _find_makefile().parent
+    config = tomllib.loads(
+        (root / "docs" / "quality" / "cosmic-ray.toml").read_text(encoding="utf-8")
+    )
+    ray = config["cosmic-ray"]
+
+    targets = ray.get("module-path")
+    assert isinstance(targets, list), (
+        "`module-path` debe ser la lista explícita de los directorios del dominio: "
+        "una ruta ancha (p. ej. `app`) mete migraciones, el plugin de cobertura y "
+        "el DI, y la sesión no cabe en un job (#785)"
+    )
+    assert tuple(targets) == MUTATION_DOMAIN_TARGETS, (
+        f"el objetivo declarado es {MUTATION_DOMAIN_TARGETS}, no {tuple(targets)}"
+    )
+    for rel in targets:
+        assert (root / rel).is_dir(), f"el objetivo declarado no existe: {rel}"
+
+    excluded = ray.get("excluded-modules") or []
+    for area in MUTATION_EXCLUDED_AREAS:
+        assert any(area in pattern for pattern in excluded), (
+            f"`excluded-modules` no declara el área {area!r}: ampliar `module-path` "
+            "la metería en el objetivo sin que ningún gate lo note"
+        )
+
+    assert float(ray["timeout"]) >= 120.0, (
+        f"timeout por mutante {ray['timeout']!r}: la suite del `test-command` tarda "
+        "39,7-95,5 s, así que por debajo de ~120 s un superviviente se marca "
+        "INCOMPETENT y el run sale degenerado (#785)"
+    )
