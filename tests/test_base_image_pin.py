@@ -17,7 +17,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DOCKERFILE = REPO_ROOT / "app" / "Dockerfile"
 SECURITY_DEEP = REPO_ROOT / ".github" / "workflows" / "security-deep.yml"
 
-FROM_RE = re.compile(r"^FROM\s+(?P<image>[^\s@]+)@(?P<digest>sha256:[0-9a-f]{64})(?:\s+AS\s+\w+)?\s*$", re.M)
+FROM_RE = re.compile(
+    r"^FROM\s+(?P<image>[^\s@]+)@(?P<digest>sha256:[0-9a-f]{64})(?:\s+AS\s+\w+)?\s*$", re.M
+)
 SCANNED_RE = re.compile(r"\bimage\s+(?P<image>[^\s@]+)@(?P<digest>sha256:[0-9a-f]{64})\b")
 
 
