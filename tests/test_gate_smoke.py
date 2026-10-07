@@ -426,10 +426,6 @@ MUTATION_DOMAIN_COUNTS = {
     "app/src/modules/lanzadera/domain/legacy_role_map.py": 66,
     "app/src/modules/expedientes/domain/anualidad.py": 66,
     "app/src/modules/expedientes/domain/hash/versioning.py": 62,
-    "app/src/modules/lanzadera/domain/ports/app_repository.py": 55,
-    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": 54,
-    "app/src/modules/expedientes/domain/expediente.py": 50,
-    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": 50,
 }
 
 
