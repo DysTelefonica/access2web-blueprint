@@ -1,0 +1,21 @@
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/cosmic-ray.toml
+# Copia del asset de la skill para este repositorio. El bloque de configuración
+# es lo único que se ajusta aquí.
+#
+# `test-command` corre la suite del repositorio SIN cobertura y con una sola
+# invocación: `-c app/pyproject.toml` (que el config del proyecto sí necesita
+# para `pythonpath` y para el plugin de cobertura) trae los `addopts` con
+# `--cov-fail-under=69`, y la suite sin cobertura no llega a ese piso. Sin
+# `--no-cov` la suite saldría distinta de cero aunque todos los tests pasaran:
+# cosmic-ray contaría cada mutante como «killed» por el umbral de cobertura, no
+# por un test, el ratchet vería 0 supervivientes y la corrida sería degenerada
+# (`scripts/check_mutation.py` mide exactamente para no dejar pasar eso).
+
+[cosmic-ray]
+module-path = "app"
+timeout = 30.0
+excluded-modules = []
+test-command = "python -m pytest -c app/pyproject.toml --rootdir=app -m 'not integration' --no-cov -q"
+
+[cosmic-ray.distributor]
+name = "local"

@@ -98,9 +98,9 @@ verify:
 # Slow, scheduled, and Linux-only in most setups. Kept out of `verify` on
 # purpose (Hard Rule 19's exclusion list), available on demand.
 mutation:
-	cosmic-ray baseline mutation.toml
-	cosmic-ray init mutation.toml mutation.sqlite
-	cosmic-ray exec mutation.toml mutation.sqlite
+	cosmic-ray baseline docs/quality/cosmic-ray.toml
+	cosmic-ray init docs/quality/cosmic-ray.toml mutation.sqlite
+	cosmic-ray exec docs/quality/cosmic-ray.toml mutation.sqlite
 	$(PYTHON) scripts/check_mutation.py mutation.sqlite
 
 clean:

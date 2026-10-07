@@ -620,3 +620,113 @@ def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
         '--certificate-oidc-issuer "https://token.actions.githubusercontent.com"'
         in signature_check["run"]
     )
+
+
+#: Herramientas que no provee el install del job `mutation`: las pone el runner
+#: (`python`, `git`) o son construcciones del shell. Cualquier otro primer token
+#: de un `run:` del job tiene que estar declarado en las extras `dev` del
+#: proyecto y presente en su lock, porque es el install del job quien lo trae.
+#: (#785: el paso `run mutants` moría con exit 127 —`cosmic-ray: command not
+#: found`— porque el pin vivía en el asset de la skill y nunca se consolidó en
+#: `app/pyproject.toml`.)
+RUNNER_PROVIDED_BINARIES = frozenset(
+    {
+        "python",
+        "python3",
+        "git",
+        "mkdir",
+        "echo",
+        "exit",
+        "test",
+        "set",
+        "if",
+        "then",
+        "elif",
+        "else",
+        "fi",
+        ":",
+    }
+)
+
+_FIRST_TOKEN = re.compile(r"^\s*([A-Za-z0-9_./$@{}\-]+)")
+
+
+def _invoked_binaries(run_blocks: list[str]) -> set[str]:
+    """Primer token de cada línea de comando; sin asignaciones ni comentarios."""
+    tokens: set[str] = set()
+    for block in run_blocks:
+        for line in block.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            first = stripped.split()[0]
+            if "=" in first:  # asignación (`blob_oid=$(...)`)
+                continue
+            match = _FIRST_TOKEN.match(stripped)
+            if match is None:
+                continue
+            token = match.group(1)
+            if token.startswith("${{") or token.endswith("/bin/python3"):
+                token = "python"
+            tokens.add(token)
+    return tokens
+
+
+def test_mutation_job_installs_every_tool_and_config_its_steps_invoke(
+    workflow: dict,
+) -> None:
+    """#785: el install del job debe proveer lo que el job invoca.
+
+    El paso `run mutants` ejecutaba `cosmic-ray` sobre un binario que el install
+    nunca instaló y sobre un config que no existía en el árbol. El job murió con
+    exit 127 durante ocho semanas sin que ningún gate lo notara, porque su
+    código de salida no es el verdicto (`check_mutation.py` lo es) y el ratchet
+    quedaba en `skipped`. Este test ata los dos extremos: lo que el job ejecuta
+    y lo que su install provee, más las rutas que le pasa.
+    """
+    job = workflow["jobs"]["mutation"]
+    blocks = [step["run"] for step in job["steps"] if "run" in step]
+
+    external: set[str] = set()
+    tool_blocks: list[str] = []
+    for block in blocks:
+        found = _invoked_binaries([block]) - RUNNER_PROVIDED_BINARIES
+        if found:
+            external |= found
+            tool_blocks.append(block)
+
+    assert external, (
+        "el job `mutation` no invoca ningún binario fuera de los que provee el "
+        "runner: este test dejó de medir lo que el install tiene que instalar"
+    )
+
+    root = _find_makefile().parent
+    dev = (
+        (root / "app" / "pyproject.toml")
+        .read_text(encoding="utf-8")
+        .partition("dev = [")[2]
+        .partition("]")[0]
+    )
+    lock = (root / "app" / "requirements-dev.lock").read_text(encoding="utf-8")
+
+    for binary in sorted(external):
+        assert f'"{binary}==' in dev, (
+            f"el job `mutation` invoca `{binary}` pero `app/pyproject.toml` no lo "
+            f"declara en las extras `dev`: su install no lo provee (#785)"
+        )
+        assert f"{binary}==" in lock, (
+            f"`{binary}` está en las extras `dev` pero no en "
+            f"`app/requirements-dev.lock`: el install `--require-hashes` del job no "
+            f"lo instala (#785)"
+        )
+
+    configs = {token for block in tool_blocks for token in re.findall(r"[\w./-]+\.toml\b", block)}
+    assert configs, (
+        "el job `mutation` no pasa ningún config `.toml` a la herramienta: este "
+        "test dejó de medir las rutas"
+    )
+    for rel in sorted(configs):
+        assert (root / rel).is_file(), (
+            f"el job `mutation` pasa `{rel}` a la herramienta pero el fichero no "
+            f"existe en el árbol (#785)"
+        )
