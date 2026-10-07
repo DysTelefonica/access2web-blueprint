@@ -15,6 +15,8 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ISSUE_DIR = REPO_ROOT / ".github" / "ISSUE_TEMPLATE"
 PR_TEMPLATE = REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md"
+#: Cuerpo real de la issue #794, capturado por la API el 2026-10-07.
+REAL_ISSUE = REPO_ROOT / "tests" / "fixtures" / "issue-canonical-794.md"
 
 #: Names and order fixed by ci-pattern (SKILL.md, «Operación por unidad de trabajo»).
 CANONICAL_SECTIONS = (
@@ -60,3 +62,18 @@ def test_pull_request_template_declares_the_gate_contract() -> None:
     assert all(f"- {field}:" in text for field in CHAIN_FIELDS)
     assert text.count("📍") == 1
     assert "## Tests que prueban el cierre" in text
+
+
+def test_a_real_canonical_issue_carries_the_six_sections() -> None:
+    """G4.1: el contrato de issue se valida sobre una issue real, no solo sobre el formulario.
+
+    El formulario promete seis secciones; una issue de verdad tiene que llevarlas,
+    en el mismo orden. El cuerpo de #794 se capturo por la API y vive como fixture.
+    """
+    headings = [
+        line.removeprefix("### ").strip()
+        for line in REAL_ISSUE.read_text(encoding="utf-8").splitlines()
+        if line.startswith("### ")
+    ]
+
+    assert headings == list(CANONICAL_SECTIONS)
