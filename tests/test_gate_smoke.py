@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sqlite3
 import subprocess
 import sys
@@ -492,3 +493,24 @@ def test_mutation_gate_fails_closed_when_a_shard_is_degenerate(tmp_path) -> None
     assert result.returncode == 1
     assert "degenerate" in result.stdout.lower()
     assert "s1.sqlite" in result.stdout
+
+
+def test_mutation_test_command_caps_memory_per_run() -> None:
+    """El `test-command` limita la memoria de cada ejecución (#785).
+
+    Un mutante desbocado mató cuatro veces el runner hospedado (SIGTERM) antes del
+    timeout de 120 s: el que muere es el runner, no el test. El tope hace que ese
+    mutante falle el test y cuente como «killed». Medido: la suite normal pica en
+    177 MB de RSS y pasa con 1 GiB; el config declara 2 GiB.
+    """
+    shared = tomllib.loads(
+        (ROOT / "docs" / "quality" / "cosmic-ray.toml").read_text(encoding="utf-8")
+    )["cosmic-ray"]
+    command = shared["test-command"]
+    match = re.search(r"ulimit -v (\d+)", command)
+    assert match, f"el test-command no limita el espacio de direcciones: {command}"
+    assert int(match.group(1)) >= 1048576, (
+        f"tope {match.group(1)} KB: por debajo de 1 GiB no es holgado para una suite "
+        "que pica en 177 MB (el valor declarado son 2 GiB)"
+    )
+    assert "--no-cov" in command

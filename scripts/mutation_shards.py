@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import importlib.machinery
 import importlib.util
+import json
 import sys
 import tomllib
 from collections import Counter
@@ -92,7 +93,10 @@ def render(shared: dict, modules: list[str]) -> str:
     lines += [f'    "{pattern}",' for pattern in shared.get("excluded-modules") or ()]
     lines += [
         "]",
-        f'test-command = "{shared["test-command"]}"',
+        # `json.dumps` produce una cadena básica de TOML válida: el test-command
+        # lleva comillas dobles dentro (`sh -c '... -m "not integration"'`) y sin
+        # escapar rompería el config generado.
+        f"test-command = {json.dumps(shared['test-command'])}",
         "",
         "[cosmic-ray.distributor]",
         f'name = "{shared["distributor"]["name"]}"',
