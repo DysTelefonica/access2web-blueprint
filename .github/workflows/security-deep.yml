@@ -87,7 +87,7 @@ jobs:
     concurrency:
       group: gate-trivy-image
       cancel-in-progress: false
-    # `trivy image` over python:3.12-slim-bookworm — depends on registry latency
+    # `trivy image` over python:3.12-slim-trixie — depends on registry latency
     # and image size. 30 min is loose; tighten once we have a measured p95.
     timeout-minutes: 30
     steps:
@@ -99,7 +99,7 @@ jobs:
         with:
           driver-opts: image=moby/buildkit:v0.18.0
 
-      - name: trivy image scan (python:3.12-slim-bookworm)
+      - name: Docker daemon preflight
         # Preflight `docker info` with `timeout 30` (#131). The `trivy image` itself
         # pulls and inspects a ~150 MB image — a hung daemon is indistinguishable
         # from a slow one without this check.
@@ -111,4 +111,39 @@ jobs:
             exit 1
           fi
 
-          docker run --rm             -v /var/run/docker.sock:/var/run/docker.sock             aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c             image python:3.12-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2             --severity HIGH,CRITICAL --exit-code 1 --no-progress
+      - name: trivy image — CRITICAL blocking (fixable or not)
+        # Zero CRITICAL in the base image is the requirement (#818), so this step
+        # does NOT pass `--ignore-unfixed`: a CRITICAL blocks whether Debian has a
+        # published fix or not, and the base digest is what decides it.
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c \
+            image python:3.12-slim-trixie@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f \
+            --severity CRITICAL --exit-code 1 --no-progress
+
+      - name: trivy image — HIGH with a published fix (blocking)
+        # `--ignore-unfixed` narrows the set to the HIGH Debian can already fix:
+        # those are actionable by bumping the base, so they block. A HIGH with no
+        # published fix cannot be repaired by any digest, which is why it is not in
+        # the blocking set — the next step keeps it visible instead.
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c \
+            image python:3.12-slim-trixie@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f \
+            --severity HIGH --ignore-unfixed --exit-code 1 --no-progress
+
+      - name: trivy image — HIGH without a fix (inventory)
+        # `--exit-code 0` and *no* `--ignore-unfixed`: the unfixed HIGH are printed
+        # on every run and do not block. The step exists so the job never goes green
+        # by no longer looking at them (Hard Rule 18: prove measurement liveness).
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy@sha256:7cced7cae583819fc7806d4cbc0dbbc7cad18b99f7d3e235192e6da8c091045c \
+            image python:3.12-slim-trixie@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f \
+            --severity HIGH --exit-code 0 --no-progress
