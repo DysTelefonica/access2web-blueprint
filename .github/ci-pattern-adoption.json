@@ -183,6 +183,12 @@
           "gate": "hr-matrix"
         }
       ]
+    },
+    "5": {
+      "operating_doc": {
+        "doc": "docs/ci-pattern-flow.md",
+        "linked_from": "AGENTS.md"
+      }
     }
   }
 }

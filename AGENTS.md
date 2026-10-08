@@ -14,6 +14,44 @@ When working on this project, load the relevant skill(s) BEFORE writing any code
 >
 > La disciplina documental (tono, nombres, formato, plantillas, anti-patrones) vive en `skills/documentation-alan-style/`. Su contrato es la única referencia; `CONTRIBUTING.md` y los documentos de `docs/` la aplican.
 
+El flujo operativo del repositorio vive en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md). Es un documento generado: no lo edite a mano; regenérelo con `ci-pattern adoption generate-doc`.
+
+<!-- ci-pattern-agents:begin -->
+## Flujo operativo y mandato de no invención
+
+Bloque gobernado: no lo edite a mano; se regenera desde el patrón.
+Antes de actuar, lea la parte del flujo operativo de la situación. Si un paso,
+comando, etiqueta o dato que necesita no está en este documento, NO lo invente:
+deténgase y pregunte en la issue o al mantenedor.
+
+| Situación | Qué leer antes de actuar |
+| --- | --- |
+| Crear una issue | Sección 1 (formulario, duplicados, aprobación) |
+| Crear una rama | Sección 2 (regex y forma del nombre) |
+| Sincronizar la rama de feature con la base | Sección 10, etapa 5 (integración por merge, nunca rebase) |
+| Escribir commits | Sección 3 (convención y unidades de trabajo) |
+| Abrir un pull request | Sección 4 (cuerpo, etiqueta, presupuesto) |
+| Encadenar PRs | Sección 4 (cadena: `chain:partial`, `Refs #N`, punta) |
+| Consultar checks | Sección 5 (tabla de checks y recetas de recuperación) |
+| Pedir un merge | Sección 6 y la etapa 9 del ciclo de vida |
+| Registrar un incidente de producción | Sección 8 (los cuatro niveles: post-mortem, registro operativo, secretos, datos personales) |
+| Reportar una fricción | Sección 9 |
+| Cualquier paso del ciclo | Sección 10 (ciclo de vida completo) |
+
+**Mandato de no invención:** si un paso, comando, etiqueta o dato que necesita
+no está documentado en el flujo operativo, no lo invente: deténgase y
+pregunte en la issue o al mantenedor.
+
+## Dónde vive la documentación
+
+Toda la documentación de este proyecto vive en ESTE repositorio, bajo `docs/`
+por materia; los post-mortems en `docs/postmortems/<AAAA-MM-DD>-<slug>.md`.
+Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
+backups, los datos en bruto y el material privado. Nunca ubique documentación
+en una ruta absoluta o externa al repositorio (HR-48): el gate de la fase 5 la
+rechaza. Detalle: la sección «Dónde vive la documentación» del flujo operativo.
+<!-- ci-pattern-agents:end -->
+
 ## How to Use
 
 1. Revise la columna «Trigger» para localizar las skills aplicables a la tarea actual.
