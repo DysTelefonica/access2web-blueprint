@@ -39,7 +39,7 @@ Si los tres comandos devuelven respuesta sin error, el repo está operativo.
 
 ## What this is
 
-El repo es **self-contained** desde el 2026-08-06: las 8 apps en alcance tienen su frontend, backend, `src/` y `docs/` (cuando existe) copiados bajo `data/staging/<app>/`. Esto permite que cualquier IA o humano trabaje sobre el blueprint sin acceso a los repos originales `C:\00repos\codigo\00_<APP>\`.
+El repo es **self-contained** desde el 2026-08-06: las 8 apps en alcance tienen su frontend, backend, `src/` y `docs/` (cuando existe) copiados bajo `data/staging/<app>/`. Esto permite que cualquier IA o humano trabaje sobre el blueprint con el repositorio como fuente única: los repositorios de origen quedan como referencia de solo lectura y no son necesarios para operarlo.
 
 | App | Snapshot |
 |---|---|
