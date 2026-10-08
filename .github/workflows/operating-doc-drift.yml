@@ -1,0 +1,83 @@
+# Deriva del documento operativo (fase 5 de la adopción del patrón de CI, #781).
+#
+# `docs/ci-pattern-flow.md` se GENERA desde los datos del repositorio. Este job
+# lo vuelve a generar con el MISMO pin del catálogo que lo declaró y falla si el
+# documento derivó: el gate del patrón regenera el documento en el mismo proceso
+# y lo compara por secciones, nombrando la sección y la diferencia.
+#
+# Se dispara solo en `push` a main y en `schedule`. Ninguno de esos eventos
+# evalúa un PR, así que este job no publica ningún nombre de check requerido
+# (HR-30) y no necesita el secreto en PRs de fork.
+#
+# El pin es un SHA de 40 hexadecimales, nunca una rama móvil: el documento se
+# compara contra el generador exacto que lo emitió. Cambiarlo es una decisión
+# explícita que exige regenerar el documento en el mismo cambio.
+
+name: operating-doc-drift
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  # Un solo literal por workflow, igual que ci.yml: el intérprete es parte del gate.
+  PYTHON_VERSION: "3.12.11"
+
+jobs:
+  operating-doc-drift:
+    # Repositorio público: infraestructura efímera hospedada por GitHub, nunca
+    # runners propios.
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: gate-operating-doc-drift-${{ github.ref }}
+      cancel-in-progress: false
+    # El checkout del pin y el gate tardan segundos; más de 10 minutos es un cuelgue.
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+
+      - name: disable sparse-checkout cone mode (runtime fallback)
+        run: |
+          if ! git sparse-checkout disable 2>/dev/null; then
+            :
+          fi
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: setup-python
+        with:
+          python-version: "3.12.11"
+
+      - name: comprobar el secreto del catálogo
+        # Sin el secreto no se puede leer el pin: se falla en voz alta y se nombra
+        # el dato que falta, en vez de salir en verde sin haber medido (HR-3).
+        env:
+          CATALOG_TOKEN: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+        run: |
+          if [ -z "${CATALOG_TOKEN}" ]; then
+            echo "falta el secreto TEAM_SKILLS_READ_TOKEN en este repositorio:" >&2
+            echo "sin el pin del catálogo la deriva del documento no se puede medir" >&2
+            exit 1
+          fi
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: DysTelefonica/team-skills
+          ref: a1cca27194335424c44bb5d9595fcd6c5d7fb3bd
+          token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+          path: .ci-pattern-pin
+          persist-credentials: false
+
+      - name: verificar el documento operativo con el pin
+        run: |
+          set -euo pipefail
+          cli=".ci-pattern-pin/personal/ardelperal/ci-pattern/assets/bin/ci-pattern"
+          python3 "${cli}" params validate ci-pattern.yaml
+          python3 "${cli}" adoption check --phase 5 .

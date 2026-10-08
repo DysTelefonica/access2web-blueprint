@@ -81,7 +81,8 @@
         {"artifact": "label:type:docs", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": "label:type:feature", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": "label:type:refactor", "disposition": "adopted", "target": ".github/host-contract.json"},
-        {"artifact": "label:wontfix", "disposition": "adopted", "target": ".github/host-contract.json"}
+        {"artifact": "label:wontfix", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": ".github/workflows/operating-doc-drift.yml", "disposition": "adopted", "target": ".github/workflows/operating-doc-drift.yml"}
       ],
       "declared_governed_paths": [
         "app/pytest_plugin/coverage_gate.py",
