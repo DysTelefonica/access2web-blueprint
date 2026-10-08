@@ -10,9 +10,11 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sqlite3
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -411,3 +413,104 @@ def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
         str(second),
     )
     assert first.read_bytes() == second.read_bytes()
+
+
+# --- Reparto del dominio entre los jobs de la matriz (#785) ---------------------------------
+#
+# El dominio (1129 mutantes) no cabe en un job. La matriz lo parte en tramos
+# deterministas y el job final fusiona las sesiones.
+
+MUTATION_DOMAIN_COUNTS = {
+    "app/src/modules/expedientes/domain/anexo/retention.py": 116,
+    "app/src/modules/expedientes/domain/anexo/size_limit.py": 99,
+    "app/src/modules/expedientes/domain/cpv/code.py": 67,
+    "app/src/modules/lanzadera/domain/legacy_role_map.py": 66,
+    "app/src/modules/expedientes/domain/anualidad.py": 66,
+    "app/src/modules/expedientes/domain/hash/versioning.py": 62,
+}
+
+
+def test_mutation_shard_assignment_is_complete_balanced_and_stable() -> None:
+    """El reparto cubre el dominio una vez, reparte la carga y no depende del orden de entrada."""
+    module = _load("mutation_shards.py")
+    total = sum(MUTATION_DOMAIN_COUNTS.values())
+    plan = module.assign(MUTATION_DOMAIN_COUNTS, 4)
+    declared = [path for entry in plan for path in entry["modules"]]
+    assert sorted(declared) == sorted(MUTATION_DOMAIN_COUNTS)
+    assert len(declared) == len(set(declared))
+    assert [entry["index"] for entry in plan] == [0, 1, 2, 3]
+    loads = [entry["mutants"] for entry in plan]
+    assert max(loads) <= total / len(plan) * 1.2, loads
+    reversed_input = dict(reversed(list(MUTATION_DOMAIN_COUNTS.items())))
+    assert module.assign(reversed_input, 4) == plan, (
+        "el reparto no puede depender del orden de entrada"
+    )
+
+
+def test_mutation_shard_assignment_fails_closed_with_too_few_modules() -> None:
+    """Un módulo no se parte entre dos jobs: con menos módulos que tramos, error."""
+    module = _load("mutation_shards.py")
+    with pytest.raises(module.ShardError):
+        module.assign({"app/a.py": 3}, 4)
+    with pytest.raises(module.ShardError):
+        module.assign(MUTATION_DOMAIN_COUNTS, 0)
+
+
+def test_mutation_shard_config_keeps_the_shared_config() -> None:
+    """El config del tramo no puede divergir del compartido en timeout ni en test-command."""
+    module = _load("mutation_shards.py")
+    shared = tomllib.loads(
+        (ROOT / "docs" / "quality" / "cosmic-ray.toml").read_text(encoding="utf-8")
+    )["cosmic-ray"]
+    rendered = module.render(shared, ["app/src/modules/lanzadera/domain/presence.py"])
+    parsed = tomllib.loads(rendered)["cosmic-ray"]
+    assert parsed["module-path"] == ["app/src/modules/lanzadera/domain/presence.py"]
+    assert parsed["timeout"] == shared["timeout"]
+    assert parsed["test-command"] == shared["test-command"]
+    assert parsed["excluded-modules"] == shared["excluded-modules"]
+
+
+def test_mutation_gate_accepts_one_session_per_shard(tmp_path) -> None:
+    first = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
+    second = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "killed")] * 5)
+    result = _run("check_mutation.py", str(first), str(second), "--shards", "2")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "run healthy" in result.stdout
+
+
+def test_mutation_gate_fails_closed_when_a_shard_is_missing(tmp_path) -> None:
+    first = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
+    second = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "killed")] * 5)
+    result = _run("check_mutation.py", str(first), str(second), "--shards", "3")
+    assert result.returncode == 1
+    assert "se esperaban 3" in result.stderr
+
+
+def test_mutation_gate_fails_closed_when_a_shard_is_degenerate(tmp_path) -> None:
+    healthy = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
+    degenerate = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "incompetent")] * 5)
+    result = _run("check_mutation.py", str(healthy), str(degenerate), "--shards", "2")
+    assert result.returncode == 1
+    assert "degenerate" in result.stdout.lower()
+    assert "s1.sqlite" in result.stdout
+
+
+def test_mutation_test_command_caps_memory_per_run() -> None:
+    """El `test-command` limita la memoria de cada ejecución (#785).
+
+    Un mutante desbocado mató cuatro veces el runner hospedado (SIGTERM) antes del
+    timeout de 120 s: el que muere es el runner, no el test. El tope hace que ese
+    mutante falle el test y cuente como «killed». Medido: la suite normal pica en
+    177 MB de RSS y pasa con 1 GiB; el config declara 2 GiB.
+    """
+    shared = tomllib.loads(
+        (ROOT / "docs" / "quality" / "cosmic-ray.toml").read_text(encoding="utf-8")
+    )["cosmic-ray"]
+    command = shared["test-command"]
+    match = re.search(r"ulimit -v (\d+)", command)
+    assert match, f"el test-command no limita el espacio de direcciones: {command}"
+    assert int(match.group(1)) >= 1048576, (
+        f"tope {match.group(1)} KB: por debajo de 1 GiB no es holgado para una suite "
+        "que pica en 177 MB (el valor declarado son 2 GiB)"
+    )
+    assert "--no-cov" in command

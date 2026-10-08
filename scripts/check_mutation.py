@@ -26,6 +26,10 @@ Stdlib only, on purpose: the session is read through ``sqlite3`` rather than thr
 tool's own API, so this gate and its tests run everywhere — including the platforms where the
 mutation runner itself cannot execute mutants.
 
+Con varias sesiones (una por tramo de la matriz, #785) la salud se mide por sesión y el ratchet
+sobre la unión de todas; `--shards N` exige que lleguen exactamente N, porque un tramo perdido
+dejaría el veredicto medido sobre menos mutantes de los que el run declara.
+
 Exit codes:
     0  run healthy and no module above its BASELINE
     1  missing/unreadable session, incomplete run, degenerate run, a module that grew, an
@@ -264,7 +268,17 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("session", type=Path, help="cosmic-ray session database")
+    parser.add_argument(
+        "sessions",
+        type=Path,
+        nargs="+",
+        help="sesiones de cosmic-ray; una por tramo de la matriz",
+    )
+    parser.add_argument(
+        "--shards",
+        type=int,
+        help="número de tramos que el run debe traer; falla si llegan menos",
+    )
     parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     parser.add_argument(
         "--emit-baseline",
@@ -273,16 +287,36 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    rows, errors = read_session(args.session)
-    if errors:
-        if args.json:
-            print(json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]}))
-        else:
-            for message in errors:
-                print(f"FAIL  {message}", file=sys.stderr)
+    if args.shards is not None and len(args.sessions) != args.shards:
+        print(
+            f"FAIL  se esperaban {args.shards} sesión(es) y llegaron "
+            f"{len(args.sessions)}: un tramo perdido dejaría el ratchet midiendo "
+            "menos de lo que el run declara",
+            file=sys.stderr,
+        )
         return 1
 
-    rows = active_rows(rows)
+    rows: list[dict[str, Any]] = []
+    for session in args.sessions:
+        part, errors = read_session(session)
+        if errors:
+            if args.json:
+                print(json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]}))
+                return 1
+            for message in errors:
+                print(f"FAIL  {message}", file=sys.stderr)
+            return 1
+        part = active_rows(part)
+        part_health, _ = check_run_health(part)
+        if part_health:
+            # Un tramo degenerado invalida la corrida entera: sumarlo daría un
+            # veredicto sobre menos mutantes de los que el run declara medir.
+            # Va a stdout, como el resto de hallazgos, con su sesión delante.
+            for message in part_health:
+                print(f"FAIL  {session}: {message}")
+            return 1
+        rows.extend(part)
+
     today = date.today()
     health, metrics = check_run_health(rows)
     survivors = measure_survivors(rows)
