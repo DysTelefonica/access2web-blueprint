@@ -7,5 +7,14 @@
     ".github/host-contract.json": "sha256:d3878b93aea923ea46d8d68d75581be5be36b602acc068fa8754b4dea3040b98",
     ".github/host-labels-snapshot.json": "sha256:09fe2ba60e590b3f61d469427e0137e84ad76a9d952f33665c953db1ed031b8b"
   },
+  "parameters": {
+    "P23_required_jobs": [
+      "review-budget",
+      "quality",
+      "security",
+      "codeql",
+      "required"
+    ]
+  },
   "schema_version": 1
 }
