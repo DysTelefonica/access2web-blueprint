@@ -30,7 +30,7 @@ This is the complete technical reference for the blueprint. For getting started,
 |---|---|
 | El mapa de ownership, flows y guardrails para mantenedores. | [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) es la guía de ownership + reading path + cómo agregar una app nueva. |
 | La fuente de verdad de las decisiones arquitectónicas D-<n> y DA-<n>. | [`docs/architecture.md`](docs/architecture.md) cataloga decisiones vigentes y obsoletas con paths; este doc sólo las referencia en `§Decisiones metodológicas`. |
-| El manual de los 12 `check_*.py` y los 4 workflows de CI. | [`docs/architecture.md`](docs/architecture.md) §CI gates mapea qué gate aplica a qué decisión; el manual de uso vive en el docstring de cada script, y este doc sólo lista dónde se orquestan. |
+| El manual de los `check_*.py` y de los workflows de CI. | [`docs/gates.md`](docs/gates.md) es el manual de uso: qué mide cada gate, cómo se lee su fallo, el contrato de los workflows y cómo añadir uno. |
 | El walkthrough por form individual. | Cada `walkthrough-*.json` por app vive en `docs/03-aplicaciones/<app>/walkthrough-*.json`; este doc sólo explica el método v3/v4. |
 
 ---
