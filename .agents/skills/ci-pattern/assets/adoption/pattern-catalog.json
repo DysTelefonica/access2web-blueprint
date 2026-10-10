@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "description": "Catálogo canónico del patrón (#311): ubicaciones donde el patrón instala gobierno en un consumer. DATO declarado, no código: la fase 0 valida la pertenencia de los targets 'adopted' contra este catálogo y la fase 3 escanea estas rutas buscando residuos. 'target_namespaces' son prefijos de artefactos no-ruta (host). Los SCRIPTS no son gobierno por ubicación sino por REFERENCIA (#311): un script solo es gobierno si el gobierno lo invoca — las fuentes de 'referenced_scripts' (los `run:` de los workflows de CI, los hooks y el entrypoint de paridad local HR-4 declarado en su política), más los que el contrato del consumer declare en 'declared_governed_paths'. Un `scripts/*.ps1` operativo de la APP que nadie del gobierno invoca no se inventaría ni se retira.",
+  "path_patterns": [
+    ".github/workflows/*.yml",
+    ".github/workflows/*.yaml",
+    ".github/PULL_REQUEST_TEMPLATE*",
+    ".github/pull_request_template.md",
+    ".github/ISSUE_TEMPLATE/*",
+    ".github/CODEOWNERS",
+    "CODEOWNERS",
+    ".github/dependabot.yml",
+    ".github/dependabot.yaml",
+    ".pre-commit-config.yaml",
+    ".husky/*",
+    "lefthook.yml",
+    ".github/*.json",
+    ".github/hooks/*",
+    ".githooks/*",
+    "AGENTS.md",
+    "CONTRIBUTING.md",
+    ".agents/skills/*",
+    ".team-skills.yaml"
+  ],
+  "target_namespaces": [
+    "ruleset:"
+  ],
+  "referenced_scripts": {
+    "extensions": [
+      ".sh",
+      ".bash",
+      ".zsh",
+      ".ksh",
+      ".ps1",
+      ".py"
+    ],
+    "sources": [
+      ".github/workflows/*.yml",
+      ".github/workflows/*.yaml",
+      ".github/hooks/*",
+      ".githooks/*",
+      ".husky/*",
+      ".pre-commit-config.yaml",
+      "lefthook.yml"
+    ],
+    "policy_entrypoints": [
+      {
+        "path": ".github/local-ci-parity-policy.json",
+        "pointer": [
+          "local",
+          "entrypoint"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "ci": {"workflow": ".github/workflows/tests.yml", "job": "unit"},
+  "local": {"entrypoint": "testing/run-unit-suites.sh"},
+  "exclusions": [
+    {"command": "bash personal/ardelperal/ci-pattern/assets/branch-name.sh", "side": "ci",
+     "reason": "self-test del propio gate HR-35 en el runner: comprueba la integridad del ejecutable en CI, no una suite de gates; duplicarla en local no añade medición"},
+    {"command": "gh issue", "side": "ci",
+     "reason": "paso previo de infraestructura (#235): genera la lista de issues abiertas que el meta-gate consume; el gate en sí es offline y corre dentro de run-unit-suites.sh"},
+    {"command": "python3 personal/ardelperal/ci-pattern/assets/workflow-policy/check_workflow_policy.py", "side": "ci",
+     "reason": "dogfooding #192: el gate de política de workflows se ejecuta sobre este repo en CI; su suite corre en el punto de entrada local vía el bucle de tests de assets"},
+    {"command": "python3 personal/ardelperal/ci-pattern/assets/pr-contract/tests/test_pr_contract.py", "side": "ci",
+     "reason": "dogfooding #193: el gate de contrato de PR se ejecuta sobre este repo en CI; su suite corre en el punto de entrada local vía el bucle de tests de assets"},
+    {"command": "python3 personal/ardelperal/ci-pattern/assets/version-bump/check_version_bump.py", "side": "ci",
+     "reason": "dogfooding #156 (HR-44): el gate de version bump se ejecuta en CI sobre el diff del PR con los SHA base/head del evento pull_request, que no existen fuera de él; su suite corre en el punto de entrada local vía el bucle de tests de assets y la invocación local se documenta en la receta del meta-gate HR-32"},
+    {"command": "python3 personal/ardelperal/ci-pattern/assets/local-ci-parity/check_local_ci_parity.py", "side": "ci",
+     "reason": "dogfooding #196: el propio gate de paridad se ejecuta sobre este repo; su suite corre en unit vía el meta-gate (check_hr_matrix ejecuta el test declarado en la matriz)"},
+    {"command": "bash -n*", "side": "any",
+     "reason": "la validación de sintaxis de todos los .sh rastreados la ejecuta el job smoke en CI; el punto de entrada la replica para que un run local sin CI no dependa de haber pasado smoke"}
+  ]
+}

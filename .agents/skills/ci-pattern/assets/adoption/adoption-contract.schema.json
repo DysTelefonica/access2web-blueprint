@@ -1,0 +1,97 @@
+{
+  "$id": "https://DysTelefonica.github.io/team-skills/ci-pattern/adoption-contract.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Contrato de adopción de ci-pattern (#276)",
+  "description": "Declaración de la adopción del patrón en un consumer: la fase actual y, para cada fase del porting-guide, los artefactos producidos con su ruta. El gate `ci-pattern adoption check` valida este esquema con un subconjunto propio (stdlib, sin validador externo) y comprueba cada fase contra el árbol real del repo destino. La adopción solo está completa cuando `adoption check --all` sale con 0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "phases"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "phases": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/phase"
+      },
+      "propertyNames": {
+        "pattern": "^[0-6]$",
+        "description": "Claves de fase que la CLI admite: 0..ADOPTION_PHASES-1 (hoy 0..6; ADOPTION_PHASES = 7). El esquema y la CLI tienen que admitir el mismo conjunto: lo verifica el test de deriva #369."
+      }
+    },
+    "agents_md": {
+      "type": "string",
+      "enum": [
+        "propagated"
+      ],
+      "description": "Declaracion explicita (HR-55, #341): sin ella adoption check informa que la estructura del AGENTS.md no se exige aun y sale 0; con ella aplica completa en fases 3 y 5."
+    }
+  },
+  "$defs": {
+    "phase": {
+      "type": "object",
+      "additionalProperties": true,
+      "$comment": "Claves por fase validadas y EJECUTADAS por el gate: fase 0 exige inventory (adopted targets existen; retired con path no puede seguir en el árbol) + removal_confirmed; fase 1 y 3 exigen evidence.path; fase 2 exige env_isolation {root, allowlist} y EJECUTA assets/env-isolation/check_env_isolation.py (--root --allowlist) exigiendo rc=0; fase 3 (#277) exige además pattern_paths, host_snapshots (branch-protection + rulesets; + actions-runners cuando el host declara camino runner) y EJECUTA la comprobación sobre el árbol, el manifiesto de gobierno y las instantáneas del host: ningún artefacto de gobierno fuera del patrón o del inventario, ningún retirado aún presente; fase 4 exige gates cubriendo EXACTAMENTE el conjunto conocido (host-readback/required-jobs/local-ci-parity/workflow-policy/hr-matrix; + runner-binding cuando el host declara camino runner, con el runner online según actions/runners; faltante o duplicado = hallazgo) y EJECUTA cada uno exigiendo rc=0 — los tokens de entrada '@ruta' y 'k=@ruta' se resuelven contra el repo y una entrada ausente es exit 2; fase 5 (#279) exige operating_doc {doc, linked_from} y verifica el documento operativo REGENERÁNDOLO en proceso (deriva = hallazgo); fase 6 exige prs (number, sha de 40 hex existente en el historial del repo vía git cat-file -e, conclusion=success)."
+    },
+    "inventory_entry": {
+      "type": "object",
+      "required": [
+        "artifact",
+        "disposition"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "artifact": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Artefacto de gobierno del destino (ruta o identificador)."
+        },
+        "disposition": {
+          "enum": [
+            "adopted",
+            "retired"
+          ],
+          "description": "Sin tercera opción: lo que no viene del patrón se elimina."
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Obligatorio si disposition=adopted: ruta repo-relativa del artefacto del patrón que lo sustituye; debe existir."
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Ruta repo-relativa del artefacto retirado/adoptado. Para skills: '.agents/skills/<nombre>'."
+        },
+        "skill": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "Identificador estructurado de la skill retirada cuando no hay path .agents/skills/<x> (retirada de una entrada del manifiesto). El gate de skills solo decide por path/skill, nunca por la prosa del artifact (#373)."
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identificador estructurado de una etiqueta retirada; distingue la retirada de labels de la de skills."
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Ruta repo-relativa de la evidencia; debe existir y no estar vacía."
+        }
+      }
+    }
+  }
+}

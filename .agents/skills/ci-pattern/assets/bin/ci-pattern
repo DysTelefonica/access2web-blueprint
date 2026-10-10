@@ -1,0 +1,3350 @@
+#!/usr/bin/env python3
+"""ci-pattern — CLI determinista del patrón de CI (adoptador/verificador).
+
+Contrato completo: `references/cli-spec.md` (relativo a la raíz de la skill,
+resuelto igual en el catálogo canónico y en cualquier mirror; especificación
+normativa). Python 3 stdlib exclusivamente: sin venv, sin
+dependencias de terceros, ejecutable con `python3` y desde CI.
+
+Comandos: params validate, verify, status, manifest show, lectura y escritura
+del manifiesto, y `adoption check` (gate por fases del contrato de adopción).
+`adopt` y `update` están retirados (exit 2 con mensaje accionable): la adopción
+la gobierna `adoption check` sobre el contrato del consumer (#376).
+
+La CLI NUNCA ejecuta git merge/push, nunca toca producción, nunca borra
+ficheros y nunca sobrescribe un fichero modificado localmente sin
+reportarlo como hallazgo.
+"""
+
+import fnmatch
+import hashlib
+import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
+from pathlib import Path, PurePosixPath
+
+# #330: el detector del 403 de plan vive en un módulo COMPARTIDO
+# (assets/host_plan.py) para que el gate de adopción y el readback del host no
+# tengan dos detectores que puedan divergir. Se importa en proceso; nunca se
+# invoca la CLI ni un subproceso para leer los datos del consumer.
+MANIFEST_NAME = ".governance-manifest.json"
+ADOPTION_CONTRACT_NAME = ".github/ci-pattern-adoption.json"
+ADOPTION_SCHEMA_VERSION = 1
+ADOPTION_PHASES = 7  # fases 0..6 del porting-guide (5 = docs, #279)
+SCHEMA_VERSION = 1
+
+EXIT_OK = 0
+EXIT_FINDINGS = 1
+EXIT_USAGE = 2
+EXIT_MISSING = 3
+# EXIT_FUTURE retirado (#276): adopt/update ya no devuelven 4; la adopción la gobierna `adoption check`.
+
+LABEL_RE = re.compile(r"^[a-z][a-z0-9-]*:[a-z0-9][a-z0-9._-]*$")
+
+USAGE = """\
+uso: ci-pattern <comando> [argumentos]
+
+Comandos:
+  params validate <file>     Valida ci-pattern.yaml contra el esquema de parámetros.
+  verify <repo> [--json] [--slice-canonical <dir>]
+                             Verifica el cumplimiento dirigido por el manifiesto.
+  status <repo> [--json]     Resumen de una línea por clase del repo destino.
+  manifest show <repo>       Imprime el manifiesto leído.
+  adoption check (--phase N | --all) <repo>
+                             Gate por fase del contrato de adopción: fases del
+                             porting-guide verificadas sobre el árbol real.
+
+`adopt` y `update` están retirados; ver references/cli-spec.md.
+
+Códigos de salida: 0 limpio · 1 hallazgos · 2 uso · 3 recurso ausente.
+Contrato: references/cli-spec.md (relativo a la raíz de la skill)
+"""
+
+
+def skill_dir():
+    """Raíz de la skill: dos niveles sobre este fichero (assets/bin → skill).
+
+    Resolución self-contained: válida en el catálogo canónico y en cualquier
+    mirror de la skill, sin depender de la ruta del repo anfitrión. El override
+    por entorno queda como escape para layouts no estándar.
+    """
+    override = os.environ.get("CI_PATTERN_SKILL_DIR")
+    if override:
+        return Path(override)
+    return Path(__file__).resolve().parents[2]
+
+
+def _cli_version():
+    """Versión de la skill desde el frontmatter de SKILL.md (#186).
+
+    Fuente única de verdad; 'unknown' sólo si el frontmatter no la declara.
+    """
+    skill_md = skill_dir() / "SKILL.md"
+    if skill_md.is_file():
+        for line in skill_md.read_text(encoding="utf-8").splitlines():
+            if line.strip().startswith("version:"):
+                return line.split(":", 1)[1].strip().strip('"')
+    return "unknown"
+
+
+CLI_VERSION = _cli_version()
+
+
+def _head_sha(repo):
+    """HEAD del repo verificado (#186); None si no hay git ni commits."""
+    try:
+        result = _run_cmd(
+            ["git", "-C", str(repo), "rev-parse", "HEAD"], timeout=60)
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip() or None
+
+
+# ---------------------------------------------------------------------------
+# Errores
+# ---------------------------------------------------------------------------
+
+
+class UsageError(Exception):
+    pass
+
+
+class MissingResourceError(Exception):
+    pass
+
+
+class ParamsFileError(Exception):
+    """Error del parser del subconjunto YAML, con número de línea."""
+
+
+# ---------------------------------------------------------------------------
+# Manifiesto
+# ---------------------------------------------------------------------------
+
+
+def load_manifest(repo):
+    path = Path(repo) / MANIFEST_NAME
+    if not path.is_file():
+        raise MissingResourceError(
+            f"manifest: {MANIFEST_NAME} no existe en {repo}. "
+            f"El manifiesto de gobierno lo escribe la adopción del repo adoptante: "
+            f"`ci-pattern adoption check --phase 3 {repo}` lo exige y lo verifica "
+            f"(ver references/porting-guide.md)."
+        )
+    try:
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MissingResourceError(f"manifest: {path} ilegible o corrupto ({exc}).") from exc
+    if not isinstance(manifest, dict) or manifest.get("schema_version") != SCHEMA_VERSION:
+        raise MissingResourceError(
+            f"manifest: schema_version debe ser {SCHEMA_VERSION}; revise {path}."
+        )
+    return manifest
+
+
+def write_manifest(repo, manifest):
+    path = Path(repo) / MANIFEST_NAME
+    path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return path
+
+
+def sha256_file(path):
+    """sha256 del contenido con saltos normalizados a LF (#187).
+
+    Un fichero con CRLF (core.autocrlf en Windows) no es hallazgo: la
+    regla de normalización es la misma para ficheros y slices.
+    """
+    digest = hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    return f"sha256:{digest}"
+
+
+# ---------------------------------------------------------------------------
+# Parser del subconjunto YAML de ci-pattern.yaml
+#
+# Aceptado (determinista, sin dependencias):
+#   - mapeo de un nivel con escalares, listas en bloque (- item) o inline [a, b]
+#   - mapas anidados de un nivel (clave: /   subclave: valor)
+#   - comentarios con # (fuera de comillas), cadenas con o sin comillas
+# Rechazado con línea: tabulación, clave duplicada, indentación ambigua.
+# ---------------------------------------------------------------------------
+
+
+def _strip_comment(line):
+    in_squote = in_dquote = False
+    for i, ch in enumerate(line):
+        if ch == "'" and not in_dquote:
+            in_squote = not in_squote
+        elif ch == '"' and not in_squote:
+            in_dquote = not in_dquote
+        elif ch == "#" and not in_squote and not in_dquote and (i == 0 or line[i - 1] in " \t"):
+            return line[:i]
+    return line
+
+
+def _parse_scalar(text, lineno, key):
+    text = text.strip()
+    if text == "{}":
+        return {}
+    if text.startswith("[") and text.endswith("]"):
+        inner = text[1:-1].strip()
+        if not inner:
+            return []
+        return [_parse_scalar(item, lineno, key) for item in inner.split(",") if item.strip()]
+    if (text.startswith('"') and text.endswith('"')) or (text.startswith("'") and text.endswith("'")):
+        return text[1:-1]
+    if text in ("true", "false"):
+        return text == "true"
+    if re.fullmatch(r"-?\d+", text):
+        return int(text)
+    if re.fullmatch(r"-?\d+\.\d+", text):
+        return float(text)
+    if text.startswith("[") or text.endswith("]"):
+        raise ParamsFileError(f"línea {lineno}: lista sin cerrar en '{key}'.")
+    if text.startswith("{") or text.endswith("}"):
+        raise ParamsFileError(
+            f"línea {lineno}: mapa inline no soportado en '{key}'; declare las claves en "
+            "líneas indentadas o use '{}' para un mapa vacío."
+        )
+    return text
+
+
+def parse_params_yaml(text):
+    """Parsea el subconjunto YAML aceptado; devuelve un dict anidado.
+
+    Profundidad arbitraria de mapas (P48 es un mapa de objetos) y listas
+    en bloque o inline a cualquier nivel. Determinista, sin dependencias.
+    """
+    root = {}
+    # Pila de (indent, contenedor_padre, clave): el contenedor real se
+    # resuelve como padre[clave] y se materializa (dict o lista) con la
+    # primera línea anidada que lo declara.
+    stack = [(-1, None, None)]
+    for lineno, raw in enumerate(text.splitlines(), start=1):
+        if "\t" in raw:
+            raise ParamsFileError(
+                f"línea {lineno}: tabulación prohibida; use espacios para la indentación."
+            )
+        line = _strip_comment(raw).rstrip()
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        if 0 < indent < 2:
+            raise ParamsFileError(f"línea {lineno}: indentación ambigua (use 2+ espacios).")
+        stripped = line.strip()
+        while len(stack) > 1 and indent <= stack[-1][0]:
+            stack.pop()
+        _indent, parent, key = stack[-1]
+        container = root if key is None else parent[key]
+
+        if stripped.startswith("- "):
+            if key is None:
+                raise ParamsFileError(
+                    f"línea {lineno}: ítem de lista de primer nivel sin clave contenedora."
+                )
+            if container is None:
+                container = parent[key] = []
+            if not isinstance(container, list):
+                raise ParamsFileError(
+                    f"línea {lineno}: '{key}' mezcla mapa y lista."
+                )
+            container.append(_parse_scalar(stripped[2:], lineno, key))
+            continue
+
+        if ":" not in stripped:
+            raise ParamsFileError(f"línea {lineno}: falta ':' tras la clave '{stripped}'.")
+        new_key, _, rest = stripped.partition(":")
+        new_key = new_key.strip()
+        if key is None:
+            if new_key in container:
+                raise ParamsFileError(f"línea {lineno}: clave duplicada '{new_key}'.")
+        else:
+            if container is None:
+                container = parent[key] = {}
+            if not isinstance(container, dict):
+                raise ParamsFileError(
+                    f"línea {lineno}: '{key}' ya tiene valor escalar o lista; no admite subclaves."
+                )
+            if new_key in container:
+                # #184: subclave duplicada se sobrescribía en silencio;
+                # ahora es entrada inválida (exit 2).
+                raise UsageError(
+                    f"línea {lineno}: subclave duplicada '{new_key}' en '{key}'."
+                )
+        if rest.strip():
+            container[new_key] = _parse_scalar(rest, lineno, new_key)
+        else:
+            container[new_key] = None
+        stack.append((indent, container, new_key))
+    return root
+
+
+# ---------------------------------------------------------------------------
+# Esquema y validación de parámetros
+# ---------------------------------------------------------------------------
+
+
+def load_schema():
+    path = skill_dir() / "assets" / "parameters.schema.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8")), path
+    except (OSError, json.JSONDecodeError) as exc:
+        raise MissingResourceError(f"esquema de parámetros ilegible en {path}: {exc}") from exc
+
+
+def validate_value(param, value):
+    """Valida un valor contra su entrada del esquema; devuelve error o None."""
+    ptype = param["type"]
+    pid = f"{param['id']}_{param['name']}"
+
+    def bad(expected, got_desc):
+        return f"{pid}: debe ser {expected}, se recibió {got_desc}."
+
+    if ptype == "regex":
+        if not isinstance(value, str):
+            return bad("regex (cadena)", _type_name(value))
+        try:
+            re.compile(value)
+        except re.error as exc:
+            return f"{pid}: no compila como regex ({exc})."
+        return None
+    if ptype == "label":
+        if not isinstance(value, str) or not LABEL_RE.fullmatch(value):
+            return (
+                f"{pid}: debe ser una etiqueta con formato prefijo:valor "
+                f"(p. ej. status:approved), se recibió {value!r}."
+            )
+        return None
+    if ptype == "path":
+        if not isinstance(value, str):
+            return bad("ruta relativa al repo", _type_name(value))
+        if value.startswith("/") or ".." in Path(value).parts:
+            return f"{pid}: debe ser una ruta relativa al repo (sin '/' inicial ni '..'), se recibió {value!r}."
+        if re.match(r"^[A-Za-z]:", value) or "\\" in value:
+            return (
+                f"{pid}: debe ser una ruta relativa al repo (separador '/', sin "
+                f"letra de unidad ni ruta UNC de Windows), se recibió {value!r}."
+            )
+        return None
+    if ptype == "url_path":
+        if not isinstance(value, str):
+            return bad("ruta URL que empiece por '/'", _type_name(value))
+        if not value.startswith("/") or value.startswith("//"):
+            return (
+                f"{pid}: debe ser una ruta URL que empiece por '/' "
+                f"(p. ej. '/healthz'), se recibió {value!r}."
+            )
+        if "\\" in value or " " in value:
+            return f"{pid}: ruta URL inválida, se recibió {value!r}."
+        return None
+    if ptype == "integer":
+        if not isinstance(value, int) or isinstance(value, bool):
+            return bad("integer", _type_name(value))
+        low = param.get("min")
+        high = param.get("max")
+        if low is not None and value < low:
+            return f"{pid}: debe ser >= {low}, se recibió {value}."
+        if high is not None and value > high:
+            return f"{pid}: debe ser <= {high}, se recibió {value}."
+        return None
+    if ptype == "float":
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            return bad("float", _type_name(value))
+        low = param.get("min")
+        high = param.get("max")
+        if low is not None and value < low:
+            return f"{pid}: debe ser >= {low}, se recibió {value}."
+        if high is not None and value > high:
+            return f"{pid}: debe ser <= {high}, se recibió {value}."
+        return None
+    if ptype == "boolean":
+        if not isinstance(value, bool):
+            return bad("boolean", _type_name(value))
+        return None
+    if ptype == "enum":
+        if value not in param.get("choices", []):
+            return f"{pid}: debe ser uno de {param.get('choices')}, se recibió {value!r}."
+        return None
+    if ptype == "string":
+        if not isinstance(value, str):
+            return bad("string", _type_name(value))
+        pattern = param.get("pattern")
+        if pattern and not re.fullmatch(pattern, value):
+            return f"{pid}: debe casar con {pattern}, se recibió {value!r}."
+        return None
+    if ptype == "list":
+        if not isinstance(value, list):
+            return bad("lista", _type_name(value))
+        item_type = param.get("item_type")
+        if item_type:
+            for idx, item in enumerate(value):
+                sub = {"id": param["id"], "name": param["name"], "type": item_type}
+                err = validate_value(sub, item)
+                if err:
+                    return f"elemento {idx + 1} de la lista {pid}: {err.split(': ', 1)[-1]}"
+        return None
+    if ptype == "map":
+        if not isinstance(value, dict):
+            return bad("mapa", _type_name(value))
+        vtype = param.get("value_type")
+        if vtype:
+            for k, v in value.items():
+                sub = (
+                    {**vtype, "id": param["id"], "name": param["name"]}
+                    if isinstance(vtype, dict)
+                    else {"id": param["id"], "name": param["name"], "type": vtype}
+                )
+                err = validate_value(sub, v)
+                if err:
+                    return f"clave '{k}' del mapa {pid}: {err.split(': ', 1)[-1]}"
+        return None
+    if ptype == "object":
+        if not isinstance(value, dict):
+            return bad("objeto", _type_name(value))
+        fields = param.get("fields")
+        if fields:
+            if not value:
+                return f"{pid}: no puede ser un objeto vacío."
+            declared = {f["name"] for f in fields}
+            unknown = sorted(set(value) - declared)
+            if unknown:
+                return f"{pid}: campos desconocidos {unknown}; sólo se admiten {sorted(declared)}."
+            for field in fields:
+                fname = field["name"]
+                if fname not in value:
+                    if field.get("required"):
+                        return f"{pid}: falta el campo requerido '{fname}'."
+                    continue
+                sub = {"id": param["id"], "name": param["name"], **field}
+                err = validate_value(sub, value[fname])
+                if err:
+                    return f"campo '{fname}' de {pid}: {err.split(': ', 1)[-1]}"
+            return None
+        if param["id"] == "P22":
+            attempts = value.get("attempts")
+            interval = value.get("interval_s")
+            if not isinstance(attempts, int) or attempts < 1:
+                return f"{pid}: 'attempts' debe ser integer >= 1."
+            if not isinstance(interval, (int, float)) or interval <= 0:
+                return f"{pid}: 'interval_s' debe ser number > 0."
+        return None
+    return f"{pid}: tipo de esquema desconocido '{ptype}'."
+
+
+def _type_name(value):
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, int):
+        return "integer"
+    if isinstance(value, float):
+        return "float"
+    if isinstance(value, list):
+        return "lista"
+    if isinstance(value, dict):
+        return "mapa"
+    if isinstance(value, str):
+        return "cadena"
+    return type(value).__name__
+
+
+def validate_params_file(path, schema, schema_path):
+    """Valida ci-pattern.yaml; devuelve (errores, params)."""
+    errors = []
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise MissingResourceError(f"fichero de parámetros ilegible {path}: {exc}") from exc
+    try:
+        params = parse_params_yaml(text)
+    except ParamsFileError as exc:
+        return [f"{path}: {exc}"], {}
+
+    by_key = {f"{p['id']}_{p['name']}": p for p in schema["parameters"]}
+    for key in params:
+        if key not in by_key:
+            errors.append(
+                f"{key}: clave desconocida — no está en el esquema ({schema_path.name}). "
+                f"Revise el nombre (forma P<NN>_<name>) o elimínela."
+            )
+    for key, param in by_key.items():
+        if key in params:
+            err = validate_value(param, params[key])
+            if err:
+                errors.append(err)
+        elif param.get("required"):
+            errors.append(
+                f"{key}: falta — es obligatorio y no tiene default seguro; establézcalo "
+                f"(consume: {', '.join(param.get('consumed_by', ['?']))})."
+            )
+    return errors, params
+
+
+# ---------------------------------------------------------------------------
+# Slice blocks
+# ---------------------------------------------------------------------------
+
+
+def extract_slice_block(text, name):
+    """Devuelve (version, content) del bloque `personal-skills:slice:NAME` o None."""
+    opening = re.compile(rf"<!--\s*personal-skills:slice:{re.escape(name)} @ (\S+)\s*-->[^\n]*\n")
+    match = opening.search(text)
+    if not match:
+        return None
+    closing = f"<!-- /personal-skills:slice:{name} -->"
+    end = text.find(closing, match.end())
+    if end == -1:
+        return None
+    return match.group(1), text[match.end():end]
+
+
+# ---------------------------------------------------------------------------
+# verify
+# ---------------------------------------------------------------------------
+
+
+# Job id válido de GitHub Actions (#232):^[A-Za-z_][A-Za-z0-9_-]*$
+_JOB_ID_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
+
+
+def _ensure_safe_manifest_path(rel):
+    """Rechaza claves del manifiesto que escapan del repositorio (#182)."""
+    parts = PurePosixPath(rel).parts
+    if (
+        PurePosixPath(rel).is_absolute()
+        or rel.startswith(("/", "\\"))
+        or ".." in parts
+        or ".." in rel
+        or re.match(r"^[A-Za-z]:", rel)
+    ):
+        raise UsageError(
+            f"la clave del manifiesto '{rel}' no es una ruta relativa segura "
+            "(absoluta, con '..' o con letra de unidad Windows); rechazada."
+        )
+
+
+def _jobs_in_workflow(text):
+    """Claves directas del bloque top-level `jobs:` de un workflow (#182).
+
+    Detección estructural por indentación, no por regex de línea: la
+    indentación de la PRIMERA clave hija fija el nivel de los jobs (2 u 4
+    espacios, según el workflow); las líneas más profundas (`with:`,
+    `steps:`, …) no son jobs cableados.
+    """
+    jobs = set()
+    in_jobs = False
+    child_indent = None
+    for line in text.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        if not line[0].isspace():
+            in_jobs = line.strip() == "jobs:"
+            child_indent = None
+            continue
+        if not in_jobs:
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        if child_indent is None:
+            child_indent = indent
+        if indent != child_indent:
+            continue
+        m = re.match(r"^(\S[^:]*):\s*(?:#.*)?$", line.strip())
+        if m:
+            jobs.add(m.group(1).strip())
+    return jobs
+
+
+def _find_registry_consumer(slices_dir, name):
+    """Localiza el consumer del registry cuyo name es el del bloque (#183).
+
+    Devuelve (consumer, None) o (None, motivo). Fail closed: registry
+    ausente o corrupto no se ignora nunca.
+    """
+    registry_path = Path(slices_dir).parent / "fleet" / "registry.json"
+    if not registry_path.is_file():
+        return None, f"no existe {registry_path}; no se puede determinar la composición."
+    try:
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        return None, f"{registry_path} no es JSON válido ({exc}); no se puede determinar la composición."
+    for entry in registry.get("repositories", []):
+        if entry.get("name") == name:
+            return entry, None
+    return None, f"el consumer '{name}' no está en {registry_path}."
+
+
+def _compose_canonical_body(slices_dir, consumer):
+    """Compone el cuerpo exactamente como el propagador (#183).
+
+    partial = slices/partials/<primary_type>.md (TrimEnd); fragment =
+    Resolve-SliceFragment: primero slices/<canonical_name>/ y luego
+    slices/<name>/ (TrimEnd). Las piezas vacías tras el recorte no
+    cuentan (truthiness de PowerShell); las presentes se unen con una
+    línea en blanco. Devuelve (cuerpo|None, descripción|None).
+    """
+    partial_path = Path(slices_dir) / "partials" / f"{consumer.get('primary_type')}.md"
+    partial = partial_path.read_text(encoding="utf-8").rstrip() if partial_path.is_file() else None
+    fragment_path = None
+    for candidate in (consumer.get("canonical_name"), consumer.get("name")):
+        if not candidate:
+            continue
+        p = Path(slices_dir) / candidate / "AGENTS.fragment.md"
+        if p.is_file():
+            fragment_path = p
+            break
+    fragment = fragment_path.read_text(encoding="utf-8").rstrip() if fragment_path else None
+    parts = [piece for piece in (partial, fragment) if piece]
+    if not parts:
+        return None, None
+    desc_parts = []
+    if partial is not None and partial != "":
+        desc_parts.append(f"partials/{consumer.get('primary_type')}.md")
+    if fragment is not None and fragment != "":
+        desc_parts.append(f"{fragment_path.parent.name}/AGENTS.fragment.md")
+    return "\n\n".join(parts), " + ".join(desc_parts)
+
+
+def _wired_jobs(wf_dir):
+    wired = set()
+    if wf_dir.is_dir():
+        for wf in sorted(wf_dir.glob("*.y*ml")):
+            wired |= _jobs_in_workflow(wf.read_text(encoding="utf-8", errors="replace"))
+    return wired
+
+
+def verify_repo(repo, slice_canonical=None):
+    """Devuelve (findings, clean, canonical_comparison). Solo lectura."""
+    findings = []
+    manifest = load_manifest(repo)
+    repo = Path(repo)
+
+    # Validación de forma del manifiesto (#182): entradas degeneradas o
+    # mal tipadas fallan cerrado con exit 2, sin traceback.
+    params = manifest.get("parameters")
+    if "parameters" in manifest and not isinstance(params, dict):
+        raise UsageError(
+            f"'parameters' debe ser un objeto; se recibió {type(params).__name__}; rechazado."
+        )
+    manifest_files = manifest.get("files")
+    if "files" in manifest and not isinstance(manifest_files, dict):
+        raise UsageError(
+            f"'files' debe ser un objeto de ruta→sha256; se recibió {type(manifest_files).__name__}; rechazado."
+        )
+    manifest_slices = manifest.get("slice_blocks")
+    if "slice_blocks" in manifest and not isinstance(manifest_slices, dict):
+        raise UsageError(
+            f"'slice_blocks' debe ser un objeto de nombre→sha256; se recibió {type(manifest_slices).__name__}; rechazado."
+        )
+    manifest_files = manifest_files or {}
+    manifest_slices = manifest_slices or {}
+    required_jobs = (params or {}).get("P23_required_jobs")
+    if not manifest_files and not manifest_slices and required_jobs == []:
+        raise UsageError(
+            "el manifiesto no contiene nada verificable (files y slice_blocks "
+            "vacíos y P23_required_jobs vacío); un manifiesto adoptado debe "
+            "fijar al menos un elemento que verificar."
+        )
+    if required_jobs is not None and (
+        not isinstance(required_jobs, list)
+        or not all(isinstance(job, str) and job.strip() for job in required_jobs)
+    ):
+        raise UsageError(
+            "P23_required_jobs debe ser una lista de cadenas no vacías; "
+            "se recibió "
+            + (
+                "una cadena"
+                if isinstance(required_jobs, str)
+                else repr(required_jobs)
+            )
+            + "; rechazado."
+        )
+    # #232: cada entrada debe ser un job id válido de GitHub Actions; un
+    # nombre con espacios o Unicode invisible pasaría como cadena no vacía
+    # y produciría un falso gate-not-wired.
+    if required_jobs:
+        bad_jobs = [job for job in required_jobs if not _JOB_ID_RE.fullmatch(job)]
+        if bad_jobs:
+            raise UsageError(
+                "P23_required_jobs debe contener solo job ids válidos de GitHub "
+                "(^[A-Za-z_][A-Za-z0-9_-]*$); entradas inválidas: "
+                + ", ".join(repr(job) for job in bad_jobs)
+                + "; rechazado."
+            )
+    # #232: todas las claves se validan ANTES de leer cualquier fichero, y
+    # el error lista TODAS las inválidas; no solo la primera encontrada.
+    unsafe_keys = []
+    for rel in manifest_files:
+        try:
+            _ensure_safe_manifest_path(rel)
+        except UsageError:
+            unsafe_keys.append(rel)
+    if unsafe_keys:
+        raise UsageError(
+            "estas claves del manifiesto no son una ruta relativa segura "
+            "(absoluta, con '..' o con letra de unidad Windows): "
+            + ", ".join(repr(key) for key in unsafe_keys)
+            + "; rechazadas antes de leer cualquier fichero."
+        )
+
+    # (a) ficheros del manifiesto: existencia + sha256
+    for rel, expected in sorted(manifest_files.items()):
+        target = repo / rel
+        if not target.is_file():
+            findings.append(("files", "missing", f"{rel} está en el manifiesto pero no existe en el repo."))
+            continue
+        actual = sha256_file(target)
+        if actual != expected:
+            findings.append(
+                (
+                    "files",
+                    "locally-modified",
+                    f"{rel} difiere del hash del manifiesto ({expected[:19]}…). "
+                    "El contenido del repo manda; re-selle el manifiesto "
+                    "(`.governance-manifest.json`) con el sha256 nuevo.",
+                )
+            )
+
+    # (b) gates cableados: cada job de P23_required_jobs aparece como clave
+    # directa del bloque `jobs:` en los workflows (detección estructural).
+    if required_jobs is None:
+        findings.append(
+            (
+                "gates",
+                "parameters-absent",
+                "P23_required_jobs no está en manifest.parameters; no se puede comprobar el cableado.",
+            )
+        )
+    else:
+        wired = _wired_jobs(repo / ".github" / "workflows")
+        for job in required_jobs:
+            if job not in wired:
+                findings.append(
+                    (
+                        "gates",
+                        "gate-not-wired",
+                        f"el job requerido '{job}' no aparece como job en ningún workflow de .github/workflows/.",
+                    )
+                )
+
+    # (c) bloques de slice: presencia + hash del manifiesto (+ canónica opcional)
+    agents = repo / "AGENTS.md"
+    agents_text = agents.read_text(encoding="utf-8") if agents.is_file() else None
+    canonical_comparison = "skipped" if slice_canonical is None else "performed"
+    for name, expected in sorted(manifest_slices.items()):
+        if agents_text is None:
+            findings.append(("slice_blocks", "missing", f"AGENTS.md no existe; no se encuentra el bloque '{name}'."))
+            continue
+        block = extract_slice_block(agents_text, name)
+        if block is None:
+            findings.append(
+                ("slice_blocks", "missing", f"bloque 'personal-skills:slice:{name}' ausente en AGENTS.md.")
+            )
+            continue
+        actual = "sha256:" + hashlib.sha256(block[1].replace("\r\n", "\n").encode("utf-8")).hexdigest()
+        if actual != expected:
+            findings.append(
+                (
+                    "slice_blocks",
+                    "locally-modified",
+                    f"el bloque '{name}' difiere del hash del manifiesto; re-propague o actualice el manifiesto.",
+                )
+            )
+        if slice_canonical is not None:
+            consumer, reason = _find_registry_consumer(slice_canonical, name)
+            if consumer is None:
+                findings.append(
+                    (
+                        "slice_blocks",
+                        "canonical-unavailable",
+                        f"bloque '{name}': {reason}",
+                    )
+                )
+            else:
+                composed, desc = _compose_canonical_body(slice_canonical, consumer)
+                marker_version = block[0]
+                if composed is None:
+                    findings.append(
+                        (
+                            "slice_blocks",
+                            "canonical-unavailable",
+                            f"no hay partial ni fragment en el catálogo para '{name}'; nada que contrastar.",
+                        )
+                    )
+                else:
+                    expected_marker = "v" + hashlib.sha256(composed.encode("utf-8")).hexdigest()[:7]
+                    if marker_version != expected_marker:
+                        findings.append(
+                            (
+                                "slice_blocks",
+                                "marker-mismatch",
+                                f"el marcador '{marker_version}' del bloque '{name}' no es la versión de la "
+                                f"composición canónica (esperada '{expected_marker}'); re-propague o actualice el manifiesto.",
+                            )
+                        )
+                    # Normalización única: LF antes de comparar (#187).
+                    if block[1].replace("\r\n", "\n") != composed.replace("\r\n", "\n") + "\n":
+                        findings.append(
+                            (
+                                "slice_blocks",
+                                "stale-vs-canonical",
+                                f"el bloque '{name}' difiere de la composición canónica ({desc}); "
+                                "el consumer quedó desfasado tras un avance del catálogo.",
+                            )
+                        )
+
+    # (d) adopción (#276): si el consumer declara contrato, verify exige
+    # `adoption check --all` en verde; sin contrato no cambia el veredicto.
+    if (repo / ADOPTION_CONTRACT_NAME).is_file():
+        adoption = load_adoption_contract(repo)
+        for n in range(ADOPTION_PHASES):
+            phase_findings = _phase_findings(repo, n, adoption["phases"].get(str(n)), adoption)
+            if phase_findings:
+                findings.extend(
+                    ("adoption", "phase-incomplete", finding) for finding in phase_findings
+                )
+                if n < ADOPTION_PHASES - 1:
+                    findings.append(
+                        (
+                            "adoption",
+                            "phase-incomplete",
+                            f"fases {n + 1}..{ADOPTION_PHASES - 1} no evaluadas: "
+                            "ninguna fase pasa si la anterior no pasa.",
+                        )
+                    )
+                break
+
+    return findings, (not findings), canonical_comparison
+
+
+# ---------------------------------------------------------------------------
+# Comandos
+# ---------------------------------------------------------------------------
+
+
+def cmd_params_validate(args):
+    if len(args) != 1:
+        raise UsageError("params validate requiere exactamente un argumento: <file>.")
+    schema, schema_path = load_schema()
+    errors, _ = validate_params_file(args[0], schema, schema_path)
+    if errors:
+        print(f"params validate: {len(errors)} error(es) en {args[0]}")
+        for err in errors:
+            print(f"  ✗ {err}")
+        print("  Corrija cada parámetro nombrado y re-ejecute antes de escribir nada.")
+        return EXIT_FINDINGS
+    print(f"params validate: OK — {args[0]} contra {schema_path.name}")
+    return EXIT_OK
+
+
+def cmd_verify(args):
+    repo = None
+    slice_canonical = None
+    as_json = False
+    i = 0
+    while i < len(args):
+        arg = args[i]
+        if arg == "--json":
+            as_json = True
+        elif arg == "--slice-canonical":
+            i += 1
+            if i >= len(args):
+                raise UsageError("--slice-canonical requiere un directorio.")
+            slice_canonical = args[i]
+        elif repo is None:
+            repo = arg
+        else:
+            raise UsageError(f"argumento inesperado en verify: {arg}")
+        i += 1
+    if repo is None:
+        raise UsageError("verify requiere <repo>.")
+
+    findings, clean, canonical_comparison = verify_repo(repo, slice_canonical)
+    if as_json:
+        manifest_path = Path(repo) / ".governance-manifest.json"
+        manifest_sha256 = (
+            "sha256:" + hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+            if manifest_path.is_file()
+            else None
+        )
+        try:
+            schema_version = load_manifest(repo).get("schema_version")
+        except MissingResourceError:
+            schema_version = None
+        print(
+            json.dumps(
+                {
+                    "repo": str(repo),
+                    "clean": clean,
+                    "findings": [{"class": c, "code": code, "detail": d} for c, code, d in findings],
+                    "canonical_comparison": canonical_comparison,
+                    "head_sha": _head_sha(repo),
+                    "cli_version": CLI_VERSION,
+                    "schema_version": schema_version,
+                    "manifest_sha256": manifest_sha256,
+                },
+                indent=2,
+            )
+        )
+    else:
+        print(f"verify {repo}: {'limpio' if clean else f'{len(findings)} hallazgo(s)'}")
+        by_class = {}
+        for cls, _code, detail in findings:
+            by_class.setdefault(cls, []).append(detail)
+        for cls in ("manifest", "files", "gates", "slice_blocks", "adoption"):
+            if cls in by_class:
+                print(f"[{cls}]")
+                for cls, code, detail in [(c, k, d) for c, k, d in findings if c == cls]:
+                    print(f"  ✗ [{code}] {detail}")
+        if canonical_comparison == "skipped":
+            print("nota: comparación canónica de slice_blocks no ejecutada (use --slice-canonical <dir>).")
+    for cls, code, detail in findings:
+        if code == "canonical-unavailable":
+            _print_friction_hint("verify", detail)
+    return EXIT_OK if clean else EXIT_FINDINGS
+
+
+def cmd_status(args):
+    as_json = "--json" in args
+    positional = [a for a in args if a != "--json"]
+    if len(positional) != 1:
+        raise UsageError("status requiere exactamente un argumento: <repo>.")
+    repo = Path(positional[0])
+    try:
+        manifest = load_manifest(repo)
+    except MissingResourceError as exc:
+        if as_json:
+            print(json.dumps({"repo": str(repo), "manifest": "absent", "error": str(exc)}))
+        else:
+            print(f"status {repo}: sin manifiesto — {exc}")
+        return EXIT_MISSING
+
+    findings, clean, canonical_comparison = verify_repo(repo)
+    files_total = len(manifest.get("files", {}))
+    files_bad = sum(1 for c, _code, _d in findings if c == "files")
+    gates_total = manifest.get("parameters", {}).get("P23_required_jobs") or []
+    gates_bad = sum(1 for c, _code, _d in findings if c == "gates")
+    slices_total = len(manifest.get("slice_blocks", {}))
+    slices_bad = sum(1 for c, _code, _d in findings if c == "slice_blocks")
+    if as_json:
+        print(
+            json.dumps(
+                {
+                    "repo": str(repo),
+                    "manifest": "present",
+                    "canonical_version": manifest.get("canonical_version"),
+                    "clean": clean,
+                    "files": {"total": files_total, "findings": files_bad},
+                    "gates": {"total": len(gates_total), "findings": gates_bad},
+                    "slice_blocks": {"total": slices_total, "findings": slices_bad},
+                    "canonical_comparison": canonical_comparison,
+                },
+                indent=2,
+            )
+        )
+    else:
+        print(
+            f"status {repo}: manifiesto presente (canónica {manifest.get('canonical_version')}), "
+            f"files {files_total - files_bad}/{files_total} OK, "
+            f"gates {len(gates_total) - gates_bad}/{len(gates_total)} cableados, "
+            f"slice_blocks {slices_total - slices_bad}/{slices_total} OK"
+        )
+    return EXIT_FINDINGS if findings else EXIT_OK
+
+
+def cmd_manifest_show(args):
+    positional = [a for a in args if a != "--json"]
+    if len(positional) != 1:
+        raise UsageError("manifest show requiere exactamente un argumento: <repo>.")
+    manifest = load_manifest(positional[0])
+    print(json.dumps(manifest, indent=2, sort_keys=True))
+    return EXIT_OK
+
+
+# ---------------------------------------------------------------------------
+# report-friction (#198): fricciones de la skill detectadas en un consumer
+# ---------------------------------------------------------------------------
+
+FRICTION_RECURRENT_LABEL = "friction:recurrent"  # no protegida; HR-11
+
+FRICTION_KINDS = ("skill-bug", "rule-unfulfillable", "doc-drift", "consumer-local")
+_TOKEN_RE = re.compile(
+    r"(ghp_[A-Za-z0-9]{16,}|gho_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{16,}"
+    r"|AKIA[A-Z0-9]{12,}|sk-[A-Za-z0-9_\-]{16,})")
+
+
+_FILE_EXTENSIONS = frozenset({
+    "py", "json", "yaml", "yml", "md", "sh", "txt", "toml", "cfg", "ini",
+    "js", "ts", "html", "css", "xml", "csv", "log", "lock", "example"})
+_FQDN_RE = re.compile(r"\b[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+){2,}\b")
+
+
+def _redact_fqdns(text):
+    """Bare FQDNs -> <host>; filenames (known extension) survive (#198)."""
+    def sub(m):
+        host = m.group(0)
+        last = host.rsplit(".", 1)[-1]
+        return host if (not last.isalpha() or len(last) < 2
+                        or last.lower() in _FILE_EXTENSIONS) else "<host>"
+    return _FQDN_RE.sub(sub, text)
+
+
+def _sanitize_friction_text(text, redactions):
+    """Saneado determinista de la fricción (#198): tokens, emails+hosts,
+    URLs, rutas absolutas (POSIX y Windows), términos --redact y bloques de
+    código del consumer. Ningún dato sembrado sobrevive al cuerpo."""
+    out = _TOKEN_RE.sub("<token>", text)
+    out = re.sub(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", "<redacted>", out)
+    out = re.sub(r"(https?://)[A-Za-z0-9._:-]+", r"\1<host>", out)
+    out = re.sub(r"(?:/home/|/Users/|/root/|C:\\Users\\)[A-Za-z0-9._\-]+", "<path>", out)
+    out = re.sub(r"(?<![\w.])/[A-Za-z0-9._\-/]{2,}", "<path>", out)
+    out = re.sub(r"[A-Za-z]:\\[A-Za-z0-9._\\\-]+", "<path>", out)
+    out = _redact_fqdns(out)
+    out = re.sub(r"```.*?```", "<consumer-code omitted>", out, flags=re.S)
+    for term in redactions:
+        out = re.sub(re.escape(term), "<redacted>", out, flags=re.IGNORECASE)
+    return out
+
+
+def _friction_fingerprint(kind, gate, observed):
+    """Huella estable: kind + gate + firma normalizada del error (rutas y
+    dígitos fuera; dos entornos distintos con el mismo defecto coinciden)."""
+    sig = observed
+    sig = re.sub(r"(?:/home/|/Users/|/root/|C:\\Users\\)[A-Za-z0-9._\-]+", "<path>", sig)
+    sig = re.sub(r"(?<![\w.])/[A-Za-z0-9._\-/]{2,}", "<path>", sig)
+    sig = re.sub(r"[A-Za-z]:\\[A-Za-z0-9._\\\-]+", "<path>", sig)
+    sig = re.sub(r"\d+", "N", sig)
+    sig = re.sub(r"\s+", " ", sig).strip().lower()
+    return hashlib.sha256(f"{kind}|{gate}|{sig}".encode("utf-8")).hexdigest()[:16]
+
+
+def _parse_friction_args(args):
+    flags = {}
+    i = 0
+    while i < len(args):
+        flag = args[i]
+        if not flag.startswith("--"):
+            raise UsageError(f"report-friction: argumento inesperado: {flag!r}.")
+        if flag == "--publish":
+            flags["publish"] = True
+            i += 1
+            continue
+        if i + 1 >= len(args):
+            raise UsageError(
+                f"report-friction: {flag} requiere un valor y llegó sin él; rechazado.")
+        if flag == "--redact":
+            flags.setdefault("redact", []).append(args[i + 1])
+            i += 2
+            continue
+        flags[flag[2:]] = args[i + 1]
+        i += 2
+    return flags
+
+
+def _print_friction_hint(gate, observed, kind="skill-bug"):
+    """#198: los gates que detectan un fallo propio (traceback, entrada no
+    soportada, canonical-unavailable) imprimen la invocación de
+    report-friction ya rellenada; la IA del consumer solo la confirma."""
+    sanitized = _sanitize_friction_text(f"{gate}: {observed}", [])
+    print("#198 — ¿es un defecto de la skill? Confirme la invocación ya rellenada:")
+    print(f"  ci-pattern report-friction --kind {kind} --gate {gate} "
+          f"--skill-version <versión> --skill-sha <sha> "
+          f"--command '{gate}' --observed '{sanitized}' "
+          f"--expected '<corríjalo aquí>' --repro '<pasos mínimos>'")
+
+
+def cmd_report_friction(args):
+    """#198: prepara un reporte de fricción saneado y clasificado.
+    Por defecto escribe el cuerpo con --dry-run y no toca la red; la
+    publicación real (`--publish` + gh autenticado) llega en el slice 2
+    junto con la deduplicación por huella."""
+    f = _parse_friction_args(args)
+    kind = f.get("kind")
+    if kind not in FRICTION_KINDS:
+        raise UsageError(
+            f"--kind debe ser uno de {list(FRICTION_KINDS)} (clasificación "
+            "explícita, nunca deducida del texto); rechazado." if kind is None else
+            f"--kind desconocido: {kind!r}; debe ser uno de {list(FRICTION_KINDS)}; rechazado.")
+    required = ("gate", "skill-version", "skill-sha", "command",
+                "observed", "expected", "repro")
+    if not f.get("publish"):
+        required += ("dry-run",)
+    missing = [k for k in required if not f.get(k)]
+    if missing:
+        raise UsageError("report-friction: campos obligatorios ausentes: "
+                         + ", ".join("--" + m for m in missing) + ".")
+    destination = "consumer" if kind == "consumer-local" else "team-skills"
+    sanitizer = lambda t: _sanitize_friction_text(t, f.get("redact", []))
+    observed, expected = sanitizer(f["observed"]), sanitizer(f["expected"])
+    repro, command = sanitizer(f["repro"]), sanitizer(f["command"])
+    gate = sanitizer(f["gate"])
+    hr = sanitizer(f.get("hr", ""))
+    sver, ssha = sanitizer(f["skill-version"]), sanitizer(f["skill-sha"])
+    fingerprint = _friction_fingerprint(kind, f["gate"], observed)
+    body = (
+        f"<!-- ci-pattern-friction: {fingerprint} -->\n"
+        "### Change type\n\nTooling\n\n"
+        "### Problem\n\n"
+        f"Fricción detectada por el harness de ci-pattern en un consumer, "
+        f"clasificada explícitamente como `{kind}` → destino `{destination}`.\n"
+        f"- Gate/asset: `{gate}`" + (f" (HR: {hr})" if hr else "") + "\n"
+        f"- Versión/SHA de la skill: {sver} @ {ssha}\n"
+        f"- Comando: `{command}`\n\n" + (
+        "La salida observada contradice el contrato de la skill: el defecto "
+        "es atribuible a la skill, no al consumer." if destination == "team-skills" else
+        "La skill se comporta según contrato: la fricción es local del "
+        "consumer y no corresponde reportarla a team-skills.") + "\n\n"
+        "### Desired outcome\n\n"
+        f"Salida esperada: {expected}\n\n"
+        "### Scope and constraints\n\n" + (
+        "Corregir en la skill (este repositorio); el consumer no puede "
+        "arreglarlo localmente. " if destination == "team-skills" else
+        "Se registra en el tracker del consumer. ") +
+        "Reporte generado y saneado por "
+        "`report-friction` (#198) en modo dry-run.\n\n"
+        "### Evidence and references\n\n"
+        f"Salida observada:\n\n{observed}\n\n"
+        f"Reproducción mínima:\n\n{repro}\n\n"
+        "### Duplicate search\n\n"
+        f"Huella de deduplicación: `ci-pattern-friction: {fingerprint}` "
+        "(la búsqueda y el comentario de ocurrencia llegan en el slice 2).\n"
+    )
+    marker = f"ci-pattern-friction: {fingerprint}"
+    if not f.get("publish"):
+        out_path = Path(f["dry-run"])
+        out_path.write_text(body, encoding="utf-8")
+        print(f"report-friction: destination={destination} fingerprint={marker}")
+        print(f"dry-run: reporte saneado escrito en {out_path} (sin red; nada publicado)")
+        return EXIT_OK
+
+    # Publicación real (#198 slice 2): requiere gh ya autenticado; dedup por
+    # huella ANTES de crear; una sola llamada por operación, sin reintentos;
+    # el resultado se verifica leyendo de vuelta (confirmed|no_write|unknown).
+    target = f.get("repo", "DysTelefonica/team-skills")
+    if kind == "consumer-local" and (not f.get("repo") or target == "DysTelefonica/team-skills"):
+        raise UsageError(
+            "consumer-local NUNCA se publica en team-skills: pase --repo <repo-del-consumer>. Rechazado.")
+
+    def gh(*argv):
+        return _run_cmd(["gh", *argv], timeout=120)
+
+    occ_files = []
+    try:
+        search = gh("issue", "list", "-R", target, "--state", "all",
+                    "--limit", "200", "--search", marker, "--json", "number,state")
+        if search.returncode != 0:
+            raise UsageError(
+                "gh falló al buscar duplicados; no se publica sin deduplicación "
+                f"(HR-3): {search.stderr.strip()}")
+        match = None
+        for cand in json.loads(search.stdout or "[]"):
+            # gh issue view --json no expone state_reason: la lectura del
+            # candidato se hace por la API REST (body/state/state_reason).
+            view = gh("api", f"repos/{target}/issues/{cand['number']}")
+            if view.returncode != 0:
+                raise UsageError(
+                    f"gh falló leyendo el candidato #{cand['number']}; no se publica "
+                    f"sin deduplicación completa (HR-3): {view.stderr.strip()}")
+            data = json.loads(view.stdout or "{}")
+            if marker in (data.get("body") or ""):
+                match = (cand["number"], data.get("state", "OPEN"),
+                         data.get("state_reason"))
+                break
+        if match:
+            number, state, state_reason = match
+            if str(state).lower() == "closed" and str(state_reason or "").lower() == "completed":
+                print(f"report-friction: result=no_write — el equivalente #{number} "
+                      "está cerrado como completed; recomendación: actualizar la "
+                      "skill en el consumer (verifica si el fix ya cubre tu "
+                      "versión) en vez de reportar de nuevo.")
+                return EXIT_OK
+            comments = gh("api", f"repos/{target}/issues/{number}/comments", "--paginate")
+            if comments.returncode != 0:
+                raise UsageError(f"gh falló leyendo comentarios de #{number} (HR-3): {comments.stderr.strip()}")
+            count = 1 + sum(1 for c in json.loads(comments.stdout or "[]")
+                            if marker in (c.get("body") or ""))
+            occ_body = (f"Ocurrencia {count} detectada por `report-friction` "
+                        f"({sver} @ {ssha}).\n\n- Comando: `{command}`\n"
+                        f"Salida observada:\n\n{observed}\n\n<!-- {marker} -->\n")
+            with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False,
+                                             encoding="utf-8") as fh:
+                occ_file = Path(fh.name)
+                fh.write(occ_body)
+            occ_files.append(occ_file)
+            com = gh("issue", "comment", str(number), "-R", target, "--body-file", str(occ_file))
+            readback = gh("api", f"repos/{target}/issues/{number}/comments", "--paginate")
+            confirmed = (com.returncode == 0 and readback.returncode == 0
+                         and any(occ_body.strip() in (c.get("body") or "")
+                                 for c in json.loads(readback.stdout or "[]")))
+            if not confirmed:
+                print("report-friction: result=unknown (la lectura de vuelta no "
+                      "confirmó la escritura; nada dado por confirmado)")
+                return 1
+            print(f"report-friction: result=confirmed — Ocurrencia {count} "
+                  f"registrada como comentario en #{number}")
+            if count >= 2:
+                lab = gh("issue", "edit", str(number), "-R", target,
+                         "--add-label", FRICTION_RECURRENT_LABEL)
+                if lab.returncode != 0:
+                    print(f"report-friction: etiqueta {FRICTION_RECURRENT_LABEL} fallida "
+                          f"({lab.stderr.strip()}); el comentario quedó confirmado.")
+                else:
+                    print(f"report-friction: etiqueta {FRICTION_RECURRENT_LABEL} aplicada "
+                          "(candidata a automatización, HR-11).")
+            return EXIT_OK
+
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False,
+                                         encoding="utf-8") as fh:
+            body_file = Path(fh.name)
+            fh.write(body)
+        occ_files.append(body_file)
+        title = f"friction({kind}): {gate} — {fingerprint}"
+        create = gh("issue", "create", "-R", target, "--title", title,
+                    "--body-file", str(body_file))
+        if create.returncode != 0 or not create.stdout.strip():
+            print("report-friction: result=unknown (gh no confirmó la creación)")
+            return 1
+        url = create.stdout.strip().splitlines()[-1]
+        number = url.rstrip("/").rsplit("/", 1)[-1]
+        readback = gh("issue", "view", number, "-R", target, "--json", "number,state,body")
+        ok = (readback.returncode == 0 and number.isdigit()
+              and marker in (json.loads(readback.stdout or "{}").get("body") or ""))
+        if not ok:
+            print("report-friction: result=unknown (la lectura de vuelta no "
+                  "confirmó la issue; nada dado por confirmado)")
+            return 1
+        print(f"report-friction: result=confirmed — issue #{number} creada: {url}")
+        return EXIT_OK
+    finally:
+        for occ_file in occ_files:
+            try:
+                occ_file.unlink()
+            except OSError:
+                pass
+
+
+# ------------------------------------------------------------- adopción (#276)
+
+ADOPTION_HELP = """\
+adoption — generación y gate por fase de la adopción (#276, #279)
+
+uso: ci-pattern adoption check (--phase N | --all) <repo>
+     ci-pattern adoption generate-doc <repo> --out <ruta>
+
+check: valida el contrato .github/ci-pattern-adoption.json del consumer y
+verifica cada fase del porting-guide contra el árbol real. Exit: 0 la fase
+cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2
+contrato ilegible, esquema inválido, sujeto vacío o entrada ausente de un
+gate.
+
+generate-doc: escribe el documento operativo del consumer (--out), generado
+desde sus datos (ci-pattern.yaml, host-contract, required-jobs, formularios
+de issue). Determinista byte a byte; nunca a stdout. Entrada ilegible →
+exit 2.
+"""
+
+
+def load_adoption_contract(repo):
+    """Carga y valida la forma del contrato de adopción del consumer.
+    Cualquier defecto de forma es exit 2 (UsageError)."""
+    path = Path(repo) / ADOPTION_CONTRACT_NAME
+    if not path.is_file():
+        raise UsageError(
+            f"contrato de adopción ausente: {path}; el consumer declara su "
+            "adopción en ese fichero (esquema: assets/adoption/)"
+        )
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(f"contrato de adopción ilegible ({path}): JSON inválido: {exc}")
+    if not isinstance(doc, dict):
+        raise UsageError(
+            f"contrato de adopción ilegible ({path}): debe ser un objeto JSON"
+        )
+    if doc.get("schema_version") != ADOPTION_SCHEMA_VERSION:
+        raise UsageError(
+            f"schema_version del contrato debe ser {ADOPTION_SCHEMA_VERSION}; "
+            f"se recibió {doc.get('schema_version')!r}"
+        )
+    phases = doc.get("phases")
+    if not isinstance(phases, dict):
+        raise UsageError(
+            f"'phases' del contrato debe ser un objeto fase→declaración; "
+            f"se recibió {type(phases).__name__}"
+        )
+    valid_keys = {str(i) for i in range(ADOPTION_PHASES)}
+    unknown = sorted(set(phases) - valid_keys)
+    if unknown:
+        raise UsageError(
+            "fases desconocidas en el contrato: "
+            + ", ".join(unknown)
+            + f"; fases válidas 0..{ADOPTION_PHASES - 1}"
+        )
+    return doc
+
+
+def _is_canonical_pattern_target(target, repo=None, declared=()):
+    """#306/#311: catálogo canónico del patrón — ubicaciones donde el patrón
+    instala (globs del catálogo), el espacio ruleset:<nombre>, los scripts
+    que el gobierno REFERENCIA (#311) y los que el contrato del consumer
+    declara explícitamente. La fase 0 solo exige pertenencia al catálogo; la
+    EXISTENCIA y la identidad (manifiesto) las verifica la fase 3, que es la
+    que instala."""
+    patterns, namespaces, refs = load_pattern_catalog()
+    if any(target.startswith(ns) for ns in namespaces):
+        return True
+    if any(fnmatch.fnmatch(target, pattern) for pattern in patterns):
+        return True
+    if target in declared:
+        return True
+    return (repo is not None
+            and target in _referenced_governance_scripts(repo, refs))
+
+
+def _check_phase_zero(repo, decl):
+    findings = []
+    declared_paths = _declared_governed_paths(decl)
+    inventory = decl.get("inventory")
+    if not isinstance(inventory, list) or not inventory:
+        return [
+            "fase 0: 'inventory' debe ser una lista no vacía: cada artefacto de "
+            "gobierno del destino con su destino (adopted/retired), sin tercera opción"
+        ]
+    for entry in inventory:
+        if not isinstance(entry, dict):
+            findings.append("fase 0: entrada de inventario no-objeto: " + repr(entry)[:80])
+            continue
+        artifact = entry.get("artifact")
+        disposition = entry.get("disposition")
+        if not isinstance(artifact, str) or not artifact.strip():
+            findings.append("fase 0: entrada de inventario sin 'artifact' no vacío")
+            continue
+        if disposition not in ("adopted", "retired"):
+            findings.append(
+                f"fase 0: '{artifact}' tiene disposición inválida {disposition!r}; "
+                "solo 'adopted' o 'retired' (lo que no viene del patrón se elimina)"
+            )
+        elif disposition == "retired":
+            # #306: el gobierno ajeno se ELIMINA en la fase 3; la fase 0 solo
+            # registra la eliminación confirmada (removal_confirmed). La
+            # presencia residual de un retired la ejecuta la fase 3, que es
+            # donde el árbol ya debe estar sustituido.
+            pass
+        elif disposition == "adopted":
+            target = entry.get("target")
+            if not isinstance(target, str) or not target.strip():
+                findings.append(f"fase 0: '{artifact}' adoptado sin 'target' no vacío")
+            elif not _is_canonical_pattern_target(target, repo, declared_paths):
+                findings.append(
+                    f"fase 0: '{artifact}' adoptado hacia '{target}', que no es un "
+                    "artefacto canónico del patrón: el catálogo de instalación ("
+                    + PATTERN_CATALOG_RELPATH + ") es "
+                    + ", ".join(load_pattern_catalog()[0]) + " y "
+                    + ", ".join(load_pattern_catalog()[1]) + "; la gobernanza de "
+                    "scripts es por REFERENCIA (#311/#312: los `run:` de los workflows "
+                    "de CI, los hooks y el entrypoint de paridad HR-4) o por "
+                    "declaración explícita en 'declared_governed_paths' "
+                    "(#306; los targets canónicos se INSTALAN y se verifican en la "
+                    "fase 3, no en la fase 0)"
+                )
+    # #312: la fase 0 EJECUTA la cobertura del inventario (HR-3: sin medir
+    # no hay pase) — rutas gobernadas del árbol según el catálogo, etiquetas
+    # del host vía instantánea declarada (sin red) y cada una exige entrada.
+    labels_rel = decl.get("host_labels")
+    if not isinstance(labels_rel, str) or not labels_rel.strip():
+        findings.append(
+            "fase 0: falta 'host_labels' (ruta relativa de la instantánea de "
+            "etiquetas del host, JSON versionado generado por el operador con "
+            "GET de solo lectura): la fase 0 comprueba la cobertura del "
+            "inventario sobre las etiquetas del host (#312)"
+        )
+    else:
+        labels_rel = labels_rel.strip()
+        try:
+            labels = json.loads((repo / labels_rel).read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise UsageError(
+                f"fase 0: la instantánea de etiquetas declarada no es legible "
+                f"({labels_rel}): {exc}")
+        if not isinstance(labels, list) or not all(isinstance(x, str) for x in labels):
+            raise UsageError(
+                "fase 0: la instantánea de etiquetas debe ser una lista de "
+                "cadenas (nombres de etiqueta)")
+        for name in labels:
+            if not any(isinstance(e, dict) and name in (e.get("artifact") or "")
+                       for e in inventory):
+                findings.append(
+                    f"fase 0: la etiqueta del host '{name}' no está inventariada "
+                    "(falta una entrada cuyo artifact la nombre)")
+    declared_inputs = {ADOPTION_CONTRACT_NAME}
+    if isinstance(labels_rel, str) and labels_rel.strip():
+        declared_inputs.add(labels_rel.strip())
+    for rel in _scan_governed_paths(repo, declared_paths):
+        if rel in declared_inputs:
+            continue
+        if _inventory_entry_covering(inventory, rel) is None:
+            findings.append(
+                f"fase 0: artefacto de gobierno sin entrada de inventario: {rel}")
+    if decl.get("removal_confirmed") is not True:
+        findings.append(
+            "fase 0: 'removal_confirmed' debe ser true: la lista de eliminación "
+            "de gobernanza la confirma el operador (porting-guide, fase 0)"
+        )
+    return findings
+
+
+def _check_evidence_phase(repo, n, decl):
+    evidence = decl.get("evidence")
+    if not isinstance(evidence, dict) or not isinstance(evidence.get("path"), str) \
+            or not evidence["path"].strip():
+        return [f"fase {n}: falta 'evidence.path': la evidencia de la fase se declara como ruta"]
+    rel = evidence["path"]
+    path = repo / rel
+    if not path.is_file():
+        return [f"fase {n}: la evidencia declarada no existe: {rel}"]
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError as exc:
+        return [f"fase {n}: la evidencia declarada no es legible: {rel}: {exc}"]
+    if not text.strip():
+        return [f"fase {n}: la evidencia declarada está vacía: {rel}"]
+    return []
+
+
+
+def _sha_in_history(repo, sha):
+    """True si el sha existe como objeto en el historial del repo (git
+    cat-file -e, sin red). Un repo no-git falla cerrado: False."""
+    proc = _run_cmd(
+        ["git", "-C", str(repo), "cat-file", "-e", sha + "^{commit}"],
+        timeout=60)
+    return proc.returncode == 0
+
+
+def _check_acceptance_phase(repo, decl):
+    prs = decl.get("prs")
+    if not isinstance(prs, list) or not prs:
+        return [
+            "fase 6: 'prs' debe ser una lista no vacía de la primera cadena de "
+            "PRs de aceptación (número, SHA y veredicto de CI)"
+        ]
+    findings = []
+    for entry in prs:
+        if not isinstance(entry, dict):
+            findings.append("fase 6: entrada de 'prs' no-objeto: " + repr(entry)[:80])
+            continue
+        number = entry.get("number")
+        sha = entry.get("sha")
+        conclusion = entry.get("conclusion")
+        if not isinstance(number, int) or isinstance(number, bool) or number < 1:
+            findings.append(f"fase 6: entrada de 'prs' con 'number' inválido: {number!r}")
+        if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}", sha or ""):
+            findings.append(
+                f"fase 6: PR {number!r} con 'sha' inválido ({sha!r}): debe ser el "
+                "SHA completo de 40 hex de la revisión evaluada"
+            )
+        if conclusion != "success":
+            findings.append(
+                f"fase 6: PR {number!r} con veredicto {conclusion!r}: la cadena de "
+                "aceptación exige CI en verde (conclusion: success)"
+            )
+        elif isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha) \
+                and not _sha_in_history(repo, sha):
+            findings.append(
+                f"fase 6: el SHA {sha} del PR {number!r} no existe en el historial "
+                "del repo (git cat-file -e): una aceptación sobre una revisión "
+                "que no está en el árbol es fabricada"
+            )
+    return findings
+
+
+# ---------------------------------------------------------------------------
+# Documentación operativa generada en destino (#279)
+#
+# El doc se GENERA desde los datos del consumer (ci-pattern.yaml, host
+# contract, política de required-jobs, formularios de issue), nunca escrito
+# a mano: así no puede contradecir la configuración real. Determinista byte
+# a byte; la deriva la detecta el gate de la fase de documentación operativa.
+# ---------------------------------------------------------------------------
+
+OPERATING_DOC_SECTIONS = (
+    ("issues", "Issues"),
+    ("branch", "Ramas"),
+    ("commits", "Commits"),
+    ("pull-request", "Pull requests"),
+    ("required-checks", "Checks requeridos"),
+    ("merge", "Merge"),
+    ("release-hotfix", "Release y hotfix"),
+    ("incidents", "Registrar un incidente"),
+    ("friction", "Fricciones"),
+    ("lifecycle", "Ciclo de vida de un cambio"),
+    ("docs-location", "Dónde vive la documentación"),
+    ("agents-block", "Bloque canónico para AGENTS.md"),
+)
+
+OPERATING_DOC_PARAMS = (
+    "P01_branch_name_pattern", "P06_review_budget_lines", "P09_labels_type",
+    "P10_label_approval", "P11_label_chain_partial", "P12_issue_form_dir",
+    "P14_status_context_e2e", "P15_status_context_smoke",
+    "P16_release_runbook_path", "P28_required_status_contexts",
+    "P49_incident_log_dir", "P50_secrets_manager",
+)
+
+# Recetas canónicas de recuperación por check (#305): qué verifica y qué
+# hacer cuando falla. Los jobs desconocidos reciben la receta genérica:
+# ninguna regla del CI puede faltar en la tabla.
+CHECK_RECOVERY = {
+    "unit": ("suites unitarias del repo",
+             "lea el primer fallo del preflight, corrija la causa responsable "
+             "y vuelva a empujar"),
+    "lint": ("estilo y calidad estática",
+             "ejecute el preflight, aplique el formateo/linter indicado y "
+             "vuelva a empujar"),
+    "pr-size": ("presupuesto de revisión (líneas añadidas + borradas)",
+                "reduzca el diff o divida el cambio en cadena "
+                "(`chain:partial` + `Refs #N`; `Closes #N` solo en la punta)"),
+    "issue-spec": ("enlace y estado de la issue (aprobada, forma canónica)",
+                   "corrija el cuerpo del PR: enlace a la issue aprobada con "
+                   "la forma canónica; nunca invente el cierre"),
+    "security": ("escaneo de seguridad de superficie",
+                 "atienda el hallazgo o justifíquelo en el PR; nunca silencie "
+                 "el scanner sin causa responsable"),
+    "security-deep": ("escaneo de seguridad profundo",
+                      "atienda el hallazgo o justifíquelo en el PR; nunca "
+                      "silencie el scanner sin causa responsable"),
+    "mutation": ("poder de detección de los tests (mutación)",
+                 "añada o endurezca tests sobre la línea que la mutación "
+                 "descubrió"),
+    "e2e": ("verificación funcional de extremo a extremo",
+            "reproduzca el escenario en local, corrija la regresión y vuelva "
+            "a empujar"),
+}
+CHECK_RECOVERY_GENERIC = ("verificación del agregador del patrón",
+                          "ejecute el preflight (HR-4), lea el fallo y corrija "
+                          "la causa responsable; si la regla no está en este "
+                          "documento, deténgase y pregunte")
+
+OPERATING_DOC_HEADER = """# Flujo operativo del repositorio
+
+Documento GENERADO por `ci-pattern adoption generate-doc` a partir de los datos del
+repositorio (ci-pattern.yaml, .github/host-contract.json, .github/required-jobs-policy.json,
+formularios de issue). NO lo edite a mano: regenérelo con el mismo comando. La deriva la
+detecta el gate de documentación operativa de `ci-pattern adoption check`."""
+
+
+def _operating_doc_params(repo):
+    """Parámetros del consumer con defaults del esquema; ilegible → exit 2."""
+    params_path = repo / "ci-pattern.yaml"
+    if not params_path.is_file():
+        raise UsageError(
+            f"documentación operativa: falta la entrada ci-pattern.yaml en la raíz "
+            f"del repo ({params_path}); el doc se genera desde datos, no a mano")
+    schema_path = skill_dir() / "assets" / "parameters.schema.json"
+    try:
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise UsageError(f"documentación operativa: esquema de parámetros ilegible: {exc}") from exc
+    try:
+        text = params_path.read_text(encoding="utf-8")
+        params = parse_params_yaml(text)
+    except ParamsFileError as exc:
+        raise UsageError(f"documentación operativa: ci-pattern.yaml ilegible: {exc}") from exc
+    by_key = {f"{p['id']}_{p['name']}": p for p in schema["parameters"]}
+    for key in params:
+        if key not in by_key:
+            raise UsageError(f"documentación operativa: ci-pattern.yaml ilegible: "
+                             f"clave desconocida '{key}'")
+    for key in OPERATING_DOC_PARAMS:
+        param = by_key[key]
+        if key not in params:
+            if param.get("default") is None:
+                raise UsageError(f"documentación operativa: falta {key} en ci-pattern.yaml "
+                                 "y no tiene default")
+            params[key] = param["default"]
+            continue
+        err = validate_value(param, params[key])
+        if err:
+            raise UsageError(f"documentación operativa: ci-pattern.yaml ilegible: {err}")
+    return params
+
+
+def _operating_doc_inputs(repo):
+    """Lee y valida el resto de entradas; ilegible → exit 2."""
+    try:
+        host = json.loads((repo / ".github" / "host-contract.json").read_text(encoding="utf-8"))
+        policy = json.loads((repo / ".github" / "required-jobs-policy.json")
+                            .read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise UsageError(f"documentación operativa: entrada ausente o ilegible: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise UsageError(f"documentación operativa: entrada JSON ilegible: {exc}") from exc
+    if not isinstance(host, dict):
+        raise UsageError("documentación operativa: host-contract.json debe ser un objeto")
+    jobs = policy.get("required_jobs") if isinstance(policy, dict) else None
+    if not isinstance(jobs, list):
+        raise UsageError("documentación operativa: required-jobs-policy.json sin "
+                         "'required_jobs' (lista)")
+    entrypoint = _local_entrypoint(repo, policy)
+    return host, [j for j in jobs if isinstance(j, str)], entrypoint.strip()
+
+
+OPERATING_DOC_AGENTS_BLOCK = """<!-- ci-pattern-agents:begin -->
+## Flujo operativo y mandato de no invención
+
+Bloque gobernado: no lo edite a mano; se regenera desde el patrón.
+Antes de actuar, lea la parte del flujo operativo de la situación. Si un paso,
+comando, etiqueta o dato que necesita no está en este documento, NO lo invente:
+deténgase y pregunte en la issue o al mantenedor.
+
+| Situación | Qué leer antes de actuar |
+| --- | --- |
+| Crear una issue | Sección 1 (formulario, duplicados, aprobación) |
+| Crear una rama | Sección 2 (regex y forma del nombre) |
+| Sincronizar la rama de feature con la base | Sección 10, etapa 5 (integración por merge, nunca rebase) |
+| Escribir commits | Sección 3 (convención y unidades de trabajo) |
+| Abrir un pull request | Sección 4 (cuerpo, etiqueta, presupuesto) |
+| Encadenar PRs | Sección 4 (cadena: `chain:partial`, `Refs #N`, punta) |
+| Consultar checks | Sección 5 (tabla de checks y recetas de recuperación) |
+| Pedir un merge | Sección 6 y la etapa 9 del ciclo de vida |
+| Registrar un incidente de producción | Sección 8 (los cuatro niveles: post-mortem, registro operativo, secretos, datos personales) |
+| Reportar una fricción | Sección 9 |
+| Cualquier paso del ciclo | Sección 10 (ciclo de vida completo) |
+
+**Mandato de no invención:** si un paso, comando, etiqueta o dato que necesita
+no está documentado en el flujo operativo, no lo invente: deténgase y
+pregunte en la issue o al mantenedor.
+
+## Dónde vive la documentación
+
+Toda la documentación de este proyecto vive en ESTE repositorio, bajo `docs/`
+por materia; los post-mortems en `docs/postmortems/<AAAA-MM-DD>-<slug>.md`.
+Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
+backups, los datos en bruto y el material privado. Nunca ubique documentación
+en una ruta absoluta o externa al repositorio (HR-48): el gate de la fase 5 la
+rechaza. Detalle: la sección «Dónde vive la documentación» del flujo operativo.
+<!-- ci-pattern-agents:end -->"""
+
+
+def _operating_doc_incident_lines(params):
+    """#322 (HR-21 ampliada): los cuatro niveles de un incidente y la regla
+    de identificadores. La ruta del registro operativo y el gestor de
+    secretos salen de los parámetros del consumer."""
+    log_dir = str(params["P49_incident_log_dir"]).rstrip("/")
+    secrets = str(params["P50_secrets_manager"]).strip()
+    return "\n".join([
+        "Un incidente de producción deja cuatro niveles, enlazados por identificadores "
+        "(ID de incidente, número de ticket, SHA, ejecución de CI, issues y PRs); el "
+        "CONTENIDO de los datos personales nunca entra en el repo.",
+        f"- **1. Post-mortem** (parámetro 9): `docs/postmortems/<AAAA-MM-DD>-<slug>.md`, "
+        "blameless, con causas de sistema y cada action item como issue con owner. Aquí "
+        "sí van identificadores y nombres de sistemas: qué pasó, por qué y qué lo evita.",
+        f"- **2. Registro operativo**: `{log_dir}/<AAAA-MM-DD>-<slug>.md` —todo el detalle "
+        "necesario para seguir atendiendo los tickets abiertos (IPs, hostnames, comandos, "
+        "logs, cronología fina y el estado con el siguiente paso de cada ticket)—. Con el "
+        "parámetro por defecto vive en este mismo repositorio; el post-mortem lo enlaza "
+        "por ruta o por identificador.",
+        f"- **3. Secretos**: credenciales y tokens viven en {secrets}, NUNCA en git, ni "
+        "siquiera en un repositorio privado. El post-mortem y el registro los citan por "
+        "su identificador en el gestor.",
+        "- **4. Datos personales y conversaciones con terceros**: se quedan en el sistema "
+        "de tickets y se referencian por su número; nunca se copian al repositorio.",
+        "- La evidencia se cita con su `sha256` y su ubicación de acceso controlado. Lo "
+        "que se redacta se marca de forma explícita (`[IP interna redactada]`): nunca se "
+        "borra en silencio.",
+        "- El gate de esta fase rechaza secretos y datos personales en el post-mortem y "
+        "en el registro operativo, y la evidencia declarada sin hash ni ubicación. Las "
+        "IPs, los hostnames y los comandos internos están permitidos.",
+    ])
+
+
+def _operating_doc_docs_location_lines(params):
+    """#319 (HR-48): dónde vive la documentación del proyecto. Este texto no
+    lleva ejemplos con rutas absolutas a propósito: el gate de la fase 5 lo
+    escanearía a él mismo y se marcaría como hallazgo."""
+    return "\n".join([
+        "- **Toda la documentación de este proyecto vive en el repositorio**, bajo `docs/`, "
+        f"por materia (p. ej. `{params['P16_release_runbook_path']}`, el runbook de release): "
+        "la leen el CI, el runner y la IA de cualquier miembro del equipo (HR-48).",
+        "- **Post-mortems** en `docs/postmortems/<AAAA-MM-DD>-<slug>.md` (parámetro 9): un "
+        "incidente y sus mitigaciones quedan junto al código que los justifica.",
+        "- **Fuera del repositorio, y sin copia en él, solo**: secretos, backups, datos en "
+        "bruto y material privado. Nada más.",
+        "- **Las convenciones compartidas entre proyectos** viven en el catálogo de "
+        "team-skills y se propagan; la documentación de este proyecto no se propaga.",
+        "- Toda ruta de documentación es **relativa al repositorio**: una ruta absoluta o "
+        "externa la rechaza el gate de documentación operativa de esta fase (HR-48).",
+    ])
+
+
+def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
+    """Ciclo de vida completo (#305), de la issue al CI verde sin pasos
+    implícitos: cada etapa con su comando exacto y su condición de «hecho»."""
+    merge_names = {"allow_merge_commit": "merge commit", "allow_squash_merge": "squash",
+                   "allow_rebase_merge": "rebase", "allow_auto_merge": "auto-merge"}
+    allowed_merges = sorted(merge_names[k] for k, v in (host.get("merge_methods") or {}).items()
+                            if isinstance(v, dict) and v.get("declared") is True and k in merge_names)
+    _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
+    return [f"Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. "
+            f"Jobs requeridos que debe ver en verde antes del merge: {_or_none(sorted(jobs))}.",
+        "- **1. Issue.** Con el formulario del consumer (sección 1), busque duplicados "
+        "y cree la issue:\n"
+        "  `gh issue list --search \"<términos>\" --json number,title,state --state all --limit 20`\n"
+        "  `gh issue create --title \"<título>\" --body-file <cuerpo-de-la-issue.md>`\n"
+        "  Hecho: la issue existe y lleva su etiqueta de tipo.",
+        f"- **2. Aprobación.** No empiece sin ella; consulte la issue:\n"
+        f"  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
+        f"  Hecho: la lista contiene `{params['P10_label_approval']}`.",
+        "- **3. Worktree.** Desde la rama base actualizada, y con el nombre de rama "
+        "compuesto aquí, nunca escrito a mano (regex "
+        f"`{params['P01_branch_name_pattern']}`):\n"
+        "  `git fetch origin && git switch <rama-base> && git pull --ff-only`\n"
+        "  `<rama-nueva>` = `<tipo>/<número>-<slug>`, con el `<slug>` del título de la "
+        "issue en minúsculas y guiones\n"
+        "  `git worktree add ../<repo>-<número>-<tema> -b <rama-nueva>`\n"
+        "  Hecho: `git worktree list` muestra la ruta nueva.",
+        "- **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; "
+        "Conventional Commits (sección 3); sin atribución de IA.\n"
+        "  Hecho: `git log --oneline <rama-base>..HEAD` muestra una entrada "
+        "por unidad.",
+        "- **5. Integración de la base y preflight local idéntico al CI "
+        "(HR-4).** Sincronice la rama de feature con la base remota ANTES de "
+        "publicar: tráigala con `git merge` —nunca rebase, `--amend` ni "
+        "force-push sobre la rama publicada—, resuelva los conflictos si los "
+        "hay y ejecute el preflight sobre el resultado integrado:\n"
+        "  `git fetch origin && git merge origin/<rama-base>`\n"
+        f"  `bash {entrypoint}`\n"
+        "  Hecho: exit 0 sobre el árbol integrado.",
+        f"- **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con "
+        f"`Refs #N` (o `Closes #N` solo en la punta de cadena), exactamente una "
+        f"etiqueta `type:*` (sección 4) y presupuesto de "
+        f"{params['P06_review_budget_lines']} líneas; si no cabe, cadena:\n"
+        "  Con `chain:partial` o en la punta de cadena (base = rama por "
+        "defecto) el cuerpo lleva ADEMÁS la sección **Chain Context** (HR-54) "
+        "como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, "
+        "`starts-at`, `ends-with` y `review-budget`, con `base` igual a la base "
+        "del PR y un único `📍` en el diagrama.\n"
+        "  `gh pr create --base <rama-base> --head <rama-nueva> "
+        "--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>`\n"
+        "  Hecho: `gh pr view <número> --json number,url` devuelve número y URL.",
+        "- **7. Checks.** Consulte la tabla de checks requeridos (sección 5) y el "
+        "estado del PR:\n"
+        "  `gh pr checks <número>`\n"
+        "  Hecho: ningún check en fail.",
+        "- **8. CI en verde.** Si un check falla, aplique su receta de recuperación "
+        "(sección 5), reejecute el preflight de la etapa 5 y empuje de nuevo. Si la "
+        "base avanzó durante la revisión, repita la integración de la etapa 5 "
+        "(merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza "
+        "anterior a la integración no es evidencia del resultado nuevo.\n"
+        "  Hecho: todos los checks en pass sobre la cabeza y la base actuales.",
+        "- **9. Merge gobernado.** El merge lo decide un humano con CI en verde; "
+        "ningún agente mergea. Métodos permitidos (host-contract): "
+        f"{_or_none(allowed_merges)}.\n"
+        "  Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.",
+        "- **10. Limpieza.** Solo después del merge verificado y sin cambios "
+        "pendientes, retire el worktree local; la rama remota se conserva "
+        "SIEMPRE (nunca `git push origin --delete`, `--delete-branch` ni borrado "
+        "de ramas):\n"
+        "  `git worktree remove ../<repo>-<número>-<tema>`\n"
+        "  Hecho: `git worktree list` ya no muestra la ruta y la rama sigue en "
+        "`origin`.",
+    ]
+
+
+def _local_entrypoint(repo, policy):
+    """Script único del preflight local (HR-4): el mismo que ejecuta el job
+    requerido. Fuentes, en orden: 'local.entrypoint' de la política de jobs
+    requeridos y 'local.entrypoint' de la política de paridad local; sin
+    ninguna, la receta de preflight no puede ser literal → exit 2."""
+    parity = _read_json_or_none(repo / ".github" / "local-ci-parity-policy.json")
+    for local in (policy.get("local") if isinstance(policy, dict) else None,
+                  parity.get("local") if isinstance(parity, dict) else None):
+        entrypoint = local.get("entrypoint") if isinstance(local, dict) else None
+        if isinstance(entrypoint, str) and entrypoint.strip():
+            return entrypoint.strip()
+    raise UsageError(
+        "documentación operativa: ni required-jobs-policy.json ni "
+        "local-ci-parity-policy.json declaran 'local.entrypoint'; la receta de "
+        "preflight local (HR-4) debe ser un comando literal, no un paso implícito")
+
+
+def _read_json_or_none(path):
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _checks_table_rows(jobs):
+    """Filas de la tabla de checks (#305): una por job requerido, en orden;
+    las desconocidas reciben la receta genérica del patrón."""
+    return [(job, CHECK_RECOVERY.get(job, CHECK_RECOVERY_GENERIC))
+            for job in sorted(jobs)]
+
+
+def _governed_merge_workflow(repo):
+    """#351: workflow del consumer cuyo job en SU runner invoca
+    check_governed_merge.py. Reutiliza wired_files de HR-52 (misma
+    logica, mismo proceso): no se adivina por nombre de fichero."""
+    label = _runner_label(repo)
+    if not label:
+        return None
+    controls = Path(__file__).resolve().parent.parent / "runner-controls"
+    if not controls.is_dir():
+        return None
+    if str(controls) not in sys.path:
+        sys.path.insert(0, str(controls))
+    try:
+        import check_runner_binding as binding
+    except ImportError:
+        return None
+    wdir = Path(repo) / ".github" / "workflows"
+    if not wdir.is_dir():
+        return None
+    files = binding.wired_files(wdir, label, binding.MERGE)
+    if not files:
+        return None
+    try:
+        return str(files[0].relative_to(Path(repo)))
+    except ValueError:
+        return str(files[0])
+
+
+def _operating_doc_merge_lines(repo, allowed_merges):
+    """#351: seccion Merge; el camino gobernado solo con declaracion."""
+    _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
+    lines = [
+        "- El merge es decisión humana con CI en verde; ningún agente mergea.",
+        f"- Métodos de merge permitidos (host-contract): {_or_none(allowed_merges)}.",
+    ]
+    gm = _governed_merge_workflow(repo)
+    if gm:
+        name = Path(gm).name
+        lines.append(
+            f"- Camino gobernado: el workflow `{name}` (workflow_dispatch) "
+            "audita el PR antes de merge y exige CI en verde; lo lanza un "
+            f"mantenedor con `gh workflow run {name} -f pr=<N>`.")
+    return lines
+
+
+def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
+    """Cuerpo de cada sección, en el orden canónico; determinista."""
+    # #356: los tipos permitidos son DATO del contrato del host; el mapeo de
+    # formularios (P09) es informativo y puede venir vacío (el formulario no
+    # declara `labels`).
+    contract_types = sorted({label["name"] for label in (host.get("labels") or [])
+                             if isinstance(label, dict)
+                             and isinstance(label.get("name"), str)
+                             and label["name"].startswith("type:")})
+    type_labels = contract_types or sorted({v for v in (params["P09_labels_type"] or {}).values()
+                                            if isinstance(v, str)})
+    forms = sorted(params["P09_labels_type"].keys())
+    template_dir = repo / params["P12_issue_form_dir"]
+    available_forms = sorted(p.name for p in template_dir.glob("*.yml")) \
+        if template_dir.is_dir() else []
+    required_checks = sorted(c.get("name") for c in (host.get("required_checks") or [])
+                             if isinstance(c, dict) and c.get("name"))
+    merge_names = {"allow_merge_commit": "merge commit", "allow_squash_merge": "squash",
+                   "allow_rebase_merge": "rebase", "allow_auto_merge": "auto-merge"}
+    allowed_merges = sorted(merge_names[k] for k, v in (host.get("merge_methods") or {}).items()
+                            if isinstance(v, dict) and v.get("declared") is True and k in merge_names)
+    contexts = params["P28_required_status_contexts"]
+    _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
+    issues_lines = [
+        "- Cree la issue con un formulario de `.github/ISSUE_TEMPLATE/`:",
+    ]
+    if contract_types:
+        issues_lines.append(
+            f"  - Etiquetas de tipo declaradas por el contrato del host "
+            f"(`{HOST_CONTRACT_NAME}`), las que el gate acepta: "
+            + ", ".join(f"`{name}`" for name in contract_types) + ".")
+    if forms:
+        issues_lines += [f"  - `{form}` → `{params['P09_labels_type'][form]}`" for form in forms]
+    elif not contract_types:
+        issues_lines.append("  - sin mapeo formulario → etiqueta declarado (P09_labels_type) ni "
+                            "etiquetas de tipo en el contrato del host")
+    issues_lines += [
+        f"- Formularios disponibles en el destino: {_or_none(available_forms)}.",
+        "- Antes de crear la issue, busque duplicados en issues abiertas y cerradas.",
+        f"- La implementación solo arranca con la etiqueta `{params['P10_label_approval']}` en la issue.",
+    ]
+    return {
+        "issues": "\n".join(issues_lines),
+        "branch": "\n".join([
+            "- Genere el nombre de rama; nunca lo escriba a mano (HR-35): "
+            "`<tipo>/<número>-<slug>`, con el slug del título de la issue en "
+            "minúsculas y guiones:",
+            "  `git switch -c <tipo>/<número>-<slug>`",
+            f"- Regex obligatoria: `{params['P01_branch_name_pattern']}`",
+            "- El generador que construye y valida el nombre (HR-35) es un activo de la "
+            "skill del patrón: no se instala en el consumer, así que aquí se compone el "
+            "nombre y se valida contra la regex.",
+        ]),
+        "commits": "\n".join([
+            "- Conventional Commits: `tipo[(scope)]: descripción` con tipo en "
+            "feat|fix|docs|chore|refactor|test|ci|perf.",
+            "- Sin atribución de IA: sin `Co-Authored-By` ni pies de página generados.",
+        ]),
+        "pull-request": "\n".join([
+            f"- Presupuesto: {params['P06_review_budget_lines']} líneas (añadidas + borradas, "
+            "tests y docs incluidos). Si no cabe, cadena de PRs.",
+            f"- Slice intermedio de cadena: etiqueta `{params['P11_label_chain_partial']}` y "
+            "`Refs #N` en el cuerpo; CERO palabras de cierre.",
+            "- Con `chain:partial` o en la punta de cadena, el cuerpo lleva la "
+            "sección Chain Context (HR-54): posición N/M, base igual a la del PR, "
+            "dependencias, presupuesto y un único `📍`.",
+            "- Solo el PR punta de cadena lleva `Closes #N`.",
+            "- Antes de un `Closes #N`, compruebe la matriz HR→gate de la skill "
+            "adoptada: `rg '\"issue\": <número>' <skill>/references/hr-gate-matrix.json`; "
+            "una entrada `manual` apuntando a la issue exige reclasificarla en el mismo PR.",
+            f"- Exactamente una etiqueta `type:*` por PR: {_or_none(type_labels)}.",
+            "- Toda edición material de una skill sube su `metadata.version` (HR-44).",
+        ]),
+        "required-checks": "\n".join(
+            [f"- Jobs requeridos del agregador: {_or_none(sorted(jobs))}. "
+             "Tabla generada 1:1 desde ellos: ningún check puede fallar por "
+             "una regla que no esté aquí.",
+             f"- Contextos requeridos declarados: {_or_none(list(contexts))}.",
+             f"- Checks del contrato de host: {_or_none(required_checks)}.",
+             ""]
+            + [f"| `{name}` | {what} | `bash {entrypoint}` | → {recovery} |"
+               for name, (what, recovery) in _checks_table_rows(jobs)]),
+        "merge": "\n".join(_operating_doc_merge_lines(repo, allowed_merges)),
+        "release-hotfix": "\n".join([
+            "- Todo release es un tag semver anotado (HR-19).",
+            "- Todo hotfix aterriza primero en main (HR-20).",
+            f"- Contextos de producción: e2e `{params['P14_status_context_e2e']}`, "
+            f"smoke `{params['P15_status_context_smoke']}`; runbook: "
+            f"`{params['P16_release_runbook_path']}`.",
+        ]),
+        "friction": "\n".join([
+            "- Registre toda fricción con evidencia (HR-11); en la segunda ocurrencia, "
+            "etiqueta `friction:recurrent`.",
+            "- El ciclo evidencia → triage → corrección de la skill sustituye a toda "
+            "receta de operación local del consumer.",
+        ]),
+        "lifecycle": "\n".join(
+            _operating_doc_lifecycle_lines(params, host, jobs, entrypoint)),
+        "incidents": _operating_doc_incident_lines(params),
+        "docs-location": _operating_doc_docs_location_lines(params),
+        "agents-block": OPERATING_DOC_AGENTS_BLOCK,
+    }
+
+
+def build_operating_doc(repo):
+    """Documento operativo completo del consumer; determinista byte a byte."""
+    params = _operating_doc_params(repo)
+    host, jobs, entrypoint = _operating_doc_inputs(repo)
+    bodies = _operating_doc_section_bodies(repo, params, host, jobs, entrypoint)
+    parts = [OPERATING_DOC_HEADER, ""]
+    for number, (key, title) in enumerate(OPERATING_DOC_SECTIONS, start=1):
+        parts += [
+            f"<!-- ci-pattern-doc:begin {key} -->",
+            f"## {number}. {title}",
+            "",
+            bodies[key],
+            "",
+            f"<!-- ci-pattern-doc:end {key} -->",
+            "",
+        ]
+    return "\n".join(parts)
+
+
+def _cmd_adoption_generate_doc(rest):
+    if rest and rest[0] in ("-h", "--help"):
+        print(ADOPTION_HELP.rstrip())
+        return EXIT_OK
+    repo = None
+    out = None
+    i = 0
+    while i < len(rest):
+        arg = rest[i]
+        if arg == "--out":
+            if i + 1 >= len(rest):
+                raise UsageError("--out requiere una ruta de destino")
+            out = rest[i + 1]
+            i += 2
+        elif arg.startswith("-"):
+            raise UsageError(f"adoption generate-doc: opción no reconocida: {arg}")
+        else:
+            if repo is not None:
+                raise UsageError("adoption generate-doc: un solo repo por invocación")
+            repo = arg
+            i += 1
+    if repo is None:
+        raise UsageError(
+            "adoption generate-doc: falta <repo>; uso: "
+            "`ci-pattern adoption generate-doc <repo> --out <ruta>`")
+    if out is None:
+        raise UsageError(
+            "adoption generate-doc: falta --out <ruta>; el documento se escribe "
+            "en el destino con --out, nunca solo a stdout")
+    if not Path(repo).is_dir():
+        raise UsageError(f"repo inexistente o no es un directorio: {repo}")
+    text = build_operating_doc(Path(repo))
+    target = Path(out)
+    if str(target.parent) and not target.parent.exists():
+        target.parent.mkdir(parents=True)
+    target.write_text(text, encoding="utf-8")
+    print(f"documento operativo escrito: {target}")
+    return EXIT_OK
+
+
+ADOPTION_GATES = {
+    # nombre declarado en el contrato → binario del patrón (relativo a la skill)
+    "host-readback": "assets/host-readback/check_host_drift.py",
+    "required-jobs": "assets/required-jobs/check_required_jobs.py",
+    "local-ci-parity": "assets/local-ci-parity/check_local_ci_parity.py",
+    "workflow-policy": "assets/workflow-policy/check_workflow_policy.py",
+    "hr-matrix": "assets/hr-gate-matrix/check_hr_matrix.py",
+}
+ENV_ISOLATION_GATE = "assets/env-isolation/check_env_isolation.py"
+
+RUNNER_BINDING_GATES = {
+    # #303: binding ejecutable exigido SOLO cuando el host declara el camino
+    # runner (runner.label); un repo con protección de rama no lo necesita.
+    "runner-binding": "assets/runner-controls/check_runner_binding.py",
+}
+
+
+def _tail(text, lines=3, width=240):
+    chunks = [l for l in (text or "").splitlines() if l.strip()]
+    return " | ".join(chunks[-lines:])[:width]
+
+
+def _resolve_adoption_args(args, repo):
+    """Resuelve los tokens de entrada del contrato: '@ruta' (o 'k=@ruta')
+    se resuelve contra el repo del consumer; una entrada ausente es exit 2
+    (el gate no se ejecuta sobre entradas que no existen)."""
+    resolved = []
+    for token in args:
+        if token.startswith("@"):
+            target = repo / token[1:]
+            if not target.exists():
+                raise UsageError(f"entrada ausente del contrato de adopción: {token[1:]}")
+            resolved.append(str(target))
+        elif "@" in token:
+            key, _, value = token.partition("=")
+            if value.startswith("@"):
+                target = repo / value[1:]
+                if not target.exists():
+                    raise UsageError(f"entrada ausente del contrato de adopción: {value[1:]}")
+                resolved.append(f"{key}={target}")
+            else:
+                resolved.append(token)
+        else:
+            resolved.append(token)
+    return resolved
+
+
+def _run_gate_binary(repo, binary, args):
+    cmd = [sys.executable, str(binary)] + _resolve_adoption_args(args, repo)
+    return _run_cmd(cmd, timeout=600)
+
+
+def _check_env_isolation_phase(repo, decl):
+    spec = decl.get("env_isolation")
+    if not isinstance(spec, dict) or not isinstance(spec.get("root"), str) \
+            or not spec["root"].strip() or not isinstance(spec.get("allowlist"), str) \
+            or not spec["allowlist"].strip():
+        return [
+            "fase 2: falta 'env_isolation' con 'root' (árbol de tests del consumer) y "
+            "'allowlist' (JSON versionado): el gate EJECUTA env-isolation (HR-28) "
+            "sobre el árbol; una declaración con evidencia en un .md no lo prueba"
+        ]
+    root = repo / spec["root"]
+    allowlist = repo / spec["allowlist"]
+    if not root.is_dir():
+        raise UsageError(f"fase 2: el árbol de tests declarado no existe: {spec['root']}")
+    if not allowlist.is_file():
+        raise UsageError(f"fase 2: el allowlist declarado no existe: {spec['allowlist']}")
+    proc = _run_gate_binary(repo, skill_dir() / ENV_ISOLATION_GATE,
+                            ["--root", str(root), "--allowlist", str(allowlist)])
+    if proc.returncode == 0:
+        return []
+    if proc.returncode == 2:
+        raise UsageError(
+            f"fase 2: env-isolation no pudo ejecutarse (rc=2): {_tail(proc.stderr)}"
+        )
+    return [
+        f"fase 2: env-isolation (HR-28) no está en verde sobre el consumer "
+        f"(rc={proc.returncode}): {_tail(proc.stdout + proc.stderr)}"
+    ]
+
+
+def _check_gates_phase(repo, decl, contract):
+    runner = _runner_label(repo)
+    gate_map = {**ADOPTION_GATES, **RUNNER_BINDING_GATES} if runner else ADOPTION_GATES
+    gates = decl.get("gates")
+    if not isinstance(gates, list) or not gates:
+        return [
+            "fase 4: falta 'gates' (lista no vacía de {gate, args}): el gate EJECUTA "
+            "cada control del patrón sobre el consumer; que los ficheros existan y "
+            "parseen no es 'en verde'"
+        ]
+    findings = []
+    names = []
+    for entry in gates:
+        name = entry.get("gate") if isinstance(entry, dict) else None
+        if name not in gate_map:
+            raise UsageError(
+                f"fase 4: gate desconocido en el contrato: {name!r}; conocidos: "
+                + ", ".join(sorted(gate_map))
+            )
+        names.append(name)
+    # Auditoría: la fase exige EXACTAMENTE el conjunto de gates del patrón —
+    # el consumer elige las ENTRADAS de cada gate, no el subconjunto.
+    missing = sorted(set(gate_map) - set(names))
+    if missing:
+        return [
+            "fase 4: faltan gates obligatorios en el contrato: "
+            + ", ".join(missing)
+            + "; la fase exige el conjunto completo del patrón en verde — el consumer "
+            "elige las entradas, no el conjunto"
+        ]
+    duplicates = sorted({n for n in names if names.count(n) > 1})
+    if duplicates:
+        return [f"fase 4: gates duplicados en el contrato: {', '.join(duplicates)}"]
+    for entry in gates:
+        name = entry["gate"]
+        args = entry.get("args") if isinstance(entry.get("args"), list) else []
+        proc = _run_gate_binary(repo, skill_dir() / gate_map[name], args)
+        if proc.returncode != 0:
+            findings.append(
+                f"fase 4: el gate '{name}' no está en verde sobre el consumer "
+                f"(rc={proc.returncode}): {_tail(proc.stdout + proc.stderr)}"
+            )
+    if runner:
+        findings.extend(_runner_online_findings(repo, contract, runner))
+    return findings
+
+
+PATTERN_CATALOG_RELPATH = "assets/adoption/pattern-catalog.json"
+
+
+def load_pattern_catalog():
+    """#311: catálogo canónico del patrón como DATO versionado
+    (assets/adoption/pattern-catalog.json), no globs ad hoc en código.
+    Devuelve (path_patterns, target_namespaces, referenced_scripts). Falla en
+    voz alta si el dato falta o es inválido (HR-3)."""
+    catalog_path = skill_dir() / PATTERN_CATALOG_RELPATH
+    try:
+        catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise UsageError(
+            f"catálogo canónico del patrón ilegible ({PATTERN_CATALOG_RELPATH}): {exc}")
+    patterns = catalog.get("path_patterns")
+    namespaces = catalog.get("target_namespaces")
+    if not isinstance(patterns, list) or not all(isinstance(x, str) for x in patterns) \
+            or not isinstance(namespaces, list) or not all(isinstance(x, str) for x in namespaces):
+        raise UsageError(
+            f"catálogo canónico del patrón inválido: 'path_patterns' y "
+            f"'target_namespaces' deben ser listas de cadenas")
+    refs = catalog.get("referenced_scripts")
+    if not isinstance(refs, dict):
+        raise UsageError(
+            "catálogo canónico del patrón inválido: 'referenced_scripts' debe ser "
+            "un objeto de fuentes de referencia (#311)")
+    extensions = refs.get("extensions")
+    sources = refs.get("sources")
+    entrypoints = refs.get("policy_entrypoints")
+    ok_entrypoints = (
+        isinstance(entrypoints, list)
+        and all(isinstance(e, dict) and isinstance(e.get("path"), str)
+                and isinstance(e.get("pointer"), list)
+                and all(isinstance(k, str) for k in e["pointer"])
+                for e in entrypoints))
+    if not isinstance(extensions, list) or not all(
+            isinstance(x, str) and x.startswith(".") for x in extensions) \
+            or not isinstance(sources, list) or not all(
+                isinstance(x, str) for x in sources) \
+            or not ok_entrypoints:
+        raise UsageError(
+            "catálogo canónico del patrón inválido: 'referenced_scripts' exige "
+            "'extensions' (lista de sufijos), 'sources' (lista de globs) y "
+            "'policy_entrypoints' (lista de {path, pointer})")
+    return patterns, namespaces, refs
+HOST_SNAPSHOT_KINDS = ("branch-protection", "rulesets")
+HOST_CONTRACT_NAME = ".github/host-contract.json"
+# #277 (incidente 2026-10-05): `adoption check` fase 3 lanzaba `ci-pattern
+# verify` como subproceso y verify ejecuta `adoption check` en proceso: el
+# ciclo superó 1.300 procesos python y tumbo el VPS por OOM dos veces.
+# Prohibición permanente: un gate de adopción jamás invoca verify/adoption
+# como subproceso. La marca del entorno hace que cualquier regresión falle
+# cerrado con exit 2 en vez de recursar.
+RECURSION_ENV = "CI_PATTERN_NESTED"
+
+
+def _child_env():
+    """Entorno para todo subproceso lanzado por esta CLI: lleva la marca
+    CI_PATTERN_NESTED=1 para que un `ci-pattern verify|adoption` anidado
+    falle cerrado (exit 2) en vez de recursar."""
+    env = os.environ.copy()
+    env[RECURSION_ENV] = "1"
+    return env
+
+
+def _run_cmd(cmd, timeout):
+    """subprocess.run con entorno marcado, captura y timeout obligatorio.
+    Un timeout se degrada a returncode 124 con stderr legible: el veredicto
+    del gate nunca cuelga indefinidamente ni truena con traceback."""
+    try:
+        return subprocess.run(
+            cmd, capture_output=True, text=True, check=False,
+            env=_child_env(), timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        return subprocess.CompletedProcess(
+            cmd, returncode=124,
+            stdout=(exc.stdout or b"").decode("utf-8", "replace")
+            if isinstance(exc.stdout, bytes) else (exc.stdout or ""),
+            stderr=(exc.stderr or b"").decode("utf-8", "replace")
+            if isinstance(exc.stderr, bytes)
+            else (exc.stderr or f"timeout: el subproceso no terminó en {timeout}s"))
+
+
+def _referenced_governance_scripts(repo, refs, declared=()):
+    """#311: un script es GOBIERNO si el gobierno lo invoca, no por su
+    ubicación. Se descubren por REFERENCIA desde las fuentes declaradas en el
+    catálogo: los `run:` de los workflows de CI, los hooks y el entrypoint de
+    paridad local del patrón (HR-4) declarado en su política; más los que el
+    contrato del consumer declara en `declared_governed_paths`. NO se filtra
+    por existencia: una referencia es una declaración de gobierno, y la
+    presencia en el árbol la resuelve `_scan_governed_paths`. Así
+    `scripts/coverage-ratchet.sh` (invocado por ci.yml) es gobierno, y
+    `scripts/local-entrypoint.sh` (invocado por Dockerfile.local, fuera del
+    gobierno) NO lo es: nadie del gobierno lo referencia."""
+    extensions = refs.get("extensions") or []
+    alternation = "|".join(re.escape(e.lstrip(".")) for e in extensions)
+    token_re = re.compile(
+        r"(?<![\w./-])(?:\./)?([A-Za-z0-9_][A-Za-z0-9_.\-/]*\.(?:" + alternation + r"))\b")
+    found = set()
+    for pattern in refs.get("sources") or []:
+        for path in repo.glob(pattern):
+            if not path.is_file():
+                continue
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            for match in token_re.finditer(text):
+                found.add(match.group(1))
+    for entry in refs.get("policy_entrypoints") or []:
+        policy = repo / entry["path"]
+        if not policy.is_file():
+            continue
+        try:
+            node = json.loads(policy.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        for key in entry["pointer"]:
+            node = node.get(key) if isinstance(node, dict) else None
+        if isinstance(node, str) and node.strip():
+            found.add(node.strip().lstrip("./"))
+    found.update(d for d in declared if isinstance(d, str) and d.strip())
+    return found
+
+
+def _scan_governed_paths(repo, declared=()):
+    """Artefactos de gobierno PRESENTES en el árbol: rutas del catálogo
+    (glob como dato) y scripts descubiertos por REFERENCIA (#312)."""
+    found = set()
+    patterns, _namespaces, refs = load_pattern_catalog()
+    for pattern in patterns:
+        for p in repo.glob(pattern):
+            if p.is_file():
+                found.add(p.relative_to(repo).as_posix())
+    for rel in _referenced_governance_scripts(repo, refs, declared):
+        if (repo / rel).is_file():
+            found.add(rel)
+    return sorted(found)
+
+
+def _declared_governed_paths(decl):
+    """Rutas que el contrato del consumer declara explícitamente como
+    gobierno (#311): la vía para scripts que ninguna fuente del patrón
+    referencia. El glob no puede saberlo; la declaración es explícita y
+    revisable. Una declaración malformada es error de uso (exit 2)."""
+    raw = decl.get("declared_governed_paths")
+    if raw is None:
+        return []
+    if not isinstance(raw, list) or not all(
+            isinstance(x, str) and x.strip() for x in raw):
+        raise UsageError(
+            "fase 0: 'declared_governed_paths' debe ser una lista de rutas "
+            "relativas de gobierno declaradas por el consumer")
+    out = []
+    for rel in raw:
+        rel = rel.strip()
+        try:
+            _ensure_safe_manifest_path(rel)
+        except UsageError as exc:
+            raise UsageError(
+                f"fase 0: 'declared_governed_paths' con ruta no segura "
+                f"({rel}): {exc}")
+        out.append(rel)
+    return out
+
+
+class _UnavailableArea:
+    """Marca de instantánea que es EVIDENCIA de capacidad no disponible: el
+    host no puede aplicar el área, así que no hay residual que comparar."""
+
+    def __repr__(self):
+        return "<área del host no disponible>"
+
+
+UNAVAILABLE_HOST_AREA = _UnavailableArea()
+
+
+def _load_host_plan():
+    """#330: importa el módulo COMPARTIDO del detector del 403 de plan
+    (`assets/host_plan.py`) desde el skill dir vigente —respeta
+    `CI_PATTERN_SKILL_DIR`, que usan las suites— y en el mismo proceso: para
+    leer los datos del consumer no se invoca la CLI ni un subproceso. Vive en
+    un solo módulo para que el gate de adopción y el readback del host no
+    tengan dos detectores que puedan divergir."""
+    assets = skill_dir() / "assets"
+    if str(assets) not in sys.path:
+        sys.path.insert(0, str(assets))
+    import host_plan
+    return host_plan
+
+
+def _host_capability(repo, area):
+    """#330: capacidad que el consumer declara para un área del host, leída
+    del contrato EN PROCESO (nunca un subproceso ni la CLI). Un contrato
+    ausente o ilegible deja el área sin declarar."""
+    try:
+        contract = json.loads((repo / HOST_CONTRACT_NAME).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    return _load_host_plan().capability_of(contract, area)
+
+
+def _runner_label(repo):
+    """#303: etiqueta del runner propio declarada en el contrato del host,
+    leída EN PROCESO (nunca CLI ni subproceso). None si el host no declara
+    camino runner."""
+    try:
+        contract = json.loads((repo / HOST_CONTRACT_NAME).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    runner = contract.get("runner") if isinstance(contract, dict) else None
+    label = runner.get("label") if isinstance(runner, dict) else None
+    return label if isinstance(label, str) and label.strip() else None
+
+
+def _runner_online_findings(repo, contract, label):
+    """#303: el runner declarado debe estar online según la relectura de
+    `actions/runners`; el nombre del runner o una de sus etiquetas deben
+    casar con `runner.label`. La instantánea se declara en la fase 3
+    (`host_snapshots`), que es donde viven las relecturas del host. Una
+    instantánea ilegible es duda (HR-3)."""
+    phases = contract.get("phases") if isinstance(contract.get("phases"), dict) else {}
+    phase3 = phases.get("3") if isinstance(phases.get("3"), dict) else {}
+    snaps = phase3.get("host_snapshots") if isinstance(phase3.get("host_snapshots"), dict) else {}
+    rel = snaps.get("actions-runners")
+    if not isinstance(rel, str) or not rel.strip():
+        raise UsageError(
+            "fase 4: el host declara camino runner pero 'host_snapshots' no declara "
+            "'actions-runners': sin la relectura del runner no se verifica que esté "
+            "online (HR-3)")
+    try:
+        data = json.loads((repo / rel).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(f"fase 4: la instantánea 'actions-runners' ({rel}) no es JSON legible: {exc}")
+    runners = data.get("runners") if isinstance(data, dict) else None
+    if not isinstance(runners, list):
+        raise UsageError(
+            f"fase 4: la instantánea 'actions-runners' ({rel}) no tiene la forma de la "
+            "API (objeto con 'runners'): una lectura que no se interpreta es duda (HR-3)")
+    for entry in runners:
+        if not isinstance(entry, dict):
+            continue
+        names = {lbl.get("name") for lbl in entry.get("labels", []) if isinstance(lbl, dict)}
+        if isinstance(entry.get("name"), str):
+            names.add(entry["name"])
+        if label in names and entry.get("status") == "online":
+            return []
+    return [
+        f"fase 4: el runner declarado '{label}' no está online según la relectura de "
+        f"actions/runners ({rel}): los controles runner-enforced no se aplican sin "
+        "runner; la adopción queda bloqueada"]
+
+
+def _plan_403_snapshot(repo, kind, rel):
+    """#330: interpreta el 403 de plan del host según la capacidad declarada.
+    Devuelve (marca, hallazgos) o levanta duda (exit 2)."""
+    plan = _load_host_plan()
+    area = plan.SNAPSHOT_CAPABILITY[kind]
+    declared = _host_capability(repo, area)
+    if declared is None:
+        raise UsageError(
+            f"fase 3: la instantánea '{kind}' ({rel}) es el 403 de plan del host "
+            f"(«{plan.PLAN_403_MARKER}…») y el contrato del host ({HOST_CONTRACT_NAME}) no "
+            f"declara 'host_capabilities.{area}': sin declaración el 403 no es ni "
+            "evidencia ni drift, y una duda no es un pase (HR-3)")
+    if declared not in plan.CAPABILITY_VALUES:
+        raise UsageError(
+            f"fase 3: la instantánea '{kind}' ({rel}) es el 403 de plan del host "
+            f"(«{plan.PLAN_403_MARKER}…») y el contrato declara "
+            f"'host_capabilities.{area}': {declared!r}, que no es un valor conocido "
+            f"({', '.join(sorted(plan.CAPABILITY_VALUES))}): un valor que no se puede "
+            "interpretar es duda, no drift (HR-3)")
+    if declared != "unavailable":
+        return UNAVAILABLE_HOST_AREA, [
+            f"fase 3: la instantánea '{kind}' ({rel}) es el 403 de plan del host "
+            f"(«{plan.PLAN_403_MARKER}…») pero el contrato declara "
+            f"'host_capabilities.{area}': {declared!r}: el host responde que no puede "
+            "aplicar el área y el contrato dice que sí; eso es drift, no evidencia"]
+    return UNAVAILABLE_HOST_AREA, []
+
+
+def _load_host_snapshot(repo, kind, rel):
+    """Lee una instantánea del host; ilegible o malformada es duda (HR-3).
+
+    Devuelve ``(datos, hallazgos)``. El 403 de plan del host vale como
+    instantánea SOLO si el contrato declara esa área `unavailable` (#330)."""
+    path = repo / rel
+    if not path.is_file():
+        raise UsageError(
+            f"fase 3: la instantánea del host '{kind}' no existe: {rel}; una "
+            "instantánea ausente es duda, no un pase (HR-3)")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(
+            f"fase 3: la instantánea '{kind}' no es JSON legible ({rel}): {exc}")
+    if _load_host_plan().is_plan_403(data):
+        return _plan_403_snapshot(repo, kind, rel)
+    want = dict if kind in ("branch-protection", "actions-runners") else list
+    if not isinstance(data, want):
+        raise UsageError(
+            f"fase 3: la instantánea '{kind}' ({rel}) debe ser un JSON "
+            f"{'objeto' if want is dict else 'array'}")
+    if kind == "rulesets":
+        for entry in data:
+            if not isinstance(entry, dict) or not isinstance(entry.get("name"), str) \
+                    or not entry["name"].strip():
+                raise UsageError(
+                    f"fase 3: la instantánea 'rulesets' ({rel}) tiene una entrada "
+                    "sin 'name'; una instantánea ilegible es duda, no un pase (HR-3)")
+    return data, []
+
+
+def _manifest_identity_findings(repo, declared_paths):
+    """Identidad del patrón EN PROCESO (#277): la única fuente es el
+    manifiesto de gobierno `.governance-manifest.json`, leído con
+    `load_manifest` y verificado con `sha256_file`, las mismas funciones que
+    usa `verify`. Devuelve (hallazgos, files del manifiesto). Un gate de
+    adopción NUNCA lanza `verify` ni `adoption check` como subproceso: verify
+    ejecuta `adoption check` en proceso y el ciclo recursivo tumbo el VPS
+    por OOM (2026-10-05)."""
+    try:
+        manifest = load_manifest(repo)
+    except MissingResourceError as exc:
+        # Un manifiesto ausente o ilegible es duda, no un pase (HR-3).
+        raise UsageError(f"fase 3: {exc}") from exc
+    manifest_files = manifest.get("files")
+    if not isinstance(manifest_files, dict):
+        raise UsageError(
+            f"fase 3: {MANIFEST_NAME} debe declarar 'files' como objeto ruta→sha256")
+    unsafe = [rel for rel in manifest_files
+              if not isinstance(rel, str)]
+    for rel in manifest_files:
+        try:
+            _ensure_safe_manifest_path(rel)
+        except UsageError:
+            unsafe.append(rel)
+    if unsafe:
+        raise UsageError(
+            "fase 3: claves del manifiesto que no son rutas relativas seguras: "
+            + ", ".join(repr(rel) for rel in unsafe))
+    findings = []
+    # (a) cada fichero del manifiesto existe y su sha256 coincide: identidad
+    # del patrón verificada contra el árbol, no autodeclarada (HR-46).
+    for rel in sorted(manifest_files):
+        target = repo / rel
+        if not target.is_file():
+            findings.append(
+                f"fase 3: '{rel}' figura en el manifiesto de gobierno pero no "
+                "existe en el árbol (HR-46)")
+            continue
+        if sha256_file(target) != manifest_files[rel]:
+            findings.append(
+                f"fase 3: '{rel}' difiere del sha256 del manifiesto de "
+                "gobierno; la identidad del patrón no es autodeclarada (HR-46)")
+    # (b) todo artefacto declarado del patrón está cubierto por el manifiesto.
+    for rel in sorted(declared_paths):
+        if rel not in manifest_files:
+            findings.append(
+                f"fase 3: '{rel}' se declara del patrón pero no está en el "
+                "manifiesto de gobierno; la identidad del patrón no es "
+                "autodeclarada (HR-46)")
+    return findings, manifest_files
+
+
+def _pattern_rulesets_from_host_contract(repo):
+    """Los rulesets del patrón salen de su contrato del host, no del
+    contrato de adopción: la identidad del patrón no es autodeclarada."""
+    path = repo / HOST_CONTRACT_NAME
+    if not path.is_file():
+        raise UsageError(
+            f"fase 3: {HOST_CONTRACT_NAME} ausente: los rulesets del patrón no "
+            "pueden resolverse desde el contrato del host; la identidad del "
+            "patrón no es autodeclarada (HR-3)")
+    try:
+        contract = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(f"fase 3: {HOST_CONTRACT_NAME} ilegible: {exc}")
+    rulesets = contract.get("rulesets") if isinstance(contract, dict) else None
+    if not isinstance(rulesets, list):
+        raise UsageError(
+            f"fase 3: {HOST_CONTRACT_NAME} debe declarar 'rulesets' como lista")
+    names = set()
+    for entry in rulesets:
+        if not isinstance(entry, dict) or not isinstance(entry.get("name"), str) \
+                or not entry["name"].strip():
+            raise UsageError(
+                f"fase 3: {HOST_CONTRACT_NAME} tiene una entrada de rulesets sin 'name'")
+        names.add(entry["name"])
+    return names
+
+
+def _inventory_entry_covering(inventory, rel):
+    """Entrada de inventario para rel: exacta (artifact/path/target), o por
+    prefijo de directorio declarado (p. ej. un entry adopted de
+    '.agents/skills/' cubre cada skill vendida; #311). `inventory` puede ser
+    la lista del contrato (fase 0) o el dict rel→entry de la fase 3."""
+    entries = inventory.values() if isinstance(inventory, dict) else inventory
+    for candidate in entries:
+        if not isinstance(candidate, dict):
+            continue
+        if any(candidate.get(k) == rel for k in ("artifact", "path", "target")):
+            return candidate
+        prefix = candidate.get("path") if isinstance(candidate.get("path"), str) \
+            else candidate.get("target") if isinstance(candidate.get("target"), str) \
+            else candidate.get("artifact") if isinstance(candidate.get("artifact"), str) \
+            else ""
+        prefix = re.split(r"\s+\(", prefix, maxsplit=1)[0].strip()
+        if prefix.endswith("/") and rel.startswith(prefix):
+            return candidate
+    return None
+
+
+# #319 (HR-48): la documentación de un proyecto vive en su repositorio. El
+# gate busca líneas que ubiquen DOCUMENTACIÓN en una ruta absoluta o externa
+# al repo; exige las dos señales en la MISMA línea (palabra de documentación y
+# token de ruta externa), así que una mención de otra ruta en un texto que no
+# habla de documentación no dispara.
+DOC_LOCATION_KEYWORDS = re.compile(
+    r"documentaci[oó]n|documentation|\bdocs?/|post-?mortem|openspec|\berd\b",
+    re.IGNORECASE)
+EXTERNAL_PATH_TOKEN = re.compile(
+    r"([A-Za-z]:[\\/][^\s]*|\\\\[^\s]+|[`\"'( ]~[\\/]"
+    r"|(?:^|[\s`\"'(])/(?:home|Users|mnt|media|opt|srv|root|var|etc)/)")
+MARKDOWN_LINK_RE = re.compile(r"\]\(([^)\s]+)\)")
+MD_MENTION_RE = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_./-]*\.md\b")
+
+
+def _external_doc_path_findings(phase, rel, text):
+    """#319 (HR-48): hallazgos de una instrucción que manda la documentación
+    a una ruta absoluta o externa al repositorio. Nombra fichero y línea."""
+    findings = []
+    for number, line in enumerate(text.splitlines(), start=1):
+        if not DOC_LOCATION_KEYWORDS.search(line):
+            continue
+        token = EXTERNAL_PATH_TOKEN.search(line)
+        if token is None:
+            continue
+        findings.append(
+            f"fase {phase}: '{rel}:{number}' manda la documentación a una ruta "
+            f"absoluta o externa al repositorio "
+            f"({token.group(1).strip().strip(chr(96) + chr(39) + chr(34) + '()[],;.')!r}): la "
+            "documentación del proyecto vive en el repositorio, bajo docs/ —los "
+            "post-mortems en docs/postmortems/—, y fuera de él quedan solo los "
+            "secretos, los backups, los datos en bruto y el material privado (HR-48)")
+    return findings
+
+
+def _linked_repo_files(repo, rels, limit=40):
+    """Ficheros del repositorio enlazados desde los ficheros dados (un
+    nivel): la regla cubre también las instrucciones enlazadas, no solo el
+    fichero que las enlaza. Se ignoran las URLs y los enlaces que salen del
+    repo; el recorrido es acotado (HR-3: nada de escaneos sin límite)."""
+    root = repo.resolve()
+    found = []
+    for rel in rels:
+        path = repo / rel
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        # Enlaces markdown y menciones en prosa: en estos repos un fichero se
+        # cita tanto con `](...)` como entre comillas invertidas, y una IA
+        # sigue las dos igual.
+        targets = MARKDOWN_LINK_RE.findall(text) + MD_MENTION_RE.findall(text)
+        for target in targets:
+            target = target.split("#", 1)[0].strip()
+            if not target or "://" in target or target.startswith(("mailto:", "#")):
+                continue
+            try:
+                candidate = (path.parent / target).resolve()
+                linked = candidate.relative_to(root).as_posix()
+            except (OSError, ValueError):
+                continue
+            if linked in rels or linked in found or not candidate.is_file():
+                continue
+            found.append(linked)
+            if len(found) >= limit:
+                return found
+    return found
+
+
+def _docs_location_findings(repo, phase, rels):
+    """#319: escanea los ficheros indicados y los que estos enlazan."""
+    findings = []
+    for rel in list(rels) + _linked_repo_files(repo, list(rels)):
+        path = repo / rel
+        if not path.is_file():
+            continue
+        findings.extend(_external_doc_path_findings(
+            phase, rel, path.read_text(encoding="utf-8", errors="replace")))
+    return findings
+
+
+# #322 (HR-21 ampliada): de un incidente de producción se guardan cuatro
+# niveles. El gate bloquea SOLO secretos, datos personales y la evidencia
+# declarada sin hash ni ubicación: las IPs, los hostnames y los comandos
+# internos están PERMITIDOS (el repositorio es privado y lo ven las mismas
+# personas, decisión del operador del 2026-10-06).
+INCIDENT_POSTMORTEM_DIR = "docs/postmortems"
+INCIDENT_SCAN_LIMIT = 200
+# El registro operativo no es solo markdown: los logs y los volcados de estado
+# también llevan el detalle (y también pueden llevar un secreto).
+INCIDENT_SCAN_SUFFIXES = (".md", ".log", ".txt", ".json", ".yaml", ".yml")
+INCIDENT_SECRET_PATTERNS = (
+    (r"(?i)\b(?:password|passwd|contrase[ñn]a)\b\s*[:=]\s*\S", "credencial"),
+    # #350: el habla común usa "clave:" para "punto clave". Este término exige
+    # un valor con estructura de secreto —comillas, o un token largo con dígito
+    # o símbolo— en vez de cualquier palabra detrás de los dos puntos.
+    (r"(?i)\bclave\b\s*[:=]\s*(?:\"[^\"]{8,}\"|'[^']{8,}'|"
+     r"(?=[^\s]*[0-9+/=_.-])[A-Za-z0-9+/=_.-]{8,})", "credencial"),
+    (r"(?i)\b(?:api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token|"
+     r"private[_-]?key|token)\b\s*[:=]", "token o clave"),
+    (r"(?i)\b(?:bearer|basic)\s+[A-Za-z0-9._~+/=-]{12,}", "credencial en cabecera"),
+    (r"\bAKIA[0-9A-Z]{16}\b", "clave de acceso"),
+    (r"\bgh[pousr]_[A-Za-z0-9]{20,}\b", "token de GitHub"),
+    (r"-----BEGIN [A-Z ]*PRIVATE KEY-----", "clave privada"),
+    (r"\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.", "token JWT"),
+)
+INCIDENT_PII_PATTERNS = (
+    (r"(?i)\b[A-Za-z0-9._%+-]+@(?:gmail|hotmail|outlook|yahoo|live|icloud|proton|"
+     r"protonmail|aol|gmx|yandex|zoho)\.(?:com|es|net|org|me)\b", "correo personal"),
+    (r"(?i)\b(?:tel[eé]fono|m[oó]vil|celular|whatsapp)\b\s*[:=]?\s*"
+     r"\+?[0-9][0-9\s().-]{6,}", "teléfono"),
+)
+INCIDENT_EVIDENCE_RE = re.compile(r"(?i)\b(?:evidencia|evidence|adjunto|attachment)\b")
+INCIDENT_HASH_RE = re.compile(r"(?i)\b(?:sha256:)?[0-9a-f]{40,64}\b")
+INCIDENT_LOCATION_RE = re.compile(
+    r"https?://|s3://|gs://"
+    r"|\b[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+\.(?:md|log|txt|json|zip|tar\.gz|pcap|png|csv)\b"
+    r"|\b(?:INC|CHG|REQ|TKT)[0-9]{5,}\b")
+
+
+def _incident_record_dirs(repo, params):
+    """Directorios de registro de incidentes a escanear: la ruta canónica de
+    post-mortems (parámetro 9) y la del registro operativo declarada por el
+    consumer (`P49_incident_log_dir`, por defecto este repositorio). Una
+    ruta que no es del repo —un repositorio de operaciones aparte— se
+    respeta pero no se escanea desde aquí."""
+    dirs = []
+    declared = str(params.get("P49_incident_log_dir") or "").strip()
+    for rel in (INCIDENT_POSTMORTEM_DIR, declared):
+        rel = rel.rstrip("/")
+        if not rel or rel in dirs:
+            continue
+        try:
+            _ensure_safe_manifest_path(rel)
+        except UsageError:
+            continue
+        if (repo / rel).is_dir():
+            dirs.append(rel)
+    return dirs
+
+
+def _check_incident_records(repo, params):
+    """#322 (HR-21): el post-mortem y el registro operativo no llevan
+    secretos ni datos personales, y la evidencia se cita con hash y
+    ubicación. Nombra fichero y línea; el valor del secreto NUNCA se
+    reproduce en el mensaje. El sujeto son los ficheros de TEXTO del
+    registro (`.md`, `.log`, `.txt`, `.json`, `.yaml`): superar el límite de
+    escaneo no da verde parcial, es duda y sale con exit 2 (HR-3)."""
+    dirs = _incident_record_dirs(repo, params)
+    subjects = []
+    for rel_dir in dirs:
+        for path in sorted((repo / rel_dir).rglob("*")):
+            if not path.is_file() or path.suffix.lower() not in INCIDENT_SCAN_SUFFIXES:
+                continue
+            try:
+                data = path.read_bytes()
+            except OSError:
+                continue
+            if b"\x00" in data[:8192]:  # un volcado no es texto: se cita por hash
+                continue
+            subjects.append((path.relative_to(repo).as_posix(),
+                             data.decode("utf-8", "replace")))
+    if len(subjects) > INCIDENT_SCAN_LIMIT:
+        raise UsageError(
+            f"fase 5: el registro de incidentes supera el límite de escaneo "
+            f"({len(subjects)} ficheros de texto en "
+            f"{', '.join(dirs) or 'ninguno'}; límite {INCIDENT_SCAN_LIMIT}): el gate no "
+            "puede juzgar el sujeto completo y NO da un verde parcial; reduzca el "
+            "registro (un fichero por incidente), divida el directorio o saque los logs "
+            "del registro y cítelos por hash y ubicación (HR-21, HR-3)")
+    findings = []
+    for rel, text in subjects:
+        for number, line in enumerate(text.splitlines(), start=1):
+            findings.extend(_incident_line_findings(rel, number, line))
+    return findings
+
+
+def _incident_line_findings(rel, number, line):
+    findings = []
+    for pattern, what in INCIDENT_SECRET_PATTERNS:
+        if re.search(pattern, line):
+            findings.append(
+                f"fase 5: '{rel}:{number}' contiene un secreto ({what}) en un registro "
+                "de incidente: las credenciales y los tokens viven en el gestor de "
+                "secretos declarado (P50_secrets_manager), nunca en git, ni siquiera en "
+                "un repositorio privado (HR-21)")
+            break
+    for pattern, what in INCIDENT_PII_PATTERNS:
+        if re.search(pattern, line):
+            findings.append(
+                f"fase 5: '{rel}:{number}' contiene datos personales ({what}): los datos "
+                "personales y las conversaciones con terceros se quedan en el sistema de "
+                "tickets y se referencian por su número (HR-21)")
+            break
+    if INCIDENT_EVIDENCE_RE.search(line) and not INCIDENT_HASH_RE.search(line) \
+            and not INCIDENT_LOCATION_RE.search(line):
+        findings.append(
+            f"fase 5: '{rel}:{number}' declara evidencia sin `sha256` ni ubicación: cite "
+            "la evidencia con su hash y su ubicación de acceso controlado, o márquela "
+            "como redactada de forma explícita (HR-21)")
+    return findings
+
+
+def _check_phase_three(repo, decl, contract):
+    """#277: sustitución del gobierno de destino ejecutada, no declarada."""
+    pattern_paths = decl.get("pattern_paths")
+    if not isinstance(pattern_paths, list) or not pattern_paths:
+        return ["fase 3: falta 'pattern_paths': la lista de artefactos que el "
+                "patrón instala en el destino"]
+    findings = []
+    for rel in pattern_paths:
+        if not isinstance(rel, str) or not rel.strip():
+            findings.append("fase 3: entrada de 'pattern_paths' sin ruta")
+        elif not (repo / rel).is_file():
+            findings.append(f"fase 3: el artefacto del patrón no está instalado: {rel}")
+    # #303: con camino runner declarado, la relectura de actions/runners es
+    # una instantánea más obligatoria; sin él, el conjunto sigue siendo el
+    # de siempre (los repos con protección de rama no cambian).
+    runner = _runner_label(repo)
+    required_kinds = list(HOST_SNAPSHOT_KINDS) + (["actions-runners"] if runner else [])
+    snapshots = decl.get("host_snapshots")
+    if not isinstance(snapshots, dict) or sorted(snapshots) != sorted(required_kinds):
+        return findings + [
+            "fase 3: 'host_snapshots' debe declarar las instantáneas del host con "
+            "las claves " + ", ".join(required_kinds)
+            + (" (el host declara camino runner: la relectura de actions/runners es obligatoria)"
+               if runner else "")]
+    for kind in required_kinds:
+        rel = snapshots[kind]
+        if not isinstance(rel, str) or not rel.strip():
+            findings.append(f"fase 3: 'host_snapshots[{kind!r}]' sin ruta")
+    if any(not isinstance(snapshots[k], str) or not snapshots[k].strip()
+           for k in required_kinds):
+        return findings
+    inventory = {}
+    inv = (contract.get("phases", {}) or {}).get("0", {}).get("inventory")
+    if isinstance(inv, list):
+        for e in inv:
+            if isinstance(e, dict) and isinstance(e.get("artifact"), str):
+                inventory[e["artifact"]] = e
+    declared_paths = {r for r in pattern_paths if isinstance(r, str)}
+    # Identidad del patrón: el manifiesto de gobierno verificado EN PROCESO
+    # con load_manifest + sha256_file (las mismas funciones de `verify`),
+    # nunca la autodeclaración del contrato de adopción (#277; hallazgo del
+    # auditor: listar el workflow legado como pattern_path no puede bastar).
+    # NUNCA como subproceso: verify ejecuta adoption check y el ciclo
+    # recursivo tumba la máquina (prohibición permanente).
+    identity_findings, manifest_files = _manifest_identity_findings(
+        repo, declared_paths)
+    findings.extend(identity_findings)
+    # Árbol: todo artefacto de gobierno pertenece al patrón (manifiesto
+    # verificado) o tiene destino declarado en el inventario (adopted en el
+    # mismo sitio o retirado y ya fuera del árbol).
+    declared_inputs = {ADOPTION_CONTRACT_NAME}
+    labels_rel = (contract.get("phases", {}) or {}).get("0", {}).get("host_labels")
+    if isinstance(labels_rel, str) and labels_rel.strip():
+        declared_inputs.add(labels_rel.strip())
+    declared_paths = _declared_governed_paths(
+        (contract.get("phases", {}) or {}).get("0", {}) or {})
+    for rel in _scan_governed_paths(repo, declared_paths):
+        if rel in manifest_files or rel in declared_inputs:
+            continue
+        entry = _inventory_entry_covering(inventory, rel)
+        if entry is None:
+            findings.append(
+                f"fase 3: artefacto de gobierno no inventariado en el árbol: {rel}")
+        elif entry.get("disposition") == "retired":
+            findings.append(
+                f"fase 3: gobierno residual: '{rel}' está retirado en el inventario "
+                "pero sigue en el árbol")
+        elif entry.get("disposition") == "adopted" and entry.get("target") != rel:
+            findings.append(
+                f"fase 3: gobierno residual: '{rel}' fue adoptado hacia "
+                f"{entry.get('target')!r} pero el artefacto original sigue en el árbol")
+    # #306: un retired declarado con 'path' que SIGUE en el árbol es
+    # residuo de gobierno ajeno (el orden real: la eliminación ocurre aquí,
+    # en la fase 3, no en la fase 0).
+    inv = (contract.get("phases", {}) or {}).get("0", {}).get("inventory")
+    if isinstance(inv, list):
+        for entry in inv:
+            if not isinstance(entry, dict) or entry.get("disposition") != "retired":
+                continue
+            path = entry.get("path")
+            if isinstance(path, str) and path.strip() and (repo / path).exists():
+                findings.append(
+                    f"fase 3: '{entry.get('artifact')}' se declara retired pero el "
+                    f"artefacto sigue en el árbol: {path} (lo que no viene del "
+                    "patrón se elimina)")
+    # Instantáneas del host: rulesets con identidad; los del patrón salen
+    # de su contrato del host, no del contrato de adopción.
+    _branch, branch_findings = _load_host_snapshot(
+        repo, "branch-protection", snapshots["branch-protection"])
+    findings.extend(branch_findings)
+    ruleset_data, ruleset_findings = _load_host_snapshot(
+        repo, "rulesets", snapshots["rulesets"])
+    findings.extend(ruleset_findings)
+    if runner:
+        # Solo se exige y se valida la FORMA aquí; que el runner esté online
+        # lo decide la fase 4 con la misma instantánea (#303).
+        _runner_data, runner_findings = _load_host_snapshot(
+            repo, "actions-runners", snapshots["actions-runners"])
+        findings.extend(runner_findings)
+    if ruleset_data is not UNAVAILABLE_HOST_AREA:
+        pattern_rulesets = _pattern_rulesets_from_host_contract(repo)
+        for entry in ruleset_data:
+            name = entry["name"]
+            if name in pattern_rulesets:
+                continue
+            e = inventory.get(f"ruleset:{name}")
+            if e is None:
+                findings.append(
+                    f"fase 3: artefacto de gobierno del host no inventariado: "
+                    f"ruleset '{name}'")
+            elif e.get("disposition") == "retired":
+                findings.append(
+                    f"fase 3: gobierno residual en el host: ruleset '{name}' está "
+                    "retirado en el inventario pero sigue activo en la instantánea")
+            else:
+                findings.append(
+                    f"fase 3: gobierno residual en el host: ruleset '{name}' fue "
+                    f"adoptado hacia {e.get('target')!r} pero sigue activo en la "
+                    "instantánea")
+    # #319 (HR-48): el AGENTS.md del destino no puede mandar la documentación
+    # fuera del repositorio. La fase 3 es donde el fichero se sustituye, así
+    # que aquí se mira ese fichero; el cierre de enlaces lo cubre la fase 5.
+    agents_md = repo / "AGENTS.md"
+    if agents_md.is_file():
+        findings.extend(_external_doc_path_findings(
+            3, "AGENTS.md", agents_md.read_text(encoding="utf-8", errors="replace")))
+    return findings
+
+
+def _split_doc_sections(text):
+    """Extrae el cuerpo de cada sección canónica del documento operativo."""
+    sections = {}
+    for match in re.finditer(
+            r"<!-- ci-pattern-doc:begin (\S+) -->\n(.*?)<!-- ci-pattern-doc:end \1 -->",
+            text, re.DOTALL):
+        sections[match.group(1)] = match.group(2)
+    return sections
+
+
+def _first_diff_line(expected, actual):
+    exp_lines = expected.splitlines()
+    act_lines = actual.splitlines()
+    for k in range(max(len(exp_lines), len(act_lines))):
+        exp = exp_lines[k].strip() if k < len(exp_lines) else "<ausente>"
+        act = act_lines[k].strip() if k < len(act_lines) else "<ausente>"
+        if exp != act:
+            return f"esperado {exp!r}, encontrado {act!r}"
+    return "contenido distinto"
+
+
+def _check_docs_phase(repo, decl):
+    """Fase 5 (#279): el documento operativo existe, está enlazado desde el
+    fichero declarado y coincide byte a byte (por secciones) con el doc
+    REGENERADO en este mismo proceso desde los datos reales del consumer.
+    Nunca se invoca `ci-pattern verify` ni `adoption check` como subproceso:
+    el generador vive en este módulo y la comparación es local."""
+    spec = decl.get("operating_doc")
+    if not isinstance(spec, dict) or not isinstance(spec.get("doc"), str) \
+            or not spec["doc"].strip() or not isinstance(spec.get("linked_from"), str) \
+            or not spec["linked_from"].strip():
+        return [
+            "fase 5: falta 'operating_doc' con 'doc' (ruta del documento generado, "
+            "p. ej. docs/ci-pattern-flow.md) y 'linked_from' (fichero que lo enlaza, "
+            "p. ej. AGENTS.md); el documento se GENERA con "
+            "'ci-pattern adoption generate-doc', nunca se escribe a mano"
+        ]
+    doc_rel = spec["doc"].strip()
+    linked_rel = spec["linked_from"].strip()
+    generated = build_operating_doc(repo)  # entradas ilegibles → UsageError (exit 2)
+    doc_path = repo / doc_rel
+    if not doc_path.is_file():
+        return [
+            f"fase 5: falta el documento operativo '{doc_rel}'; genérelo con "
+            f"'ci-pattern adoption generate-doc <repo> --out {doc_rel}' y enlácelo "
+            f"desde '{linked_rel}'"
+        ]
+    linked_path = repo / linked_rel
+    if not linked_path.is_file():
+        return [f"fase 5: el fichero de enlace '{linked_rel}' no existe"]
+    linked_text = linked_path.read_text(encoding="utf-8")
+    if doc_rel not in linked_text:
+        return [
+            f"fase 5: el documento operativo '{doc_rel}' no está enlazado desde "
+            f"'{linked_rel}'; una IA que llega al repo debe encontrar el flujo "
+            "operativo sin buscarlo"
+        ]
+    agents_findings = _check_agents_block(repo)
+    if agents_findings:
+        return agents_findings
+    location_findings = _docs_location_findings(repo, 5, [linked_rel, doc_rel])
+    if location_findings:
+        return location_findings
+    existing = doc_path.read_text(encoding="utf-8")
+    findings = []
+    incidents = _check_incident_records(repo, _operating_doc_params(repo))
+    if existing == generated:
+        return _check_checks_table_coverage(existing, repo) + incidents
+    generated_sections = _split_doc_sections(generated)
+    existing_sections = _split_doc_sections(existing)
+    for key, _title in OPERATING_DOC_SECTIONS:
+        expected = generated_sections.get(key)
+        found = existing_sections.get(key)
+        if expected is None or found is None:
+            findings.append(
+                f"fase 5: el documento operativo '{doc_rel}' no contiene la sección "
+                f"canónica '{key}'; regenere con 'ci-pattern adoption generate-doc'")
+        elif expected != found:
+            findings.append(
+                f"fase 5: deriva del documento operativo en la sección '{key}' "
+                f"({_first_diff_line(expected, found)}): el destino contradice los "
+                "datos reales (etiquetas, checks o regex de rama); regenere con "
+                "'ci-pattern adoption generate-doc'")
+    return findings + _check_checks_table_coverage(existing, repo) + incidents
+
+
+def _check_agents_block(repo):
+    """#305: AGENTS.md del consumer contiene el bloque canónico generado
+    (índice de skills por situación + mandato «no inventar, deténgase y
+    pregunte»), byte a byte. Una copia alterada es peor que la ausencia."""
+    agents = repo / "AGENTS.md"
+    if not agents.is_file():
+        return [
+            "fase 5: falta AGENTS.md en la raíz; copie en él el bloque "
+            "canónico 'agents-block' del documento operativo: es el índice "
+            "de skills por situación y el mandato de no invención (si un "
+            "paso no está documentado, no lo invente: deténgase y pregunte)"]
+    text = agents.read_text(encoding="utf-8")
+    begin, end = ("<!-- ci-pattern-agents:begin -->",
+                  "<!-- ci-pattern-agents:end -->")
+    if begin not in text or end not in text:
+        return [
+            "fase 5: AGENTS.md no contiene el bloque canónico 'agents-block' "
+            "(índice de skills por situación y mandato: si un paso no está "
+            "documentado, no lo invente: deténgase y pregunte); copie el "
+            "bloque del documento operativo generado"]
+    start = text.index(begin)
+    found = text[start:text.index(end, start) + len(end)]
+    if found != OPERATING_DOC_AGENTS_BLOCK:
+        return [
+            "fase 5: el bloque de AGENTS.md está alterado respecto al "
+            "canónico generado; una copia alterada es peor que la ausencia: "
+            "la IA confiaría en una regla que el patrón no emitió; regenere "
+            "el documento y vuelva a copiar el bloque 'agents-block'"]
+    return []
+
+
+def _check_checks_table_coverage(doc_text, repo):
+    """#305: la tabla de checks del documento cubre EXACTAMENTE los jobs
+    requeridos reales, en ambos sentidos. Con la comparación byte a byte
+    esto ya se detecta como deriva; este chequeo nombra la causa exacta:
+    un job sin fila (sin documentar) o una fila sin job (fabricada)."""
+    _host, jobs, _entrypoint = _operating_doc_inputs(repo)
+    section = _split_doc_sections(doc_text).get("required-checks", "")
+    documented = set(re.findall(r"^\| `([a-z0-9-]+)` \|", section, re.MULTILINE))
+    findings = []
+    for job in sorted(set(jobs) - documented):
+        findings.append(
+            f"fase 5: el job requerido '{job}' no aparece en la tabla de checks "
+            "del documento operativo; ninguna regla del CI puede fallar sin "
+            "estar documentada; regenere con 'ci-pattern adoption generate-doc'")
+    for check in sorted(documented - set(jobs)):
+        findings.append(
+            f"fase 5: la tabla de checks documenta el check '{check}' que no "
+            "existe en los jobs requeridos; una receta fabricada es peor que "
+            "la ausencia; regenere con 'ci-pattern adoption generate-doc'")
+    return findings
+
+
+SLICE_OPEN_RE = re.compile(
+    r"<!--\s*personal-skills:slice:([A-Za-z0-9_-]+)\s*@[^>]*-->")
+SLICE_CLOSE_RE = re.compile(r"<!--\s*/personal-skills:slice:([A-Za-z0-9_-]+)\s*-->")
+AGENTS_LINK_RE = re.compile(
+    r"`([A-Za-z0-9_.\-]+(?:/[A-Za-z0-9_.\-]+)+\.(?:md|py|json|sh|ps1|yml))`"
+    r"|\]\(([^)#\s]+)\)")
+
+
+def _manifest_slice_sha(repo):
+    """slice_block_sha256 declarado en .team-skills.yaml (S1); None si no."""
+    path = repo / ".team-skills.yaml"
+    if not path.is_file():
+        return None
+    m = re.search(r"^slice_block_sha256:\s*([0-9a-f]{64})\s*$",
+                  path.read_text(encoding="utf-8"), re.M)
+    return m.group(1) if m else None
+
+
+def _check_agents_structure(repo, contract):
+    """#341-S3 (HR-55): estructura del AGENTS en fases 3 y 5.
+
+    AGENTS = titulo + bloque propagado (marcas personal-skills:slice:* con
+    sha256 identico a slice_block_sha256 del .team-skills.yaml) + como
+    mucho UNA seccion local '## ' tras el cierre, cuyos enlaces existan en
+    el repo.
+
+    La activacion NO depende del contenido: exige la DECLARACION explicita
+    agents_md: "propagated" en el contrato de adopcion. Sin declaracion el
+    gate informa y sale 0 (la adopción previa no se rompe); con ella
+    aplica completo, incluso sin bloque. El fail-open de que ningun
+    consumer se declare lo cierra por fuera el doctor de flota, que exige
+    el bloque a todo consumer con governance: ci-pattern en el registro."""
+    agents_path = repo / "AGENTS.md"
+    if not agents_path.is_file():
+        return []
+    if not (isinstance(contract, dict)
+            and contract.get("agents_md") == "propagated"):
+        print("HR-55: agents_md no declarado en el contrato de adopcion; "
+              "la estructura del AGENTS.md todavia no se exige "
+              '(se activa con agents_md: "propagated").', file=sys.stderr)
+        return []
+    text = agents_path.read_text(encoding="utf-8")
+    manifest_sha = _manifest_slice_sha(repo)
+    open_m = SLICE_OPEN_RE.search(text)
+    if open_m is None:
+        return ["HR-55: agents_md declarado pero AGENTS.md no tiene el "
+                "bloque personal-skills:slice:<consumer>"]
+    findings = []
+    for line in text[: open_m.start()].splitlines():
+        st = line.strip()
+        if not st:
+            continue
+        if not st.startswith("# "):
+            findings.append(
+                "HR-55: texto antes del bloque propagado en AGENTS.md: "
+                + st[:60])
+            break
+    close_m = SLICE_CLOSE_RE.search(text, open_m.end())
+    if close_m is None or close_m.group(1) != open_m.group(1):
+        findings.append("HR-55: marcas de slice desbalanceadas en AGENTS.md")
+        return findings
+    body = text[open_m.end(): close_m.start()]
+    if body.startswith("\n"):
+        body = body[1:]
+    if body.endswith("\n"):
+        body = body[:-1]
+    if manifest_sha is None:
+        findings.append(
+            "HR-55: AGENTS.md tiene el bloque propagado pero "
+            ".team-skills.yaml no declara slice_block_sha256")
+    else:
+        got = hashlib.sha256(body.encode("utf-8")).hexdigest()
+        if got != manifest_sha:
+            findings.append(
+                "HR-55: el sha256 del bloque en AGENTS.md no coincide con "
+                "slice_block_sha256 del .team-skills.yaml")
+    after = text[close_m.end():]
+    if after.strip():
+        lines = after.splitlines()
+        idx = next((i for i, l in enumerate(lines) if l.strip()), None)
+        if not lines[idx].startswith("## "):
+            findings.append(
+                "HR-55: texto tras el cierre fuera de la seccion local "
+                "(solo UNA seccion '## ' tras el bloque)")
+        else:
+            n_sections = sum(1 for l in lines if l.startswith("## "))
+            if n_sections > 1:
+                findings.append(
+                    f"HR-55: mas de una seccion local en AGENTS.md ({n_sections})")
+            section = "\n".join(lines[idx:])
+            for lm in AGENTS_LINK_RE.finditer(section):
+                link = lm.group(1) or lm.group(2)
+                if not link or link.startswith(("http:", "https:", "/", "~", "<")):
+                    continue
+                if not (repo / link).exists():
+                    findings.append(
+                        "HR-55: enlace roto en la seccion local: " + link)
+    return findings
+
+
+MAINTENANCE_BEGIN_RE = re.compile(r"<!--\s*maintenance:begin\s*-->")
+MAINTENANCE_END_RE = re.compile(r"<!--\s*maintenance:end\s*-->")
+MAINTENANCE_BLOCK_RE = re.compile(
+    r"<!--\s*maintenance:begin\s*-->.*?<!--\s*maintenance:end\s*-->", re.S)
+PERSONAL_PATH_RE = re.compile(r"personal/[A-Za-z0-9_.-]+/")
+USER_PATH_RE = re.compile(r"[A-Za-z]:\\Users\\[A-Za-z0-9_.-]+|/home/[A-Za-z0-9_.-]+")
+
+
+def _propagable_text(text):
+    """Devuelve el texto de un fichero sin las regiones maintenance.
+
+    Mismo marcador que usa Compose-ConsumerSlice (scripts/lib):
+    el dato que decide es la pareja de marcas, no dos implementaciones."""
+    return MAINTENANCE_BLOCK_RE.sub("", text)
+
+
+def _check_slice_content(catalog, paths):
+    """HR-56 (#358): lo que compone la propagacion no lleva nombres
+    propios ni rutas personales.
+
+    Fallo cerrado: sin 'maintainers' declarados en fleet/registry.json el
+    control no puede medir, y por eso falla en lugar de pasar en verde."""
+    findings = []
+    maintainers = None
+    registry = catalog / "fleet" / "registry.json"
+    if registry.is_file():
+        try:
+            maintainers = json.loads(
+                registry.read_text(encoding="utf-8")).get("maintainers")
+        except json.JSONDecodeError as exc:
+            findings.append(f"HR-56: fleet/registry.json ilegible: {exc}")
+    if not maintainers:
+        findings.append(
+            "HR-56: fleet/registry.json no declara 'maintainers'; sin la "
+            "lista de mantenedores el control no puede medir")
+        maintainers = []
+    for path in paths:
+        try:
+            raw = path.read_text(encoding="utf-8")
+        except OSError as exc:
+            findings.append(f"HR-56: no se pudo leer {path}: {exc}")
+            continue
+        try:
+            rel = str(path.relative_to(catalog))
+        except ValueError:
+            rel = str(path)
+        n_begin = len(MAINTENANCE_BEGIN_RE.findall(raw))
+        n_end = len(MAINTENANCE_END_RE.findall(raw))
+        if n_begin != n_end:
+            findings.append(
+                f"HR-56: {rel}: marcador maintenance desbalanceado "
+                f"(begin={n_begin}, end={n_end}); cierra cada maintenance:begin "
+                "con su maintenance:end")
+            continue
+        for lineno, line in enumerate(_propagable_text(raw).splitlines(), 1):
+            for m in PERSONAL_PATH_RE.finditer(line):
+                findings.append(
+                    f"HR-56: {rel}:{lineno}: ruta personal en lo propagable: "
+                    f"{m.group(0)!r}")
+            for m in USER_PATH_RE.finditer(line):
+                findings.append(
+                    f"HR-56: {rel}:{lineno}: ruta de usuario en lo propagable: "
+                    f"{m.group(0)!r}")
+            for login in maintainers:
+                if re.search(r"(?<![A-Za-z0-9_.-])" + re.escape(login) + r"(?![A-Za-z0-9_-])",
+                             line, re.I):
+                    findings.append(
+                        f"HR-56: {rel}:{lineno}: login de mantenedor "
+                        f"{login!r} en lo propagable")
+    return findings
+
+
+def _phase_findings(repo, n, decl, contract):
+    """Hallazgos de la fase n contra el árbol real; [] si cumple."""
+    if not isinstance(decl, dict):
+        return [f"fase {n}: sin declaración en el contrato"]
+    if n == 0:
+        return _check_phase_zero(repo, decl)
+    if n == 2:
+        return _check_env_isolation_phase(repo, decl)
+    if n == 1:
+        return _check_evidence_phase(repo, n, decl)
+    if n == 3:
+        return _check_phase_three(repo, decl, contract) + \
+            _check_evidence_phase(repo, n, decl) + \
+            _check_agents_structure(repo, contract)
+    if n == 4:
+        return _check_gates_phase(repo, decl, contract)
+    if n == 5:
+        return _check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
+    if n == 6:
+        return _check_acceptance_phase(repo, decl)
+    return [f"fase {n}: fase fuera del rango 0..{ADOPTION_PHASES - 1}"]
+
+
+def cmd_adoption(args):
+    if not args or args[0] in ("-h", "--help"):
+        print(ADOPTION_HELP.rstrip())
+        return EXIT_OK
+    if args[:1] == ["generate-doc"]:
+        return _cmd_adoption_generate_doc(args[1:])
+    if args[:1] != ["check"]:
+        raise UsageError(
+            "adoption: subcomando desconocido; use 'adoption check (--phase N | --all) <repo>' "
+            "o 'adoption generate-doc <repo> --out <ruta>'."
+        )
+    rest = args[1:]
+    if rest[:1] in (["-h"], ["--help"]):
+        print(ADOPTION_HELP.rstrip())
+        return EXIT_OK
+    phase_raw = None
+    all_phases = False
+    repo = None
+    i = 0
+    while i < len(rest):
+        arg = rest[i]
+        if arg == "--phase":
+            if i + 1 >= len(rest):
+                raise UsageError("--phase requiere un número de fase (0..%d)" % (ADOPTION_PHASES - 1))
+            phase_raw = rest[i + 1]
+            i += 2
+        elif arg == "--all":
+            all_phases = True
+            i += 1
+        elif arg.startswith("-"):
+            raise UsageError(f"adoption check: opción no reconocida: {arg}")
+        else:
+            if repo is not None:
+                raise UsageError("adoption check: un solo repo por invocación")
+            repo = arg
+            i += 1
+    if repo is None:
+        raise UsageError("adoption check: falta <repo>")
+    if all_phases == (phase_raw is not None):
+        raise UsageError("adoption check: exactamente una de --phase N o --all")
+    if not Path(repo).is_dir():
+        raise UsageError(f"repo inexistente o no es un directorio: {repo}")
+    if all_phases:
+        last = ADOPTION_PHASES - 1
+    else:
+        if not re.fullmatch(r"[0-6]", phase_raw):
+            raise UsageError(f"--phase debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {phase_raw!r}")
+        last = int(phase_raw)
+
+    contract = load_adoption_contract(repo)
+    blocked_at = None
+    findings = []
+    for n in range(last + 1):
+        phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)), contract)
+        if phase_findings:
+            blocked_at = n
+            findings.extend(phase_findings)
+            break
+    if findings:
+        if blocked_at < last:
+            print(
+                f"adoption check: fases {blocked_at + 1}..{last} no evaluadas: "
+                "ninguna fase pasa si la anterior no pasa.",
+                file=sys.stderr,
+            )
+        for finding in findings:
+            print(f"hallazgo: {finding}", file=sys.stderr)
+        return EXIT_FINDINGS
+    print(f"adoption check: fases 0..{last} en verde sobre {repo}")
+    return EXIT_OK
+
+
+COMMANDS = {
+    "params": lambda args: (
+        cmd_params_validate(args[1:])
+        if args[:1] == ["validate"]
+        else (_ for _ in ()).throw(UsageError("params: subcomando desconocido; use 'params validate <file>'."))
+    ),
+    "verify": cmd_verify,
+    "status": cmd_status,
+    "manifest": lambda args: (
+        cmd_manifest_show(args[1:])
+        if args[:1] == ["show"]
+        else (_ for _ in ()).throw(UsageError("manifest: subcomando desconocido; use 'manifest show <repo>'."))
+    ),
+    "adopt": lambda args: (_ for _ in ()).throw(
+        UsageError(
+            "`adopt` está retirado: la adopción la gobierna una IA con "
+            "`ci-pattern adoption check (--phase N | --all) <repo>` sobre el "
+            "contrato .github/ci-pattern-adoption.json; esta CLI nunca copia "
+            "plantillas ni escribe el manifiesto."
+        )
+    ),
+    "update": lambda args: (_ for _ in ()).throw(
+        UsageError(
+            "`update` está retirado: la re-sincronización con la canónica se "
+            "gobierna por el manifiesto y el veredicto de "
+            "`ci-pattern adoption check (--phase N | --all) <repo>`; esta CLI "
+            "nunca sobrescribe ficheros."
+        )
+    ),
+    "adoption": cmd_adoption,
+    "report-friction": cmd_report_friction,
+}
+
+
+def main(argv=None):
+    # #187: en Windows la tubería por defecto es cp1252 y el glifo de
+    # hallazgo reventaba con UnicodeEncodeError antes de mostrar nada.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if not argv or argv[0] in ("-h", "--help"):
+        print(USAGE)
+        return EXIT_OK if argv else EXIT_USAGE
+    # Guarda anti-recursión (#277, incidente 2026-10-05): verify ejecuta
+    # adoption check en proceso, así que un verify/adoption lanzado como
+    # subproceso desde un gate recursa sin límite. Si el entorno ya lleva la
+    # marca, fallo cerrado con exit 2; los subprocesos de esta CLI nacen
+    # marcados vía _child_env().
+    if argv[0] in ("verify", "adoption") and os.environ.get(RECURSION_ENV):
+        print(
+            "error de uso: recursión de ci-pattern detectada (CI_PATTERN_NESTED ya definida): "
+            "un gate de adopción no puede invocar `verify` ni `adoption` como subproceso; "
+            "las comprobaciones de manifiesto se hacen en proceso.",
+            file=sys.stderr,
+        )
+        return EXIT_USAGE
+    try:
+        command = COMMANDS.get(argv[0])
+        if command is None:
+            raise UsageError(f"comando desconocido: {argv[0]}. Ejecute `ci-pattern --help`.")
+        return command(argv[1:])
+    except UsageError as exc:
+        print(f"error de uso: {exc}", file=sys.stderr)
+        return EXIT_USAGE
+    except MissingResourceError as exc:
+        print(f"recurso ausente: {exc}", file=sys.stderr)
+        print(str(exc))
+        return EXIT_MISSING
+    except Exception as exc:
+        _print_friction_hint(argv[0], f"traceback: {type(exc).__name__}: {exc}")
+        raise
+
+
+if __name__ == "__main__":
+    sys.exit(main())
