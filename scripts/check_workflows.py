@@ -685,6 +685,35 @@ def _check_public_pr_runner_isolation(doc: dict[str, Any]) -> Iterator[Finding]:
         )
 
 
+def _check_no_self_hosted_runners(doc: dict[str, Any]) -> Iterator[Finding]:
+    """Reject ANY job pinned to a self-hosted runner (issue #800).
+
+    This is the repository rule, not a PR-isolation nuance: the repository is
+    public and does not consume the operator's own VPS runners at all
+    (`docs/10-runners.md`). `_check_public_pr_runner_isolation` deliberately
+    exempts jobs excluded from pull requests, so a scheduled job could hide
+    there — `mutation` did: pinned to a label with zero registered runners, red
+    every week while the `required` aggregator published green (#785).
+    """
+    jobs = doc.get("jobs") or {}
+    if not isinstance(jobs, dict):
+        return
+    for job_name, job_def in jobs.items():
+        if not isinstance(job_def, dict) or "uses" in job_def:
+            continue
+        runner = job_def.get("runs-on")
+        labels = runner if isinstance(runner, list) else [runner]
+        if not any(str(label) == "self-hosted" for label in labels):
+            continue
+        yield (
+            "error",
+            f"jobs.{job_name}.runs-on",
+            f"job `{job_name}` uses `{runner!r}`; a public repository does not consume "
+            f"the operator's self-hosted runners (docs/10-runners.md): use a literal "
+            f"GitHub-hosted label such as `ubuntu-24.04` or `ubuntu-24.04-arm`",
+        )
+
+
 # --------------------------------------------------------------------------------------------
 # RUN-ALL-CHECKS
 # --------------------------------------------------------------------------------------------
@@ -750,6 +779,11 @@ def _check_one(path: Path, doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
         yield (
             severity,
             _format_finding(path, severity, "public-pr-runner", location, message),
+        )
+    for severity, location, message in _check_no_self_hosted_runners(doc):
+        yield (
+            severity,
+            _format_finding(path, severity, "no-self-hosted-runner", location, message),
         )
 
 
