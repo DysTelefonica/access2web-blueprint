@@ -150,6 +150,20 @@ def required_checks(contract: dict) -> list[str]:
     return names
 
 
+def tracker_branch(contract: dict) -> str | None:
+    """#333 (regla 7): con `tracker_branch` declarado, lo que llega a una rama
+    protegida tiene que venir del PR del tracker (modelo «rama de feature con PR
+    tracker en borrador»). Sin declaración el control no cambia: una cadena
+    apilada hacia main no necesita tracker, y exigirlo sin declararlo
+    inventaria una regla que el contrato no pide."""
+    value = contract.get("tracker_branch")
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise FailClosed("contract 'tracker_branch' must be a non-empty string")
+    return value.strip()
+
+
 def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[str]) -> list[str]:
     # Politica de verificacion (#326): se leen las check-runs con
     # filter=latest sobre la primera pagina (per_page=100); la API legada de
@@ -220,6 +234,7 @@ def main() -> int:
                     raise FailClosed("the compare returned a commit without a 40-char sha")
                 commits.append({"id": sha, "author": {"name": author.get("name")}})
         required = required_checks(contract)
+        tracker = tracker_branch(contract)
         findings: list[str] = []
         seen_prs: set = set()
         for commit in commits:
@@ -238,6 +253,18 @@ def main() -> int:
                 findings.append(f"commit {commit['id']} — author: {author_name}\n  reason: {reason}")
                 continue
             merged = into_branch
+            if tracker is not None:
+                heads = sorted({p["head"]["ref"] for p in merged
+                                if isinstance(p.get("head"), dict)
+                                and isinstance(p["head"].get("ref"), str)})
+                if tracker not in heads:
+                    findings.append(
+                        f"commit {commit['id']} — author: {author_name}\n"
+                        f"  reason: el contrato declara tracker_branch '{tracker}' y ningún PR "
+                        f"mergeado en {branch} tiene esa rama como cabeza "
+                        f"(cabezas: {heads or 'desconocidas'}) — lo que llega a una rama "
+                        "protegida tiene que venir del PR del tracker (#333, regla 7)")
+                    continue
             for pull in merged:
                 number = pull.get("number")
                 if number in seen_prs:

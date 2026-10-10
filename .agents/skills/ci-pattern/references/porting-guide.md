@@ -239,6 +239,11 @@ host el patrón se adopta con el camino runner (HR-34 con su clase
    `host_capabilities` como `unavailable`, la etiqueta del runner en
    `runner.label` —la que incluye el `runs-on`, p. ej. `cadete`— y las
    ramas gobernadas en `protected_branches`.
+   Si su cadena de PRs usa el modelo **rama de feature con PR tracker en
+   borrador** (HR-54, regla 7), declare además `tracker_branch` con esa rama:
+   el detective post-push pasará a exigir que el PR mergeado en cada rama
+   protegida tenga esa rama como cabeza. Sin la declaración el control no
+   cambia, que es lo correcto para una cadena apilada hacia `main`.
 2. Capture las instantáneas con GETs de solo lectura: para
    `branch-protection` y `rulesets` guarde el cuerpo real del `403`, y para
    `actions-runners` la respuesta de `repos/<owner>/<repo>/actions/runners`.
