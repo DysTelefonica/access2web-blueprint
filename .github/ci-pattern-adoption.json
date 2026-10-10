@@ -21,6 +21,7 @@
         {"artifact": ".github/local-ci-parity-policy.json", "disposition": "adopted", "target": ".github/local-ci-parity-policy.json"},
         {"artifact": "scripts/local-preflight.sh", "disposition": "adopted", "target": "scripts/local-preflight.sh"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
+        {"artifact": ".team-skills.yaml (manifiesto de skills de la flota: lo escribe el propagador de DysTelefonica/team-skills en cada corrida, y el catálogo del patrón lo lista como artefacto de gobierno)", "disposition": "adopted", "target": ".team-skills.yaml"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
         {"artifact": "scripts/check_branch_name.py", "disposition": "adopted", "target": "scripts/check_branch_name.py"},
         {"artifact": "scripts/check_dry.py", "disposition": "adopted", "target": "scripts/check_dry.py"},
