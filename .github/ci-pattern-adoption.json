@@ -191,6 +191,12 @@
         "doc": "docs/ci-pattern-flow.md",
         "linked_from": "AGENTS.md"
       }
+    },
+    "6": {
+      "prs": [
+        {"number": 831, "sha": "ca15b3994a987b3edc895331c29b634d44775f36", "conclusion": "success"},
+        {"number": 834, "sha": "34cbcb32f639f4e3adfd6d1f42554680428e345b", "conclusion": "success"}
+      ]
     }
   }
 }
