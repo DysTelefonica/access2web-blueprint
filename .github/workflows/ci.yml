@@ -313,13 +313,21 @@ jobs:
     # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
     # session needs the mutation runner on a real codebase. Verify it once on adoption.
     # The tag-push branch is the XCUT #703 contract: a release cannot publish unless
-    # mutation testing has run on the exact bytes of the tag. Costs ~60 min on the
-    # GitHub-hosted ARM runner; this repository is public and does not consume the
-    # VPS' own runners. The release path accepts that latency to keep the
-    # fail-closed guarantee (alternative was a preflight lookup of a recent manual
-    # run, which relies on operational discipline).
-    # NOTE: the `if` keeps this slow weekly gate and the release contract out of the
-    # pull-request path; it is not a per-PR check.
+    # mutation testing has run on the exact bytes of the tag. Costs up to ~60 min; the
+    # release path accepts that latency to keep the fail-closed guarantee (alternative
+    # was a preflight lookup of a recent manual run, which relies on operational
+    # discipline).
+    #
+    # Runner: este repositorio es público y **no consume runners propios del VPS**
+    # (`docs/10-runners.md`). Hasta #800 este job pineaba
+    # `[self-hosted, Linux, ARM64, oracle-vps, a2w]`, una etiqueta con **cero runners
+    # registrados**: el semanal no podía recibir máquina y llevaba cuatro semanas en
+    # rojo sin que el agregador `required` lo mirase (#785). `ubuntu-24.04-arm`
+    # conserva la arquitectura ARM64 que ya usaban los demás jobs del repositorio.
+    #
+    # NOTE: the `if` uses the simple `!= 'pull_request'` exclusion accepted by
+    # `scripts/check_workflows.py::_condition_excludes_pull_requests`; el job sigue
+    # siendo caro y semanal, no de PR, y ahora lo ejecuta un runner hospedado.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04-arm
     # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
@@ -346,9 +354,8 @@ jobs:
 
       - name: disable sparse-checkout cone mode (runtime fallback)
         # See the same step in the ``quality`` and ``review-budget``
-        # jobs. It is kept as a defensive fallback: the checkout option
-        # above is the real fix, and this step is harmless once the cone
-        # mode is already disabled.
+        # jobs. El job semanal corre en un runner hospedado y hereda la
+        # misma configuración de cono del cache.
         # `|| true` is forbidden by Hard Rule 1 (test_no_run_block_forces_success),
         # so we use a typed shell conditional. `git sparse-checkout disable`
         # returns non-zero on older git (command not found); the `if ! ...`

@@ -14,11 +14,10 @@ permissions:
 
 jobs:
   preflight:
-    # Runs on the self-hosted `a2w` runner. Antes vivía en `ubuntu-24.04` por el
-    # split del retro #117/#127 — la contención que justificaba ese split ya no
-    # aplica (2026-08-20): corren 2 runners `a2w` en fan-out. El billing de
-    # GitHub Actions rompió el 2026-08-20 y no debe condicionar el release path.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # Runner hospedado: este repositorio es público y no consume los runners
+    # propios del VPS (#800). El job solo usa git, `gh` y `jq` contra la API de
+    # Actions, así que no depende de la arquitectura.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     # Per-job FIFO, one group per job: a shared group would make the three jobs
     # of the same run queue behind each other instead of behind their peers.
@@ -79,7 +78,9 @@ jobs:
     # ghcr.io treats PAT and `GITHUB_TOKEN` access as distinct grants on
     # a public package.
     needs: preflight
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # ARM64 hospedado: la imagen que este job consume la publica `publish`, que
+    # corre en la misma etiqueta, así que la arquitectura se conserva (#800).
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 20
     concurrency:
       group: release-e2e-${{ github.ref }}
@@ -164,9 +165,9 @@ jobs:
 
   publish:
     needs: e2e
-    # Same runner class the heavy ci jobs use, so the image is built on the
-    # architecture it will actually run on.
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # La arquitectura de la imagen es la del runner: se conserva ARM64 en la
+    # etiqueta hospedada, la misma que consume `e2e` (#800).
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 45
     concurrency:
       group: release-publish-${{ github.ref }}
@@ -252,7 +253,8 @@ jobs:
 
   verify:
     needs: publish
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    # `cosign verify` contra el digest publicado: sin dependencia de arquitectura.
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     concurrency:
       group: release-verify-${{ github.ref }}

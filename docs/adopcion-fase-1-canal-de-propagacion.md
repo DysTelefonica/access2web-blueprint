@@ -2,16 +2,16 @@
 
 > **Qué es.** La auditoría del mecanismo real que propaga el catálogo de `DysTelefonica/team-skills` hacia este repositorio, con la salida literal de las dos ejecuciones intentadas hoy y el estado medido del destino.
 
-> **Qué no es.** El cierre de la fase. La evidencia de la corrida vive en `docs/adopcion-fase-1-evidencia-propagacion.md`, y es lo que declara `phases."1".evidence.path`; este documento es la auditoría del mecanismo. Lo que sigue abierto es el artefacto del destino, no la fase: el PR #770 no puede mergear con ese tamaño.
+> **Qué no es.** El cierre de la fase. La evidencia de la corrida vive en `docs/adopcion-fase-1-evidencia-propagacion.md`, y es lo que declara `phases."1".evidence.path`; este documento es la auditoría del mecanismo. El artefacto del destino que aquí quedaba abierto —«el PR #770 no puede mergear con ese tamaño»— está cerrado: el propagador parte la propagación en dos tramos encadenados y el tramo revisable cabe en el presupuesto (ver la segunda corrida en la evidencia).
 
 ## El mecanismo, leído del repositorio que lo aloja
 
 | Fichero | Rol | Lee | Escribe |
 |---|---|---|---|
 | `fleet/registry.json` | Declaración del consumidor | — | — (entrada de este repositorio: `active_branch: main`, `bot_branch: skill-fleet/access2web-blueprint`, `primary_type: web`, sin `governance` declarado) |
-| `scripts/propagate-team-skills.ps1` | La corrida real | El partial del tipo primario, el fragmento del consumidor, el partial de gobernanza (solo si el consumidor declara `governance`), el catálogo `skills/`, `fleet/governance-tiers.json` | El bloque de `AGENTS.md` entre marcadores, `.agents/skills/<n>/`, `.team-skills.yaml`, y el borrado de `skills/<n>/` solo para las skills que salen del catálogo; después commit y `git push --force-with-lease` a la rama de flota, y apertura o actualización del PR |
+| `scripts/propagate-team-skills.ps1` | La corrida real | El partial del tipo primario, el fragmento del consumidor, el partial de gobernanza (solo si el consumidor declara `governance`), el catálogo `skills/`, `fleet/governance-tiers.json` | El bloque de `AGENTS.md` entre marcadores, `.agents/skills/<n>/`, `.team-skills.yaml`, y el borrado de `skills/<n>/` solo para las skills que salen del catálogo; después commit y `git push --force-with-lease` a **dos** ramas de flota (tramo revisable y tramo vendorizado), el refresco de los metadatos del PR existente por la API REST **antes** del push, y la apertura o actualización de los dos PRs encadenados |
 | `scripts/doctor-team-skills.ps1` | Comprobación de solo lectura | Registry, manifiesto, marcadores, catálogo | Nada. Códigos: 0 sincronizado, 1 deriva, 2 inconsistente, 3 error de entorno |
-| `fleet/governance-tiers.json` | Canal de gobernanza | — | — (declara qué partial y qué skills llegan solo a un consumidor con `governance`; este repositorio no lo declara, así que no le llegan) |
+| `fleet/governance-tiers.json` | Canal de gobernanza | — | — (declara qué partial y qué skills llegan solo a un consumidor con `governance`; este repositorio **sí** lo declara desde la declaración de gobierno del registro, y de ahí que el partial de gobernanza viaje en el slice y lleguen las seis skills del tier) |
 
 El alcance real no incluye hooks: no existen `.githooks` ni `.husky`, y los espejos de runtime (`.claude/`, `.opencode/`, `.codex/`) los escribe el consumidor con `scripts/install-skills.sh`, no el propagador.
 
@@ -19,8 +19,8 @@ El alcance real no incluye hooks: no existen `.githooks` ni `.husky`, y los espe
 
 - **El slice está en `main`.** `AGENTS.md` lleva el bloque entre `<!-- personal-skills:slice:access2web-blueprint @ v0092651 -->` y su cierre, con tres commits de flota (`@ vae17553` #755, `@ 4675cbe` #761, `@ f0e46d3` #767). El canal del slice funciona y está mergeado.
 - **v1, mergeada, escribió `skills/`:** 50 entradas, de las cuales 4 son del consumidor (`README.md`, `architecture-guardrails`, `lanzadera-testing-strategy`, `maintainer-prompt-drafter`) y el resto vienen del catálogo.
-- **v2, pendiente, escribe `.agents/skills/`:** la rama de flota `skill-fleet/access2web-blueprint` (PR #770, abierto desde el 2026-10-02) cambió 278 ficheros con 39.368 líneas en `f5b584b` y, tras las corridas de la evidencia, 265 ficheros con 37.715 líneas en `7be912a`: las skills de `.agents/skills/` (43), `AGENTS.md` y el `.team-skills.yaml`, que en `f5b584b` salía de 0 bytes y en `7be912a` sale escrito (1.419 bytes).
-- **Migración incompleta.** Los dos destinos no contienen el mismo conjunto: de las skills del canal de gobernanza, `skills/` tiene 4 y `.agents/skills/` tiene 2. Mientras la migración no termine, el repositorio sostiene dos copias divergentes del catálogo.
+- **v2, entregada, escribe `.agents/skills/`:** la rama de flota `skill-fleet/access2web-blueprint` cambió 278 ficheros con 39.368 líneas en `f5b584b` y 265 ficheros con 37.715 líneas en `7be912a` en sus primeras corridas. La segunda corrida documentada en la evidencia dejó la propagación en **dos tramos encadenados**: el tramo revisable (`.team-skills.yaml` + `AGENTS.md`, 166 líneas, PR #770) mergeado en `d9a7d40`, y el tramo vendorizado (`.agents/skills/**`, 146 ficheros, PR #830 con su excepción de tamaño declarada) mergeado en `7d1bb58`. La propagación es idempotente: una corrida posterior reporta `no_change`.
+- **Los dos destinos conviven, y no por una migración a medias.** `skills/` (50 entradas) es el catálogo vendorizado del propio repositorio —declarado `adopted` en el inventario de la fase 0— y `.agents/skills/` es la vía del propagador v2, donde llega el tier de gobierno (6 skills). El propagador ya no escribe `skills/`; retirar ese árbol es una decisión del consumidor, no una fase pendiente del canal.
 
 ## Las dos ejecuciones intentadas, con salida literal
 
