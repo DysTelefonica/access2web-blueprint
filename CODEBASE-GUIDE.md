@@ -200,7 +200,7 @@ Esta guía explica ownership, flows, y guardrails. **NO duplica** la API referen
 |---|---|
 | La fuente de verdad arquitectónica. | Las decisiones D-<n> y DA-<n> viven en [`docs/architecture.md`](docs/architecture.md); este doc sólo las referencia. |
 | La referencia técnica de endpoints, schemas o CLI flags. | [`DOCS.md`](../DOCS.md) es la technical reference raíz. |
-| El manual de uso de los `check_*.py`. | [`docs/architecture.md`](docs/architecture.md) §CI gates mapea los gates; el manual de uso vive en el docstring de cada script, y este doc sólo nombra cuál aplica a qué artefacto. |
+| El manual de uso de los `check_*.py`. | [`docs/gates.md`](docs/gates.md) es el manual de uso de cada gate, el contrato de los workflows y los pasos para añadir uno; [`docs/architecture.md`](docs/architecture.md) §CI gates mapea qué gate protege qué decisión. |
 | Una guía de estilo de código o convención de naming. | [`CONTRIBUTING.md`](../CONTRIBUTING.md) §Convención multi-app + `pyproject.fragment.toml` + ruff/mypy config. |
 
 ## Core invariants
