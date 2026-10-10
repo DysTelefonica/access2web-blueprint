@@ -313,21 +313,13 @@ jobs:
     # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
     # session needs the mutation runner on a real codebase. Verify it once on adoption.
     # The tag-push branch is the XCUT #703 contract: a release cannot publish unless
-    # mutation testing has run on the exact bytes of the tag. Costs up to ~60 min; the
-    # release path accepts that latency to keep the fail-closed guarantee (alternative
-    # was a preflight lookup of a recent manual run, which relies on operational
-    # discipline).
-    #
-    # Runner: este repositorio es público y **no consume runners propios del VPS**
-    # (`docs/10-runners.md`). Hasta #800 este job pineaba
-    # `[self-hosted, Linux, ARM64, oracle-vps, a2w]`, una etiqueta con **cero runners
-    # registrados**: el semanal no podía recibir máquina y llevaba cuatro semanas en
-    # rojo sin que el agregador `required` lo mirase (#785). `ubuntu-24.04-arm`
-    # conserva la arquitectura ARM64 que ya usaban los demás jobs del repositorio.
-    #
-    # NOTE: the `if` uses the simple `!= 'pull_request'` exclusion accepted by
-    # `scripts/check_workflows.py::_condition_excludes_pull_requests`; el job sigue
-    # siendo caro y semanal, no de PR, y ahora lo ejecuta un runner hospedado.
+    # mutation testing has run on the exact bytes of the tag. Costs ~60 min on the
+    # GitHub-hosted ARM runner; this repository is public and does not consume the
+    # VPS' own runners. The release path accepts that latency to keep the
+    # fail-closed guarantee (alternative was a preflight lookup of a recent manual
+    # run, which relies on operational discipline).
+    # NOTE: the `if` keeps this slow weekly gate and the release contract out of the
+    # pull-request path; it is not a per-PR check.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04-arm
     # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
@@ -354,8 +346,9 @@ jobs:
 
       - name: disable sparse-checkout cone mode (runtime fallback)
         # See the same step in the ``quality`` and ``review-budget``
-        # jobs. El job semanal corre en un runner hospedado y hereda la
-        # misma configuración de cono del cache.
+        # jobs. It is kept as a defensive fallback: the checkout option
+        # above is the real fix, and this step is harmless once the cone
+        # mode is already disabled.
         # `|| true` is forbidden by Hard Rule 1 (test_no_run_block_forces_success),
         # so we use a typed shell conditional. `git sparse-checkout disable`
         # returns non-zero on older git (command not found); the `if ! ...`
@@ -409,22 +402,50 @@ jobs:
             exit 1
           fi
 
-      - name: run mutants
-        # The runner's own exit code is not the verdict: it reports success for a run in which
-        # nothing executed. check_mutation.py is what decides (Hard Rule 18).
+      - name: mutar el tramo
+        # Cada job mide el reparto con su propio `init` (3,7 s) y ejecuta solo su
+        # tramo; el reparto es determinista, así que los diez jobs coinciden.
         run: |
+          set -euo pipefail
           cosmic-ray init docs/quality/cosmic-ray.toml mutation-session.sqlite
-          cosmic-ray exec docs/quality/cosmic-ray.toml mutation-session.sqlite
+          python scripts/mutation_shards.py --session mutation-session.sqlite \
+            --shards 10 --index ${{ matrix.shard }} --out shard.toml
+          cosmic-ray exec shard.toml shard-session.sqlite
 
-      - name: mutation ratchet
-        run: ${{ steps.setup-python.outputs.pythonLocation }}/bin/python3 scripts/check_mutation.py mutation-session.sqlite
+      - name: publicar la sesión del tramo
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-session-${{ matrix.shard }}
+          path: shard-session.sqlite
+          if-no-files-found: error
 
-      # The mutation-session sqlite blob previously published as an
-      # `actions/upload-artifact` step here is intentionally removed;
-      # see the matching comment in the `quality` job. The
-      # `python scripts/check_mutation.py` step exits with the ratchet
-      # verdict; that exit code (no `continue-on-error`, no `|| true`) is
-      # the gate.
+  mutation-ratchet:
+    # Fusiona las sesiones de la matriz y da el veredicto. Falla cerrado si
+    # falta un tramo (`--shards 10`) o si alguno no midió nada.
+    needs: mutation
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    concurrency:
+      group: gate-mutation-ratchet
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.11"
+
+      - name: bajar las sesiones de los tramos
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: mutation-session-*
+          path: sessions
+
+      # `check_mutation.py` es stdlib a propósito: el veredicto no necesita el
+      # toolchain de mutación, solo las sesiones.
+      - name: veredicto sobre las sesiones fusionadas
+        run: python scripts/check_mutation.py sessions/*/*.sqlite --shards 10
 
   security:
     # Issue #702: security.yml is now `on: workflow_call` only (no

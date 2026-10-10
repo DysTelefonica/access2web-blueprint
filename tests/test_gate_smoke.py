@@ -13,6 +13,7 @@ import json
 import sqlite3
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -413,11 +414,64 @@ def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
     assert first.read_bytes() == second.read_bytes()
 
 
-# --- Gate multi-sesión: una sesión por tramo de la matriz (#785) ----------------------------
+# --- Reparto del dominio entre los jobs de la matriz (#785) ---------------------------------
 #
-# El job final fusiona las sesiones de los tramos. El gate exige la salud de cada una
-# —un tramo degenerado invalida la corrida— y `--shards N` falla cerrado si llegan menos:
-# un tramo perdido daría el veredicto medido sobre menos mutantes de los que el run declara.
+# Medido el 2026-10-07: el dominio (1129 mutantes) en un solo job pide 38-113 h, más que el
+# techo de un job hospedado. La matriz parte el dominio en tramos deterministas y el job final
+# fusiona las sesiones. Estos tests fijan el reparto y el fallo cerrado del gate multi-sesión.
+
+MUTATION_DOMAIN_COUNTS = {
+    "app/src/modules/expedientes/domain/anexo/retention.py": 116,
+    "app/src/modules/expedientes/domain/anexo/size_limit.py": 99,
+    "app/src/modules/expedientes/domain/cpv/code.py": 67,
+    "app/src/modules/lanzadera/domain/legacy_role_map.py": 66,
+    "app/src/modules/expedientes/domain/anualidad.py": 66,
+    "app/src/modules/expedientes/domain/hash/versioning.py": 62,
+    "app/src/modules/lanzadera/domain/ports/app_repository.py": 55,
+    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": 54,
+    "app/src/modules/expedientes/domain/expediente.py": 50,
+    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": 50,
+}
+
+
+def test_mutation_shard_assignment_is_complete_balanced_and_stable() -> None:
+    """El reparto cubre el dominio una vez, reparte la carga y no depende del orden de entrada."""
+    module = _load("mutation_shards.py")
+    total = sum(MUTATION_DOMAIN_COUNTS.values())
+    plan = module.assign(MUTATION_DOMAIN_COUNTS, 4)
+    declared = [path for entry in plan for path in entry["modules"]]
+    assert sorted(declared) == sorted(MUTATION_DOMAIN_COUNTS)
+    assert len(declared) == len(set(declared))
+    assert [entry["index"] for entry in plan] == [0, 1, 2, 3]
+    loads = [entry["mutants"] for entry in plan]
+    assert max(loads) <= total / len(plan) * 1.2, loads
+    reversed_input = dict(reversed(list(MUTATION_DOMAIN_COUNTS.items())))
+    assert module.assign(reversed_input, 4) == plan, (
+        "el reparto no puede depender del orden de entrada"
+    )
+
+
+def test_mutation_shard_assignment_fails_closed_with_too_few_modules() -> None:
+    """Un módulo no se parte entre dos jobs: con menos módulos que tramos, error."""
+    module = _load("mutation_shards.py")
+    with pytest.raises(module.ShardError):
+        module.assign({"app/a.py": 3}, 4)
+    with pytest.raises(module.ShardError):
+        module.assign(MUTATION_DOMAIN_COUNTS, 0)
+
+
+def test_mutation_shard_config_keeps_the_shared_config() -> None:
+    """El config del tramo no puede divergir del compartido en timeout ni en test-command."""
+    module = _load("mutation_shards.py")
+    shared = tomllib.loads(
+        (ROOT / "docs" / "quality" / "cosmic-ray.toml").read_text(encoding="utf-8")
+    )["cosmic-ray"]
+    rendered = module.render(shared, ["app/src/modules/lanzadera/domain/presence.py"])
+    parsed = tomllib.loads(rendered)["cosmic-ray"]
+    assert parsed["module-path"] == ["app/src/modules/lanzadera/domain/presence.py"]
+    assert parsed["timeout"] == shared["timeout"]
+    assert parsed["test-command"] == shared["test-command"]
+    assert parsed["excluded-modules"] == shared["excluded-modules"]
 
 
 def test_mutation_gate_accepts_one_session_per_shard(tmp_path) -> None:
