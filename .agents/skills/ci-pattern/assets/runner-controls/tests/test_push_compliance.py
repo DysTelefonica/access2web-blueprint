@@ -146,6 +146,36 @@ class DetectiveTests(unittest.TestCase):
         state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
         self.assertEqual(state["calls"], [])
 
+    def test_tracker_contract_rejects_arrival_from_another_branch(self) -> None:
+        """#333 (regla 7): con `tracker_branch` declarado, un PR mergeado cuya
+        cabeza no es esa rama es violación y abre incidente."""
+        contract_data = {**contract(), "tracker_branch": "feat/303-tracker"}
+        state = base_state()
+        state["pulls"][SHA] = [{"number": 7, "merged": True, "merged_at": "2026-10-06T10:00:00Z",
+                                "user": {"login": "ardelperal"}, "base": {"ref": "main"},
+                                "head": {"ref": "otra/rama"}}]
+        proc = run_gate(self.root, push_event(), contract_data, state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("tracker_branch", self.created_issue()["body"])
+
+    def test_tracker_contract_accepts_arrival_from_the_tracker(self) -> None:
+        """Sin violación, el control no cambia de veredicto: conforme sale 0."""
+        contract_data = {**contract(), "tracker_branch": "feat/303-tracker"}
+        state = base_state()
+        state["pulls"][SHA] = [{"number": 7, "merged": True, "merged_at": "2026-10-06T10:00:00Z",
+                                "user": {"login": "ardelperal"}, "base": {"ref": "main"},
+                                "head": {"ref": "feat/303-tracker"}}]
+        proc = run_gate(self.root, push_event(), contract_data, state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+
+    def test_contract_with_an_unusable_tracker_branch_fails_closed(self) -> None:
+        """Un `tracker_branch` declarado y vacío es contrato inservible (HR-3)."""
+        proc = run_gate(self.root, push_event(), {**contract(), "tracker_branch": "  "}, base_state())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("tracker_branch", proc.stdout + proc.stderr)
+
     def test_first_push_of_a_new_unprotected_branch_is_skipped(self) -> None:
         """#361: un push que CREA una rama no protegida no tiene rango que auditar
         (`before` de ceros) y la rama no es gobernada: sale 0 sin llamar a la API."""
