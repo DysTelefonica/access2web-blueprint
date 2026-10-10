@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "agents_md": "propagated",
   "phases": {
     "0": {
       "inventory": [
