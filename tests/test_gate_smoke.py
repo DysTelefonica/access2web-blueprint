@@ -411,3 +411,35 @@ def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
         str(second),
     )
     assert first.read_bytes() == second.read_bytes()
+
+
+# --- Gate multi-sesión: una sesión por tramo de la matriz (#785) ----------------------------
+#
+# El job final fusiona las sesiones de los tramos. El gate exige la salud de cada una
+# —un tramo degenerado invalida la corrida— y `--shards N` falla cerrado si llegan menos:
+# un tramo perdido daría el veredicto medido sobre menos mutantes de los que el run declara.
+
+
+def test_mutation_gate_accepts_one_session_per_shard(tmp_path) -> None:
+    first = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
+    second = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "killed")] * 5)
+    result = _run("check_mutation.py", str(first), str(second), "--shards", "2")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "run healthy" in result.stdout
+
+
+def test_mutation_gate_fails_closed_when_a_shard_is_missing(tmp_path) -> None:
+    first = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
+    second = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "killed")] * 5)
+    result = _run("check_mutation.py", str(first), str(second), "--shards", "3")
+    assert result.returncode == 1
+    assert "se esperaban 3" in result.stderr
+
+
+def test_mutation_gate_fails_closed_when_a_shard_is_degenerate(tmp_path) -> None:
+    healthy = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
+    degenerate = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "incompetent")] * 5)
+    result = _run("check_mutation.py", str(healthy), str(degenerate), "--shards", "2")
+    assert result.returncode == 1
+    assert "degenerate" in result.stdout.lower()
+    assert "s1.sqlite" in result.stdout
