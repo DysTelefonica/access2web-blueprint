@@ -1,0 +1,55 @@
+# Fixture for the parity check (DysTelefonica/team-skills#161): the same job
+# set as ci-workflow.fixture.yml, written the other ways a consumer writes it.
+# The aggregator lists its needs as a block sequence; other jobs declare needs
+# of their own, in scalar and flow style, and must not be taken for it.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo lint
+
+  compile:
+    needs: lint            # scalar needs on a job that is not the aggregator
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo compile
+
+  smoke:
+    needs: [lint, compile]
+    runs-on: ubuntu-latest
+    steps:
+      # A step may carry text that looks like workflow keys; it is data.
+      - run: |
+          echo "needs: [nothing]"
+          echo "rogue:"
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: example/action@v1
+        with:
+          needs: not-a-job-dependency
+  full:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo full
+
+  required:
+    name: required (aggregator)
+    if: always()
+    needs:
+      - lint
+      - compile   # trailing comments are allowed
+      - "smoke"
+      - 'unit'
+
+      - full
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo gate

@@ -1,0 +1,11 @@
+{
+  "note": "Molde genérico de allowlist (HR-28): variables de entorno que las suites pueden leer. El consumer versione la suya (p. ej. .github/env-isolation-allowlist.json) con las variables que sus suites realmente lean; todo lo no declarado es hallazgo.",
+  "env_vars": [
+    "TMPDIR",
+    "TMP",
+    "TEMP",
+    "HOME",
+    "PATH",
+    "CI"
+  ]
+}
