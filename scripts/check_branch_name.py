@@ -44,6 +44,11 @@ ALLOWLIST = frozenset(
         # numbered-branch convention and the fleet pushes the same
         # branch name on every run. Issue #749.
         "skill-fleet/access2web-blueprint",
+        # La propagacion parte el payload en dos tramos encadenados: el
+        # vendorizado viaja en la rama hermana, cuyo PR lleva por base la rama
+        # del tramo 1. Mismo criterio y mismo motivo que la entrada anterior.
+        # Issue #829.
+        "skill-fleet/access2web-blueprint-vendored",
     }
 )
 
