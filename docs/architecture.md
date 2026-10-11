@@ -312,7 +312,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 ## Navigation
 
-Previous: [CODEBASE-GUIDE](../../CODEBASE-GUIDE.md) | Next: [calidad-de-codigo-y-ci](calidad-de-codigo-y-ci.md)
+Previous: [CODEBASE-GUIDE](../../CODEBASE-GUIDE.md) | Next: [AGENT-SETUP](AGENT-SETUP.md)
 
 ---
 

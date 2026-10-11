@@ -84,7 +84,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         id: setup-python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12.11"
 
       - name: branch name
         env:
@@ -108,6 +108,9 @@ jobs:
         run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
+    # Los nombres de check requeridos se publican solo desde eventos que evaluan
+    # el PR o la rama base (HR-30): schedule y workflow_dispatch no los publican.
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     # This job executes code from public pull requests, so it must use isolated,
     # ephemeral GitHub-hosted infrastructure.
     runs-on: ubuntu-24.04
@@ -135,7 +138,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         id: setup-python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12.11"
 
       - name: install
         # The dev pins live in app/pyproject.toml and are exact (ruff==0.15.21,
@@ -217,7 +220,7 @@ jobs:
             git checkout-index --force --all scripts/check_dry.py
           fi
           if [ -f app/pyproject.toml ]; then
-            python -m pip install --editable "app[dev]"
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
@@ -286,7 +289,7 @@ jobs:
       - name: quality gates and indicators
         # Runs layers -> complexity -> DRY in that fixed order, writes
         # quality-report.json, and renders the indicator table into the job summary.
-        run: ${{ steps.setup-python.outputs.pythonLocation }}/bin/python3 scripts/quality_report.py
+        run: python scripts/quality_report.py
 
       # The `actions/upload-artifact` step that previously published
       # `quality-report.json` as a downloadable blob is intentionally
@@ -310,16 +313,23 @@ jobs:
     # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
     # session needs the mutation runner on a real codebase. Verify it once on adoption.
     # The tag-push branch is the XCUT #703 contract: a release cannot publish unless
-    # mutation testing has run on the exact bytes of the tag. Costs ~60 min on the
-    # self-hosted `a2w` runner; the release path accepts that latency to keep the
-    # fail-closed guarantee (alternative was a preflight lookup of a recent manual
-    # run, which relies on operational discipline).
+    # mutation testing has run on the exact bytes of the tag. Costs up to ~60 min; the
+    # release path accepts that latency to keep the fail-closed guarantee (alternative
+    # was a preflight lookup of a recent manual run, which relies on operational
+    # discipline).
+    #
+    # Runner: este repositorio es público y **no consume runners propios del VPS**
+    # (`docs/10-runners.md`). Hasta #800 este job pineaba
+    # `[self-hosted, Linux, ARM64, oracle-vps, a2w]`, una etiqueta con **cero runners
+    # registrados**: el semanal no podía recibir máquina y llevaba cuatro semanas en
+    # rojo sin que el agregador `required` lo mirase (#785). `ubuntu-24.04-arm`
+    # conserva la arquitectura ARM64 que ya usaban los demás jobs del repositorio.
+    #
     # NOTE: the `if` uses the simple `!= 'pull_request'` exclusion accepted by
-    # `scripts/check_workflows.py::_condition_excludes_pull_requests` — this is
-    # what makes a self-hosted runner safely PR-reachable on push, schedule and
-    # workflow_dispatch without exposing the runner to PR-originated code.
+    # `scripts/check_workflows.py::_condition_excludes_pull_requests`; el job sigue
+    # siendo caro y semanal, no de PR, y ahora lo ejecuta un runner hospedado.
     if: github.event_name != 'pull_request'
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
+    runs-on: ubuntu-24.04-arm
     # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
     # succession serialize rather than racing cosmic-ray's sqlite (umbrella #117).
     concurrency:
@@ -344,8 +354,8 @@ jobs:
 
       - name: disable sparse-checkout cone mode (runtime fallback)
         # See the same step in the ``quality`` and ``review-budget``
-        # jobs. The weekly mutation job runs on the same self-hosted
-        # runner and inherits the same stale cone config from the cache.
+        # jobs. El job semanal corre en un runner hospedado y hereda la
+        # misma configuración de cono del cache.
         # `|| true` is forbidden by Hard Rule 1 (test_no_run_block_forces_success),
         # so we use a typed shell conditional. `git sparse-checkout disable`
         # returns non-zero on older git (command not found); the `if ! ...`
@@ -358,7 +368,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         id: setup-python
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: "3.12.11"
 
       - name: install
         # See the quality job's install step (#109, #110, #117 F2, #414).
@@ -387,7 +397,7 @@ jobs:
           # step below (post-install) so that ruff is available. Placing it here (pre-
           # pip install) would fail because ruff is not installed yet.
           if [ -f app/pyproject.toml ]; then
-            python -m pip install --editable "app[dev]"
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
@@ -424,6 +434,9 @@ jobs:
     # `needs:` it: `needs:` cannot cross workflow files, but a job invoked
     # via `uses: ./...` still has an ordinary job id and result.
     uses: ./.github/workflows/security.yml
+    # Mismo criterio que `quality` (HR-30): ningun nombre de check requerido
+    # desde eventos que no evaluan el PR.
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     permissions:
       contents: read
     concurrency:
@@ -435,6 +448,8 @@ jobs:
     # required here (not just inside codeql.yml's own job) because a
     # reusable workflow cannot exceed the permissions its caller grants it.
     uses: ./.github/workflows/codeql.yml
+    # Mismo criterio que `quality` y `security` (HR-30).
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
     permissions:
       contents: read
       security-events: write
@@ -456,7 +471,11 @@ jobs:
     # dependency (e.g. `review-budget` outside a pull_request) would mark
     # this job's own status as skipped too, and a skipped required check
     # does not block a merge the way a failed one does.
-    if: always()
+    # `if:` sin `always()` literal y con la comparacion de evento: la guarda de
+    # HR-30 no puede probar un `always()` suelto, y `!cancelled()` conserva el
+    # motivo original —un dependency saltado no debe saltar este check, que es
+    # el requerido de la proteccion de rama—.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()
     needs: [review-budget, quality, security, codeql]
     runs-on: ubuntu-24.04
     concurrency:

@@ -79,6 +79,12 @@ extend-exclude = [
     # this repo to the catalog's formatting and be undone by the next
     # propagation. Same boundary as APAP_WEB (ardelperal/APAP_WEB#839).
     "skills/",
+    # El propagador v2 materializa el mismo contenido del catalogo bajo
+    # `.agents/skills/` (misma frontera, ruta nueva). Sin esta entrada, todo
+    # PR de flota nace con `ruff format --check` en rojo por 75 ficheros que
+    # nadie escribe a mano aqui y que la propagacion siguiente volveria a
+    # traer. Issue #829.
+    ".agents/skills/",
     ".venv",
     "venv",
     "build",

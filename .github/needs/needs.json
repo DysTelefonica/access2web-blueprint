@@ -1,0 +1,22 @@
+{
+  "codeql": {
+    "outputs": {},
+    "result": "success"
+  },
+  "quality": {
+    "outputs": {},
+    "result": "success"
+  },
+  "required": {
+    "outputs": {},
+    "result": "success"
+  },
+  "review-budget": {
+    "outputs": {},
+    "result": "success"
+  },
+  "security": {
+    "outputs": {},
+    "result": "success"
+  }
+}

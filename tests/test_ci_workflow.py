@@ -260,6 +260,23 @@ def verify_commands() -> str:
     return blob
 
 
+def _local_preflight() -> str:
+    """El texto del preflight local, donde vive la única lista de gates."""
+    path = _find_makefile().parent / "scripts" / "local-preflight.sh"
+    assert path.is_file(), f"{path} no existe: `make verify` delega en él (Hard Rule 19)"
+    return path.read_text(encoding="utf-8")
+
+
+def _local_preflight_commands() -> list[str]:
+    """Los comandos del preflight, en orden y sin comentarios ni `set -`."""
+    commands: list[str] = []
+    for raw in _local_preflight().splitlines():
+        line = raw.strip()
+        if line and not line.startswith("#") and not line.startswith("set -"):
+            commands.append(" ".join(line.split()))
+    return commands
+
+
 def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     """Hard Rule 19: one command must equal green.
 
@@ -271,25 +288,55 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     VERIFY_EXCLUSIONS — an absence that is written down is a decision, and an
     absence that is not is a hole.
     """
-    expected = [
+    # 1. `make verify` no tiene su propia lista: delega en el script.
+    assert "scripts/local-preflight.sh" in verify_commands, (
+        "`make verify` does not delegate to scripts/local-preflight.sh: the canonical "
+        "list of gates must live in exactly one place (Hard Rule 19)."
+    )
+
+    # 2. El script corre los mismos gates que CI, en el mismo orden.
+    expected: list[str] = []
+    for command in REQUIRED_COMMANDS:
+        if command in VERIFY_EXCLUSIONS:
+            continue
+        if command.removeprefix("python ") in [
+            v.removeprefix("python ") for v in VERIFY_EXCLUSIONS
+        ]:
+            continue
+        if command not in expected:
+            expected.append(command)
+
+    script = " ".join(_local_preflight_commands())
+    positions = [script.find(" ".join(command.split())) for command in expected]
+    assert -1 not in positions, (
+        "ci.yml gates a pull request on "
+        f"{[c for c, pos in zip(expected, positions, strict=True) if pos == -1]}, but the local "
+        "preflight never runs them. Add the gate to scripts/local-preflight.sh, in the "
+        "same order ci.yml runs it (Hard Rule 19)."
+    )
+    assert positions == sorted(positions), (
+        "the local preflight runs the CI gates in a different order: the sequence is "
+        "part of the contract (complexity and coverage depend on it)."
+    )
+
+    # 3. Y no corre ningún gate que no esté declarado: cada línea del script es
+    #    uno de los gates esperados.
+    allowed = set()
+    for command in expected:
+        normalized = " ".join(command.split())
+        allowed |= {normalized, normalized.removeprefix("python "), f"python {normalized}"}
+    extra = [
         command
-        for command in REQUIRED_COMMANDS
-        if command not in VERIFY_EXCLUSIONS
-        and command.removeprefix("python ")
-        not in [v.removeprefix("python ") for v in VERIFY_EXCLUSIONS]
+        for command in _local_preflight_commands()
+        if not any(
+            " ".join(command.split()) == candidate
+            or " ".join(command.split()).startswith(candidate)
+            for candidate in allowed
+        )
     ]
-    # Strip prefix before comparison so commands (now without `python ` prefix)
-    # match VERIFY_EXCLUSIONS entries (which keep the prefix for compatibility).
-    missing = [
-        command
-        for command in expected
-        if command.removeprefix("python ") not in verify_commands.replace("python -m ", "")
-        and command not in verify_commands
-    ]
-    assert not missing, (
-        f"ci.yml gates a pull request on {missing}, but `make verify` never runs them. "
-        "Add a target per gate and list it in the `verify` prerequisites, in the same "
-        "order ci.yml runs it (Hard Rule 19)."
+    assert not extra, (
+        f"the local preflight runs commands that are not in the CI gate contract: {extra}. "
+        "Either wire them in ci.yml or record the decision in VERIFY_EXCLUSIONS."
     )
 
 
@@ -369,26 +416,52 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
 
 
 def _install_blocks(run_blocks: list[str]) -> list[str]:
-    """Run blocks that target the platform project for `pip install`.
+    """Run blocks that install the pinned toolchain for `pip install`.
 
     An install block is any run block that combines `pip install` with the
-    `app[dev]` editable target — this is what every quality, mutation, and
-    security job calls when wiring the project into the runner's venv.
+    hash-pinned requirements file generated from `app/uv.lock` — this is what
+    every quality and mutation job calls when wiring the project's toolchain
+    into the runner's interpreter. The install no longer uses an editable
+    `app[dev]` target: the project is imported through pytest's `pythonpath`
+    and mypy's `--explicit-package-bases`, and the pattern's structural gate
+    only verifies pins it can read (HR-26).
     """
-    return [block for block in run_blocks if "pip install" in block and "app[dev]" in block]
+    return [
+        block
+        for block in run_blocks
+        if "pip install" in block and "app/requirements-dev.lock" in block
+    ]
+
+
+def test_every_setup_python_step_pins_the_same_literal(workflow: dict) -> None:
+    """HR-26: el gate estructural solo puede leer un literal, no una expresión.
+
+    Cada `actions/setup-python` lleva la versión exacta escrita en el paso —lo
+    que el gate del patrón verifica— y ese literal tiene que ser el mismo que
+    la variable declarada en `env`, para que el valor no derive en dos sitios.
+    """
+    declared = workflow["env"]["PYTHON_VERSION"]
+    steps = [s for j in workflow["jobs"].values() for s in j.get("steps", [])]
+    setup = [s for s in steps if str(s.get("uses", "")).startswith("actions/setup-python@")]
+
+    assert setup, "no actions/setup-python step found"
+    for step in setup:
+        assert step["with"]["python-version"] == declared, (
+            f"setup-python declares {step['with']['python-version']!r} and env declares {declared!r}"
+        )
 
 
 def test_install_step_defends_against_missing_pyproject(run_blocks: list[str]) -> None:
     """F2 of #117: a chain that ships pyproject.fragment.toml without
     app/pyproject.toml must NOT fail with a cryptic pip error.
 
-    Every install step targeting `app[dev]` MUST guard the install with a
+    Every install step targeting the pinned toolchain MUST guard the install with a
     file existence check, harden the shell with `set -euo pipefail`, exit
     non-zero on the failure path, and reference issue #117 in the diagnostic
     so an operator staring at a red job can recognise the chain-hole shape.
     """
     installs = _install_blocks(run_blocks)
-    assert installs, "no run block installs app[dev] — this test is stale"
+    assert installs, "no run block installs the pinned toolchain — this test is stale"
 
     for i, block in enumerate(installs, start=1):
         # Defensive guard: prove the project exists before pip sees it.
@@ -423,7 +496,7 @@ def test_install_step_reports_chain_hole_when_fragment_only(
     chain-hole shape and link the failure back to the umbrella issue.
     """
     installs = _install_blocks(run_blocks)
-    assert installs, "no run block installs app[dev] — this test is stale"
+    assert installs, "no run block installs the pinned toolchain — this test is stale"
     for i, block in enumerate(installs, start=1):
         assert "pyproject.fragment.toml" in block, (
             f"install step #{i} does not mention pyproject.fragment.toml: {block}"
@@ -497,7 +570,13 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert "merge-ready" not in jobs, "merge-ready was fully superseded by `required`"
 
     required = jobs["required"]
-    assert required["if"] == "always()"
+    # El `if` conserva la semántica de `always()` —un dependency saltado no
+    # salta este check, que es el requerido de la protección de rama— con la
+    # forma que el gate del patrón puede probar (HR-30): comparaciones de
+    # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
+    assert required["if"] == (
+        "(github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()"
+    )
     assert required["needs"] == ["review-budget", "quality", "security", "codeql"]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"

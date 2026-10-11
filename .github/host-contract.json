@@ -1,0 +1,102 @@
+{
+  "contract_version": 1,
+  "protected_branches": [
+    "main"
+  ],
+  "host_capabilities": {
+    "branch_protection": "available",
+    "rulesets": "available",
+    "required_checks": "available"
+  },
+  "labels": [
+    {
+      "name": "status:approved",
+      "class": "host-enforced"
+    },
+    {
+      "name": "chain:partial",
+      "class": "documented-only"
+    },
+    {
+      "name": "type:bug",
+      "class": "host-enforced"
+    },
+    {
+      "name": "type:chore",
+      "class": "host-enforced"
+    },
+    {
+      "name": "type:docs",
+      "class": "host-enforced"
+    },
+    {
+      "name": "type:feature",
+      "class": "host-enforced"
+    },
+    {
+      "name": "type:refactor",
+      "class": "host-enforced"
+    },
+    {
+      "name": "size:exception",
+      "class": "host-enforced"
+    }
+  ],
+  "required_checks": [
+    {
+      "name": "required",
+      "class": "host-enforced"
+    }
+  ],
+  "merge_methods": {
+    "allow_merge_commit": {
+      "declared": true,
+      "class": "host-enforced"
+    },
+    "allow_squash_merge": {
+      "declared": true,
+      "class": "host-enforced"
+    },
+    "allow_rebase_merge": {
+      "declared": true,
+      "class": "host-enforced"
+    },
+    "allow_update_branch": {
+      "declared": false,
+      "class": "host-enforced"
+    },
+    "allow_auto_merge": {
+      "declared": false,
+      "class": "host-enforced"
+    }
+  },
+  "protection": {
+    "enforce_admins": {
+      "declared": true,
+      "class": "host-enforced"
+    },
+    "required_linear_history": {
+      "declared": false,
+      "class": "host-enforced"
+    },
+    "required_conversation_resolution": {
+      "declared": true,
+      "class": "host-enforced"
+    },
+    "allow_force_pushes": {
+      "declared": false,
+      "class": "host-enforced"
+    },
+    "allow_deletions": {
+      "declared": false,
+      "class": "host-enforced"
+    }
+  },
+  "rulesets": [
+    {
+      "name": "main-maintainers-and-admins-merge",
+      "enforcement": "active",
+      "class": "host-enforced"
+    }
+  ]
+}

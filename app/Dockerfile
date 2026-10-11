@@ -3,13 +3,16 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — applies to lanzadera-mvp Phase 0.
 # Every `FROM` is pinned by SHA256 digest (Hard Rule 6). Tags mutate silently;
 # digests pin byte-for-byte content. Resolved at adoption (2026-08-09) via the
-# Docker Hub registry API; re-resolve when bumping Python or switching base OS.
+# Docker Hub registry API and re-resolved on 2026-10-07 when the base moved from
+# `bookworm` to `trixie` (#818): Debian 12 no longer publishes fixes for the
+# CRITICAL advisories the image carried, and trixie is the current base with
+# zero of them. Re-resolve when bumping Python or switching base OS.
 
 # ---------------------------------------------------------------------------
 # Stage 1 — builder: install the package and its dev dependencies into a
 # throwaway environment. The final image carries only the runtime wheels.
 # ---------------------------------------------------------------------------
-FROM python:3.12-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2 AS builder
+FROM python:3.12-slim-trixie@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -27,10 +30,14 @@ RUN apt-get update \
         libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy the package definition first so the wheel cache is reusable.
-COPY pyproject.toml ./
+# Copy the package definition and the README the metadata reads, plus the package
+# source hatchling ships. `readme = "README.md"` in pyproject.toml is a file the
+# backend opens while generating metadata: without it the build dies with
+# "Readme file does not exist: README.md" and no image is produced (#772).
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
 
-# Install runtime + dev dependencies into a virtualenv at /opt/venv.
+# Install the project and its runtime dependencies into a virtualenv at /opt/venv.
 RUN python -m venv /opt/venv \
     && /opt/venv/bin/pip install --upgrade pip==24.2 \
     && /opt/venv/bin/pip install --no-cache-dir .
@@ -39,21 +46,27 @@ RUN python -m venv /opt/venv \
 # Stage 2 — runtime: copy only the venv and the source. No build tooling, no
 # apt cache, no source tree that includes tests.
 # ---------------------------------------------------------------------------
-FROM python:3.12-slim-bookworm@sha256:4766d8b510c428e595d74b9cc5bbb2fae8e26316fffb4adc89908d79aacd58a2 AS runtime
+FROM python:3.12-slim-trixie@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f AS runtime
 
 ENV PATH="/opt/venv/bin:${PATH}" \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONHASHSEED=random
+    PYTHONHASHSEED=random \
+    PYTHONPATH="/app"
 
 # `appuser` exists on the base image; we just assign a non-root UID.
 RUN useradd --create-home --uid 10001 --shell /usr/sbin/nologin appuser
 
 WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
-COPY src/ /app/src/
+# The application imports itself as `app.src...` and the CMD below resolves
+# `app.src.main:app`, so sys.path needs a directory that holds an `app` package
+# with `src` inside it: the source goes to /app/app/src and PYTHONPATH is /app.
+# Copying it to /app/src (the previous layout) made the CMD fail with
+# "No module named 'app'" (#772).
+COPY src/ /app/app/src/
 
 USER appuser
 

@@ -1,8 +1,8 @@
-[← Back to CODEBASE-GUIDE.md](../../CODEBASE-GUIDE.md) · [← Back to DOCS.md](../../DOCS.md) · [← Back to docs/calidad-de-codigo-y-ci.md](../calidad-de-codigo-y-ci.md)
+[← Back to CODEBASE-GUIDE.md](../../CODEBASE-GUIDE.md) · [← Back to DOCS.md](../../DOCS.md) · [← Back to docs/architecture.md](../architecture.md)
 
 # access2web-blueprint — Estrategia de testing
 
-**Esta guía documenta la taxonomía de tests del MVP Lanzadera, los criterios de selección por capa y los gaps conocidos. El contrato de los gates mecánicos vive en [`docs/calidad-de-codigo-y-ci.md`](../calidad-de-codigo-y-ci.md). Aquí está el «por qué testeamos así» y el «dónde se rompe la disciplina hoy». El doc no describe cómo escribir un test en pytest ni cómo usar FastAPI TestClient — eso son frameworks cuyo uso se asume.**
+**Esta guía documenta la taxonomía de tests del MVP Lanzadera, los criterios de selección por capa y los gaps conocidos. El contrato de los gates mecánicos vive en [`docs/architecture.md`](../architecture.md) §CI gates. Aquí está el «por qué testeamos así» y el «dónde se rompe la disciplina hoy». El doc no describe cómo escribir un test en pytest ni cómo usar FastAPI TestClient — eso son frameworks cuyo uso se asume.**
 
 > **Estado del doc:** v1.0 — audita 50 archivos reales en `tests/lanzadera/`, 5 categorías aplicables, 3 gaps abiertos.
 
@@ -93,10 +93,10 @@ Aquí se aplica la regla «no testeamos lo que no se rompe». Cuando una pieza e
 | Pieza sin test | Sustitución activa | Documentada en |
 |---|---|---|
 | Contrato del container DI | `tests/lanzadera/di/test_lanzadera_container.py` (sí existe — ejemplo de lo que sí testeamos). | — |
-| Capas hexagonal purity | `scripts/check_layers.py` (QC-2, QC-9). | `docs/calidad-de-codigo-y-ci.md` §Hexagonal layer gate. |
-| Naming de branches | `scripts/check_branch_name.py` (QC-6). | `docs/calidad-de-codigo-y-ci.md` §Los 12 check_*.py. |
-| Tamaño de PR | `scripts/check_pr_size.py` (QC-6). | `docs/calidad-de-codigo-y-ci.md` §Los 12 check_*.py. |
-| Workflow YAML drift | `scripts/check_workflows.py` (QC-9). | `docs/calidad-de-codigo-y-ci.md` §Los 12 check_*.py. |
+| Capas hexagonal purity | `scripts/check_layers.py` (QC-2, QC-9). | `docs/architecture.md` §Patrón hexagonal (DA-1). |
+| Naming de branches | `scripts/check_branch_name.py` (QC-6). | `docs/architecture.md` §CI gates. |
+| Tamaño de PR | `scripts/check_pr_size.py` (QC-6). | `CONTRIBUTING.md` §Tamaño de los PRs. |
+| Workflow YAML drift | `scripts/check_workflows.py` (QC-9). | `docs/architecture.md` §CI gates. |
 | Migration Alembic contra Postgres real | Test Categoría 5 gated por `APAP_INTEGRATION_ENABLED`. | `docs/03-aplicaciones/lanzadera/migration/` (D112). |
 | Visual UI / accesibilidad | Revisión manual en staging; planes UAT. | `docs/05-capacidades/expedientes/uat-cutover-legacy-retirement.md` §UAT. |
 
@@ -144,20 +144,20 @@ Cuando la mutation score cae por debajo del umbral, `security-deep.yml` falla y 
 | Taxonomía de los 5 tipos de test que este repo necesita. | Tabla §Las 5 categorías, con archivo ancla por categoría. |
 | Reglas de selección por capa (domain / application / adapters / delivery). | Árbol de decisión §Cómo elegir el tipo correcto. |
 | Mapeo de gaps abiertos a su mitigación actual. | Sección §Gaps abiertos, una fila por gap con severidad y plan. |
-| Puente entre el CodeGuide y `calidad-de-codigo-y-ci.md`. | §Cross-references al pie, con paths verificables. |
+| Puente entre el CodeGuide y `docs/architecture.md` §CI gates. | §Cross-references al pie, con paths verificables. |
 
 ## What this is not
 
 | No es | Límite |
 |---|---|
 | Una copia del `apap-testing-strategy` de `ardelperal/APAP_WEB`. | Este repo tiene 50 archivos en 5 categorías, no 265 en 6; la estructura se acorta pero no se duplica. |
-| Réplica operativa de `docs/calidad-de-codigo-y-ci.md`. | Ese doc cubre los 12 `check_*.py` y los 5 workflows (operativo). Este cubre qué probar y por qué (estratégico). |
+| Réplica operativa de `docs/architecture.md` §CI gates. | Esa sección cubre los `check_*.py` y los workflows que los invocan. Este cubre qué probar y por qué (estratégico). |
 | Lista exhaustiva de los 50 archivos. | La lista vive en el árbol de `tests/lanzadera/`; este doc la resume por capa. |
 | Manual de pytest, FastAPI TestClient ni Alembic. | Esos son frameworks; este doc los asume y prescribe su uso por capa. |
 
 ## Cross-references
 
-- [`docs/calidad-de-codigo-y-ci.md`](../calidad-de-codigo-y-ci.md) — los 12 gates mecánicos y los 5 workflows. **Operativo**.
+- [`scripts/local-preflight.sh`](../../scripts/local-preflight.sh) — la lista única de gates que corre el CI. **Operativo**.
 - [`docs/architecture.md`](../architecture.md) §CI gates — decisiones arquitectónicas detrás de cada gate. **Decisión**.
 - [`CODEBASE-GUIDE.md`](../../CODEBASE-GUIDE.md) — ownership, flujos y guardarraíles del monorepo. **Orientación**.
 - [`openspec/changes/lanzadera-mvp/design.md`](../../openspec/changes/lanzadera-mvp/design.md) §Pipeline de calidad — el contrato completo de los gates en el SDD original.
@@ -196,4 +196,4 @@ Reglas que un cambio no debe romper. Citable en un review:
 
 ## Navigation
 
-Previous: [← Back to CODEBASE-GUIDE.md](../../CODEBASE-GUIDE.md) · Next: [docs/calidad-de-codigo-y-ci.md →](../calidad-de-codigo-y-ci.md)
+Previous: [← Back to CODEBASE-GUIDE.md](../../CODEBASE-GUIDE.md) · Next: [docs/architecture.md →](../architecture.md)

@@ -45,7 +45,7 @@
 
 ### Incluye
 
-- `docs/testing/testing-strategy.md` — el doc Pieza 1, **entregado en PR-1a (#529)**. Taxonomía de las 5 categorías, árbol de decisión, evidencia de los 50 archivos, gaps abiertos, cross-references a `docs/calidad-de-codigo-y-ci.md` y `CODEBASE-GUIDE.md`.
+- `docs/testing/testing-strategy.md` — el doc Pieza 1, **entregado en PR-1a (#529)**. Taxonomía de las 5 categorías, árbol de decisión, evidencia de los 50 archivos, gaps abiertos, cross-references a `docs/architecture.md` §CI gates y `CODEBASE-GUIDE.md`.
 - `docs/testing/epic.md` — esta epic. Estructura 7 secciones + 2 anexos + checklist.
 - Pieza 2 (`skills/lanzadera-testing-strategy/SKILL.md`) queda como **ticket futuro** T-3, fuera del scope de esta epic.
 
@@ -200,8 +200,8 @@ Notas sobre T-3: queda documentado como propuesta en `testing-strategy.md` §Pie
 | `tests/lanzadera/_fakes.py` | Los `FakeFixtures` que la skill invocará (HR-2). |
 | `tests/lanzadera/_presence_fakes.py` | Fakes especializados de presence. |
 | `app/src/modules/lanzadera/` (domain, application, adapters, delivery, di) | El código bajo test. |
-| `docs/calidad-de-codigo-y-ci.md` §Hexagonal layer gate | La pureza de capa que la skill enforzará (HR-1). |
-| `docs/calidad-de-codigo-y-ci.md` §Los 12 check_*.py | Los gates mecánicos vigentes; sustitutos de tests ausentes. |
+| `docs/architecture.md` §Patrón hexagonal (DA-1) | La pureza de capa que la skill enforzará (HR-1). |
+| `docs/architecture.md` §CI gates | Los gates mecánicos vigentes; sustitutos de tests ausentes. |
 | `CODEBASE-GUIDE.md` §Recommended reading path | El entry point de la taxonomía para mantenedores nuevos. |
 | `openspec/changes/lanzadera-mvp/design.md` §Pipeline de calidad | El contrato SDD original. |
 | `docs/03-aplicaciones/lanzadera/epic.md` | Epic madre; estructura replicada (7 secciones + 2 anexos + checklist). |

@@ -6,7 +6,7 @@
 
 ## Resumen ejecutivo
 
-Este diseño describe cómo se construye el primer slice del monolito modular `platform/` sobre PostgreSQL, partiendo del módulo `lanzadera` y de los nueve sub-specs ya producidos por `sdd-spec` (`users`, `apps`, `profiles`, `assignments`, `auth-core`, `auth-reset`, `auth-bootstrap`, `global_admins`, `audit`). Las decisiones arquitectónicas heredadas son D5 (plataforma modular permission-aware), D8 (hexagonal global), D36+D37 obsoletos, D66-D68 (stack cerrado y monolito modular), D70-D72 (caché selectiva), D77 (Docker desde día uno), D82 (Expand and Contract), D85 (catálogo de 20 aplicaciones), D88 (Argon2id vía `argon2-cffi==25.1.0`), D89 (sin columna `legacy_hash`, `password_hash = NULL` para los 156 usuarios), D90 (reset flow con tokens one-time de 24 h) y D91 (CLI exclusivo para el primer admin global). Los doce quality gates QC-1 a QC-11 aparecen wired en `.github/workflows/ci.yml`, pinned por `tests/test_ci_workflow.py` y commiteados antes del primer `git commit` de código de aplicación, conforme al plan de `docs/calidad-de-codigo-y-ci.md`. La entrega se reparte en cuatro fases de cero a dos semanas, con la fase de aplicación (Alembic 0001-0006, adapters de repos, delivery HTMX, CLI admin) ejecutada en strict TDD.
+Este diseño describe cómo se construye el primer slice del monolito modular `platform/` sobre PostgreSQL, partiendo del módulo `lanzadera` y de los nueve sub-specs ya producidos por `sdd-spec` (`users`, `apps`, `profiles`, `assignments`, `auth-core`, `auth-reset`, `auth-bootstrap`, `global_admins`, `audit`). Las decisiones arquitectónicas heredadas son D5 (plataforma modular permission-aware), D8 (hexagonal global), D36+D37 obsoletos, D66-D68 (stack cerrado y monolito modular), D70-D72 (caché selectiva), D77 (Docker desde día uno), D82 (Expand and Contract), D85 (catálogo de 20 aplicaciones), D88 (Argon2id vía `argon2-cffi==25.1.0`), D89 (sin columna `legacy_hash`, `password_hash = NULL` para los 156 usuarios), D90 (reset flow con tokens one-time de 24 h) y D91 (CLI exclusivo para el primer admin global). Los doce quality gates QC-1 a QC-11 aparecen wired en `.github/workflows/ci.yml`, pinned por `tests/test_ci_workflow.py` y commiteados antes del primer `git commit` de código de aplicación, conforme al plan de `docs/architecture.md` §CI gates. La entrega se reparte en cuatro fases de cero a dos semanas, con la fase de aplicación (Alembic 0001-0006, adapters de repos, delivery HTMX, CLI admin) ejecutada en strict TDD.
 
 ## Estructura física del módulo
 
@@ -306,7 +306,7 @@ Ningún step lleva `continue-on-error: true` ni `|| true` (Hard Rule 1 de `deter
 
 ## Tests y TDD
 
-La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`; comando vivo: `pytest --cov=app --cov-fail-under=69`). El orden de adopción es el del plan por día de `docs/calidad-de-codigo-y-ci.md`. Los archivos siguientes son los que el MVP debe tener antes del primer `git commit` de código de `lanzadera.auth`.
+La disciplina es **strict TDD** (`openspec/config.yaml`: `apply.tdd: true`; comando vivo: `pytest --cov=app --cov-fail-under=69`). El orden de adopción es el del plan por día del MVP. Los archivos siguientes son los que el MVP debe tener antes del primer `git commit` de código de `lanzadera.auth`.
 
 | Archivo de test | Verifica | Decisión / Spec |
 |---|---|---|
@@ -343,12 +343,12 @@ Cada riesgo declara severidad, mitigación y gate que la enforce. La tabla se cr
 | R-11 (H12) | Topología híbrida: `apps.requires_office_presence` no se evalúa en el MVP. | `LocationPort` con `assume_in_office` que devuelve `True` (DA-9). El refuerzo llega con el módulo HPS. | Test `test_assume_in_office.py` assertea el stub. |
 | R-12 (H13) | Diseño detallado del ciclo UAT ABIERTO (P16). | No bloquea el MVP; la gobernanza admin-global-only ya está APROBADA (D48). | Diferido a Fase 4. |
 | R-13 (H14) | cosmic-ray DIFERIDO (QC-8). | Aceptado; se reactiva cuando ≥ 3 módulos tengan cobertura > 70 % y ≥ 5 tests por path real. | QC-8 cierra con disparador. |
-| R-14 | Drift entre `docs/calidad-de-codigo-y-ci.md` y el código del MVP. | Hard Rule 10: cuando un doc diverge del código, el PR que detecta la divergencia corrige uno u otro. | `quality_report.py` + revisión de PR. |
+| R-14 | Drift entre la documentación del CI y el código del MVP. | Hard Rule 10: cuando un doc diverge del código, el PR que detecta la divergencia corrige uno u otro. | `quality_report.py` + revisión de PR. |
 | R-15 | Variabilidad de PYTHONHASHSEED, locale y orden de iteración afectan los envelopes de los gates. | `_pin_output_encoding()`, `hashlib.sha256` (no `hash()`), `sorted()` en cada walk, `-p no:randomly` en pytest. | Hard Rule 17 + tests de determinismo. |
 
 ## Plan de implementación por fases
 
-Las cuatro fases corresponden al plan por día de `docs/calidad-de-codigo-y-ci.md` y a los tickets TK-LZ-MVP-1 a TK-LZ-MVP-24 del proposal. Cada fase termina con un PR ≤ 400 líneas (QC-6) y con `make quality-report` limpio.
+Las cuatro fases corresponden al plan por día del MVP y a los tickets TK-LZ-MVP-1 a TK-LZ-MVP-24 del proposal. Cada fase termina con un PR ≤ 400 líneas (QC-6) y con `make quality-report` limpio.
 
 ### Fase 1 — Día 0 a 2: estructura + gates básicos + security scanning
 
@@ -566,7 +566,7 @@ El `.accdb` legacy permanece intacto y operativo. Para un Contract posterior a u
 
 ## Operación del MVP
 
-Las variables de entorno, los puertos listening y los entry points del proceso se documentan en una sola tabla para que la rampa de operación no disperse la información entre `docker-compose.yml`, `pyproject.toml` y los scripts. La disciplina sigue la convención Conf-5 a Conf-8 de `docs/calidad-de-codigo-y-ci.md`.
+Las variables de entorno, los puertos listening y los entry points del proceso se documentan en una sola tabla para que la rampa de operación no disperse la información entre `docker-compose.yml`, `pyproject.toml` y los scripts. La disciplina sigue las convenciones operativas del CI.
 
 ### Variables de entorno
 
@@ -605,13 +605,13 @@ Ninguna variable contiene secretos sin cifrar. `PLATFORM_SECRET_KEY` se inyecta 
 | Implementar un helper crítico | §Contratos críticos. | `tests/lanzadera/auth/test_<helper>.py`. |
 | Aplicar las migraciones | §Runbook de migración. | `docs/08-decisiones-y-preguntas-abiertas.md` (D82, D89). |
 | Operar el MVP en local | §Operación del MVP (variables, puertos, entry points). | `docker-compose.yml`, `Makefile`. |
-| Diagnosticar por qué un gate falla | §Quality gates wiring. | `docs/calidad-de-codigo-y-ci.md` §Anti-patrones. |
+| Diagnosticar por qué un gate falla | §Quality gates wiring. | `docs/architecture.md` §CI gates. |
 | Auditar la ausencia de legacy | `tests/lanzadera/auth/test_no_legacy_compat.py`. | §Riesgos de implementación (R-1). |
 | Cerrar un gap abierto | §Decisiones pendientes y gaps. | El sub-spec de origen (referenciado en la columna «Origen»). |
 
 ## Convenciones operativas aplicadas al módulo
 
-Las ocho convenciones de `docs/calidad-de-codigo-y-ci.md` §Convenciones operativas se aterrizan aquí para el módulo `lanzadera`. La tabla no duplica la definición del gate; solo nombra cómo aplica a este módulo concreto.
+Las convenciones operativas del CI se aterrizan aquí para el módulo `lanzadera`. La tabla no duplica la definición del gate; solo nombra cómo aplica a este módulo concreto.
 
 | Conf | Convención | Aplicación en `lanzadera` |
 |---|---|---|
@@ -632,7 +632,7 @@ Las ocho convenciones de `docs/calidad-de-codigo-y-ci.md` §Convenciones operati
 | Sub-specs | `openspec/changes/lanzadera-mvp/specs/{users,apps,profiles,assignments,auth-core,auth-reset,auth-bootstrap,global_admins,audit}/spec.md` |
 | Decisiones D5-D91 | `docs/08-decisiones-y-preguntas-abiertas.md` |
 | Arquitectura objetivo y principios | `docs/09-arquitectura-objetivo-y-principios.md` |
-| Quality gates del MVP | `docs/calidad-de-codigo-y-ci.md` |
+| Quality gates del MVP | `docs/architecture.md` §CI gates |
 | Auditoría Clean Code + swarm-forge | `docs/auditoria-harnesses-clean-code.md` |
 | Configuración del change | `openspec/config.yaml` |
 | Skill de quality harness | `.opencode/skills/deterministic-quality-harness/SKILL.md` (symlinked desde `~/.config/opencode/skills/`) |
