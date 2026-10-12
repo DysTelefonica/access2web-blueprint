@@ -19,10 +19,19 @@
 # supervivientes y cosmic-ray los marcaba INCOMPETENT en vez de SURVIVED. 120 s
 # cubre la medición más lenta con margen.
 #
-# `test-command` corre la suite SIN cobertura: los `addopts` de
-# `app/pyproject.toml` traen `--cov-fail-under=69` y la suite sin cobertura no
-# llega al piso, así que sin `--no-cov` cada mutante contaría como «killed» por
-# el umbral de cobertura y no por un test (un verde vacío).
+# `test-command` corre la suite SIN cobertura y con tope de memoria por
+# ejecución. Sin `--no-cov` la suite hereda `--cov-fail-under=69` de los addopts
+# y sale distinta de cero aunque todos los tests pasen: cada mutante contaría
+# como «killed» por el umbral de cobertura y no por un test (un verde vacío).
+#
+# El `ulimit -v 2097152` (2 GiB de espacio de direcciones) es la defensa contra
+# un mutante que desboca la memoria: medido el 2026-10-07, la suite normal tiene
+# un pico de 177 MB de RSS y pasa holgada con un tope de 1 GiB, así que 2 GiB no
+# molesta a ningún test real y corta lo desbocado. Sin el tope, un mutante de
+# `app/src/modules/expedientes/domain/hash/versioning.py` tumbó cuatro veces el
+# runner hospedado (SIGTERM, exit 143) antes del timeout de 120 s por mutante, y
+# el que muere es el runner, no el test. Con el tope, ese mutante falla el test
+# y cuenta como «killed», igual en CI que en local.
 
 [cosmic-ray]
 module-path = [
@@ -35,7 +44,7 @@ excluded-modules = [
     "app/pytest_plugin/**/*.py",
     "app/src/modules/*/di/**/*.py",
 ]
-test-command = "python -m pytest -c app/pyproject.toml --rootdir=app -m 'not integration' --no-cov -q"
+test-command = "sh -c 'ulimit -v 2097152; exec python -m pytest -c app/pyproject.toml --rootdir=app -m \"not integration\" --no-cov -q'"
 
 [cosmic-ray.distributor]
 name = "local"
