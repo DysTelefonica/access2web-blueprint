@@ -60,6 +60,7 @@ dev = [
     "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
     "pip-audit==2.9.0",            # Dependency scan (security.yml).
     "types-cachetools==6.2.0.20260408",     # Type stubs for cachetools (DA-8, WU AD5).
+    "cosmic-ray==8.7.0",           # QC-11 mutation tooling: the weekly `mutation` job and `make mutation` cannot run without it (#785).
 ]
 
 # ---------------------------------------------------------------------------
