@@ -669,7 +669,8 @@ def test_DEBUG_print_routes(auth_client: TestClient) -> None:
     """Debug: print registered routes."""
     print("\nRegistered routes:")
     for route in auth_client.app.routes:
-        print(f"  {route.path}")
+        # starlette 1.x also yields `_IncludedRouter` entries, which carry no `path`.
+        print(f"  {getattr(route, 'path', type(route).__name__)}")
 
 
 def test_DEBUG_source_contains_my_apps(auth_client: TestClient) -> None:
@@ -719,7 +720,8 @@ def test_DEBUG_patch_then_register(auth_client: TestClient) -> None:
     # Also check the _build_app function's router
     print("\nRoutes from auth_client.app:")
     for route in auth_client.app.routes:
-        print(f"  {route.path}")
+        # starlette 1.x also yields `_IncludedRouter` entries, which carry no `path`.
+        print(f"  {getattr(route, 'path', type(route).__name__)}")
 
 
 def test_DEBUG_reload_and_register(auth_client: TestClient) -> None:
