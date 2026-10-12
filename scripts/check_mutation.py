@@ -78,11 +78,113 @@ class AwaitingAcquisition:
     since: str  # ISO-8601, the date it landed on the default branch
 
 
-# Empty by design — see Hard Rule #12 of deterministic-quality-harness v1.6.
-# The mutation gate runs only on schedule/workflow_dispatch, not per PR, so its
-# indicators reach quality-report.json on a different cadence. When the first
-# survivor appears, the gate will block without a ratchet.
-BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {}
+# Adquirida del primer run real de la matriz (#785): run 37738787049 sobre el SHA
+# c01ea22, 1129/1129 mutantes medidos, 0 % INCOMPETENT, 65,19 % de score y los 393
+# supervivientes de abajo. Es un ratchet shrink-only (Hard Rule #12): cada entrada
+# declara su `target` y su `target_date`, ninguna puede crecer, y una por encima
+# del target con la fecha vencida falla el job.
+#
+# Anomalía conocida de esta medición: dos mutantes de
+# `app/src/modules/expedientes/domain/hash/versioning.py:171` (`def hash`) con
+# los operadores `ReplaceBinaryOperator_Mul_Pow` y
+# `ReplaceBinaryOperator_BitAnd_Pow` convierten una operación en `**` y agotan el
+# timeout de 120 s por mutante.
+BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {
+    "app/src/modules/expedientes/domain/anexo/agregado.py": BaselineEntry(
+        survivors=3, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anexo/reference.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anexo/retention.py": BaselineEntry(
+        survivors=22, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anexo/size_limit.py": BaselineEntry(
+        survivors=9, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anualidad.py": BaselineEntry(
+        survivors=20, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/cpv/code.py": BaselineEntry(
+        survivors=28, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/cpv/structure.py": BaselineEntry(
+        survivors=18, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/expediente.py": BaselineEntry(
+        survivors=8, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/hash/versioning.py": BaselineEntry(
+        survivors=16, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/hito.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/juridica.py": BaselineEntry(
+        survivors=2, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/modificado.py": BaselineEntry(
+        survivors=11, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/responsable.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/suministrador.py": BaselineEntry(
+        survivors=10, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/app.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/audit_event.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/legacy_role_map.py": BaselineEntry(
+        survivors=35, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/__init__.py": BaselineEntry(
+        survivors=38, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/app_repository.py": BaselineEntry(
+        survivors=45, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/assignment_repository.py": BaselineEntry(
+        survivors=12, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/jwt_signer.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/presence_repository.py": BaselineEntry(
+        survivors=2, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/profile_repository.py": BaselineEntry(
+        survivors=23, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/reset_token_repository.py": BaselineEntry(
+        survivors=11, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/session_repository.py": BaselineEntry(
+        survivors=11, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/profile.py": BaselineEntry(
+        survivors=24, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/reset_token.py": BaselineEntry(
+        survivors=2, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": BaselineEntry(
+        survivors=17, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": BaselineEntry(
+        survivors=6, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/session.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/user.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+}
+
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -234,10 +336,13 @@ def render_baseline(survivors: dict[str, int], today: date, horizon_days: int = 
     target_date = date.fromordinal(today.toordinal() + horizon_days).isoformat()
     lines = ["BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {"]
     for module in sorted(survivors):
+        # Envuelto para que el bloque pegado en `check_mutation.py` pase el linter
+        # del repositorio (límite de 100 columnas) sin retocarlo a mano.
+        lines.append(f'    "{module}": BaselineEntry(')
         lines.append(
-            f'    "{module}": BaselineEntry(survivors={survivors[module]}, '
-            f'target=0, target_date="{target_date}"),'
+            f'        survivors={survivors[module]}, target=0, target_date="{target_date}"'
         )
+        lines.append("    ),")
     lines.append("}")
     return "\n".join(lines)
 
