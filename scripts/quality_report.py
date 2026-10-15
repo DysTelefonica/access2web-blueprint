@@ -63,12 +63,6 @@ GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
 #: the same envelope. Its absence from a PR report is expected; a PR report that claimed to
 #: include it would be lying.
 
-#: PR-scoped gates. They need a base ref and a PR body, so they only run with --include-pr-gates.
-PR_GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
-    ("branch_name", "check_branch_name.py", ()),
-    ("pr_size", "check_pr_size.py", ()),
-)
-
 #: The published indicator set: what it means, and which direction is good. Everything here is
 #: derived from a gate envelope — this table never computes anything itself.
 INDICATOR_MEANINGS: dict[str, tuple[str, str]] = {
@@ -229,19 +223,15 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="report path (default: <root>/quality-report.json)",
     )
-    parser.add_argument(
-        "--include-pr-gates",
-        action="store_true",
-        help="also run the PR-scoped gates (branch name, PR size)",
-    )
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
     scripts = (args.scripts or Path(__file__).resolve().parent).resolve()
     out = args.out or (root / "quality-report.json")
 
-    selected = list(GATES) + (list(PR_GATES) if args.include_pr_gates else [])
-    envelopes = [run_gate(scripts, script, root, extra) for _, script, extra in selected]
+    # PR-scoped gates (branch name, PR size) live in the ``pr-gate`` CI job
+    # (issue #854 removed ``--include-pr-gates`` and the ``PR_GATES`` tuple above).
+    envelopes = [run_gate(scripts, script, root, extra) for _, script, extra in GATES]
     report = build_report(root, envelopes)
 
     out.write_text(json.dumps(report, indent=2, sort_keys=False) + "\n", encoding="utf-8")
