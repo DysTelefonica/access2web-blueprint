@@ -28,6 +28,7 @@ REQUIRED_COMMANDS = (
     "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
     "python scripts/check_branch_name.py",
+    "python scripts/check_walkthrough_schema.py --strict",
     "python scripts/check_required_jobs.py",
 )
 
@@ -37,8 +38,10 @@ REQUIRED_COMMANDS = (
 #: turns an absence into a recorded decision — anything NOT in this tuple must
 #: be reachable from `make verify`.
 VERIFY_EXCLUSIONS = (
-    "python scripts/check_pr_size.py",  # needs merge-base + labels
-    "python scripts/check_branch_name.py",  # needs the head ref
+    "mypy --explicit-package-bases app/",  # full suite: CI quality job only
+    "python scripts/check_workflows.py",  # ci.yml contract: CI quality job only
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',  # full suite
+    "scripts/quality_report.py",  # code gates after the suite: CI quality job only
     "python scripts/check_mutation.py",  # weekly schedule, far too slow per PR
     "pip-audit",  # network: advisory database
     "gitleaks",  # docker
