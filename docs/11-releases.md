@@ -84,9 +84,8 @@ con código distinto de cero, no.
 | Gate | Dónde | Rechaza |
 |---|---|---|
 | `scripts/release-preflight.sh` | Local y workflow `release` | Tag sin anotar, versión no canónica, o commit que no es el `origin/main` actual. |
-| `scripts/require-ci-success.sh` | Workflow `release` | Tag sobre un commit cuyo workflow `ci` no está en verde con evento `merge_group` o `schedule` sobre ese SHA (#864, en `main`). |
+| `scripts/require-ci-success.sh` | Workflow `release` | Tag sobre un commit cuyo workflow `ci` no está en verde con evento `push` o `schedule` sobre ese SHA (decisión final de #857, sobre el código de #864). |
 | `cosign verify` | Workflow `release` | Digest sin firma válida del workflow y tag exactos. |
-| Job `mutation` en `ci.yml` | Schedule semanal y `workflow_dispatch` (no en push de tag) | Un commit cuyo `mutation` no ha corrido en verde para ese SHA. La mutación no bloquea la release; corre como nightly y ratcheta. |
 | `pre-push` (`gentleai.gatedTags`) | Máquina local | Publicación de un tag estable. Es una barrera, no un cerrojo. |
 
 ### Verificación criptográfica

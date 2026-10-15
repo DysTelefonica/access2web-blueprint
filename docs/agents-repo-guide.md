@@ -135,10 +135,12 @@ Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rule
 `main` tiene branch protection desde el 2026-09-09, tras hacer público el
 repositorio en GitHub Free. La protección se aplica también a administradores.
 
-La cola de merge nativa de GitHub integra los PRs en serie contra `main` con el
-CI corriendo en cada cabeza; no hay que actualizar la rama con `main` manualmente.
-Todas las conversaciones deben estar resueltas y (tras issue #702) un único check
-en verde: `required`. Ese job agrega (`needs:`) `review-budget`, `quality`,
+El CI corre una vez en la PR contra la cabeza actual: `required` debe estar
+en verde antes de fusionar. Sin `strict` ni cola de merge, una PR que ya pasó
+el CI se integra aunque quede atrás de `main` (no hay que sincronizar la rama
+con `main` a mano). La red de seguridad tras el merge es el mismo workflow
+`ci` en `push` a `main` y un `schedule` diario. Todas las conversaciones
+deben estar resueltas y (tras issue #702) un único check en verde: `required`. Ese job agrega (`needs:`) `review-budget`, `quality`,
 `security` y `codeql` — los dos últimos invocan `security.yml`/`codeql.yml` como
 jobs `uses:` porque `needs:` no cruza archivos de workflow — y falla cerrado ante
 cualquier job faltante, en `failure`, o en un `skipped` no permitido para ese
@@ -171,7 +173,7 @@ Toda entrega pasa por una issue canónica y un PR; el merge lo lanza un mantened
 - **Issue.** El formulario canónico (`.github/ISSUE_TEMPLATE/issue-canonical.yml`) tiene seis secciones obligatorias: `Problema y contexto`, `Evidencia verificable`, `Alcance y no objetivos`, `Criterios de aceptación`, `Plan de validación` y `Dependencias y riesgos`. Cualquier mantenedor del repositorio con rol de administración aplica `status:approved` tras la revisión, incluso sobre su propia issue; ninguna rama ni PR se crea sin esa etiqueta.
 - **Rama.** `<tipo>/<slug>` con el patrón de gentle-ai (`feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert`), sin número de issue; lo aplica el ruleset del host. La trazabilidad vive en el cuerpo del PR con `Closes #N`.
 - **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`, la sección `Chain Context` en la punta de una cadena o con `chain:partial`, y la sección de los tests que prueban el cierre cuando el PR cierra una issue. Si el diff supera las 400 líneas, el mantenedor pone la etiqueta `size:exception` tras responder las 4 preguntas de `AGENTS.md` §F.7.
-- **Check requerido.** `required` debe estar en verde; la cola de merge nativa lo revalida sobre la base actual antes de integrar. No hay que sincronizar la rama con `main` a mano.
+- **Check requerido.** `required` debe estar en verde en la PR antes de fusionar. Sin `strict` ni cola de merge, una PR que ya pasó el CI se integra aunque quede atrás de `main` (no hay que sincronizar la rama con `main` a mano); la red de seguridad tras el merge es el mismo `ci` en `push` a `main` y un `schedule` diario.
 - **Merge.** Lo lanza un mantenedor por el camino del host: el ruleset `main-maintainers-and-admins-merge` solo deja actualizar `main` a los mantenedores y administradores, y solo mediante un PR. **Ningún agente mergea ni aplica `status:approved`.**
 - **Rama remota.** Se conserva tras el merge; nunca se borra.
 - **Documentación.** Vive en el repositorio, bajo `docs/`.
