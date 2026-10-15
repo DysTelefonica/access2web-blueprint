@@ -380,26 +380,17 @@ jobs:
       cancel-in-progress: false
 
   e2e-smoke:
-    # Issue #876: humo E2E en cada PR (espejo gentle-ai). Construye la
-    # imagen de la PR, espera a `/health` (120 s en runner hospedado
-    # por el cold start de Docker; 60 s sería el criterio en un runner
-    # con Docker precalentado) y ejecuta 2 specs de Playwright (smoke
-    # + login). La suite completa queda en `release.yml` y en el
-    # nightly. Runner hospedado: las PRs de fork son input no
-    # confiable y no tocan infraestructura propia.
+    # Issue #876: humo E2E en cada PR. Imagen de la PR, /health y 2 specs
+    # de Playwright (smoke + login). La suite completa va en release.yml.
     if: github.event_name == 'pull_request'
     needs: [pr-gate]
     runs-on: ubuntu-24.04
-    # Cada PR obtiene su propio run; el cancel-in-progress a nivel de
-    # workflow no debe pisarlo (el job consume un slot de runner
-    # hospedado durante la build + Playwright).
+    # Cada PR tiene su propio run; no lo cancela el workflow.
     concurrency:
       group: gate-e2e-smoke-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     timeout-minutes: 5
-    # Mismo service que el job `integration` (#882/#901): misma imagen
-    # con digest, mismas variables y mismo healthcheck. Puerto dinámico;
-    # se resuelve en el paso siguiente, nunca se fija a 5432.
+    # Mismo service que el job `integration` (#882/#901); puerto dinámico.
     services:
       postgres:
         image: postgres:16-alpine@sha256:1a66d744c1b459e13b05a8fca341da84cb63383e99ce262210efee5a319d4551
@@ -441,9 +432,7 @@ jobs:
           echo "E2E_DATABASE_URL=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
 
       - name: Install the lockfile and apply the real migrations
-        # Mismo patrón que el job `integration`: alembic corre en el runner
-        # con el checkout completo, porque 0003 lee data/fixtures/ de la
-        # raíz del repo, que la imagen no incluye.
+        # Igual que `integration`: 0003 lee data/fixtures/, fuera de la imagen.
         run: |
           set -euo pipefail
           if [ -f app/pyproject.toml ]; then
@@ -474,17 +463,13 @@ jobs:
           # PLATFORM_SECRET_KEY: 0004_seed_users cifra el DNI con AES-256-GCM
           # y necesita la clave; mismo valor que el job `integration`.
           PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
-          # --network host: el contenedor llega al Postgres del service en
-          # 127.0.0.1:<puerto dinámico>. Sin -p porque el puerto 8000 queda
-          # en el host directamente.
+          # --network host: el contenedor llega al Postgres en 127.0.0.1.
           docker run -d --name test-app --network host \
             -e DATABASE_URL="$E2E_DATABASE_URL" \
             -e SECRET_KEY="$E2E_SECRET_KEY" \
             -e PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
             test-app:pr
-          # Espera activa a /health, hasta 120 s (#876 criterio 1: 60 s
-          # en runner con Docker precalentado; 120 s cubre el cold start
-          # del runner hospedado ubuntu-24.04, que es lo que la PR usa).
+          # Espera a /health hasta 120 s (cold start del runner hospedado).
           for i in $(seq 1 120); do
             if curl -s http://localhost:8000/health > /dev/null 2>&1; then
               echo "App is ready"

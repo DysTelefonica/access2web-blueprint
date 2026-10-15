@@ -4,17 +4,13 @@
  * Global Playwright fixtures for the Lanzadera E2E suite.
  *
  * Responsibilities:
- *  1. Seed two known users (admin and regular) into the real `lanzadera`
- *     schema, after the CI runner has applied `alembic upgrade head`.
- *     The migrations are not run here: they live in ci.yml, next to the
- *     service that hosts the database.
- *  2. Provide `getAdminToken()` and `getUserToken()` to every test via module
- *     exports — each spec calls them per test or caches at describe-level.
+ *  1. Seed two known users into the `lanzadera` schema (migrations run on
+ *     the CI runner first, see ci.yml).
+ *  2. Provide `getAdminToken()` and `getUserToken()` to every test.
  *
  * Runtime contract (read from env):
- *  - `TEST_CONTAINER_NAME`  — defaults to `test-app` (matches the release workflow).
- *  - `DATABASE_URL`         — `postgresql+asyncpg://...` (the same value the
- *                             app container receives).
+ *  - `TEST_CONTAINER_NAME`  — defaults to `test-app`.
+ *  - `DATABASE_URL`         — `postgresql+asyncpg://...`.
  *
  * Usage in a spec:
  *
@@ -53,19 +49,10 @@ export const TEST_USER_NAME = "Alice E2E";
 export async function globalSetup(_config: FullConfig): Promise<void> {
   const containerName = process.env.TEST_CONTAINER_NAME ?? "test-app";
 
-  // 1. Migrations are applied by the CI step that runs before the app
-  //    starts (ci.yml, `alembic upgrade head` on the runner). They cannot
-  //    run in the container: 0003 reads `data/fixtures/` from the repo
-  //    root, which the image does not contain.
-
-  // 2. Seed the two test users into the real schema. The script runs in the
-  //    container, where argon2-cffi and asyncpg are installed, so the hashes
-  //    come from the same hasher family the app uses for login.
-  //
-  //    `dni_encrypted` is NOT NULL in the schema. The login flow never reads
-  //    it, so the test rows carry a fixed placeholder instead of an AES-GCM
-  //    ciphertext. Status is `active`, because login rejects any other state.
-  //    The insert is idempotent (ON CONFLICT on the fixed UUID).
+  // Migrations run on the CI runner (ci.yml), not here. The seed runs in
+  // the container, where argon2-cffi and asyncpg are installed. `dni_encrypted`
+  // is NOT NULL but login never reads it, so it carries a placeholder. Status
+  // is `active` because login rejects any other state. Insert is idempotent.
   const seedScript = `
 import asyncio, os, uuid
 import asyncpg
