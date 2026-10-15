@@ -5,7 +5,7 @@
 # fails if either ever appears.
 #
 # VERIFICATION ORDER (Hard Rule 13) — declared once, never reordered:
-#   1. review-budget gates (pr-size, branch-name)  cheap, and they gate reviewability, not code
+#   1. pr-gate (pr-size, walkthrough schema)      cheap, and it gates reviewability, not code
 #   2. format, lint, typecheck                     mechanical, fix before reading anything else
 #   3. tests + coverage                            produces coverage.json
 #   4. layers -> complexity -> DRY                 run by scripts/quality_report.py, in that order
@@ -42,18 +42,18 @@ env:
   PYTHON_VERSION: "3.12.11"
 
 jobs:
-  review-budget:
+  pr-gate:
     # Public pull requests are untrusted input. Every PR-reachable job runs on
     # an ephemeral GitHub-hosted runner, never on repository infrastructure.
     runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
-    # Per-gate FIFO: if a `review-budget` is already in flight on the runner, the next
+    # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
     concurrency:
-      group: gate-review-budget-${{ github.event.pull_request.number || github.ref }}
+      group: gate-pr-gate-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
-    # Fail fast: branch-name + pr-size run in seconds; anything beyond 5 min is hung.
+    # Fail fast: pr-size + walkthrough schema run in seconds; anything beyond 5 min is hung.
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -86,11 +86,6 @@ jobs:
         with:
           python-version: "3.12.11"
 
-      - name: branch name
-        env:
-          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-        run: python scripts/check_branch_name.py
-
       - name: pr size
         # PR_BODY is attacker-controlled text. It is passed through the environment, never
         # interpolated into the shell, so a crafted title or body cannot inject a command.
@@ -108,6 +103,7 @@ jobs:
         run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
+    needs: pr-gate
     # Los nombres de check requeridos se publican solo desde eventos que evaluan
     # el PR o la rama base (HR-30): schedule y workflow_dispatch no los publican.
     if: github.event_name == 'pull_request' || github.event_name == 'push'
@@ -359,7 +355,7 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: disable sparse-checkout cone mode (runtime fallback)
-        # See the same step in the ``quality`` and ``review-budget``
+        # See the same step in the ``quality`` and ``pr-gate``
         # jobs. El job semanal corre en un runner hospedado y hereda la
         # misma configuración de cono del cache.
         # `|| true` is forbidden by Hard Rule 1 (test_no_run_block_forces_success),
@@ -470,6 +466,7 @@ jobs:
     # separately in branch protection — is what lets `required` below
     # `needs:` it: `needs:` cannot cross workflow files, but a job invoked
     # via `uses: ./...` still has an ordinary job id and result.
+    needs: pr-gate
     uses: ./.github/workflows/security.yml
     # Mismo criterio que `quality` (HR-30): ningun nombre de check requerido
     # desde eventos que no evaluan el PR.
@@ -484,6 +481,7 @@ jobs:
     # Same treatment as `security` above. `security-events: write` is
     # required here (not just inside codeql.yml's own job) because a
     # reusable workflow cannot exceed the permissions its caller grants it.
+    needs: pr-gate
     uses: ./.github/workflows/codeql.yml
     # Mismo criterio que `quality` y `security` (HR-30).
     if: github.event_name == 'pull_request' || github.event_name == 'push'
@@ -496,7 +494,7 @@ jobs:
 
   required:
     # Issue #702: deterministic replacement for the six hand-configured
-    # branch-protection checks (quality, review-budget, pip-audit,
+    # branch-protection checks (quality, pr-gate, pip-audit,
     # gitleaks, trivy-config, codeql) and for `merge-ready`, which this job
     # fully supersedes (it never blocked anything — it only reported
     # `mergeable`/`reviewDecision`, both of which GitHub already derives
@@ -505,7 +503,7 @@ jobs:
     # protection.
     #
     # `if: always()` is load-bearing: without it, a single skipped
-    # dependency (e.g. `review-budget` outside a pull_request) would mark
+    # dependency (e.g. `pr-gate` outside a pull_request) would mark
     # this job's own status as skipped too, and a skipped required check
     # does not block a merge the way a failed one does.
     # `if:` sin `always()` literal y con la comparacion de evento: la guarda de
@@ -513,7 +511,7 @@ jobs:
     # motivo original —un dependency saltado no debe saltar este check, que es
     # el requerido de la proteccion de rama—.
     if: (github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()
-    needs: [review-budget, quality, security, codeql]
+    needs: [pr-gate, quality, security, codeql]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

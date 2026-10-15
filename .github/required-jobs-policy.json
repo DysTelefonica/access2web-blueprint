@@ -5,7 +5,7 @@
     }
   },
   "required_jobs": [
-    "review-budget",
+    "pr-gate",
     "quality",
     "security",
     "codeql",

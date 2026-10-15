@@ -2,7 +2,7 @@
 """Fail closed unless every branch-protection-required CI job succeeded.
 
 Issue #702: `main` branch protection previously required six checks
-(`quality`, `review-budget`, `pip-audit`, `gitleaks`, `trivy-config`,
+(`quality`, `pr-gate`, `pip-audit`, `gitleaks`, `trivy-config`,
 `codeql`) configured by hand directly in GitHub, with nothing tying that
 list back to the actual workflows. Renaming or deleting a job silently
 desynchronizes it from reality.
@@ -36,18 +36,18 @@ from collections.abc import Mapping
 #: Every job branch protection currently requires, by job id as it appears
 #: in `ci.yml` (`security` and `codeql` are the reusable-workflow-call jobs,
 #: not the inner jobs of `security.yml` / `codeql.yml`).
-ALL_JOBS = frozenset({"review-budget", "quality", "security", "codeql"})
+ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql"})
 
-#: `review-budget` only runs `if: github.event_name == 'pull_request'`
+#: `pr-gate` only runs `if: github.event_name == 'pull_request'`
 #: (issue #135) — every other supported event must accept it as a skip.
 #: `quality`, `security` and `codeql` carry no `if:` guard in `ci.yml`, so
 #: they run — and must succeed — on every event below, `pull_request`
 #: included.
 SKIPS_BY_EVENT = {
     "pull_request": frozenset(),
-    "push": frozenset({"review-budget"}),
-    "schedule": frozenset({"review-budget"}),
-    "workflow_dispatch": frozenset({"review-budget"}),
+    "push": frozenset({"pr-gate"}),
+    "schedule": frozenset({"pr-gate"}),
+    "workflow_dispatch": frozenset({"pr-gate"}),
 }
 
 

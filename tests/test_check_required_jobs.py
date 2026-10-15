@@ -24,26 +24,26 @@ def _needs(result: str = "success") -> dict[str, dict[str, str]]:
 
 
 def test_pull_request_requires_every_job_green() -> None:
-    """`review-budget`, `quality`, `security` and `codeql` all run on a PR."""
+    """`pr-gate`, `quality`, `security` and `codeql` all run on a PR."""
     assert gate.check_results(_needs(), "pull_request") == []
 
 
-def test_push_and_schedule_and_dispatch_allow_review_budget_to_skip() -> None:
-    """`review-budget` is `if: github.event_name == 'pull_request'` in ci.yml."""
+def test_push_and_schedule_and_dispatch_allow_pr_gate_to_skip() -> None:
+    """`pr-gate` is `if: github.event_name == 'pull_request'` in ci.yml."""
     needs = _needs()
-    needs["review-budget"]["result"] = "skipped"
+    needs["pr-gate"]["result"] = "skipped"
 
     assert gate.check_results(needs, "push") == []
     assert gate.check_results(needs, "schedule") == []
     assert gate.check_results(needs, "workflow_dispatch") == []
 
 
-def test_review_budget_skip_is_a_violation_on_pull_request() -> None:
-    """A PR without review-budget having run is exactly the gap this closes."""
+def test_pr_gate_skip_is_a_violation_on_pull_request() -> None:
+    """A PR without pr-gate having run is exactly the gap this closes."""
     needs = _needs()
-    needs["review-budget"]["result"] = "skipped"
+    needs["pr-gate"]["result"] = "skipped"
 
-    assert gate.check_results(needs, "pull_request") == ["review-budget: result='skipped'"]
+    assert gate.check_results(needs, "pull_request") == ["pr-gate: result='skipped'"]
 
 
 def test_security_or_codeql_skip_is_never_allowed() -> None:

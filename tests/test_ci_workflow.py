@@ -27,7 +27,6 @@ REQUIRED_COMMANDS = (
     "scripts/quality_report.py",
     "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
-    "python scripts/check_branch_name.py",
     "python scripts/check_required_jobs.py",
 )
 
@@ -418,6 +417,9 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # ci.yml and removes this entry. The script is owned by #855; the wiring
     # is owned by #857 by design — see issue #855 §"Alcance y no objetivos".
     "check_issue_spec.py",
+    # Issue #857 (PR-B): the branch-name job leaves ci.yml, so the script has no
+    # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
+    "check_branch_name.py",
 )
 
 
@@ -583,7 +585,7 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert required["if"] == (
         "(github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()"
     )
-    assert required["needs"] == ["review-budget", "quality", "security", "codeql"]
+    assert required["needs"] == ["pr-gate", "quality", "security", "codeql"]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
     assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
@@ -593,6 +595,25 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert step["run"] == "python scripts/check_required_jobs.py"
     assert step["env"]["CI_NEEDS_JSON"] == "${{ toJSON(needs) }}"
     assert step["env"]["CI_EVENT_NAME"] == "${{ github.event_name }}"
+
+
+def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
+    """Issue #857, PR-B: the cheap front gate is `pr-gate`; `review-budget` is renamed away."""
+    jobs = workflow["jobs"]
+    assert "pr-gate" in jobs
+    assert "review-budget" not in jobs
+
+
+def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
+    """Issue #857, PR-B: a failed gate must not pay for quality, security or codeql."""
+    jobs = workflow["jobs"]
+    for job in ("quality", "security", "codeql"):
+        assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
+
+
+def test_branch_name_is_no_longer_wired_into_ci(run_blocks: list[str]) -> None:
+    """Issue #857, PR-B: the branch-name check leaves ci.yml; #859 deletes the script."""
+    assert not [block for block in run_blocks if "check_branch_name.py" in block]
 
 
 def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
