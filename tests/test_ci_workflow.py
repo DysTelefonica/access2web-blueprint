@@ -837,3 +837,68 @@ def test_mutation_config_targets_only_the_domain() -> None:
         "39,7-95,5 s, así que por debajo de ~120 s un superviviente se marca "
         "INCOMPETENT y el run sale degenerado (#785)"
     )
+
+
+# ---------------------------------------------------------------------------
+# Issue #857 (PR-A): trigger surface and mutation scope
+# ---------------------------------------------------------------------------
+#
+# PR-A in the chain carries the trigger set and the mutation-scope change.
+# PR-B carries the pr-gate rename, the needs wiring, the format --check
+# migration, the sparse-checkout cleanup, and the check_required_jobs /
+# required-jobs-policy / check_workflows renames. Each PR targets main;
+# the two together close #857.
+
+
+def test_ci_does_not_run_on_push_to_main(workflow: dict) -> None:
+    """Issue #857: `push: branches: [main]` is gone.
+
+    The merge queue proves the PR against the real `main` and moves the
+    protected branch exactly to the tested group, so a `push` run would
+    only repeat the same proof. Re-adding the trigger re-opens the
+    18-of-36 branch history the issue cites.
+    """
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    assert "push" not in triggers, (
+        "ci.yml must not declare a `push:` trigger: the merge queue proves "
+        "the PR against the real main, and a push run would only repeat "
+        "the same proof (issue #857, PR-A)."
+    )
+
+
+def test_ci_runs_on_pull_request_merge_group_schedule_dispatch(
+    workflow: dict,
+) -> None:
+    """The four events the queue + nightly + manual surface require."""
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    if isinstance(triggers, list):
+        present = set(triggers)
+    elif isinstance(triggers, str):
+        present = {triggers}
+    else:
+        present = set(triggers.keys())
+
+    for required_event in ("pull_request", "merge_group", "schedule", "workflow_dispatch"):
+        assert required_event in present, (
+            f"ci.yml must declare `{required_event}` in its trigger set "
+            f"(issue #857, PR-A). Present: {sorted(present)}."
+        )
+
+
+def test_mutation_runs_only_on_schedule_and_workflow_dispatch(
+    workflow: dict,
+) -> None:
+    """Issue #857: mutation is the nightly net, not a PR cost.
+
+    The mutation job costs ~60 min on the hosted runner; running it
+    on every PR or on every merge group is what PR-A closes. The
+    accepted form is the `schedule || workflow_dispatch` comparison
+    that the structural gate `check_workflows.py` can prove.
+    """
+    mutation = workflow["jobs"]["mutation"]
+    assert mutation["if"] == (
+        "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
+    ), (
+        f"`mutation` must run only on schedule + workflow_dispatch "
+        f"(issue #857, PR-A). Current `if`: {mutation['if']!r}"
+    )

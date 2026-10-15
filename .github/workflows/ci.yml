@@ -22,11 +22,14 @@ name: ci
 
 on:
   pull_request:
-  push:
-    branches: [main]
+  merge_group:
   schedule:
     # Weekly mutation run. Mutation is the only mechanical answer to "do these tests assert
     # anything", and it is far too slow for every PR — so it runs on a cadence and ratchets.
+    # `merge_group` keeps the protected branch honest: a queue that bypasses mutation
+    # would silently erode the ratchet. The queue runs mutation via the same `schedule`
+    # event the cron does, so the ratchet is what `required` aggregates against, not
+    # what a single PR pays for.
     - cron: "0 3 * * 1"
   workflow_dispatch:
 
@@ -326,7 +329,7 @@ jobs:
     # NOTE: the `if` uses the simple `!= 'pull_request'` exclusion accepted by
     # `scripts/check_workflows.py::_condition_excludes_pull_requests`; el job sigue
     # siendo caro y semanal, no de PR, y ahora lo ejecuta un runner hospedado.
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04-arm
     # cosmic-ray on the declared testable boundary is intentionally slow. El timeout de cada
     # tramo es holgado — Hard Rule 18: el exit code del runner no es el veredicto, lo es
