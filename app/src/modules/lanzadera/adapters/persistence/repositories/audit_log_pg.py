@@ -61,7 +61,7 @@ class AuditLogPg:
     def __init__(self, session_factory: AsyncSessionFactoryPort) -> None:
         self._factory = session_factory
 
-    async def append(self, event: AuditEvent) -> None:
+    async def append(self, event: AuditLogEntry) -> None:
         """Persist an audit row.
 
         DA-11: every mutating case-of-use MUST call this from inside
@@ -72,10 +72,13 @@ class AuditLogPg:
         (so a failed audit cannot roll back the password reset);
         transactional consumers wire the adapter via session sharing
         instead.
+
+        The ``id`` column has a server-side ``gen_random_uuid()``
+        default, so the adapter does not generate it; callers pass an
+        ``AuditLogEntry`` (the Protocol entry) which has no ``id``.
         """
         async with self._factory.transaction() as session:
             stmt = sa.insert(AUDIT_TABLE).values(
-                id=event.id,
                 event_type=event.event_type,
                 actor_id=event.actor_id,
                 target_id=event.target_id,
