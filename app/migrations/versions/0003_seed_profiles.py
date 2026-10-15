@@ -59,7 +59,7 @@ def upgrade() -> None:
                 f"""INSERT INTO {SCHEMA}.profiles
                     (id, app_id, code, name, capabilities, active, created_at, updated_at)
                     VALUES
-                    (:id, :app_id, :code, :name, :capabilities, 'active', now(), now())"""
+                    (:id, :app_id, :code, :name, :capabilities, :active, now(), now())"""
             ),
             {
                 "id": profile["id"],
@@ -68,6 +68,14 @@ def upgrade() -> None:
                 "name": profile["name"],
                 # G-2 ABIERTO: capabilities provisional {}.
                 "capabilities": json.dumps(profile.get("capabilities", {})),
+                # Issue #904: the column is `sa.Boolean()` (see
+                # 0001_core_schema.py). The previous hardcoded literal
+                # 'active' raised `InvalidTextRepresentationError` from
+                # asyncpg the first time the integration job ran
+                # migrations on a real Postgres service (PR-3 of #882,
+                # CI run 38773849842). Read the value from the fixture
+                # so per-row fidelity is preserved.
+                "active": profile["active"],
             },
         )
 

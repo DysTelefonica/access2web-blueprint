@@ -80,15 +80,38 @@ def parse_version(v: str) -> tuple:
     return tuple(int(x) for x in v.split("."))
 
 
+def merge_base(repo: Path, base: str, head: str) -> str:
+    """#T6a (Refs #509): el diff se hace contra el merge-base, no contra la
+    punta de la base del PR. Con dos puntos (`base..head`) cualquier commit
+    que entró a main entre la bifurcación y la apertura del PR aparecía
+    como cambio del PR y disparaba HR-44 sin defecto. Con tres puntos
+    (`merge-base..head`) sólo cuentan los commits introducidos por el PR.
+    Si las dos ramas no tienen ancestro común (PR contra una base que ya
+    no existe), falla con GateError para mantener fail-closed (HR-3)."""
+    out = git(repo, "merge-base", base, head)
+    if not out:
+        raise GateError(
+            f"merge-base of {base!r} and {head!r} is empty: branches share "
+            "no common ancestor; el gate no puede distinguir PR de base")
+    return out
+
+
 def changed_files(repo: Path, base: str, head: str, skill_dir: str) -> list[str]:
-    out = git(repo, "diff", "--name-only", f"{base}..{head}", "--", skill_dir)
+    """Diff desde el merge-base de la base y el head del PR (T6a, Refs #509)."""
+    mb = merge_base(repo, base, head)
+    out = git(repo, "diff", "--name-only", f"{mb}..{head}", "--", skill_dir)
     return [l for l in out.splitlines() if l.strip()]
 
 
 def discover_skill_dirs(repo: Path, base: str, head: str) -> list[str]:
-    """Skill dirs (a SKILL.md at head) with files touched by the diff."""
+    """Skill dirs (a SKILL.md at head) with files touched by the diff.
+
+    #T6a (Refs #509): el diff se hace contra el merge-base de la base y
+    el head del PR, igual que `changed_files`, para que la cobertura de
+    skills monitorizadas coincida con los ficheros cambiados por el PR."""
+    mb = merge_base(repo, base, head)
     dirs = set()
-    for f in git(repo, "diff", "--name-only", f"{base}..{head}").splitlines():
+    for f in git(repo, "diff", "--name-only", f"{mb}..{head}").splitlines():
         parts = f.strip().split("/")
         for i in range(1, len(parts)):
             d = "/".join(parts[:i])
@@ -141,7 +164,8 @@ def main(argv):
             print(f"  - {line}")
         return 1
     print("VERSION-BUMP OK: no material skill edit without a version bump "
-          f"between {args.base!r} and {args.head!r}.")
+          f"between {args.base!r} and {args.head!r} "
+          f"(diff contra merge-base, Refs #509).")
     return 0
 
 

@@ -58,20 +58,22 @@
     },
     {
       "id": "P07",
-      "name": "size_exception_field",
-      "type": "string",
-      "default": "size-exception-reason:",
+      "name": "size_exception_label",
+      "type": "label",
+      "default": "size:exception",
       "required": false,
-      "consumed_by": ["scripts/check_pr_size.py:39"]
+      "consumed_by": ["scripts/check_pr_size.py:39"],
+      "deprecated": "El campo 'size-exception-reason:' del cuerpo del PR está retirado (A1, #518); la excepción es solo la etiqueta 'size:exception' aplicada por el mantenedor cuando partir la PR rompería main, sin lockfiles ni generados en el cómputo del presupuesto."
     },
     {
       "id": "P08",
       "name": "lockfile_excludes",
       "type": "list",
       "item_type": "string",
-      "default": ["**/package-lock.json", "uv.lock"],
+      "default": [],
       "required": false,
-      "consumed_by": [".github/workflows/pr-size.yml"]
+      "consumed_by": [".github/workflows/pr-size.yml"],
+      "deprecated": "Las exclusiones de lockfiles están retiradas (A1, #518); el presupuesto se computa sobre adiciones + eliminaciones del PR tal como las da GitHub, sin exclusiones."
     },
     {
       "id": "P09",
@@ -248,7 +250,7 @@
       "name": "required_status_contexts",
       "type": "list",
       "item_type": "string",
-      "default": ["ci / required", "pr-name / branch-name", "pr-size / pr-size"],
+      "default": ["ci / required", "pr-size / pr-size"],
       "required": false,
       "consumed_by": [".github/branch-protection.md"]
     },
@@ -453,6 +455,45 @@
       "required": false,
       "consumed_by": ["assets/bin/ci-pattern (receta de incidentes)"],
       "description": "Gestor de secretos declarado por el consumer (Vault, OpenShift Secrets, 1Password...): las credenciales y los tokens viven ahí, nunca en git."
-    }
+    },
+    {
+    "id": "P51",
+    "name": "runners_profile",
+    "type": "enum",
+    "choices": [
+      "hosted",
+      "self-hosted"
+    ],
+    "default": "hosted",
+    "required": false,
+    "consumed_by": [
+      "assets/runner-profile/check_runner_profile.py"
+    ],
+    "description": "Perfil de runners del consumer. self-hosted exige que los jobs de PR/push corran en el pool propio (P52) o sean excepcion justificada (P53): en repos privados de cuenta Free los minutos hosted se agotan y el CI queda ciego mientras el pool esta ocioso (HR-61)."
+  },
+    {
+    "id": "P52",
+    "name": "runners_pool_labels",
+    "type": "list",
+    "item_type": "string",
+    "default": [],
+    "required": false,
+    "consumed_by": [
+      "assets/runner-profile/check_runner_profile.py"
+    ],
+    "description": "Conjunto exacto de etiquetas del pool self-hosted gobernable (orden irrelevante). Vacia con P51=self-hosted es entrada invalida, fail-closed: 'self-hosted' pelado goberna cualquier runner conectado, incluido un portatil personal."
+  },
+    {
+    "id": "P53",
+    "name": "hosted_exceptions",
+    "type": "map",
+    "value_type": "string",
+    "default": {},
+    "required": false,
+    "consumed_by": [
+      "assets/runner-profile/check_runner_profile.py"
+    ],
+    "description": "Excepciones hosted con causa de indivisibilidad, mapa job→motivo no vacio (estilo HR-15): jobs que por contrato o herramienta solo corren en runner hosted. La excepcion sin motivo es hallazgo del gate, no silencio."
+  }
   ]
 }

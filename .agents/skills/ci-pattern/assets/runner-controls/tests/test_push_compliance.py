@@ -73,6 +73,14 @@ elif "/pulls/" in path:
     if detail is None:
         sys.stderr.write("gh: 404 Not Found\\n"); sys.exit(1)
     print(json.dumps(detail))
+elif "/commits/" in path and path.count("/") == 4:
+    # GET /repos/{{repo}}/commits/{{sha}} — devuelve el commit con su arbol.
+    sha = path.split("/commits/")[1]
+    commit = state.get("commits", {{}}).get(sha, {{}})
+    if commit:
+        print(json.dumps(commit))
+    else:
+        sys.stderr.write("gh: 404 Not Found\\n"); sys.exit(1)
 else:
     sys.stderr.write("gh: unsupported endpoint " + path + "\\n"); sys.exit(1)
 json.dump(state, open(STATE_PATH, "w", encoding="utf-8"))
@@ -109,10 +117,11 @@ def base_state() -> dict:
             "pr_details": {"7": {"number": 7, "merged": True, "user": {"login": "ardelperal"},
                                  "head": {"sha": SHA}, "merge_commit_sha": SHA}},
             "check_runs": {SHA: [{"id": 1, "name": CHECK, "conclusion": "success", "status": "completed"}]},
+            "commits": {SHA: {"sha": SHA, "tree": {"sha": "a1b2c3d4e5f6"}}},
             "created_issues": [], "calls": [], "merges": [],
             "compare": {"total_commits": 1,
                         "commits": [{"sha": SHA,
-                                     "commit": {"author": {"name": "Dev A"}}}]}}
+                                         "commit": {"author": {"name": "Dev A"}}}]}}
 
 
 def run_gate(root: Path, event: dict, contract_data: dict, state: dict) -> subprocess.CompletedProcess:
@@ -324,6 +333,33 @@ class DetectiveTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("fail", (proc.stdout + proc.stderr).lower())
 
+    def test_tree_integrity_ok_when_pushed_matches_pr(self) -> None:
+        # Arbol conforme: el commit del push tiene el mismo arbol que la PR.
+        state = base_state()
+        # El arbol del push es el mismo que el de la PR (SHA -> a1b2c3d4e5f6).
+        state["commits"][SHA] = {"sha": SHA, "tree": {"sha": "a1b2c3d4e5f6"}}
+        proc = run_gate(self.root, push_event(), contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("OK", proc.stdout)
+
+    def test_tree_integrity_mismatch_opens_incident(self) -> None:
+        # Arbol inconsistente: el push llego con un arbol distinto al de la PR.
+        # El compare del push devuelve PUSHED_SHA; la PR lo referencia (squash/rebase).
+        PUSHED_SHA = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+        state = base_state()
+        # El head de la PR tiene arbol PR_TREE_SHA.
+        state["commits"][SHA] = {"sha": SHA, "tree": {"sha": "PR_TREE_SHA"}}
+        # El commit del push tiene PUSHED_TREE_SHA (diferente a PR_TREE_SHA).
+        state["commits"][PUSHED_SHA] = {"sha": PUSHED_SHA, "tree": {"sha": "PUSHED_TREE_SHA"}}
+        # El compare del push devuelve PUSHED_SHA (squash/rebase creó otro commit).
+        state["compare"] = {"total_commits": 1,
+                            "commits": [{"sha": PUSHED_SHA,
+                                         "commit": {"author": {"name": "Dev A"}}}]}
+        # La PR se mapea por PUSHED_SHA (el commit resultante del squash/rebase).
+        state["pulls"][PUSHED_SHA] = [{"number": 7, "merged": True,
+                                        "merged_at": "2026-10-06T10:00:00Z",
+                                        "user": {"login": "ardelperal"},
+                                        "base": {"ref": "main"}}]
 
 if __name__ == "__main__":
     unittest.main()

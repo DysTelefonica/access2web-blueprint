@@ -1,0 +1,35 @@
+{
+  "info": {
+    "description": "Hexagonal Python platform for the Lanzadera admin module. W58 (#515) wired the LanzaderaContainer (W55, #49) to the HTTP delivery layer so every admin route runs through the use-case layer (W54, #43).",
+    "title": "Platform \u2014 Lanzadera MVP",
+    "version": "0.0.0+phase0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "healthcheck_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Healthcheck Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Healthcheck",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  }
+}

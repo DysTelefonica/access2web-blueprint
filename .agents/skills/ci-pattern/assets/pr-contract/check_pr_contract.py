@@ -94,38 +94,36 @@ def check_closes(pr, base, default_branch, policy, findings):
             "los PR encadenados intermedios no deben cerrar la issue."
         )
 
-SIZE_PLACEHOLDER = re.compile(r"<[^>]+>|\{\{[^}]+\}\}|^(?:TODO|FIXME)$", re.IGNORECASE)
+def size_exception_applied(pr, policy):
+    """A1: la excepción de presupuesto la aplica solo el mantenedor cuando
+    partir el PR rompería `main`. El gate verifica que la etiqueta
+    `size:exception` está aplicada; la procedencia (mantenedor y motivo)
+    vive en el cuerpo del PR bajo `## Excepción de tamaño` y la aplica un
+    humano en GitHub, no este gate.
 
-def size_exception_reason(body, field="size-exception-reason:"):
-    """HR-8: la excepción de presupuesto como DATO — una sola línea, una
-    sola aparición en todo el cuerpo y valor sin el marcador de plantilla.
-    Devuelve la razón válida o None si la excepción no es válida.
+    Devuelve True si la etiqueta está aplicada, False en caso contrario.
+    """
+    label_name = policy.get("size_exception_label", "size:exception")
+    labels = {l.get("name") for l in pr.get("labels", []) if isinstance(l, dict)}
+    return label_name in labels
 
-    Es la ÚNICA implementación de la regla (SKILL HR-8): la lee también el
-    merge gobernado (`assets/runner-controls/check_governed_merge.py`), que
-    la importa en proceso en lugar de copiarla."""
-    text = body or ""
-    needle = field.lower()
-    lines = [line for line in text.splitlines() if needle in line.lower()]
-    if len(lines) != 1 or text.lower().count(needle) != 1:
-        return None
-    line = lines[0]
-    value = line[line.lower().find(needle) + len(field):].strip()
-    if not value or SIZE_PLACEHOLDER.search(value):
-        return None
-    return value
 
 def check_budget(pr, repo, base_sha, head_sha, policy, findings):
+    """A1: el presupuesto es 400 (adiciones + eliminaciones del PR, sin
+    exclusiones). Si el diff lo supera, la única vía válida es la
+    etiqueta `size:exception` aplicada por el mantenedor; el campo
+    `size-exception-reason:` del cuerpo está retirado."""
     budget = policy.get("review_budget_lines", 400)
-    field = policy.get("size_exception_field", "size-exception-reason:")
-    body = pr.get("body") or ""
+    label_name = policy.get("size_exception_label", "size:exception")
     diff_lines = git_shortstat(repo, base_sha, head_sha)
     if diff_lines <= budget:
         return
-    if size_exception_reason(body, field) is None:
+    if not size_exception_applied(pr, policy):
         findings.append(
-            f"HR-8: el diff supera el presupuesto ({diff_lines} > {budget}) y "
-            f"no existe el campo de excepción '{field}' con reason en el cuerpo."
+            f"A1: el diff supera el presupuesto ({diff_lines} > {budget}) y "
+            f"no lleva la etiqueta '{label_name}' aplicada por el mantenedor. "
+            "Encadene PRs o pida al mantenedor la etiqueta tras responder las "
+            "4 preguntas de '## Excepción de tamaño' en el cuerpo."
         )
 
 def check_commits(repo, base_sha, head_sha, policy, findings):

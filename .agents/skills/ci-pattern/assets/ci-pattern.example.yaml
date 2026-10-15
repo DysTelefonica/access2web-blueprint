@@ -19,7 +19,14 @@ P11_label_chain_partial: chain:partial
 P18_health_url_var: APAP_DEPLOY_HEALTH_URL
 P21_smoke_user_agent: "apap-production-smoke/1 (+https://github.com/ardelperal/APAP_WEB)"
 P23_required_jobs: [pr-size, issue-spec, lint, security, security-deep, mutation, typecheck, test, integration, verify-fallback-ready, build, e2e, ui-detection]
-P28_required_status_contexts: [ci / required, pr-name / branch-name, pr-size / pr-size]
+P28_required_status_contexts: [ci / required, pr-size / pr-size]
 P30_python_version: "3.12.11"
 P32_coverage_floor: 85
 P45_deploy_image: ghcr.io/ardelperal/apap-web
+
+# Perfil de runners (P51-P53): repo privado de cuenta Free -> el pool
+# propio es el perfil por defecto; hosted solo con excepcion justificada.
+P51_runners_profile: self-hosted
+P52_runners_pool_labels: [self-hosted, Linux, ARM64, apap, oracle, coolify, noble, deploy]
+P53_hosted_exceptions:
+  deploy: accion de terceros sin build ARM64 (causa de indivisibilidad, HR-15)

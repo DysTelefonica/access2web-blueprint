@@ -5,18 +5,18 @@ extrayendo estos valores primero; ninguna regla de la skill depende de los
 valores concretos del consumer de origen (`ardelperal/APAP_WEB`), que figuran
 solo como ejemplo verificado.
 
-## Los veinticinco parámetros
+## Los veintinueve parámetros
 
 | # | Parámetro | Valor en ardelperal/APAP_WEB (consumer de origen; ejemplo verificado) | Dónde vive | Quién lo lee |
 |---|---|---|---|---|
-| 1 | Regex de rama | `^(feat\|fix\|chore\|docs\|refactor\|test)/<N>-<kebab-slug>$` | Protección de rama + gate de nombre de rama | El gate deriva la issue del número `<N>`; el generador `assets/branch-name.sh` la lee del gate (`--gate-script`) o la recibe por `--pattern`, y valida el nombre antes de crear la rama (HR-35) |
-| 2 | Presupuesto de revisión | `400` líneas (adiciones + eliminaciones, sin lockfiles) | Constante del gate de tamaño | `scripts/check_pr_size.py` |
+| 8 | Política de merge | Commit de fusión, rama remota conservada, sin `strict`, sin cola de merge; CI una vez en la PR; `push` a `main` más nightly diario como red de seguridad | Settings del repo | Gate de evidencia del deploy |
 | 3 | Etiquetas canónicas | `chain:partial`, `size:exception`, `type:*`, `status:approved` | Configuración de labels del repo | Gates de issue-spec y de tamaño |
 | 4 | Contextos de estado por SHA | `release/smoke-production`, `release/e2e-production` | Lista cerrada de contextos | `scripts/check_release_evidence.py` |
 | 5 | Rutas sensibles | Globs de auth, sesión, CSRF, migraciones y runtime (49 líneas) | `.github/release-e2e-paths.txt` | `scripts/check_release_e2e_required.py` |
 | 6 | URL de salud | `https://<host>/healthz` (expone `.revision` del deploy) | Constante del smoke | `scripts/production_smoke.py` |
 | 7 | User-Agent del smoke | Agente propio con reintentos y host de la redirección | Constante del smoke | `scripts/production_smoke.py` (403 de Cloudflare sin él) |
-| 8 | Política de merge | Commit de fusión, rama remota conservada, auto-merge + update-branch activados, `strict: true` | Settings del repo | Gate de evidencia del deploy |
+| 1 | Regex de rama | `^(feat\|fix\|chore\|docs\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` | Ruleset de protección de rama del repo | El ruleset del host enforza la regex; no hay gate local de nombre — la derivación de la issue por nombre de rama está retirada (A5) |
+| 2 | Presupuesto de revisión | `400` líneas (adiciones + eliminaciones del PR, sin exclusiones — ni lockfiles ni generados) | Constante del gate de tamaño | `scripts/check_pr_size.py`; la única excepción es la etiqueta `size:exception`, aplicada solo por el mantenedor cuando partir la PR rompería `main` (A1) |
 | 9 | Ruta de post-mortems | `docs/postmortems/<date>-<slug>.md` | Convención de docs del repo | HR-21 (post-mortem blameless); HR-19 (notas de release); HR-48 (la documentación del proyecto vive en su repo, y el gate de las fases 3 y 5 lo comprueba) |
 | 10 | Playbook de release | `RELEASE-<TAG>.md` en la raíz del repo | Raíz del repo | HR-22 |
 | 11 | Runbook e2e de producción | `docs/runbooks/e2e-production.md` | `docs/runbooks/` | Exclusión de §1; registro del veredicto (HR-10); el runbook es parte del arnés de evidencia y queda sujeto a HR-42 (premisas con comando de siembra o verificación) |
@@ -34,23 +34,23 @@ solo como ejemplo verificado.
 | 22 | Manifiestos que disparan el gate de avisos en PR | Lista de rutas de manifiestos de dependencias (p. ej. `requirements*.txt`, `pyproject.toml`); valores concretos aún sin fijar en el consumer | Fichero de datos del consumer | HR-39 (gate programado + PRs que tocan manifiestos) |
 | 24 | Ruta del registro operativo de incidentes | `docs/incidents/` — el mismo repositorio de la aplicación; un repositorio de operaciones aparte es opcional | `ci-pattern.yaml` (`P49_incident_log_dir`), con default del esquema | HR-21 (detalle técnico del incidente: IPs, hostnames, comandos, logs, cronología y estado de cada ticket); gate de fase 5 |
 | 25 | Gestor de secretos declarado | «el gestor de secretos del consumer» (p. ej. Vault, OpenShift Secrets, 1Password) | `ci-pattern.yaml` (`P50_secrets_manager`), con default del esquema | HR-21 (credenciales y tokens: nunca en git, ni en un repositorio privado) |
+| 26 | Superficies de UI (globs) | defaults del gate: `app/**`, `web/**`, `src/**`, `pages/**`, `components/**`, `views/**`, `templates/**`; el consumer los reemplaza con `--ui-glob` | argumentos del gate `assets/e2e-evidence/check_e2e_evidence.py` | HR-58 (evidencia e2e por PR); invariante `web.md` |
+| 27 | Lista blanca no-UI | 25 prefijos por defecto (`.github/`, `docs/`, `scripts/`, `tests/`, manifiestos…); se reemplaza con `--non-ui-prefix` | ídem (`--non-ui-prefix`) | HR-58 |
+| 28 | Directorio y patrón de flujos e2e | `tests/e2e_ci` y `*.spec.{ts,js,py}` | ídem (`--e2e-dir`, `--e2e-pattern`) | HR-58 |
+| 29 | Sección de exención en el cuerpo de la PR | `## Exencion e2e` (una sección vacía no exonera) | ídem (`--exemption-section`, `--pr-body-file`) | HR-58; HR-8 (la excepción como dato) |
+EAD
+| 30 | Perfil de runners del consumer | `self-hosted` en APAP_WEB (repo privado, cuenta Free: los minutos hosted agotados bloquean el CI entero — piloto ardelperal/APAP_WEB#1386) | `ci-pattern.yaml` (`P51_runners_profile`, default `hosted`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61) |
+| 31 | Etiquetas del pool self-hosted | conjunto exacto declarado por el consumer (precedente APAP_WEB: `self-hosted, Linux, ARM64, apap, oracle, coolify, noble, deploy` → P29 en `references/asset-inventory.md`) | `ci-pattern.yaml` (`P52_runners_pool_labels`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61); vacio con perfil self-hosted = entrada invalida |
+| 32 | Excepciones hosted justificadas | mapa job→motivo (causa de indivisibilidad, estilo HR-15) | `ci-pattern.yaml` (`P53_hosted_exceptions`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61) |
+origin/main
 
-El nombre de rama (parámetro 1) se **genera**, nunca se prescribe de memoria:
-`assets/branch-name.sh` construye `<tipo>/<N>-<slug>`, normaliza el slug
- de
-forma determinista (minúsculas, sin acentos, guiones), valida contra la regex
-—leída del `check_branch_name.py` del destino o pasada por `--pattern`— e
-incluye auto-test ejecutable sin el repo destino (HR-35). Las opciones
-(`--pattern`, `--max-len`, `--gate-script`) se aceptan en cualquier orden,
-antes o después del nombre: `--max-len` debe ser un entero positivo (se
-rechaza con mensaje explícito) y los nombres con salto de línea, retorno de
-carro o vacíos se rechazan como no representables como rama. La plantilla de
-encargo que verifica el resto de parámetros en vivo vive en
-`references/delegation-template.md` (HR-36).
+El nombre de rama (parámetro 1) lo aplica el **ruleset del repo** sobre el
+nombre de la rama al push (#518); ya no hay generador local.
 
 Parámetros secundarios documentados en las fuentes: host de producción, versión
-de Python y lista de checks requeridos (tres en este repo: `branch-name`,
-`required`, `pr-size / pr-size`).
+de Python y lista de checks requeridos (en este repo: `required`,
+`pr-size / pr-size`; el gate `branch-name` está retirado — el ruleset
+del host aplica la regex).
 
 ## Policy file de gates dormibles (HR-18)
 
