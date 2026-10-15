@@ -1,10 +1,8 @@
 <!--
 El presupuesto de revisión es 400 líneas (additions + deletions) y se aplica en
-el job `review-budget` del workflow de CI (`scripts/check_pr_size.py`).
-La única manera de sobrepasarlo es partir el PR o aplicar la etiqueta
-`size:exception` — la concede el mantenedor y se documenta en el cuerpo del
-PR. Con la adopción del gobierno simplificado (#854) se retiró el campo
-`size-exception-reason:` del cuerpo: ya no es gate.
+el job `review-budget` del workflow de CI (`scripts/check_pr_size.py`). El gate
+lee solo la etiqueta `size:exception`, que pone el mantenedor; el cuerpo no
+lleva ningún campo de excepción.
 -->
 
 Closes #
@@ -34,6 +32,16 @@ Closes #
 <!-- Obligatoria si el cuerpo lleva `Closes #N` (HR-53 del patrón): nombre el
      fichero o el caso de test que demuestra el comportamiento. La prosa no
      cierra nada. -->
+
+## Excepción de tamaño
+
+<!-- Solo si el PR supera 400 líneas. Responda las cuatro preguntas; el mantenedor
+     decide si concede la etiqueta `size:exception`. -->
+
+1. ¿Qué parte puede ir antes en una PR propia sin romper `main` (refactor previo, puerto o servicio con sus tests, docs)?
+2. ¿Se puede partir por sub-comportamiento o por capa (dominio → ruta → plantilla + e2e)?
+3. ¿Hay cambios que no se pidieron (formato, renombrados, limpieza)? Quítalos antes de medir.
+4. Si se fusiona solo la primera mitad, ¿qué se rompe exactamente en `main`? Nombra el test o el fichero concreto. Si no puedes nombrarlo, la PR se parte.
 
 ## Checklist
 
