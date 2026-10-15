@@ -69,16 +69,34 @@ export async function globalSetup(_config: FullConfig): Promise<void> {
   //    `PasswordHasher`. The old `PasswordHash` import worked against
   //    an earlier binding; the PR's release-yml / nightly runs hit the
   //    `ImportError` on the new image.
+  //
+  //    The DB path is read from $DATABASE_URL (the same env var alembic
+  //    uses) and resolved to an absolute path with `os.path.abspath`.
+  //    Opening `test.db` relative to cwd was brittle: when the docker
+  //    exec `-w /app` happened not to land on the directory that holds
+  //    the file (uvicorn may have written `test.db` under a different
+  //    effective cwd), sqlite3 raised `unable to open database file`.
+  //    Resolving against the env-var path matches what the app itself
+  //    does and surfaces the exact file in the error if it ever breaks
+  //    again.
   const seedScript = `
-import sqlite3, sys, uuid
+import os, sqlite3, sys, uuid
 from argon2 import PasswordHasher
+
+db_url = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
+db_path = db_url.split("///", 1)[1]
+if not db_path.startswith("/"):
+    db_path = os.path.abspath(db_path)
+print(f"[e2e:seed] cwd={os.getcwd()} db_url={db_url} db_path={db_path}")
+if not os.path.exists(db_path):
+    sys.exit(f"seed: database file not found at {db_path}")
 
 # Generate real Argon2id hashes using the container's argon2-cffi
 h = PasswordHasher()
 admin_hash = h.hash("${TEST_ADMIN_PASSWORD}")
 user_hash  = h.hash("${TEST_USER_PASSWORD}")
 
-conn = sqlite3.connect("test.db")
+conn = sqlite3.connect(db_path)
 cur = conn.cursor()
 
 admin_id = str(uuid.UUID("00000000-0000-0000-0000-000000000001"))
