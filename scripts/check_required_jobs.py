@@ -2,7 +2,7 @@
 """Fail closed unless every branch-protection-required CI job succeeded.
 
 Issue #702: `main` branch protection previously required six checks
-(`quality`, `review-budget`, `pip-audit`, `gitleaks`, `trivy-config`,
+(`quality`, `pr-gate`, `pip-audit`, `gitleaks`, `trivy-config`,
 `codeql`) configured by hand directly in GitHub, with nothing tying that
 list back to the actual workflows. Renaming or deleting a job silently
 desynchronizes it from reality.
@@ -12,18 +12,20 @@ Adapted from `ardelperal/APAP_WEB`'s `scripts/check_required_jobs.py`
 the validated reference implementation. The event set differs, so the
 adaptation is not a byte-for-byte copy:
 
-  - `ci.yml`'s own triggers are `pull_request`, `push` (branches: `main`),
-    `schedule` and `workflow_dispatch`. There is no tag-push trigger here —
-    tags are `release.yml`'s domain and out of scope for this gate.
+  - `ci.yml`'s own triggers are `pull_request` (with the six type
+    events pinned in #857 PR-B), `push` (branches: `main`), `schedule`
+    (nightly safety net) and `workflow_dispatch`. There is no
+    `merge_group` trigger — the queue is gone with the gentle-ai model
+    — and no tag-push trigger here (tags are `release.yml`'s domain
+    and out of scope for this gate).
   - `needs:` cannot cross workflow files. `security.yml` and `codeql.yml`
     were made reusable (`on: workflow_call`) and are invoked directly as
     jobs inside `ci.yml` (`uses: ./.github/workflows/security.yml` /
     `codeql.yml`), which is what lets this aggregator `needs:` them and
     read `needs.<id>.result` exactly like any ordinary job.
-  - `mutation` is deliberately NOT one of the required jobs: it is
-    schedule/workflow_dispatch-only and was never part of branch
-    protection, so it stays out of `ALL_JOBS` and keeps running
-    independently.
+  - `mutation` and `mutation-ratchet` are no longer in `ci.yml` (the
+    gentle-ai model moves mutation out of CI; #857 PR-D), so they are
+    out of `ALL_JOBS` by construction.
 """
 
 from __future__ import annotations
@@ -36,18 +38,21 @@ from collections.abc import Mapping
 #: Every job branch protection currently requires, by job id as it appears
 #: in `ci.yml` (`security` and `codeql` are the reusable-workflow-call jobs,
 #: not the inner jobs of `security.yml` / `codeql.yml`).
-ALL_JOBS = frozenset({"review-budget", "quality", "security", "codeql"})
+ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql"})
 
-#: `review-budget` only runs `if: github.event_name == 'pull_request'`
-#: (issue #135) — every other supported event must accept it as a skip.
-#: `quality`, `security` and `codeql` carry no `if:` guard in `ci.yml`, so
-#: they run — and must succeed — on every event below, `pull_request`
-#: included.
+#: `pr-gate` only runs `if: github.event_name == 'pull_request'`
+#: (issue #135, #857 PR-B). On every other trigger that fires `ci.yml`
+#: — `push` (post-merge safety net), `schedule` (nightly) and
+#: `workflow_dispatch` (manual) — `pr-gate` is skipped, and the heavy
+#: jobs that `needs: pr-gate` accept the skip. `pull_request` is the
+#: one event where the gate actually runs and the heavy jobs must see
+#: a `success` from it. `merge_group` is gone: the merge queue left
+#: with the gentle-ai model (#857 PR-D).
 SKIPS_BY_EVENT = {
     "pull_request": frozenset(),
-    "push": frozenset({"review-budget"}),
-    "schedule": frozenset({"review-budget"}),
-    "workflow_dispatch": frozenset({"review-budget"}),
+    "push": frozenset({"pr-gate"}),
+    "schedule": frozenset({"pr-gate"}),
+    "workflow_dispatch": frozenset({"pr-gate"}),
 }
 
 

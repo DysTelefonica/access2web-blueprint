@@ -1,0 +1,14 @@
+{
+  "baseline_version": 1,
+  "entries": [
+    {
+      "identity": {
+        "rule": "example-rule",
+        "path": "src/example.py",
+        "fingerprint": "sha256-of-content-or-route"
+      },
+      "target": "refactor module to drop this finding",
+      "target_date": "2026-12-31"
+    }
+  ]
+}

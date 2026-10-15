@@ -31,8 +31,15 @@ pueden ejecutarlos usan `ubuntu-24.04`, un runner efímero hospedado por GitHub.
 | `schedule` y `workflow_dispatch` | Runner hospedado por GitHub |
 | Tag de release `v*` | Runner hospedado por GitHub |
 
-El gate `scripts/check_workflows.py` rechaza cualquier job alcanzable desde un
-pull request que use `self-hosted`, una matriz o una expresión dinámica.
+El gate `scripts/check_workflows.py` rechaza **cualquier** job que use
+`self-hosted`, alcance o no a los pull requests, y además rechaza —para los
+alcanzables desde un PR— una matriz o una expresión dinámica.
+
+La regla se mide, no se predica: hasta #800 la exención de los jobs excluidos de
+PR dejaba fuera del gate al job `mutation`, pineado a
+`[self-hosted, Linux, ARM64, oracle-vps, a2w]` —una etiqueta con **cero runners
+registrados**—, que llevaba cuatro semanas en rojo mientras el agregador
+`required` publicaba verde (#785).
 
 Un job propio dentro de un workflow de PR debe excluir ese evento mediante una
 condición estática sobre `github.event_name`.
@@ -56,7 +63,7 @@ consultar GitHub y el runbook de infraestructura autorizado.
 | Workflow | Jobs | Etiqueta |
 |---|---|---|
 | `ci.yml` | `review-budget`, `quality`, `required` | `ubuntu-24.04` |
-| `ci.yml` | `mutation` | runner propio del VPS (transitorio; lo migra #785) |
+| `ci.yml` | `mutation` | `ubuntu-24.04-arm` |
 | `security.yml` | `gitleaks`, `trivy-config`, `pip-audit` | `ubuntu-24.04` |
 | `security-deep.yml` | `gitleaks-history`, `trivy-image` | `ubuntu-24.04-arm` |
 | `codeql.yml` | `codeql` | `ubuntu-24.04` |

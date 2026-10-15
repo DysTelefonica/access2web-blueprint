@@ -1,12 +1,10 @@
 <!--
-`size-exception-reason:` es un campo de datos del cuerpo del PR: una sola
-línea, en la primera columna, exactamente una aparición — nunca etiqueta ni
-prosa dispersa (HR-8 del patrón). Deje el motivo vacío salvo que el diff supere
-las 400 líneas y no quepa partirlo; el gate de tamaño del repositorio
-(`scripts/check_pr_size.py`) pide además la etiqueta `size:exception`.
+El presupuesto de revisión es 400 líneas (additions + deletions) y se aplica en
+el job `pr-gate` del workflow de CI (`scripts/check_pr_size.py`). Las rutas
+vendorizadas `.agents/skills/**` y `skills/**` no cuentan (issue #918). El gate
+lee solo la etiqueta `size:exception`, que pone el mantenedor; el cuerpo no
+lleva ningún campo de excepción.
 -->
-
-size-exception-reason: <motivo en una sola línea, solo si el diff no puede partirse>
 
 Closes #
 
@@ -36,10 +34,20 @@ Closes #
      fichero o el caso de test que demuestra el comportamiento. La prosa no
      cierra nada. -->
 
+## Excepción de tamaño
+
+<!-- Solo si el PR supera 400 líneas. Responda las cuatro preguntas; el mantenedor
+     decide si concede la etiqueta `size:exception`. -->
+
+1. ¿Qué parte puede ir antes en una PR propia sin romper `main` (refactor previo, puerto o servicio con sus tests, docs)?
+2. ¿Se puede partir por sub-comportamiento o por capa (dominio → ruta → plantilla + e2e)?
+3. ¿Hay cambios que no se pidieron (formato, renombrados, limpieza)? Quítalos antes de medir.
+4. Si se fusiona solo la primera mitad, ¿qué se rompe exactamente en `main`? Nombra el test o el fichero concreto. Si no puedes nombrarlo, la PR se parte.
+
 ## Checklist
 
 - [ ] La issue canónica vinculada está linkada y tiene `status:approved`.
-- [ ] CI verde contra la base actual: `required`, `quality`, `codeql`, `review-budget` y los tres de `security`.
+- [ ] CI verde contra la base actual: `required`, `quality`, `codeql`, `pr-gate` y los tres de `security`.
 - [ ] Conventional Commits, sin atribución de IA.
 - [ ] La rama remota se preserva tras el merge (nunca `git push origin --delete <rama>`).
 - [ ] El merge lo lanza un mantenedor por el camino del host (ruleset `main-maintainers-and-admins-merge`). Ningún agente aplica `status:approved` ni mergea.

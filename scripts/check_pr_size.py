@@ -1,17 +1,24 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_pr_size.py
-"""PR size gate: a review budget, enforced.
+# HARNESS-PROVENANCE: access2web-blueprint issue #854 — scripts/check_pr_size.py
+"""Gate del presupuesto de revisión: adiciones + borrados contra 400 líneas de autoría.
 
-Counts semantic changed lines between the merge base and HEAD. Line-ending churn is not a change
-a reviewer has to read, so ``--ignore-cr-at-eol`` normalises CRLF before counting.
+Dos modos:
 
-The override is deliberately awkward. ``size:exception`` alone does nothing; it must be paired
-with a reason line, because an override nobody has to justify is not an override, it is the
-default.
+    pr-event <event.json>      adiciones, borrados y etiquetas del evento pull_request;
+                               con GITHUB_TOKEN en el entorno, el desglose por fichero
+                               sale de la API de ficheros del PR
+    local [<merge-base>]       ``git diff`` contra <merge-base> (por defecto origin/main)
 
-Exit codes:
-    0  within budget, or overridden with a stated reason
-    1  over budget, or overridden without a reason
+Las rutas vendorizadas (``.agents/skills/**`` y ``skills/**``) son copia generada del
+catálogo team-skills y no cuentan como autoría (issue #918). Si no hay desglose que
+sume exactamente el total, se cuenta todo: el gate falla cerrado.
+
+La única excepción es la etiqueta ``size:exception``, que aplica el mantenedor.
+El cuerpo del PR no se lee.
+
+Códigos de salida:
+    0  dentro del presupuesto, o excepción por la etiqueta ``size:exception``
+    1  fuera del presupuesto, o evento mal formado
 """
 
 from __future__ import annotations
@@ -22,72 +29,178 @@ import os
 import re
 import subprocess
 import sys
-
-# --------------------------------------------------------------------------------------------
-# CONFIGURATION
-# --------------------------------------------------------------------------------------------
+import urllib.request
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 MAX_CHANGED_LINES = 400
-
-#: Generated files a human never reads line by line. Every entry weakens the gate, so keep the
-#: list short and justify additions in review.
-EXCLUDED_SUFFIXES = ("uv.lock", "poetry.lock", "package-lock.json", "pnpm-lock.yaml")
-
-OVERRIDE_MARKER = "size:exception"
-OVERRIDE_REASON = re.compile(r"^\s*size-exception-reason:\s*(?P<reason>\S.*)$", re.MULTILINE)
-OVERRIDE_MARKER_RE = re.compile(r"^\s*.*size:exception", re.MULTILINE)
-
-# --------------------------------------------------------------------------------------------
-# MECHANISM
-# --------------------------------------------------------------------------------------------
+SIZE_EXCEPTION_LABEL = "size:exception"
+VENDORED_ROOTS = (".agents/skills/", "skills/")
+GITHUB_API = "https://api.github.com"
+FILES_PER_PAGE = 100
+MAX_FILE_PAGES = 30  # la API de ficheros de un PR lista como mucho 3000
+REPO_PATTERN = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 
 
-def _git(*args: str) -> str:
-    result = subprocess.run(
-        ["git", *args], capture_output=True, text=True, check=False, encoding="utf-8"
-    )
-    if result.returncode != 0:
-        raise RuntimeError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
-    return result.stdout
+@dataclass(frozen=True)
+class FileChange:
+    """Líneas añadidas y borradas de un fichero del PR. ``previous_path`` solo en renombrados."""
+
+    path: str
+    added: int
+    deleted: int
+    previous_path: str | None = None
+
+    @property
+    def lines(self) -> int:
+        return self.added + self.deleted
 
 
-def changed_lines(base_ref: str) -> tuple[int, list[tuple[str, int]]]:
-    """Return the total counted lines and the per-file breakdown, largest first."""
-    raw = _git("diff", "--numstat", "--ignore-cr-at-eol", f"{base_ref}...HEAD")
-    per_file: list[tuple[str, int]] = []
-    total = 0
-    for line in raw.splitlines():
-        parts = line.split("\t")
-        if len(parts) != 3:
-            continue
-        added, deleted, path = parts
-        if added == "-" or deleted == "-":  # binary file, not reviewable line by line
-            continue
-        if path.endswith(EXCLUDED_SUFFIXES):
-            continue
-        count = int(added) + int(deleted)
-        total += count
-        per_file.append((path, count))
-    per_file.sort(key=lambda item: item[1], reverse=True)
-    return total, per_file
+def has_size_exception_label(labels: Iterable[str]) -> bool:
+    """True cuando las etiquetas llevan la excepción del mantenedor."""
+    return SIZE_EXCEPTION_LABEL in labels
 
 
-def override_reason(pr_body: str) -> str | None:
-    """Return the stated reason when a valid override is present, else ``None``."""
-    if not OVERRIDE_MARKER_RE.search(pr_body):
+def is_vendored(change: FileChange) -> bool:
+    """Vendorizado si su ruta lo es y, en un renombrado, también la ruta anterior.
+
+    Un renombrado desde una ruta de autoría hacia una vendorizada sigue contando.
+    """
+    if not change.path.startswith(VENDORED_ROOTS):
+        return False
+    return change.previous_path is None or change.previous_path.startswith(VENDORED_ROOTS)
+
+
+def author_lines(total: int, files: list[FileChange] | None) -> int:
+    """Líneas de autoría. Falla cerrado: sin desglose, o si no suma el total, cuenta todo."""
+    if files is None or sum(change.lines for change in files) != total:
+        return total
+    return sum(change.lines for change in files if not is_vendored(change))
+
+
+def compute_local_total(cwd: Path, merge_base: str) -> int:
+    """Adiciones + borrados de HEAD contra ``merge_base``, como los cuenta GitHub (regla 4)."""
+    shortstat = subprocess.run(
+        ["git", "diff", "--shortstat", f"{merge_base}...HEAD"],
+        cwd=str(cwd),
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding="utf-8",
+    ).stdout
+    return sum(int(count) for count in re.findall(r"(\d+) (?:insertion|deletion)", shortstat))
+
+
+def local_files(cwd: Path, merge_base: str) -> list[FileChange] | None:
+    """Desglose por fichero de ``git diff --numstat``; None si git no lo da (falla cerrado)."""
+    try:
+        output = subprocess.run(
+            ["git", "diff", "--numstat", "--no-renames", "-z", f"{merge_base}...HEAD"],
+            cwd=str(cwd),
+            capture_output=True,
+            check=True,
+        ).stdout.decode("utf-8", errors="surrogateescape")
+        return [_numstat_record(record) for record in output.split("\0") if record]
+    except (OSError, ValueError, subprocess.CalledProcessError):
         return None
-    match = OVERRIDE_REASON.search(pr_body)
-    return match.group("reason").strip() if match else None
+
+
+def _numstat_record(record: str) -> FileChange:
+    # Con -z y sin renombrados cada registro es "añadidas\tborradas\truta". Binarios: "-".
+    added, deleted, path = record.split("\t", 2)
+    return FileChange(path, _numstat_count(added), _numstat_count(deleted))
+
+
+def _numstat_count(value: str) -> int:
+    return 0 if value == "-" else int(value)
+
+
+def fetch_pr_files(
+    repo: str,
+    number: int,
+    token: str,
+    *,
+    opener: Callable[..., Any] = urllib.request.urlopen,
+) -> list[FileChange] | None:
+    """Desglose por fichero desde la API de GitHub; None ante cualquier fallo (falla cerrado).
+
+    El token solo viaja a ``api.github.com``. ``opener`` existe para los tests.
+    """
+    if not REPO_PATTERN.fullmatch(repo) or not token:
+        return None
+    files: list[FileChange] = []
+    try:
+        for page in range(1, MAX_FILE_PAGES + 1):
+            request = urllib.request.Request(
+                f"{GITHUB_API}/repos/{repo}/pulls/{number}/files"
+                f"?per_page={FILES_PER_PAGE}&page={page}",
+                headers={
+                    "Accept": "application/vnd.github+json",
+                    "Authorization": f"Bearer {token}",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                },
+            )
+            with opener(request, timeout=20) as response:
+                batch = json.loads(response.read().decode("utf-8"))
+            if not isinstance(batch, list):
+                return None
+            files.extend(_file_change(item) for item in batch)
+            if len(batch) < FILES_PER_PAGE:
+                return files
+    except (OSError, ValueError, TypeError, KeyError):
+        # Falla cerrado: red, HTTP, JSON o forma inesperada cuentan el total del PR.
+        return None
+    return None  # más ficheros de los que lista la API: el desglose está incompleto
+
+
+def _file_change(item: dict[str, Any]) -> FileChange:
+    added, deleted, filename = item["additions"], item["deletions"], item["filename"]
+    previous_path = item.get("previous_filename")
+    if not isinstance(added, int) or not isinstance(deleted, int) or not isinstance(filename, str):
+        raise TypeError("fichero del PR mal formado")
+    if previous_path is not None and not isinstance(previous_path, str):
+        raise TypeError("previous_filename mal formado")
+    return FileChange(filename, added, deleted, previous_path)
+
+
+def _pr_event(event_path: Path) -> tuple[int, list[str], str | None, int | None]:
+    pull_request = json.loads(event_path.read_text(encoding="utf-8")).get("pull_request") or {}
+    additions = pull_request.get("additions")
+    deletions = pull_request.get("deletions")
+    if not isinstance(additions, int) or not isinstance(deletions, int):
+        raise ValueError(f"{event_path}: pull_request.additions/deletions must be integers")
+    labels = [label["name"] for label in pull_request.get("labels") or []]
+    repo = ((pull_request.get("base") or {}).get("repo") or {}).get("full_name")
+    return additions + deletions, labels, repo, pull_request.get("number")
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    subparsers = parser.add_subparsers(dest="mode")
+
+    pr_event = subparsers.add_parser(
+        "pr-event",
+        help="leer adiciones, borrados y etiquetas de un evento pull_request",
+    )
+    pr_event.add_argument("event_json", type=Path)
+
+    local = subparsers.add_parser("local", help="git diff --shortstat contra <merge-base>")
+    local.add_argument(
+        "merge_base",
+        nargs="?",
+        default="origin/main",
+        help="referencia base (por defecto: origin/main)",
+    )
+    return parser
 
 
 def _pin_output_encoding() -> None:
-    """Pin stdout/stderr to UTF-8.
-
-    Python picks the output encoding from the platform locale, so the same gate emits different
-    bytes on a Windows workstation (cp1252) and a Linux runner (utf-8) — and a non-encodable
-    character crashes the write outright. A harness that claims determinism cannot let its own
-    output depend on where it ran.
-    """
+    """Fija stdout y stderr a UTF-8 (Hard Rule 8)."""
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
         if reconfigure is not None:
@@ -96,73 +209,38 @@ def _pin_output_encoding() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--base-ref",
-        default=os.environ.get("BASE_REF", "origin/main"),
-        help="ref to diff against (default: $BASE_REF or origin/main)",
-    )
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
-    args = parser.parse_args(argv)
+    args = _build_parser().parse_args(argv)
+    if args.mode is None:  # sin subcomando: el paso de CI actual sigue funcionando
+        args.mode, args.merge_base = "local", "origin/main"
 
-    try:
-        total, per_file = changed_lines(args.base_ref)
-    except RuntimeError as exc:
-        if args.json:
-            print(json.dumps({"gate": "pr_size", "status": "error", "detail": str(exc)}))
-        else:
-            print(f"FAIL  {exc}", file=sys.stderr)
-        return 1
+    labels: list[str] = []
+    if args.mode == "local":
+        total = compute_local_total(Path.cwd(), args.merge_base)
+        files = local_files(Path.cwd(), args.merge_base)
+    else:
+        total, labels, repo, number = _pr_event(args.event_json)
+        token = os.environ.get("GITHUB_TOKEN", "")
+        files = None
+        if token and isinstance(repo, str) and isinstance(number, int):
+            files = fetch_pr_files(repo, number, token)
+    counted = author_lines(total, files)
 
-    if args.json:
-        reason = override_reason(os.environ.get("PR_BODY", ""))
-        passed = total <= MAX_CHANGED_LINES or bool(reason)
-        print(
-            json.dumps(
-                {
-                    "gate": "pr_size",
-                    "status": "pass" if passed else "fail",
-                    "indicators": {
-                        "changed_lines": total,
-                        "files_changed": len(per_file),
-                        "overridden": bool(reason),
-                    },
-                    "ceilings": {"changed_lines": MAX_CHANGED_LINES},
-                    "findings": [
-                        {"file": path, "line": 0, "detail": f"{count} changed line(s)"}
-                        for path, count in per_file[:10]
-                    ]
-                    if not passed
-                    else [],
-                },
-                indent=2,
-            )
-        )
-        return 0 if passed else 1
-
-    if total <= MAX_CHANGED_LINES:
-        print(f"OK    {total} changed line(s), budget is {MAX_CHANGED_LINES}")
+    if counted <= MAX_CHANGED_LINES or has_size_exception_label(labels):
         return 0
 
-    pr_body = os.environ.get("PR_BODY", "")
-    reason = override_reason(pr_body)
-    if reason:
-        print(f"OK    {total} changed line(s) over budget, overridden: {reason}")
-        return 0
-
-    print(f"FAIL  {total} changed line(s), budget is {MAX_CHANGED_LINES}")
-    for path, count in per_file[:10]:
-        print(f"        {count:>6}  {path}")
-    if OVERRIDE_MARKER in pr_body:
+    print(f"Tamaño del PR: {counted} líneas (límite {MAX_CHANGED_LINES}).", file=sys.stderr)
+    if counted != total:
+        print(f"Excluidas {total - counted} líneas de rutas vendorizadas.", file=sys.stderr)
+    elif files is None:
+        print("Sin desglose por fichero: se cuenta el total del PR.", file=sys.stderr)
+    if args.mode == "pr-event":
         print(
-            f"        '{OVERRIDE_MARKER}' found but no 'size-exception-reason: <why>' line in the "
-            f"PR body"
+            f"Parta el PR. Solo el mantenedor puede aplicar '{SIZE_EXCEPTION_LABEL}', "
+            "tras responder las cuatro preguntas del cuerpo.",
+            file=sys.stderr,
         )
     else:
-        print(
-            f"        split the PR, or add '{OVERRIDE_MARKER}' plus a "
-            f"'size-exception-reason: <why>' line to the PR body"
-        )
+        print("El modo local no tiene excepción: reduzca el diff o parta el PR.", file=sys.stderr)
     return 1
 
 

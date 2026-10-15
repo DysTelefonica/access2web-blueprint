@@ -24,26 +24,64 @@ def _needs(result: str = "success") -> dict[str, dict[str, str]]:
 
 
 def test_pull_request_requires_every_job_green() -> None:
-    """`review-budget`, `quality`, `security` and `codeql` all run on a PR."""
+    """`pr-gate`, `quality`, `security` and `codeql` all run on a PR."""
     assert gate.check_results(_needs(), "pull_request") == []
 
 
-def test_push_and_schedule_and_dispatch_allow_review_budget_to_skip() -> None:
-    """`review-budget` is `if: github.event_name == 'pull_request'` in ci.yml."""
+def test_schedule_and_dispatch_allow_pr_gate_to_skip() -> None:
+    """`pr-gate` is `if: github.event_name == 'pull_request'` in ci.yml."""
     needs = _needs()
-    needs["review-budget"]["result"] = "skipped"
+    needs["pr-gate"]["result"] = "skipped"
 
-    assert gate.check_results(needs, "push") == []
     assert gate.check_results(needs, "schedule") == []
     assert gate.check_results(needs, "workflow_dispatch") == []
 
 
-def test_review_budget_skip_is_a_violation_on_pull_request() -> None:
-    """A PR without review-budget having run is exactly the gap this closes."""
-    needs = _needs()
-    needs["review-budget"]["result"] = "skipped"
+def test_push_allows_pr_gate_to_skip() -> None:
+    """Issue #857, PR-D: `push` is the post-merge safety net on `main`.
 
-    assert gate.check_results(needs, "pull_request") == ["review-budget: result='skipped'"]
+    `pr-gate` is `if: github.event_name == 'pull_request'`, so on a
+    push to `main` it skips. The push event must accept the skip
+    exactly like `schedule` and `workflow_dispatch` do.
+    """
+    needs = _needs()
+    needs["pr-gate"]["result"] = "skipped"
+
+    assert gate.check_results(needs, "push") == []
+
+
+def test_push_with_quality_skipped_is_a_violation() -> None:
+    """Issue #857, PR-D: a skipped `quality` on the push safety net must not pass.
+
+    `pr-gate` is allowed to skip on `push` (it has no PR payload to
+    read there), but `quality` carries no `if:` guard — the safety net
+    is only as good as the jobs that actually run.
+    """
+    needs = _needs()
+    needs["pr-gate"]["result"] = "skipped"
+    needs["quality"]["result"] = "skipped"
+
+    assert gate.check_results(needs, "push") == ["quality: result='skipped'"]
+
+
+def test_merge_group_is_an_unsupported_event() -> None:
+    """Issue #857, PR-D: the merge queue is gone with the gentle-ai model.
+
+    `merge_group` was the queue's verdict event; without the queue
+    there is no merge-group run to listen to. The gate must reject it
+    so a stray queue-style run cannot certify a tag.
+    """
+    violations = gate.check_results(_needs(), "merge_group")
+
+    assert violations == ["unsupported event: merge_group"]
+
+
+def test_pr_gate_skip_is_a_violation_on_pull_request() -> None:
+    """A PR without pr-gate having run is exactly the gap this closes."""
+    needs = _needs()
+    needs["pr-gate"]["result"] = "skipped"
+
+    assert gate.check_results(needs, "pull_request") == ["pr-gate: result='skipped'"]
 
 
 def test_security_or_codeql_skip_is_never_allowed() -> None:

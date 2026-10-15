@@ -26,6 +26,10 @@ Stdlib only, on purpose: the session is read through ``sqlite3`` rather than thr
 tool's own API, so this gate and its tests run everywhere — including the platforms where the
 mutation runner itself cannot execute mutants.
 
+Con varias sesiones (una por tramo de la matriz, #785) la salud se mide por sesión y el ratchet
+sobre la unión de todas; `--shards N` exige que lleguen exactamente N, porque un tramo perdido
+dejaría el veredicto medido sobre menos mutantes de los que el run declara.
+
 Exit codes:
     0  run healthy and no module above its BASELINE
     1  missing/unreadable session, incomplete run, degenerate run, a module that grew, an
@@ -74,11 +78,113 @@ class AwaitingAcquisition:
     since: str  # ISO-8601, the date it landed on the default branch
 
 
-# Empty by design — see Hard Rule #12 of deterministic-quality-harness v1.6.
-# The mutation gate runs only on schedule/workflow_dispatch, not per PR, so its
-# indicators reach quality-report.json on a different cadence. When the first
-# survivor appears, the gate will block without a ratchet.
-BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {}
+# Adquirida del primer run real de la matriz (#785): run 37738787049 sobre el SHA
+# c01ea22, 1129/1129 mutantes medidos, 0 % INCOMPETENT, 65,19 % de score y los 393
+# supervivientes de abajo. Es un ratchet shrink-only (Hard Rule #12): cada entrada
+# declara su `target` y su `target_date`, ninguna puede crecer, y una por encima
+# del target con la fecha vencida falla el job.
+#
+# Anomalía conocida de esta medición: dos mutantes de
+# `app/src/modules/expedientes/domain/hash/versioning.py:171` (`def hash`) con
+# los operadores `ReplaceBinaryOperator_Mul_Pow` y
+# `ReplaceBinaryOperator_BitAnd_Pow` convierten una operación en `**` y agotan el
+# timeout de 120 s por mutante.
+BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {
+    "app/src/modules/expedientes/domain/anexo/agregado.py": BaselineEntry(
+        survivors=3, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anexo/reference.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anexo/retention.py": BaselineEntry(
+        survivors=22, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anexo/size_limit.py": BaselineEntry(
+        survivors=9, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/anualidad.py": BaselineEntry(
+        survivors=20, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/cpv/code.py": BaselineEntry(
+        survivors=28, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/cpv/structure.py": BaselineEntry(
+        survivors=18, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/expediente.py": BaselineEntry(
+        survivors=8, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/hash/versioning.py": BaselineEntry(
+        survivors=16, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/hito.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/juridica.py": BaselineEntry(
+        survivors=2, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/modificado.py": BaselineEntry(
+        survivors=11, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/responsable.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/expedientes/domain/suministrador.py": BaselineEntry(
+        survivors=10, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/app.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/audit_event.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/legacy_role_map.py": BaselineEntry(
+        survivors=35, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/__init__.py": BaselineEntry(
+        survivors=38, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/app_repository.py": BaselineEntry(
+        survivors=45, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/assignment_repository.py": BaselineEntry(
+        survivors=12, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/jwt_signer.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/presence_repository.py": BaselineEntry(
+        survivors=2, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/profile_repository.py": BaselineEntry(
+        survivors=23, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/reset_token_repository.py": BaselineEntry(
+        survivors=11, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/ports/session_repository.py": BaselineEntry(
+        survivors=11, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/profile.py": BaselineEntry(
+        survivors=24, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/reset_token.py": BaselineEntry(
+        survivors=2, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": BaselineEntry(
+        survivors=17, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": BaselineEntry(
+        survivors=6, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/session.py": BaselineEntry(
+        survivors=4, target=0, target_date="2027-01-06"
+    ),
+    "app/src/modules/lanzadera/domain/user.py": BaselineEntry(
+        survivors=1, target=0, target_date="2027-01-06"
+    ),
+}
+
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -230,10 +336,13 @@ def render_baseline(survivors: dict[str, int], today: date, horizon_days: int = 
     target_date = date.fromordinal(today.toordinal() + horizon_days).isoformat()
     lines = ["BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {"]
     for module in sorted(survivors):
+        # Envuelto para que el bloque pegado en `check_mutation.py` pase el linter
+        # del repositorio (límite de 100 columnas) sin retocarlo a mano.
+        lines.append(f'    "{module}": BaselineEntry(')
         lines.append(
-            f'    "{module}": BaselineEntry(survivors={survivors[module]}, '
-            f'target=0, target_date="{target_date}"),'
+            f'        survivors={survivors[module]}, target=0, target_date="{target_date}"'
         )
+        lines.append("    ),")
     lines.append("}")
     return "\n".join(lines)
 
@@ -264,7 +373,17 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("session", type=Path, help="cosmic-ray session database")
+    parser.add_argument(
+        "sessions",
+        type=Path,
+        nargs="+",
+        help="sesiones de cosmic-ray; una por tramo de la matriz",
+    )
+    parser.add_argument(
+        "--shards",
+        type=int,
+        help="número de tramos que el run debe traer; falla si llegan menos",
+    )
     parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     parser.add_argument(
         "--emit-baseline",
@@ -273,16 +392,36 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    rows, errors = read_session(args.session)
-    if errors:
-        if args.json:
-            print(json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]}))
-        else:
-            for message in errors:
-                print(f"FAIL  {message}", file=sys.stderr)
+    if args.shards is not None and len(args.sessions) != args.shards:
+        print(
+            f"FAIL  se esperaban {args.shards} sesión(es) y llegaron "
+            f"{len(args.sessions)}: un tramo perdido dejaría el ratchet midiendo "
+            "menos de lo que el run declara",
+            file=sys.stderr,
+        )
         return 1
 
-    rows = active_rows(rows)
+    rows: list[dict[str, Any]] = []
+    for session in args.sessions:
+        part, errors = read_session(session)
+        if errors:
+            if args.json:
+                print(json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]}))
+                return 1
+            for message in errors:
+                print(f"FAIL  {message}", file=sys.stderr)
+            return 1
+        part = active_rows(part)
+        part_health, _ = check_run_health(part)
+        if part_health:
+            # Un tramo degenerado invalida la corrida entera: sumarlo daría un
+            # veredicto sobre menos mutantes de los que el run declara medir.
+            # Va a stdout, como el resto de hallazgos, con su sesión delante.
+            for message in part_health:
+                print(f"FAIL  {session}: {message}")
+            return 1
+        rows.extend(part)
+
     today = date.today()
     health, metrics = check_run_health(rows)
     survivors = measure_survivors(rows)

@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "agents_md": "propagated",
   "phases": {
     "0": {
       "inventory": [
@@ -18,9 +19,9 @@
         {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
         {"artifact": ".github/required-jobs-policy.json", "disposition": "adopted", "target": ".github/required-jobs-policy.json"},
-        {"artifact": ".github/local-ci-parity-policy.json", "disposition": "adopted", "target": ".github/local-ci-parity-policy.json"},
         {"artifact": "scripts/local-preflight.sh", "disposition": "adopted", "target": "scripts/local-preflight.sh"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
+        {"artifact": ".team-skills.yaml (manifiesto de skills de la flota: lo escribe el propagador de DysTelefonica/team-skills en cada corrida, y el catálogo del patrón lo lista como artefacto de gobierno)", "disposition": "adopted", "target": ".team-skills.yaml"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
         {"artifact": "scripts/check_branch_name.py", "disposition": "adopted", "target": "scripts/check_branch_name.py"},
         {"artifact": "scripts/check_dry.py", "disposition": "adopted", "target": "scripts/check_dry.py"},
@@ -33,7 +34,6 @@
         {"artifact": "scripts/quality_report.py", "disposition": "adopted", "target": "scripts/quality_report.py"},
         {"artifact": "scripts/release-preflight.sh", "disposition": "adopted", "target": "scripts/release-preflight.sh"},
         {"artifact": "scripts/require-ci-success.sh", "disposition": "adopted", "target": "scripts/require-ci-success.sh"},
-        {"artifact": "app/pytest_plugin/coverage_gate.py (gate de cobertura: piso global y cuatro helpers críticos al 100 %, invocado por la suite que ejecuta el workflow de CI)", "disposition": "adopted", "target": "app/pytest_plugin/coverage_gate.py"},
         {"artifact": "scripts/check_complexity.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_complexity.py"},
         {"artifact": "scripts/check_decision_guards.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_decision_guards.py"},
         {"artifact": "scripts/check_layers.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_layers.py"},
@@ -81,10 +81,10 @@
         {"artifact": "label:type:docs", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": "label:type:feature", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": "label:type:refactor", "disposition": "adopted", "target": ".github/host-contract.json"},
-        {"artifact": "label:wontfix", "disposition": "adopted", "target": ".github/host-contract.json"}
+        {"artifact": "label:wontfix", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": ".github/workflows/operating-doc-drift.yml", "disposition": "adopted", "target": ".github/workflows/operating-doc-drift.yml"}
       ],
       "declared_governed_paths": [
-        "app/pytest_plugin/coverage_gate.py",
         "scripts/check_complexity.py",
         "scripts/check_decision_guards.py",
         "scripts/check_layers.py",
@@ -160,15 +160,6 @@
         },
         {
           "args": [
-            "--repo",
-            "@.",
-            "--policy",
-            "@.github/local-ci-parity-policy.json"
-          ],
-          "gate": "local-ci-parity"
-        },
-        {
-          "args": [
             "--workflow",
             "@.github/workflows/ci.yml",
             "--base-branch",
@@ -182,6 +173,18 @@
           "args": [],
           "gate": "hr-matrix"
         }
+      ]
+    },
+    "5": {
+      "operating_doc": {
+        "doc": "docs/ci-pattern-flow.md",
+        "linked_from": "AGENTS.md"
+      }
+    },
+    "6": {
+      "prs": [
+        {"number": 831, "sha": "ca15b3994a987b3edc895331c29b634d44775f36", "conclusion": "success"},
+        {"number": 834, "sha": "34cbcb32f639f4e3adfd6d1f42554680428e345b", "conclusion": "success"}
       ]
     }
   }

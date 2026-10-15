@@ -945,9 +945,16 @@ jobs:
     assert "jobs.test.runs-on" in stderr
 
 
-def test_public_pr_runner_allows_self_hosted_job_excluded_from_pr(
+def test_no_self_hosted_runner_rejects_job_excluded_from_pr(
     tmp_path: Path,
 ) -> None:
+    """Issue #785/#800: no se libra por excluirse de los PR.
+
+    La regla de aislamiento de PR exime a este job (no es PR-reachable), y por
+    ese hueco se coló `mutation`: etiqueta `self-hosted` con cero runners
+    registrados, rojo cada semana mientras `required` publicaba verde. La regla
+    del repositorio no admite ningún job en runner propio.
+    """
     body = """\
 name: mixed
 on: [pull_request, schedule, workflow_dispatch]
@@ -963,7 +970,8 @@ jobs:
 """
     p = _write(tmp_path, "mixed.yml", body)
     rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 0, stderr
+    assert rc != 0, stderr
+    assert "no-self-hosted-runner" in stderr
     assert "public-pr-runner" not in stderr
 
 

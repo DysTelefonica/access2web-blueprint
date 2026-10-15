@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "phases": {
+    "0": {
+      "inventory": [
+        {
+          "artifact": "jenkins-pipeline-legacy",
+          "disposition": "retired"
+        },
+        {
+          "artifact": ".github/workflows/build.yml",
+          "disposition": "adopted",
+          "target": ".github/workflows/ci.yml"
+        },
+        {
+          "artifact": "docs/branch-protection.md",
+          "disposition": "adopted",
+          "target": ".github/host-contract.json"
+        }
+      ],
+      "removal_confirmed": true
+    },
+    "1": {
+      "evidence": {
+        "path": "docs/adoption/phase1-propagation-evidence.md"
+      }
+    },
+    "2": {
+      "env_isolation": {
+        "root": "tests",
+        "allowlist": ".github/env-isolation-allowlist.json"
+      }
+    },
+    "3": {
+      "pattern_paths": [
+        ".github/workflows/ci.yml",
+        ".github/host-contract.json",
+        ".github/required-jobs-policy.json",
+        ".github/workflow-policy.json"
+      ],
+      "pattern_rulesets": ["branch-protection"],
+      "host_snapshots": {
+        "branch-protection": "docs/adoption/phase3-branch-protection.json",
+        "rulesets": "docs/adoption/phase3-rulesets.json"
+      }
+    },
+    "4": {
+      "gates": [
+        {
+          "gate": "workflow-policy",
+          "args": [
+            "--workflow",
+            "@.github/workflows/ci.yml",
+            "--required-jobs",
+            "@.github/required-jobs-policy.json"
+          ]
+        },
+        {
+          "gate": "required-jobs",
+          "args": [
+            "--policy",
+            "@.github/required-jobs-policy.json",
+            "--event",
+            "pull_request"
+          ]
+        }
+      ]
+    },
+    "6": {
+      "prs": [
+        {
+          "number": 101,
+          "sha": "0123456789abcdef0123456789abcdef01234567",
+          "conclusion": "success"
+        }
+      ]
+    },
+    "5": {
+      "operating_doc": {
+        "doc": "docs/ci-pattern-flow.md",
+        "linked_from": "AGENTS.md"
+      }
+    }
+  }
+}

@@ -34,6 +34,8 @@ from pathlib import Path
 import asyncpg
 import pytest
 
+from tests.lanzadera.migrations.test_migration_0001 import _pg_endpoint
+
 SCHEMA = "lanzadera"
 
 # ---------------------------------------------------------------------------
@@ -46,8 +48,7 @@ EXPECTED_ASSIGNMENTS = 622  # active (revoked_at IS NULL)
 EXPECTED_AUDIT = 200
 
 
-PG_HOST = "127.0.0.1"
-PG_PORT = 5432
+PG_HOST, PG_PORT = _pg_endpoint()
 PG_USER = "lanzadera"
 PG_PASSWORD = "lanzadera-dev-only"
 

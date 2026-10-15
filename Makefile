@@ -24,11 +24,11 @@ PYTEST ?= $(PYTHON) -m pytest
 .PHONY: help verify format lint typecheck test check-workflows quality-report mutation clean
 
 help:
-	@echo "verify           - THE green-PR gate: every gate ci.yml runs on a pull request"
+	@echo "verify           - THE local PR preflight: scripts/local-preflight.sh (the CI suite runs in CI)"
 	@echo "format           - ruff format --check --config app/pyproject.toml (mechanical, fix first)"
 	@echo "lint             - ruff check --config app/pyproject.toml ."
 	@echo "typecheck        - mypy over $(PACKAGE)/"
-	@echo "test             - pytest with coverage.json"
+	@echo "test             - pytest"
 	@echo "quality-report   - layers -> complexity -> mutation sites -> DRY, in order"
 	@echo "mutation         - the cosmic-ray session + ratchet (slow; CI runs it weekly)"
 	@echo ""
@@ -36,8 +36,8 @@ help:
 	@echo "tests/test_ci_workflow.py::test_make_verify_runs_every_local_gate."
 
 # Verification order is Hard Rule 13 and is identical to ci.yml's:
-# mechanical fixes first, then tests (which produce coverage.json), then the
-# code gates that consume it. Never reorder these; the order is load-bearing.
+# mechanical fixes first, then tests, then the code gates. Never reorder
+# these; the order is load-bearing.
 # --config is load-bearing: the ruff contract (line-length 100, select list,
 # tests/fixtures exclude) lives in app/pyproject.toml. Run from the repository
 # root without it, ruff finds no configuration and silently uses its own
@@ -52,14 +52,10 @@ typecheck:
 	$(MYPY) --explicit-package-bases $(PACKAGE)/
 
 # -c app/pyproject.toml --rootdir=app is load-bearing: pytest's contract
-# (pythonpath, testpaths, the coverage-gate plugin by its `app.` path) is
-# written for rootdir=app. Without them, every test fails with
-# ModuleNotFoundError: app. cwd stays at the repo root so coverage.json lands
-# where the downstream gates look for it. --cov-fail-under=69 is the current
-# floor; pyproject.toml's [tool.coverage.run] omit is what makes that number
-# comparable week to week (Hard Rule 14).
+# (pythonpath, testpaths) is written for rootdir=app. Without them, every
+# test fails with ModuleNotFoundError: app.
 test:
-	$(PYTEST) -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json --cov-report=term --cov-fail-under=69
+	$(PYTEST) -c app/pyproject.toml --rootdir=app -m "not integration"
 
 check-workflows:
 	$(PYTHON) scripts/check_workflows.py
@@ -80,17 +76,19 @@ quality-report:
 #
 # Adding a gate to ci.yml without adding it here fails the parity test. That is
 # the only reason the two lists will still match a year from now.
-# verify — THE definition of green (Hard Rule 19), delegando en la única
-# lista de comandos: scripts/local-preflight.sh, con los mismos gates y el
-# mismo orden que el job `quality` de ci.yml. Los targets de arriba quedan
-# como atajos por gate; la lista canónica no vive en dos sitios.
+# verify — the local PR preflight, delegando en la única lista de comandos:
+# scripts/local-preflight.sh, con los gates del pr-gate de ci.yml en su mismo
+# orden. Los targets de arriba quedan como atajos por gate; la lista canónica
+# no vive en dos sitios. La suite completa (format, lint, typecheck, tests y
+# cobertura) corre en el job `quality` de CI, no aquí.
 #
 # Deliberately NOT included, each for a reason that is pinned by
 # test_make_verify_excludes_what_a_workstation_cannot_run:
-#   - check_pr_size / check_branch_name  need the PR payload (merge-base, labels)
-#   - check_mutation + cosmic-ray        weekly schedule; far too slow per PR
-#   - pip-audit / gitleaks / trivy       Docker- and network-dependent scanners
-#   - check_required_jobs                needs the real toJSON(needs) of a run
+#   - mypy, pytest + coverage, quality_report  full suite; CI quality job only
+#   - check_workflows                          ci.yml contract; CI quality job only
+#   - check_mutation + cosmic-ray              weekly schedule; far too slow per PR
+#   - pip-audit / gitleaks / trivy             Docker- and network-dependent scanners
+#   - check_required_jobs                      needs the real toJSON(needs) of a run
 verify:
 	@bash scripts/local-preflight.sh
 	@echo "verify: all CI pull-request gates passed."
@@ -98,10 +96,10 @@ verify:
 # Slow, scheduled, and Linux-only in most setups. Kept out of `verify` on
 # purpose (Hard Rule 19's exclusion list), available on demand.
 mutation:
-	cosmic-ray baseline mutation.toml
-	cosmic-ray init mutation.toml mutation.sqlite
-	cosmic-ray exec mutation.toml mutation.sqlite
+	cosmic-ray baseline docs/quality/cosmic-ray.toml
+	cosmic-ray init docs/quality/cosmic-ray.toml mutation.sqlite
+	cosmic-ray exec docs/quality/cosmic-ray.toml mutation.sqlite
 	$(PYTHON) scripts/check_mutation.py mutation.sqlite
 
 clean:
-	rm -rf .pytest_cache .ruff_cache .mypy_cache coverage.json quality-report.json
+	rm -rf .pytest_cache .ruff_cache .mypy_cache quality-report.json

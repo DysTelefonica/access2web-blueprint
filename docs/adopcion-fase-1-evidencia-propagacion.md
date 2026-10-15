@@ -162,3 +162,35 @@ git show origin/skill-fleet/access2web-blueprint:.team-skills.yaml | wc -c   # 1
 git ls-tree --name-only origin/skill-fleet/access2web-blueprint:.agents/skills | wc -l   # 43
 git diff --shortstat main...origin/skill-fleet/access2web-blueprint          # 265 ficheros, +37.715/-5
 ```
+
+## Segunda corrida: el propagador conforme, en dos tramos encadenados
+
+La primera corrida dejó un PR de 265 ficheros que el gate de presupuesto de este
+repositorio no podía admitir —la auditoría del canal lo dejó escrito como «el PR
+#770 no puede mergear con ese tamaño»—. La segunda corrida usa el propagador ya
+conforme y particionado (`DysTelefonica/team-skills` #399, #400, #401 y #402) y
+cierra ese artefacto.
+
+| Dato | Valor |
+|---|---|
+| Catálogo | `DysTelefonica/team-skills`, `main` |
+| Propiedades del propagador | cuerpo con `## Chain Context`, presupuesto medido sobre el commit ya creado, excepción por datos en el tramo vendorizado, refresco de los metadatos del PR por la API REST **antes** del push |
+| PR del tramo revisable | **#770** — `.team-skills.yaml` + `AGENTS.md`, 2 ficheros, +157/−9 (166 líneas) · merge `d9a7d40` |
+| PR del tramo vendorizado | **#830** — `.agents/skills/**`, 146 ficheros · encadenado (`base` = rama del tramo 1) · merge `7d1bb58` |
+| Gates del tramo revisable | `required`, `quality`, `review-budget` (**166/400**), `gitleaks`, `pip-audit`, `trivy-config`, `codeql` |
+| Gates del tramo vendorizado | los mismos, con `review-budget` admitido por la **excepción declarada por datos** (`size:exception` + `size-exception-reason:`), que es la salida que el propio gate documenta |
+| Idempotencia | una corrida posterior con el mismo catálogo reporta `no_change`: ni commit, ni push, ni PR |
+| Efecto colateral, medido y corregido | el manifiesto de flota entró sin entrada de inventario y dejó `operating-doc-drift` en rojo hasta inventariarlo (issue #832, PR #833) |
+
+### Alcance real del mecanismo, medido en esta corrida
+
+Cubre: el bloque de `AGENTS.md` entre marcadores (partial del tipo primario +
+partial de gobernanza + fragmento del consumidor), `.agents/skills/<n>/` para el
+tier de gobierno y la lista curada, `.team-skills.yaml`, y el re-sello de
+`.governance-manifest.json` para los ficheros que la corrida escribe y el
+manifiesto lista.
+
+No cubre: no mergea, no escribe en `main`, no retira el árbol `skills/` del
+consumidor y no toca ningún repositorio de `team-skills`. El gate de presupuesto
+del destino admite el tramo vendorizado por **excepción declarada**, no por
+relajación de la regla.

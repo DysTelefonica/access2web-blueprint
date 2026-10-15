@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -21,12 +22,11 @@ REQUIRED_COMMANDS = (
     "ruff check --config app/pyproject.toml .",
     "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
-    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
-    "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
-    "python scripts/check_branch_name.py",
+    "python scripts/check_walkthrough_schema.py --strict",
     "python scripts/check_required_jobs.py",
 )
 
@@ -36,9 +36,10 @@ REQUIRED_COMMANDS = (
 #: turns an absence into a recorded decision — anything NOT in this tuple must
 #: be reachable from `make verify`.
 VERIFY_EXCLUSIONS = (
-    "python scripts/check_pr_size.py",  # needs merge-base + labels
-    "python scripts/check_branch_name.py",  # needs the head ref
-    "python scripts/check_mutation.py",  # weekly schedule, far too slow per PR
+    "mypy --explicit-package-bases app/",  # full suite: CI quality job only
+    "python scripts/check_workflows.py",  # ci.yml contract: CI quality job only
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',  # full suite
+    "scripts/quality_report.py",  # code gates after the suite: CI quality job only
     "pip-audit",  # network: advisory database
     "gitleaks",  # docker
     "trivy",  # docker
@@ -412,6 +413,19 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # After the sprint, --strict activates in ci.yml's quality job and this entry
     # is removed. Issue #535 tracks the exit criteria.
     "check_test_classification.py",
+    # Issue #857 (PR-B): the branch-name job leaves ci.yml, so the script has no
+    # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
+    "check_branch_name.py",
+    # Issue #857, PR-C1b: the mutation jobs leave ci.yml, so the scripts have no
+    # CI step in the PR rollup. They stay on disk — the mutation job moved
+    # to release.yml (PR-C1d) and reads them from there. The two
+    # KNOWN_PENDING_GATES entries here mark the ci.yml-side absence.
+    "check_mutation.py",
+    "check_mutation_sites.py",
+    # Issue #875: scripts/check_deadcode.py ships the ratchet without a CI step.
+    # The quality-job wiring lives in the PR for the gentle-ai model (#857, owned
+    # by apap4); that PR adds the step to ci.yml and removes this entry.
+    "check_deadcode.py",
 )
 
 
@@ -562,9 +576,10 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     `needs:` cannot cross workflow files, so `security` and `codeql` are
     embedded as `uses: ./.github/workflows/*.yml` calls directly inside
     ci.yml — from GitHub's perspective those are still ordinary job ids the
-    aggregator can depend on and read `needs.<id>.result` from. `mutation`
-    stays out on purpose: it is schedule/workflow_dispatch-only and was
-    never part of branch protection.
+    aggregator can depend on and read `needs.<id>.result` from. Issue #857,
+    PR-D: the event set that feeds the aggregator drops `merge_group` (the
+    queue is gone with the gentle-ai model) and gains `push` (the post-merge
+    safety net on `main`).
     """
     jobs = workflow["jobs"]
     assert "merge-ready" not in jobs, "merge-ready was fully superseded by `required`"
@@ -575,9 +590,11 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     # forma que el gate del patrón puede probar (HR-30): comparaciones de
     # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
     assert required["if"] == (
-        "(github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()"
+        "(github.event_name == 'pull_request' || github.event_name == 'push' "
+        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
+        "&& !cancelled()"
     )
-    assert required["needs"] == ["review-budget", "quality", "security", "codeql"]
+    assert required["needs"] == ["pr-gate", "quality", "security", "codeql"]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
     assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
@@ -587,6 +604,135 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert step["run"] == "python scripts/check_required_jobs.py"
     assert step["env"]["CI_NEEDS_JSON"] == "${{ toJSON(needs) }}"
     assert step["env"]["CI_EVENT_NAME"] == "${{ github.event_name }}"
+
+
+def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
+    """Issue #857, PR-B: the cheap front gate is `pr-gate`; `review-budget` is renamed away."""
+    jobs = workflow["jobs"]
+    assert "pr-gate" in jobs
+    assert "review-budget" not in jobs
+
+
+def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
+    """Issue #857, PR-B: a failed gate must not pay for quality, security or codeql."""
+    jobs = workflow["jobs"]
+    for job in ("quality", "security", "codeql"):
+        assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
+
+
+def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
+    workflow: dict,
+) -> None:
+    """Issue #857, PR-D: the heavy jobs run on every event the workflow listens to.
+
+    `pr-gate` only fires on `pull_request`, so on `push` (post-merge safety
+    net on `main`), `schedule` (nightly) and `workflow_dispatch` (manual)
+    it is `skipped`. The heavy jobs that `needs: pr-gate` must accept the
+    skip on every one of those events. `merge_group` is gone: the queue
+    left with the gentle-ai model.
+    """
+    jobs = workflow["jobs"]
+    expected = (
+        "(github.event_name == 'pull_request' || github.event_name == 'push' "
+        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
+        "&& !cancelled() "
+        "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
+    )
+    for job in ("quality", "security", "codeql"):
+        assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
+
+
+def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
+    """Issue #857, PR-C: the size gate reads the PR event, not the runner state.
+
+    The local mode depends on a `git diff` against `origin/main`, which is only
+    present on a checked-out runner. Switching to `pr-event` lets the gate
+    answer the same question from `$GITHUB_EVENT_PATH` alone.
+    """
+    steps = [s for s in workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
+    assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
+    step = steps[0]
+    assert step["run"] == 'python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"'
+    env = step.get("env") or {}
+    assert "BASE_REF" not in env
+    assert "PR_BODY" not in env
+
+
+def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> None:
+    """Issue #918: the size gate reads the per-file breakdown from the PR Files API.
+
+    It needs `pull-requests: read` (the job-level grant) and the runner token, so the
+    step gets the token explicitly; without it the gate counts the whole PR.
+    """
+    job = workflow["jobs"]["pr-gate"]
+    assert job["permissions"]["pull-requests"] == "read"
+    step = [s for s in job["steps"] if s.get("name") == "pr size"][0]
+    assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
+def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
+    """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
+
+    It needs `issues: read` (the job-level grant) and the runner token, so the
+    step gets both explicitly rather than inheriting a broader default.
+    """
+    job = workflow["jobs"]["pr-gate"]
+    assert job["permissions"] == {"contents": "read", "issues": "read", "pull-requests": "read"}
+    steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
+    assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
+    step = steps[0]
+    assert step["run"] == 'python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"'
+    assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
+def test_issue_spec_leaves_known_pending_gates(run_blocks: list[str]) -> None:
+    """Issue #857, PR-C: once wired, check_issue_spec.py is no longer an exception."""
+    assert "check_issue_spec.py" not in KNOWN_PENDING_GATES
+
+
+def test_release_mutation_job_needs_preflight() -> None:
+    """Issue #857, PR-C1d: the mutation job in release.yml runs after preflight.
+
+    `preflight` is the gate that validates the tag identity, the ci verdict
+    on the exact SHA, and the channel classification (rc vs stable). The
+    mutation job depends on it because a failed preflight means the tag
+    is not fit to ship, and running cosmic-ray on bytes that will never
+    publish wastes the hosted runner's free-tier minutes.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "mutation" in jobs, "release.yml must declare a `mutation` job (#857, PR-C1d)"
+    assert jobs["mutation"]["needs"] == "preflight", (
+        f"`mutation` must declare `needs: preflight` (issue #857, PR-C1d). "
+        f"Got: {jobs['mutation'].get('needs')!r}"
+    )
+
+
+def test_release_publish_needs_e2e_and_mutation() -> None:
+    """Issue #857, PR-C1d: publish depends on both e2e and mutation.
+
+    A green e2e is necessary (the published image must pass the Playwright
+    smoke) but not sufficient — a mutation failure on the exact bytes
+    being shipped is exactly the class of release-time failure the
+    `mutation` job exists to catch. `publish` must wait for both, in
+    either order, so a red mutation holds the tag.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "publish" in jobs, "release.yml must declare a `publish` job"
+    needs = jobs["publish"]["needs"]
+    # GitHub Actions serialises a list-typed `needs` as a list of strings;
+    # the older scalar form is a bare string. Accept both.
+    needed = {needs} if isinstance(needs, str) else set(needs)
+    assert needed == {"e2e", "mutation"}, (
+        f"`publish` must depend on `e2e` and `mutation` (issue #857, PR-C1d). "
+        f"Got: {sorted(needed)!r}"
+    )
+
+
+def test_branch_name_is_no_longer_wired_into_ci(run_blocks: list[str]) -> None:
+    """Issue #857, PR-B: the branch-name check leaves ci.yml; #859 deletes the script."""
+    assert not [block for block in run_blocks if "check_branch_name.py" in block]
 
 
 def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
@@ -619,4 +765,252 @@ def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
     assert (
         '--certificate-oidc-issuer "https://token.actions.githubusercontent.com"'
         in signature_check["run"]
+    )
+
+
+#: Herramientas que no provee el install del job `mutation`: las pone el runner
+#: (`python`, `git`) o son construcciones del shell. Cualquier otro primer token
+#: de un `run:` del job tiene que estar declarado en las extras `dev` del
+#: proyecto y presente en su lock, porque es el install del job quien lo trae.
+#: (#785: el paso `run mutants` moría con exit 127 —`cosmic-ray: command not
+#: found`— porque el pin vivía en el asset de la skill y nunca se consolidó en
+#: `app/pyproject.toml`.)
+RUNNER_PROVIDED_BINARIES = frozenset(
+    {
+        "python",
+        "python3",
+        "git",
+        "mkdir",
+        "echo",
+        "exit",
+        "test",
+        "set",
+        "if",
+        "then",
+        "elif",
+        "else",
+        "fi",
+        ":",
+    }
+)
+
+_FIRST_TOKEN = re.compile(r"^\s*([A-Za-z0-9_./$@{}\-]+)")
+
+
+def _invoked_binaries(run_blocks: list[str]) -> set[str]:
+    """Primer token de cada línea de comando; sin asignaciones ni comentarios.
+
+    Las continuaciones de línea (barra invertida final) se unen antes del primer token: una
+    bandera de la línea siguiente no es un binario.
+    """
+    tokens: set[str] = set()
+    for block in run_blocks:
+        logical: list[str] = []
+        for line in block.splitlines():
+            if logical and logical[-1].endswith("\\"):
+                logical[-1] = logical[-1][:-1].rstrip() + " " + line.strip()
+            else:
+                logical.append(line)
+        for line in logical:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            first = stripped.split()[0]
+            if "=" in first:  # asignación (`blob_oid=$(...)`)
+                continue
+            match = _FIRST_TOKEN.match(stripped)
+            if match is None:
+                continue
+            token = match.group(1)
+            if token.startswith("${{") or token.endswith("/bin/python3"):
+                token = "python"
+            tokens.add(token)
+    return tokens
+
+
+#: Dominio declarado del job `mutation`: los dos directorios `domain/` del
+#: monorepo. Medido el 2026-10-07: mutar `app/` entero genera 7905 mutantes y la
+#: sesión no cabe en el techo de 6 h de un job hospedado; el dominio son 1129.
+MUTATION_DOMAIN_TARGETS = (
+    "app/src/modules/expedientes/domain",
+    "app/src/modules/lanzadera/domain",
+)
+
+#: Áreas del árbol que quedan fuera del objetivo. Con la lista de arriba ya no
+#: están en juego; se declaran para que ampliar `module-path` no las meta en
+#: silencio (migraciones, el plugin de cobertura del arnés y el composition root).
+MUTATION_EXCLUDED_AREAS = ("app/migrations/", "app/pytest_plugin/", "/di/")
+
+
+def test_mutation_config_targets_only_the_domain() -> None:
+    """#785: el objetivo del job `mutation` es el dominio, con timeout real.
+
+    El config del PR apuntaba a `app` entero y a 30 s por mutante. La suite del
+    `test-command` tarda 39,7-95,5 s en esta máquina, así que un superviviente se
+    cortaba y cosmic-ray lo marcaba INCOMPETENT en vez de SURVIVED. Este test ata
+    las tres piezas: el objetivo, las exclusiones y el timeout.
+    """
+    root = _find_makefile().parent
+    config = tomllib.loads(
+        (root / "docs" / "quality" / "cosmic-ray.toml").read_text(encoding="utf-8")
+    )
+    ray = config["cosmic-ray"]
+
+    targets = ray.get("module-path")
+    assert isinstance(targets, list), (
+        "`module-path` debe ser la lista explícita de los directorios del dominio: "
+        "una ruta ancha (p. ej. `app`) mete migraciones, el plugin de cobertura y "
+        "el DI, y la sesión no cabe en un job (#785)"
+    )
+    assert tuple(targets) == MUTATION_DOMAIN_TARGETS, (
+        f"el objetivo declarado es {MUTATION_DOMAIN_TARGETS}, no {tuple(targets)}"
+    )
+    for rel in targets:
+        assert (root / rel).is_dir(), f"el objetivo declarado no existe: {rel}"
+
+    excluded = ray.get("excluded-modules") or []
+    for area in MUTATION_EXCLUDED_AREAS:
+        assert any(area in pattern for pattern in excluded), (
+            f"`excluded-modules` no declara el área {area!r}: ampliar `module-path` "
+            "la metería en el objetivo sin que ningún gate lo note"
+        )
+
+    assert float(ray["timeout"]) >= 120.0, (
+        f"timeout por mutante {ray['timeout']!r}: la suite del `test-command` tarda "
+        "39,7-95,5 s, así que por debajo de ~120 s un superviviente se marca "
+        "INCOMPETENT y el run sale degenerado (#785)"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Issue #857 (PR-A): trigger surface and mutation scope
+# ---------------------------------------------------------------------------
+#
+# PR-A in the chain carries the trigger set and the mutation-scope change.
+# PR-B carries the pr-gate rename, the needs wiring, the format --check
+# migration, the sparse-checkout cleanup, and the check_required_jobs /
+# required-jobs-policy / check_workflows renames. Each PR targets main;
+# the two together close #857.
+
+
+def test_ci_runs_on_push_to_main(workflow: dict) -> None:
+    """Issue #857, PR-D: `push: branches: [main]` is the post-merge safety net.
+
+    The gentle-ai model does not use a merge queue. Every PR runs `ci`
+    exactly once, and the `required` aggregator re-proves the same
+    commit on the push that follows the merge. The trigger is
+    `branches: [main]` so a feature-branch push does not re-run the
+    whole suite — only the merge to `main` does.
+    """
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    assert "push" in triggers, (
+        "ci.yml must declare a `push:` trigger (issue #857, PR-D): the "
+        "post-merge safety net on `main` is what re-proves the commit "
+        "after the queue is gone."
+    )
+    push = triggers["push"]
+    assert isinstance(push, dict), (
+        f"ci.yml `push:` must declare `branches:` (issue #857, PR-D). Got: {push!r}"
+    )
+    assert list(push.get("branches", [])) == ["main"], (
+        f"ci.yml `push:` must pin `branches: [main]` (issue #857, PR-D). "
+        f"Got: {push.get('branches')!r}"
+    )
+
+
+def test_ci_runs_on_pull_request_push_schedule_dispatch(
+    workflow: dict,
+) -> None:
+    """The four events the gentle-ai model surfaces (PR + push + nightly + manual)."""
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    if isinstance(triggers, list):
+        present = set(triggers)
+    elif isinstance(triggers, str):
+        present = {triggers}
+    else:
+        present = set(triggers.keys())
+
+    for required_event in ("pull_request", "push", "schedule", "workflow_dispatch"):
+        assert required_event in present, (
+            f"ci.yml must declare `{required_event}` in its trigger set "
+            f"(issue #857, PR-D). Present: {sorted(present)}."
+        )
+
+
+def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
+    """Issue #857, PR-D: the merge queue is gone with the gentle-ai model.
+
+    `merge_group` was the queue's verdict event; without the queue there
+    is no merge-group run to listen to. Leaving the trigger in place
+    would re-introduce a class of `unsupported event` failures in
+    `scripts/check_required_jobs.py` (#857 PR-D dropped it from
+    `SKIPS_BY_EVENT`).
+    """
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    if isinstance(triggers, dict):
+        assert "merge_group" not in triggers, (
+            "ci.yml must not declare a `merge_group:` trigger: the queue is "
+            "gone with the gentle-ai model (issue #857, PR-D)."
+        )
+
+
+# --- Issue #857, PR-B: pull_request type set -----------------------------
+#
+# `pull_request:` without an explicit `types:` uses the GitHub default
+# (opened, synchronize, reopened). That set misses two events that DO
+# invalidate an already-published pr-gate verdict:
+#
+#   * `edited`     — when the maintainer pastes `Closes #N` into the PR
+#                    body after opening, the issue-spec gate does not
+#                    re-run.
+#   * `labeled` /
+#     `unlabeled` — when the maintainer applies `size:exception` after
+#                    the gate went red, the size verdict does not
+#                    re-evaluate.
+#
+# Pinning the type set here is what guarantees a verdict refresh on
+# those events. The list MUST stay exact (the order is the contract
+# `check_workflows.py` proves).
+
+
+PR_GATE_PULL_REQUEST_TYPES = (
+    "opened",
+    "synchronize",
+    "reopened",
+    "edited",
+    "labeled",
+    "unlabeled",
+)
+
+
+def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
+    """Issue #857, PR-B: pr-gate must re-run when body edits or labels change.
+
+    The default ``pull_request`` trigger only fires on opened,
+    synchronize, reopened. Editing the PR body or applying/removing
+    ``size:exception`` after opening does NOT re-run the pr-gate, so a
+    stale verdict sticks until the next synchronize. Pinning the type
+    list here is what closes that drift.
+    """
+    # yaml.safe_load maps the `on` keyword to the Python boolean `True`
+    # unless quoted; the existing tests guard both spellings already.
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    pull_request = triggers.get("pull_request")
+    assert isinstance(pull_request, dict), (
+        "ci.yml must declare `pull_request:` with a body so `types:` "
+        "can be pinned (issue #857, PR-B). A bare `pull_request:` falls "
+        "back to the GitHub default type set and misses `edited`, "
+        "`labeled` and `unlabeled`."
+    )
+    types = pull_request.get("types")
+    assert types is not None, (
+        "ci.yml must declare `pull_request.types:` — relying on the "
+        "default leaves edit and label events out of the pr-gate "
+        "(issue #857, PR-B)."
+    )
+    assert list(types) == list(PR_GATE_PULL_REQUEST_TYPES), (
+        f"ci.yml `pull_request.types:` is {list(types)!r}, expected "
+        f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include "
+        "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
+        "when the body or labels change after opening (issue #857, PR-B)."
     )

@@ -58,19 +58,110 @@ jobs:
             printf 'kind=stable\n' >>"$GITHUB_OUTPUT"
           fi
 
-  e2e:
-    # Non-blocking Playwright smoke against the just-published image.
-    # Runs between preflight (provenance + CI verdict on the tip) and
-    # publish (tag push); publishes the image only after preflight is
-    # green, so by the time this job runs the tag exists in ghcr.io.
+  mutation:
+    # Issue #857, PR-C1d: la mutación sale del CI diario (#881 retiró los
+    # jobs de ci.yml) y entra al release. Un fallo de mutación bloquea
+    # la publicación: `publish` depende de `mutation` y la ratchet
+    # (`check_mutation.py`) es el último step de este job, así que un
+    # veredicto rojo no llega a `publish`.
     #
-    # The Playwright step wraps the test runner with `|| true` by design
-    # (see the inline note). Until the e2e tests are real (DB fixtures,
-    # auth secrets, a stable selector map), this job is a plumbing probe
-    # — it pulls the published image, starts it, pokes /health, and
-    # reports. Failing it would push release back without a real signal,
-    # because the assertion currently is "the container booted", not
-    # "the application works". The TODO in `e2e/README.md` tracks the gap.
+    # Runner: este repositorio es público y **no consume runners
+    # propios del VPS** (`docs/10-runners.md`). `ubuntu-24.04-arm`
+    # conserva la arquitectura ARM64 que ya usaba el job retirado
+    # de ci.yml y que consumen `e2e` y `publish` (#800).
+    #
+    # Reutilización de pasos: los steps de checkout, install, mutar
+    # vienen del job `mutation` de ci.yml (retirado por #881). El
+    # ratchet (final step) viene del job `mutation-ratchet` del
+    # mismo ci.yml. Aquí se combinan en un solo job porque release
+    # no necesita la matriz de 10 shards en paralelo de las PRs:
+    # un release es raro y la latencia extra es aceptable; a cambio,
+    # la ratchet puede ser un step final y `publish` puede depender
+    # directamente de `mutation` sin un job intermedio.
+    needs: preflight
+    runs-on: ubuntu-24.04-arm
+    # cosmic-ray sobre el dominio (1129 mutantes) es lento por diseño.
+    # El techo de 150 min del job retirado se mantiene: 10 tramos
+    # secuenciales a ~52 s por mutante en el peor caso medido
+    # (116 x 52 s ≈ 1,7 h) entran holgados. Hard Rule 18: el exit
+    # code del runner no es el veredicto, lo es `check_mutation.py`.
+    timeout-minutes: 150
+    # Per-gate FIFO: dos releases a la misma cola no se pisan — la
+    # concurrencia se serializa por ref.
+    concurrency:
+      group: release-mutation-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: setup-python
+        with:
+          python-version: "3.12.11"
+
+      - name: install
+        # Reutiliza la lógica del install del job `mutation` de ci.yml
+        # (#881): restaura `app/pyproject.toml` y
+        # `scripts/check_mutation_sites.py` si el sparse-checkout los
+        # ha dejado fuera, luego instala el toolchain pinned.
+        run: |
+          set -euo pipefail
+          if ! git sparse-checkout disable 2>/dev/null; then
+            :
+          fi
+          if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
+            mkdir -p app
+            blob_oid=$(git show HEAD:app/pyproject.toml | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
+            git checkout-index --force --all app/pyproject.toml
+          fi
+          if [ ! -f scripts/check_mutation_sites.py ] && git show HEAD:scripts/check_mutation_sites.py >/dev/null 2>&1; then
+            mkdir -p scripts
+            blob_oid=$(git show HEAD:scripts/check_mutation_sites.py | git hash-object -w --stdin)
+            git update-index --add --cacheinfo 100644,$blob_oid,scripts/check_mutation_sites.py
+            git checkout-index --force --all scripts/check_mutation_sites.py
+          fi
+          if [ -f app/pyproject.toml ]; then
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
+          else
+            echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
+            echo "::error::The CI cannot install a Python project that does not exist."
+            exit 1
+          fi
+
+      - name: mutar el dominio
+        # Reutiliza `scripts/mutation_shards.py` del job `mutation` de
+        # ci.yml: el reparto es determinista, así que los 10 tramos
+        # secuenciales coinciden con los 10 tramos paralelos del job
+        # retirado. Sin matriz porque el job entero es secuencial
+        # ahora (el ratchet es el último step).
+        run: |
+          set -euo pipefail
+          cosmic-ray init docs/quality/cosmic-ray.toml mutation-session.sqlite
+          for shard in 0 1 2 3 4 5 6 7 8 9; do
+            python scripts/mutation_shards.py --session mutation-session.sqlite \
+              --shards 10 --index "$shard" --out "shard-${shard}.toml"
+            cosmic-ray init "shard-${shard}.toml" "shard-session-${shard}.sqlite"
+            cosmic-ray exec "shard-${shard}.toml" "shard-session-${shard}.sqlite"
+          done
+
+      - name: ratchet sobre las sesiones fusionadas
+        # `check_mutation.py` es stdlib a propósito: el veredicto
+        # no necesita el toolchain de mutación, solo las sesiones.
+        # Viene del job `mutation-ratchet` de ci.yml (retirado por
+        # #881), integrado aquí como último step para que un fallo
+        # bloquee `publish` directamente.
+        run: python scripts/check_mutation.py shard-session-*.sqlite --shards 10
+
+  e2e:
+    # Blocking Playwright smoke against the just-published image.
+    # Runs between preflight (provenance + CI verdict on the tip) and
+    # publish; publish depends on this job (`needs: e2e`), so a red smoke
+    # holds the release and the tag is not promoted to the registry until
+    # the image passes end-to-end on the published artifact. By the time
+    # this job runs the image exists in ghcr.io (preflight is green).
     #
     # Image-pull path: preflight validated tag provenance, so the tag is
     # well-formed; this job only re-runs that on the publishing runner to
@@ -164,7 +255,7 @@ jobs:
         run: docker stop test-app || true
 
   publish:
-    needs: e2e
+    needs: [e2e, mutation]
     # La arquitectura de la imagen es la del runner: se conserva ARM64 en la
     # etiqueta hospedada, la misma que consume `e2e` (#800).
     runs-on: ubuntu-24.04-arm

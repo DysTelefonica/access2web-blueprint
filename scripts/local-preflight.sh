@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-# Preflight local canónico: los mismos gates, en el mismo orden, que el job
-# `quality` de .github/workflows/ci.yml. Es la ÚNICA lista de comandos (Hard
-# Rule 19); el target `verify` del Makefile delega aquí y el test
-# `test_make_verify_delegates_to_the_local_preflight` fija que las dos listas
-# no se separen. Lo que CI corre y una estación de trabajo no puede —el
-# payload del PR, el presupuesto semanal de mutación, los escáneres que
-# necesitan Docker o red— queda fuera y se declara en ese mismo test.
+# Preflight local canónico: los gates de pull request del pr-gate de
+# .github/workflows/ci.yml en modo local, en su mismo orden, más ruff. Es la
+# ÚNICA lista local (Hard Rule 19): el target `verify` del Makefile delega aquí
+# y el test `test_make_verify_runs_every_local_gate` fija que no se separe de
+# ci.yml. La suite, mypy, la cobertura, la mutación y los escáneres quedan solo
+# en CI: son lentos o necesitan Docker, red o el contexto del run, y se declaran
+# en VERIFY_EXCLUSIONS de ese mismo test.
 set -euo pipefail
 
 ruff format --check --config app/pyproject.toml .
 ruff check --config app/pyproject.toml .
-mypy --explicit-package-bases app/
-python scripts/check_workflows.py
-pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json --cov-report=term --cov-fail-under=69
-python scripts/quality_report.py
+python scripts/check_pr_size.py
+python scripts/check_walkthrough_schema.py --strict

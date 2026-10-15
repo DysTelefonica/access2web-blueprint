@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
+from datetime import datetime
 from pathlib import Path
 
 import sqlalchemy as sa
@@ -31,16 +32,15 @@ SCHEMA = "lanzadera"
 def upgrade() -> None:
     fixture = (
         Path(__file__).parent.parent.parent.parent
-        / "data" / "fixtures" / "lanzadera" / "audit_events.json"
+        / "data"
+        / "fixtures"
+        / "lanzadera"
+        / "audit_events.json"
     )
     events = json.loads(fixture.read_text())
 
     bind = op.get_bind()
-    count = (
-        bind.execute(sa.text(f"SELECT COUNT(*) FROM {SCHEMA}.audit"))
-        .scalar()
-        or 0
-    )
+    count = bind.execute(sa.text(f"SELECT COUNT(*) FROM {SCHEMA}.audit")).scalar() or 0
     if count >= len(events):
         return
 
@@ -62,7 +62,17 @@ def upgrade() -> None:
                 "result": event["result"],
                 "correlation_id": event["correlation_id"],
                 "payload": json.dumps(event.get("payload", {})),
-                "created_at": event["created_at"],
+                # Issue #913: the column is `sa.DateTime(timezone=True)`
+                # (see 0001_core_schema.py). The previous binding passed
+                # the raw JSON string `event["created_at"]` and raised
+                # `DataError: invalid input for query argument: ...
+                # expected a datetime.date or datetime.datetime
+                # instance, got 'str'` the first time the integration
+                # job ran alembic against a real Postgres service (PR-3
+                # of #882, CI run 38787186647, after #912 fixed 0005).
+                # Parse the ISO string with `datetime.fromisoformat` so
+                # asyncpg receives a timezone-aware `datetime`.
+                "created_at": datetime.fromisoformat(event["created_at"]),
             },
         )
 
@@ -70,6 +80,4 @@ def upgrade() -> None:
 def downgrade() -> None:
     bind = op.get_bind()
     # Delete seeded events (those with module='lanzadera' and no actor).
-    bind.execute(
-        sa.text(f"DELETE FROM {SCHEMA}.audit WHERE actor_id IS NULL")
-    )
+    bind.execute(sa.text(f"DELETE FROM {SCHEMA}.audit WHERE actor_id IS NULL"))

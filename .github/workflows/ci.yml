@@ -5,7 +5,7 @@
 # fails if either ever appears.
 #
 # VERIFICATION ORDER (Hard Rule 13) — declared once, never reordered:
-#   1. review-budget gates (pr-size, branch-name)  cheap, and they gate reviewability, not code
+#   1. pr-gate (pr-size, walkthrough schema)      cheap, and it gates reviewability, not code
 #   2. format, lint, typecheck                     mechanical, fix before reading anything else
 #   3. tests + coverage                            produces coverage.json
 #   4. layers -> complexity -> DRY                 run by scripts/quality_report.py, in that order
@@ -22,12 +22,42 @@ name: ci
 
 on:
   pull_request:
+    # Issue #857, PR-B: the default `pull_request:` type set is
+    # [opened, synchronize, reopened] only. Two events that DO
+    # invalidate an already-published pr-gate verdict must trigger a
+    # refresh and the default leaves them out:
+    #   * `edited`     — when the maintainer pastes `Closes #N` into
+    #                    the PR body after opening, the issue-spec
+    #                    gate does not re-run.
+    #   * `labeled` /
+    #     `unlabeled` — when the maintainer applies `size:exception`
+    #                    after the gate went red, the size verdict
+    #                    does not re-evaluate.
+    # Pinning the set here is what guarantees the verdict refreshes
+    # on those events. `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
+    # pins the exact list — order and contents — so a silent drift
+    # cannot pass review.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - labeled
+      - unlabeled
   push:
+    # Issue #857, PR-D: after the merge lands on `main`, the safety net runs
+    # `ci` on the new commit. The PR's `pr-gate` does NOT run on push (its
+    # own `if:` excludes every event except `pull_request`), so the heavy
+    # jobs that wait on `needs: pr-gate` must accept its `skipped` result
+    # here. This is the gentle-ai model: one CI run on the PR, one safety
+    # net on the push, no merge queue.
     branches: [main]
   schedule:
-    # Weekly mutation run. Mutation is the only mechanical answer to "do these tests assert
-    # anything", and it is far too slow for every PR — so it runs on a cadence and ratchets.
-    - cron: "0 3 * * 1"
+    # Issue #857, PR-D: nightly safety net on `main`, mirroring gentle-ai's
+    # `cron: "0 3 * * *"`. The schedule runs the full heavy-jobs suite; the
+    # weekly `0 3 * * 1` from the merge-queue era is gone with the queue
+    # itself and with the mutation job.
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -42,18 +72,24 @@ env:
   PYTHON_VERSION: "3.12.11"
 
 jobs:
-  review-budget:
+  pr-gate:
     # Public pull requests are untrusted input. Every PR-reachable job runs on
     # an ephemeral GitHub-hosted runner, never on repository infrastructure.
     runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
-    # Per-gate FIFO: if a `review-budget` is already in flight on the runner, the next
+    # `issues: read` lets the issue-spec step fetch the issue linked by the PR body.
+    # `pull-requests: read` lets the pr-size step read the per-file breakdown (issue #918).
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
     concurrency:
-      group: gate-review-budget-${{ github.event.pull_request.number || github.ref }}
+      group: gate-pr-gate-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
-    # Fail fast: branch-name + pr-size run in seconds; anything beyond 5 min is hung.
+    # Fail fast: pr-size + walkthrough schema run in seconds; anything beyond 5 min is hung.
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -86,18 +122,22 @@ jobs:
         with:
           python-version: "3.12.11"
 
-      - name: branch name
-        env:
-          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-        run: python scripts/check_branch_name.py
-
       - name: pr size
-        # PR_BODY is attacker-controlled text. It is passed through the environment, never
-        # interpolated into the shell, so a crafted title or body cannot inject a command.
+        # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
+        # The script reads it as data; the body is never interpolated into the shell.
+        # GITHUB_TOKEN reads the per-file breakdown so vendored skills are not counted
+        # as author lines (issue #918). Without it the gate counts the whole PR.
         env:
-          BASE_REF: origin/${{ github.event.pull_request.base.ref }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: python scripts/check_pr_size.py
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"
+
+      - name: issue spec
+        # The PR body is attacker-controlled: the event file is read as data by the
+        # gate, and the token is only used for the read-only issue lookup.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"
 
       - name: walkthrough schema
         # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST
@@ -108,9 +148,14 @@ jobs:
         run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
-    # Los nombres de check requeridos se publican solo desde eventos que evaluan
-    # el PR o la rama base (HR-30): schedule y workflow_dispatch no los publican.
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    needs: pr-gate
+    # Issue #857, PR-D: en el modelo gentle-ai, los heavy jobs corren en los
+    # cuatro eventos que la red de seguridad del repo evalúa: la PR
+    # (`pull_request`), el post-merge (`push` a `main`), el nightly
+    # (`schedule`) y el manual (`workflow_dispatch`). `pr-gate` solo se
+    # ejecuta en `pull_request`, así que en los otros tres su `result`
+    # es `skipped` y este `if:` lo acepta explícitamente.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     # This job executes code from public pull requests, so it must use isolated,
     # ephemeral GitHub-hosted infrastructure.
     runs-on: ubuntu-24.04
@@ -257,11 +302,8 @@ jobs:
         run: ruff check --config app/pyproject.toml .
 
       - name: typecheck
-        # `--explicit-package-bases` is required since slice 1 of #266 added
-        # app/pytest_plugin/coverage_gate_helpers.py: without it, mypy 1.13.0
-        # stops on "Source file found twice under different module names" because
-        # it sees the file as both `pytest_plugin.coverage_gate_helpers` and
-        # `app.pytest_plugin.coverage_gate_helpers` depending on the walk path.
+        # `--explicit-package-bases` keeps pytest_plugin-style split history
+        # resolvable across the years. Kept as a belt-and-braces setting.
         # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
         run: mypy --explicit-package-bases app/
 
@@ -272,6 +314,16 @@ jobs:
         # no service container fixes a host port, every `uses:` is pinned by
         # SHA. Matches the `check-workflows` Makefile target.
         run: python scripts/check_workflows.py
+
+      - name: suites populated
+        # Issue #882 (PR-1): a green CI with zero tests in a suite is a false
+        # guarantee. Each mandatory suite (unit, integration, e2e_smoke) must
+        # collect at least one test under `--collect-only -m <expr>`. Renaming
+        # a marker, deleting a directory, or skipping a fixture silently now
+        # fails this gate before the full pytest run wastes runner minutes.
+        # Runs before `tests` so a guard violation is the first signal the
+        # operator sees, not an expensive test failure later.
+        run: python scripts/check_suites_populated.py
 
       - name: tests
         # `-c app/pyproject.toml --rootdir=app` is load-bearing. The pytest contract
@@ -308,117 +360,6 @@ jobs:
       # reviewer reads, not the artifact blob. The CI PR rollup's
       # `quality` check is now driven by the script-level exit code.
 
-  mutation:
-    # Scheduled, manual and on tag push (XCUT #703). THIS IS THE ONE JOB THE SKILL COULD NOT EXECUTE END TO END —
-    # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
-    # session needs the mutation runner on a real codebase. Verify it once on adoption.
-    # The tag-push branch is the XCUT #703 contract: a release cannot publish unless
-    # mutation testing has run on the exact bytes of the tag. Costs ~60 min on the
-    # self-hosted `a2w` runner; the release path accepts that latency to keep the
-    # fail-closed guarantee (alternative was a preflight lookup of a recent manual
-    # run, which relies on operational discipline).
-    # NOTE: the `if` uses the simple `!= 'pull_request'` exclusion accepted by
-    # `scripts/check_workflows.py::_condition_excludes_pull_requests` — this is
-    # what makes a self-hosted runner safely PR-reachable on push, schedule and
-    # workflow_dispatch without exposing the runner to PR-originated code.
-    if: github.event_name != 'pull_request'
-    runs-on: [self-hosted, Linux, ARM64, oracle-vps, a2w]
-    # Per-gate FIFO even on the weekly schedule: two manual triggers in quick
-    # succession serialize rather than racing cosmic-ray's sqlite (umbrella #117).
-    concurrency:
-      group: gate-mutation
-      cancel-in-progress: false
-    # cosmic-ray on the declared testable boundary is intentionally slow. The
-    # timeout is loose — Hard Rule 18 says the runner's exit code is not the
-    # verdict; check_mutation.py is.
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          # ``sparse-checkout-cone-mode: false
-          # sparse-checkout: disable`` is the real fix for #414: the
-          # default ``sparse-checkout-cone-mode: true`` only materialises
-          # paths touched by the PR diff, so writing to
-          # ``app/pyproject.toml`` (not in the diff) fails with
-          # "Read-only file system" and the worktree guard trips.
-          # (the git-show fallback in the install step remains as a secondary path.)
-          sparse-checkout-cone-mode: false
-
-      - name: disable sparse-checkout cone mode (runtime fallback)
-        # See the same step in the ``quality`` and ``review-budget``
-        # jobs. The weekly mutation job runs on the same self-hosted
-        # runner and inherits the same stale cone config from the cache.
-        # `|| true` is forbidden by Hard Rule 1 (test_no_run_block_forces_success),
-        # so we use a typed shell conditional. `git sparse-checkout disable`
-        # returns non-zero on older git (command not found); the `if ! ...`
-        # branch absorbs that exit code into a no-op without using `|| true`.
-        run: |
-          if ! git sparse-checkout disable 2>/dev/null; then
-            :
-          fi
-
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        id: setup-python
-        with:
-          python-version: "3.12.11"
-
-      - name: install
-        # See the quality job's install step (#109, #110, #117 F2, #414).
-        run: |
-          set -euo pipefail
-          if ! git sparse-checkout disable 2>/dev/null; then
-            :
-          fi
-          if [ ! -f app/pyproject.toml ] && git show HEAD:app/pyproject.toml >/dev/null 2>&1; then
-            mkdir -p app
-            blob_oid=$(git show HEAD:app/pyproject.toml | git hash-object -w --stdin)
-            git update-index --add --cacheinfo 100644,$blob_oid,app/pyproject.toml
-            git checkout-index --force --all app/pyproject.toml
-          fi
-          # Same stale cone bug as app/pyproject.toml above: scripts/check_mutation_sites.py
-          # is not in the PR diff, so it is excluded from sparse-checkout. The merge commit
-          # may be older than the latest local formatting, so also run ruff format on it to
-          # guarantee compliance regardless of which version was materialised by the checkout.
-          if [ ! -f scripts/check_mutation_sites.py ] && git show HEAD:scripts/check_mutation_sites.py >/dev/null 2>&1; then
-            mkdir -p scripts
-            blob_oid=$(git show HEAD:scripts/check_mutation_sites.py | git hash-object -w --stdin)
-            git update-index --add --cacheinfo 100644,$blob_oid,scripts/check_mutation_sites.py
-            git checkout-index --force --all scripts/check_mutation_sites.py
-          fi
-          # NOTE: ruff format on scripts/check_mutation_sites.py runs as a separate
-          # step below (post-install) so that ruff is available. Placing it here (pre-
-          # pip install) would fail because ruff is not installed yet.
-          if [ -f app/pyproject.toml ]; then
-            python -m pip install --require-hashes --requirement app/requirements-dev.lock
-          elif [ -f pyproject.fragment.toml ]; then
-            echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
-            echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
-            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
-            exit 1
-          else
-            echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
-            echo "::error::The CI cannot install a Python project that does not exist. See issue #117 F2."
-            exit 1
-          fi
-
-      - name: run mutants
-        # The runner's own exit code is not the verdict: it reports success for a run in which
-        # nothing executed. check_mutation.py is what decides (Hard Rule 18).
-        run: |
-          cosmic-ray init docs/quality/cosmic-ray.toml mutation-session.sqlite
-          cosmic-ray exec docs/quality/cosmic-ray.toml mutation-session.sqlite
-
-      - name: mutation ratchet
-        run: ${{ steps.setup-python.outputs.pythonLocation }}/bin/python3 scripts/check_mutation.py mutation-session.sqlite
-
-      # The mutation-session sqlite blob previously published as an
-      # `actions/upload-artifact` step here is intentionally removed;
-      # see the matching comment in the `quality` job. The
-      # `python scripts/check_mutation.py` step exits with the ratchet
-      # verdict; that exit code (no `continue-on-error`, no `|| true`) is
-      # the gate.
-
   security:
     # Issue #702: security.yml is now `on: workflow_call` only (no
     # independent triggers). Invoking it here as a job — rather than
@@ -426,10 +367,12 @@ jobs:
     # separately in branch protection — is what lets `required` below
     # `needs:` it: `needs:` cannot cross workflow files, but a job invoked
     # via `uses: ./...` still has an ordinary job id and result.
+    needs: pr-gate
     uses: ./.github/workflows/security.yml
-    # Mismo criterio que `quality` (HR-30): ningun nombre de check requerido
-    # desde eventos que no evaluan el PR.
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    # Mismo criterio que `quality` (HR-30, #857 PR-D): los heavy jobs
+    # aceptan `pr-gate` saltado en cualquier evento en el que este
+    # tiene `if: github.event_name == 'pull_request'`.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     permissions:
       contents: read
     concurrency:
@@ -440,9 +383,10 @@ jobs:
     # Same treatment as `security` above. `security-events: write` is
     # required here (not just inside codeql.yml's own job) because a
     # reusable workflow cannot exceed the permissions its caller grants it.
+    needs: pr-gate
     uses: ./.github/workflows/codeql.yml
-    # Mismo criterio que `quality` y `security` (HR-30).
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    # Mismo criterio que `quality` y `security` (HR-30, #857 PR-D).
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     permissions:
       contents: read
       security-events: write
@@ -452,7 +396,7 @@ jobs:
 
   required:
     # Issue #702: deterministic replacement for the six hand-configured
-    # branch-protection checks (quality, review-budget, pip-audit,
+    # branch-protection checks (quality, pr-gate, pip-audit,
     # gitleaks, trivy-config, codeql) and for `merge-ready`, which this job
     # fully supersedes (it never blocked anything — it only reported
     # `mergeable`/`reviewDecision`, both of which GitHub already derives
@@ -461,15 +405,17 @@ jobs:
     # protection.
     #
     # `if: always()` is load-bearing: without it, a single skipped
-    # dependency (e.g. `review-budget` outside a pull_request) would mark
+    # dependency (e.g. `pr-gate` outside a pull_request) would mark
     # this job's own status as skipped too, and a skipped required check
     # does not block a merge the way a failed one does.
     # `if:` sin `always()` literal y con la comparacion de evento: la guarda de
     # HR-30 no puede probar un `always()` suelto, y `!cancelled()` conserva el
     # motivo original —un dependency saltado no debe saltar este check, que es
-    # el requerido de la proteccion de rama—.
-    if: (github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()
-    needs: [review-budget, quality, security, codeql]
+    # el requerido de la proteccion de rama—. Issue #857, PR-D: el conjunto de
+    # eventos pasa a `pull_request || push || schedule || workflow_dispatch`;
+    # `merge_group` desaparece con la cola de merge.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    needs: [pr-gate, quality, security, codeql]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}
