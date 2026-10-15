@@ -413,6 +413,11 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # After the sprint, --strict activates in ci.yml's quality job and this entry
     # is removed. Issue #535 tracks the exit criteria.
     "check_test_classification.py",
+    # Issue #855 ships the unit-tested gate (scripts/check_issue_spec.py).
+    # Issue #857 (PR-C of the same chain) wires it into the pr-gate step of
+    # ci.yml and removes this entry. The script is owned by #855; the wiring
+    # is owned by #857 by design — see issue #855 §"Alcance y no objetivos".
+    "check_issue_spec.py",
 )
 
 
