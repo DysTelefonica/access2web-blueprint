@@ -44,6 +44,7 @@ def _evaluate_coverage(
     """
     return [], []
 
+
 # Exact (module, optional owner, helper) targets required by DA-2 and DA-4.
 CRITICAL_TARGETS: tuple[tuple[str, str | None, str], ...] = (
     (
