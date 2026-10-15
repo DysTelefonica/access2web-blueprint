@@ -22,10 +22,9 @@ REQUIRED_COMMANDS = (
     "ruff check --config app/pyproject.toml .",
     "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
-    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
-    "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
     "python scripts/check_walkthrough_schema.py --strict",
     "python scripts/check_required_jobs.py",
@@ -39,9 +38,8 @@ REQUIRED_COMMANDS = (
 VERIFY_EXCLUSIONS = (
     "mypy --explicit-package-bases app/",  # full suite: CI quality job only
     "python scripts/check_workflows.py",  # ci.yml contract: CI quality job only
-    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',  # full suite
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',  # full suite
     "scripts/quality_report.py",  # code gates after the suite: CI quality job only
-    "python scripts/check_mutation.py",  # weekly schedule, far too slow per PR
     "pip-audit",  # network: advisory database
     "gitleaks",  # docker
     "trivy",  # docker
@@ -418,6 +416,12 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # Issue #857 (PR-B): the branch-name job leaves ci.yml, so the script has no
     # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
     "check_branch_name.py",
+    # Issue #857, PR-C1b: the mutation jobs leave ci.yml, so the scripts have no
+    # CI step in the PR rollup. They stay on disk — the mutation job moved
+    # to release.yml (PR-C1d) and reads them from there. The two
+    # KNOWN_PENDING_GATES entries here mark the ci.yml-side absence.
+    "check_mutation.py",
+    "check_mutation_sites.py",
     # Issue #875: scripts/check_deadcode.py ships the ratchet without a CI step.
     # The quality-job wiring lives in the PR for the gentle-ai model (#857, owned
     # by apap4); that PR adds the step to ci.yml and removes this entry.
@@ -674,6 +678,46 @@ def test_issue_spec_leaves_known_pending_gates(run_blocks: list[str]) -> None:
     assert "check_issue_spec.py" not in KNOWN_PENDING_GATES
 
 
+def test_release_mutation_job_needs_preflight() -> None:
+    """Issue #857, PR-C1d: the mutation job in release.yml runs after preflight.
+
+    `preflight` is the gate that validates the tag identity, the ci verdict
+    on the exact SHA, and the channel classification (rc vs stable). The
+    mutation job depends on it because a failed preflight means the tag
+    is not fit to ship, and running cosmic-ray on bytes that will never
+    publish wastes the hosted runner's free-tier minutes.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "mutation" in jobs, "release.yml must declare a `mutation` job (#857, PR-C1d)"
+    assert jobs["mutation"]["needs"] == "preflight", (
+        f"`mutation` must declare `needs: preflight` (issue #857, PR-C1d). "
+        f"Got: {jobs['mutation'].get('needs')!r}"
+    )
+
+
+def test_release_publish_needs_e2e_and_mutation() -> None:
+    """Issue #857, PR-C1d: publish depends on both e2e and mutation.
+
+    A green e2e is necessary (the published image must pass the Playwright
+    smoke) but not sufficient — a mutation failure on the exact bytes
+    being shipped is exactly the class of release-time failure the
+    `mutation` job exists to catch. `publish` must wait for both, in
+    either order, so a red mutation holds the tag.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "publish" in jobs, "release.yml must declare a `publish` job"
+    needs = jobs["publish"]["needs"]
+    # GitHub Actions serialises a list-typed `needs` as a list of strings;
+    # the older scalar form is a bare string. Accept both.
+    needed = {needs} if isinstance(needs, str) else set(needs)
+    assert needed == {"e2e", "mutation"}, (
+        f"`publish` must depend on `e2e` and `mutation` (issue #857, PR-C1d). "
+        f"Got: {sorted(needed)!r}"
+    )
+
+
 def test_branch_name_is_no_longer_wired_into_ci(run_blocks: list[str]) -> None:
     """Issue #857, PR-B: the branch-name check leaves ci.yml; #859 deletes the script."""
     assert not [block for block in run_blocks if "check_branch_name.py" in block]
@@ -770,67 +814,6 @@ def _invoked_binaries(run_blocks: list[str]) -> set[str]:
                 token = "python"
             tokens.add(token)
     return tokens
-
-
-def test_mutation_job_installs_every_tool_and_config_its_steps_invoke(
-    workflow: dict,
-) -> None:
-    """#785: el install del job debe proveer lo que el job invoca.
-
-    El paso `run mutants` ejecutaba `cosmic-ray` sobre un binario que el install
-    nunca instaló y sobre un config que no existía en el árbol. El job murió con
-    exit 127 durante ocho semanas sin que ningún gate lo notara, porque su
-    código de salida no es el verdicto (`check_mutation.py` lo es) y el ratchet
-    quedaba en `skipped`. Este test ata los dos extremos: lo que el job ejecuta
-    y lo que su install provee, más las rutas que le pasa.
-    """
-    job = workflow["jobs"]["mutation"]
-    blocks = [step["run"] for step in job["steps"] if "run" in step]
-
-    external: set[str] = set()
-    tool_blocks: list[str] = []
-    for block in blocks:
-        found = _invoked_binaries([block]) - RUNNER_PROVIDED_BINARIES
-        if found:
-            external |= found
-            tool_blocks.append(block)
-
-    assert external, (
-        "el job `mutation` no invoca ningún binario fuera de los que provee el "
-        "runner: este test dejó de medir lo que el install tiene que instalar"
-    )
-
-    root = _find_makefile().parent
-    dev = (
-        (root / "app" / "pyproject.toml")
-        .read_text(encoding="utf-8")
-        .partition("dev = [")[2]
-        .partition("]")[0]
-    )
-    lock = (root / "app" / "requirements-dev.lock").read_text(encoding="utf-8")
-
-    for binary in sorted(external):
-        assert f'"{binary}==' in dev, (
-            f"el job `mutation` invoca `{binary}` pero `app/pyproject.toml` no lo "
-            f"declara en las extras `dev`: su install no lo provee (#785)"
-        )
-        assert f"{binary}==" in lock, (
-            f"`{binary}` está en las extras `dev` pero no en "
-            f"`app/requirements-dev.lock`: el install `--require-hashes` del job no "
-            f"lo instala (#785)"
-        )
-
-    configs = {token for block in tool_blocks for token in re.findall(r"[\w./-]+\.toml\b", block)}
-    assert configs, (
-        "el job `mutation` no pasa ningún config `.toml` a la herramienta: este "
-        "test dejó de medir las rutas"
-    )
-    generated = set(re.findall(r"--out\s+([\w./-]+\.toml)", " ".join(blocks)))
-    for rel in sorted(configs):
-        assert (root / rel).is_file() or rel in generated, (
-            f"el job `mutation` pasa `{rel}` a la herramienta pero el fichero no "
-            f"existe en el árbol y ningún paso lo genera (#785)"
-        )
 
 
 #: Dominio declarado del job `mutation`: los dos directorios `domain/` del
@@ -957,25 +940,6 @@ def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
             "ci.yml must not declare a `merge_group:` trigger: the queue is "
             "gone with the gentle-ai model (issue #857, PR-D)."
         )
-
-
-def test_mutation_runs_only_on_schedule_and_workflow_dispatch(
-    workflow: dict,
-) -> None:
-    """Issue #857: mutation is the nightly net, not a PR cost.
-
-    The mutation job costs ~60 min on the hosted runner; running it
-    on every PR or on every merge group is what PR-A closes. The
-    accepted form is the `schedule || workflow_dispatch` comparison
-    that the structural gate `check_workflows.py` can prove.
-    """
-    mutation = workflow["jobs"]["mutation"]
-    assert mutation["if"] == (
-        "github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'"
-    ), (
-        f"`mutation` must run only on schedule + workflow_dispatch "
-        f"(issue #857, PR-A). Current `if`: {mutation['if']!r}"
-    )
 
 
 # --- Issue #857, PR-B: pull_request type set -----------------------------

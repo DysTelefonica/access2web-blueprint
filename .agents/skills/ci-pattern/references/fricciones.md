@@ -24,7 +24,7 @@ fricción en una línea y su antídoto, con la regla de la skill que lo codifica
 | A9 | Vulture sin instalar imprimía «OK (0 confirmed-dead)»: el único falso verde puro del CI (ardelperal/APAP_WEB#1142) | Gate fail-loud si el herramienta no midió (HR-3); guard ardelperal/APAP_WEB#1143 |
 | A11 | Slice verde en todas las matrices locales, rojo en el job e2e dockerizado sin su seed fixture (ardelperal/APAP_WEB#1138) | El fixture viaja en el slice; comprobar también los jobs que solo corren en CI (HR-15) |
 | B1 | El smoke de producción recibía 403 de Cloudflare por el User-Agent de urllib (ardelperal/APAP_WEB#1134, resuelto #1135) | Ejecutar de verdad cada gate que toca producción (HR-2); User-Agent propio (parámetro 7) |
-| B2 | `strict` sin cola: cada merge ajeno invalida los PR abiertos («required status checks are expected», tres veces) | Auto-merge + update-branch activados; secuencia determinista de actualización (HR-17) |
+| B2 | `strict` sin cola: cada merge ajeno invalida los PR abiertos («required status checks are expected», tres veces) | Sin `strict` y sin cola; CI una vez en la PR; `push` a `main` más nightly diario como red de seguridad |
 | B3 | La suite de tests local no ejecuta los pasos de lint: tres PR llegaron a CI con fallos que local no veía (ardelperal/APAP_WEB#1082, #1133, #1119) | Preflight canónico con paridad total (HR-4); `scripts/preflight.py` |
 | B4 | Mensajes del gate que no dicen la causa real («missing or empty section» cuando el problema era el nivel de encabezado) | Mensajes con la causa exacta y el arreglo esperado (HR-13) |
 | B11 | GitHub no registró nunca `Closes #1119` en #1145: el gate exigía algo que el cuerpo ya tenía | Verificar `closingIssuesReferences` tras crear; excepción declarada + cierre a mano auditable (HR-7, HR-13) |
@@ -33,7 +33,7 @@ fricción en una línea y su antídoto, con la regla de la skill que lo codifica
 | F-001 | El ratchet de ruff evalúa rulesets que el `ruff check` local no corre: rojo en CI, verde en local (ardelperal/APAP_WEB#1111) | Preflight que reproduce el job, no un subconjunto curado (HR-4) |
 | F-002 | El ratchet pide «lock in the improvement» pero bajar la baseline es un edit manual | Comando de regeneración de baseline; ratchet shrink-only (HR-15) |
 | F-003 | Un fallo de raíz se enmascaraba como 7 fallos del agregador `required` | Agregador que separa causa raíz de skips en cascada (HR-13) |
-| F-004 | `size:exception` era una danza de etiquetas aplicadas tarde que no reevaluaba el gate | Excepción como campo de datos del cuerpo del PR (HR-1, HR-8) |
+| F-004 | `size:exception` era una danza de etiquetas aplicadas tarde que no reevaluaba el gate | Excepción reducida a la única via valida — etiqueta `size:exception` aplicada solo por el mantenedor cuando partir la PR romperia `main` y tras las 4 preguntas en el cuerpo; HR-8 (campo `size-exception-reason:`) retirado |
 | F-005 | Reanudar una revisión interrumpida exigía hashes y tokens internos a mano | El arnés de review asume interrupciones; la skill de CI no lo disimula |
 | F-006 | Entornos locales sin el intérprete de python localizado y docs con intérpretes mezclados | El preflight canónico abstrae el intérprete; un solo comando documentado (HR-4) |
 | F-007 | Un worker desatendido no puede commitear: la política pide aprobación interactiva | Contrato de dos fases: worker deja staged + evidencia; el orquestador commitea tras verificar |

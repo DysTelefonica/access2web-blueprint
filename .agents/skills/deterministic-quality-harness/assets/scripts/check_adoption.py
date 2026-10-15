@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/scripts/check_adoption.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/check_adoption.py
 """Fail-closed adoption preflight and scanner-image lock resolver."""
 
 from __future__ import annotations
@@ -24,6 +24,19 @@ SECURITY_LOCK = "security-images.lock.json"
 QUALITY_POLICY = "quality-policy.json"
 PYPROJECT = "pyproject.toml"
 DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+#: Pattern to detect baseline dicts/constants in Python scripts.
+#: Matches `BASELINE`, `BASELINE_*`, `ALLOWLIST`, `POLICY` etc.
+BASELINE_NAME_RE = re.compile(r"\b(BASELINE[A-Z_]*|ALLOWLIST[A-Z_]*|POLICY[A-Z_]*|CEILING[A-Z_]*)\b")
+#: Pattern to detect shrink-only or ratchet comments in YAML/CI files.
+SHRINK_ONLY_RE = re.compile(r"(shrink[_-]?only|baseline|ratchet|lock[_-]?in|shrink[-_]only)", re.IGNORECASE)
+#: Patterns of ratchet gates known to be present in a repo.
+RATCHET_GATES = frozenset({
+    "check_ratchet.py",
+    "check_ruff_ratchet.py",
+    "check_mutation_sites.py",
+    "check_vulture_guard.py",
+})
 
 
 class AdoptionError(RuntimeError):
@@ -149,12 +162,168 @@ def _security_lock(root: Path, sources: Mapping[str, str]) -> dict[str, dict[str
     return locked
 
 
+# ---- HR-15 adoption audit ----
+
+class _BaselineFinding:
+    """A discovered baseline that may or may not be covered."""
+    __slots__ = ("path", "name", "source", "covered")
+
+    def __init__(self, path: Path, name: str, source: str, covered: bool) -> None:
+        self.path = path
+        self.name = name
+        self.source = source
+        self.covered = covered
+
+    def __repr__(self) -> str:
+        state = "ok" if self.covered else "UNCOVERED"
+        return f"_BaselineFinding({self.name!r}, {self.path}, {state})"
+
+
+def _find_python_files(root: Path, dirs: tuple[str, ...] = ("scripts",)) -> list[Path]:
+    """Yield .py files under the given sub-directory names."""
+    results: list[Path] = []
+    for d in dirs:
+        target = root / d
+        if target.is_dir():
+            results.extend(p for p in target.rglob("*.py") if p.is_file())
+    return results
+
+
+def _detect_baseline_dicts(root: Path) -> list[_BaselineFinding]:
+    """Scan Python scripts for baseline dicts/constants.
+
+    Returns a list of findings for every file that declares a `BASELINE`-named
+    dict, `ALLOWLIST`, `POLICY` or similar constant whose value is a dict literal
+    (``{ ... }``) or a call that produces one.
+    """
+    findings: list[_BaselineFinding] = []
+    for pyfile in _find_python_files(root):
+        text = pyfile.read_text(encoding="utf-8")
+        match = BASELINE_NAME_RE.search(text)
+        if match is None:
+            continue
+        # Check if it's assigned as a dict constant (not just a comment)
+        # Look for `NAME = { ... }` on the same or nearby line
+        for line in text.splitlines():
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
+            if match.group() in stripped and "{" in stripped:
+                findings.append(_BaselineFinding(pyfile, match.group(), "dict", False))
+                break
+    return findings
+
+
+def _detect_shrink_only_comments(root: Path) -> list[_BaselineFinding]:
+    """Scan YAML/CI files for shrink-only / ratchet declarations.
+
+    Returns findings for every file that mentions a shrink-only or ratchet
+    pattern but does not reference a known ratchet gate script.
+    """
+    findings: list[_BaselineFinding] = []
+    for d in (".github", "ci", "workflows"):
+        target = root / d
+        if not target.is_dir():
+            continue
+        for wf in target.rglob("*.yml"):
+            if not wf.is_file():
+                continue
+            text = wf.read_text(encoding="utf-8")
+            if SHRINK_ONLY_RE.search(text):
+                # Check if the file also references a ratchet gate
+                has_gate = any(gate in text for gate in RATCHET_GATES)
+                if not has_gate:
+                    findings.append(
+                        _BaselineFinding(wf, "shrink-only-comment", "yaml", False)
+                    )
+    return findings
+
+
+def _has_check_ratchet(root: Path) -> bool:
+    """Return True if the repo has at least one ratchet gate script."""
+    for d in ("assets", "scripts", ".github", "ci"):
+        if _has_check_ratchet_for_path(root / d):
+            return True
+    return False
+
+
+def _has_check_ratchet_for_path(directory: Path) -> bool:
+    """Return True if *directory* contains a ratchet gate script."""
+    if not directory.is_dir():
+        return False
+    for f in directory.iterdir():
+        if f.name in RATCHET_GATES and f.is_file():
+            return True
+    # Also check subdirectories
+    for f in directory.rglob("*.py"):
+        if f.name in RATCHET_GATES:
+            return True
+    return False
+
+
+def _verify_hr15_coverage(findings: list[_BaselineFinding], root: Path) -> None:
+    """Verify every discovered baseline is covered by a ratchet gate."""
+    has_gate = _has_check_ratchet(root)
+    uncovered: list[_BaselineFinding] = []
+
+    for finding in findings:
+        if finding.covered:
+            continue
+        if has_gate:
+            # Heuristic 1: the script name matches a known ratchet gate
+            # (e.g. check_mutation_sites.py) — it both declares AND enforces.
+            script_name = finding.path.name.lower()
+            if any(g.lower().replace(".py", "") in script_name for g in RATCHET_GATES):
+                finding.covered = True
+                continue
+            # Heuristic 2: the baseline is in scripts/ and a ratchet gate
+            # also lives under scripts/ — the gate operates at repo level
+            # and covers all baselines in that tree.
+            if finding.path.parent.is_relative_to(root / "scripts"):
+                scripts_gate = _has_check_ratchet_for_path(root / "scripts")
+                if scripts_gate:
+                    finding.covered = True
+                    continue
+            # When a ratchet gate is present but the baseline is in a
+            # different tree (e.g. .github/), flag as needing manual
+            # verification.
+            uncovered.append(finding)
+        else:
+            # No ratchet gate at all: every baseline is uncovered.
+            uncovered.append(finding)
+
+    if uncovered:
+        msgs = []
+        for f in uncovered:
+            msgs.append(
+                f"HR-15 baseline {f.name!r} in {f.path.relative_to(root)} "
+                f"({f.source}) is NOT covered by a ratchet gate — "
+                "either add check_ratchet.py (--base-baseline) or "
+                "invoke an equivalent shrink-only comparison against the base branch"
+            )
+        raise AdoptionError(
+            f"HR-15 adoption incomplete: {len(uncovered)} uncovered baseline(s). "
+            + "; ".join(msgs)
+        )
+
+
+def _validate_hr15_adoption(root: Path) -> None:
+    """Validate that all consumer baselines are covered by ratchet gates (HR-15)."""
+    dict_findings = _detect_baseline_dicts(root)
+    comment_findings = _detect_shrink_only_comments(root)
+    all_findings = dict_findings + comment_findings
+    if not all_findings:
+        return  # No baselines detected — nothing to audit.
+    _verify_hr15_coverage(all_findings, root)
+
+
 def validate_adoption(root: Path) -> dict[str, dict[str, str]]:
     """Validate every artifact needed by mutation and security jobs."""
     mutation = _validate_mutation_config(root)
     _validate_quality_policy_parity(root, mutation)
     _validate_dev_lock(root)
     sources = _security_sources(root)
+    _validate_hr15_adoption(root)
     return _security_lock(root, sources)
 
 

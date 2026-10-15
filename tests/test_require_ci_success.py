@@ -1,11 +1,24 @@
-"""The release ci gate reads green from the queue, not from a push run.
+"""The release CI gate reads green from the most recent ``ci.yml`` run for the SHA.
 
-Every commit that lands on ``main`` arrives with a green ``ci`` job on the
-exact SHA, produced by the merge queue (``event: merge_group``). The nightly
-schedule (``event: schedule``) also carries a green verdict on the same SHA.
-A push or pull_request run on the same SHA must not certify a tag: with the
-queue in place it does not exist, and a surviving one is a stray or a
-pre-queue artefact — never the verdict that authorised the merge.
+Issue #857, PR-C1c: the gate's contract switches to the gentle-ai criterion.
+The previous version filtered by ``event in {merge_group, schedule}``, which
+only made sense with the merge queue. After the queue is gone, every event
+that the workflow listens to (``pull_request``, ``push``, ``schedule``,
+``workflow_dispatch``) is a legitimate verdict for the exact SHA — and the
+*most recent* run is the only one that matters, because re-runs exist:
+
+  1. A run that is still ``in_progress`` (or ``queued``, or any other
+     non-``completed`` status) fails with a message telling the operator to
+     wait and re-run the release from the same tag.
+  2. A most-recent run that concluded ``failure`` fails even if an older
+     run on the same SHA was green: a re-run invalidates the earlier
+     verdict.
+  3. A most-recent run that concluded ``success`` passes — any event,
+     any name, just the file ``ci.yml`` on the exact SHA.
+  4. No runs at all for the SHA fails with a message telling the operator
+     to push the commit to a branch that runs ``ci.yml`` and re-run the
+     release from the same tag.
+  5. A GitHub API error fails the gate: no green evidence, no release.
 
 The script under test is ``scripts/require-ci-success.sh``; the GitHub CLI is
 replaced with a shim on ``PATH`` that returns a fixed API payload and applies
@@ -32,6 +45,12 @@ SHIM_TEMPLATE = """#!/usr/bin/env bash
 # Test shim for the ``gh`` CLI. Replays a recorded API response and applies
 # the script's own ``--jq`` selector with a real ``jq`` binary, so the
 # script exercises its real decision path against deterministic fixtures.
+#
+# ``-r`` is load-bearing: ``gh api --jq`` in production formats strings
+# with gojq's raw output (no JSON quoting, no escape sequences), and the
+# script splits the result with ``cut -fN`` on real tab characters. Using
+# ``jq -c`` instead would JSON-encode the string — tabs come out as
+# literal ``\t`` and ``cut`` sees the whole row as a single field.
 if [[ "$1" == "api" ]]; then
   shift
   jq_expr=""
@@ -44,7 +63,7 @@ if [[ "$1" == "api" ]]; then
     esac
   done
   if [[ -n "$GH_TEST_API_RESPONSE" && -n "$jq_expr" ]]; then
-    printf '%s' "$GH_TEST_API_RESPONSE" | jq -c "$jq_expr"
+    printf '%s' "$GH_TEST_API_RESPONSE" | jq -r "$jq_expr"
   fi
 fi
 """
@@ -85,88 +104,94 @@ def _run_gate(
     )
 
 
-def test_merge_group_success_passes(tmp_path: Path) -> None:
-    """A1 — green merge_group run is the canonical release verdict."""
-    result = _run_gate(
-        tmp_path,
-        [
-            {
-                "name": "ci",
-                "event": "merge_group",
-                "conclusion": "success",
-                "run_started_at": "2026-10-15T10:00:00Z",
-            }
-        ],
-    )
-    assert result.returncode == 0, result.stderr
-    assert "green" in result.stdout
+def test_green_passes(tmp_path: Path) -> None:
+    """Rule 3: a most-recent run that concluded ``success`` passes.
 
-
-def test_schedule_success_passes(tmp_path: Path) -> None:
-    """A2 — green schedule run (nightly mutation) also counts."""
-    result = _run_gate(
-        tmp_path,
-        [
-            {
-                "name": "ci",
-                "event": "schedule",
-                "conclusion": "success",
-                "run_started_at": "2026-10-14T03:00:00Z",
-            }
-        ],
-    )
-    assert result.returncode == 0, result.stderr
-    assert "green" in result.stdout
-
-
-def test_push_run_does_not_satisfy_the_gate(tmp_path: Path) -> None:
-    """A3 — a green push run on the same SHA is not the release verdict.
-
-    With the queue, push runs on ``main`` no longer exist. A surviving
-    push run is either a stray or a pre-queue artefact, and must not
-    certify a tag.
+    No event filter: any run of ``ci.yml`` on the exact SHA — pull_request,
+    push, schedule, workflow_dispatch — is a legitimate verdict.
     """
     result = _run_gate(
         tmp_path,
         [
             {
-                "name": "ci",
-                "event": "push",
+                "created_at": "2026-10-15T10:00:00Z",
+                "id": 1,
+                "status": "completed",
                 "conclusion": "success",
-                "run_started_at": "2026-10-15T09:00:00Z",
+                "html_url": "https://github.com/owner/repo/actions/runs/1",
             }
         ],
     )
-    assert result.returncode == 1, result.stderr
-    assert "ci gate" in result.stderr
+    assert result.returncode == 0, result.stderr
+    assert "succeeded" in result.stdout
 
 
-def test_no_runs_fails(tmp_path: Path) -> None:
-    """A4 — no completed runs on the SHA fails."""
-    result = _run_gate(tmp_path, [])
-    assert result.returncode == 1, result.stderr
-    assert "no completed" in result.stderr
-
-
-def test_non_success_conclusion_fails(tmp_path: Path) -> None:
-    """A5 — a merge_group run that did not pass fails the gate."""
+def test_in_progress_run_fails(tmp_path: Path) -> None:
+    """Rule 1: a run that is still in_progress (queued, etc.) fails with
+    a message that says to wait and re-run the release from the same tag."""
     result = _run_gate(
         tmp_path,
         [
             {
-                "name": "ci",
-                "event": "merge_group",
-                "conclusion": "failure",
-                "run_started_at": "2026-10-15T10:00:00Z",
+                "created_at": "2026-10-15T10:00:00Z",
+                "id": 1,
+                "status": "in_progress",
+                "conclusion": None,
+                "html_url": "https://github.com/owner/repo/actions/runs/1",
             }
         ],
     )
     assert result.returncode == 1, result.stderr
-    assert "failure" in result.stderr
+    assert "still in_progress" in result.stderr
+    assert "Wait for it to finish" in result.stderr
+    assert "re-run this release from the same tag" in result.stderr
+
+
+def test_most_recent_red_with_previous_green_fails(tmp_path: Path) -> None:
+    """Rule 2: the most recent run decides, even if an earlier run was green.
+
+    A subsequent re-run that concluded ``failure`` invalidates the older
+    green verdict. The gate looks at the newest run by ``created_at``
+    (tie-break by ``id``) — never at the first one, never at any run that
+    is not the most recent.
+    """
+    result = _run_gate(
+        tmp_path,
+        [
+            {
+                "created_at": "2026-10-15T10:00:00Z",
+                "id": 1,
+                "status": "completed",
+                "conclusion": "success",
+                "html_url": "https://github.com/owner/repo/actions/runs/1",
+            },
+            {
+                "created_at": "2026-10-15T11:00:00Z",
+                "id": 2,
+                "status": "completed",
+                "conclusion": "failure",
+                "html_url": "https://github.com/owner/repo/actions/runs/2",
+            },
+        ],
+    )
+    assert result.returncode == 1, result.stderr
+    assert "concluded failure" in result.stderr
+    assert "Fix it on main" in result.stderr
+    assert "move the tag and release again" in result.stderr
+
+
+def test_no_runs_fails(tmp_path: Path) -> None:
+    """Rule 4: no runs at all for the SHA fails with a message that says
+    to push the commit to a branch that runs ci.yml and re-run from the tag."""
+    result = _run_gate(tmp_path, [])
+    assert result.returncode == 1, result.stderr
+    assert "no ci run exists" in result.stderr
+    assert "Push the commit" in result.stderr
+    assert "re-run this release from the same tag" in result.stderr
 
 
 def test_api_error_fails(tmp_path: Path) -> None:
-    """A6 — a GitHub API error fails the gate (no green evidence).
+    """Rule 5: a GitHub API error fails the gate (no green evidence, no release).
 
     The shim writes to stderr to mimic ``gh api`` on a network error and
     exits non-zero, which is the contract the real CLI follows.

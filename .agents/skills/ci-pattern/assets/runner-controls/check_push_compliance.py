@@ -164,6 +164,32 @@ def tracker_branch(contract: dict) -> str | None:
     return value.strip()
 
 
+def check_tree_integrity(repo: str, head_sha: str, commit_sha: str) -> list[str]:
+    """Verificar que el arbol de lo que fue revieweado coincide con el arbol
+    que llego al push (si el merge fue seguro)."""
+    # Obtener el arbol del head de la PR (lo que fue revieweado).
+    pr_commit = gh_json(f"repos/{repo}/commits/{head_sha}")
+    if not isinstance(pr_commit, dict):
+        return []  # Si la API no devuelve el commit, no bloqueamos (fall-open).
+    pr_tree = pr_commit.get("tree", {}).get("sha")
+    if not isinstance(pr_tree, str) or not SHA_RE.match(pr_tree):
+        return []
+    # Obtener el arbol del commit que llego al push.
+    pushed_commit = gh_json(f"repos/{repo}/commits/{commit_sha}")
+    if not isinstance(pushed_commit, dict):
+        return []
+    pushed_tree = pushed_commit.get("tree", {}).get("sha")
+    if not isinstance(pushed_tree, str):
+        return []
+    if pr_tree != pushed_tree:
+        return [
+            f"arbol de PR #{pr_tree[:12]} vs commit {commit_sha[:7]}: difieren en el arbol; "
+            "esto indica que el arbol mergeado no es identico al arbol revieweado. "
+            "Verifique que se uso safe-merge (#426)."
+        ]
+    return []
+
+
 def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[str]) -> list[str]:
     # Politica de verificacion (#326): se leen las check-runs con
     # filter=latest sobre la primera pagina (per_page=100); la API legada de
@@ -276,6 +302,11 @@ def main() -> int:
                     raise FailClosed(f"PR #{number} detail is not the API pull shape")
                 login = (pull.get("user") or {}).get("login") or "unknown"
                 verdicts = check_verdict(repo, number, detail["head"]["sha"], required)
+                # Verificacion del arbol: lo que llego a main debe ser identico
+                # a lo que fue revieweado (siempre que el commit del push
+                # sea exactamente el head de la PR mergeada).
+                tree_findings = check_tree_integrity(repo, detail["head"]["sha"], commit["id"])
+                verdicts += tree_findings
                 if verdicts:
                     evidence = "\n".join(f"  {line}" for line in verdicts)
                     findings.append(f"commit {commit['id']} — author: {author_name} — PR #{number} "

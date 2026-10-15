@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/scripts/quality_report.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/quality_report.py
 """Aggregate every gate's indicator envelope into one report.
 
 Gates answer pass/fail. Indicators answer "by how much, and which way is it moving" — which is

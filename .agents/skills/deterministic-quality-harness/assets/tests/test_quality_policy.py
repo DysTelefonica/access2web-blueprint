@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/tests/test_quality_policy.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_quality_policy.py
 """Contract tests for the shared quality-policy evidence boundary."""
 
 from __future__ import annotations

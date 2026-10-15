@@ -4,8 +4,8 @@ description: Trigger: deterministic code quality, ratchet gate, shrink-only base
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: 1.8
-  last_verified: 2026-09-05
+  version: 2.0
+  last_verified: 2026-10-14
   scope: ['universal', 'docs']
   auto_invoke: ['auditing CI quality gates', 'setting ratchet baselines']
   tiers: ['universal', 'docs']

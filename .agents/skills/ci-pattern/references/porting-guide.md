@@ -202,8 +202,11 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
 
 - **G4.1 — Issue-spec equivalente** instalado y validando el formato canónico
   de issue en el destino.
-- **G4.2 — Presupuesto de tamaño** con excepción declarada como campo de datos
-  (`size-exception-reason:`) y cadena de PRs para lo que no cabe.
+- **G4.2 — Presupuesto de tamaño** sin exclusiones (adiciones + eliminaciones del
+  PR, 400). La única excepción es la etiqueta `size:exception`, aplicada solo
+  por el mantenedor cuando partir la PR rompería `main`; el campo
+  `size-exception-reason:` del cuerpo está retirado. Encadenar PRs es el camino
+  normal cuando el trabajo no cabe.
 - **G4.3 — Preflight ejecutable** en local con un solo comando, paridad con el
   job de lint (HR-4).
 - **G4.4 — CI en la rama base**, net-new si el destino no tenía.

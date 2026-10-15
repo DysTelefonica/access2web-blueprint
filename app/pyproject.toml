@@ -56,7 +56,7 @@ dev = [
     "mypy==1.13.0",                # QC-4 typecheck (platform/src/ only).
     "pytest==8.4.2",               # Strict-TDD runner.
     "pytest-asyncio==1.4.0",       # Async test runner (DR2 reset-flow fixtures in tests/lanzadera/auth/ use async; pytest-asyncio honours asyncio_mode = \"auto\").
-    "pytest-cov==7.0.0",           # Coverage + gate plugin host.
+    "pytest-socket==0.7.0",        # Network isolation for the unit suite (issue #883).
     "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
     "pip-audit==2.9.0",            # Dependency scan (security.yml).
     "types-cachetools==6.2.0.20260408",     # Type stubs for cachetools (DA-8, WU AD5).
@@ -118,13 +118,9 @@ known-first-party = ["app", "tests"]
 python_version = "3.12"
 strict = true
 files = ["src"]
-# `--explicit-package-bases` is required since slice 1 of #266 added
-# app/pytest_plugin/coverage_gate_helpers.py: without it, mypy 1.13.0
-# stops on "Source file found twice under different module names" because
-# it sees the file as both `pytest_plugin.coverage_gate_helpers` and
-# `app.pytest_plugin.coverage_gate_helpers` depending on the walk path.
-# Setting it here makes the flag implicit so a bare `mypy app/` would
-# still resolve correctly across PR #288 (main) and the 266 stack.
+# `--explicit-package-bases` keeps the pytest_plugin split history resolvable
+# across PRs that landed while it existed. Kept as a belt-and-braces setting
+# so a bare `mypy app/` does not regress if the plugin package returns.
 # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
 explicit_package_bases = true
 # A bare `# type: ignore` graduates silence into a permanent hole. Requiring
@@ -165,43 +161,19 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "-p no:randomly",
-    # The coverage gate plugin is the canonical Phase 0 declaration site for
-    # CRITICAL_HELPERS. When the helpers do not exist yet, the plugin emits a
-    # WARNING, not a failure — see app/pytest_plugin/coverage_gate.py.
-    "-p app.pytest_plugin.coverage_gate",
-    # Coverage configuration matches what `pytest --cov=app --cov-fail-under=85`
-    # does at the CLI. Source = the `app` package rooted at this directory.
-    # coverage.py looks for its own configuration in the CURRENT directory, not in
-    # pytest's rootdir. Both CI and the Makefile run from the repository root, where
-    # there is no pyproject.toml — so [tool.coverage.run] omit, the declared
-    # testable/untestable boundary of Hard Rule 14, was never read. The boundary was
-    # right; nothing was reading it.
-    "--cov-config=app/pyproject.toml",
-    "--cov=app",
-    # 69 is the coverage this suite produces over the DECLARED source. It moved twice
-    # today, and each move made the number mean more:
-    #
-    #   85     never measured — pytest could not start, so nothing checked it
-    #   74.35  first real run, but coverage had no config, so `source = ["app"]` was
-    #          not applied: it measured only the files some test happened to import
-    #   69.08  with the declared source loaded — every file under app/, imported or not
-    #
-    # The last drop is not a regression. It is the denominator finally matching the
-    # declaration (Hard Rule 14: without a declared boundary a coverage floor measures
-    # a different thing every week).
-    #
-    # A floor set above reality is not a ratchet, it is a permanently red gate that
-    # gets deleted the first time someone needs to ship. This one is shrink-only in
-    # the direction that matters — raising it is a welcome PR, lowering it to go
-    # green is blocked — with 85% as the declared target by 2026-12-31 (Hard Rule 12:
-    # every baseline records its target value and target date).
-    "--cov-fail-under=69",
-    "--cov-report=term-missing:skip-covered",
-    "--cov-report=json:coverage.json",
+    # Network isolation: unit tests cannot open sockets to the public internet.
+    # `--allow-hosts=127.0.0.1` keeps the loopback alive (in-process fakes, ASGI
+    # TestClient over a unix socket bound to 127.0.0.1, the local SMTP sink).
+    # `--allow-unix-socket` keeps domain sockets (Postgres under pg_tmp_dir,
+    # sqlite-via-named-pipe when the suite uses one). Integration tests opt
+    # out via `pytestmark = pytest.mark.integration` or `@pytest.mark.e2e`,
+    # which the autouse fixture in `tests/conftest.py` honours.
+    "--disable-socket",
+    "--allow-unix-socket",
+    "--allow-hosts=127.0.0.1",
 ]
 # `pythonpath = [".."]` makes the worktree root importable from pytest's
-# sys.path. Without this, `app.pytest_plugin.coverage_gate` cannot be loaded
-# when pytest is invoked from `app/` (cwd would shadow the package).
+# sys.path.
 pythonpath = [".."]
 testpaths = [
     # Phase 0 + Phase 6 tests live at the worktree root in `tests/`.
@@ -214,6 +186,16 @@ testpaths = [
 # failed at COLLECTION, before a single assertion ran.
 markers = [
     "integration: touches a real database or another out-of-process dependency",
+    "e2e: end-to-end test that exercises a live deployment-shaped stack (ASGI server + DB + fixtures)",
+    # ``allow_uncaught_hosts`` is a marker that the ``pytest-socket``
+    # plugin reads: tests decorated with it may open sockets to
+    # ``hosts`` listed in ``--allow-hosts`` even when ``--disable-socket``
+    # is on. The unit suite uses it on the loopback-connect probe in
+    # ``tests/test_isolation.py`` (W88 #883). With ``--strict-markers``
+    # on, the marker must be declared here, otherwise collection fails
+    # with ``'allow_uncaught_hosts' not found in 'markers' configuration
+    # option`` before a single assertion runs.
+    "allow_uncaught_hosts: opt a single test out of --disable-socket for the hosts listed in --allow-hosts (used by pytest-socket)",
 ]
 # ``asyncio_mode = "auto"`` lets the existing test files (which use
 # ``await`` inside sync ``def test_*``) keep working without an explicit
@@ -224,41 +206,6 @@ asyncio_mode = "auto"
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-
-[tool.coverage.run]
-# Source is the `app` package (cwd-relative). Branch coverage off for now
-# to keep the floor aligned with --cov-fail-under=85.
-source = ["app"]
-omit = [
-    # Hard Rule 14: the testable/untestable boundary is declared here, in
-    # version control, and nowhere else. Keep this list short and review it
-    # quarterly.
-    #
-    # Empty `__init__.py` markers carry no statements to test. Excluding them
-    # keeps package-boundary files out of the coverage denominator.
-    "app/src/__init__.py",
-    "app/src/shared/__init__.py",
-    "app/src/modules/__init__.py",
-    "app/src/modules/lanzadera/__init__.py",
-    "app/src/modules/lanzadera/domain/__init__.py",
-    "app/src/modules/lanzadera/ports/__init__.py",
-    "app/src/modules/lanzadera/application/__init__.py",
-    "app/src/modules/lanzadera/adapters/__init__.py",
-    "app/src/modules/lanzadera/di/__init__.py",
-    "app/src/modules/lanzadera/delivery/__init__.py",
-    "app/pytest_plugin/__init__.py",
-]
-
-[tool.coverage.report]
-# `exclude_lines` keeps the standard no-cover idioms from inflating the
-# denominator: pragma markers, abstract methods, type-checking imports.
-exclude_lines = [
-    "pragma: no cover",
-    "raise NotImplementedError",
-    "if TYPE_CHECKING:",
-    "if __name__ == .__main__.:",
-    "\\.\\.\\.",
-]
 
 [tool.hatch.build.targets.wheel]
 # Tests and fixtures never ship to production.

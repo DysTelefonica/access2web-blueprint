@@ -24,11 +24,6 @@ from pathlib import Path
 from check_push_compliance import (FailClosed, check_verdict, gh_json, load_json,
                                    protected_branches, required_checks)
 
-# HR-8 vive UNA sola vez: el merge gobernado importa el validador del gate
-# de contrato de PR en proceso (nunca lo copia ni invoca la CLI).
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "pr-contract"))
-from check_pr_contract import size_exception_reason  # noqa: E402
-
 GH_TIMEOUT = 30
 CLOSING = re.compile(r"\b(closes|fixes|resolves)\s+#?\d+", re.IGNORECASE)
 
@@ -89,9 +84,9 @@ def main() -> int:
         if len(type_labels) != 1:
             findings.append(f"expected exactly one type:* label, found {type_labels or 'none'}")
         size = pull["additions"] + pull["deletions"]
-        if size > args.max_lines and size_exception_reason(body) is None:
+        if size > args.max_lines and "size:exception" not in labels:
             findings.append(f"PR size {size} lines exceeds the review budget of {args.max_lines} "
-                            "without a valid size-exception-reason field (HR-8)")
+                            "without the 'size:exception' label applied by the maintainer (A1)")
         if "chain:partial" in labels and CLOSING.search(body):
             findings.append("Closes in an intermediate PR: only the chain tip may carry closing words")
         base_ref = pull["base"]["ref"]
