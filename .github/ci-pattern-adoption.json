@@ -34,7 +34,6 @@
         {"artifact": "scripts/quality_report.py", "disposition": "adopted", "target": "scripts/quality_report.py"},
         {"artifact": "scripts/release-preflight.sh", "disposition": "adopted", "target": "scripts/release-preflight.sh"},
         {"artifact": "scripts/require-ci-success.sh", "disposition": "adopted", "target": "scripts/require-ci-success.sh"},
-        {"artifact": "app/pytest_plugin/coverage_gate.py (gate de cobertura: piso global y cuatro helpers críticos al 100 %, invocado por la suite que ejecuta el workflow de CI)", "disposition": "adopted", "target": "app/pytest_plugin/coverage_gate.py"},
         {"artifact": "scripts/check_complexity.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_complexity.py"},
         {"artifact": "scripts/check_decision_guards.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_decision_guards.py"},
         {"artifact": "scripts/check_layers.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_layers.py"},
@@ -86,7 +85,6 @@
         {"artifact": ".github/workflows/operating-doc-drift.yml", "disposition": "adopted", "target": ".github/workflows/operating-doc-drift.yml"}
       ],
       "declared_governed_paths": [
-        "app/pytest_plugin/coverage_gate.py",
         "scripts/check_complexity.py",
         "scripts/check_decision_guards.py",
         "scripts/check_layers.py",
