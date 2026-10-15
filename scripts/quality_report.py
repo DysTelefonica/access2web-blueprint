@@ -71,7 +71,6 @@ INDICATOR_MEANINGS: dict[str, tuple[str, str]] = {
     "max_complexity": ("highest cyclomatic complexity of any function", "lower"),
     "functions_over_ceiling": ("functions above the gate ceiling", "lower"),
     "functions_measured": ("functions the gate could measure", "higher"),
-    "line_coverage_pct": ("statements executed by the suite", "higher"),
     "max_mutation_sites": ("largest mutation surface of any file", "lower"),
     "files_over_ceiling": ("files above the gate ceiling", "lower"),
     "total_mutation_sites": ("mutation surface of the whole package", "lower"),
