@@ -376,5 +376,3 @@ def test_sessionfinish_warns_when_target_module_not_importable(
     captured = capsys.readouterr()
     assert captured.err.count("is not defined yet") == 4
     assert session.exitstatus == 0
-
-
