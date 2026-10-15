@@ -94,12 +94,11 @@ jobs:
           python-version: "3.12.11"
 
       - name: pr size
-        # PR_BODY is attacker-controlled text. It is passed through the environment, never
-        # interpolated into the shell, so a crafted title or body cannot inject a command.
+        # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
+        # The script reads it as data; the body is never interpolated into the shell.
         env:
-          BASE_REF: origin/${{ github.event.pull_request.base.ref }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: python scripts/check_pr_size.py
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"
 
       - name: issue spec
         # The PR body is attacker-controlled: the event file is read as data by the

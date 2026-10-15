@@ -621,6 +621,22 @@ def test_heavy_jobs_run_on_pr_and_queue_only_after_pr_gate_passed_or_skipped(
         assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
 
 
+def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
+    """Issue #857, PR-C: the size gate reads the PR event, not the runner state.
+
+    The local mode depends on a `git diff` against `origin/main`, which is only
+    present on a checked-out runner. Switching to `pr-event` lets the gate
+    answer the same question from `$GITHUB_EVENT_PATH` alone.
+    """
+    steps = [s for s in workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
+    assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
+    step = steps[0]
+    assert step["run"] == 'python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"'
+    env = step.get("env") or {}
+    assert "BASE_REF" not in env
+    assert "PR_BODY" not in env
+
+
 def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
