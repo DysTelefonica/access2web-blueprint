@@ -488,13 +488,15 @@ jobs:
         run: npx playwright install chromium
 
       - name: Run the E2E smoke specs
+        # Desde e2e/: ahí está la copia de @playwright/test que usan los specs.
+        # Desde la raíz, npx baja otra y Playwright no encuentra tests.
+        working-directory: e2e
         env:
           BASE_URL: http://localhost:8000
           TEST_CONTAINER_NAME: test-app
         run: |
           set -euo pipefail
-          npx playwright test e2e/smoke.spec.ts e2e/auth.spec.ts \
-            --config=e2e/playwright.config.ts
+          npx playwright test smoke.spec.ts auth.spec.ts
 
   required:
     # Issue #702: deterministic replacement for the six hand-configured
