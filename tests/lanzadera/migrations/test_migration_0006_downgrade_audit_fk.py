@@ -37,6 +37,11 @@ from tests.lanzadera.migrations.test_migration_0001 import (
     _worktree_root,
 )
 
+# ``integration_enabled`` is a pytest fixture defined in
+# ``test_migration_0001``; pytest discovers it automatically from the
+# sibling test module without an explicit import. Issue #901 (run
+# 38807752784) caught the missing fixture reference.
+
 
 async def _admin_conn() -> asyncpg.Connection:
     return await asyncpg.connect(
