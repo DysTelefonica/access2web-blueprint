@@ -417,11 +417,15 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
     "check_branch_name.py",
     # Issue #857, PR-C1b: the mutation jobs leave ci.yml, so the scripts have no
-    # CI step. The scripts stay on disk temporarily; PR-C3 deletes
-    # scripts/check_mutation.py and PR-C4 deletes scripts/check_mutation_sites.py
-    # along with the two KNOWN_PENDING_GATES entries.
+    # CI step in the PR rollup. They stay on disk — the mutation job moved
+    # to release.yml (PR-C1d) and reads them from there. The two
+    # KNOWN_PENDING_GATES entries here mark the ci.yml-side absence.
     "check_mutation.py",
     "check_mutation_sites.py",
+    # Issue #875: scripts/check_deadcode.py ships the ratchet without a CI step.
+    # The quality-job wiring lives in the PR for the gentle-ai model (#857, owned
+    # by apap4); that PR adds the step to ci.yml and removes this entry.
+    "check_deadcode.py",
 )
 
 
