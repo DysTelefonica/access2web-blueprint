@@ -5,6 +5,13 @@
 # check the release path never learns that CI was red on the exact bytes it is
 # about to publish, and a tag would be created over a known-broken tree.
 #
+# The gate accepts only runs that certify the merge-queue verdict for the
+# SHA: a green `ci` run whose `event` is `merge_group` (the queue run that
+# landed this commit) or `schedule` (the nightly mutation verdict). Push and
+# pull_request runs on `main` no longer count: with the queue in place they
+# do not exist, and a surviving one is either a stray or a pre-queue
+# artefact — never the verdict that authorised the merge.
+#
 #     GH_TOKEN=... ./scripts/require-ci-success.sh [commit-sha]
 #
 # Contract: docs/11-releases.md
@@ -29,15 +36,21 @@ fi
 command -v gh >/dev/null || die 'the GitHub CLI (gh) is required'
 command -v jq >/dev/null || die 'jq is required'
 
+# A green `ci` run is the release verdict only when it was produced by the
+# queue (merge_group) or by the nightly schedule. Any other event on the
+# same SHA — a stray push, a workflow_dispatch replay — is rejected so a
+# non-queue run cannot certify a tag.
 runs=$(gh api --paginate "repos/${repo}/actions/runs?head_sha=${sha}&status=completed" \
-  --jq ".workflow_runs[] | select(.name == \"${workflow}\")" |
+  --jq ".workflow_runs[] | select(.name == \"${workflow}\" and (.event == \"merge_group\" or .event == \"schedule\"))" |
   jq -s '.') || die "could not query workflow runs for ${sha}"
 
 [[ "$(jq 'length' <<<"$runs")" -gt 0 ]] ||
-  die "no completed '${workflow}' run found for ${sha}; wait for CI before tagging"
+  die "no completed '${workflow}' run with event merge_group|schedule for ${sha}; wait for CI before tagging"
 
 conclusion=$(jq -r 'sort_by(.run_started_at) | last | .conclusion' <<<"$runs")
 [[ "$conclusion" == success ]] ||
   die "the latest '${workflow}' run for ${sha} concluded '${conclusion}', not success"
 
-printf "ci gate: '%s' is green on %s\n" "$workflow" "$sha"
+printf "ci gate: '%s' is green on %s (event %s)\n" \
+  "$workflow" "$sha" \
+  "$(jq -r 'sort_by(.run_started_at) | last | .event' <<<"$runs")"

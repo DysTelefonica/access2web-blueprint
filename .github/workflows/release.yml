@@ -59,18 +59,12 @@ jobs:
           fi
 
   e2e:
-    # Non-blocking Playwright smoke against the just-published image.
+    # Blocking Playwright smoke against the just-published image.
     # Runs between preflight (provenance + CI verdict on the tip) and
-    # publish (tag push); publishes the image only after preflight is
-    # green, so by the time this job runs the tag exists in ghcr.io.
-    #
-    # The Playwright step wraps the test runner with `|| true` by design
-    # (see the inline note). Until the e2e tests are real (DB fixtures,
-    # auth secrets, a stable selector map), this job is a plumbing probe
-    # — it pulls the published image, starts it, pokes /health, and
-    # reports. Failing it would push release back without a real signal,
-    # because the assertion currently is "the container booted", not
-    # "the application works". The TODO in `e2e/README.md` tracks the gap.
+    # publish; publish depends on this job (`needs: e2e`), so a red smoke
+    # holds the release and the tag is not promoted to the registry until
+    # the image passes end-to-end on the published artifact. By the time
+    # this job runs the image exists in ghcr.io (preflight is green).
     #
     # Image-pull path: preflight validated tag provenance, so the tag is
     # well-formed; this job only re-runs that on the publishing runner to
