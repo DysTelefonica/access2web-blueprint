@@ -43,11 +43,22 @@ APPS_TABLE = sa.Table(
     sa.Column("id", sa.Integer, sa.Identity(always=False), primary_key=True),
     sa.Column("name", sa.Text(), nullable=False),
     sa.Column("short_code", sa.Text(), nullable=False),
-    sa.Column("deployment_topology", sa.Enum(AppTopology, name="app_topology")),
+    sa.Column(
+        "deployment_topology",
+        sa.Enum(
+            AppTopology,
+            name="app_topology",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+    ),
     sa.Column("requires_office_presence", sa.Boolean, nullable=False, default=False),
     sa.Column(
         "registration_status",
-        sa.Enum(AppRegistrationStatus, name="app_registration_status"),
+        sa.Enum(
+            AppRegistrationStatus,
+            name="app_registration_status",
+            values_callable=lambda e: [m.value for m in e],
+        ),
     ),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
     sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
