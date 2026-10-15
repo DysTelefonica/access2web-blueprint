@@ -40,7 +40,6 @@ WIRE_ALLOWLIST: frozenset[str] = frozenset(
         "test_bootstrap_adapter.py",
         "test_branch_name_wiring.py",
         "test_complexity_wiring.py",
-        "test_coverage_gate_class_methods_e2e.py",
         "test_crap_retired_guard.py",
         "test_decision_guards_wiring.py",
         "test_dry_wiring.py",
