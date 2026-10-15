@@ -88,9 +88,7 @@ def _pr_event_total_and_labels(event_path: Path) -> tuple[int, list[str]]:
     additions = pull_request.get("additions")
     deletions = pull_request.get("deletions")
     if not isinstance(additions, int) or not isinstance(deletions, int):
-        raise ValueError(
-            f"{event_path}: pull_request.additions/deletions must be integers"
-        )
+        raise ValueError(f"{event_path}: pull_request.additions/deletions must be integers")
     return additions + deletions, _label_names(payload)
 
 
@@ -107,9 +105,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     pr_event.add_argument("event_json", type=Path)
 
-    local = subparsers.add_parser(
-        "local", help="git diff --shortstat against <merge-base>"
-    )
+    local = subparsers.add_parser("local", help="git diff --shortstat against <merge-base>")
     local.add_argument(
         "merge_base",
         nargs="?",
