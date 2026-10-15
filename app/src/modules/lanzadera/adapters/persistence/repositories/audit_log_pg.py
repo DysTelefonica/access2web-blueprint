@@ -33,6 +33,7 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.audit_log_table
     AUDIT_TABLE,
 )  # noqa: F401  # re-exported for back-compat
 from app.src.modules.lanzadera.domain.audit_event import AuditEvent
+from app.src.modules.lanzadera.domain.ports import AuditLogEntry
 
 
 def _row_to_event(row: sa.Row[Any]) -> AuditEvent:
