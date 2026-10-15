@@ -149,20 +149,21 @@ def test_branch_name_gate_rejects_invalid_names(branch: str) -> None:
 # ---------------------------------------------------------------------------------------------
 # check_pr_size
 #
-# The diff path needs a git repository, so it is covered by the workflow itself rather than here.
-# The override policy is pure logic and is covered directly: an override with no stated reason
-# must not count as an override.
+# The git diff path needs a real repository, so it is covered by
+# `tests/lanzadera/test_pr_size_wiring.py`. The override policy is pure logic
+# and is covered here: with issue #854 the override is the `size:exception`
+# label on the PR, applied by the maintainer; the PR body no longer carries a
+# `size-exception-reason:` field and is not consulted by the gate.
 # ---------------------------------------------------------------------------------------------
 
 
-def test_pr_size_override_requires_a_reason() -> None:
+def test_pr_size_override_is_size_exception_label() -> None:
     module = _load("check_pr_size.py")
-    assert module.override_reason("size:exception") is None
-    assert module.override_reason("") is None
-    assert (
-        module.override_reason("size:exception\nsize-exception-reason: generated migration")
-        == "generated migration"
-    )
+    assert module.has_size_exception_label([]) is False
+    assert module.has_size_exception_label(["type:refactor"]) is False
+    assert module.has_size_exception_label(["size:exception"]) is True
+    # Other labels alongside the override must not stop it from counting.
+    assert module.has_size_exception_label(["type:refactor", "size:exception"]) is True
 
 
 # ---------------------------------------------------------------------------------------------
