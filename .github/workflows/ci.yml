@@ -425,6 +425,11 @@ jobs:
             -e DATABASE_URL="sqlite+aiosqlite:///./test.db" \
             -e SECRET_KEY="$E2E_SECRET_KEY" \
             test-app:pr
+          # Debug: confirma que el contenedor sigue corriendo y qué dice
+          # su log si el arranque se atasca.
+          sleep 5
+          docker ps --filter "name=test-app" --format "container status: {{.Status}}"
+          docker logs test-app 2>&1 | tail -20 || true
           # Espera activa a /health, hasta 120 s (#876 criterio 1: 60 s
           # en runner con Docker precalentado; 120 s cubre el cold start
           # del runner hospedado ubuntu-24.04, que es lo que la PR usa).
