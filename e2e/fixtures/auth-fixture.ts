@@ -70,26 +70,38 @@ export async function globalSetup(_config: FullConfig): Promise<void> {
   //    an earlier binding; the PR's release-yml / nightly runs hit the
   //    `ImportError` on the new image.
   //
-  //    The DB path is read from $DATABASE_URL (the same env var alembic
-  //    uses) and resolved to an absolute path with `os.path.abspath`.
-  //    Opening `test.db` relative to cwd was brittle: when the docker
-  //    exec `-w /app` happened not to land on the directory that holds
-  //    the file (uvicorn may have written `test.db` under a different
-  //    effective cwd), sqlite3 raised `unable to open database file`.
-  //    Resolving against the env-var path matches what the app itself
-  //    does and surfaces the exact file in the error if it ever breaks
-  //    again.
+  //    The DB file path is found by scanning common locations the
+  //    app / alembic could have written to (uvicorn may have started
+  //    with a different effective cwd than the Dockerfile WORKDIR,
+  //    so the relative `./test.db` URL can resolve to a different
+  //    absolute path than /app/test.db). The first existing match is
+  //    used. The previous attempt at a single absolute path
+  //    (/app/test.db) failed because the migrations step had placed
+  //    the file elsewhere; this lookup keeps the seed working as long
+  //    as the migrations step and the seed step agree on *some*
+  //    location.
   const seedScript = `
-import os, sqlite3, sys, uuid
+import glob, os, sqlite3, sys, uuid
 from argon2 import PasswordHasher
 
-db_url = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
-db_path = db_url.split("///", 1)[1]
-if not db_path.startswith("/"):
-    db_path = os.path.abspath(db_path)
-print(f"[e2e:seed] cwd={os.getcwd()} db_url={db_url} db_path={db_path}")
-if not os.path.exists(db_path):
-    sys.exit(f"seed: database file not found at {db_path}")
+candidates = [
+    os.environ.get("DATABASE_URL", "").split("///", 1)[-1],
+    "/app/test.db",
+    "/app/app/test.db",
+    "./test.db",
+]
+candidates = [os.path.abspath(p) if p and not p.startswith("/") else p for p in candidates if p]
+candidates += glob.glob("/app/**/test.db", recursive=True)
+candidates += glob.glob("/tmp/**/test.db", recursive=True)
+
+db_path = None
+for cand in candidates:
+    if isinstance(cand, str) and os.path.exists(cand):
+        db_path = cand
+        break
+print(f"[e2e:seed] cwd={os.getcwd()} tried={candidates} picked={db_path}")
+if db_path is None:
+    sys.exit("seed: database file not found in any known location")
 
 # Generate real Argon2id hashes using the container's argon2-cffi
 h = PasswordHasher()
