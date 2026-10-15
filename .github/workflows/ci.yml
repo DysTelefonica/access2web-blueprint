@@ -78,9 +78,11 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
     # `issues: read` lets the issue-spec step fetch the issue linked by the PR body.
+    # `pull-requests: read` lets the pr-size step read the per-file breakdown (issue #918).
     permissions:
       contents: read
       issues: read
+      pull-requests: read
     # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
@@ -123,8 +125,11 @@ jobs:
       - name: pr size
         # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
         # The script reads it as data; the body is never interpolated into the shell.
+        # GITHUB_TOKEN reads the per-file breakdown so vendored skills are not counted
+        # as author lines (issue #918). Without it the gate counts the whole PR.
         env:
           GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"
 
       - name: issue spec

@@ -4,7 +4,9 @@
 
 Dos modos:
 
-    pr-event <event.json>      adiciones, borrados y etiquetas del evento pull_request
+    pr-event <event.json>      adiciones, borrados y etiquetas del evento pull_request;
+                               con GITHUB_TOKEN en el entorno, el desglose por fichero
+                               sale de la API de ficheros del PR
     local [<merge-base>]       ``git diff`` contra <merge-base> (por defecto origin/main)
 
 Las rutas vendorizadas (``.agents/skills/**`` y ``skills/**``) son copia generada del
@@ -23,16 +25,23 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
-from collections.abc import Iterable
+import urllib.request
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 MAX_CHANGED_LINES = 400
 SIZE_EXCEPTION_LABEL = "size:exception"
 VENDORED_ROOTS = (".agents/skills/", "skills/")
+GITHUB_API = "https://api.github.com"
+FILES_PER_PAGE = 100
+MAX_FILE_PAGES = 30  # la API de ficheros de un PR lista como mucho 3000
+REPO_PATTERN = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
 
 
 @dataclass(frozen=True)
@@ -108,14 +117,63 @@ def _numstat_count(value: str) -> int:
     return 0 if value == "-" else int(value)
 
 
-def _pr_event_total_and_labels(event_path: Path) -> tuple[int, list[str]]:
+def fetch_pr_files(
+    repo: str,
+    number: int,
+    token: str,
+    *,
+    opener: Callable[..., Any] = urllib.request.urlopen,
+) -> list[FileChange] | None:
+    """Desglose por fichero desde la API de GitHub; None ante cualquier fallo (falla cerrado).
+
+    El token solo viaja a ``api.github.com``. ``opener`` existe para los tests.
+    """
+    if not REPO_PATTERN.fullmatch(repo) or not token:
+        return None
+    files: list[FileChange] = []
+    try:
+        for page in range(1, MAX_FILE_PAGES + 1):
+            request = urllib.request.Request(
+                f"{GITHUB_API}/repos/{repo}/pulls/{number}/files"
+                f"?per_page={FILES_PER_PAGE}&page={page}",
+                headers={
+                    "Accept": "application/vnd.github+json",
+                    "Authorization": f"Bearer {token}",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                },
+            )
+            with opener(request, timeout=20) as response:
+                batch = json.loads(response.read().decode("utf-8"))
+            if not isinstance(batch, list):
+                return None
+            files.extend(_file_change(item) for item in batch)
+            if len(batch) < FILES_PER_PAGE:
+                return files
+    except (OSError, ValueError, TypeError, KeyError):
+        # Falla cerrado: red, HTTP, JSON o forma inesperada cuentan el total del PR.
+        return None
+    return None  # más ficheros de los que lista la API: el desglose está incompleto
+
+
+def _file_change(item: dict[str, Any]) -> FileChange:
+    added, deleted, filename = item["additions"], item["deletions"], item["filename"]
+    previous_path = item.get("previous_filename")
+    if not isinstance(added, int) or not isinstance(deleted, int) or not isinstance(filename, str):
+        raise TypeError("fichero del PR mal formado")
+    if previous_path is not None and not isinstance(previous_path, str):
+        raise TypeError("previous_filename mal formado")
+    return FileChange(filename, added, deleted, previous_path)
+
+
+def _pr_event(event_path: Path) -> tuple[int, list[str], str | None, int | None]:
     pull_request = json.loads(event_path.read_text(encoding="utf-8")).get("pull_request") or {}
     additions = pull_request.get("additions")
     deletions = pull_request.get("deletions")
     if not isinstance(additions, int) or not isinstance(deletions, int):
         raise ValueError(f"{event_path}: pull_request.additions/deletions must be integers")
     labels = [label["name"] for label in pull_request.get("labels") or []]
-    return additions + deletions, labels
+    repo = ((pull_request.get("base") or {}).get("repo") or {}).get("full_name")
+    return additions + deletions, labels, repo, pull_request.get("number")
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -156,12 +214,15 @@ def main(argv: list[str] | None = None) -> int:
         args.mode, args.merge_base = "local", "origin/main"
 
     labels: list[str] = []
-    files: list[FileChange] | None = None
     if args.mode == "local":
         total = compute_local_total(Path.cwd(), args.merge_base)
         files = local_files(Path.cwd(), args.merge_base)
     else:
-        total, labels = _pr_event_total_and_labels(args.event_json)
+        total, labels, repo, number = _pr_event(args.event_json)
+        token = os.environ.get("GITHUB_TOKEN", "")
+        files = None
+        if token and isinstance(repo, str) and isinstance(number, int):
+            files = fetch_pr_files(repo, number, token)
     counted = author_lines(total, files)
 
     if counted <= MAX_CHANGED_LINES or has_size_exception_label(labels):
@@ -170,6 +231,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Tamaño del PR: {counted} líneas (límite {MAX_CHANGED_LINES}).", file=sys.stderr)
     if counted != total:
         print(f"Excluidas {total - counted} líneas de rutas vendorizadas.", file=sys.stderr)
+    elif files is None:
+        print("Sin desglose por fichero: se cuenta el total del PR.", file=sys.stderr)
     if args.mode == "pr-event":
         print(
             f"Parta el PR. Solo el mantenedor puede aplicar '{SIZE_EXCEPTION_LABEL}', "
