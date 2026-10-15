@@ -1,10 +1,8 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp QC-6
-# — test_pr_size_wiring.py
-"""Wiring pin for `scripts/check_pr_size.py` (QC-6).
+# HARNESS-PROVENANCE: access2web-blueprint issue #854 — test_pr_size_wiring.py
+"""Wiring pin for `scripts/check_pr_size.py` (issue #854): one test per acceptance rule.
 
-The PR size gate counts changed lines against a base ref and fails above 400.
-Phase 0 asserts the gate parses its arguments, evaluates an override when one
-is supplied with a reason, and emits a JSON envelope with the right schema.
+The budget is additions + deletions, at most 400. The only override is the
+`size:exception` label. Rules 1-3 share one parametrized verdict matrix.
 """
 
 from __future__ import annotations
@@ -17,81 +15,103 @@ from pathlib import Path
 
 import pytest
 
-
-def _find_script() -> Path:
-    here = Path(__file__).resolve()
-    for parent in here.parents:
-        candidate = parent / "scripts" / "check_pr_size.py"
-        if candidate.is_file():
-            return candidate
-    raise AssertionError("scripts/check_pr_size.py not found")
+SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "check_pr_size.py"
 
 
-def _find_root() -> Path:
-    here = Path(__file__).resolve()
-    for parent in here.parents:
-        # In a worktree, `.git` is a FILE pointing to the real gitdir; in a
-        # full clone, it is a DIRECTORY. Accept both.
-        candidate = parent / ".git"
-        if candidate.is_dir() or candidate.is_file():
-            return parent
-    raise AssertionError("worktree root not found (no .git)")
-
-
-@pytest.fixture(scope="module")
-def root() -> Path:
-    return _find_root()
-
-
-@pytest.fixture(scope="module")
-def script() -> Path:
-    return _find_script()
-
-
-def test_pr_size_ceiling_is_400(script: Path) -> None:
-    spec = importlib.util.spec_from_file_location("check_pr_size", script)
+def _load():
+    spec = importlib.util.spec_from_file_location("check_pr_size", SCRIPT)
     module = importlib.util.module_from_spec(spec)
     sys.modules["check_pr_size"] = module
     spec.loader.exec_module(module)
-    assert module.MAX_CHANGED_LINES == 400
+    return module
 
 
-def test_pr_size_override_needs_reason() -> None:
-    """Hard Rule: the override is awkward on purpose — `size:exception` alone does nothing."""
-    spec = importlib.util.spec_from_file_location("check_pr_size", _find_script())
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["check_pr_size"] = module
-    spec.loader.exec_module(module)
-    # No marker, no reason — both should be None.
-    assert module.override_reason("plain PR body without marker") is None
-    # Marker but no reason — None.
-    assert module.override_reason("size:exception\nno reason line here\n") is None
-    # Marker AND reason — the reason line wins.
-    body = "size:exception\nsize-exception-reason: PR 1 is the indivisible foundation scaffold.\n"
-    assert module.override_reason(body) == "PR 1 is the indivisible foundation scaffold."
-
-
-def test_pr_size_gate_runs_against_head(root: Path, script: Path) -> None:
-    """Phase 0 wiring: the gate runs end-to-end against the local commit chain."""
-    result = subprocess.run(
-        [
-            sys.executable,
-            str(script),
-            "--base-ref",
-            "HEAD~0",
-            "--json",
-        ],
+def _run(*args, cwd=None):
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), *args],
+        cwd=cwd,
         capture_output=True,
         text=True,
-        check=False,
         encoding="utf-8",
-        cwd=str(root),
     )
-    # The gate may report `error` when the diff is empty (HEAD~0 is HEAD, no diff),
-    # but the JSON envelope must always parse.
-    assert result.returncode in (0, 1), f"unexpected exit {result.returncode}"
-    envelope = json.loads(result.stdout)
-    assert envelope["gate"] == "pr_size"
-    assert "indicators" in envelope
-    assert "changed_lines" in envelope["indicators"]
-    assert envelope["ceilings"]["changed_lines"] == 400
+
+
+def _git(repo, *args):
+    return subprocess.run(
+        ["git", *args], cwd=repo, check=True, capture_output=True, text=True
+    ).stdout
+
+
+def _event(tmp_path, additions, deletions, labels=()):
+    payload = {
+        "pull_request": {
+            "additions": additions,
+            "deletions": deletions,
+            "labels": [{"name": name} for name in labels],
+        }
+    }
+    path = tmp_path / "event.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return str(path)
+
+
+def _local_repo(tmp_path, insertions, deletions):
+    """Repo whose HEAD replaces the `deletions` lines of HEAD~1 with `insertions` new lines."""
+    repo = tmp_path / "local"
+    repo.mkdir()
+    _git(repo, "init", "--initial-branch=main")
+    _git(repo, "config", "user.email", "t@e")
+    _git(repo, "config", "user.name", "t")
+    (repo / "f.txt").write_text("old\n" * deletions, encoding="utf-8")
+    _git(repo, "add", "f.txt")
+    _git(repo, "commit", "-m", "base")
+    (repo / "f.txt").write_text("new\n" * insertions, encoding="utf-8")
+    _git(repo, "commit", "-am", "change")
+    return repo
+
+
+def test_ceiling_is_400():
+    """The 400-line review budget is fixed."""
+    assert _load().MAX_CHANGED_LINES == 400
+
+
+# Rules 1-3: (mode, additions or insertions, deletions, labels) -> exit code, and the total
+# in the output when over budget.
+@pytest.mark.parametrize(
+    ("mode", "adds", "dels", "labels", "expected_rc", "expected_total"),
+    [
+        ("pr-event", 100, 50, (), 0, None),  # rule 1: within budget
+        ("local", 100, 0, (), 0, None),
+        ("pr-event", 350, 200, (), 1, "550"),  # rule 2: over budget, no label
+        ("local", 500, 0, (), 1, "500"),
+        ("pr-event", 350, 200, ("size:exception",), 0, None),  # rule 3: the label overrides
+    ],
+    ids=["r1-pr-event", "r1-local", "r2-pr-event", "r2-local", "r3-label"],
+)
+def test_rules_1_2_3_verdict(mode, adds, dels, labels, expected_rc, expected_total, tmp_path):
+    if mode == "pr-event":
+        result = _run(mode, _event(tmp_path, adds, dels, labels))
+    else:
+        result = _run(mode, "HEAD~1", cwd=_local_repo(tmp_path, adds, dels))
+    assert result.returncode == expected_rc, result.stderr
+    if expected_total:
+        assert expected_total in result.stderr
+
+
+def test_rule_4_local_total_equals_the_api_total(tmp_path):
+    """`local` gives the total GitHub reports for the same range: 200 added + 50 removed."""
+    repo = _local_repo(tmp_path, insertions=200, deletions=50)
+    assert _load().compute_local_total(repo, "HEAD~1") == 250
+
+
+@pytest.mark.parametrize(
+    ("adds", "dels", "expected_rc"),
+    [(10, 5, 0), (500, 10, 1)],
+    ids=["pass", "fail"],
+)
+def test_rule_5_binary_output_without_warnings(adds, dels, expected_rc, tmp_path):
+    """The verdict is the exit code; stdout stays empty and stderr carries no Python warning."""
+    result = _run("pr-event", _event(tmp_path, adds, dels))
+    assert result.returncode == expected_rc
+    assert result.stdout == ""
+    assert "Warning" not in result.stderr
