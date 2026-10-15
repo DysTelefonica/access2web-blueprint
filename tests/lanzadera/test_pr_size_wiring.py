@@ -150,6 +150,4 @@ def test_rule_5_binary_output_no_warning(verdict_path, tmp_path):
         assert result.returncode == 1
         assert "510" in (result.stdout + result.stderr)
     for warning in ("DeprecationWarning", "UserWarning"):
-        assert warning not in result.stderr, (
-            f"unexpected {warning} on stderr: {result.stderr!r}"
-        )
+        assert warning not in result.stderr, f"unexpected {warning} on stderr: {result.stderr!r}"
