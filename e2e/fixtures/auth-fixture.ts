@@ -62,12 +62,19 @@ export async function globalSetup(_config: FullConfig): Promise<void> {
 
   // 2. Seed test users — Python script runs inside the container where
   //    argon2-cffi is available, so we get real hashes for the test passwords.
+  //
+  //    argon2-cffi 23+ renamed `PasswordHash` to `PasswordHasher`. The
+  //    container pins argon2-cffi==25.1.0 (see app/pyproject.toml); the
+  //    app's own hasher (`credential_hasher_argon2id.py`) also uses
+  //    `PasswordHasher`. The old `PasswordHash` import worked against
+  //    an earlier binding; the PR's release-yml / nightly runs hit the
+  //    `ImportError` on the new image.
   const seedScript = `
 import sqlite3, sys, uuid
-from argon2 import PasswordHash
+from argon2 import PasswordHasher
 
 # Generate real Argon2id hashes using the container's argon2-cffi
-h = PasswordHash()
+h = PasswordHasher()
 admin_hash = h.hash("${TEST_ADMIN_PASSWORD}")
 user_hash  = h.hash("${TEST_USER_PASSWORD}")
 
