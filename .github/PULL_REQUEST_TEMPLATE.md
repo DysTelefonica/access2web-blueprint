@@ -1,12 +1,11 @@
 <!--
-`size-exception-reason:` es un campo de datos del cuerpo del PR: una sola
-línea, en la primera columna, exactamente una aparición — nunca etiqueta ni
-prosa dispersa (HR-8 del patrón). Deje el motivo vacío salvo que el diff supere
-las 400 líneas y no quepa partirlo; el gate de tamaño del repositorio
-(`scripts/check_pr_size.py`) pide además la etiqueta `size:exception`.
+El presupuesto de revisión es 400 líneas (additions + deletions) y se aplica en
+el job `review-budget` del workflow de CI (`scripts/check_pr_size.py`).
+La única manera de sobrepasarlo es partir el PR o aplicar la etiqueta
+`size:exception` — la concede el mantenedor y se documenta en el cuerpo del
+PR. Con la adopción del gobierno simplificado (#854) se retiró el campo
+`size-exception-reason:` del cuerpo: ya no es gate.
 -->
-
-size-exception-reason: <motivo en una sola línea, solo si el diff no puede partirse>
 
 Closes #
 
