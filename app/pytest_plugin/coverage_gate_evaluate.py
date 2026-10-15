@@ -76,9 +76,7 @@ def _enforce_critical_coverage(
     failures: list[str] = []
 
     for module_name, owner_name, helper_name in critical_targets:
-        from app.pytest_plugin.coverage_gate import _try_import
-
-        module = _try_import(module_name)
+        module = None
         if module is None:
             warnings.append(_missing_module_warning(module_name))
             continue
