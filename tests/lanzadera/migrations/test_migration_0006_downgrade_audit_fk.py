@@ -21,6 +21,8 @@ import os
 import secrets
 import subprocess
 import sys
+import uuid
+from datetime import UTC, datetime
 from pathlib import Path
 
 import asyncpg
@@ -94,7 +96,7 @@ def _run_alembic(
         )
 
 
-def _seeded_event_ids(worktree_root: Path) -> list[int]:
+def _seeded_event_ids(worktree_root: Path) -> list[str]:
     fixture = worktree_root / "data" / "fixtures" / "lanzadera" / "audit_events.json"
     return [event["id"] for event in json.loads(fixture.read_text())]
 
@@ -126,12 +128,14 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
     try:
         _run_alembic(worktree_root, alembic_ini, db_name, "upgrade", "head")
 
-        # Pick ids that are far from anything the fixture uses. We do not
-        # know the fixture's id range, so use a distinct high range and let
-        # the assertion confirm they are not in the seeded set.
+        # Pick ids that are far from anything the fixture uses. The audit
+        # table columns are UUID (``id``, ``actor_id``, ``correlation_id``)
+        # and Text (``target_id``); see 0001_core_schema.py.
         seeded = set(_seeded_event_ids(worktree_root))
-        unrelated_with_actor = 900_000_001
-        unrelated_without_actor = 900_000_002
+        unrelated_with_actor = str(uuid.uuid4())
+        unrelated_without_actor = str(uuid.uuid4())
+        real_target_id = f"real:target:{secrets.token_hex(4)}"
+        real_correlation_id = str(uuid.uuid4())
         assert unrelated_with_actor not in seeded
         assert unrelated_without_actor not in seeded
 
@@ -146,7 +150,7 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
             # We need a real user to satisfy the FK for the actor_id row.
             user_id_row = await conn.fetchrow("SELECT id FROM lanzadera.users ORDER BY id LIMIT 1")
             assert user_id_row is not None, "0004 must have seeded at least one user"
-            real_user_id = user_id_row["id"]
+            real_user_id = str(user_id_row["id"])
 
             await conn.execute(
                 """
@@ -154,14 +158,18 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
                   (id, event_type, actor_id, target_id, module,
                    result, correlation_id, payload, created_at)
                 VALUES
-                  ($1, 'app.open', $2, 1, 'real',
-                   'success', 'real-actor', '{}'::jsonb, now()),
-                  ($3, 'app.open', NULL, 1, 'real',
-                   'success', 'real-anon', '{}'::jsonb, now())
+                  ($1, 'app.open', $2, $3, 'lanzadera',
+                   'success', $4, '{}'::jsonb, now()),
+                  ($5, 'app.open', NULL, $6, 'lanzadera',
+                   'success', $7, '{}'::jsonb, now())
                 """,
                 unrelated_with_actor,
                 real_user_id,
+                real_target_id,
+                real_correlation_id,
                 unrelated_without_actor,
+                real_target_id,
+                real_correlation_id,
             )
         finally:
             await conn.close()
@@ -180,11 +188,11 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
         )
         try:
             surviving_with_actor = await conn.fetchval(
-                "SELECT count(*) FROM lanzadera.audit WHERE id = $1",
+                "SELECT count(*) FROM lanzadera.audit WHERE id = $1::uuid",
                 unrelated_with_actor,
             )
             surviving_without_actor = await conn.fetchval(
-                "SELECT count(*) FROM lanzadera.audit WHERE id = $1",
+                "SELECT count(*) FROM lanzadera.audit WHERE id = $1::uuid",
                 unrelated_without_actor,
             )
         finally:
@@ -252,20 +260,24 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
         # and a different ``event_type`` / ``created_at`` so the row does
         # not match the fixture fingerprint. ``module`` alone cannot
         # discriminate, hence the full-row match in the downgrade query.
+        # Columns: ``id``/``actor_id``/``correlation_id`` are UUID,
+        # ``target_id`` is Text, ``created_at`` is timestamptz — see
+        # 0001_core_schema.py.
         colliding_ids = seeded[:200]
+        real_correlation_id = str(uuid.uuid4())
         rows = [
             (
                 id_,
                 "auth.real-event",  # different from any fixture event_type
                 None,
-                999_999,  # different from any fixture target_id
+                f"real:{i}:{id_}",  # different from any fixture target_id
                 "lanzadera",  # what the app actually writes
                 "success",
-                f"real-{id_}",
+                real_correlation_id,
                 "{}",
-                "2099-01-01T00:00:00+00:00",  # different from any fixture created_at
+                datetime(2099, 1, 1, tzinfo=UTC),  # different from any fixture created_at
             )
-            for id_ in colliding_ids
+            for i, id_ in enumerate(colliding_ids)
         ]
 
         conn = await asyncpg.connect(
