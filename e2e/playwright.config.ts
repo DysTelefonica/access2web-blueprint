@@ -47,8 +47,6 @@
 
 import { defineConfig, devices } from "@playwright/test";
 
-import { globalSetup } from "./fixtures/auth-fixture";
-
 export default defineConfig({
   testDir: ".",
   testMatch: /.*spec\.ts$/,
@@ -63,7 +61,12 @@ export default defineConfig({
     baseURL: process.env.BASE_URL ?? "http://localhost:8000",
     trace: "retain-on-failure",
   },
-  globalSetup,
+  // Playwright 1.64+ requires `globalSetup` to be a string path. The
+  // function form was removed; Playwright now spawns the script in a
+  // child process and looks up its `default` (or named `globalSetup`)
+  // export. `fixtures/auth-fixture.ts` exports `globalSetup` already,
+  // so the path form is a one-token swap from the function form.
+  globalSetup: "./fixtures/auth-fixture.ts",
   projects: [
     {
       name: "chromium",
