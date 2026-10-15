@@ -568,9 +568,10 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     `needs:` cannot cross workflow files, so `security` and `codeql` are
     embedded as `uses: ./.github/workflows/*.yml` calls directly inside
     ci.yml — from GitHub's perspective those are still ordinary job ids the
-    aggregator can depend on and read `needs.<id>.result` from. `mutation`
-    stays out on purpose: it is schedule/workflow_dispatch-only and was
-    never part of branch protection.
+    aggregator can depend on and read `needs.<id>.result` from. Issue #857,
+    PR-D: the event set that feeds the aggregator drops `merge_group` (the
+    queue is gone with the gentle-ai model) and gains `push` (the post-merge
+    safety net on `main`).
     """
     jobs = workflow["jobs"]
     assert "merge-ready" not in jobs, "merge-ready was fully superseded by `required`"
@@ -581,7 +582,9 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     # forma que el gate del patrón puede probar (HR-30): comparaciones de
     # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
     assert required["if"] == (
-        "(github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled()"
+        "(github.event_name == 'pull_request' || github.event_name == 'push' "
+        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
+        "&& !cancelled()"
     )
     assert required["needs"] == ["pr-gate", "quality", "security", "codeql"]
 
@@ -609,14 +612,21 @@ def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
         assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
 
 
-def test_heavy_jobs_run_on_pr_and_queue_only_after_pr_gate_passed_or_skipped(
+def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
     workflow: dict,
 ) -> None:
-    """Issue #857, PR-B: `pr-gate` is skipped in the merge queue, so the heavy jobs
-    must accept a skipped gate there, and only there, on top of a passed one."""
+    """Issue #857, PR-D: the heavy jobs run on every event the workflow listens to.
+
+    `pr-gate` only fires on `pull_request`, so on `push` (post-merge safety
+    net on `main`), `schedule` (nightly) and `workflow_dispatch` (manual)
+    it is `skipped`. The heavy jobs that `needs: pr-gate` must accept the
+    skip on every one of those events. `merge_group` is gone: the queue
+    left with the gentle-ai model.
+    """
     jobs = workflow["jobs"]
     expected = (
-        "(github.event_name == 'pull_request' || github.event_name == 'merge_group') "
+        "(github.event_name == 'pull_request' || github.event_name == 'push' "
+        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
         "&& !cancelled() "
         "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
     )
@@ -884,26 +894,35 @@ def test_mutation_config_targets_only_the_domain() -> None:
 # the two together close #857.
 
 
-def test_ci_does_not_run_on_push_to_main(workflow: dict) -> None:
-    """Issue #857: `push: branches: [main]` is gone.
+def test_ci_runs_on_push_to_main(workflow: dict) -> None:
+    """Issue #857, PR-D: `push: branches: [main]` is the post-merge safety net.
 
-    The merge queue proves the PR against the real `main` and moves the
-    protected branch exactly to the tested group, so a `push` run would
-    only repeat the same proof. Re-adding the trigger re-opens the
-    18-of-36 branch history the issue cites.
+    The gentle-ai model does not use a merge queue. Every PR runs `ci`
+    exactly once, and the `required` aggregator re-proves the same
+    commit on the push that follows the merge. The trigger is
+    `branches: [main]` so a feature-branch push does not re-run the
+    whole suite — only the merge to `main` does.
     """
     triggers = workflow.get(True) or workflow.get("on") or {}
-    assert "push" not in triggers, (
-        "ci.yml must not declare a `push:` trigger: the merge queue proves "
-        "the PR against the real main, and a push run would only repeat "
-        "the same proof (issue #857, PR-A)."
+    assert "push" in triggers, (
+        "ci.yml must declare a `push:` trigger (issue #857, PR-D): the "
+        "post-merge safety net on `main` is what re-proves the commit "
+        "after the queue is gone."
+    )
+    push = triggers["push"]
+    assert isinstance(push, dict), (
+        f"ci.yml `push:` must declare `branches:` (issue #857, PR-D). Got: {push!r}"
+    )
+    assert list(push.get("branches", [])) == ["main"], (
+        f"ci.yml `push:` must pin `branches: [main]` (issue #857, PR-D). "
+        f"Got: {push.get('branches')!r}"
     )
 
 
-def test_ci_runs_on_pull_request_merge_group_schedule_dispatch(
+def test_ci_runs_on_pull_request_push_schedule_dispatch(
     workflow: dict,
 ) -> None:
-    """The four events the queue + nightly + manual surface require."""
+    """The four events the gentle-ai model surfaces (PR + push + nightly + manual)."""
     triggers = workflow.get(True) or workflow.get("on") or {}
     if isinstance(triggers, list):
         present = set(triggers)
@@ -912,10 +931,27 @@ def test_ci_runs_on_pull_request_merge_group_schedule_dispatch(
     else:
         present = set(triggers.keys())
 
-    for required_event in ("pull_request", "merge_group", "schedule", "workflow_dispatch"):
+    for required_event in ("pull_request", "push", "schedule", "workflow_dispatch"):
         assert required_event in present, (
             f"ci.yml must declare `{required_event}` in its trigger set "
-            f"(issue #857, PR-A). Present: {sorted(present)}."
+            f"(issue #857, PR-D). Present: {sorted(present)}."
+        )
+
+
+def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
+    """Issue #857, PR-D: the merge queue is gone with the gentle-ai model.
+
+    `merge_group` was the queue's verdict event; without the queue there
+    is no merge-group run to listen to. Leaving the trigger in place
+    would re-introduce a class of `unsupported event` failures in
+    `scripts/check_required_jobs.py` (#857 PR-D dropped it from
+    `SKIPS_BY_EVENT`).
+    """
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    if isinstance(triggers, dict):
+        assert "merge_group" not in triggers, (
+            "ci.yml must not declare a `merge_group:` trigger: the queue is "
+            "gone with the gentle-ai model (issue #857, PR-D)."
         )
 
 
