@@ -396,8 +396,7 @@ jobs:
     concurrency:
       group: gate-e2e-smoke-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
-    # Instalar el lock y aplicar migraciones supera los 5 min del job anterior.
-    timeout-minutes: 15
+    timeout-minutes: 5
     # Mismo service que el job `integration` (#882/#901): misma imagen
     # con digest, mismas variables y mismo healthcheck. Puerto dinámico;
     # se resuelve en el paso siguiente, nunca se fija a 5432.
@@ -447,7 +446,18 @@ jobs:
         # raíz del repo, que la imagen no incluye.
         run: |
           set -euo pipefail
-          python -m pip install --require-hashes --requirement app/requirements-dev.lock
+          if [ -f app/pyproject.toml ]; then
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
+          elif [ -f pyproject.fragment.toml ]; then
+            echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
+            echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
+            exit 1
+          else
+            echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
+            echo "::error::The CI cannot install a Python project that does not exist. See issue #117 F2."
+            exit 1
+          fi
           PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
           DATABASE_URL="$E2E_DATABASE_URL" PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
             alembic -c app/migrations/alembic.ini upgrade head
