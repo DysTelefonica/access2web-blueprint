@@ -310,6 +310,16 @@ jobs:
         # SHA. Matches the `check-workflows` Makefile target.
         run: python scripts/check_workflows.py
 
+      - name: suites populated
+        # Issue #882 (PR-1): a green CI with zero tests in a suite is a false
+        # guarantee. Each mandatory suite (unit, integration, e2e_smoke) must
+        # collect at least one test under `--collect-only -m <expr>`. Renaming
+        # a marker, deleting a directory, or skipping a fixture silently now
+        # fails this gate before the full pytest run wastes runner minutes.
+        # Runs before `tests` so a guard violation is the first signal the
+        # operator sees, not an expensive test failure later.
+        run: python scripts/check_suites_populated.py
+
       - name: tests
         # `-c app/pyproject.toml --rootdir=app` is load-bearing. The pytest contract
         # lives in app/pyproject.toml and is written for rootdir=app: `pythonpath =

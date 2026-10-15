@@ -182,10 +182,15 @@ testpaths = [
 ]
 # `--strict-markers` is on, which is correct: a typo in a marker name should fail
 # rather than silently select nothing. That makes declaring every marker part of
-# the contract, and `integration` was never declared — so two migration modules
-# failed at COLLECTION, before a single assertion ran.
+# the contract. The three mandatory suites the suite-populated guard checks (see
+# `scripts/check_suites_populated.py`) are declared here:
+#   - `integration`: tests with @pytest.mark.integration (Postgres + out-of-process)
+#   - `e2e_smoke`: gate-smoke tests that run real scripts as subprocesses
+# The `unit` suite is by exclusion (`-m "not integration and not e2e_smoke"`);
+# it does not need a marker declaration.
 markers = [
     "integration: touches a real database or another out-of-process dependency",
+    "e2e_smoke: gate-smoke tests that run real scripts as subprocesses",
     "e2e: end-to-end test that exercises a live deployment-shaped stack (ASGI server + DB + fixtures)",
     # ``allow_uncaught_hosts`` is a marker that the ``pytest-socket``
     # plugin reads: tests decorated with it may open sockets to
