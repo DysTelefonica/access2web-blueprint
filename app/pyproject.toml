@@ -160,14 +160,9 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "-p no:randomly",
-    # The coverage gate plugin is the canonical Phase 0 declaration site for
-    # CRITICAL_HELPERS. When the helpers do not exist yet, the plugin emits a
-    # WARNING, not a failure — see app/pytest_plugin/coverage_gate.py.
-    "-p app.pytest_plugin.coverage_gate",
 ]
 # `pythonpath = [".."]` makes the worktree root importable from pytest's
-# sys.path. Without this, `app.pytest_plugin.coverage_gate` cannot be loaded
-# when pytest is invoked from `app/` (cwd would shadow the package).
+# sys.path.
 pythonpath = [".."]
 testpaths = [
     # Phase 0 + Phase 6 tests live at the worktree root in `tests/`.

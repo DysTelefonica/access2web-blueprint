@@ -34,6 +34,17 @@ depends_on: str | Sequence[str] | None = None
 
 SCHEMA = "lanzadera"
 
+# Issue #904: when ``PLATFORM_SECRET_KEY`` is unset (e.g. a CI caller
+# that forgot to ``export`` it, like the integration job in PR-3 of
+# #882), fall back to the same Fernet-format key the dev test
+# fixture uses. The default is 32 zero bytes, base64url-encoded
+# (44 characters, single ``=`` padding); it matches
+# ``tests/lanzadera/migrations/test_seed_migrations.py::_FIXTURE_KEY``
+# so the integration round-trip keeps working when callers rely on
+# the default. Production and ``docker-compose`` dev still set the
+# env var explicitly, so the fallback never wins in those contexts.
+_DEFAULT_PLATFORM_SECRET_KEY = base64.urlsafe_b64encode(b"0" * 32).decode()
+
 
 def _encrypt_national_id(dni_plain: str, raw_key: bytes) -> bytes:
     """AES-256-GCM encrypt ``dni_plain`` → nonce(12) || ciphertext || tag(16)."""
@@ -44,7 +55,7 @@ def _encrypt_national_id(dni_plain: str, raw_key: bytes) -> bytes:
 
 
 def _load_key() -> bytes:
-    raw = os.environ["PLATFORM_SECRET_KEY"]
+    raw = os.environ.get("PLATFORM_SECRET_KEY", _DEFAULT_PLATFORM_SECRET_KEY)
     return base64.urlsafe_b64decode(raw)
 
 
