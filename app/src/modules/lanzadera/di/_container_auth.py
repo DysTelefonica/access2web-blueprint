@@ -15,6 +15,9 @@ from typing import TYPE_CHECKING, Any
 from app.src.modules.lanzadera.adapters.persistence.async_session_factory import (
     AsyncSessionFactoryPort,
 )
+from app.src.modules.lanzadera.adapters.persistence.repositories.session_repository_pg import (
+    SessionRepositoryPg,
+)
 from app.src.modules.lanzadera.domain.ports.jwt_signer import JwtSignerPort
 from app.src.modules.lanzadera.domain.ports.password_hasher import PasswordHasher
 from app.src.modules.lanzadera.domain.ports.secret_manager import SecretManager
@@ -33,21 +36,8 @@ def _pick_session(
     """Return a fake session repo if injected; otherwise build the default."""
     if fake is not None:
         return fake  # type: ignore[return-value]
-    return _build_default_session_repo()
-
-
-def _build_default_session_repo() -> SessionRepository:
-    """Default ``SessionRepository`` wiring (W62 #539).
-
-    Returns a Postgres-backed adapter once ``SessionRepositoryPg``
-    lands in a follow-up slice. Until then, raising here makes the
-    production-code path fail fast with a clear message.
-    """
-    raise NotImplementedError(
-        "SessionRepositoryPg is not implemented yet. "
-        "Pass a fake (tests/lanzadera/_fakes.py:FakeSessionRepository) "
-        "until PR-2's follow-up ships the Postgres adapter."
-    )
+    assert factory is not None, "no fake and no factory - caller must inject one"
+    return SessionRepositoryPg(factory)
 
 
 def _build_default_jwt_signer() -> JwtSignerPort:
