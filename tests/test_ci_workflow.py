@@ -670,6 +670,46 @@ def test_issue_spec_leaves_known_pending_gates(run_blocks: list[str]) -> None:
     assert "check_issue_spec.py" not in KNOWN_PENDING_GATES
 
 
+def test_release_mutation_job_needs_preflight() -> None:
+    """Issue #857, PR-C1d: the mutation job in release.yml runs after preflight.
+
+    `preflight` is the gate that validates the tag identity, the ci verdict
+    on the exact SHA, and the channel classification (rc vs stable). The
+    mutation job depends on it because a failed preflight means the tag
+    is not fit to ship, and running cosmic-ray on bytes that will never
+    publish wastes the hosted runner's free-tier minutes.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "mutation" in jobs, "release.yml must declare a `mutation` job (#857, PR-C1d)"
+    assert jobs["mutation"]["needs"] == "preflight", (
+        f"`mutation` must declare `needs: preflight` (issue #857, PR-C1d). "
+        f"Got: {jobs['mutation'].get('needs')!r}"
+    )
+
+
+def test_release_publish_needs_e2e_and_mutation() -> None:
+    """Issue #857, PR-C1d: publish depends on both e2e and mutation.
+
+    A green e2e is necessary (the published image must pass the Playwright
+    smoke) but not sufficient — a mutation failure on the exact bytes
+    being shipped is exactly the class of release-time failure the
+    `mutation` job exists to catch. `publish` must wait for both, in
+    either order, so a red mutation holds the tag.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "publish" in jobs, "release.yml must declare a `publish` job"
+    needs = jobs["publish"]["needs"]
+    # GitHub Actions serialises a list-typed `needs` as a list of strings;
+    # the older scalar form is a bare string. Accept both.
+    needed = {needs} if isinstance(needs, str) else set(needs)
+    assert needed == {"e2e", "mutation"}, (
+        f"`publish` must depend on `e2e` and `mutation` (issue #857, PR-C1d). "
+        f"Got: {sorted(needed)!r}"
+    )
+
+
 def test_branch_name_is_no_longer_wired_into_ci(run_blocks: list[str]) -> None:
     """Issue #857, PR-B: the branch-name check leaves ci.yml; #859 deletes the script."""
     assert not [block for block in run_blocks if "check_branch_name.py" in block]
