@@ -115,3 +115,69 @@ def test_rule_5_binary_output_without_warnings(adds, dels, expected_rc, tmp_path
     assert result.returncode == expected_rc
     assert result.stdout == ""
     assert "Warning" not in result.stderr
+
+
+# ---------------------------------------------------------------------------------------------
+# Rama vendorizada (issue #918): las rutas de skills copiadas desde team-skills no cuentan.
+# ---------------------------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("path", "expected"),
+    [
+        (".agents/skills/ci-pattern/SKILL.md", True),
+        ("skills/documentation-alan-style/SKILL.md", True),
+        ("scripts/check_pr_size.py", False),
+        ("skillsx/a.md", False),
+        ("myskills/skills/a.md", False),
+        ("docs/skills/a.md", False),
+    ],
+)
+def test_rule_6_vendored_roots_are_matched_as_prefixes(path, expected):
+    """Rule 6: only the two vendored roots count as copied skills; look-alikes do not."""
+    module = _load()
+    assert module.is_vendored(module.FileChange(path, added=1, deleted=0)) is expected
+
+
+def test_rule_9_without_breakdown_or_with_a_partial_one_counts_everything():
+    """Rule 9: no breakdown, or one that does not add up to the total, counts the whole PR."""
+    module = _load()
+    assert module.author_lines(16000, None) == 16000
+    partial = [module.FileChange("skills/a.md", added=100, deleted=0)]
+    assert module.author_lines(16000, partial) == 16000
+
+
+def test_rule_12_local_mode_excludes_vendored_lines(tmp_path):
+    """Rule 12: local mode subtracts the vendored lines of the git diff: 510 total, 10 author."""
+    repo = _local_repo_with_files(tmp_path, {".agents/skills/x/SKILL.md": 500, "scripts/a.py": 10})
+    assert _run("local", "HEAD~1", cwd=repo).returncode == 0
+
+
+def test_rule_12_local_mode_counts_author_lines_over_budget(tmp_path):
+    """Rule 12: 450 author lines plus 500 vendored lines is still over budget."""
+    repo = _local_repo_with_files(tmp_path, {".agents/skills/x/SKILL.md": 500, "scripts/a.py": 450})
+    assert _run("local", "HEAD~1", cwd=repo).returncode == 1
+
+
+def test_rule_13_local_breakdown_outside_a_repository_is_none(tmp_path):
+    """Rule 13: no git range, no breakdown (fail-closed in local mode)."""
+    module = _load()
+    assert module.local_files(tmp_path, "origin/main") is None
+
+
+def _local_repo_with_files(tmp_path, files):
+    repo = tmp_path / "local"
+    repo.mkdir()
+    _git(repo, "init", "--initial-branch=main")
+    _git(repo, "config", "user.email", "t@e")
+    _git(repo, "config", "user.name", "t")
+    (repo / "README.md").write_text("base\n", encoding="utf-8")
+    _git(repo, "add", "README.md")
+    _git(repo, "commit", "-m", "base")
+    for relative, lines in files.items():
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("line\n" * lines, encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "change")
+    return repo
