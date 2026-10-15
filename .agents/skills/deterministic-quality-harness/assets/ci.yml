@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/ci.yml
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/ci.yml
 #
 # Reference workflow. Every gate below exits non-zero on a real violation; none of them is
 # wrapped in `|| true` or `continue-on-error` (Hard Rule 1), and `tests/test_ci_workflow.py`

@@ -9,7 +9,7 @@ el catálogo; este doc conserva las ideas con su evidencia.
 
 | Idea | Qué hace gentle-ai | Estado en este patrón |
 |---|---|---|
-| T1 — Doble gate de tamaño, uno dormido | Check informativo para el autor + política `pull_request_target` dormida tras `grandfather-size-exceptions.json` con transición validada | Adoptado como R15/HR-18: el policy file de gates dormibles (`assets/parameters.md`) |
+| T1 — Doble gate de tamaño, uno dormido | Check informativo para el autor + política `pull_request_target` dormida tras `grandfather-size-exceptions.json` con transición validada | Rechazado para el eje de tamaño (A1): la etiqueta `size:exception` la aplica solo el mantenedor, el campo `size-exception-reason:` del cuerpo está retirado y el patrón no mantiene `grandfather-size-exceptions.json`. El policy file de gates dormibles (HR-18) sigue activo para otros gates. |
 | T2 — Ratchet sobre baseline, no clean gate | `comm -13 baseline current` con `--update` y locale pineado | Adoptado (HR-15); forma para `check_mutation_sites` y vulture |
 | T3 — Drift guard con `test -list` antes de todo manifest | Un selector que no matchea nada es un agujero silencioso | Adoptado para el propio workflow (actionlint, nombres de paso) |
 | T4 — Preflight de release como scripts versionados reusables | `require-ci-success.sh`, `release-preflight.sh`, verificación de lo publicado | Parcialmente adoptado (preflight canónico); leer de vuelta lo publicado sigue abierto |

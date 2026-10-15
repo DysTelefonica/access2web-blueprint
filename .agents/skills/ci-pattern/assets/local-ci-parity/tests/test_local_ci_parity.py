@@ -42,7 +42,7 @@ CI_STEPS = """      - name: Suites desde el script único
         run: python3 personal/ardelperal/ci-pattern/assets/x/check_x.py --arg 1
 """
 
-EXCL = [{"command": "python3 personal/ardelperal/ci-pattern/assets/x/check_x.py", "side": "ci",
+EXCL = [{"command": "python3 personal/ardelperal/ci-pattern/assets/x/check_x.py*", "side": "ci",
          "reason": "gate CI-only: requiere secretos del runner"}]
 
 
@@ -127,6 +127,42 @@ class LocalCiParityTests(unittest.TestCase):
                             build_policy(tmp, [], tmp))
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
             self.assertIn("bash cmd/b.sh", proc.stdout)
+
+    def test_flag_difference_between_local_and_ci_is_a_finding(self):
+        """Friccion F1 (#396): dos lados ejecutando el mismo comando
+        con distinto flag deben producir un hallazgo que nombre AMBAS
+        formas exactas. Caso de referencia (defecto medido): el lint
+        de ardelperal/APAP_WEB corria 'python3 scripts/check_alantyle.py
+        --informational' en CI y 'python3 scripts/check_alantyle.py'
+        local; con la _signature() colapsada a dos tokens, ambos lados
+        daban 'python3 scripts/check_alantyle.py' y el gate daba falso
+        verde sobre una suite RED (17 violaciones) detectadas fuera de
+        la paridad. Tras el fix, los flags son visibles y el gate falla
+        (HR-4 enmendada por #396)."""
+        wf = ("jobs:\n"
+              "  unit:\n"
+              "    steps:\n"
+              "      - run: bash testing/run-unit-suites.sh\n"
+              "      - run: python3 scripts/check_alantyle.py --informational\n")
+        ep = ('#!/usr/bin/env bash\n'
+              'python3 scripts/check_alantyle.py\n')
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = build_repo(tmp, workflow=wf, entrypoint=ep)
+            proc = run_gate(repo, build_policy(tmp, [], repo))
+            self.assertEqual(proc.returncode, 1,
+                             "el gate debe fallar (no dar falso verde) cuando "
+                             "el CI corre el comando con --informational y el "
+                             "local produce la forma sin flag "
+                             "(friccion F1 #396):\n" + proc.stdout + proc.stderr)
+            # El hallazgo debe nombrar ambas formas exactas del comando
+            # para que el autor vea la diferencia de flag, no solo el lado
+            # que difiere.
+            self.assertIn("python3 scripts/check_alantyle.py --informational",
+                          proc.stdout,
+                          "el hallazgo debe nombrar la forma CI con flag")
+            self.assertIn("python3 scripts/check_alantyle.py",
+                          proc.stdout,
+                          "el hallazgo debe nombrar la forma local sin flag")
 
     def test_undeclared_local_command_is_a_finding(self):
         """CI que NO invoca el entrypoint: comandos locales sin

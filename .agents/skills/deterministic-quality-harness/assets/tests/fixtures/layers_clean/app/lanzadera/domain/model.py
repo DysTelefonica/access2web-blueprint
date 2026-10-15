@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — positive fixture
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — positive fixture
 """A domain module that respects every rule: stdlib only, same slice, inward dependencies."""
 
 from dataclasses import dataclass

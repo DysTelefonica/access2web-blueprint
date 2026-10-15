@@ -45,6 +45,7 @@ Exit codes: 0 no findings · 1 findings · 2 invalid input or empty subject.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import re
 import sys
@@ -286,7 +287,9 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
                         finding("`pip install` without an exact `==` pin (HR-26)")
 
 
-def load_required(path: str) -> list[str]:
+def load_required(path: str) -> tuple[list[str], dict]:
+    """Lee la politica del policy: de `required-jobs` y devuelve (jobs, data)
+    para que el resto del gate acceda a otras claves declaradas (HR-39)."""
     try:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -296,17 +299,148 @@ def load_required(path: str) -> list[str]:
             not all(isinstance(j, str) and j for j in jobs) or len(set(jobs)) != len(jobs):
         raise InvalidInput("required-jobs policy: `required_jobs` must be a non-empty "
                            "list of unique job names")
-    return jobs
+    return jobs, data
+
+
+def _state_entry_valid(entry: object) -> str | None:
+    """None si valida; mensaje si no. Shape invalido -> exit 2 (HR-3, HR-18)."""
+    if not isinstance(entry, dict):
+        return "entry is not a mapping"
+    str_fields = ("name", "command", "pr_workflow", "pr_job",
+                  "scheduled_workflow", "alert_command")
+    for f in str_fields + ("manifests",):
+        if f not in entry:
+            return f"missing required field '{f}'"
+        v = entry[f]
+        if f == "manifests":
+            if not isinstance(v, list) or not v or not all(isinstance(m, str) and m for m in v):
+                return "field 'manifests' must be a non-empty list of strings"
+        elif not isinstance(v, str) or not v:
+            return f"field '{f}' must be a non-empty string"
+    return None
+
+
+def _job_runs_command(job: dict, command: str) -> bool:
+    steps = job.get("steps") or []
+    for step in steps:
+        if not isinstance(step, dict):
+            continue
+        run = step.get("run")
+        if isinstance(run, str) and command in run:
+            return True
+    return False
+
+
+def _any_job_runs_command(doc: dict, command: str) -> bool:
+    jobs = doc.get("jobs") or {}
+    for job in jobs.values():
+        if isinstance(job, dict) and _job_runs_command(job, command):
+            return True
+    return False
+
+
+def _find_workflow(workflows: list[tuple[str, dict]], target: str):
+    """Busca un workflow por igualdad de ruta normalizada. Sin red y sin
+    adivinar: la ruta declarada en el policy debe coincidir con una de las
+    que el consumer paso por --workflow."""
+    t = str(Path(target))
+    for path, doc in workflows:
+        if str(Path(path)) == t:
+            return path, doc
+    return None, None
+
+
+def _paths_cover(manifests: list[str], patterns: list[str]) -> list[str]:
+    """Manifiestos declarados que ningun pattern de paths cubre (fnmatch)."""
+    uncovered = []
+    for m in manifests:
+        if not any(fnmatch.fnmatch(m, p) for p in patterns if isinstance(p, str)):
+            uncovered.append(m)
+    return uncovered
+
+
+def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
+                                out: list[str]) -> None:
+    """HR-39: un gate cuyo veredicto depende de estado externo mutable va
+    programado y solo bloquea PRs que tocan los manifiestos declarados.
+
+    Activacion: la clave `state_dependent_gates` debe estar en el policy
+    file. Si esta AUSENTE imprime notice por stderr y termina (el fail-open
+    lo cierra por fuera el doctor de flota); si esta PRESENTE se exige, y
+    la lista vacia es declaracion valida.
+    """
+    if "state_dependent_gates" not in data:
+        print("HR-39: state_dependent_gates no declarado en el policy file; "
+              "la regla todavia no se exige (se activa al declararse).",
+              file=sys.stderr)
+        return
+    entries = data["state_dependent_gates"]
+    if not isinstance(entries, list):
+        raise InvalidInput("`state_dependent_gates` debe ser una lista de entradas")
+    for entry in entries:
+        err = _state_entry_valid(entry)
+        if err is not None:
+            raise InvalidInput(f"HR-39: malformed entry ({err})")
+        name = entry["name"]
+        command = entry["command"]
+        pr_wf_path = entry["pr_workflow"]
+        pr_job_id = entry["pr_job"]
+        manifests = entry["manifests"]
+        sched_path = entry["scheduled_workflow"]
+        alert = entry["alert_command"]
+        pr_path, pr_doc = _find_workflow(workflows, pr_wf_path)
+        if pr_doc is None:
+            out.append(f"HR-39: el gate '{name}' declara pr_workflow='{pr_wf_path}' "
+                       "pero ese workflow no esta entre los inputs.")
+            continue
+        sched_real_path, sched_doc = _find_workflow(workflows, sched_path)
+        if sched_doc is None:
+            out.append(f"HR-39: el gate '{name}' declara scheduled_workflow='{sched_path}' "
+                       "pero ese workflow no esta entre los inputs.")
+            continue
+        pr_events = workflow_events(pr_doc)
+        if "pull_request" not in pr_events:
+            out.append(f"HR-39: el gate '{name}' no se ejecuta en pull_request en "
+                       f"{pr_path}; sin disparador de PR no puede gatear el PR.")
+            continue
+        pr_paths = pr_events["pull_request"].get("paths")
+        if not isinstance(pr_paths, list) or not pr_paths:
+            out.append(f"HR-39: el gate '{name}' corre en pull_request sin `paths:` "
+                       f"en {pr_path}; bloquea PRs que no tocan los manifiestos.")
+        else:
+            for m in _paths_cover(manifests, pr_paths):
+                out.append(f"HR-39: el gate '{name}' no cubre el manifiesto '{m}' "
+                           f"en paths: {pr_paths} ({pr_path}).")
+        jobs = pr_doc.get("jobs") or {}
+        pr_job = jobs.get(pr_job_id)
+        if not isinstance(pr_job, dict):
+            out.append(f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                       f"ese job no existe en {pr_path}.")
+        elif not _job_runs_command(pr_job, command):
+            out.append(f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                       f"ese job no ejecuta '{command}' en {pr_path}.")
+        sched_events = workflow_events(sched_doc)
+        if "schedule" not in sched_events:
+            out.append(f"HR-39: el gate '{name}' declara scheduled_workflow='{sched_real_path}' "
+                       "pero ese workflow no tiene disparador schedule:.")
+        if not _any_job_runs_command(sched_doc, command):
+            out.append(f"HR-39: el gate '{name}' corre programado pero ningun job "
+                       f"ejecuta '{command}' en {sched_real_path}.")
+        if not _any_job_runs_command(sched_doc, alert):
+            out.append(f"HR-39: el gate '{name}' corre programado pero no hay paso "
+                       f"que ejecute alert_command='{alert}' en {sched_real_path}; "
+                       "sin alerta, el rojo programado queda sin abrir issue.")
 
 
 def main(argv):
-    ap = argparse.ArgumentParser(description="Workflow policy gate (HR-3, HR-26, HR-30).")
+    ap = argparse.ArgumentParser(description="Workflow policy gate "
+                                "(HR-3, HR-26, HR-30, HR-39).")
     ap.add_argument("--workflow", action="append", required=True)
     ap.add_argument("--required-jobs", required=True)
     ap.add_argument("--base-branch", default="main")
     args = ap.parse_args(argv)
     try:
-        required = load_required(args.required_jobs)
+        required, data = load_required(args.required_jobs)
         docs = [(w, parse_workflow(Path(w).read_text(encoding="utf-8"), w)) for w in args.workflow]
     except (InvalidInput, OSError) as exc:
         print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
@@ -320,6 +454,11 @@ def main(argv):
     for jid in required:
         if jid not in seen:
             findings.append(f"required job '{jid}' is absent from every analyzed workflow")
+    try:
+        check_state_dependent_gates(docs, data, findings)
+    except InvalidInput as exc:
+        print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
+        return 2
     if findings:
         print(f"WORKFLOW-POLICY FAIL: {len(findings)} finding(s)")
         for f in findings:

@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/tests/test_gate_smoke.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_gate_smoke.py
 """Smoke tests: every gate is observed exiting 1 on a real violation (Execution Step 5).
 
 A gate that has never been seen failing is a false guarantee. Each test here feeds a known
@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
 import sqlite3
 import subprocess
 import sys
@@ -241,20 +242,104 @@ def test_branch_name_gate_rejects_invalid_names(branch: str) -> None:
 # ---------------------------------------------------------------------------------------------
 # check_pr_size
 #
-# The diff path needs a git repository, so it is covered by the workflow itself rather than here.
-# The override policy is pure logic and is covered directly: an override with no stated reason
-# must not count as an override.
+# A1 (#518): the budget counts additions + deletions as GitHub reports them, with no exclusions,
+# and the only override is the ``size:exception`` label applied by a separate identity. The body
+# carries no override field, so a ``size-exception-reason:`` line must not change the verdict.
+# The diff runs in a real throwaway repository and the gate is observed through its exit code.
 # ---------------------------------------------------------------------------------------------
 
 
-def test_pr_size_override_requires_a_reason() -> None:
-    module = _load("check_pr_size.py")
-    assert module.override_reason("size:exception") is None
-    assert module.override_reason("") is None
-    assert (
-        module.override_reason("size:exception\nsize-exception-reason: generated migration")
-        == "generated migration"
+def _pr_repo(root: Path, path: str, added_lines: int) -> None:
+    """Make ``root`` a repo whose ``feature`` branch adds ``added_lines`` lines to ``path``."""
+
+    def git(*args: str) -> None:
+        subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
+
+    git("init", "-q", "-b", "main")
+    git("config", "user.email", "gate@example.com")
+    git("config", "user.name", "gate")
+    (root / "README.md").write_text("base\n", encoding="utf-8")
+    git("add", "-A")
+    git("commit", "-q", "-m", "base")
+    git("checkout", "-q", "-b", "feature")
+    target = root / path
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("".join(f"line {i}\n" for i in range(added_lines)), encoding="utf-8")
+    git("add", "-A")
+    git("commit", "-q", "-m", "feat")
+
+
+def _run_pr_size(root: Path, **env: str) -> subprocess.CompletedProcess[str]:
+    gate_env = {"PATH": os.environ["PATH"], "HOME": str(root), **env}
+    return subprocess.run(
+        [sys.executable, str(SCRIPTS / "check_pr_size.py"), "--base-ref", "main"],
+        cwd=root,
+        env=gate_env,
+        capture_output=True,
+        text=True,
+        check=False,
+        encoding="utf-8",
     )
+
+
+def test_pr_size_passes_exactly_at_the_budget(tmp_path: Path) -> None:
+    _pr_repo(tmp_path, "app/service.py", added_lines=399)  # 399 added + 1 deleted = 400
+    assert _run_pr_size(tmp_path, PR_AUTHOR="alice").returncode == 0
+
+
+def test_pr_size_counts_lockfiles_and_generated_files(tmp_path: Path) -> None:
+    _pr_repo(tmp_path, "package-lock.json", added_lines=401)
+    result = _run_pr_size(tmp_path, PR_AUTHOR="alice")
+    assert result.returncode == 1, result.stdout
+    assert "401" in result.stdout
+
+
+def test_pr_size_body_reason_alone_does_not_override(tmp_path: Path) -> None:
+    _pr_repo(tmp_path, "app/service.py", added_lines=401)
+    result = _run_pr_size(
+        tmp_path,
+        PR_AUTHOR="alice",
+        PR_BODY="size-exception-reason: dejaría main roto si lo partimos",
+    )
+    assert result.returncode == 1, result.stdout
+
+
+def test_pr_size_label_by_separate_approver_overrides_without_body_reason(tmp_path: Path) -> None:
+    _pr_repo(tmp_path, "app/service.py", added_lines=401)
+    result = _run_pr_size(tmp_path, PR_AUTHOR="alice", SIZE_EXCEPTION_APPROVER="bob", PR_BODY="")
+    assert result.returncode == 0, result.stdout
+
+
+def test_pr_size_label_by_the_author_does_not_override(tmp_path: Path) -> None:
+    _pr_repo(tmp_path, "app/service.py", added_lines=401)
+    result = _run_pr_size(tmp_path, PR_AUTHOR="alice", SIZE_EXCEPTION_APPROVER="alice")
+    assert result.returncode == 1, result.stdout
+
+
+# Separation of the approver from the PR author (#430, alcance punto 1; HR-33). The CI passes
+# the GitHub login that applied the ``size:exception`` label; the gate fails closed when the
+# approver is the same identity as the author or when no approver is recorded.
+def test_pr_size_override_accepts_separate_approver() -> None:
+    module = _load("check_pr_size.py")
+    assert module.override_has_separate_approver("alice", "bob") is True
+    assert module.override_has_separate_approver("Alice", "bob") is True
+    assert module.override_has_separate_approver("  alice  ", "bob") is True
+
+
+@pytest.mark.parametrize(
+    "author, approver",
+    [
+        ("alice", "alice"),  # same login, exact
+        ("Alice", "alice"),  # case-insensitive
+        ("alice", "  alice  "),  # whitespace-trimmed
+        ("alice", ""),  # no approver recorded — fail closed
+        ("", "bob"),  # no author recorded — fail closed
+        ("", ""),  # neither recorded — fail closed
+    ],
+)
+def test_pr_size_override_rejects_self_or_missing_approver(author: str, approver: str) -> None:
+    module = _load("check_pr_size.py")
+    assert module.override_has_separate_approver(author, approver) is False
 
 
 # ---------------------------------------------------------------------------------------------

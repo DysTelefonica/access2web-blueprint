@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
 """Second copy."""
 
 

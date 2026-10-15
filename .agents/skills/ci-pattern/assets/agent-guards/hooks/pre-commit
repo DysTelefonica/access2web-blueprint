@@ -1,0 +1,44 @@
+#!/bin/sh
+# ci-pattern:agent-guards v1 (pre-commit) — DysTelefonica/team-skills#420
+# Guarda de agente: rechaza commits en la rama protegida y en el checkout
+# principal del consumer (el principal ejecuta cron de produccion; el agente
+# trabaja SIEMPRE en un worktree dedicado). Detectivo, fail-closed.
+#
+# Escape hatch humano explicito: CI_PATTERN_ALLOW_MAIN_CHECKOUT=1 levanta el
+# bloqueo del checkout principal. No levanta el de la rama protegida.
+set -u
+marker_line="# ci-pattern:agent-guards v1"
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  echo "RECHAZADO: pre-commit sin toplevel de git (entorno no inspeccionable)." >&2
+  exit 2
+}
+gitdir=$(git -C "$root" rev-parse --path-format=absolute --git-dir 2>/dev/null) || {
+  echo "RECHAZADO: pre-commit sin --git-dir absoluto." >&2
+  exit 2
+}
+commondir=$(git -C "$root" rev-parse --path-format=absolute --git-common-dir 2>/dev/null) || {
+  echo "RECHAZADO: pre-commit sin --git-common-dir absoluto." >&2
+  exit 2
+}
+
+protected=$(git -C "$root" config --get ci-pattern.protected-branch 2>/dev/null)
+[ -n "$protected" ] || protected=main
+
+branch=$(git -C "$root" symbolic-ref --quiet --short HEAD 2>/dev/null) || branch=""
+
+if [ "$branch" = "$protected" ]; then
+  echo "RECHAZADO: commit en la rama protegida '$protected' (HR-59, #420)." >&2
+  echo "  Salga con git switch -c <tipo>/<issue>-<slug> y trabaje en un worktree." >&2
+  exit 1
+fi
+
+if [ "$gitdir" = "$commondir" ] && [ "${CI_PATTERN_ALLOW_MAIN_CHECKOUT:-}" != "1" ]; then
+  echo "RECHAZADO: commit en el checkout principal (HR-59, #420)." >&2
+  echo "  El checkout principal puede ejecutar cron de produccion. Cree un" >&2
+  echo "  worktree: git worktree add ../<proyecto>-worktrees/<n> -b <rama>." >&2
+  echo "  Uso humano deliberado: CI_PATTERN_ALLOW_MAIN_CHECKOUT=1 git commit ..." >&2
+  exit 1
+fi
+
+exit 0
