@@ -16,6 +16,7 @@ import json
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
+from typing import Any, cast
 
 import sqlalchemy as sa
 from alembic import op
@@ -39,7 +40,7 @@ def _fixture_path() -> Path:
     )
 
 
-def _seeded_events() -> list[dict[str, object]]:
+def _seeded_events() -> list[dict[str, Any]]:
     """The full event list the upgrade() inserts, from the same fixture.
 
     downgrade() matches the discriminating columns the upgrade() writes
@@ -50,7 +51,7 @@ def _seeded_events() -> list[dict[str, object]]:
     set_password.py), so they do not discriminate a seeded row from a
     real one. Issue #928.
     """
-    return json.loads(_fixture_path().read_text())
+    return cast(list[dict[str, Any]], json.loads(_fixture_path().read_text()))
 
 
 def upgrade() -> None:
@@ -89,7 +90,7 @@ def upgrade() -> None:
                 # of #882, CI run 38787186647, after #912 fixed 0005).
                 # Parse the ISO string with `datetime.fromisoformat` so
                 # asyncpg receives a timezone-aware ``datetime``.
-                "created_at": datetime.fromisoformat(event["created_at"]),
+                "created_at": datetime.fromisoformat(cast(str, event["created_at"])),
             },
         )
 
@@ -121,7 +122,7 @@ def downgrade() -> None:
                 # Issue #913: the column is `sa.DateTime(timezone=True)`.
                 # Parse the ISO string with ``datetime.fromisoformat`` so
                 # asyncpg receives a timezone-aware ``datetime``.
-                "created_at": datetime.fromisoformat(event["created_at"]),
+                "created_at": datetime.fromisoformat(cast(str, event["created_at"])),
             }
             for event in events
         ],
