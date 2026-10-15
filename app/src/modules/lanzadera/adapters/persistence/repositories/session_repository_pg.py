@@ -74,4 +74,8 @@ class SessionRepositoryPg:
                 .values(expires_at=sa.func.least(SESSIONS_TABLE.c.expires_at, at))
             )
             result = await db.execute(stmt)
-        return result.rowcount > 0
+            # SQLAlchemy 2.0 types ``execute()`` as ``Result[Any]``; the
+            # sync ``CursorResult.rowcount`` lives on the underlying
+            # ``CursorResult``. ``getattr`` keeps mypy happy.
+            rowcount: int = getattr(result, "rowcount", 0) or 0
+        return rowcount > 0
