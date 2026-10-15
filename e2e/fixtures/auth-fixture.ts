@@ -54,21 +54,10 @@ export const TEST_USER_NAME = "Alice E2E";
 export async function globalSetup(_config: FullConfig): Promise<void> {
   const containerName = process.env.TEST_CONTAINER_NAME ?? "test-app";
 
-  // 1. Apply schema migrations
-  //    The Dockerfile copies `app/migrations/` to `/app/migrations/`,
-  //    including `alembic.ini` and `env.py`. `python -m alembic` walks
-  //    up from cwd looking for `alembic.ini`, but cwd is /app where
-  //    the file does not live. Passing `-c /app/migrations/alembic.ini`
-  //    pins the config and matches the layout shipped by the image.
-  const migrationResult = await runInContainer(containerName, [
-    "python", "-m", "alembic", "-c", "/app/migrations/alembic.ini", "upgrade", "head",
-  ]);
-  console.log(`[e2e:globalSetup] Migrations applied.`);
-  if (migrationResult.exitCode !== 0) {
-    throw new Error(
-      `e2e:globalSetup — alembic failed:\nstdout: ${migrationResult.stdout}\nstderr: ${migrationResult.stderr}`
-    );
-  }
+  // 1. Migrations are applied by the CI step that runs before the app
+  //    starts (ci.yml, `alembic upgrade head` on the runner). They cannot
+  //    run in the container: 0003 reads `data/fixtures/` from the repo
+  //    root, which the image does not contain.
 
   // 2. Seed test users — Python script runs inside the container where
   //    argon2-cffi is available, so we get real hashes for the test passwords.

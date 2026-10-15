@@ -396,7 +396,8 @@ jobs:
     concurrency:
       group: gate-e2e-smoke-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
-    timeout-minutes: 5
+    # Instalar el lock y aplicar migraciones supera los 5 min del job anterior.
+    timeout-minutes: 15
     # Mismo service que el job `integration` (#882/#901): misma imagen
     # con digest, mismas variables y mismo healthcheck. Puerto dinámico;
     # se resuelve en el paso siguiente, nunca se fija a 5432.
@@ -439,6 +440,17 @@ jobs:
             exit 1
           fi
           echo "E2E_DATABASE_URL=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
+
+      - name: Install the lockfile and apply the real migrations
+        # Mismo patrón que el job `integration`: alembic corre en el runner
+        # con el checkout completo, porque 0003 lee data/fixtures/ de la
+        # raíz del repo, que la imagen no incluye.
+        run: |
+          set -euo pipefail
+          python -m pip install --require-hashes --requirement app/requirements-dev.lock
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          DATABASE_URL="$E2E_DATABASE_URL" PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
+            alembic -c app/migrations/alembic.ini upgrade head
 
       - name: Start the app and wait for /health
         env:
