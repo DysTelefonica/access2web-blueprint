@@ -26,6 +26,7 @@ from uuid import UUID
 from fastapi import APIRouter, HTTPException, Request, status
 
 from app.src.modules.lanzadera.delivery.http import admin as _admin
+from app.src.modules.lanzadera.delivery.http.schemas import CreateUserRequest
 from app.src.modules.lanzadera.domain.user import UserStatus
 
 router = APIRouter(prefix="/admin/users", tags=["admin-users-json"])
@@ -93,24 +94,27 @@ async def list_users(request: Request, limit: int = 50, offset: int = 0) -> dict
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_user(
     request: Request,
-    *,
-    email: str,
-    name: str,
-    national_id: str,
+    body: CreateUserRequest,
 ) -> dict[str, object]:
     """Create a new platform user.
 
-    The user is created with ``status=password_reset_required``.
-    A separate reset flow activates the account.
+    Body shape (issue #774) is a JSON object ``{"email", "name",
+    "national_id"}`` validated by ``CreateUserRequest``. The pre-fix
+    signature ``*, email: str, name: str, national_id: str`` silently
+    coerced every field into a query parameter and rejected real JSON
+    bodies with ``422 Field required [query, email]``.
+
+    The user is created with ``status=password_reset_required``; a
+    separate reset flow activates the account.
     """
     await _admin.require_global_admin(request)
     container = _container(request)
     actor = _actor_id(request)
     try:
         user = await container.create_user(  # type: ignore[attr-defined]
-            email=email.strip().lower(),
-            name=name.strip(),
-            national_id=national_id.strip(),
+            email=body.email.strip().lower(),
+            name=body.name.strip(),
+            national_id=body.national_id.strip(),
             actor_id=actor,
         )
     except Exception as exc:  # noqa: BLE001
