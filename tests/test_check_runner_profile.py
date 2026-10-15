@@ -87,8 +87,7 @@ def test_operating_doc_drift_has_no_pull_request_trigger() -> None:
     triggers = _triggers(doc)
     if isinstance(triggers, str):
         assert triggers != "pull_request", (
-            "operating-doc-drift.yml must not run on pull_request "
-            "(issue #858, criterion #2)."
+            "operating-doc-drift.yml must not run on pull_request (issue #858, criterion #2)."
         )
     elif isinstance(triggers, list):
         assert "pull_request" not in triggers, (
@@ -159,8 +158,7 @@ def _catalog_pin_from_yaml() -> str:
     # always appears in a single line as a bare 40-hex SHA.
     candidates = re.findall(r"^#.*?\b([0-9a-f]{40})\b", text, flags=re.MULTILINE)
     assert candidates, (
-        "ci-pattern.yaml header must name the catalog pin as a 40-hex SHA "
-        "in a comment line"
+        "ci-pattern.yaml header must name the catalog pin as a 40-hex SHA in a comment line"
     )
     return candidates[0]
 
@@ -181,9 +179,7 @@ def _catalog_pin_from_workflow() -> str:
                 "DysTelefonica/team-skills"
             ):
                 ref = with_block.get("ref")
-                assert isinstance(ref, str) and re.fullmatch(
-                    r"[0-9a-f]{40}", ref
-                ), (
+                assert isinstance(ref, str) and re.fullmatch(r"[0-9a-f]{40}", ref), (
                     "operating-doc-drift.yml must check out the catalog "
                     f"pin as a 40-hex SHA, got ref={ref!r}"
                 )
