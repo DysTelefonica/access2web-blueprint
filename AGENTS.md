@@ -271,11 +271,7 @@ Saltarse cualquiera deja a la IA operando contra arquitectura obsoleta.
 
 `docs/03-aplicaciones/<app>/walkthrough-*.json` se regenera con dysflow + codegraph-vba. Cambios "manuales" del JSON quedan desincronizados con la realidad del binario. No editar a mano.
 
-## §F.6 Convención multi-app en commits
-
-El prefijo de commit identifica la app afectada: `fix(expedientes): ...`, `docs(lanzadera): ...`, `chore(platform): ...`. Conventional commit con placeholder `(app)` literal se considera violación de convention (ver `CONTRIBUTING.md` §Convención multi-app). El scope del commit debe ser siempre una sola app o plataforma; los commits cross-cutting van a `platform/` o `chore(platform):`.
-
-## §F.7 Skills locales no distribuidas por catalog
+## §F.6 Skills locales no distribuidas por catalog
 
 Este repo mantiene dos skills propias que **no están en el catalog** y no se sobrescriben en propagación:
 
@@ -283,6 +279,17 @@ Este repo mantiene dos skills propias que **no están en el catalog** y no se so
 - `skills/documentation-alan-style/` — formato documental (Castellano peninsular, sentence case, sin emojis). El catalog tiene su propia `documentation-alan-style` que SOBREESCRIBE esta local; la divergencia histórica entre ambas se cierra tras la primera propagación exitosa.
 
 Si una IA llega al repo y NO ve `architecture-guardrails` cargada, está operando contra arquitectura obsoleta.
+
+## §F.7 Preguntas obligatorias antes de pedir `size:exception`
+
+La etiqueta `size:exception` es la última opción, no la regla. Solo procede si partir la PR dejaría `main` roto (una regla a medias o una migración sin su código). El agente nunca pone la etiqueta: la pide al mantenedor respondiendo en el cuerpo de la PR, bajo `## Excepción de tamaño`, a estas preguntas:
+
+1. ¿Qué parte puede ir antes en una PR propia sin romper `main` (refactor previo, puerto o servicio con sus tests, docs)?
+2. ¿Se puede partir por sub-comportamiento o por capa (dominio → ruta → plantilla + e2e)?
+3. ¿Hay cambios que no se pidieron (formato, renombrados, limpieza)? Quítalos antes de medir.
+4. Si se fusiona solo la primera mitad, ¿qué se rompe exactamente en `main`? Nombra el test o el fichero concreto. Si no puedes nombrarlo, la PR se parte.
+
+"Son sobre todo tests" o "es un solo comportamiento" no bastan.
 <!-- /personal-skills:slice:access2web-blueprint -->
 
 ## Guía local del repositorio
