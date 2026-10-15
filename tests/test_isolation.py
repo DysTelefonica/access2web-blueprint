@@ -32,7 +32,6 @@ import socket
 
 import pytest
 
-
 # Module-level canary: set when this module is first imported, before any
 # test or fixture runs. The ``_isolate_unit_env`` autouse fixture must
 # clear it before any unit-test body executes. If the fixture is missing
