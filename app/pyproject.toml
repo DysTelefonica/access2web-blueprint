@@ -37,13 +37,13 @@ dependencies = [
     "cryptography>=50.0,<51",      # AES-GCM for NationalIdCipher (CA-S4). Pinned above the 49.0.0 CVE floor (PYSEC-2026-3553/3554) and the 48.0.1 floor (GHSA-537c-gmf6-5ccf).
     "sqlalchemy==2.0.*",           # Core ORM for adapters (Phase 4).
     "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
-    "asyncpg==0.30.*",             # Postgres driver for SQLAlchemy (Phase 4).
+    "asyncpg>=0.30,<0.33",             # Postgres driver for SQLAlchemy (Phase 4).
     "fastapi>=0.142,<0.144",           # Sobre 0.121.3: es la versión cuya restricción deja entrar starlette 1.x.
     "starlette>=1.0,<2",           # Línea con los arreglos de PYSEC-2026-161/248/249/2280/2281.
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
     "httpx==0.28.*",               # Test client + downstream HTTP.
-    "cachetools==5.*",             # TTLCache adapter (DA-8).
+    "cachetools>=5,<8",             # TTLCache adapter (DA-8).
     "python-multipart==0.0.*",     # FastAPI form parsing.
     "uvicorn[standard]==0.30.*",   # ASGI server for delivery.
 ]
@@ -59,7 +59,7 @@ dev = [
     "pytest-socket==0.7.0",        # Network isolation for the unit suite (issue #883).
     "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
     "pip-audit==2.9.0",            # Dependency scan (security.yml).
-    "types-cachetools==6.2.0.20260408",     # Type stubs for cachetools (DA-8, WU AD5).
+    "types-cachetools==7.0.0.20260713",     # Type stubs for cachetools (DA-8, WU AD5).
     "cosmic-ray==8.7.0",           # QC-11 mutation tooling: the weekly `mutation` job and `make mutation` cannot run without it (#785).
     "vulture==2.16",               # QC-12 dead-code ratchet: scripts/check_deadcode.py runs `vulture app/ --min-confidence 80` against .deadcode-baseline.txt (#875).
 ]
