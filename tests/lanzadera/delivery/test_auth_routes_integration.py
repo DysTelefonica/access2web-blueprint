@@ -398,13 +398,17 @@ def test_me_returns_401_without_token(auth_client: TestClient) -> None:
 def test_me_returns_enriched_identity(auth_client: TestClient, fake_fixtures: FakeFixtures) -> None:
     """Valid Bearer → 200 + user identity + assigned apps.
 
-    The JWT ``sub`` must be ``user.id`` so that ``get_my_apps`` finds
-    the seeded assignments (the middleware puts ``sub`` into
-    ``request.state.user_id``).
+    The JWT ``sub`` is ``session.id`` (production convention; the W62
+    login route signs ``sub=str(session.id)``). ``AuthMiddleware``
+    looks up the session row, populates ``state.user_id`` with
+    ``session.user_id`` and ``state.session_id`` with ``session.id``
+    (issue #773 closed the conflation that mapped both fields to
+    ``session.id``). ``/auth/me`` reads ``state.user_id`` to find the
+    user and ``get_my_apps`` to find the assignments.
     """
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
     profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
@@ -441,7 +445,8 @@ def test_require_global_admin_returns_403_for_non_admin(
 ) -> None:
     """JWT present but caller not in ``global_admins`` → 403 Forbidden."""
     user = _seed_active_user(fake_fixtures)
-    token = _mint_jwt(sub=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=_session.id)
     # Intentionally NOT calling ``fake_fixtures.global_admins.grant(user.id)``.
 
     response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
@@ -456,7 +461,8 @@ def test_require_global_admin_passes_for_admin(
     """Caller IS in ``global_admins`` → 200 OK (the gate passes)."""
     user = _seed_active_user(fake_fixtures)
     fake_fixtures.global_admins.members.add(user.id)
-    token = _mint_jwt(sub=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
@@ -467,12 +473,14 @@ def test_require_global_admin_passes_for_admin(
 def test_require_global_admin_returns_503_without_container(
     fake_fixtures: FakeFixtures,
 ) -> None:
-    """``app.state.container = None`` → 503 Service Unavailable.
+    """``app.state.container = None`` → 401 (fail-closed, #773).
 
-    The lifespan logs a warning when the container is not initialised
-    (e.g. ``DATABASE_URL`` not configured); the gate must not silently
-    bypass — it returns 503 so the caller can distinguish a missing
-    backend from a real auth decision.
+    Issue #773 closes the silent bypass path: when the lifespan cannot
+    build a container, ``AuthMiddleware`` cannot verify the session,
+    so ``state.user_id`` stays empty and the gate returns 401. The
+    previous assertion of 503 (gate-only check) relied on the JWT
+    signature being trusted without a session lookup — that contract
+    changed with the fix.
     """
     container = _build_container(fake_fixtures)
     app = _build_protected_app(container)
@@ -480,12 +488,13 @@ def test_require_global_admin_returns_503_without_container(
 
     user = _seed_active_user(fake_fixtures)
     fake_fixtures.global_admins.members.add(user.id)
-    token = _mint_jwt(sub=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     with TestClient(app) as test_client:
         response = test_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
-    assert response.status_code == 503
+    assert response.status_code == 401
 
 
 # ---------------------------------------------------------------------------
@@ -519,8 +528,7 @@ def test_my_apps_returns_apps_with_profiles_and_capabilities(
     """User with one assignment gets the app + profile + capabilities."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    # JWT sub must be user.id so that get_my_apps finds the assignment
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
     profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
@@ -571,8 +579,7 @@ def test_my_capabilities_returns_profile_keys(
     """User assigned to app → returns the profile's capability names."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    # JWT sub must be user.id so effective_permissions finds the assignment
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
     profile = _seed_profile(
@@ -711,7 +718,7 @@ def test_require_capability_returns_403_when_user_lacks_cap(
     """User has no assignment for app_id → 403."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     response = cap_client.get("/apps/7/records", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
@@ -723,7 +730,7 @@ def test_require_capability_passes_when_user_has_capability(
     """User assigned to app with 'Calidad' capability → 200."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _app = _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
     profile = _seed_profile(fake_fixtures, app_id=7, code="CALIDAD", capabilities={"Calidad": True})
