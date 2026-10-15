@@ -66,7 +66,7 @@ WORKFLOWS_DIR = Path(__file__).resolve().parent.parent / ".github" / "workflows"
 
 #: Recommended timeout per gate criticality. Fail on missing altogether.
 _TIMEOUT_RECOMMENDED = {
-    "review-budget": 5,  # PR-size + branch-name, both <1s
+    "pr-gate": 5,  # PR-size + walkthrough schema, both <1s
     "security": 15,  # docker pull + scan; observed 17-min zombie in #117
     "quality": 30,  # ruff + mypy + pytest + 4 quality gates
     "mutation": 60,  # cosmic-ray is slow by design

@@ -123,46 +123,23 @@ def test_complexity_ceiling_is_absolute_not_top_n() -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# check_branch_name
-# ---------------------------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize("branch", ["feat/42-lanzadera-auth", "fix/7-crlf-count", "main"])
-def test_branch_name_gate_accepts_valid_names(branch: str) -> None:
-    assert _run("check_branch_name.py", "--branch", branch).returncode == 0
-
-
-@pytest.mark.parametrize(
-    "branch",
-    [
-        "lanzadera-auth",
-        "feat/lanzadera-auth",
-        "feat/42_lanzadera_auth",
-        "FEAT/42-auth",
-        "develop",
-    ],
-)
-def test_branch_name_gate_rejects_invalid_names(branch: str) -> None:
-    assert _run("check_branch_name.py", "--branch", branch).returncode == 1
-
-
-# ---------------------------------------------------------------------------------------------
 # check_pr_size
 #
-# The diff path needs a git repository, so it is covered by the workflow itself rather than here.
-# The override policy is pure logic and is covered directly: an override with no stated reason
-# must not count as an override.
+# The git diff path needs a real repository, so it is covered by
+# `tests/lanzadera/test_pr_size_wiring.py`. The override policy is pure logic
+# and is covered here: with issue #854 the override is the `size:exception`
+# label on the PR, applied by the maintainer; the PR body no longer carries a
+# `size-exception-reason:` field and is not consulted by the gate.
 # ---------------------------------------------------------------------------------------------
 
 
-def test_pr_size_override_requires_a_reason() -> None:
+def test_pr_size_override_is_size_exception_label() -> None:
     module = _load("check_pr_size.py")
-    assert module.override_reason("size:exception") is None
-    assert module.override_reason("") is None
-    assert (
-        module.override_reason("size:exception\nsize-exception-reason: generated migration")
-        == "generated migration"
-    )
+    assert module.has_size_exception_label([]) is False
+    assert module.has_size_exception_label(["type:refactor"]) is False
+    assert module.has_size_exception_label(["size:exception"]) is True
+    # Other labels alongside the override must not stop it from counting.
+    assert module.has_size_exception_label(["type:refactor", "size:exception"]) is True
 
 
 # ---------------------------------------------------------------------------------------------
@@ -359,12 +336,11 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
         "check_layers.py",
         "check_complexity.py",
         "check_dry.py",
-        "check_branch_name.py",
     ],
 )
 def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
     root = FIXTURES / "layers_clean"
-    args = ["--branch", "main"] if gate_script == "check_branch_name.py" else ["--root", str(root)]
+    args = ["--root", str(root)]
     result = _run(gate_script, *args, "--json")
     envelope = json.loads(result.stdout)
     assert envelope["gate"]
