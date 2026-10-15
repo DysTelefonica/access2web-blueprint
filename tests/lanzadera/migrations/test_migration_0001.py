@@ -28,6 +28,7 @@ import secrets
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import asyncpg
 import pytest
@@ -93,10 +94,25 @@ FORBIDDEN_AUDIT_COLUMNS: tuple[str, ...] = (
 # Database creation borrows the credentials shipped by docker-compose.yml
 # (Phase 0). The port stays on the loopback because the test runs in WSL
 # alongside the `docker compose up -d postgres` container.
-PG_HOST = "127.0.0.1"
-PG_PORT = 5432
 PG_USER = "lanzadera"
 PG_PASSWORD = "lanzadera-dev-only"
+
+
+def _pg_endpoint() -> tuple[str, int]:
+    """Host and port of the integration Postgres.
+
+    The CI job publishes Postgres on a dynamic host port and exports the real
+    DSN in ``APAP_INTEGRATION_URL`` (or ``INTEGRATION_DSN``). Without a DSN the
+    loopback default ``127.0.0.1:5432`` applies (local docker compose).
+    """
+    dsn = os.environ.get("APAP_INTEGRATION_URL") or os.environ.get("INTEGRATION_DSN")
+    if not dsn:
+        return "127.0.0.1", 5432
+    parts = urlsplit(dsn)
+    return parts.hostname or "127.0.0.1", parts.port or 5432
+
+
+PG_HOST, PG_PORT = _pg_endpoint()
 
 
 def _worktree_root() -> Path:
@@ -267,7 +283,11 @@ def migrated_db(
     assert schema structure, then a module-finaliser drops the database.
     """
     if not integration_enabled:
-        pytest.skip("APAP_INTEGRATION_ENABLED=1 required for migration tests")
+        pytest.fail(
+            "Issue #882: APAP_INTEGRATION_ENABLED is not 1. The integration "
+            "DSN gate must fail closed, not skip, so a missing Postgres "
+            "shows up as a red CI instead of a silently green one."
+        )
     asyncio.run(_create_test_database(test_db_name))
     try:
         _run_alembic(worktree_root, alembic_ini, test_db_name, "upgrade", "head")

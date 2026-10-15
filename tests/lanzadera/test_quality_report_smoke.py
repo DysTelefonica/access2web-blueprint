@@ -18,6 +18,12 @@ from pathlib import Path
 
 import pytest
 
+# Issue #882: the suite-populated guard (`scripts/check_suites_populated.py`)
+# pins each mandatory suite against disappearing under a rename. Every test
+# in this file is a gate-smoke run against `scripts/quality_report.py` as
+# a subprocess, so the file-level marker is the honest mark.
+pytestmark = pytest.mark.e2e_smoke
+
 
 def _find_script() -> Path:
     here = Path(__file__).resolve()
