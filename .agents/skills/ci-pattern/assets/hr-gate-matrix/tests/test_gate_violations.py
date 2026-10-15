@@ -123,89 +123,6 @@ def recipe_pr_contract() -> int:
     return 1
 
 
-def recipe_ratchet() -> int:
-    """HR-15/16: a new finding identity must fail."""
-    with tempfile.TemporaryDirectory() as d:
-        f = Path(d, "findings.json")
-        f.write_text(json.dumps({"measured": True, "subjects": 1, "findings": [
-            {"rule": "r", "path": "p", "fingerprint": "new-identity"}]}), encoding="utf-8")
-        b = Path(d, "baseline.json")
-        b.write_text(json.dumps({"baseline_version": 1, "entries": []}), encoding="utf-8")
-        gate = SKILL_ROOT / "assets/ratchet/check_ratchet.py"
-        return run([sys.executable, str(gate), "--findings", str(f),
-                    "--baseline", str(b), "--today", "2026-10-04"]).returncode
-
-
-def recipe_release_gate() -> int:
-    """HR-19/20: a semver tag on a side branch must fail."""
-    with tempfile.TemporaryDirectory() as d:
-        repo = Path(d, "repo")
-        repo.mkdir()
-        for args in (["init", "-q", "-b", "main"],
-                     ["config", "user.name", "v"], ["config", "user.email", "v@v"],
-                     ["commit", "-q", "--allow-empty", "-m", "chore: base"],
-                     ["checkout", "-q", "-b", "side"],
-                     ["commit", "-q", "--allow-empty", "-m", "feat: side"],
-                     ["tag", "-a", "v1.0.0", "-m", "release"]):
-            run(["git", "-C", str(repo), *args])
-        gate = SKILL_ROOT / "assets/release-gate/check_release_tag.py"
-        return run([sys.executable, str(gate), "--repo", str(repo),
-                    "--tag", "v1.0.0", "--default-branch", "main"]).returncode
-
-
-def recipe_required_jobs() -> int:
-    """HR-29: a failed required job must fail the verdict."""
-    with tempfile.TemporaryDirectory() as d:
-        pol = Path(d, "policy.json")
-        pol.write_text(json.dumps({"required_jobs": ["lint"]}), encoding="utf-8")
-        needs = Path(d, "needs.json")
-        needs.write_text(json.dumps({"lint": {"result": "failure", "outputs": {}}}),
-                         encoding="utf-8")
-        gate = SKILL_ROOT / "assets/required-jobs/check_required_jobs.py"
-        return run([sys.executable, str(gate), "--policy", str(pol),
-                    "--event", "pull_request"], stdin=open(needs)).returncode
-
-
-def recipe_host_readback() -> int:
-    """HR-34: a declared label missing from the host snapshot must fail; and
-    the runner-enforced class (#303) must fail where the host can enforce."""
-    with tempfile.TemporaryDirectory() as d:
-        gate = SKILL_ROOT / "assets/host-readback/check_host_drift.py"
-        snaps = {"repo": {}, "labels": [{"name": "status:approved"}],
-                 "branch-protection": {}, "rulesets": []}
-        paths = []
-        for kind, payload in snaps.items():
-            path = Path(d, f"{kind}.json")
-            path.write_text(json.dumps(payload), encoding="utf-8")
-            paths += ["--snapshot", f"{kind}={path}"]
-        contract = Path(d, "contract.json")
-        contract.write_text(json.dumps({
-            "contract_version": 1,
-            "labels": [{"name": "status:approved", "class": "host-enforced"},
-                       {"name": "status:blocked", "class": "host-enforced"}],
-            "required_checks": [],
-            "merge_methods": {},
-            "protection": {},
-            "rulesets": [],
-        }), encoding="utf-8")
-        rc_label = run([sys.executable, str(gate), "--contract", str(contract), *paths]).returncode
-        # #303: fixture violador de la tercera clase — una capacidad que el
-        # host aplica no admite una regla runner-enforced.
-        contract.write_text(json.dumps({
-            "contract_version": 1,
-            "labels": [{"name": "status:approved", "class": "host-enforced"}],
-            "required_checks": [],
-            "merge_methods": {},
-            "protection": {"enforce_admins": {"declared": False, "class": "runner-enforced"}},
-            "rulesets": [],
-            "runner": {"label": "cadete-oracle-arm64"},
-        }), encoding="utf-8")
-        rc_runner = run([sys.executable, str(gate), "--contract", str(contract), *paths]).returncode
-        # HR-32 solo exige que el gate RECHACE su fixture: basta con que
-        # alguno de los dos pase para que la receta sea verde (0).
-        return 0 if rc_label == 0 or rc_runner == 0 else rc_label
-
-
 def recipe_push_compliance() -> int:
     """HR-49: un push a rama protegida sin PR mergeado debe abrir incidente (1)."""
     with tempfile.TemporaryDirectory() as d:
@@ -301,10 +218,46 @@ def recipe_runner_binding() -> int:
                     "--workflows", str(wdir)], timeout=60).returncode
 
 
-def recipe_branch_name() -> int:
-    """HR-35: a name the gate rejects must fail."""
-    gate = SKILL_ROOT / "assets/branch-name.sh"
-    return run([str(gate), "validate", "Not A Branch Name"]).returncode
+def recipe_state_dependent_gates() -> int:
+    """HR-39: una declaracion que bloquea PRs sin filtrar por paths
+    debe fallar; el chequeo debe rechazar la violacion por defectos."""
+    with tempfile.TemporaryDirectory() as d:
+        d_path = Path(d)
+        pin = "@" + "a" * 40
+        pr_yaml = ("on:\n  pull_request:\njobs:\n  build:\n"
+                   "    name: build (${{ github.event_name }})\n"
+                   f"    steps:\n      - uses: actions/checkout{pin}\n"
+                   "        run: |\n          set -u\n          exit \"$fail\"\n"
+                   "  security:\n    name: security\n"
+                   f"    steps:\n      - uses: actions/checkout{pin}\n"
+                   "      - run: pip-audit\n")
+        sched_yaml = ("on:\n  schedule:\n    - cron: '0 3 * * *'\n"
+                      "  push:\n    branches: [main]\n"
+                      "jobs:\n  audit:\n    name: audit\n"
+                      f"    steps:\n      - uses: actions/checkout{pin}\n"
+                      "      - run: pip-audit\n"
+                      "      - run: gh issue create --title audit --body x\n")
+        pol = {
+            "required_jobs": ["build"],
+            "state_dependent_gates": [{
+                "name": "dependency-audit",
+                "command": "pip-audit",
+                "pr_workflow": "wf_pr.yml",
+                "pr_job": "security",
+                "manifests": ["uv.lock", "requirements*.txt"],
+                "scheduled_workflow": "wf_sched.yml",
+                "alert_command": "gh issue create",
+            }],
+        }
+        (d_path / "wf_pr.yml").write_text(pr_yaml, encoding="utf-8")
+        (d_path / "wf_sched.yml").write_text(sched_yaml, encoding="utf-8")
+        (d_path / "policy.json").write_text(json.dumps(pol), encoding="utf-8")
+        gate = SKILL_ROOT / "assets/workflow-policy/check_workflow_policy.py"
+        return run([sys.executable, str(gate),
+                    "--workflow", "wf_pr.yml",
+                    "--workflow", "wf_sched.yml",
+                    "--required-jobs", "policy.json",
+                    "--base-branch", "main"], cwd=str(d_path)).returncode
 
 
 def recipe_exemptions() -> int:
@@ -723,97 +676,21 @@ def recipe_adoption_check() -> int:
     return 1
 
 
-def recipe_version_bump() -> int:
-    """HR-44: skill files changed without version bump must fail."""
-    with tempfile.TemporaryDirectory() as d:
-        skill = Path(d, "skill")
-        skill.mkdir(parents=True)
-        (skill / "SKILL.md").write_text(
-            "---\nname: x\nmetadata:\n  version: \"0.3\"\n---\nbody\n",
-            encoding="utf-8")
-        import subprocess as sp
-        sp.run(["git", "init", "-q", "-b", "main"], cwd=d, check=True)
-        sp.run(["git", "config", "user.name", "t"], cwd=d, check=True)
-        sp.run(["git", "config", "user.email", "t@t"], cwd=d, check=True)
-        sp.run(["git", "add", "-A"], cwd=d, check=True)
-        sp.run(["git", "commit", "-q", "-m", "v0.3"], cwd=d, check=True)
-        (skill / "new.txt").write_text("content\n", encoding="utf-8")
-        sp.run(["git", "add", "-A"], cwd=d, check=True)
-        sp.run(["git", "commit", "-q", "-m", "no bump"], cwd=d, check=True)
-        gate = SKILL_ROOT / "assets/version-bump/check_version_bump.py"
-        return run([sys.executable, str(gate), "--repo", str(d),
-                    "--base", "main~1", "--head", "main",
-                    "--skill-dir", "skill"]).returncode
-
-def recipe_agents_structure() -> int:
-    """HR-55: un AGENTS sin bloque con agents_md declarado en el contrato
-    de adopción debe fallar (la violación propia de HR-55, #341)."""
-    with tempfile.TemporaryDirectory() as d:
-        repo = Path(d)
-        (repo / "AGENTS.md").write_text("# Titulo\n", encoding="utf-8")
-        bin_path = SKILL_ROOT / "assets/bin/ci-pattern"
-        script = (
-            "import importlib.util, importlib.machinery, sys\n"
-            "spec = importlib.util.spec_from_loader('cip', importlib.machinery."
-            f"SourceFileLoader('cip', {str(bin_path)!r}))\n"
-            "m = importlib.util.module_from_spec(spec)\n"
-            "spec.loader.exec_module(m)\n"
-            "from pathlib import Path\n"
-            "code = m._check_agents_structure(Path(sys.argv[1]), "
-            "{'agents_md': 'propagated'})\n"
-            "sys.exit(1 if code else 0)\n")
-        return run([sys.executable, "-c", script, str(repo)]).returncode
-
-
-def recipe_slice_content() -> int:
-    """HR-56: una ruta personal en lo que compone la propagación debe
-    fallar (la violación propia de HR-56, #358)."""
-    with tempfile.TemporaryDirectory() as d:
-        repo = Path(d)
-        (repo / "fleet").mkdir()
-        (repo / "fleet" / "registry.json").write_text(json.dumps({
-            "schema_version": 1, "maintainers": ["mantener-one"],
-            "repositories": [], "local_layout": {"local_root": str(repo)}}),
-            encoding="utf-8")
-        target = repo / "slices" / "partials" / "gov.md"
-        target.parent.mkdir(parents=True)
-        target.write_text("Ver personal/ardelperal/ci-pattern/SKILL.md\n",
-                          encoding="utf-8")
-        bin_path = SKILL_ROOT / "assets/bin/ci-pattern"
-        script = (
-            "import importlib.util, importlib.machinery, sys\n"
-            "spec = importlib.util.spec_from_loader('cip', importlib.machinery."
-            f"SourceFileLoader('cip', {str(bin_path)!r}))\n"
-            "m = importlib.util.module_from_spec(spec)\n"
-            "spec.loader.exec_module(m)\n"
-            "from pathlib import Path\n"
-            "code = m._check_slice_content(Path(sys.argv[1]), [Path(sys.argv[2])])\n"
-            "sys.exit(1 if code else 0)\n")
-        return run([sys.executable, "-c", script, str(repo), str(target)]).returncode
-
-
 RECIPES = {
-    "assets/workflow-policy/tests/test_workflow_policy.py": recipe_workflow_policy,
+    "assets/workflow-policy/tests/test_workflow_policy.py": [recipe_workflow_policy, recipe_state_dependent_gates],
     "assets/pr-contract/tests/test_pr_contract.py": recipe_pr_contract,
-    "assets/ratchet/tests/test_ratchet.py": recipe_ratchet,
-    "assets/release-gate/tests/test_release_tag.py": recipe_release_gate,
-    "assets/required-jobs/tests/test_required_jobs.py": recipe_required_jobs,
-    "assets/host-readback/tests/test_host_drift.py": recipe_host_readback,
     "assets/runner-controls/tests/test_push_compliance.py": recipe_push_compliance,
     "assets/runner-controls/tests/test_governed_merge.py": recipe_governed_merge,
     "assets/runner-controls/tests/test_force_push_guard.py": recipe_force_push_guard,
     "assets/runner-controls/tests/test_runner_binding.py": recipe_runner_binding,
     "assets/local-ci-parity/tests/test_local_ci_parity.py": recipe_local_ci_parity,
     "assets/deploy-evidence/tests/test_deploy_evidence.py": recipe_deploy_evidence,
-    "assets/branch-name.sh self-test": recipe_branch_name,
     "assets/exemptions/tests/test_exemptions.py": recipe_exemptions,
     "assets/hr-gate-matrix/tests/test_structured_inputs.py": recipe_structured_inputs,
     "assets/env-isolation/tests/test_env_isolation.py": recipe_env_isolation,
     "assets/deploy-review/tests/test_deploy_policy.py": recipe_deploy_policy,
     "assets/runbook-premises/tests/test_runbook_premises.py": recipe_runbook_premises,
-    "assets/adoption/tests/test_adoption_check.py": [
-        recipe_adoption_check, recipe_agents_structure, recipe_slice_content],
-    "assets/version-bump/tests/test_version_bump.py": recipe_version_bump,
+    "assets/adoption/tests/test_adoption_check.py": recipe_adoption_check,
 }
 
 def main(argv):

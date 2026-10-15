@@ -153,6 +153,83 @@ class Discovery(unittest.TestCase):
             self.assertNotIn("owner/two", out)
 
 
+class MergeBaseDiff(unittest.TestCase):
+    """#T6a (Refs #509): el diff se calcula contra el merge-base, no contra
+    la punta de la base del PR. Caso de la auditoría (114818713399,
+    115014106789, 115018249635, 115018311601, 115023387817, 115047671163):
+    main avanza entre la bifurcación y la apertura del PR. Con dos puntos
+    (`base..head`) el commit que entró a main se ve como cambio del PR y
+    dispara HR-44; con tres puntos (`merge-base..head`) sólo cuentan los
+    commits del PR."""
+
+    def _make_pr_with_main_advance(self, d, *, main_extra_files=(), pr_files=()):
+        r = Repo(d)
+        r.write_skill("skills/test-skill", "test-skill", "0.3")
+        r.commit("v0.3")
+        # Bifurcación: la rama de feature parte de aquí.
+        git(r.d, "checkout", "-q", "-b", "feature")
+        # main avanza después de la bifurcación, con un cambio a la skill
+        # que NO bumpa la versión (escenario típico de la auditoría).
+        git(r.d, "checkout", "-q", "main")
+        skill = r.d / "skills" / "test-skill"
+        for rel, content in main_extra_files:
+            (skill / rel).write_text(content, encoding="utf-8")
+        r.commit("main: extra file without bump")
+        # PR: commit en la rama con un cambio a la skill que SÍ bumpa.
+        git(r.d, "checkout", "-q", "feature")
+        for rel, content in pr_files:
+            (skill / rel).write_text(content, encoding="utf-8")
+        r.write_skill("skills/test-skill", "test-skill", "0.4")
+        r.commit("pr: bump to 0.4")
+        return r
+
+    def test_main_extra_commit_does_not_trigger_hr44(self):
+        """El commit de main no cuenta como cambio del PR: HR-44 limpio.
+
+        Con diff de 2 puntos (comportamiento anterior) el archivo de main
+        aparecía como cambio del PR y, sumado al bump, el gate fallaba
+        porque la versión 0.3 de la base y 0.4 de la cabeza se comparaban
+        sin bump intermedio (el bump del PR quedaba enmascarado por la
+        ausencia de bump en main). Con merge-base el diff sólo contiene
+        los commits del PR, la versión sube a 0.4 y el gate es limpio."""
+        with tempfile.TemporaryDirectory() as d:
+            r = self._make_pr_with_main_advance(
+                d,
+                main_extra_files=[("main-only.md", "added on main")],
+                pr_files=[("pr.md", "added on PR")],
+            )
+            code, out = run_gate(
+                r.d, "main", "feature", "skills/test-skill",
+            )
+            self.assertEqual((code, "HR-44" in out), (0, False), out)
+
+    def test_pr_with_no_bump_on_top_of_main_advance_is_a_finding(self):
+        """El PR introduce un cambio a la skill sin bump: HR-44 rojo,
+        y el finding nombra sólo los ficheros del PR (no los de main)."""
+        with tempfile.TemporaryDirectory() as d:
+            r = self._make_pr_with_main_advance(
+                d,
+                main_extra_files=[("main-only.md", "added on main")],
+                pr_files=[("pr.md", "added on PR")],
+            )
+            # Sustituir el bump del PR por un cambio sin bump: la versión
+            # queda en 0.3 en la cabeza de feature.
+            skill = r.d / "skills" / "test-skill"
+            (skill / "SKILL.md").write_text(
+                SKILL_MD.format(name="test-skill", version="0.3"),
+                encoding="utf-8",
+            )
+            git(r.d, "add", "-A")
+            git(r.d, "commit", "-q", "-m", "pr: edit without bump")
+            code, out = run_gate(
+                r.d, "main", "feature", "skills/test-skill",
+            )
+            self.assertEqual(code, 1, out)
+            self.assertIn("HR-44", out)
+            self.assertIn("skills/test-skill", out)
+            self.assertNotIn("main-only.md", out)
+
+
 class InvalidInput(unittest.TestCase):
     def test_unreadable_frontmatter_at_head_exits_two(self):
         with tempfile.TemporaryDirectory() as d:

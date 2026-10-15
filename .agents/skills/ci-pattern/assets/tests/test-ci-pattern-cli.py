@@ -1730,12 +1730,11 @@ class WindowsPortabilityTests(unittest.TestCase):
         ).stdout.strip()
         listing = subprocess.run(
             ["git", "-C", toplevel, "ls-files", "-s",
-             "personal/ardelperal/ci-pattern/assets/bin/ci-pattern",
-             "personal/ardelperal/ci-pattern/assets/branch-name.sh"],
+             "personal/ardelperal/ci-pattern/assets/bin/ci-pattern"],
             capture_output=True, text=True, check=True,
         ).stdout
         modes = [line.split()[0] for line in listing.splitlines()]
-        self.assertEqual(modes, ["100755", "100755"])
+        self.assertEqual(modes, ["100755"])
 
 class AssetInventoryTests(unittest.TestCase):
     """#190: asset-inventory.md coincide con el árbol real de la skill y
@@ -1768,7 +1767,6 @@ class AssetInventoryTests(unittest.TestCase):
         doc = self.DOC.read_text(encoding="utf-8")
         for rel in (
             "assets/bin/ci-pattern",
-            "assets/branch-name.sh",
             "assets/parameters.schema.json",
             "assets/ci-pattern.example.yaml",
             "assets/host-readback/check_host_drift.py",
@@ -1777,6 +1775,19 @@ class AssetInventoryTests(unittest.TestCase):
             "references/delegation-template.md",
         ):
             self.assertIn(rel, doc)
+
+    def test_branch_name_helper_is_withdrawn(self):
+        """#518: el generador de nombre de rama está retirado (el ruleset
+        del repo aplica la regex). El árbol y la ayuda de la skill no lo
+        mencionan como activo entregable."""
+        for rel in (
+            "personal/ardelperal/ci-pattern/assets/branch-name.sh",
+            "personal/ardelperal/ci-pattern/assets/bin/branch-name",
+        ):
+            self.assertFalse(
+                (self.REPO_ROOT / rel).exists(),
+                f"{rel} debe estar retirado",
+            )
 
 
 class WaveSiguienteFreeTests(unittest.TestCase):
