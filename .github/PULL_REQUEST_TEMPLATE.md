@@ -1,6 +1,6 @@
 <!--
 El presupuesto de revisión es 400 líneas (additions + deletions) y se aplica en
-el job `review-budget` del workflow de CI (`scripts/check_pr_size.py`). El gate
+el job `pr-gate` del workflow de CI (`scripts/check_pr_size.py`). El gate
 lee solo la etiqueta `size:exception`, que pone el mantenedor; el cuerpo no
 lleva ningún campo de excepción.
 -->
@@ -46,7 +46,7 @@ Closes #
 ## Checklist
 
 - [ ] La issue canónica vinculada está linkada y tiene `status:approved`.
-- [ ] CI verde contra la base actual: `required`, `quality`, `codeql`, `review-budget` y los tres de `security`.
+- [ ] CI verde contra la base actual: `required`, `quality`, `codeql`, `pr-gate` y los tres de `security`.
 - [ ] Conventional Commits, sin atribución de IA.
 - [ ] La rama remota se preserva tras el merge (nunca `git push origin --delete <rama>`).
 - [ ] El merge lo lanza un mantenedor por el camino del host (ruleset `main-maintainers-and-admins-merge`). Ningún agente aplica `status:approved` ni mergea.

@@ -229,7 +229,7 @@ def main(argv: list[str] | None = None) -> int:
     scripts = (args.scripts or Path(__file__).resolve().parent).resolve()
     out = args.out or (root / "quality-report.json")
 
-    # PR-scoped gates (branch name, PR size) live in the ``review-budget`` CI job
+    # PR-scoped gates (branch name, PR size) live in the ``pr-gate`` CI job
     # (issue #854 removed ``--include-pr-gates`` and the ``PR_GATES`` tuple above).
     envelopes = [run_gate(scripts, script, root, extra) for _, script, extra in GATES]
     report = build_report(root, envelopes)
