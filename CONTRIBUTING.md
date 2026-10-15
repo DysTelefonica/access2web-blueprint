@@ -9,9 +9,32 @@ Consulte esta guía antes de abrir un issue o un PR. Mantenga cada cambio centra
 1. Abra un issue que describa el problema, el alcance y el resultado esperado.
 2. Cree una branch específica a partir de `main`.
 3. Aplique el cambio y documente las decisiones relevantes.
-4. Verifique el contenido con los checks definidos por el repositorio.
+4. Verifique el contenido con los checks definidos por el repositorio (ver la siguiente sección «Antes de abrir una PR»).
 5. Abra un PR pequeño con una descripción verificable.
 6. Responda a la revisión y mantenga actualizada la branch.
+
+## Antes de abrir una PR
+
+La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué verifica cada uno, cómo aprobarlo localmente y el comando que lo replica. La tabla cubre los gates `pr-gate` (revisión barata, primer corte), `quality` (tests, typecheck, cobertura, ratchets de calidad), `security` (gitleaks, pip-audit, trivy-config) y `codeql` (análisis estático). El agregador `required` exige los cuatro jobs verdes sobre la base actual (`ci.yml:497-529`).
+
+| Check | Qué comprueba | Cómo pasarlo | Comando local |
+|---|---|---|---|
+| Nombre de rama (pr-gate) | La rama sigue el patrón gentle-ai `^(feat\|fix\|chore\|docs\|style\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` (sin número de issue); lo enforza el ruleset del host | Nombrarla `<tipo>/<slug>` con kebab-case; las cadenas encadenadas añaden sufijo | — (lo enforza el ruleset, no un script local) |
+| Issue-spec (pr-gate) | El cuerpo lleva `Closes`/`Fixes`/`Resolves`/`Refs #N` apuntando a una issue con `status:approved` y un `type:*` (Refs #855) | Poner `Closes #N` en la primera línea del cuerpo con la issue aprobada | `python scripts/check_issue_spec.py local --body-file <body>` |
+| Tamaño de la PR (pr-gate) | `additions + deletions` de la API de la PR ≤ 400; la etiqueta `size:exception` la pone el mantenedor como override solo cuando partir la PR dejaría `main` roto y tras responder las 4 preguntas de `AGENTS.md` §F.7 (Refs #854) | Partir por unidad de trabajo o encadenar PRs (orden de escape); `size:exception` es la última opción | `python scripts/check_pr_size.py local --base origin/main` |
+| Esquema de walkthroughs (pr-gate) | Los JSON `docs/03-aplicaciones/*/walkthrough-*.json` cumplen el contrato v2.1 (`check_walkthrough_schema.py --strict`) | Regenerar con dysflow + codegraph-vba; nunca editar a mano | `python scripts/check_walkthrough_schema.py --strict` |
+| Lint (pr-gate) | `ruff check` sin findings | `ruff check .` antes de commit | `ruff check --config app/pyproject.toml .` |
+| Formato (quality) | `ruff format` sin cambios en el árbol | `ruff format .` antes de commit | `ruff format --check --config app/pyproject.toml .` |
+| Typecheck (quality) | `mypy --explicit-package-bases app/` verde | `mypy app/` antes de push | `mypy --explicit-package-bases app/` |
+| Workflow gate (quality) | Ningún job de `.github/workflows/*.yml` usa `|| true`, `continue-on-error` ni `pull_request_target`; todos declaran `timeout-minutes` | Diseñar el job con Hard Rule 1, 13 y 15 | `python scripts/check_workflows.py` |
+| Tests y cobertura (quality) | `pytest` verde con `--cov-fail-under` ≥ suelo | Correr la suite antes del push | `pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov` |
+| Quality report (quality) | `quality_report.py` verde en orden `layers → complexity → DRY` | `python scripts/quality_report.py` antes del push | `python scripts/quality_report.py` |
+| Security (gitleaks, pip-audit, trivy-config) | Sin secretos en el diff, sin CVEs en el grafo de dependencias, sin misconfiguraciones trivy | Auditar el diff localmente antes del push; abrir issue de incidente si aparece algo | — (solo CI) |
+| CodeQL | Análisis estático sin alertas de severidad alta | — | — (solo CI) |
+
+> Las preguntas obligatorias antes de pedir `size:exception` viven en `AGENTS.md` §F.7. «Son sobre todo tests» o «es un solo comportamiento» no bastan.
+
+`make verify` ejecuta los gates locales en el mismo orden que el CI (Hard Rule 13): format, lint, typecheck, tests, quality report, check-workflows. Es la única forma de declarar verde una PR sin haber pasado antes por el runner.
 
 ## Conventional Commits
 
@@ -90,32 +113,6 @@ fix(platform): migrar Text(2) a BOOLEAN
 | `[EXP]` | Expedientes |
 | `[XCUT]` | Transversal |
 
-## Tamaño de los PRs
-
-El presupuesto es de **400 líneas** (`additions + deletions`), comprobado por
-`scripts/check_pr_size.py`. No es una cifra arbitraria: es el límite a partir
-del cual una revisión deja de ser atenta y pasa a ser un vistazo.
-
-Cuando el cambio no cabe, el orden de preferencia es este:
-
-1. **Partir por unidad de trabajo.** Si el cambio contiene dos ideas
-   separables, son dos PRs. Es la opción por defecto y casi siempre la correcta.
-2. **PRs encadenados.** Cuando las partes dependen unas de otras y no pueden
-   entrar por separado, cada rama parte de la anterior en lugar de `main`, y
-   cada PR apunta a la rama que le precede. Se integran en orden. Así cada
-   revisión ve una porción entendible en lugar del muro entero.
-3. **`size:exception`.** Último recurso, y sólo cuando el diff grande es
-   inevitable: código generado, dependencias, migraciones. Requiere añadir al
-   cuerpo del PR una línea `size-exception-reason: <motivo>`.
-
-Los commits por unidad de trabajo son los ladrillos; los PRs encadenados son los
-tramos de muro. Un cambio grande se trocea al planificarlo, no al final, cuando
-el gate ya ha rebotado.
-
-Usar `size:exception` para ahorrarse un corte deja el gate sin sentido. Si se
-recurre a ella con frecuencia, el problema no es el presupuesto: es que el
-trabajo se está planificando en piezas demasiado grandes.
-
 ## Reglas específicas de este repositorio
 
 - Mantenga los PRs pequeños y centrados en una única idea.
@@ -136,6 +133,8 @@ eliminándolos. Se perdería justo la granularidad que el trabajo por unidades
 pretende crear: `main` conserva el qué, y la rama, el cómo se llegó.
 
 El coste es una lista de ramas larga. La convención de nombre
-`<tipo>/<nº issue>-<slug>` la mantiene navegable.
+`<tipo>/<slug>` (patrón gentle-ai, sin número de issue; lo enforza el ruleset)
+la mantiene navegable; la trazabilidad con la issue vive en el cuerpo del PR,
+con `Closes #N`.
 
 [← Back to README](README.md) · [Next: CHANGELOG.md →](CHANGELOG.md)
