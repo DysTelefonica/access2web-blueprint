@@ -49,13 +49,20 @@ def _is_control(line):
 
 
 def _signature(cmd):
+    """Devuelve el comando COMPLETO normalizado (whitespace colapsado,
+    sin asignaciones `VAR=` iniciales, sin `sudo`/`env` líderes), NO los
+    dos primeros tokens. HR-4 exige comparar el comando con sus
+    opciones/flags (enmienda #396): 'python3 x.py --informational' y
+    'python3 x.py' son comandos distintos. Mide el defecto de la
+    version 1.14.12: la firma de dos tokens colapsaba ambos y daba
+    falso verde sobre el lint de ardelperal/APAP_WEB."""
+    if not cmd:
+        return ""
     toks = cmd.split()
     while toks and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", toks[0]):
         toks = toks[1:]
     if toks and toks[0] in ("sudo", "env"):
         toks = toks[1:]
-    if len(toks) >= 2:
-        return f"{toks[0]} {toks[1]}"
     return " ".join(toks)
 
 
@@ -260,10 +267,30 @@ def main(argv=None):
                             "una exención sin motivo no gobierna (HR-34).")
     local_f = [s for s in local_sigs if not _excluded(s, exclusions, "local", used)]
     ci_f = [s for s in ci_sigs if not _excluded(s, exclusions, "ci", used)]
+
+    def _flag_counterpart(sig, others):
+        """Devuelve el candidato de `others` cuya unica diferencia con
+        `sig` son flags/opciones finales (uno es `other + ' '`-prefijo
+        del otro). Se usa para nombrar ambas formas exactas en un
+        hallazgo cuando la friccion F1 (#396) es solo de opciones."""
+        for cand in sorted(others):
+            if cand == sig:
+                continue
+            if sig.startswith(cand + " ") or cand.startswith(sig + " "):
+                return cand
+        return None
+
+    def _unmatched_finding(tag, sig, other_set):
+        counterpart = _flag_counterpart(sig, other_set)
+        if counterpart:
+            return (f"comando {tag}: este lado ejecuta {sig!r} pero el otro "
+                    f"ejecuta {counterpart!r} (difieren en opciones/flags)")
+        return f"comando {tag}: {sig!r}"
+
     for tag, side, other in (("del CI sin entrada local", ci_f, local_f),
                              ("local sin correspondencia en el CI", local_f, ci_f)):
         for sig in sorted(set(side) - set(other)):
-            findings.append(f"comando {tag}: {sig!r}")
+            findings.append(_unmatched_finding(tag, sig, other))
     common = [s for s in local_f if s in set(ci_f)]
     if common != [s for s in ci_f if s in set(common)]:
         findings.append(

@@ -18,7 +18,8 @@ GATE = ASSET / "check_workflow_policy.py"
 sys.path.insert(0, str(GATE.parent))
 import check_workflow_policy as gate  # noqa: E402
 
-POLICY = {"required_jobs": ["build"], "events": {"pull_request": {"accepted_skips": []}}}
+POLICY = {"required_jobs": ["build"], "events": {"pull_request": {"accepted_skips": []}},
+           "state_dependent_gates": []}
 PINNED = "uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
 RUN_OK = "set -u\n          exit \"$fail\""
 
@@ -181,6 +182,201 @@ class HR30PrEventOnly(GateCase):
                 tail="  other:\n    steps:\n      - " + PINNED + "\n        run: echo ok\n"), 0, None),
             ("degenerate on as scalar list", yml(on="on: [pull_request]"), 0, None),
         ])
+
+
+SCHED_PINNED = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
+
+
+GOOD_BUILD = """  build:
+    name: build (${{ github.event_name }})
+    steps:
+      - uses: """ + SCHED_PINNED + """
+        run: |
+          set -u
+          exit "$fail"
+"""
+
+SECURITY_TAIL = """  security:
+    name: security
+    steps:
+      - uses: """ + SCHED_PINNED + """
+      - run: pip-audit
+"""
+
+AUDIT_TAIL_GOOD = """  audit:
+    name: audit
+    steps:
+      - uses: """ + SCHED_PINNED + """
+      - run: pip-audit
+      - run: gh issue create --title audit --body x
+"""
+
+AUDIT_TAIL_NO_ALERT = """  audit:
+    name: audit
+    steps:
+      - uses: """ + SCHED_PINNED + """
+      - run: pip-audit
+"""
+
+
+def pr_wf(paths_flow="[uv.lock, requirements*.txt]"):
+    if paths_flow:
+        on = "on:\n  pull_request:\n    paths: " + paths_flow + "\n"
+    else:
+        on = "on:\n  pull_request:\n"
+    return on + "jobs:\n" + GOOD_BUILD + SECURITY_TAIL
+
+
+def sched_wf(tail=AUDIT_TAIL_GOOD,
+             on_block="on:\n  schedule:\n    - cron: '0 3 * * *'\n  push:\n    branches: [main]\n"):
+    return on_block + "jobs:\n" + tail
+
+
+GOOD_STATE_ENTRY = {
+    "name": "dependency-audit",
+    "command": "pip-audit",
+    "pr_workflow": "wf_pr.yml",
+    "pr_job": "security",
+    "manifests": ["uv.lock", "requirements*.txt"],
+    "scheduled_workflow": "wf_sched.yml",
+    "alert_command": "gh issue create",
+}
+
+REQUIRED_POLICY = {"required_jobs": ["build"]}
+
+
+class HR39StateDependentGates(unittest.TestCase):
+    """HR-39: un gate dependiente de estado externo va programado y solo
+    bloquea PRs que tocan los manifiestos declarados."""
+
+    def run_pair(self, pr_text, sched_text, policy=None):
+        pol = dict(REQUIRED_POLICY)
+        if policy is not None:
+            pol.update(policy)
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            p = d_path / "policy.json"
+            pr_path = d_path / "wf_pr.yml"
+            sched_path = d_path / "wf_sched.yml"
+            p.write_text(json.dumps(pol), encoding="utf-8")
+            pr_path.write_text(pr_text, encoding="utf-8")
+            sched_path.write_text(sched_text, encoding="utf-8")
+            cmd = [sys.executable, str(GATE),
+                   "--workflow", "wf_pr.yml",
+                   "--workflow", "wf_sched.yml",
+                   "--required-jobs", "policy.json", "--base-branch", "main"]
+            out = subprocess.run(cmd, capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout, out.stderr
+
+    def run_pair_no_sched(self, pr_text, policy):
+        pol = dict(REQUIRED_POLICY)
+        pol.update(policy)
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            p = d_path / "policy.json"
+            pr_path = d_path / "wf_pr.yml"
+            p.write_text(json.dumps(pol), encoding="utf-8")
+            pr_path.write_text(pr_text, encoding="utf-8")
+            cmd = [sys.executable, str(GATE),
+                   "--workflow", "wf_pr.yml",
+                   "--required-jobs", "policy.json", "--base-branch", "main"]
+            out = subprocess.run(cmd, capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout, out.stderr
+
+    def assert_clean_hr39(self, code, out, err):
+        self.assertEqual(code, 0, (out, err))
+        self.assertNotIn("HR-39", out)
+        self.assertNotIn("HR-39", err)
+
+    def test_clean_declaration_exits_zero(self):
+        """(a) declaracion limpia: PR con paths cubriendo manifiestos y
+        schedule con audit + alert: verde."""
+        pol = {"state_dependent_gates": [GOOD_STATE_ENTRY]}
+        code, out, err = self.run_pair(pr_wf(), sched_wf(), policy=pol)
+        self.assert_clean_hr39(code, out, err)
+
+    def test_pull_request_without_paths_is_finding(self):
+        """(b) pull_request sin paths: el gate bloquea PRs que no tocan
+        manifiestos. Finding HR-39."""
+        pol = {"state_dependent_gates": [GOOD_STATE_ENTRY]}
+        code, out, err = self.run_pair(pr_wf(paths_flow=""), sched_wf(), policy=pol)
+        self.assertEqual(code, 1, (out, err))
+        self.assertIn("HR-39", out)
+        self.assertIn("paths", out)
+
+    def test_manifest_not_covered_is_finding(self):
+        """(c) un manifiesto declarado que ningun path pattern cubre: finding."""
+        pol = {"state_dependent_gates": [GOOD_STATE_ENTRY]}
+        code, out, err = self.run_pair(
+            pr_wf(paths_flow="[pyproject.toml]"), sched_wf(), policy=pol)
+        self.assertEqual(code, 1, (out, err))
+        self.assertIn("HR-39", out)
+        self.assertIn("uv.lock", out)
+        self.assertIn("requirements", out)
+
+    def test_no_scheduled_workflow_is_finding(self):
+        """(d) el policy declara scheduled_workflow pero no aparece en inputs: finding."""
+        pol = {"state_dependent_gates": [GOOD_STATE_ENTRY]}
+        code, out, err = self.run_pair_no_sched(pr_wf(), policy=pol)
+        self.assertEqual(code, 1, (out, err))
+        self.assertIn("HR-39", out)
+        self.assertIn("wf_sched.yml", out)
+
+    def test_scheduled_without_alert_is_finding(self):
+        """(e) el workflow programado no ejecuta el alert_command: finding."""
+        pol = {"state_dependent_gates": [GOOD_STATE_ENTRY]}
+        code, out, err = self.run_pair(
+            pr_wf(), sched_wf(tail=AUDIT_TAIL_NO_ALERT), policy=pol)
+        self.assertEqual(code, 1, (out, err))
+        self.assertIn("HR-39", out)
+        self.assertIn("gh issue create", out)
+
+    def test_key_absent_exits_zero_with_notice(self):
+        """(f) state_dependent_gates ausente: el gate imprime notice por
+        stderr y sale 0 (fail-open; lo cierra por fuera el doctor)."""
+        code, out, err = self.run_pair(pr_wf(), sched_wf())
+        self.assertEqual(code, 0, (out, err))
+        self.assertIn("HR-39", err)
+        self.assertNotIn("HR-39", out)
+
+    def test_empty_list_exits_zero(self):
+        """Una lista vacia es declaracion valida: 'no tenemos gates
+        dependientes de estado'. El propio repo del patron es dogfood de
+        este caso."""
+        pol = {"state_dependent_gates": []}
+        code, out, err = self.run_pair(pr_wf(), sched_wf(), policy=pol)
+        self.assertEqual(code, 0, (out, err))
+        self.assertNotIn("HR-39", out)
+        self.assertNotIn("HR-39", err)
+
+    def test_malformed_entry_exits_two(self):
+        """(g) entrada malformada (campo obligatorio ausente, manifests
+        vacio, manifests no lista de cadenas): exit 2 sin nombrar HR-39."""
+        bad_entries = [
+            ({"name": "x"}, "missing-fields"),
+            (dict(GOOD_STATE_ENTRY, manifests=[]), "manifests-empty"),
+            (dict(GOOD_STATE_ENTRY, manifests="uv.lock"), "manifests-not-list"),
+            (dict(GOOD_STATE_ENTRY, manifests=["uv.lock", 42]), "manifests-non-str"),
+            (dict(GOOD_STATE_ENTRY, name=""), "name-empty"),
+            (dict(GOOD_STATE_ENTRY, command=""), "command-empty"),
+            (dict(GOOD_STATE_ENTRY, pr_workflow=""), "pr-workflow-empty"),
+            (dict(GOOD_STATE_ENTRY, pr_job=""), "pr-job-empty"),
+            (dict(GOOD_STATE_ENTRY, scheduled_workflow=""), "scheduled-empty"),
+            (dict(GOOD_STATE_ENTRY, alert_command=""), "alert-empty"),
+        ]
+        for bad, label in bad_entries:
+            with self.subTest(case=label):
+                pol = {"state_dependent_gates": [bad]}
+                code, out, err = self.run_pair(pr_wf(), sched_wf(), policy=pol)
+                self.assertEqual(code, 2, (out, err))
+                # El shape invalido es exit 2 por HR-3 y HR-18, no por HR-39.
+                self.assertNotIn("HR-39", out)
+
+    def test_top_level_must_be_list(self):
+        pol = {"state_dependent_gates": {"name": "x"}}
+        code, out, err = self.run_pair(pr_wf(), sched_wf(), policy=pol)
+        self.assertEqual(code, 2, (out, err))
+        self.assertIn("state_dependent_gates", err)
 
 
 class Cross(GateCase):

@@ -57,6 +57,7 @@ dev = [
     "mypy==1.13.0",                # QC-4 typecheck (platform/src/ only).
     "pytest==8.4.2",               # Strict-TDD runner.
     "pytest-asyncio==1.4.0",       # Async test runner (DR2 reset-flow fixtures in tests/lanzadera/auth/ use async; pytest-asyncio honours asyncio_mode = \"auto\").
+    "pytest-socket==0.7.0",        # Network isolation for the unit suite (issue #883).
     "pyyaml==6.0.3",               # Required by tests/test_ci_workflow.py.
     "pip-audit==2.9.0",            # Dependency scan (security.yml).
     "types-cachetools==6.2.0.20260408",     # Type stubs for cachetools (DA-8, WU AD5).
@@ -161,6 +162,16 @@ addopts = [
     "--strict-markers",
     "--strict-config",
     "-p no:randomly",
+    # Network isolation: unit tests cannot open sockets to the public internet.
+    # `--allow-hosts=127.0.0.1` keeps the loopback alive (in-process fakes, ASGI
+    # TestClient over a unix socket bound to 127.0.0.1, the local SMTP sink).
+    # `--allow-unix-socket` keeps domain sockets (Postgres under pg_tmp_dir,
+    # sqlite-via-named-pipe when the suite uses one). Integration tests opt
+    # out via `pytestmark = pytest.mark.integration` or `@pytest.mark.e2e`,
+    # which the autouse fixture in `tests/conftest.py` honours.
+    "--disable-socket",
+    "--allow-unix-socket",
+    "--allow-hosts=127.0.0.1",
 ]
 # `pythonpath = [".."]` makes the worktree root importable from pytest's
 # sys.path.
@@ -176,6 +187,16 @@ testpaths = [
 # failed at COLLECTION, before a single assertion ran.
 markers = [
     "integration: touches a real database or another out-of-process dependency",
+    "e2e: end-to-end test that exercises a live deployment-shaped stack (ASGI server + DB + fixtures)",
+    # ``allow_uncaught_hosts`` is a marker that the ``pytest-socket``
+    # plugin reads: tests decorated with it may open sockets to
+    # ``hosts`` listed in ``--allow-hosts`` even when ``--disable-socket``
+    # is on. The unit suite uses it on the loopback-connect probe in
+    # ``tests/test_isolation.py`` (W88 #883). With ``--strict-markers``
+    # on, the marker must be declared here, otherwise collection fails
+    # with ``'allow_uncaught_hosts' not found in 'markers' configuration
+    # option`` before a single assertion runs.
+    "allow_uncaught_hosts: opt a single test out of --disable-socket for the hosts listed in --allow-hosts (used by pytest-socket)",
 ]
 # ``asyncio_mode = "auto"`` lets the existing test files (which use
 # ``await`` inside sync ``def test_*``) keep working without an explicit

@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
+from datetime import datetime
 from pathlib import Path
 
 import sqlalchemy as sa
@@ -34,7 +35,10 @@ SCHEMA = "lanzadera"
 def upgrade() -> None:
     fixture = (
         Path(__file__).parent.parent.parent.parent
-        / "data" / "fixtures" / "lanzadera" / "assignments.json"
+        / "data"
+        / "fixtures"
+        / "lanzadera"
+        / "assignments.json"
     )
     assignments = json.loads(fixture.read_text())
 
@@ -64,16 +68,21 @@ def upgrade() -> None:
                 "user_id": row["user_id"],
                 "app_id": row["app_id"],
                 "profile_id": row["profile_id"],
-                "granted_at": row["granted_at"],
+                # Issue #911: the column is `sa.DateTime(timezone=True)`
+                # (see 0001_core_schema.py). The previous binding
+                # passed the raw JSON string `row["granted_at"]` and
+                # raised `DataError: invalid input for query argument:
+                # ... expected a datetime.date or datetime.datetime
+                # instance, got 'str'` the first time the integration
+                # job ran alembic against a real Postgres service (PR-3
+                # of #882, CI run 38782719315). Parse the ISO string
+                # with `datetime.fromisoformat` so asyncpg receives a
+                # timezone-aware `datetime`.
+                "granted_at": datetime.fromisoformat(row["granted_at"]),
             },
         )
 
 
 def downgrade() -> None:
     bind = op.get_bind()
-    bind.execute(
-        sa.text(
-            f"DELETE FROM {SCHEMA}.user_app_assignments"
-            " WHERE granted_by IS NULL"
-        )
-    )
+    bind.execute(sa.text(f"DELETE FROM {SCHEMA}.user_app_assignments WHERE granted_by IS NULL"))

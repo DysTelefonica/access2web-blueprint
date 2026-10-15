@@ -1,4 +1,4 @@
-<!-- HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/README.md -->
+<!-- HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/README.md -->
 
 # Assets — reference implementation of the harness
 

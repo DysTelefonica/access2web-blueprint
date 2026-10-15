@@ -9,7 +9,7 @@
   "chain_tip_requires_closes": true,
   "closes_pattern": "Closes|Fixes|Resolves",
   "review_budget_lines": 400,
-  "size_exception_field": "size-exception-reason:",
+  "size_exception_label": "size:exception",
   "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\\([^)]+\\))?!?: ",
   "ai_attribution_patterns": [
     "Co-Authored-By:",

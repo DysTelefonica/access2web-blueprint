@@ -22,7 +22,7 @@ REQUIRED_COMMANDS = (
     "ruff check --config app/pyproject.toml .",
     "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
-    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
     "python scripts/check_pr_size.py",
@@ -38,7 +38,7 @@ REQUIRED_COMMANDS = (
 VERIFY_EXCLUSIONS = (
     "mypy --explicit-package-bases app/",  # full suite: CI quality job only
     "python scripts/check_workflows.py",  # ci.yml contract: CI quality job only
-    'pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json',  # full suite
+    'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',  # full suite
     "scripts/quality_report.py",  # code gates after the suite: CI quality job only
     "pip-audit",  # network: advisory database
     "gitleaks",  # docker

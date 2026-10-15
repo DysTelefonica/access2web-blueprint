@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.8 — assets/scripts/quality_policy.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/quality_policy.py
 """Load the canonical quality policy and bind evidence to candidate and scope identities."""
 
 from __future__ import annotations
