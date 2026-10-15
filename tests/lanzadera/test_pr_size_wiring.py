@@ -118,33 +118,205 @@ def test_rule_5_binary_output_without_warnings(adds, dels, expected_rc, tmp_path
 
 
 # ---------------------------------------------------------------------------------------------
-# Rama vendorizada (issue #918): las rutas de skills copiadas desde team-skills no cuentan.
+# Rama vendorizada: las rutas de skills copiadas desde team-skills no cuentan como autoría.
 # ---------------------------------------------------------------------------------------------
 
 
+def _event_with_repo(tmp_path, additions, deletions, labels=()):
+    """Evento de pull_request con número y repositorio base: habilita el desglose por fichero."""
+    payload = {
+        "pull_request": {
+            "number": 910,
+            "additions": additions,
+            "deletions": deletions,
+            "labels": [{"name": name} for name in labels],
+            "base": {"repo": {"full_name": "DysTelefonica/access2web-blueprint"}},
+        }
+    }
+    path = tmp_path / "event.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return str(path)
+
+
 @pytest.mark.parametrize(
-    ("path", "expected"),
-    [
-        (".agents/skills/ci-pattern/SKILL.md", True),
-        ("skills/documentation-alan-style/SKILL.md", True),
-        ("scripts/check_pr_size.py", False),
-        ("skillsx/a.md", False),
-        ("myskills/skills/a.md", False),
-        ("docs/skills/a.md", False),
-    ],
+    "path",
+    [".agents/skills/ci-pattern/SKILL.md", "skills/documentation-alan-style/SKILL.md"],
 )
-def test_rule_6_vendored_roots_are_matched_as_prefixes(path, expected):
-    """Rule 6: only the two vendored roots count as copied skills; look-alikes do not."""
+def test_vendored_paths_are_not_author_lines(path):
+    """Rule 6: the two vendored roots are excluded; the path is compared as a prefix."""
     module = _load()
-    assert module.is_vendored(module.FileChange(path, added=1, deleted=0)) is expected
+    assert module.is_vendored(module.FileChange(path, added=1, deleted=0)) is True
 
 
-def test_rule_9_without_breakdown_or_with_a_partial_one_counts_everything():
-    """Rule 9: no breakdown, or one that does not add up to the total, counts the whole PR."""
+@pytest.mark.parametrize(
+    "path",
+    ["scripts/check_pr_size.py", "skillsx/a.md", "myskills/skills/a.md", "docs/skills/a.md"],
+)
+def test_author_paths_are_not_vendored(path):
+    """Rule 6: look-alike paths and nested `skills` directories stay author lines."""
     module = _load()
-    assert module.author_lines(16000, None) == 16000
-    partial = [module.FileChange("skills/a.md", added=100, deleted=0)]
-    assert module.author_lines(16000, partial) == 16000
+    assert module.is_vendored(module.FileChange(path, added=1, deleted=0)) is False
+
+
+def test_rule_7_pr_with_only_vendored_paths_passes(tmp_path, monkeypatch):
+    """Rule 7: a PR that only touches vendored skills (#910 shape) is within budget."""
+    module = _load()
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setattr(
+        module,
+        "fetch_pr_files",
+        lambda repo, number, token: [
+            module.FileChange(".agents/skills/ci-pattern/SKILL.md", added=5000, deleted=6000),
+            module.FileChange("skills/documentation-alan-style/SKILL.md", added=2000, deleted=3000),
+        ],
+    )
+    assert module.main(["pr-event", _event_with_repo(tmp_path, 7000, 9000)]) == 0
+
+
+@pytest.mark.parametrize(
+    ("author_add", "author_del", "expected_rc", "expected_author"),
+    [(300, 0, 0, "300"), (350, 100, 1, "450")],
+    ids=["mixed-within", "mixed-over"],
+)
+def test_rule_8_mixed_pr_counts_only_author_lines(
+    author_add, author_del, expected_rc, expected_author, tmp_path, monkeypatch, capsys
+):
+    """Rule 8: a mixed PR is judged on its author lines, not on the vendored ones."""
+    module = _load()
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setattr(
+        module,
+        "fetch_pr_files",
+        lambda repo, number, token: [
+            module.FileChange("scripts/check_pr_size.py", author_add, author_del),
+            module.FileChange(".agents/skills/x/SKILL.md", added=5000, deleted=4000),
+        ],
+    )
+    event = _event_with_repo(tmp_path, author_add + 5000, author_del + 4000)
+    assert module.main(["pr-event", event]) == expected_rc
+    if expected_rc:
+        assert expected_author in capsys.readouterr().err
+
+
+def test_rule_8_rename_into_vendored_path_still_counts_the_author_side(tmp_path, monkeypatch):
+    """Rule 8: a file renamed from an author path into a vendored one keeps counting."""
+    module = _load()
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setattr(
+        module,
+        "fetch_pr_files",
+        lambda repo, number, token: [
+            module.FileChange(
+                ".agents/skills/x.md", added=0, deleted=450, previous_path="docs/x.md"
+            ),
+        ],
+    )
+    assert module.main(["pr-event", _event_with_repo(tmp_path, 0, 450)]) == 1
+
+
+@pytest.mark.parametrize("fetch_result", [None, []], ids=["no-breakdown", "empty-breakdown"])
+def test_rule_9_fail_closed_counts_everything(fetch_result, tmp_path, monkeypatch):
+    """Rule 9: without a breakdown that adds up to the event total, every line counts."""
+    module = _load()
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setattr(module, "fetch_pr_files", lambda repo, number, token: fetch_result)
+    assert module.main(["pr-event", _event_with_repo(tmp_path, 7000, 9000)]) == 1
+
+
+def test_rule_9_inconsistent_breakdown_counts_everything(tmp_path, monkeypatch, capsys):
+    """Rule 9: a breakdown that does not add up to the event total (truncated list) fails closed."""
+    module = _load()
+    monkeypatch.setenv("GITHUB_TOKEN", "t")
+    monkeypatch.setattr(
+        module,
+        "fetch_pr_files",
+        lambda repo, number, token: [module.FileChange("skills/a.md", added=100, deleted=0)],
+    )
+    assert module.main(["pr-event", _event_with_repo(tmp_path, 7000, 9000)]) == 1
+    assert "16000" in capsys.readouterr().err
+
+
+def test_rule_9_without_token_never_calls_the_api(tmp_path, monkeypatch):
+    """Rule 9: with no GITHUB_TOKEN the breakdown is not requested and the total counts."""
+    module = _load()
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+
+    def must_not_call(repo, number, token):
+        raise AssertionError("no debe llamar a la API sin token")
+
+    monkeypatch.setattr(module, "fetch_pr_files", must_not_call)
+    assert module.main(["pr-event", _event_with_repo(tmp_path, 7000, 9000)]) == 1
+
+
+class _FakeResponse:
+    def __init__(self, body):
+        self._body = body
+
+    def read(self):
+        return self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_rule_10_fetch_maps_files_and_sends_the_token_only_to_github():
+    """Rule 10: Files API entries map per file; the job token goes only to api.github.com."""
+    module = _load()
+    seen = []
+
+    def opener(request, timeout):
+        seen.append((request.full_url, request.get_header("Authorization")))
+        body = [
+            {"filename": "skills/a.md", "additions": 3, "deletions": 1},
+            {
+                "filename": ".agents/skills/b.md",
+                "previous_filename": "docs/b.md",
+                "additions": 0,
+                "deletions": 2,
+            },
+        ]
+        return _FakeResponse(json.dumps(body).encode("utf-8"))
+
+    files = module.fetch_pr_files("DysTelefonica/access2web-blueprint", 910, "t", opener=opener)
+    assert files == [
+        module.FileChange("skills/a.md", added=3, deleted=1),
+        module.FileChange(".agents/skills/b.md", added=0, deleted=2, previous_path="docs/b.md"),
+    ]
+    url, auth = seen[0]
+    assert url.startswith(
+        "https://api.github.com/repos/DysTelefonica/access2web-blueprint/pulls/910/files"
+    )
+    assert auth == "Bearer t"
+
+
+def _raise_oserror(request, timeout):
+    raise OSError("sin red")
+
+
+def _answer_not_a_list(request, timeout):
+    return _FakeResponse(b'{"message": "Not Found"}')
+
+
+def _answer_full_pages_forever(request, timeout):
+    # 100 files per page for every page: the listing never ends within the 3000-file cap.
+    body = [{"filename": "a", "additions": 1, "deletions": 0}] * 100
+    return _FakeResponse(json.dumps(body).encode("utf-8"))
+
+
+@pytest.mark.parametrize(
+    "opener",
+    [_raise_oserror, _answer_not_a_list, _answer_full_pages_forever],
+    ids=["network-error", "not-a-list", "more-than-3000-files"],
+)
+def test_rule_11_fetch_failures_return_none(opener):
+    """Rule 11: any failure, malformed answer or incomplete listing means no breakdown."""
+    module = _load()
+    assert (
+        module.fetch_pr_files("DysTelefonica/access2web-blueprint", 910, "t", opener=opener) is None
+    )
 
 
 def test_rule_12_local_mode_excludes_vendored_lines(tmp_path):
