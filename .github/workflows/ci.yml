@@ -50,6 +50,10 @@ jobs:
     # an ephemeral GitHub-hosted runner, never on repository infrastructure.
     runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
+    # `issues: read` lets the issue-spec step fetch the issue linked by the PR body.
+    permissions:
+      contents: read
+      issues: read
     # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
@@ -96,6 +100,13 @@ jobs:
           BASE_REF: origin/${{ github.event.pull_request.base.ref }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: python scripts/check_pr_size.py
+
+      - name: issue spec
+        # The PR body is attacker-controlled: the event file is read as data by the
+        # gate, and the token is only used for the read-only issue lookup.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"
 
       - name: walkthrough schema
         # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST

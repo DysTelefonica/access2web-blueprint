@@ -412,11 +412,6 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # After the sprint, --strict activates in ci.yml's quality job and this entry
     # is removed. Issue #535 tracks the exit criteria.
     "check_test_classification.py",
-    # Issue #855 ships the unit-tested gate (scripts/check_issue_spec.py).
-    # Issue #857 (PR-C of the same chain) wires it into the pr-gate step of
-    # ci.yml and removes this entry. The script is owned by #855; the wiring
-    # is owned by #857 by design — see issue #855 §"Alcance y no objetivos".
-    "check_issue_spec.py",
     # Issue #857 (PR-B): the branch-name job leaves ci.yml, so the script has no
     # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
     "check_branch_name.py",
@@ -624,6 +619,26 @@ def test_heavy_jobs_run_on_pr_and_queue_only_after_pr_gate_passed_or_skipped(
     )
     for job in ("quality", "security", "codeql"):
         assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
+
+
+def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
+    """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
+
+    It needs `issues: read` (the job-level grant) and the runner token, so the
+    step gets both explicitly rather than inheriting a broader default.
+    """
+    job = workflow["jobs"]["pr-gate"]
+    assert job["permissions"] == {"contents": "read", "issues": "read"}
+    steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
+    assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
+    step = steps[0]
+    assert step["run"] == 'python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"'
+    assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
+def test_issue_spec_leaves_known_pending_gates(run_blocks: list[str]) -> None:
+    """Issue #857, PR-C: once wired, check_issue_spec.py is no longer an exception."""
+    assert "check_issue_spec.py" not in KNOWN_PENDING_GATES
 
 
 def test_branch_name_is_no_longer_wired_into_ci(run_blocks: list[str]) -> None:
