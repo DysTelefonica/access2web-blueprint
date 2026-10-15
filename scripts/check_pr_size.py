@@ -109,7 +109,11 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"PR size: {total} (limit {MAX_CHANGED_LINES}).", file=sys.stderr)
     if args.mode == "pr-event":
-        print(f"Apply the '{SIZE_EXCEPTION_LABEL}' label or split the PR.", file=sys.stderr)
+        print(
+            "Split the PR. Only the maintainer applies "
+            f"'{SIZE_EXCEPTION_LABEL}', after the 4 questions in the PR body.",
+            file=sys.stderr,
+        )
     else:
         print("local mode has no override; reduce the diff or split the PR.", file=sys.stderr)
     return 1
