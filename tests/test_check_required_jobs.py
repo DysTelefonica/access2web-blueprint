@@ -84,9 +84,18 @@ def test_pr_gate_skip_is_a_violation_on_pull_request() -> None:
     assert gate.check_results(needs, "pull_request") == ["pr-gate: result='skipped'"]
 
 
-def test_security_or_codeql_skip_is_never_allowed() -> None:
-    """`security` and `codeql` carry no `if:` guard — they must always run."""
-    for job in ("security", "codeql", "quality"):
+def test_heavy_jobs_skip_is_never_allowed() -> None:
+    """Heavy jobs must always run; carrying no `if:` guard, skip is a violation.
+
+    The four jobs in question — `quality`, `integration`, `security` and
+    `codeql` — run the unit, integration, e2e-smoke-via-subprocess and code
+    scanning gates respectively. A skipped gate is always a violation,
+    regardless of the event (`pull_request`, `push`, `schedule`,
+    `workflow_dispatch`). Issue #882, PR-3 added `integration` to this
+    set; a skipped integration gate would be the same false guarantee
+    PR-2 removed from the DSN fixture.
+    """
+    for job in ("quality", "integration", "security", "codeql"):
         needs = _needs()
         needs[job]["result"] = "skipped"
         assert gate.check_results(needs, "push") == [f"{job}: result='skipped'"]

@@ -594,7 +594,7 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
         "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
         "&& !cancelled()"
     )
-    assert required["needs"] == ["pr-gate", "quality", "security", "codeql"]
+    assert required["needs"] == ["pr-gate", "quality", "integration", "security", "codeql"]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
     assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
@@ -613,10 +613,107 @@ def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) ->
     assert "review-budget" not in jobs
 
 
+def test_integration_job_runs_pytest_m_integration_against_postgres_service() -> None:
+    """Issue #882, PR-3: the integration job wires ci.yml to the in-job Postgres service.
+
+    The DSN fixture (PR-2) fails closed when the integration URL is missing;
+    this job provides that URL by running postgres as a service so the
+    integration tests have a real database to talk to. The contract is
+    three things at once:
+
+      1. The job exists and declares ``services: postgres`` (so a
+         later rename to an external service changes the contract).
+      2. The image is pinned by SHA256 digest (the image runs as the
+         pin, not whatever tag a publisher swaps under it later — ``pull_policy:
+         always`` makes the digest load-bearing, a stale local cache would
+         be a silent replay vulnerability in a release gate).
+      3. The pytest command runs the full integration suite with no path
+         filter — ``pytest -m integration`` — because partial coverage
+         is what made this gate a false guarantee in the first place.
+    """
+    workflow = yaml.safe_load(_find_workflow().read_text(encoding="utf-8"))
+    job = workflow["jobs"]["integration"]
+
+    # (1) services: postgres exists. The exact service name is part of
+    # the contract: it is referenced from the body of the step that
+    # resolves the DSN from the assigned host port.
+    assert "services" in job, (
+        "`integration` job must declare `services:` (issue #882, PR-3): "
+        "without a Postgres service the integration tests have no DSN"
+    )
+    assert "postgres" in job["services"], (
+        "`integration.services.postgres` is the contract (issue #882, PR-3). "
+        "Got: " + repr(list(job["services"].keys()))
+    )
+    postgres = job["services"]["postgres"]
+
+    # (2) image is pinned by SHA256 digest. A bare tag is exactly the
+    # supply-chain drift this guard exists to detect; a substring match
+    # is fine because the digest format is fixed-length and unambiguous.
+    image = postgres["image"]
+    assert "@sha256:" in image, (
+        f"`integration.services.postgres.image` must be pinned by SHA256 "
+        f"digest (issue #882, PR-3). Got: {image!r}. A bare tag like "
+        f"`postgres:16-alpine` is third-party code that can change between "
+        f"two otherwise identical runs."
+    )
+
+    # (3) the pytest run is `-m integration` with no path filter. A path
+    # filter on the integration job would re-introduce the partial-coverage
+    # hole that the levels comment on #882 explicitly rejects.
+    pytest_steps = [step for step in job["steps"] if "pytest" in step.get("run", "")]
+    assert pytest_steps, (
+        "`integration` job must contain at least one `pytest` step "
+        "(issue #882, PR-3). Without one, the job is a green rollup that "
+        "never asserts anything."
+    )
+    runs = [step["run"] for step in pytest_steps]
+    assert any("-m integration" in run for run in runs), (
+        f"`integration` pytest step must select `integration` marker "
+        f"(issue #882, PR-3). Got runs: {runs!r}. No-path-filter is the "
+        f"point: a subset of the suite is what made this gate a false "
+        f"guarantee in the first place."
+    )
+
+
+def test_integration_job_runs_alembic_upgrade_before_pytest() -> None:
+    """Issue #882, PR-3: the integration suite expects an up-to-date schema.
+
+    The test files (``test_migration_0001.py``, ``test_user_repository_pg.py``)
+    assume a clean schema. An alembic upgrade step BEFORE pytest is the
+    contract; without it the integration suite is testing against a stale
+    schema and the migration itself is untested.
+    """
+    workflow = yaml.safe_load(_find_workflow().read_text(encoding="utf-8"))
+    job = workflow["jobs"]["integration"]
+    step_names = [step.get("name", "") for step in job["steps"]]
+
+    # The "Apply migrations" step name is the one the integration suite
+    # expects; if a rename moves the contract here the test catches it.
+    migration_steps = [step for step in job["steps"] if "alembic" in step.get("run", "")]
+    assert migration_steps, (
+        "`integration` job must run `alembic upgrade` before pytest "
+        "(issue #882, PR-3). Without it, the suite tests against a "
+        "stale schema and the migration itself is untested in CI."
+    )
+    pytest_steps = [step for step in job["steps"] if "pytest" in step.get("run", "")]
+    assert pytest_steps, "pytest step expected (covered by another test)"
+
+    # The migration step must appear BEFORE the pytest step in the
+    # job's steps list. ``steps`` preserves YAML order.
+    migration_index = job["steps"].index(migration_steps[0])
+    pytest_index = job["steps"].index(pytest_steps[0])
+    assert migration_index < pytest_index, (
+        f"`alembic upgrade` (index {migration_index}) must run before "
+        f"`pytest` (index {pytest_index}) in the integration job "
+        f"(issue #882, PR-3). Step names: {step_names!r}"
+    )
+
+
 def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
-    """Issue #857, PR-B: a failed gate must not pay for quality, security or codeql."""
+    """Issue #857, PR-B: a failed gate must not pay for quality, security, codeql or integration."""
     jobs = workflow["jobs"]
-    for job in ("quality", "security", "codeql"):
+    for job in ("quality", "security", "codeql", "integration"):
         assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
 
 
@@ -629,7 +726,9 @@ def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
     net on `main`), `schedule` (nightly) and `workflow_dispatch` (manual)
     it is `skipped`. The heavy jobs that `needs: pr-gate` must accept the
     skip on every one of those events. `merge_group` is gone: the queue
-    left with the gentle-ai model.
+    left with the gentle-ai model. Issue #882, PR-3 extends the same
+    shape to `integration` so the in-job Postgres service runs after the
+    merge and on the nightly as well — not just on the PR event.
     """
     jobs = workflow["jobs"]
     expected = (
@@ -638,7 +737,7 @@ def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
         "&& !cancelled() "
         "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
     )
-    for job in ("quality", "security", "codeql"):
+    for job in ("quality", "security", "codeql", "integration"):
         assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
 
 
