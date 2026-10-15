@@ -55,10 +55,20 @@ export async function globalSetup(_config: FullConfig): Promise<void> {
   const containerName = process.env.TEST_CONTAINER_NAME ?? "test-app";
 
   // 1. Apply schema migrations
-  await runInContainer(containerName, [
+  const migrationResult = await runInContainer(containerName, [
     "python", "-m", "alembic", "upgrade", "head",
   ]);
-  console.log("[e2e:globalSetup] Migrations applied.");
+  console.log(
+    `[e2e:globalSetup] Migrations applied. ` +
+    `exit=${migrationResult.exitCode} ` +
+    `stdout=${migrationResult.stdout.trim()} ` +
+    `stderr=${migrationResult.stderr.trim()}`
+  );
+  if (migrationResult.exitCode !== 0) {
+    throw new Error(
+      `e2e:globalSetup — alembic failed:\nstdout: ${migrationResult.stdout}\nstderr: ${migrationResult.stderr}`
+    );
+  }
 
   // 2. Seed test users — Python script runs inside the container where
   //    argon2-cffi is available, so we get real hashes for the test passwords.
@@ -70,38 +80,40 @@ export async function globalSetup(_config: FullConfig): Promise<void> {
   //    an earlier binding; the PR's release-yml / nightly runs hit the
   //    `ImportError` on the new image.
   //
-  //    The DB file path is found by scanning common locations the
-  //    app / alembic could have written to (uvicorn may have started
-  //    with a different effective cwd than the Dockerfile WORKDIR,
-  //    so the relative `./test.db` URL can resolve to a different
-  //    absolute path than /app/test.db). The first existing match is
-  //    used. The previous attempt at a single absolute path
-  //    (/app/test.db) failed because the migrations step had placed
-  //    the file elsewhere; this lookup keeps the seed working as long
-  //    as the migrations step and the seed step agree on *some*
-  //    location.
+  //    The DB file is found by inspecting the container: list /app
+  //    and /tmp, glob for any `test.db`, and use the first match.
+  //    Earlier heuristics that hard-coded /app/test.db failed because
+  //    uvicorn or alembic created the file in a different path inside
+  //    the container; the search converges on the actual location.
   const seedScript = `
-import glob, os, sqlite3, sys, uuid
+import glob, os, sqlite3, subprocess, sys, uuid
 from argon2 import PasswordHasher
 
-candidates = [
-    os.environ.get("DATABASE_URL", "").split("///", 1)[-1],
-    "/app/test.db",
-    "/app/app/test.db",
-    "./test.db",
-]
-candidates = [os.path.abspath(p) if p and not p.startswith("/") else p for p in candidates if p]
-candidates += glob.glob("/app/**/test.db", recursive=True)
-candidates += glob.glob("/tmp/**/test.db", recursive=True)
+print(f"[e2e:seed] cwd={os.getcwd()} uid={os.getuid()} db_url={os.environ.get('DATABASE_URL','')}")
+try:
+    print(f"[e2e:seed] ls /app = {os.listdir('/app')}")
+except Exception as e:
+    print(f"[e2e:seed] ls /app failed: {e}")
+try:
+    print(f"[e2e:seed] ls . = {os.listdir('.')}")
+except Exception as e:
+    print(f"[e2e:seed] ls . failed: {e}")
 
 db_path = None
-for cand in candidates:
-    if isinstance(cand, str) and os.path.exists(cand):
+for cand in (
+    glob.glob("/app/**/test.db", recursive=True)
+    + glob.glob("/app/**/*.sqlite*", recursive=True)
+    + glob.glob("/tmp/**/*.sqlite*", recursive=True)
+    + glob.glob("/tmp/**/*.db", recursive=True)
+    + glob.glob("/var/**/*.db", recursive=True)
+):
+    if os.path.isfile(cand) and os.path.getsize(cand) > 0:
         db_path = cand
         break
-print(f"[e2e:seed] cwd={os.getcwd()} tried={candidates} picked={db_path}")
+
+print(f"[e2e:seed] picked={db_path}")
 if db_path is None:
-    sys.exit("seed: database file not found in any known location")
+    sys.exit("seed: database file not found after migrations")
 
 # Generate real Argon2id hashes using the container's argon2-cffi
 h = PasswordHasher()
