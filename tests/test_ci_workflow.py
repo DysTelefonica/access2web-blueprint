@@ -1037,4 +1037,3 @@ def test_e2e_smoke_job_exists_and_runs_on_pull_request(workflow: dict) -> None:
         f"`required.needs` is {required['needs']!r}; debe incluir "
         "`e2e-smoke` para que branch protection lo exija (#876)"
     )
-
