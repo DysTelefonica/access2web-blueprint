@@ -658,6 +658,18 @@ def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
     assert "PR_BODY" not in env
 
 
+def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> None:
+    """Issue #918: the size gate reads the per-file breakdown from the PR Files API.
+
+    It needs `pull-requests: read` (the job-level grant) and the runner token, so the
+    step gets the token explicitly; without it the gate counts the whole PR.
+    """
+    job = workflow["jobs"]["pr-gate"]
+    assert job["permissions"]["pull-requests"] == "read"
+    step = [s for s in job["steps"] if s.get("name") == "pr size"][0]
+    assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
 def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
@@ -665,7 +677,7 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     step gets both explicitly rather than inheriting a broader default.
     """
     job = workflow["jobs"]["pr-gate"]
-    assert job["permissions"] == {"contents": "read", "issues": "read"}
+    assert job["permissions"] == {"contents": "read", "issues": "read", "pull-requests": "read"}
     steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
     assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
     step = steps[0]
