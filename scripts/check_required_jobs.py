@@ -38,7 +38,7 @@ from collections.abc import Mapping
 #: Every job branch protection currently requires, by job id as it appears
 #: in `ci.yml` (`security` and `codeql` are the reusable-workflow-call jobs,
 #: not the inner jobs of `security.yml` / `codeql.yml`).
-ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql"})
+ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql", "e2e-smoke"})
 
 #: `pr-gate` only runs `if: github.event_name == 'pull_request'`
 #: (issue #135, #857 PR-B). On every other trigger that fires `ci.yml`
@@ -50,9 +50,9 @@ ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql"})
 #: with the gentle-ai model (#857 PR-D).
 SKIPS_BY_EVENT = {
     "pull_request": frozenset(),
-    "push": frozenset({"pr-gate"}),
-    "schedule": frozenset({"pr-gate"}),
-    "workflow_dispatch": frozenset({"pr-gate"}),
+    "push": frozenset({"pr-gate", "e2e-smoke"}),
+    "schedule": frozenset({"pr-gate", "e2e-smoke"}),
+    "workflow_dispatch": frozenset({"pr-gate", "e2e-smoke"}),
 }
 
 
