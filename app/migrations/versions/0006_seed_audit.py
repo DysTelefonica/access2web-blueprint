@@ -28,16 +28,36 @@ depends_on: str | Sequence[str] | None = None
 
 SCHEMA = "lanzadera"
 
+# Row-count expectations derived from the fixture file (deterministic seed=42).
+# Keep these in sync with the JSON fixture so downgrade() can target exact
+# ids and never touch real audit rows. See #928.
+EXPECTED_AUDIT_EVENTS = 200
 
-def upgrade() -> None:
-    fixture = (
-        Path(__file__).parent.parent.parent.parent
+
+def _fixture_path() -> Path:
+    return (
+        Path(__file__).resolve().parent.parent.parent.parent
         / "data"
         / "fixtures"
         / "lanzadera"
         / "audit_events.json"
     )
-    events = json.loads(fixture.read_text())
+
+
+def _seeded_event_ids() -> list[int]:
+    """Ids the upgrade() inserts, taken from the same fixture source.
+
+    downgrade() uses this list to delete exactly the seeded rows and
+    nothing else. Issue #928: prior heuristic (``WHERE actor_id IS NULL``)
+    wiped unrelated audit rows with a null actor and could not remove
+    seeded rows with a non-null actor (which in turn blocked the 0005
+    downgrade via ``fk_audit_actor_id_users``).
+    """
+    return [event["id"] for event in json.loads(_fixture_path().read_text())]
+
+
+def upgrade() -> None:
+    events = json.loads(_fixture_path().read_text())
 
     bind = op.get_bind()
     count = bind.execute(sa.text(f"SELECT COUNT(*) FROM {SCHEMA}.audit")).scalar() or 0
@@ -71,7 +91,7 @@ def upgrade() -> None:
                 # job ran alembic against a real Postgres service (PR-3
                 # of #882, CI run 38787186647, after #912 fixed 0005).
                 # Parse the ISO string with `datetime.fromisoformat` so
-                # asyncpg receives a timezone-aware `datetime`.
+                # asyncpg receives a timezone-aware ``datetime``.
                 "created_at": datetime.fromisoformat(event["created_at"]),
             },
         )
@@ -79,5 +99,14 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     bind = op.get_bind()
-    # Delete seeded events (those with module='lanzadera' and no actor).
-    bind.execute(sa.text(f"DELETE FROM {SCHEMA}.audit WHERE actor_id IS NULL"))
+    # Issue #928: delete only the rows this migration seeded, by id.
+    # ``actor_id IS NULL`` is a heuristic that wiped real audit rows with
+    # a null actor and left seeded rows with a non-null actor blocking the
+    # 0005 -> 0004 downgrade via ``fk_audit_actor_id_users``.
+    seeded_ids = _seeded_event_ids()
+    if not seeded_ids:
+        return
+    bind.execute(
+        sa.text(f"DELETE FROM {SCHEMA}.audit WHERE id = ANY(:ids)"),
+        {"ids": seeded_ids},
+    )
