@@ -38,6 +38,7 @@ dependencies = [
     "sqlalchemy==2.0.*",           # Core ORM for adapters (Phase 4).
     "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
     "asyncpg==0.30.*",             # Postgres driver for SQLAlchemy (Phase 4).
+    "aiosqlite==0.20.*",           # Async SQLite driver para `sqlite+aiosqlite:///` (#876: el humo E2E y la suite e2e de release usan esta URL; sin el driver, uvicorn crashea en el lifespan con `ModuleNotFoundError: No module named 'aiosqlite'`).
     "fastapi==0.142.*",           # Sobre 0.121.3: es la versión cuya restricción deja entrar starlette 1.x.
     "starlette>=1.0,<2",           # Línea con los arreglos de PYSEC-2026-161/248/249/2280/2281.
     "jinja2==3.1.*",               # Async templates for HTMX views (Phase 5).
