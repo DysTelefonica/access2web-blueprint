@@ -263,7 +263,7 @@ class _FakeResponse:
 
 
 def test_rule_10_fetch_maps_files_and_sends_the_token_only_to_github():
-    """Rule 10: the Files API is mapped per file and called with the job token, on api.github.com."""
+    """Rule 10: Files API entries map per file; the job token goes only to api.github.com."""
     module = _load()
     seen = []
 
