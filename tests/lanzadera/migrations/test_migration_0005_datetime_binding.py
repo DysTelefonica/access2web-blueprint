@@ -1,5 +1,8 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp #911
-"""Regression test for issue #911: 0005_seed_assignments.py must bind ``granted_at`` as a datetime, not a raw string.
+"""Regression test for issue #911: 0005 binds granted_at as datetime.
+
+The ``0005_seed_assignments.py`` migration must bind ``granted_at``
+as a parsed ``datetime``, not the raw JSON string the fixture carries.
 
 The original migration bound ``row["granted_at"]`` (an ISO 8601 string
 from the JSON fixture) directly to a ``sa.DateTime(timezone=True)``
@@ -57,7 +60,7 @@ def test_0005_granted_at_parsed_as_datetime() -> None:
 
     # RED condition: the raw string reaches the bind call.
     assert _FORBIDDEN_DQUOTE not in src, (
-        "0005_seed_assignments.py binds `row[\"granted_at\"]` (a JSON "
+        '0005_seed_assignments.py binds `row["granted_at"]` (a JSON '
         "string) directly to a TIMESTAMPTZ column. asyncpg rejects "
         "strings for TIMESTAMPTZ. Parse with `datetime.fromisoformat` "
         "before binding. See issue #911."
@@ -68,11 +71,9 @@ def test_0005_granted_at_parsed_as_datetime() -> None:
     )
 
     # GREEN condition: the migration binds a parsed datetime.
-    assert (
-        _EXPECTED_BINDING in src or _EXPECTED_BINDING_ALT in src
-    ), (
+    assert _EXPECTED_BINDING in src or _EXPECTED_BINDING_ALT in src, (
         "0005_seed_assignments.py must parse the `granted_at` ISO "
-        "string with `datetime.fromisoformat(row[\"granted_at\"])` "
+        'string with `datetime.fromisoformat(row["granted_at"])` '
         "before binding. See issue #911."
     )
 
@@ -82,10 +83,7 @@ def test_0005_datetime_imported() -> None:
     src = MIGRATION.read_text(encoding="utf-8")
     # ``datetime.fromisoformat`` only resolves when ``datetime`` is in
     # scope. Accept either spelling of the import.
-    assert (
-        "from datetime import datetime" in src
-        or "import datetime" in src
-    ), (
+    assert "from datetime import datetime" in src or "import datetime" in src, (
         "0005_seed_assignments.py must import `datetime` (either "
         "`from datetime import datetime` or `import datetime`) so "
         "`datetime.fromisoformat(...)` resolves. See issue #911."
