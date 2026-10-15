@@ -28,11 +28,6 @@ depends_on: str | Sequence[str] | None = None
 
 SCHEMA = "lanzadera"
 
-# Module value the upgrade() forces on every seeded row. downgrade()
-# uses it as part of the identity check so a real row whose id happens
-# to collide with a seeded one is not deleted. See #928.
-SEEDED_MODULE = "lanzadera"
-
 
 def _fixture_path() -> Path:
     return (
@@ -44,20 +39,22 @@ def _fixture_path() -> Path:
     )
 
 
-def _seeded_event_ids() -> list[int]:
-    """Ids the upgrade() inserts, taken from the same fixture source.
+def _seeded_events() -> list[dict[str, object]]:
+    """The full event list the upgrade() inserts, from the same fixture.
 
-    downgrade() uses this list together with ``SEEDED_MODULE`` to delete
-    exactly the seeded rows and nothing else. Issue #928: prior heuristic
-    (``WHERE actor_id IS NULL``) wiped unrelated audit rows with a null
-    actor and could not remove seeded rows with a non-null actor (which
-    in turn blocked the 0005 downgrade via ``fk_audit_actor_id_users``).
+    downgrade() matches the discriminating columns the upgrade() writes
+    (id, event_type, actor_id, target_id, created_at). ``module``,
+    ``result``, ``correlation_id`` and ``payload`` are intentionally
+    excluded: the application also writes ``module='lanzadera'`` and the
+    other fields on real events (login.py, create_user.py,
+    set_password.py), so they do not discriminate a seeded row from a
+    real one. Issue #928.
     """
-    return [event["id"] for event in json.loads(_fixture_path().read_text())]
+    return json.loads(_fixture_path().read_text())
 
 
 def upgrade() -> None:
-    events = json.loads(_fixture_path().read_text())
+    events = _seeded_events()
 
     bind = op.get_bind()
     count = bind.execute(sa.text(f"SELECT COUNT(*) FROM {SCHEMA}.audit")).scalar() or 0
@@ -71,7 +68,7 @@ def upgrade() -> None:
                     (id, event_type, actor_id, target_id, module,
                      result, correlation_id, payload, created_at)
                     VALUES
-                    (:id, :event_type, :actor_id, :target_id, '{SEEDED_MODULE}',
+                    (:id, :event_type, :actor_id, :target_id, 'lanzadera',
                      :result, :correlation_id, :payload, :created_at)"""
             ),
             {
@@ -99,17 +96,33 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     bind = op.get_bind()
-    # Issue #928: delete only the rows this migration seeded. The id alone
-    # is not enough — ``upgrade()`` is a no-op when ``audit`` already
-    # holds at least ``len(events)`` rows, so a real row whose id happens
-    # to collide with a seeded one would otherwise be deleted here.
-    # ``SEEDED_MODULE`` is the literal the upgrade() forces on every
-    # inserted row, so ``(id, module)`` uniquely identifies a seeded row
-    # among the rows the upgrade actually wrote.
-    seeded_ids = _seeded_event_ids()
-    if not seeded_ids:
+    # Issue #928: delete only the rows this migration seeded, matching
+    # every column the upgrade() wrote that the application does not also
+    # write (``id``, ``event_type``, ``actor_id``, ``target_id``,
+    # ``created_at``). ``IS NOT DISTINCT FROM`` treats NULLs in
+    # ``actor_id`` as equal to NULLs in the fixture, so a seeded event
+    # with no actor is still matched.
+    events = _seeded_events()
+    if not events:
         return
     bind.execute(
-        sa.text(f"DELETE FROM {SCHEMA}.audit WHERE id = ANY(:ids) AND module = :module"),
-        {"ids": seeded_ids, "module": SEEDED_MODULE},
+        sa.text(
+            f"""DELETE FROM {SCHEMA}.audit
+                WHERE (id, event_type, actor_id, target_id, created_at)
+                      IS NOT DISTINCT FROM
+                      (:id, :event_type, :actor_id, :target_id, :created_at)"""
+        ),
+        [
+            {
+                "id": event["id"],
+                "event_type": event["event_type"],
+                "actor_id": event.get("actor_id"),
+                "target_id": event["target_id"],
+                # Issue #913: the column is `sa.DateTime(timezone=True)`.
+                # Parse the ISO string with ``datetime.fromisoformat`` so
+                # asyncpg receives a timezone-aware ``datetime``.
+                "created_at": datetime.fromisoformat(event["created_at"]),
+            }
+            for event in events
+        ],
     )

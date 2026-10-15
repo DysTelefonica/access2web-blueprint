@@ -201,17 +201,23 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
 
     upgrade() returns without inserting when ``audit`` already has at least
     ``len(events)`` rows. downgrade() must still only target rows the
-    upgrade actually wrote — in practice rows with ``module = 'lanzadera'``,
-    not rows whose id happens to collide with a seeded id.
+    upgrade actually wrote — the discriminating identity is the full
+    matching of ``(id, event_type, actor_id, target_id, created_at)`` with
+    the fixture (``module`` is not a discriminator because the application
+    also writes ``module='lanzadera'`` on real events).
 
     Sequence:
 
     1. ``alembic upgrade head`` seeds the 200 audit rows from the fixture.
-    2. Insert 200+ real rows whose ``id`` collides with seeded ids but with
-       ``module = 'real'``.
-    3. ``alembic downgrade 0005`` runs 0006's ``downgrade()`` (and any
-       downgrade() above 0006 if applicable — here only 0006).
-    4. The 200+ real rows must still be there.
+    2. Insert 200+ real rows whose ``id`` collides with seeded ids, using
+       ``module='lanzadera'`` (what the app actually writes — see
+       login.py, create_user.py, set_password.py) and a different
+       ``event_type`` and ``created_at`` so the row does not match the
+       fixture fingerprint.
+    3. ``alembic downgrade 0005`` runs 0006's ``downgrade()``.
+    4. The 200+ real rows must still be there, and the 200 seeded rows
+       must have been removed (so the 0004 downgrade does not hit
+       ``fk_audit_actor_id_users``).
     """
     assert integration_enabled, "APAP_INTEGRATION_ENABLED=1 required"
 
@@ -234,12 +240,23 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
         )
 
         # Pick the first 200 seeded ids and insert a real row for each one
-        # with a colliding id but ``module = 'real'``. The downgrade() that
-        # only filters by id would wipe these; the fix filters by
-        # ``module = 'lanzadera'`` too, so they survive.
+        # with a colliding id, ``module='lanzadera'`` (what the app writes),
+        # and a different ``event_type`` / ``created_at`` so the row does
+        # not match the fixture fingerprint. ``module`` alone cannot
+        # discriminate, hence the full-row match in the downgrade query.
         colliding_ids = seeded[:200]
         rows = [
-            (id_, "app.open", None, 1, "real", "success", f"real-{id_}", "{}", "now()")
+            (
+                id_,
+                "auth.real-event",  # different from any fixture event_type
+                None,
+                999_999,  # different from any fixture target_id
+                "lanzadera",  # what the app actually writes
+                "success",
+                f"real-{id_}",
+                "{}",
+                "2099-01-01T00:00:00+00:00",  # different from any fixture created_at
+            )
             for id_ in colliding_ids
         ]
 
@@ -264,7 +281,8 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
 
             total_before = await conn.fetchval("SELECT count(*) FROM lanzadera.audit")
             real_count_before = await conn.fetchval(
-                "SELECT count(*) FROM lanzadera.audit WHERE module = 'real'"
+                "SELECT count(*) FROM lanzadera.audit "
+                "WHERE event_type = 'auth.real-event'"
             )
             assert real_count_before == 200
             assert total_before >= 400
@@ -273,7 +291,7 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
 
         # Downgrade only 0006 (so the schema above 0006 is preserved). The
         # important step is 0006's downgrade(), which the new fix narrows to
-        # ``(id, module) = (seeded, 'lanzadera')``.
+        # the full row match against the fixture.
         _run_alembic(worktree_root, alembic_ini, db_name, "downgrade", "0005")
 
         conn = await asyncpg.connect(
@@ -285,10 +303,12 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
         )
         try:
             real_count_after = await conn.fetchval(
-                "SELECT count(*) FROM lanzadera.audit WHERE module = 'real'"
+                "SELECT count(*) FROM lanzadera.audit "
+                "WHERE event_type = 'auth.real-event'"
             )
             seeded_count_after = await conn.fetchval(
-                "SELECT count(*) FROM lanzadera.audit WHERE module = 'lanzadera'"
+                "SELECT count(*) FROM lanzadera.audit "
+                "WHERE event_type IN ('auth.login.success', 'auth.login.failure', 'app.open')"
             )
         finally:
             await conn.close()
