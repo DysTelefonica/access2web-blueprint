@@ -1,93 +1,126 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_pr_size.py
-"""PR size gate: a review budget, enforced.
+# HARNESS-PROVENANCE: access2web-blueprint issue #854 — scripts/check_pr_size.py
+"""PR size gate: additions + deletions against the 400-line review budget.
 
-Counts semantic changed lines between the merge base and HEAD. Line-ending churn is not a change
-a reviewer has to read, so ``--ignore-cr-at-eol`` normalises CRLF before counting.
+Two modes:
 
-The override is deliberately awkward. ``size:exception`` alone does nothing; it must be paired
-with a reason line, because an override nobody has to justify is not an override, it is the
-default.
+    pr-event <event.json>      additions, deletions and labels from a GitHub
+                               ``pull_request`` webhook payload
+    local [<merge-base>]       ``git diff --shortstat <merge-base>...HEAD``
+                               (default merge-base: ``origin/main``)
+
+When invoked with no subcommand the script defaults to ``local origin/main``,
+which keeps the existing ``python scripts/check_pr_size.py`` CI step working
+unchanged (PR-C, issue #857, will switch CI to ``pr-event``).
+
+Override is the ``size:exception`` label applied by the maintainer. The
+``size-exception-reason:`` field on the PR body is no longer consulted.
 
 Exit codes:
-    0  within budget, or overridden with a stated reason
-    1  over budget, or overridden without a reason
+    0  within budget, or overridden by the ``size:exception`` label
+    1  over budget, or malformed payload
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import subprocess
 import sys
-
-# --------------------------------------------------------------------------------------------
-# CONFIGURATION
-# --------------------------------------------------------------------------------------------
+from pathlib import Path
+from typing import Iterable
 
 MAX_CHANGED_LINES = 400
-
-#: Generated files a human never reads line by line. Every entry weakens the gate, so keep the
-#: list short and justify additions in review.
-EXCLUDED_SUFFIXES = ("uv.lock", "poetry.lock", "package-lock.json", "pnpm-lock.yaml")
-
-OVERRIDE_MARKER = "size:exception"
-OVERRIDE_REASON = re.compile(r"^\s*size-exception-reason:\s*(?P<reason>\S.*)$", re.MULTILINE)
-OVERRIDE_MARKER_RE = re.compile(r"^\s*.*size:exception", re.MULTILINE)
-
-# --------------------------------------------------------------------------------------------
-# MECHANISM
-# --------------------------------------------------------------------------------------------
+SIZE_EXCEPTION_LABEL = "size:exception"
 
 
-def _git(*args: str) -> str:
+def has_size_exception_label(labels: Iterable[str]) -> bool:
+    """True when the iterable carries the override label."""
+    return SIZE_EXCEPTION_LABEL in set(labels)
+
+
+def compute_local_total(cwd: Path, merge_base: str) -> int:
+    """Total insertions + deletions of HEAD vs ``merge_base`` in ``cwd``.
+
+    Parses ``git diff --shortstat`` so it equals the API total for the same range
+    (rule 4 of issue #854).
+    """
     result = subprocess.run(
-        ["git", *args], capture_output=True, text=True, check=False, encoding="utf-8"
+        ["git", "diff", "--shortstat", f"{merge_base}...HEAD"],
+        cwd=str(cwd),
+        capture_output=True,
+        text=True,
+        check=True,
+        encoding="utf-8",
     )
-    if result.returncode != 0:
-        raise RuntimeError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
-    return result.stdout
+    inserts = 0
+    deletes = 0
+    for token in result.stdout.split(","):
+        token = token.strip()
+        insertion = re.match(r"(\d+) insertion", token)
+        deletion = re.match(r"(\d+) deletion", token)
+        if insertion:
+            inserts = int(insertion.group(1))
+        elif deletion:
+            deletes = int(deletion.group(1))
+    return inserts + deletes
 
 
-def changed_lines(base_ref: str) -> tuple[int, list[tuple[str, int]]]:
-    """Return the total counted lines and the per-file breakdown, largest first."""
-    raw = _git("diff", "--numstat", "--ignore-cr-at-eol", f"{base_ref}...HEAD")
-    per_file: list[tuple[str, int]] = []
-    total = 0
-    for line in raw.splitlines():
-        parts = line.split("\t")
-        if len(parts) != 3:
-            continue
-        added, deleted, path = parts
-        if added == "-" or deleted == "-":  # binary file, not reviewable line by line
-            continue
-        if path.endswith(EXCLUDED_SUFFIXES):
-            continue
-        count = int(added) + int(deleted)
-        total += count
-        per_file.append((path, count))
-    per_file.sort(key=lambda item: item[1], reverse=True)
-    return total, per_file
+def _label_names(payload: dict) -> list[str]:
+    """Label names from a ``pull_request`` payload — accepts dicts or strings."""
+    pull_request = payload.get("pull_request") or {}
+    labels = pull_request.get("labels") or []
+    names: list[str] = []
+    for label in labels:
+        if isinstance(label, str):
+            names.append(label)
+        elif isinstance(label, dict):
+            name = label.get("name")
+            if isinstance(name, str):
+                names.append(name)
+    return names
 
 
-def override_reason(pr_body: str) -> str | None:
-    """Return the stated reason when a valid override is present, else ``None``."""
-    if not OVERRIDE_MARKER_RE.search(pr_body):
-        return None
-    match = OVERRIDE_REASON.search(pr_body)
-    return match.group("reason").strip() if match else None
+def _pr_event_total_and_labels(event_path: Path) -> tuple[int, list[str]]:
+    payload = json.loads(event_path.read_text(encoding="utf-8"))
+    pull_request = payload.get("pull_request") or {}
+    additions = pull_request.get("additions")
+    deletions = pull_request.get("deletions")
+    if not isinstance(additions, int) or not isinstance(deletions, int):
+        raise ValueError(
+            f"{event_path}: pull_request.additions/deletions must be integers"
+        )
+    return additions + deletions, _label_names(payload)
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    subparsers = parser.add_subparsers(dest="mode")
+
+    pr_event = subparsers.add_parser(
+        "pr-event",
+        help="read additions, deletions and labels from a GitHub pull_request event",
+    )
+    pr_event.add_argument("event_json", type=Path)
+
+    local = subparsers.add_parser(
+        "local", help="git diff --shortstat against <merge-base>"
+    )
+    local.add_argument(
+        "merge_base",
+        nargs="?",
+        default="origin/main",
+        help="merge-base ref (default: origin/main)",
+    )
+    return parser
 
 
 def _pin_output_encoding() -> None:
-    """Pin stdout/stderr to UTF-8.
-
-    Python picks the output encoding from the platform locale, so the same gate emits different
-    bytes on a Windows workstation (cp1252) and a Linux runner (utf-8) — and a non-encodable
-    character crashes the write outright. A harness that claims determinism cannot let its own
-    output depend on where it ran.
-    """
+    """Pin stdout/stderr to UTF-8 (Hard Rule 8)."""
     for stream in (sys.stdout, sys.stderr):
         reconfigure = getattr(stream, "reconfigure", None)
         if reconfigure is not None:
@@ -96,72 +129,35 @@ def _pin_output_encoding() -> None:
 
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--base-ref",
-        default=os.environ.get("BASE_REF", "origin/main"),
-        help="ref to diff against (default: $BASE_REF or origin/main)",
-    )
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
+    parser = _build_parser()
     args = parser.parse_args(argv)
 
-    try:
-        total, per_file = changed_lines(args.base_ref)
-    except RuntimeError as exc:
-        if args.json:
-            print(json.dumps({"gate": "pr_size", "status": "error", "detail": str(exc)}))
-        else:
-            print(f"FAIL  {exc}", file=sys.stderr)
-        return 1
+    # Default to `local origin/main` so the existing CI step keeps working.
+    if args.mode is None:
+        args.mode = "local"
+        args.merge_base = "origin/main"
 
-    if args.json:
-        reason = override_reason(os.environ.get("PR_BODY", ""))
-        passed = total <= MAX_CHANGED_LINES or bool(reason)
-        print(
-            json.dumps(
-                {
-                    "gate": "pr_size",
-                    "status": "pass" if passed else "fail",
-                    "indicators": {
-                        "changed_lines": total,
-                        "files_changed": len(per_file),
-                        "overridden": bool(reason),
-                    },
-                    "ceilings": {"changed_lines": MAX_CHANGED_LINES},
-                    "findings": [
-                        {"file": path, "line": 0, "detail": f"{count} changed line(s)"}
-                        for path, count in per_file[:10]
-                    ]
-                    if not passed
-                    else [],
-                },
-                indent=2,
-            )
-        )
-        return 0 if passed else 1
+    if args.mode == "local":
+        total = compute_local_total(Path.cwd(), args.merge_base)
+        labels: list[str] = []
+    else:  # pr-event
+        total, labels = _pr_event_total_and_labels(args.event_json)
 
     if total <= MAX_CHANGED_LINES:
-        print(f"OK    {total} changed line(s), budget is {MAX_CHANGED_LINES}")
+        return 0
+    if has_size_exception_label(labels):
         return 0
 
-    pr_body = os.environ.get("PR_BODY", "")
-    reason = override_reason(pr_body)
-    if reason:
-        print(f"OK    {total} changed line(s) over budget, overridden: {reason}")
-        return 0
-
-    print(f"FAIL  {total} changed line(s), budget is {MAX_CHANGED_LINES}")
-    for path, count in per_file[:10]:
-        print(f"        {count:>6}  {path}")
-    if OVERRIDE_MARKER in pr_body:
+    print(f"PR size: {total} (limit {MAX_CHANGED_LINES}).", file=sys.stderr)
+    if args.mode == "pr-event":
         print(
-            f"        '{OVERRIDE_MARKER}' found but no 'size-exception-reason: <why>' line in the "
-            f"PR body"
+            f"Apply the '{SIZE_EXCEPTION_LABEL}' label or split the PR.",
+            file=sys.stderr,
         )
     else:
         print(
-            f"        split the PR, or add '{OVERRIDE_MARKER}' plus a "
-            f"'size-exception-reason: <why>' line to the PR body"
+            "local mode has no override; reduce the diff or split the PR.",
+            file=sys.stderr,
         )
     return 1
 
