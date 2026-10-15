@@ -54,9 +54,7 @@ def _run_alembic(
     db_name: str,
     *args: str,
 ) -> None:
-    database_url = (
-        f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"
-    )
+    database_url = f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"
     env = os.environ.copy()
     env["DATABASE_URL"] = database_url
     env["PYTHONPATH"] = str(worktree_root) + os.pathsep + env.get("PYTHONPATH", "")
@@ -133,9 +131,7 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
         )
         try:
             # We need a real user to satisfy the FK for the actor_id row.
-            user_id_row = await conn.fetchrow(
-                "SELECT id FROM lanzadera.users ORDER BY id LIMIT 1"
-            )
+            user_id_row = await conn.fetchrow("SELECT id FROM lanzadera.users ORDER BY id LIMIT 1")
             assert user_id_row is not None, "0004 must have seeded at least one user"
             real_user_id = user_id_row["id"]
 
@@ -186,8 +182,7 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
             "(destructive — issue #928)"
         )
         assert surviving_without_actor == 1, (
-            "downgrade wiped an unrelated audit row with a null actor "
-            "(destructive — issue #928)"
+            "downgrade wiped an unrelated audit row with a null actor (destructive — issue #928)"
         )
     finally:
         await _drop_test_database(db_name)
@@ -281,8 +276,7 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
 
             total_before = await conn.fetchval("SELECT count(*) FROM lanzadera.audit")
             real_count_before = await conn.fetchval(
-                "SELECT count(*) FROM lanzadera.audit "
-                "WHERE event_type = 'auth.real-event'"
+                "SELECT count(*) FROM lanzadera.audit WHERE event_type = 'auth.real-event'"
             )
             assert real_count_before == 200
             assert total_before >= 400
@@ -303,8 +297,7 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
         )
         try:
             real_count_after = await conn.fetchval(
-                "SELECT count(*) FROM lanzadera.audit "
-                "WHERE event_type = 'auth.real-event'"
+                "SELECT count(*) FROM lanzadera.audit WHERE event_type = 'auth.real-event'"
             )
             seeded_count_after = await conn.fetchval(
                 "SELECT count(*) FROM lanzadera.audit "
