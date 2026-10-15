@@ -106,7 +106,7 @@ jobs:
     needs: pr-gate
     # Los nombres de check requeridos se publican solo desde eventos que evaluan
     # el PR o la rama base (HR-30): schedule y workflow_dispatch no los publican.
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     # This job executes code from public pull requests, so it must use isolated,
     # ephemeral GitHub-hosted infrastructure.
     runs-on: ubuntu-24.04
@@ -470,7 +470,7 @@ jobs:
     uses: ./.github/workflows/security.yml
     # Mismo criterio que `quality` (HR-30): ningun nombre de check requerido
     # desde eventos que no evaluan el PR.
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     permissions:
       contents: read
     concurrency:
@@ -484,7 +484,7 @@ jobs:
     needs: pr-gate
     uses: ./.github/workflows/codeql.yml
     # Mismo criterio que `quality` y `security` (HR-30).
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     permissions:
       contents: read
       security-events: write
@@ -510,7 +510,7 @@ jobs:
     # HR-30 no puede probar un `always()` suelto, y `!cancelled()` conserva el
     # motivo original —un dependency saltado no debe saltar este check, que es
     # el requerido de la proteccion de rama—.
-    if: (github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()
+    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled()
     needs: [pr-gate, quality, security, codeql]
     runs-on: ubuntu-24.04
     concurrency:

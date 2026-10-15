@@ -2,6 +2,9 @@
   "events": {
     "pull_request": {
       "accepted_skips": []
+    },
+    "merge_group": {
+      "accepted_skips": ["pr-gate"]
     }
   },
   "required_jobs": [

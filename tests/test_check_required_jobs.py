@@ -28,14 +28,38 @@ def test_pull_request_requires_every_job_green() -> None:
     assert gate.check_results(_needs(), "pull_request") == []
 
 
-def test_push_and_schedule_and_dispatch_allow_pr_gate_to_skip() -> None:
+def test_schedule_and_dispatch_allow_pr_gate_to_skip() -> None:
     """`pr-gate` is `if: github.event_name == 'pull_request'` in ci.yml."""
     needs = _needs()
     needs["pr-gate"]["result"] = "skipped"
 
-    assert gate.check_results(needs, "push") == []
+    assert gate.check_results(needs, "schedule") == []
     assert gate.check_results(needs, "schedule") == []
     assert gate.check_results(needs, "workflow_dispatch") == []
+
+
+def test_merge_group_allows_pr_gate_to_skip() -> None:
+    """Issue #857, PR-B: the queue never has a PR payload for `pr-gate` to read."""
+    needs = _needs()
+    needs["pr-gate"]["result"] = "skipped"
+
+    assert gate.check_results(needs, "merge_group") == []
+
+
+def test_merge_group_with_quality_skipped_is_a_violation() -> None:
+    """Issue #857, PR-B: a skipped `quality` in the queue must never merge green."""
+    needs = _needs()
+    needs["pr-gate"]["result"] = "skipped"
+    needs["quality"]["result"] = "skipped"
+
+    assert gate.check_results(needs, "merge_group") == ["quality: result='skipped'"]
+
+
+def test_push_is_an_unsupported_event() -> None:
+    """Issue #857, PR-B: ci.yml no longer fires on push; the gate must not accept it."""
+    violations = gate.check_results(_needs(), "push")
+
+    assert violations == ["unsupported event: push"]
 
 
 def test_pr_gate_skip_is_a_violation_on_pull_request() -> None:
@@ -51,7 +75,7 @@ def test_security_or_codeql_skip_is_never_allowed() -> None:
     for job in ("security", "codeql", "quality"):
         needs = _needs()
         needs[job]["result"] = "skipped"
-        assert gate.check_results(needs, "push") == [f"{job}: result='skipped'"]
+        assert gate.check_results(needs, "merge_group") == [f"{job}: result='skipped'"]
 
 
 def test_failed_job_is_a_violation_on_every_supported_event() -> None:

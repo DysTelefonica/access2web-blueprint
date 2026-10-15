@@ -583,7 +583,7 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     # forma que el gate del patrón puede probar (HR-30): comparaciones de
     # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
     assert required["if"] == (
-        "(github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()"
+        "(github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled()"
     )
     assert required["needs"] == ["pr-gate", "quality", "security", "codeql"]
 
@@ -609,6 +609,21 @@ def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
     jobs = workflow["jobs"]
     for job in ("quality", "security", "codeql"):
         assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
+
+
+def test_heavy_jobs_run_on_pr_and_queue_only_after_pr_gate_passed_or_skipped(
+    workflow: dict,
+) -> None:
+    """Issue #857, PR-B: `pr-gate` is skipped in the merge queue, so the heavy jobs
+    must accept a skipped gate there, and only there, on top of a passed one."""
+    jobs = workflow["jobs"]
+    expected = (
+        "(github.event_name == 'pull_request' || github.event_name == 'merge_group') "
+        "&& !cancelled() "
+        "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
+    )
+    for job in ("quality", "security", "codeql"):
+        assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
 
 
 def test_branch_name_is_no_longer_wired_into_ci(run_blocks: list[str]) -> None:

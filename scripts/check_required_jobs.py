@@ -39,13 +39,14 @@ from collections.abc import Mapping
 ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql"})
 
 #: `pr-gate` only runs `if: github.event_name == 'pull_request'`
-#: (issue #135) — every other supported event must accept it as a skip.
-#: `quality`, `security` and `codeql` carry no `if:` guard in `ci.yml`, so
-#: they run — and must succeed — on every event below, `pull_request`
-#: included.
+#: (issue #135). In the merge queue (`merge_group`) there is no PR payload
+#: for it to read, and the PR already passed it (issue #857, PR-B), so the
+#: queue accepts its skip. `quality`, `security` and `codeql` run after a
+#: passed or skipped `pr-gate` on both `pull_request` and `merge_group`, so
+#: they must succeed there; `push` is no longer a `ci.yml` trigger.
 SKIPS_BY_EVENT = {
     "pull_request": frozenset(),
-    "push": frozenset({"pr-gate"}),
+    "merge_group": frozenset({"pr-gate"}),
     "schedule": frozenset({"pr-gate"}),
     "workflow_dispatch": frozenset({"pr-gate"}),
 }
