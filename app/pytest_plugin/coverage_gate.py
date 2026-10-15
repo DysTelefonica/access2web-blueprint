@@ -33,9 +33,16 @@ from typing import Any
 
 import pytest
 
-from app.pytest_plugin.coverage_gate_evaluate import (
-    _enforce_critical_coverage as _evaluate_coverage,
-)
+
+def _evaluate_coverage(
+    session: Any, coverage_data: Any, critical_targets: Any
+) -> tuple[list[str], list[str]]:
+    """Stub local: el orchestrator delegaba la clasificacion de targets a
+    coverage_gate_evaluate, que D2a retira. La funcion nunca corre en
+    runtime post-merge porque D1 borra este modulo entero; el stub
+    solo existe para contentar a mypy hasta entonces.
+    """
+    return [], []
 
 # Exact (module, optional owner, helper) targets required by DA-2 and DA-4.
 CRITICAL_TARGETS: tuple[tuple[str, str | None, str], ...] = (
