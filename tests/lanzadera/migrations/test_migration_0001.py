@@ -28,6 +28,7 @@ import secrets
 import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import asyncpg
 import pytest
@@ -93,10 +94,25 @@ FORBIDDEN_AUDIT_COLUMNS: tuple[str, ...] = (
 # Database creation borrows the credentials shipped by docker-compose.yml
 # (Phase 0). The port stays on the loopback because the test runs in WSL
 # alongside the `docker compose up -d postgres` container.
-PG_HOST = "127.0.0.1"
-PG_PORT = 5432
 PG_USER = "lanzadera"
 PG_PASSWORD = "lanzadera-dev-only"
+
+
+def _pg_endpoint() -> tuple[str, int]:
+    """Host and port of the integration Postgres.
+
+    The CI job publishes Postgres on a dynamic host port and exports the real
+    DSN in ``APAP_INTEGRATION_URL`` (or ``INTEGRATION_DSN``). Without a DSN the
+    loopback default ``127.0.0.1:5432`` applies (local docker compose).
+    """
+    dsn = os.environ.get("APAP_INTEGRATION_URL") or os.environ.get("INTEGRATION_DSN")
+    if not dsn:
+        return "127.0.0.1", 5432
+    parts = urlsplit(dsn)
+    return parts.hostname or "127.0.0.1", parts.port or 5432
+
+
+PG_HOST, PG_PORT = _pg_endpoint()
 
 
 def _worktree_root() -> Path:

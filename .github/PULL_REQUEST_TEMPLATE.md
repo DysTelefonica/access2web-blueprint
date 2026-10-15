@@ -1,6 +1,7 @@
 <!--
 El presupuesto de revisión es 400 líneas (additions + deletions) y se aplica en
-el job `pr-gate` del workflow de CI (`scripts/check_pr_size.py`). El gate
+el job `pr-gate` del workflow de CI (`scripts/check_pr_size.py`). Las rutas
+vendorizadas `.agents/skills/**` y `skills/**` no cuentan (issue #918). El gate
 lee solo la etiqueta `size:exception`, que pone el mantenedor; el cuerpo no
 lleva ningún campo de excepción.
 -->
