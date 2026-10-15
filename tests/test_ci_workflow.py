@@ -418,6 +418,10 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # Issue #857 (PR-B): the branch-name job leaves ci.yml, so the script has no
     # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
     "check_branch_name.py",
+    # Issue #875: scripts/check_deadcode.py ships the ratchet without a CI step.
+    # The quality-job wiring lives in the PR for the gentle-ai model (#857, owned
+    # by apap4); that PR adds the step to ci.yml and removes this entry.
+    "check_deadcode.py",
 )
 
 
