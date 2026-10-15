@@ -42,9 +42,7 @@ class StubClient:
     def issue(self, repository: str, number: int) -> dict[str, Any]:
         self.requested.append((repository, number))
         if number not in self.issues_by_number:
-            raise check_issue_spec.GitHubApiError(
-                f"GET /repos/{repository}/issues/{number}: 404"
-            )
+            raise check_issue_spec.GitHubApiError(f"GET /repos/{repository}/issues/{number}: 404")
         return self.issues_by_number[number]
 
 
@@ -92,9 +90,7 @@ def test_main_local_mode_rejects_body_without_reference(tmp_path: Path) -> None:
     client = StubClient({42: _issue(["status:approved", "type:feature"])})
 
     rc = check_issue_spec.run_command(
-        check_issue_spec.parse_args(
-            ["local", "--body-file", str(body_file), "--repository", REPO]
-        ),
+        check_issue_spec.parse_args(["local", "--body-file", str(body_file), "--repository", REPO]),
         client,
     )
 
