@@ -381,9 +381,11 @@ jobs:
 
   e2e-smoke:
     # Issue #876: humo E2E en cada PR (espejo gentle-ai). Construye la
-    # imagen de la PR, espera a `/health` (60 s) y ejecuta 2 specs de
-    # Playwright (smoke + login). La suite completa queda en `release.yml`
-    # y en el nightly. Runner hospedado: las PRs de fork son input no
+    # imagen de la PR, espera a `/health` (120 s en runner hospedado
+    # por el cold start de Docker; 60 s sería el criterio en un runner
+    # con Docker precalentado) y ejecuta 2 specs de Playwright (smoke
+    # + login). La suite completa queda en `release.yml` y en el
+    # nightly. Runner hospedado: las PRs de fork son input no
     # confiable y no tocan infraestructura propia.
     if: github.event_name == 'pull_request'
     needs: [pr-gate]
@@ -423,15 +425,17 @@ jobs:
             -e DATABASE_URL="sqlite+aiosqlite:///./test.db" \
             -e SECRET_KEY="$E2E_SECRET_KEY" \
             test-app:pr
-          # Espera activa a /health, hasta 60 s (#876 criterio 1).
-          for i in $(seq 1 60); do
+          # Espera activa a /health, hasta 120 s (#876 criterio 1: 60 s
+          # en runner con Docker precalentado; 120 s cubre el cold start
+          # del runner hospedado ubuntu-24.04, que es lo que la PR usa).
+          for i in $(seq 1 120); do
             if curl -s http://localhost:8000/health > /dev/null 2>&1; then
               echo "App is ready"
               exit 0
             fi
             sleep 1
           done
-          echo "::error::app did not respond on /health within 60s"
+          echo "::error::app did not respond on /health within 120s"
           exit 1
 
       - name: Install Playwright dependencies
