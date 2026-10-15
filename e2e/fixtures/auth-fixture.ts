@@ -60,9 +60,21 @@ export async function globalSetup(_config: FullConfig): Promise<void> {
   //    up from cwd looking for `alembic.ini`, but cwd is /app where
   //    the file does not live. Passing `-c /app/migrations/alembic.ini`
   //    pins the config and matches the layout shipped by the image.
+  //
+  //    Override DATABASE_URL to use the sync `sqlite:////app/test.db`
+  //    for this single command. SQLAlchemy 2.x's async engine in
+  //    env.py wraps a sync engine that always falls back to pysqlite;
+  //    the absolute path passed via -e reaches sqlite3.connect without
+  //    the async driver translation, so the file opens cleanly. uvicorn
+  //    in the container keeps using the aiosqlite URL for its async
+  //    session factory.
   const migrationResult = await runInContainer(containerName, [
     "python", "-m", "alembic", "-c", "/app/migrations/alembic.ini", "upgrade", "head",
-  ]);
+  ], {
+    env: {
+      DATABASE_URL: "sqlite:////app/test.db",
+    },
+  });
   console.log(`[e2e:globalSetup] Migrations applied.`);
   if (migrationResult.exitCode !== 0) {
     throw new Error(
@@ -135,7 +147,15 @@ conn.close()
 
   const seedResult = await runInContainer(containerName, [
     "python", "-c", seedScript,
-  ], { cwd: "/app" });
+  ], {
+    cwd: "/app",
+    // Match the migrations command: pass the sync absolute-path URL so
+    // the seed reads the same path the migrations wrote to. uvicorn
+    // keeps the async `sqlite+aiosqlite:////app/test.db` in its own env.
+    env: {
+      DATABASE_URL: "sqlite:////app/test.db",
+    },
+  });
 
   if (seedResult.exitCode !== 0) {
     throw new Error(
