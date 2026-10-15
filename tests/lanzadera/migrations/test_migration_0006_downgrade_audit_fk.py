@@ -191,3 +191,115 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
         )
     finally:
         await _drop_test_database(db_name)
+
+
+@pytest.mark.integration
+async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
+    integration_enabled: bool,
+) -> None:
+    """Simulate the case where ``upgrade()`` is a no-op (audit already populated).
+
+    upgrade() returns without inserting when ``audit`` already has at least
+    ``len(events)`` rows. downgrade() must still only target rows the
+    upgrade actually wrote — in practice rows with ``module = 'lanzadera'``,
+    not rows whose id happens to collide with a seeded id.
+
+    Sequence:
+
+    1. ``alembic upgrade head`` seeds the 200 audit rows from the fixture.
+    2. Insert 200+ real rows whose ``id`` collides with seeded ids but with
+       ``module = 'real'``.
+    3. ``alembic downgrade 0005`` runs 0006's ``downgrade()`` (and any
+       downgrade() above 0006 if applicable — here only 0006).
+    4. The 200+ real rows must still be there.
+    """
+    assert integration_enabled, "APAP_INTEGRATION_ENABLED=1 required"
+
+    worktree_root = _worktree_root()
+    for candidate in _alembic_ini_candidates(worktree_root):
+        if candidate.is_file():
+            alembic_ini = candidate
+            break
+    else:
+        pytest.skip("alembic.ini not found")
+
+    db_name = f"lanzadera_test_0006_noop_{secrets.token_hex(4)}"
+    await _create_test_database(db_name)
+    try:
+        _run_alembic(worktree_root, alembic_ini, db_name, "upgrade", "head")
+
+        seeded = _seeded_event_ids(worktree_root)
+        assert len(seeded) >= 200, (
+            "fixture must yield at least 200 rows for this test to be meaningful"
+        )
+
+        # Pick the first 200 seeded ids and insert a real row for each one
+        # with a colliding id but ``module = 'real'``. The downgrade() that
+        # only filters by id would wipe these; the fix filters by
+        # ``module = 'lanzadera'`` too, so they survive.
+        colliding_ids = seeded[:200]
+        rows = [
+            (id_, "app.open", None, 1, "real", "success", f"real-{id_}", "{}", "now()")
+            for id_ in colliding_ids
+        ]
+
+        conn = await asyncpg.connect(
+            host=PG_HOST,
+            port=PG_PORT,
+            user=PG_USER,
+            password=PG_PASSWORD,
+            database=db_name,
+        )
+        try:
+            await conn.executemany(
+                """
+                INSERT INTO lanzadera.audit
+                  (id, event_type, actor_id, target_id, module,
+                   result, correlation_id, payload, created_at)
+                VALUES
+                  ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::timestamptz)
+                """,
+                rows,
+            )
+
+            total_before = await conn.fetchval("SELECT count(*) FROM lanzadera.audit")
+            real_count_before = await conn.fetchval(
+                "SELECT count(*) FROM lanzadera.audit WHERE module = 'real'"
+            )
+            assert real_count_before == 200
+            assert total_before >= 400
+        finally:
+            await conn.close()
+
+        # Downgrade only 0006 (so the schema above 0006 is preserved). The
+        # important step is 0006's downgrade(), which the new fix narrows to
+        # ``(id, module) = (seeded, 'lanzadera')``.
+        _run_alembic(worktree_root, alembic_ini, db_name, "downgrade", "0005")
+
+        conn = await asyncpg.connect(
+            host=PG_HOST,
+            port=PG_PORT,
+            user=PG_USER,
+            password=PG_PASSWORD,
+            database=db_name,
+        )
+        try:
+            real_count_after = await conn.fetchval(
+                "SELECT count(*) FROM lanzadera.audit WHERE module = 'real'"
+            )
+            seeded_count_after = await conn.fetchval(
+                "SELECT count(*) FROM lanzadera.audit WHERE module = 'lanzadera'"
+            )
+        finally:
+            await conn.close()
+
+        assert real_count_after == 200, (
+            "downgrade() wiped a real audit row whose id collides with a "
+            "seeded id (destructive when upgrade() was a no-op — issue #928)"
+        )
+        assert seeded_count_after == 0, (
+            "downgrade() left seeded audit rows behind (would block 0004 via "
+            "fk_audit_actor_id_users — issue #928)"
+        )
+    finally:
+        await _drop_test_database(db_name)

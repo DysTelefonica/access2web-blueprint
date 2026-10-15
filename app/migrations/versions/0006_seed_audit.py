@@ -28,10 +28,10 @@ depends_on: str | Sequence[str] | None = None
 
 SCHEMA = "lanzadera"
 
-# Row-count expectations derived from the fixture file (deterministic seed=42).
-# Keep these in sync with the JSON fixture so downgrade() can target exact
-# ids and never touch real audit rows. See #928.
-EXPECTED_AUDIT_EVENTS = 200
+# Module value the upgrade() forces on every seeded row. downgrade()
+# uses it as part of the identity check so a real row whose id happens
+# to collide with a seeded one is not deleted. See #928.
+SEEDED_MODULE = "lanzadera"
 
 
 def _fixture_path() -> Path:
@@ -47,11 +47,11 @@ def _fixture_path() -> Path:
 def _seeded_event_ids() -> list[int]:
     """Ids the upgrade() inserts, taken from the same fixture source.
 
-    downgrade() uses this list to delete exactly the seeded rows and
-    nothing else. Issue #928: prior heuristic (``WHERE actor_id IS NULL``)
-    wiped unrelated audit rows with a null actor and could not remove
-    seeded rows with a non-null actor (which in turn blocked the 0005
-    downgrade via ``fk_audit_actor_id_users``).
+    downgrade() uses this list together with ``SEEDED_MODULE`` to delete
+    exactly the seeded rows and nothing else. Issue #928: prior heuristic
+    (``WHERE actor_id IS NULL``) wiped unrelated audit rows with a null
+    actor and could not remove seeded rows with a non-null actor (which
+    in turn blocked the 0005 downgrade via ``fk_audit_actor_id_users``).
     """
     return [event["id"] for event in json.loads(_fixture_path().read_text())]
 
@@ -71,7 +71,7 @@ def upgrade() -> None:
                     (id, event_type, actor_id, target_id, module,
                      result, correlation_id, payload, created_at)
                     VALUES
-                    (:id, :event_type, :actor_id, :target_id, 'lanzadera',
+                    (:id, :event_type, :actor_id, :target_id, '{SEEDED_MODULE}',
                      :result, :correlation_id, :payload, :created_at)"""
             ),
             {
@@ -99,14 +99,17 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     bind = op.get_bind()
-    # Issue #928: delete only the rows this migration seeded, by id.
-    # ``actor_id IS NULL`` is a heuristic that wiped real audit rows with
-    # a null actor and left seeded rows with a non-null actor blocking the
-    # 0005 -> 0004 downgrade via ``fk_audit_actor_id_users``.
+    # Issue #928: delete only the rows this migration seeded. The id alone
+    # is not enough — ``upgrade()`` is a no-op when ``audit`` already
+    # holds at least ``len(events)`` rows, so a real row whose id happens
+    # to collide with a seeded one would otherwise be deleted here.
+    # ``SEEDED_MODULE`` is the literal the upgrade() forces on every
+    # inserted row, so ``(id, module)`` uniquely identifies a seeded row
+    # among the rows the upgrade actually wrote.
     seeded_ids = _seeded_event_ids()
     if not seeded_ids:
         return
     bind.execute(
-        sa.text(f"DELETE FROM {SCHEMA}.audit WHERE id = ANY(:ids)"),
-        {"ids": seeded_ids},
+        sa.text(f"DELETE FROM {SCHEMA}.audit WHERE id = ANY(:ids) AND module = :module"),
+        {"ids": seeded_ids, "module": SEEDED_MODULE},
     )
