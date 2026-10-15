@@ -197,7 +197,8 @@ class _LazyAuthSigner:
             raise InvalidTokenError("auth not initialised yet")
         if now is None:
             now = int(container._clock().timestamp())
-        return container.jwt_signer.verify(token, now=now)
+        result: dict[str, object] = container.jwt_signer.verify(token, now=now)
+        return result
 
 
 _ensure_container_middleware(app)
