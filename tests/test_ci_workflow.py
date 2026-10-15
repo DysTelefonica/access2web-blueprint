@@ -27,7 +27,6 @@ REQUIRED_COMMANDS = (
     "scripts/quality_report.py",
     "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
-    "python scripts/check_branch_name.py",
     "python scripts/check_required_jobs.py",
 )
 
@@ -413,11 +412,9 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # After the sprint, --strict activates in ci.yml's quality job and this entry
     # is removed. Issue #535 tracks the exit criteria.
     "check_test_classification.py",
-    # Issue #855 ships the unit-tested gate (scripts/check_issue_spec.py).
-    # Issue #857 (PR-C of the same chain) wires it into the pr-gate step of
-    # ci.yml and removes this entry. The script is owned by #855; the wiring
-    # is owned by #857 by design — see issue #855 §"Alcance y no objetivos".
-    "check_issue_spec.py",
+    # Issue #857 (PR-B): the branch-name job leaves ci.yml, so the script has no
+    # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
+    "check_branch_name.py",
 )
 
 
@@ -581,10 +578,9 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     # forma que el gate del patrón puede probar (HR-30): comparaciones de
     # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
     assert required["if"] == (
-        "(github.event_name == 'pull_request' || "
-        "github.event_name == 'merge_group') && !cancelled()"
+        "(github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled()"
     )
-    assert required["needs"] == ["review-budget", "quality", "security", "codeql"]
+    assert required["needs"] == ["pr-gate", "quality", "security", "codeql"]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
     assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
@@ -594,6 +590,76 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert step["run"] == "python scripts/check_required_jobs.py"
     assert step["env"]["CI_NEEDS_JSON"] == "${{ toJSON(needs) }}"
     assert step["env"]["CI_EVENT_NAME"] == "${{ github.event_name }}"
+
+
+def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
+    """Issue #857, PR-B: the cheap front gate is `pr-gate`; `review-budget` is renamed away."""
+    jobs = workflow["jobs"]
+    assert "pr-gate" in jobs
+    assert "review-budget" not in jobs
+
+
+def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
+    """Issue #857, PR-B: a failed gate must not pay for quality, security or codeql."""
+    jobs = workflow["jobs"]
+    for job in ("quality", "security", "codeql"):
+        assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
+
+
+def test_heavy_jobs_run_on_pr_and_queue_only_after_pr_gate_passed_or_skipped(
+    workflow: dict,
+) -> None:
+    """Issue #857, PR-B: `pr-gate` is skipped in the merge queue, so the heavy jobs
+    must accept a skipped gate there, and only there, on top of a passed one."""
+    jobs = workflow["jobs"]
+    expected = (
+        "(github.event_name == 'pull_request' || github.event_name == 'merge_group') "
+        "&& !cancelled() "
+        "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
+    )
+    for job in ("quality", "security", "codeql"):
+        assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
+
+
+def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
+    """Issue #857, PR-C: the size gate reads the PR event, not the runner state.
+
+    The local mode depends on a `git diff` against `origin/main`, which is only
+    present on a checked-out runner. Switching to `pr-event` lets the gate
+    answer the same question from `$GITHUB_EVENT_PATH` alone.
+    """
+    steps = [s for s in workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
+    assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
+    step = steps[0]
+    assert step["run"] == 'python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"'
+    env = step.get("env") or {}
+    assert "BASE_REF" not in env
+    assert "PR_BODY" not in env
+
+
+def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
+    """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
+
+    It needs `issues: read` (the job-level grant) and the runner token, so the
+    step gets both explicitly rather than inheriting a broader default.
+    """
+    job = workflow["jobs"]["pr-gate"]
+    assert job["permissions"] == {"contents": "read", "issues": "read"}
+    steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
+    assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
+    step = steps[0]
+    assert step["run"] == 'python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"'
+    assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
+def test_issue_spec_leaves_known_pending_gates(run_blocks: list[str]) -> None:
+    """Issue #857, PR-C: once wired, check_issue_spec.py is no longer an exception."""
+    assert "check_issue_spec.py" not in KNOWN_PENDING_GATES
+
+
+def test_branch_name_is_no_longer_wired_into_ci(run_blocks: list[str]) -> None:
+    """Issue #857, PR-B: the branch-name check leaves ci.yml; #859 deletes the script."""
+    assert not [block for block in run_blocks if "check_branch_name.py" in block]
 
 
 def test_release_signs_and_verifies_the_published_digest_with_oidc() -> None:
@@ -866,4 +932,66 @@ def test_mutation_runs_only_on_schedule_and_workflow_dispatch(
     ), (
         f"`mutation` must run only on schedule + workflow_dispatch "
         f"(issue #857, PR-A). Current `if`: {mutation['if']!r}"
+    )
+
+
+# --- Issue #857, PR-B: pull_request type set -----------------------------
+#
+# `pull_request:` without an explicit `types:` uses the GitHub default
+# (opened, synchronize, reopened). That set misses two events that DO
+# invalidate an already-published pr-gate verdict:
+#
+#   * `edited`     — when the maintainer pastes `Closes #N` into the PR
+#                    body after opening, the issue-spec gate does not
+#                    re-run.
+#   * `labeled` /
+#     `unlabeled` — when the maintainer applies `size:exception` after
+#                    the gate went red, the size verdict does not
+#                    re-evaluate.
+#
+# Pinning the type set here is what guarantees a verdict refresh on
+# those events. The list MUST stay exact (the order is the contract
+# `check_workflows.py` proves).
+
+
+PR_GATE_PULL_REQUEST_TYPES = (
+    "opened",
+    "synchronize",
+    "reopened",
+    "edited",
+    "labeled",
+    "unlabeled",
+)
+
+
+def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
+    """Issue #857, PR-B: pr-gate must re-run when body edits or labels change.
+
+    The default ``pull_request`` trigger only fires on opened,
+    synchronize, reopened. Editing the PR body or applying/removing
+    ``size:exception`` after opening does NOT re-run the pr-gate, so a
+    stale verdict sticks until the next synchronize. Pinning the type
+    list here is what closes that drift.
+    """
+    # yaml.safe_load maps the `on` keyword to the Python boolean `True`
+    # unless quoted; the existing tests guard both spellings already.
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    pull_request = triggers.get("pull_request")
+    assert isinstance(pull_request, dict), (
+        "ci.yml must declare `pull_request:` with a body so `types:` "
+        "can be pinned (issue #857, PR-B). A bare `pull_request:` falls "
+        "back to the GitHub default type set and misses `edited`, "
+        "`labeled` and `unlabeled`."
+    )
+    types = pull_request.get("types")
+    assert types is not None, (
+        "ci.yml must declare `pull_request.types:` — relying on the "
+        "default leaves edit and label events out of the pr-gate "
+        "(issue #857, PR-B)."
+    )
+    assert list(types) == list(PR_GATE_PULL_REQUEST_TYPES), (
+        f"ci.yml `pull_request.types:` is {list(types)!r}, expected "
+        f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include "
+        "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
+        "when the body or labels change after opening (issue #857, PR-B)."
     )
