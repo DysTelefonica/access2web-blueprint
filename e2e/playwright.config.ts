@@ -47,6 +47,8 @@
 
 import { defineConfig, devices } from "@playwright/test";
 
+export const BASE_URL = process.env.BASE_URL ?? "http://localhost:8000";
+
 export default defineConfig({
   testDir: ".",
   testMatch: /.*spec\.ts$/,
@@ -58,7 +60,7 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI ? "list" : "list",
   use: {
-    baseURL: process.env.BASE_URL ?? "http://localhost:8000",
+    baseURL: BASE_URL,
     trace: "retain-on-failure",
   },
   // Playwright 1.64+ requires `globalSetup` to be a string path AND the
