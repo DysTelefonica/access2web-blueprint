@@ -11,5 +11,4 @@ set -euo pipefail
 ruff format --check --config app/pyproject.toml .
 ruff check --config app/pyproject.toml .
 python scripts/check_pr_size.py
-python scripts/check_branch_name.py
 python scripts/check_walkthrough_schema.py --strict

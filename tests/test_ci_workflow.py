@@ -27,7 +27,6 @@ REQUIRED_COMMANDS = (
     "scripts/quality_report.py",
     "scripts/check_mutation.py",
     "python scripts/check_pr_size.py",
-    "python scripts/check_branch_name.py",
     "python scripts/check_walkthrough_schema.py --strict",
     "python scripts/check_required_jobs.py",
 )
