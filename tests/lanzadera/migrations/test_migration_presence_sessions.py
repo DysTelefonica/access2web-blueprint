@@ -52,12 +52,8 @@ EXPECTED_COLUMNS: tuple[tuple[str, str, str], ...] = (
 )
 
 
-def _run_alembic(
-    worktree_root: Path, alembic_ini: Path, db_name: str, *args: str
-) -> None:
-    database_url = (
-        f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"
-    )
+def _run_alembic(worktree_root: Path, alembic_ini: Path, db_name: str, *args: str) -> None:
+    database_url = f"postgresql+asyncpg://{PG_USER}:{PG_PASSWORD}@{PG_HOST}:{PG_PORT}/{db_name}"
     env = os.environ.copy()
     env["DATABASE_URL"] = database_url
     env["PYTHONPATH"] = str(worktree_root) + os.pathsep + env.get("PYTHONPATH", "")
@@ -119,9 +115,7 @@ async def test_alembic_upgrade_head_creates_presence_sessions_with_pinned_layout
     assert integration_enabled, "APAP_INTEGRATION_ENABLED=1 required"
 
     worktree_root = _worktree_root()
-    alembic_ini = next(
-        (c for c in _alembic_ini_candidates(worktree_root) if c.is_file()), None
-    )
+    alembic_ini = next((c for c in _alembic_ini_candidates(worktree_root) if c.is_file()), None)
     assert alembic_ini is not None, "alembic.ini not found"
 
     db_name = f"lanzadera_test_771_presence_{secrets.token_hex(4)}"
@@ -155,9 +149,7 @@ async def test_presence_repository_adapter_can_write_after_upgrade_head(
     assert integration_enabled, "APAP_INTEGRATION_ENABLED=1 required"
 
     worktree_root = _worktree_root()
-    alembic_ini = next(
-        (c for c in _alembic_ini_candidates(worktree_root) if c.is_file()), None
-    )
+    alembic_ini = next((c for c in _alembic_ini_candidates(worktree_root) if c.is_file()), None)
     assert alembic_ini is not None, "alembic.ini not found"
 
     db_name = f"lanzadera_test_771_adapter_{secrets.token_hex(4)}"
