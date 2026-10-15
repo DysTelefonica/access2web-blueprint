@@ -14,7 +14,7 @@ AD-W62-2: silent failure on missing / malformed / expired tokens.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import pytest
@@ -41,15 +41,35 @@ def _fixed_now() -> int:
     return int(datetime(2026, 9, 1, 12, 0, 0, tzinfo=UTC).timestamp())
 
 
-def _app_with_middleware(*, signer: Hs256JwtSigner | None = None, now=None) -> FastAPI:
+def _app_with_middleware(
+    *,
+    signer: Hs256JwtSigner | None = None,
+    now=None,
+    sessions=None,
+) -> FastAPI:
     """Build a minimal FastAPI app with the middleware mounted.
 
     The probe route returns the current ``request.state.user_id`` so
     tests can assert what the middleware populated. Returns 401 when
     the state is None so the test can distinguish "middleware set the
     state" from "the app did its own gate".
+
+    ``sessions`` (issue #773): a session repository the middleware
+    consults at request time. When ``None``, the middleware sees no
+    container and falls into the silent-failure path (state stays
+    empty); tests that expect a populated state must pass a repo.
     """
     app = FastAPI()
+
+    if sessions is not None:
+        _sessions_repo = sessions
+
+        class _Container:
+            pass
+
+        _Container.sessions = _sessions_repo
+
+        app.state.container = _Container()
 
     @app.get("/probe")
     async def probe(req: Request):
@@ -95,14 +115,33 @@ async def test_middleware_passes_through_without_authorization(client_with_middl
     assert response.status_code == 401
 
 
-async def test_middleware_extracts_user_id_from_valid_bearer(client_with_middleware) -> None:
-    """Valid Bearer token → ``request.state.user_id`` populated."""
-    client, signer = client_with_middleware
+async def test_middleware_extracts_user_id_from_valid_bearer() -> None:
+    """Valid Bearer token → ``request.state.user_id`` populated.
+
+    Issue #773: the middleware now also consults the session repo,
+    so the test wires a ``FakeSessionRepository`` keyed on the same
+    ``session_id`` carried by the JWT ``sub`` claim.
+    """
+    from app.src.modules.lanzadera.domain.session import Session
+    from tests.lanzadera._fakes import FakeSessionRepository
+
+    signer = _signer()
     session_id = uuid4()
+    sessions_repo = FakeSessionRepository()
+    now_real = datetime.now(UTC)
+    sessions_repo.sessions[session_id] = Session(
+        id=session_id,
+        user_id=session_id,  # conflated in this unit test to keep the body assertion literal
+        created_at=now_real - timedelta(hours=1),
+        expires_at=now_real + timedelta(hours=2),
+    )
+    app = _app_with_middleware(signer=signer, sessions=sessions_repo, now=_fixed_now)
     now = _fixed_now()
     token = signer.sign({"sub": str(session_id), "iat": now, "exp": now + 60})
 
-    response = await client.get("/probe", headers={"Authorization": f"Bearer {token}"})
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/probe", headers={"Authorization": f"Bearer {token}"})
 
     assert response.status_code == 200
     assert response.json() == {"user_id": str(session_id)}
@@ -139,13 +178,32 @@ async def test_middleware_is_per_request() -> None:
     Uses two probe routes on the same app so the test can confirm
     that requests do not leak state. The unique ``X-Test-Session-A``
     and ``X-Test-Session-B`` tokens are issued with the same signer
-    but different ``sub`` claims.
+    but different ``sub`` claims. Issue #773: the middleware now
+    consults the session repo, so the test wires a ``FakeSessionRepository``
+    with both sessions seeded.
     """
-    signer = _signer()
-    app = _app_with_middleware(signer=signer)
+    from app.src.modules.lanzadera.domain.session import Session
+    from tests.lanzadera._fakes import FakeSessionRepository
 
+    signer = _signer()
+    sessions_repo = FakeSessionRepository()
     session_a = uuid4()
     session_b = uuid4()
+    now_real = datetime.now(UTC)
+    sessions_repo.sessions[session_a] = Session(
+        id=session_a,
+        user_id=session_a,
+        created_at=now_real - timedelta(hours=1),
+        expires_at=now_real + timedelta(hours=2),
+    )
+    sessions_repo.sessions[session_b] = Session(
+        id=session_b,
+        user_id=session_b,
+        created_at=now_real - timedelta(hours=1),
+        expires_at=now_real + timedelta(hours=2),
+    )
+    app = _app_with_middleware(signer=signer, sessions=sessions_repo)
+
     now = _fixed_now()
     token_a = signer.sign({"sub": str(session_a), "iat": now, "exp": now + 60})
     token_b = signer.sign({"sub": str(session_b), "iat": now, "exp": now + 60})
