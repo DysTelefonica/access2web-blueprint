@@ -37,10 +37,18 @@ from tests.lanzadera.migrations.test_migration_0001 import (
     _worktree_root,
 )
 
-# ``integration_enabled`` is a pytest fixture defined in
-# ``test_migration_0001``; pytest discovers it automatically from the
-# sibling test module without an explicit import. Issue #901 (run
-# 38807752784) caught the missing fixture reference.
+
+# Local copy of the ``integration_enabled`` fixture from
+# ``test_migration_0001``. Pytest does not auto-discover fixtures from
+# sibling test modules; each module that uses a fixture must either
+# define it or import it explicitly. Importing caused a redefinition
+# warning (F811) and the import shape (``from ... import integration_enabled``)
+# shadowed the parameter, so the fixture was not registered. Issue #901
+# (runs 38807752784 and 38808296486).
+@pytest.fixture
+def integration_enabled() -> bool:
+    """True when ``APAP_INTEGRATION_ENABLED=1`` is set in the test env."""
+    return os.environ.get("APAP_INTEGRATION_ENABLED") == "1"
 
 
 async def _admin_conn() -> asyncpg.Connection:
