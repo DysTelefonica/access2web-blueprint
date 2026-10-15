@@ -118,26 +118,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     secret_manager = EnvSecretManagerAdapter()
     password_hasher = CredentialHasherArgon2id()
     bootstrap_source = EnvAdminSourceAdapter()
-    try:
-        container = LanzaderaContainer(
-            session_factory=session_factory,
-            secret_manager=secret_manager,
-            password_hasher=password_hasher,
-            bootstrap_source=bootstrap_source,
-        )
-    except NotImplementedError as exc:
-        # W62 (#539): SessionRepositoryPg aún no está implementado. Hasta
-        # que PR-2's follow-up lo cierre, la app arranca sin container
-        # (el endpoint /health responde, cualquier ruta que lo necesite
-        # obtiene AttributeError en runtime, comportamiento aceptable
-        # para el MVP — el release.yml::e2e y el e2e-smoke (#876) caen
-        # en este caso). El engine se libera para no dejar conexiones
-        # colgadas en el lifespan.
-        _logger.warning("container not initialised: %s", exc)
-        app.state.container = None
-        await _engine.dispose()
-        yield
-        return
+    # W62 (#543), e2e-smoke (#876): #926 wired SessionRepositoryPg, so the
+    # container must build. If it cannot, the app fails to start — a
+    # silent ``container = None`` is what hid the 404 on /auth/* in the
+    # e2e smoke. The previous ``except NotImplementedError`` branch is
+    # removed on purpose; the engine is still disposed in the finally
+    # below so a failed container construction does not leak connections.
+    container = LanzaderaContainer(
+        session_factory=session_factory,
+        secret_manager=secret_manager,
+        password_hasher=password_hasher,
+        bootstrap_source=bootstrap_source,
+    )
     try:
         created = await run_bootstrap(container)
         if created:
