@@ -19,6 +19,13 @@ from pathlib import Path
 
 import pytest
 
+# Issue #882: the suite-populated guard (`scripts/check_suites_populated.py`)
+# pins each mandatory suite against disappearing under a rename. Marking this
+# file `e2e_smoke` is the way to satisfy the "≥1 test collects under
+# `-m e2e_smoke`" side of the guard — without it, the guard fails
+# immediately on a clean tree.
+pytestmark = pytest.mark.e2e_smoke
+
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
