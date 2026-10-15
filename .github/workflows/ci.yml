@@ -450,8 +450,15 @@ jobs:
           APAP_INTEGRATION_ENABLED: "1"
         # The integration suite expects the latest schema; alembic applies it.
         # `DATABASE_URL` is what `app/migrations/env.py` reads.
+        # `PLATFORM_SECRET_KEY` is required by 0004_seed_users.py to
+        # AES-256-GCM encrypt the DNI field; the value matches the dev
+        # fixture (`tests/lanzadera/migrations/test_seed_migrations.py`
+        # `_FIXTURE_KEY`) and what `docker-compose.yml` exports for
+        # local dev. Computing it inline keeps the workflow self-contained
+        # and the contract auditable from this step alone.
         run: |
           set -euo pipefail
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
           DATABASE_URL="$APAP_INTEGRATION_URL" alembic -c app/migrations/alembic.ini upgrade head
 
       - name: Run integration tests
