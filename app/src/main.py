@@ -43,6 +43,9 @@ from app.src.modules.lanzadera.adapters.persistence.async_session_factory import
     async_session_factory,
 )
 from app.src.modules.lanzadera.delivery.http.admin_routes import register_routes
+from app.src.modules.lanzadera.delivery.http.auth_middleware import (
+    AuthMiddleware,
+)
 from app.src.modules.lanzadera.di.bootstrap import run_bootstrap
 from app.src.modules.lanzadera.di.container import LanzaderaContainer
 
@@ -174,9 +177,6 @@ app = FastAPI(
 # request reaches the app. The signer is wrapped in a lazy proxy that
 # resolves ``app.state.container.jwt_signer`` on every request because
 # the container itself is created in the lifespan.
-from app.src.modules.lanzadera.delivery.http.auth_middleware import (
-    AuthMiddleware,
-)
 
 
 class _LazyAuthSigner:
