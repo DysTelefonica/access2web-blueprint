@@ -37,8 +37,11 @@ from collections.abc import Mapping
 
 #: Every job branch protection currently requires, by job id as it appears
 #: in `ci.yml` (`security` and `codeql` are the reusable-workflow-call jobs,
-#: not the inner jobs of `security.yml` / `codeql.yml`).
-ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql"})
+#: not the inner jobs of `security.yml` / `codeql.yml`). Issue #882, PR-3:
+#: `integration` joins the set — it runs the Postgres service and the
+#: `-m integration` suite; a red integration gate holds the PR just like
+#: a red quality gate does.
+ALL_JOBS = frozenset({"pr-gate", "quality", "integration", "security", "codeql"})
 
 #: `pr-gate` only runs `if: github.event_name == 'pull_request'`
 #: (issue #135, #857 PR-B). On every other trigger that fires `ci.yml`
