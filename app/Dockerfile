@@ -36,6 +36,13 @@ RUN apt-get update \
 # "Readme file does not exist: README.md" and no image is produced (#772).
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
+# alembic needs `alembic.ini` and `env.py` at runtime to apply migrations
+# against the live DB; without it the e2e-smoke job (#876) — and any
+# future on-image migration entrypoint — fails with "No config file
+# 'alembic.ini' found". The directory is small (~10 files) and has no
+# secrets; shipping it inside the image keeps the migration entrypoint
+# self-contained.
+COPY migrations/ ./migrations/
 
 # Install the project and its runtime dependencies into a virtualenv at /opt/venv.
 RUN python -m venv /opt/venv \
@@ -67,6 +74,10 @@ COPY --from=builder /opt/venv /opt/venv
 # Copying it to /app/src (the previous layout) made the CMD fail with
 # "No module named 'app'" (#772).
 COPY src/ /app/app/src/
+# alembic.ini + env.py land at /app/migrations so the e2e-smoke job (#876)
+# can run `python -m alembic upgrade head` from /app; the script_location
+# inside alembic.ini resolves to the same directory.
+COPY --from=builder /build/migrations /app/migrations
 
 USER appuser
 
