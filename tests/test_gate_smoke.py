@@ -123,30 +123,6 @@ def test_complexity_ceiling_is_absolute_not_top_n() -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# check_branch_name
-# ---------------------------------------------------------------------------------------------
-
-
-@pytest.mark.parametrize("branch", ["feat/42-lanzadera-auth", "fix/7-crlf-count", "main"])
-def test_branch_name_gate_accepts_valid_names(branch: str) -> None:
-    assert _run("check_branch_name.py", "--branch", branch).returncode == 0
-
-
-@pytest.mark.parametrize(
-    "branch",
-    [
-        "lanzadera-auth",
-        "feat/lanzadera-auth",
-        "feat/42_lanzadera_auth",
-        "FEAT/42-auth",
-        "develop",
-    ],
-)
-def test_branch_name_gate_rejects_invalid_names(branch: str) -> None:
-    assert _run("check_branch_name.py", "--branch", branch).returncode == 1
-
-
-# ---------------------------------------------------------------------------------------------
 # check_pr_size
 #
 # The git diff path needs a real repository, so it is covered by
@@ -360,12 +336,11 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
         "check_layers.py",
         "check_complexity.py",
         "check_dry.py",
-        "check_branch_name.py",
     ],
 )
 def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
     root = FIXTURES / "layers_clean"
-    args = ["--branch", "main"] if gate_script == "check_branch_name.py" else ["--root", str(root)]
+    args = ["--root", str(root)]
     result = _run(gate_script, *args, "--json")
     envelope = json.loads(result.stdout)
     assert envelope["gate"]

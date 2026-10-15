@@ -15,7 +15,7 @@
 # es "repo público, runners hospedados" (HR-61) y debe quedar como dato,
 # no como derivado del silencio.
 
-P01_branch_name_pattern: '^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$'
+P01_branch_name_pattern: '^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)\/[a-z0-9._-]+$'
 P06_review_budget_lines: 400
 P09_labels_type: {}
 P10_label_approval: status:approved
