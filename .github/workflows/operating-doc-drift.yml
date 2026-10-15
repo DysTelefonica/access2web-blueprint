@@ -5,21 +5,25 @@
 # documento derivó: el gate del patrón regenera el documento en el mismo proceso
 # y lo compara por secciones, nombrando la sección y la diferencia.
 #
-# Se dispara solo en `push` a main y en `schedule`. Ninguno de esos eventos
+# Se dispara solo en `schedule` y `workflow_dispatch` (decisión de #858): este
+# job no caza defectos de código, solo deriva documental entre commits del
+# catálogo pinneado, así que añadirlo al camino de los PRs o al `push` de main
+# gastaría minutos sin valor de revisión. Ninguno de los eventos restantes
 # evalúa un PR, así que este job no publica ningún nombre de check requerido
 # (HR-30) y no necesita el secreto en PRs de fork.
 #
 # El pin es un SHA de 40 hexadecimales, nunca una rama móvil: el documento se
 # compara contra el generador exacto que lo emitió. Cambiarlo es una decisión
-# explícita que exige regenerar el documento en el mismo cambio.
+# explícita que exige regenerar el documento en el mismo cambio. El pin actual
+# (07711e6a40b188e0d2a01ab345231e2f2b8af3c3) trae P51–P53 y el gate
+# `runner-profile/check_runner_profile.py` (PR #477, punta de la cadena #435).
 
 name: operating-doc-drift
 
 on:
-  push:
-    branches: [main]
   schedule:
     - cron: "0 4 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -70,7 +74,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: DysTelefonica/team-skills
-          ref: a1cca27194335424c44bb5d9595fcd6c5d7fb3bd
+          ref: 07711e6a40b188e0d2a01ab345231e2f2b8af3c3
           token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
           path: .ci-pattern-pin
           persist-credentials: false
