@@ -659,15 +659,12 @@ jobs:
     # eventos pasa a `pull_request || push || schedule || workflow_dispatch`;
     # `merge_group` desaparece con la cola de merge.
     if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
-<<<<<<< HEAD
-    needs: [pr-gate, quality, security, codeql, e2e-smoke]
-=======
     # Issue #882, PR-3: `integration` joins the required aggregator. The
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
-    # does.
-    needs: [pr-gate, quality, integration, security, codeql]
->>>>>>> origin/main
+    # does. e2e-smoke (#876) is the E2E gate added by the smoke branch
+    # once the auth routers mount; a red e2e-smoke also holds the PR.
+    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}
