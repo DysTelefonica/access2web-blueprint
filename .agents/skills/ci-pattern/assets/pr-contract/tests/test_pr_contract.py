@@ -19,7 +19,7 @@ POLICY_DATA = json.loads(POLICY.read_text(encoding="utf-8")) if POLICY.is_file()
     "chain_tip_requires_closes": True,
     "closes_pattern": "Closes|Fixes|Resolves",
     "review_budget_lines": 400,
-    "size_exception_field": "size-exception-reason:",
+    "size_exception_label": "size:exception",
     "conventional_commit_pattern": "^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\\([^)]+\\))?!?: ",
     "ai_attribution_patterns": ["Co-Authored-By:", "Generated-by:", "Generated with"],
 }
@@ -122,19 +122,23 @@ class PrContractGateTests(unittest.TestCase):
             self.assertEqual(p.returncode, 1)
             self.assertIn("HR-7", p.stdout)
 
-    def test_hr8_budget_exceeded_without_exception_fails(self):
+    def test_a1_budget_exceeded_without_label_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
             p = self._run(tmp, labels=["type:feature"], body="sin excepción\n",
                           commits=["feat: x"] + [f"feat: bulk {i}" for i in range(5)],
                           policy_overrides={"review_budget_lines": 3})
             self.assertEqual(p.returncode, 1)
             self.assertIn("presupuesto", p.stdout)
+            self.assertIn("size:exception", p.stdout)
+            self.assertNotIn("size-exception-reason", p.stdout)
 
-    def test_hr8_budget_with_exception_passes(self):
+    def test_a1_budget_with_label_passes(self):
         with tempfile.TemporaryDirectory() as tmp:
-            p = self._run(tmp, labels=["type:feature"],
-                          body="Closes #42\nsize-exception-reason: refactor\n\n"
-                               "## Tests que prueban el cierre\n\n- `tests/test_gate.py`\n" + chain_block("main"),
+            p = self._run(tmp, labels=["type:feature", "size:exception"],
+                          body="Closes #42\n\n## Excepción de tamaño\n\n"
+                               "1. parte en PR previa\n2. sí, por capa\n3. no\n4. ninguno\n\n"
+                               "## Tests que prueban el cierre\n\n- `tests/test_gate.py`\n"
+                               + chain_block("main"),
                           commits=["feat: x"] + [f"feat: bulk {i}" for i in range(5)],
                           policy_overrides={"review_budget_lines": 3})
             self.assertEqual(p.returncode, 0, p.stdout)

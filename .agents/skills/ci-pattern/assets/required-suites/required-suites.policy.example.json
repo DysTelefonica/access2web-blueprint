@@ -1,0 +1,22 @@
+{
+  "required_suites": [
+    "lint",
+    "unit",
+    "integration",
+    "e2e-smoke"
+  ],
+  "events": {
+    "pull_request": {
+      "accepted_unran": ["e2e-smoke"]
+    },
+    "push": {
+      "accepted_unran": []
+    },
+    "schedule": {
+      "accepted_unran": []
+    },
+    "workflow_dispatch": {
+      "accepted_unran": []
+    }
+  }
+}

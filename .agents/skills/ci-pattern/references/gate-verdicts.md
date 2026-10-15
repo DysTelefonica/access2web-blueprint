@@ -17,7 +17,7 @@ verificado se marca. Las fricciones citadas se detallan en
 |---|---|---|---|
 | `required` (agregador) | Se queda, reforzado | Suite de paridad del asset (`assets/required-jobs/`) | Falla cerrado con matriz de skips esperados; causa raíz separada de skips en cascada (F-003, ardelperal/APAP_WEB#1118) |
 | `pr-size` | Se queda, reforzado | Sin verificar | Excepción como campo de datos del cuerpo, no etiqueta (ardelperal/APAP_WEB#1141; R2) |
-| `branch-name` | Se queda | Sin verificar | Deriva la issue del nombre de rama; base del trazado determinista (ardelperal/APAP_WEB#1111) |
+| `branch-name` | Retirado (ruleset) | — | El ruleset del repo aplica `^(feat\|fix\|chore\|docs\|refactor\|test)/[a-z0-9._-]+$`; el gate del nombre estaba retirado porque duplicaba lo que ya enforza el host (A5) |
 | `issue-spec` | Se queda, mensaje a mejorar | Sin verificar | Trazabilidad determinista rama + etiquetas + cierre (B4, B11) |
 | `integration` (Postgres real) | Se queda | Sin verificar | Verifica comportamiento que el mock no cubre |
 | `security` (pip-audit, gitleaks, trivy config) | Se queda, re-agendado | Sin verificar | El resultado de pip-audit es función de la base de avisos del momento, no del diff — siete fallos en cuatro ramas sin relación dentro de 80 minutos (2026-09-29/10-01) —: corre programado sobre la rama por defecto y en los PRs que tocan manifiestos (HR-39, parámetro 22); gitleaks y trivy config sí son función del diff y permanecen por PR |

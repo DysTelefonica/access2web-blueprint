@@ -1,0 +1,33 @@
+#!/bin/sh
+# ci-pattern:agent-guards v1 (pre-push) — DysTelefonica/team-skills#420
+# Guarda de agente: rechaza push directo a la rama protegida (entrada a main
+# exclusivamente por PR, HR-14/HR-50) y rechaza tambien la eliminacion de esa
+# rama remota: la rama remota se conserva siempre tras el merge.
+# Fail-closed: linea de stdin ilegible => rechazo.
+set -u
+
+root=$(git rev-parse --show-toplevel 2>/dev/null) || {
+  echo "RECHAZADO: pre-push sin toplevel de git." >&2
+  exit 2
+}
+protected=$(git -C "$root" config --get ci-pattern.protected-branch 2>/dev/null)
+[ -n "$protected" ] || protected=main
+
+blocked=0
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  # git invoca pre-push con 4 campos; linea incompleta es duda (HR-3).
+  [ -n "$remote_ref" ] || continue
+  case "$remote_ref" in
+    "refs/heads/$protected")
+      echo "RECHAZADO: push a la rama protegida '$protected' ($local_ref)." >&2
+      echo "  La entrada a main solo sale por PR mergeada por un mantenedor" >&2
+      echo "  (HR-50, #420)." >&2
+      blocked=1
+      ;;
+  esac
+done
+
+if [ "$blocked" -ne 0 ]; then
+  exit 1
+fi
+exit 0

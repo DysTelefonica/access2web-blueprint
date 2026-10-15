@@ -22,10 +22,6 @@
   ],
   "required_checks": [
     {
-      "name": "branch-name",
-      "class": "host-enforced"
-    },
-    {
       "name": "required",
       "class": "host-enforced"
     }

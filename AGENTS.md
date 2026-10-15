@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v6f327ae -->
+<!-- personal-skills:slice:access2web-blueprint @ v020f582 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -143,7 +143,7 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 
 - El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario.
 - **Rojo en CI pisa todo el merge.** Regla humana: el revisor no debe pulsar merge con ningún check rojo, ni siquiera si el rojo parece trivial. Complemento técnico: `repository-delivery-governance` HR-7 + `deterministic-quality-harness` HR-1 fail-loud atajan el escenario cuando hay branch protection automatizada.
-- El job `merge-ready` signal-only que consulta `mergeable` y `reviewDecision` está retirado (no cazaba defectos): con ruleset + cola de merge nativa, la barrera ya la aplica el host y replicarla en CI duplicaba la señal sin añadir garantía.
+- El job `merge-ready` signal-only que consulta `mergeable` y `reviewDecision` está retirado (no cazaba defectos): sin `strict` ni cola de merge, la barrera la aplica el ruleset del host y la red de seguridad post-merge (`push` a `main` + nightly diario), y replicarla en CI duplicaba la señal sin añadir garantía.
 - Cuando el CI rojo es por **infra** (runner colgado, red, secret rotado), abrir issue bloqueante de CI y enlazarla desde el PR; no embutir la fix infra en el PR del feature salvo que sea ≤30 LOC y se cierre en el día.
 
 ### Anti-slop y atribución

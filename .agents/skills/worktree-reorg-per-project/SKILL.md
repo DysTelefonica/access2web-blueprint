@@ -4,7 +4,7 @@ description: Trigger: worktree reorg per project, clean main. Reorganize git wor
 license: Apache-2.0
 metadata:
   author: ardelpeal
-  version: 2.0
+  version: 2.0.1
   last_verified: 2026-09-05
   scope: ['universal']
   auto_invoke: ['reorganizing worktrees per project']
@@ -161,10 +161,32 @@ if (Test-Path -LiteralPath $legacyChildContainer) {
 # Prune stale metadata (if any worktree was half-deleted during the run)
 git -C $p worktree prune
 
-# If a project-internal orphan dir fails to delete with "Access is denied", that's
-# a Windows file lock (AV/Indexer). Retry later or accept as residual — the
-# worktree list no longer references it.
+# --- safe-cleanup: borrado seguro de rama local post-merge ---
+# Tras un merge exitoso, la rama remota ya contiene el trabajo; se puede
+# retirar la rama local con `safe_cleanup` (DysTelefonica/team-skills#436).
+# safe_cleanup borra la rama local y su worktree SOLO si la punta esta
+# preservada (coincide con origin/<branch>, es ancestro de origin/<base>,
+# o iguala el head de una PR mergeada). Falla cerrado en caso contrario.
+# Se usa desde el proyecto (cd al project root), pasando --bundle-dir
+# para tener un respaldo antes de cualquier borrado.
+
+# Uso desde PowerShell (ajuste paths):
+#   $bundleDir = "C:\backups\ci-pattern"
+#   python3 "$env:HOME\.agents\skills\ci-pattern\assets\runner-controls\safe_cleanup.py" \
+#       --repo-dir $p \
+#       --branch <branch-name> \
+#       [--worktree <path-to-wt>] \
+#       [--pr-head <sha>] \
+#       [--bundle-dir $bundleDir]
+#   # rc=0 limpio / rc=3 rehusado / rc=2 error de entorno (fail-closed)
 ```
+
+**Importante**: no use `git push origin --delete <branch>` ni `git push origin
+--delete-branch` bajo ninguna circunstancia. La rama remota sobrevive al merge;
+solo se borra la rama LOCAL (y su worktree, si corresponde) a travês de
+`safe_cleanup`. Si a un proyecto-internal orphan dir fails to delete with
+"Access is denied", that's a Windows file lock (AV/Indexer). Retry later or
+accept as residual — the worktree list no longer references it.
 
 ## Bulk Update Helper
 

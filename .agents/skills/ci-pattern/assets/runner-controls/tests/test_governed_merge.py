@@ -112,24 +112,32 @@ class GovernedMergeTests(unittest.TestCase):
         self.assert_merged(proc, False)
 
     def test_size_exception_allows_oversized_pr(self) -> None:
-        # HR-8: el campo size-exception-reason ES la excepcion del presupuesto.
+        # A1: la unica via valida para un PR sobre el presupuesto es la
+        # etiqueta 'size:exception' aplicada por el mantenedor; el campo
+        # 'size-exception-reason:' del cuerpo esta retirado.
+        state = base_state()
+        state["pr_details"]["7"].update(
+            additions=380, deletions=60,
+            labels=[{"name": "type:bug"}, {"name": "chain:partial"}, {"name": "size:exception"}],
+            body="Refs #303\n\n## Excepción de tamaño\n\n1. parte en PR previa\n2. sí\n3. no\n4. ninguno\n")
+        proc = run_gate(self.root, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
+
+    def test_size_exception_field_in_body_is_ignored(self) -> None:
+        # A1: el campo 'size-exception-reason:' del cuerpo esta retirado;
+        # la excepcion solo cuenta cuando la etiqueta 'size:exception' esta
+        # aplicada por el mantenedor. El cuerpo puede mencionarla, pero si
+        # no hay etiqueta, el merge se bloquea.
         state = base_state()
         state["pr_details"]["7"].update(
             additions=380, deletions=60,
             body="Refs #303\nsize-exception-reason: borrado completo de un fichero\n")
         proc = run_gate(self.root, contract(), state)
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assert_merged(proc, True)
-
-    def test_invalid_size_exception_blocks_the_merge(self) -> None:
-        # Vacio o duplicado: la excepcion no es dato -> el tamano bloquea.
-        for body in ("Refs #303\nsize-exception-reason:\n",
-                     "Refs #303\nsize-exception-reason: a\nsize-exception-reason: b\n"):
-            state = base_state()
-            state["pr_details"]["7"].update(additions=380, deletions=60, body=body)
-            proc = run_gate(self.root, contract(), state)
-            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-            self.assert_merged(proc, False)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("size:exception", proc.stdout)
+        self.assertNotIn("size-exception-reason", proc.stdout)
+        self.assert_merged(proc, False)
 
     def test_draft_pr_blocks_the_merge(self) -> None:
         state = base_state()
