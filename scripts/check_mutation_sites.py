@@ -60,23 +60,6 @@ class BaselineEntry:
 # is a ratchet you got wrong. The ratchet target aligns with the DG-11 review
 # date in `openspec/changes/architectural-guards-over-metrics/tasks.md`.
 BASELINE: dict[str, BaselineEntry] = {
-    # W45 (#490) extracted the orchestrator into coverage_gate_evaluate.py
-    # via a backward-compat wrapper. coverage_gate.py now sits at ~53 sites
-    # (entry point + fixture + StashKey + thin wrapper); the orchestrator
-    # lives in coverage_gate_evaluate.py at ~62 sites. No BASELINE entry
-    # needed for either.
-    # "app/pytest_plugin/coverage_gate.py": BaselineEntry(
-    #     sites=109, target=100, target_date="2027-02-13"
-    # ),
-    # W44 (#488) split coverage_gate_helpers.py into three cohesive
-    # modules (coverage_gate_coverage, coverage_gate_messages,
-    # coverage_gate_resolution). Each is well below the 100-site
-    # ceiling (26/42/61 sites), so no BASELINE entry is needed for them.
-    # The orchestrator in coverage_gate.py is still 109 sites — that's
-    # the file left to address via a future orchestrator restructure.
-    # "app/pytest_plugin/coverage_gate_helpers.py": BaselineEntry(
-    #     sites=127, target=100, target_date="2027-02-13"
-    # ),
     # W46 (#492) split platform_user.py into three cohesive modules:
     # - platform_user_types.py (47 sites): shared types + helpers
     # - platform_user_auth.py (89 sites): set-password, grant/revoke global admin
