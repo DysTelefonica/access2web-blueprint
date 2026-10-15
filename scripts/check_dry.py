@@ -182,6 +182,12 @@ BASELINE: dict[str, BaselineEntry] = {
     # and the delivery.http admin import. Same coincidence class as the
     # W40/W61/W64 entries.
     "dup:3aaedade4aaa": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
+    # W62 #921: session_repository_pg.py and reset_token_repository_pg.py
+    # share the same module-docstring + __future__ + AsyncSessionFactoryPort
+    # import pattern (5 statements). Structural coincidence — every
+    # Postgres adapter in ``repositories/`` opens with the same shape. Same
+    # class as the W64 (#585) entry above. Not a smell.
+    "dup:ba56157c426d": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     "dup:c146aa3ae961": BaselineEntry(occurrences=2, target=2, target_date="2030-01-01"),
     # W57 (#514): admin.py removed; dup:110a87c35376 shrank to 0 (NOTE).
     # W60 (#522) and W61 (#524): not re-detected — entry removed from BASELINE.

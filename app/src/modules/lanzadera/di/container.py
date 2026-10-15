@@ -62,6 +62,9 @@ from app.src.modules.lanzadera.adapters.persistence.repositories.profile_reposit
 from app.src.modules.lanzadera.adapters.persistence.repositories.reset_token_repository_pg import (
     ResetTokenRepositoryPg,
 )
+from app.src.modules.lanzadera.adapters.persistence.repositories.session_repository_pg import (
+    SessionRepositoryPg,
+)
 from app.src.modules.lanzadera.adapters.persistence.repositories.user_repository_pg import (
     UserRepositoryPg,
 )
@@ -225,17 +228,8 @@ class LanzaderaContainer:
             PresenceRepositoryPg,
         )
         self._audit = cast(AuditLog, _pick(audit, self._factory, AuditLogPg))
-        # W62 (#539): session_repo mirrors the other driven-port slots.
-        # The Postgres adapter for sessions lands in a follow-up slice;
-        # for now the only injection path is the test fake.
-        # ``_build_default_session_repo`` ignores its factory arg (it raises),
-        # but ``_pick`` requires the adapter_cls to accept one. Pass a
-        # lambda that swallows the factory; the factory arg is unused on this branch.
-        self._session_repo = _pick(
-            session_repo,
-            self._factory,
-            lambda _f: self._build_default_session_repo(),
-        )
+        # W62 (#539, #921): session_repo mirrors the other driven-port slots.
+        self._session_repo = _pick(session_repo, self._factory, SessionRepositoryPg)
         # W62 PR-6: jwt_signer is an HS256-only port that does not need a
         # Postgres session_factory (the secret lives in the env). The test
         # path injects a fake; otherwise the default builder loads
@@ -263,21 +257,6 @@ class LanzaderaContainer:
     @property
     def bootstrap_source(self) -> BootstrapAdminSource:
         return self._bootstrap_source
-
-    def _build_default_session_repo(self) -> SessionRepository:
-        """Default ``SessionRepository`` wiring (W62 #539).
-
-        Returns a Postgres-backed adapter once ``SessionRepositoryPg``
-        lands in a follow-up slice. Until then, raising here makes the
-        production-code path fail fast with a clear message rather
-        than silently mocking the wrong dependency in tests. The
-        test path stays untouched because tests inject the fake.
-        """
-        raise NotImplementedError(
-            "SessionRepositoryPg is not implemented yet. "
-            "Pass a fake (tests/lanzadera/_fakes.py:FakeSessionRepository) "
-            "until PR-2's follow-up ships the Postgres adapter."
-        )
 
     def _build_default_jwt_signer(self) -> JwtSignerPort:
         """Default ``JwtSignerPort`` wiring (W62 PR-6).
