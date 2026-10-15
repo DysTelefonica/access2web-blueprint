@@ -24,7 +24,7 @@ PYTEST ?= $(PYTHON) -m pytest
 .PHONY: help verify format lint typecheck test check-workflows quality-report mutation clean
 
 help:
-	@echo "verify           - THE green-PR gate: every gate ci.yml runs on a pull request"
+	@echo "verify           - THE local PR preflight: scripts/local-preflight.sh (the CI suite runs in CI)"
 	@echo "format           - ruff format --check --config app/pyproject.toml (mechanical, fix first)"
 	@echo "lint             - ruff check --config app/pyproject.toml ."
 	@echo "typecheck        - mypy over $(PACKAGE)/"
@@ -80,17 +80,19 @@ quality-report:
 #
 # Adding a gate to ci.yml without adding it here fails the parity test. That is
 # the only reason the two lists will still match a year from now.
-# verify — THE definition of green (Hard Rule 19), delegando en la única
-# lista de comandos: scripts/local-preflight.sh, con los mismos gates y el
-# mismo orden que el job `quality` de ci.yml. Los targets de arriba quedan
-# como atajos por gate; la lista canónica no vive en dos sitios.
+# verify — the local PR preflight, delegando en la única lista de comandos:
+# scripts/local-preflight.sh, con los gates del pr-gate de ci.yml en su mismo
+# orden. Los targets de arriba quedan como atajos por gate; la lista canónica
+# no vive en dos sitios. La suite completa (format, lint, typecheck, tests y
+# cobertura) corre en el job `quality` de CI, no aquí.
 #
 # Deliberately NOT included, each for a reason that is pinned by
 # test_make_verify_excludes_what_a_workstation_cannot_run:
-#   - check_pr_size / check_branch_name  need the PR payload (merge-base, labels)
-#   - check_mutation + cosmic-ray        weekly schedule; far too slow per PR
-#   - pip-audit / gitleaks / trivy       Docker- and network-dependent scanners
-#   - check_required_jobs                needs the real toJSON(needs) of a run
+#   - mypy, pytest + coverage, quality_report  full suite; CI quality job only
+#   - check_workflows                          ci.yml contract; CI quality job only
+#   - check_mutation + cosmic-ray              weekly schedule; far too slow per PR
+#   - pip-audit / gitleaks / trivy             Docker- and network-dependent scanners
+#   - check_required_jobs                      needs the real toJSON(needs) of a run
 verify:
 	@bash scripts/local-preflight.sh
 	@echo "verify: all CI pull-request gates passed."

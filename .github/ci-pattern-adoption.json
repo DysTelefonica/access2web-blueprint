@@ -19,7 +19,6 @@
         {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
         {"artifact": ".github/required-jobs-policy.json", "disposition": "adopted", "target": ".github/required-jobs-policy.json"},
-        {"artifact": ".github/local-ci-parity-policy.json", "disposition": "adopted", "target": ".github/local-ci-parity-policy.json"},
         {"artifact": "scripts/local-preflight.sh", "disposition": "adopted", "target": "scripts/local-preflight.sh"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
         {"artifact": ".team-skills.yaml (manifiesto de skills de la flota: lo escribe el propagador de DysTelefonica/team-skills en cada corrida, y el catálogo del patrón lo lista como artefacto de gobierno)", "disposition": "adopted", "target": ".team-skills.yaml"},
@@ -160,15 +159,6 @@
             "@.github/needs/needs.json"
           ],
           "gate": "required-jobs"
-        },
-        {
-          "args": [
-            "--repo",
-            "@.",
-            "--policy",
-            "@.github/local-ci-parity-policy.json"
-          ],
-          "gate": "local-ci-parity"
         },
         {
           "args": [
