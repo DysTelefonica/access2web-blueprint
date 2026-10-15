@@ -147,10 +147,22 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
             database=db_name,
         )
         try:
-            # We need a real user to satisfy the FK for the actor_id row.
-            user_id_row = await conn.fetchrow("SELECT id FROM lanzadera.users ORDER BY id LIMIT 1")
-            assert user_id_row is not None, "0004 must have seeded at least one user"
-            real_user_id = str(user_id_row["id"])
+            # Create a non-synthetic user so 0004's DELETE
+            # (``WHERE email LIKE '%@synthetic.lanzadera'``) does not try
+            # to remove it. This user stands in for a real production
+            # user whose audit rows must survive the downgrade.
+            real_user_id = str(uuid.uuid4())
+            await conn.execute(
+                """
+                INSERT INTO lanzadera.users
+                  (id, email, name, dni_encrypted, status, failed_attempts)
+                VALUES
+                  ($1, $2, 'Real Test User', $3, 'active', 0)
+                """,
+                real_user_id,
+                f"real-{secrets.token_hex(4)}@enterprise.test",
+                b"\x00",
+            )
 
             await conn.execute(
                 """
