@@ -19,9 +19,9 @@ La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué veri
 
 | Check | Qué comprueba | Cómo pasarlo | Comando local |
 |---|---|---|---|
-| Nombre de rama (pr-gate) | La rama sigue `<tipo>/<n>-<slug>` (o Dependabot); `check_branch_name.py:26` | Nombrarla `<tipo>/<n-issue>-<slug>`; las cadenas `chain:partial` añaden sufijo | `python scripts/check_branch_name.py` |
+| Nombre de rama (pr-gate) | La rama sigue el patrón gentle-ai `^(feat\|fix\|chore\|docs\|style\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` (sin número de issue); lo enforza el ruleset del host | Nombrarla `<tipo>/<slug>` con kebab-case; las cadenas encadenadas añaden sufijo | — (lo enforza el ruleset, no un script local) |
 | Issue-spec (pr-gate) | El cuerpo lleva `Closes`/`Fixes`/`Resolves`/`Refs #N` apuntando a una issue con `status:approved` y un `type:*` (Refs #855) | Poner `Closes #N` en la primera línea del cuerpo con la issue aprobada | `python scripts/check_issue_spec.py local --body-file <body>` |
-| Tamaño de la PR (pr-gate) | `additions + deletions` de la API de la PR ≤ 400; la etiqueta `size:exception` la pone el mantenedor como override (Refs #854) | Partir por unidad de trabajo, encadenar PRs, o pedir `size:exception` al mantenedor (responder las 4 preguntas de `AGENTS.md` §F.7) | `python scripts/check_pr_size.py local --base origin/main` |
+| Tamaño de la PR (pr-gate) | `additions + deletions` de la API de la PR ≤ 400; la etiqueta `size:exception` la pone el mantenedor como override solo cuando partir la PR dejaría `main` roto y tras responder las 4 preguntas de `AGENTS.md` §F.7 (Refs #854) | Partir por unidad de trabajo o encadenar PRs (orden de escape); `size:exception` es la última opción | `python scripts/check_pr_size.py local --base origin/main` |
 | Esquema de walkthroughs (pr-gate) | Los JSON `docs/03-aplicaciones/*/walkthrough-*.json` cumplen el contrato v2.1 (`check_walkthrough_schema.py --strict`) | Regenerar con dysflow + codegraph-vba; nunca editar a mano | `python scripts/check_walkthrough_schema.py --strict` |
 | Lint (pr-gate) | `ruff check` sin findings | `ruff check .` antes de commit | `ruff check --config app/pyproject.toml .` |
 | Formato (quality) | `ruff format` sin cambios en el árbol | `ruff format .` antes de commit | `ruff format --check --config app/pyproject.toml .` |
@@ -133,6 +133,8 @@ eliminándolos. Se perdería justo la granularidad que el trabajo por unidades
 pretende crear: `main` conserva el qué, y la rama, el cómo se llegó.
 
 El coste es una lista de ramas larga. La convención de nombre
-`<tipo>/<nº issue>-<slug>` la mantiene navegable.
+`<tipo>/<slug>` (patrón gentle-ai, sin número de issue; lo enforza el ruleset)
+la mantiene navegable; la trazabilidad con la issue vive en el cuerpo del PR,
+con `Closes #N`.
 
 [← Back to README](README.md) · [Next: CHANGELOG.md →](CHANGELOG.md)

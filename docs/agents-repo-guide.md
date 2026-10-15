@@ -75,15 +75,15 @@ Lea [`CONTRIBUTING.md`](CONTRIBUTING.md) **antes** de crear un issue, una rama, 
 
 | Gate | Comprueba | Si se ignora |
 |---|---|---|
-| `scripts/check_branch_name.py` | `<tipo>/<nº issue>-<kebab-slug>` | Hay que rehacer la rama, y el PR con ella |
+| Ruleset del host | Patrón `<tipo>/<slug>` (gentle-ai, sin número de issue) sobre la rama | Hay que renombrar la rama antes de pedir review |
 | `scripts/check_pr_size.py` | 400 líneas (`additions + deletions`) | Hay que partir el PR |
 | `scripts/check_workflows.py` | Actions fijadas por SHA de 40 hex; un `concurrency.group` por job | El workflow se rechaza |
 
 Consecuencias operativas:
 
-1. **El issue va primero.** El nombre de la rama necesita su número, así que crearla antes que el issue obliga a rehacerla.
+1. **El issue se enlaza en el cuerpo del PR con `Closes #N` (o `Refs #N` para no cerrar).** La trazabilidad vive en el cuerpo, no en el nombre de la rama.
 2. **Dimensione el trabajo al redactar el issue, no al abrir el PR.** Estime el alcance en el propio issue y, si no cabe en 400 líneas, deje escrito ahí el troceado: qué entra en cada PR y en qué orden. Un issue que no dice cómo se entrega delega esa decisión al final, que es justo cuando la salida cómoda es la excepción.
-3. **Si no cabe en 400 líneas, hay tres salidas y `size:exception` es la última.** Primero partir por unidad de trabajo; si las partes dependen entre sí, encadenar PRs (cada rama parte de la anterior); y sólo para diffs inevitables, `size:exception` con su `size-exception-reason:`. El orden y el motivo están en `CONTRIBUTING.md`.
+3. **Si no cabe en 400 líneas, hay tres salidas y `size:exception` es la última.** Primero partir por unidad de trabajo; si las partes dependen entre sí, encadenar PRs (cada rama parte de la anterior); y sólo cuando partir la PR dejaría `main` roto, pedir `size:exception` al mantenedor respondiendo las 4 preguntas de `AGENTS.md` §F.7. El orden y el motivo están en `CONTRIBUTING.md`.
 4. **Al integrar, conserve la rama remota.** Se integra con `--squash` y se limpia el worktree local con `git worktree remove <ruta>`. El motivo está en `CONTRIBUTING.md`.
 5. **Verifique en local antes de empujar.** `make` no está disponible en Git Bash en Windows; invoque los scripts con `python scripts/<nombre>.py`.
 
@@ -135,13 +135,15 @@ Este orden lo operacionaliza la skill **`architecture-guardrails`** (§Hard Rule
 `main` tiene branch protection desde el 2026-09-09, tras hacer público el
 repositorio en GitHub Free. La protección se aplica también a administradores.
 
-GitHub exige un PR actualizado con `main`, todas las conversaciones resueltas
-y (tras issue #702) un único check en verde: `required`. Ese job agrega
-(`needs:`) `review-budget`, `quality`, `security` y `codeql` — los dos
-últimos invocan `security.yml`/`codeql.yml` como jobs `uses:` porque
-`needs:` no cruza archivos de workflow — y falla cerrado ante cualquier job
-faltante, en `failure`, o en un `skipped` no permitido para ese evento
-(`scripts/check_required_jobs.py`). No permite force-push ni borrar la rama.
+La cola de merge nativa de GitHub integra los PRs en serie contra `main` con el
+CI corriendo en cada cabeza; no hay que actualizar la rama con `main` manualmente.
+Todas las conversaciones deben estar resueltas y (tras issue #702) un único check
+en verde: `required`. Ese job agrega (`needs:`) `review-budget`, `quality`,
+`security` y `codeql` — los dos últimos invocan `security.yml`/`codeql.yml` como
+jobs `uses:` porque `needs:` no cruza archivos de workflow — y falla cerrado ante
+cualquier job faltante, en `failure`, o en un `skipped` no permitido para ese
+evento (`scripts/check_required_jobs.py`). No permite force-push ni borrar la
+rama.
 
 Todo job alcanzable desde un PR público usa un runner hospedado por GitHub. El
 gate `check_workflows.py` rechaza etiquetas propias o dinámicas en esa ruta;
@@ -190,19 +192,19 @@ La skill `estado-planificacion-update` cubre el ciclo completo de vida de un ref
 
 El archivo `estado-planificacion-*.html` es la single source of truth visual del avance para los jefes. Cuando un agente entra al repo, debe leer el HTML más reciente antes de proponer cambios.
 
-## Hard rule — Anti-AI-slop gate antes de cualquier PR
+## Hard rule — Anti-AI-slop disciplina (recomendada, no gateada por código)
 
-Toda implementación de un PR (código, tests, docs, configuración) pasa por el gate de la skill `gentle-ai-ai-slop-discipline` antes de pushear la rama o pedir `size:exception`. La secuencia es no negociable:
+Toda implementación de un PR (código, tests, docs, configuración) pasa por la disciplina de la skill `gentle-ai-ai-slop-discipline` antes de pushear la rama o pedir `size:exception`. La disciplina existe y la cargan los agentes; ningún script del repositorio la verifica. La secuencia sigue siendo:
 
-1. **Cargar la skill primero.** Antes de la primera línea del diff, leer `~/.agents/skills/gentle-ai-ai-slop-discipline/SKILL.md` en su versión actual. La skill lleva changelog; saltarse la versión vigente es saltarse el gate.
+1. **Cargar la skill primero.** Antes de la primera línea del diff, leer `~/.agents/skills/gentle-ai-ai-slop-discipline/SKILL.md` en su versión actual. La skill lleva changelog; saltarse la versión vigente es saltarse la disciplina.
 2. **Pasar las 4 preguntas self-check.** Para cada archivo nuevo o modificado, responder: ¿está en los acceptance scenarios del issue? ¿el humano puede defender cada línea como decisión propia? ¿duplica autoridad existente? ¿se va de scope? Si cualquier respuesta es «no» o «no sé», STOP. Reescribir antes de continuar.
 3. **Detectar las 3 firmas.** Prose paralelo que duplica autoridad. Claims amplios sin contrato testeable. Tests que verifican objetos AI-invented en lugar del dominio real. Cada firma detectada es deuda permanente: remover antes de commitear.
 4. **Pre-submission self-review.** Releer el diff completo. Para cada línea fuera del scope del issue: ¿por qué está aquí? Si no hay respuesta, va fuera.
 5. **AI-slop self-defense con el humano.** Antes de pushear, presentar al humano 1-3 líneas random del diff y preguntar: «¿podés defender esta línea como decisión tuya, no de la IA?». Si no, la línea se elimina.
 
-**Excepción al gate**: edición trivial puramente pasiva (typo fix, formato, link roto). Documentar en el commit por qué no aplica el gate.
+**Excepción a la disciplina**: edición trivial puramente pasiva (typo fix, formato, link roto). Documentar en el commit por qué no aplica.
 
-**`size:exception` con AI-slop no negociable**: pedir `size:exception` sin haber pasado este gate es rechazo automático. El diff grande no excusa tests AI-invented.
+> Esta sección se queda como disciplina del agente, no como gate del CI. Ningún código de este repositorio rechaza PRs por AI-slop: quien opera con IA debe autorregularse.
 
 [← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)
 
