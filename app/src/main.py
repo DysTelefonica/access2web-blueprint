@@ -213,7 +213,8 @@ class _LazyAuthSigner:
             )
 
             raise InvalidTokenError("auth not initialised yet")
-        return container.jwt_signer.sign(claims)
+        token: str = container.jwt_signer.sign(claims)
+        return token
 
 
 _ensure_container_middleware(app)
