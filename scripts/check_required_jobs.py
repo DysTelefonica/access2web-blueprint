@@ -12,18 +12,20 @@ Adapted from `ardelperal/APAP_WEB`'s `scripts/check_required_jobs.py`
 the validated reference implementation. The event set differs, so the
 adaptation is not a byte-for-byte copy:
 
-  - `ci.yml`'s own triggers are `pull_request`, `push` (branches: `main`),
-    `schedule` and `workflow_dispatch`. There is no tag-push trigger here —
-    tags are `release.yml`'s domain and out of scope for this gate.
+  - `ci.yml`'s own triggers are `pull_request` (with the six type
+    events pinned in #857 PR-B), `push` (branches: `main`), `schedule`
+    (nightly safety net) and `workflow_dispatch`. There is no
+    `merge_group` trigger — the queue is gone with the gentle-ai model
+    — and no tag-push trigger here (tags are `release.yml`'s domain
+    and out of scope for this gate).
   - `needs:` cannot cross workflow files. `security.yml` and `codeql.yml`
     were made reusable (`on: workflow_call`) and are invoked directly as
     jobs inside `ci.yml` (`uses: ./.github/workflows/security.yml` /
     `codeql.yml`), which is what lets this aggregator `needs:` them and
     read `needs.<id>.result` exactly like any ordinary job.
-  - `mutation` is deliberately NOT one of the required jobs: it is
-    schedule/workflow_dispatch-only and was never part of branch
-    protection, so it stays out of `ALL_JOBS` and keeps running
-    independently.
+  - `mutation` and `mutation-ratchet` are no longer in `ci.yml` (the
+    gentle-ai model moves mutation out of CI; #857 PR-D), so they are
+    out of `ALL_JOBS` by construction.
 """
 
 from __future__ import annotations
@@ -39,14 +41,16 @@ from collections.abc import Mapping
 ALL_JOBS = frozenset({"pr-gate", "quality", "security", "codeql"})
 
 #: `pr-gate` only runs `if: github.event_name == 'pull_request'`
-#: (issue #135). In the merge queue (`merge_group`) there is no PR payload
-#: for it to read, and the PR already passed it (issue #857, PR-B), so the
-#: queue accepts its skip. `quality`, `security` and `codeql` run after a
-#: passed or skipped `pr-gate` on both `pull_request` and `merge_group`, so
-#: they must succeed there; `push` is no longer a `ci.yml` trigger.
+#: (issue #135, #857 PR-B). On every other trigger that fires `ci.yml`
+#: — `push` (post-merge safety net), `schedule` (nightly) and
+#: `workflow_dispatch` (manual) — `pr-gate` is skipped, and the heavy
+#: jobs that `needs: pr-gate` accept the skip. `pull_request` is the
+#: one event where the gate actually runs and the heavy jobs must see
+#: a `success` from it. `merge_group` is gone: the merge queue left
+#: with the gentle-ai model (#857 PR-D).
 SKIPS_BY_EVENT = {
     "pull_request": frozenset(),
-    "merge_group": frozenset({"pr-gate"}),
+    "push": frozenset({"pr-gate"}),
     "schedule": frozenset({"pr-gate"}),
     "workflow_dispatch": frozenset({"pr-gate"}),
 }
