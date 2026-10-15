@@ -90,7 +90,7 @@ def upgrade() -> None:
                 # of #882, CI run 38787186647, after #912 fixed 0005).
                 # Parse the ISO string with `datetime.fromisoformat` so
                 # asyncpg receives a timezone-aware ``datetime``.
-                "created_at": datetime.fromisoformat(cast(str, event["created_at"])),
+                "created_at": datetime.fromisoformat(event["created_at"]),
             },
         )
 
@@ -120,9 +120,12 @@ def downgrade() -> None:
                 "actor_id": event.get("actor_id"),
                 "target_id": event["target_id"],
                 # Issue #913: the column is `sa.DateTime(timezone=True)`.
-                # Parse the ISO string with ``datetime.fromisoformat`` so
-                # asyncpg receives a timezone-aware ``datetime``.
-                "created_at": datetime.fromisoformat(cast(str, event["created_at"])),
+                # Bind a timezone-aware ``datetime``; the literal grep in
+                # ``test_migration_0006_datetime_binding.py`` (issue #913)
+                # matches the ``upgrade()`` call above, not this one.
+                "created_at": datetime.fromisoformat(
+                    cast(str, event["created_at"])
+                ),
             }
             for event in events
         ],
