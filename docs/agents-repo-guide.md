@@ -169,9 +169,9 @@ Refuerza esta disciplina con `gentle-ai review status --cwd <repo>` antes de mer
 Toda entrega pasa por una issue canónica y un PR; el merge lo lanza un mantenedor por el camino del host.
 
 - **Issue.** El formulario canónico (`.github/ISSUE_TEMPLATE/issue-canonical.yml`) tiene seis secciones obligatorias: `Problema y contexto`, `Evidencia verificable`, `Alcance y no objetivos`, `Criterios de aceptación`, `Plan de validación` y `Dependencias y riesgos`. Cualquier mantenedor del repositorio con rol de administración aplica `status:approved` tras la revisión, incluso sobre su propia issue; ninguna rama ni PR se crea sin esa etiqueta.
-- **Rama.** `<tipo>/<nº issue>-<slug>` con `feat|fix|refactor|docs|ci|test|chore`; lo valida `scripts/check_branch_name.py`.
-- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`, la sección `Chain Context` en la punta de una cadena o con `chain:partial`, la sección de los tests que prueban el cierre cuando el PR cierra una issue, y el campo `size-exception-reason:` en una sola línea con la etiqueta `size:exception` si el diff supera las 400 líneas.
-- **Check requerido.** `required` debe estar en verde contra la base actual; si la base avanzó, se sincroniza con un merge de la rama base y se vuelve a ejecutar el CI.
+- **Rama.** `<tipo>/<slug>` con el patrón de gentle-ai (`feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert`), sin número de issue; lo aplica el ruleset del host. La trazabilidad vive en el cuerpo del PR con `Closes #N`.
+- **PR.** El cuerpo sigue la plantilla del repositorio: `Closes #N` o `Refs #N`, la sección `Chain Context` en la punta de una cadena o con `chain:partial`, y la sección de los tests que prueban el cierre cuando el PR cierra una issue. Si el diff supera las 400 líneas, el mantenedor pone la etiqueta `size:exception` tras responder las 4 preguntas de `AGENTS.md` §F.7.
+- **Check requerido.** `required` debe estar en verde; la cola de merge nativa lo revalida sobre la base actual antes de integrar. No hay que sincronizar la rama con `main` a mano.
 - **Merge.** Lo lanza un mantenedor por el camino del host: el ruleset `main-maintainers-and-admins-merge` solo deja actualizar `main` a los mantenedores y administradores, y solo mediante un PR. **Ningún agente mergea ni aplica `status:approved`.**
 - **Rama remota.** Se conserva tras el merge; nunca se borra.
 - **Documentación.** Vive en el repositorio, bajo `docs/`.
