@@ -79,5 +79,11 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     bind = op.get_bind()
+    # Issue #924: seeded events with a non-null ``actor_id`` reference
+    # ``users.id`` via ``fk_audit_actor_id_users``. 0004's downgrade
+    # deletes the seeded users, which would raise
+    # ``ForeignKeyViolationError`` while those audit rows still exist.
+    # Null out the FK before the DELETE so 0005 -> 0004 can run cleanly.
+    bind.execute(sa.text(f"UPDATE {SCHEMA}.audit SET actor_id = NULL"))
     # Delete seeded events (those with module='lanzadera' and no actor).
     bind.execute(sa.text(f"DELETE FROM {SCHEMA}.audit WHERE actor_id IS NULL"))
