@@ -7,7 +7,7 @@
 # VERIFICATION ORDER (Hard Rule 13) — declared once, never reordered:
 #   1. pr-gate (pr-size, walkthrough schema)      cheap, and it gates reviewability, not code
 #   2. format, lint, typecheck                     mechanical, fix before reading anything else
-#   3. tests + coverage                            produces coverage.json
+#   3. tests                                      runs the pytest suite
 #   4. layers -> complexity -> DRY                 run by scripts/quality_report.py, in that order
 #
 # The code gates are NOT separate YAML steps on purpose. Their order is load-bearing —
@@ -329,13 +329,15 @@ jobs:
         # `-c app/pyproject.toml --rootdir=app` is load-bearing. The pytest contract
         # lives in app/pyproject.toml and is written for rootdir=app: `pythonpath =
         # [".."]` is what makes `from app.src...` resolve, `testpaths = ["../tests"]`
-        # is where the tests actually are, and addopts loads the coverage-gate plugin
-        # by its `app.` path. Invoked from the repository root with no -c, pytest finds
-        # no configuration at all and every test fails with ModuleNotFoundError: app.
+        # is where the tests actually are. Invoked from the repository root with no
+        # -c, pytest finds no configuration at all and every test fails with
+        # ModuleNotFoundError: app.
         #
-        # cwd stays at the repository root so coverage.json lands where the downstream
-        # gates look for it.
-        run: pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json --cov-report=term
+        # Coverage and the coverage-gate plugin were retired in #877; the previous
+        # `--cov --cov-report=json:coverage.json --cov-report=term` flags depended
+        # on pytest-cov, which is no longer in app/pyproject.toml. The unit suite
+        # and the quality gates downstream run without coverage data.
+        run: pytest -c app/pyproject.toml --rootdir=app -m "not integration"
 
 
       - name: quality gates and indicators
@@ -359,6 +361,129 @@ jobs:
       # `## Quality indicators` block); that summary block is what the
       # reviewer reads, not the artifact blob. The CI PR rollup's
       # `quality` check is now driven by the script-level exit code.
+
+  integration:
+    # Issue #882 (PR-3): the DSN fixture (PR-2) fails closed when the
+    # integration URL is missing. This job provides that URL by running
+    # postgres as a service in the runner, so the integration tests
+    # have a real database to talk to — no more "skip on missing DSN".
+    # Runs after pr-gate; the same `if:` shape as quality/security/codeql
+    # accepts pr-gate's skip on push/schedule/dispatch (#857 PR-D).
+    needs: pr-gate
+    runs-on: ubuntu-24.04
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    # Per-gate FIFO same shape as the other heavy jobs.
+    concurrency:
+      group: gate-integration-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    # Hard Rule 15: alembic upgrade + integration suite on a cold container
+    # is slower than the unit suite; 25 min is the generous budget.
+    timeout-minutes: 25
+    services:
+      postgres:
+        # `postgres:16-alpine` pinned by SHA256 digest. `pull_policy: always`
+        # makes the digest load-bearing — a stale local cache would be a
+        # silent replay vulnerability in a release gate.
+        image: postgres:16-alpine@sha256:1a66d744c1b459e13b05a8fca341da84cb63383e99ce262210efee5a319d4551
+        env:
+          POSTGRES_DB: lanzadera
+          POSTGRES_USER: lanzadera
+          POSTGRES_PASSWORD: lanzadera-dev-only
+        # CI template guidance: NOT `- 5432:5432`. The dynamic port is
+        # read in the step below; hardcoding it lets two concurrent jobs
+        # collide on one host port, or worse, silently share one database
+        # across branches — which is why the previous PR forced the DSN
+        # fixture to fail instead of skip.
+        ports:
+          - 5432
+        options: >-
+          --health-cmd "pg_isready -U lanzadera -d lanzadera"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          sparse-checkout-cone-mode: false
+
+      - name: disable sparse-checkout cone mode (runtime fallback)
+        # See the same step in the `quality` job (#109, #110, #117 F2, #414).
+        run: |
+          if ! git sparse-checkout disable 2>/dev/null; then
+            :
+          fi
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        id: setup-python
+        with:
+          python-version: "3.12.11"
+
+      - name: install
+        # Same #117 defensive guard as the `quality` job: prove the
+        # project exists before pip sees it, harden the shell, and exit
+        # non-zero on the failure path. `tests/test_ci_workflow.py`
+        # asserts every install step in the workflow carries this shape,
+        # so this guard is part of the install contract, not a stylistic
+        # choice. The integration suite additionally needs asyncpg +
+        # alembic which the lockfile already pins.
+        run: |
+          set -euo pipefail
+          if [ -f app/pyproject.toml ]; then
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
+          elif [ -f pyproject.fragment.toml ]; then
+            echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
+            echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
+            exit 1
+          else
+            echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
+            echo "::error::The CI cannot install a Python project that does not exist. See issue #117 F2."
+            exit 1
+          fi
+
+      # CI template guidance: NEVER hardcode the port in `jobs.<id>.env` —
+      # the job context is not available there and an empty string with no
+      # error would make the fixture skip silently. Read the runner-assigned
+      # port via the step-level env and export the DSN to $GITHUB_ENV so later
+      # steps can reuse it.
+      - name: Resolve the DSN from the assigned host port
+        env:
+          POSTGRES_HOST_PORT: ${{ job.services.postgres.ports['5432'] }}
+        run: |
+          set -euo pipefail
+          if [ -z "$POSTGRES_HOST_PORT" ]; then
+            echo "::error::service port did not resolve; refusing to run with a DSN that cannot connect" >&2
+            exit 1
+          fi
+          echo "INTEGRATION_DSN=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
+          echo "APAP_INTEGRATION_URL=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
+
+      - name: Apply migrations
+        env:
+          APAP_INTEGRATION_ENABLED: "1"
+        # The integration suite expects the latest schema; alembic applies it.
+        # `DATABASE_URL` is what `app/migrations/env.py` reads.
+        # `PLATFORM_SECRET_KEY` is required by 0004_seed_users.py to
+        # AES-256-GCM encrypt the DNI field; the value matches the dev
+        # fixture (`tests/lanzadera/migrations/test_seed_migrations.py`
+        # `_FIXTURE_KEY`) and what `docker-compose.yml` exports for
+        # local dev. Computing it inline keeps the workflow self-contained
+        # and the contract auditable from this step alone.
+        run: |
+          set -euo pipefail
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          DATABASE_URL="$APAP_INTEGRATION_URL" alembic -c app/migrations/alembic.ini upgrade head
+
+      - name: Run integration tests
+        env:
+          APAP_INTEGRATION_ENABLED: "1"
+        # `-m integration` collects all @pytest.mark.integration tests.
+        # No path filter: the integration job runs the full integration
+        # suite, not a subset (levels comment on #882).
+        run: |
+          set -euo pipefail
+          pytest -c app/pyproject.toml --rootdir=app -m integration
 
   security:
     # Issue #702: security.yml is now `on: workflow_call` only (no
@@ -534,7 +659,15 @@ jobs:
     # eventos pasa a `pull_request || push || schedule || workflow_dispatch`;
     # `merge_group` desaparece con la cola de merge.
     if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+<<<<<<< HEAD
     needs: [pr-gate, quality, security, codeql, e2e-smoke]
+=======
+    # Issue #882, PR-3: `integration` joins the required aggregator. The
+    # job runs the full integration suite against the in-job Postgres
+    # service; a red integration gate holds the PR the same way `quality`
+    # does.
+    needs: [pr-gate, quality, integration, security, codeql]
+>>>>>>> origin/main
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

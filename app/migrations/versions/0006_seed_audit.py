@@ -16,6 +16,7 @@ import json
 from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
+from typing import Any, cast
 
 import sqlalchemy as sa
 from alembic import op
@@ -29,15 +30,32 @@ depends_on: str | Sequence[str] | None = None
 SCHEMA = "lanzadera"
 
 
-def upgrade() -> None:
-    fixture = (
-        Path(__file__).parent.parent.parent.parent
+def _fixture_path() -> Path:
+    return (
+        Path(__file__).resolve().parent.parent.parent.parent
         / "data"
         / "fixtures"
         / "lanzadera"
         / "audit_events.json"
     )
-    events = json.loads(fixture.read_text())
+
+
+def _seeded_events() -> list[dict[str, Any]]:
+    """The full event list the upgrade() inserts, from the same fixture.
+
+    downgrade() matches the discriminating columns the upgrade() writes
+    (id, event_type, actor_id, target_id, created_at). ``module``,
+    ``result``, ``correlation_id`` and ``payload`` are intentionally
+    excluded: the application also writes ``module='lanzadera'`` and the
+    other fields on real events (login.py, create_user.py,
+    set_password.py), so they do not discriminate a seeded row from a
+    real one. Issue #928.
+    """
+    return cast(list[dict[str, Any]], json.loads(_fixture_path().read_text()))
+
+
+def upgrade() -> None:
+    events = _seeded_events()
 
     bind = op.get_bind()
     count = bind.execute(sa.text(f"SELECT COUNT(*) FROM {SCHEMA}.audit")).scalar() or 0
@@ -71,7 +89,7 @@ def upgrade() -> None:
                 # job ran alembic against a real Postgres service (PR-3
                 # of #882, CI run 38787186647, after #912 fixed 0005).
                 # Parse the ISO string with `datetime.fromisoformat` so
-                # asyncpg receives a timezone-aware `datetime`.
+                # asyncpg receives a timezone-aware ``datetime``.
                 "created_at": datetime.fromisoformat(event["created_at"]),
             },
         )
@@ -79,5 +97,36 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     bind = op.get_bind()
-    # Delete seeded events (those with module='lanzadera' and no actor).
-    bind.execute(sa.text(f"DELETE FROM {SCHEMA}.audit WHERE actor_id IS NULL"))
+    # Issue #928: delete only the rows this migration seeded, matching
+    # every column the upgrade() wrote that the application does not also
+    # write (``id``, ``event_type``, ``actor_id``, ``target_id``,
+    # ``created_at``). ``IS NOT DISTINCT FROM`` treats NULLs in
+    # ``actor_id`` as equal to NULLs in the fixture, so a seeded event
+    # with no actor is still matched.
+    events = _seeded_events()
+    if not events:
+        return
+    bind.execute(
+        sa.text(
+            f"""DELETE FROM {SCHEMA}.audit
+                WHERE (id, event_type, actor_id, target_id, created_at)
+                      IS NOT DISTINCT FROM
+                      (:id, :event_type, :actor_id, :target_id, :created_at)"""
+        ),
+        [
+            {
+                "id": event["id"],
+                "event_type": event["event_type"],
+                "actor_id": event.get("actor_id"),
+                "target_id": event["target_id"],
+                # Issue #913: the column is `sa.DateTime(timezone=True)`.
+                # Bind a timezone-aware ``datetime``; the literal grep in
+                # ``test_migration_0006_datetime_binding.py`` (issue #913)
+                # matches the ``upgrade()`` call above, not this one.
+                "created_at": datetime.fromisoformat(
+                    cast(str, event["created_at"])
+                ),
+            }
+            for event in events
+        ],
+    )
