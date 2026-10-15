@@ -217,7 +217,11 @@ BASELINE: dict[str, BaselineEntry] = {
     # W65 Phase 2 E2E (#605): main.py grew from 100 to 105 mutation sites
     # due to wiring the new users_json_router (import + include_router).
     # At ceiling on main (100 sites); now 5 sites over. Add to BASELINE.
-    "app/src/main.py": (BaselineEntry(sites=105, target=100, target_date="2027-02-13")),
+    # W62 (#543) and e2e-smoke (#876) PR-A: main.py went 105 -> 122
+    # (lazy signer + import-time middleware install) -> 118 (removing
+    # the now-dead ``except NotImplementedError`` lifespan branch once
+    # #926 wired SessionRepositoryPg). Lock the gain in.
+    "app/src/main.py": (BaselineEntry(sites=118, target=100, target_date="2027-02-13")),
     # C02 (#227): ExpedienteEditService.execute() is a 4-step pipeline
     # (load + validate version + apply_edit + UoW with audit + change
     # records) that lands at 160 sites. Each step has its own

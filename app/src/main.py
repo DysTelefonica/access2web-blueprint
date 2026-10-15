@@ -43,6 +43,9 @@ from app.src.modules.lanzadera.adapters.persistence.async_session_factory import
     async_session_factory,
 )
 from app.src.modules.lanzadera.delivery.http.admin_routes import register_routes
+from app.src.modules.lanzadera.delivery.http.auth_middleware import (
+    AuthMiddleware,
+)
 from app.src.modules.lanzadera.di.bootstrap import run_bootstrap
 from app.src.modules.lanzadera.di.container import LanzaderaContainer
 
@@ -118,6 +121,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     secret_manager = EnvSecretManagerAdapter()
     password_hasher = CredentialHasherArgon2id()
     bootstrap_source = EnvAdminSourceAdapter()
+    # W62 (#543), e2e-smoke (#876): #926 wired SessionRepositoryPg, so the
+    # container must build. If it cannot, the app fails to start — a
+    # silent ``container = None`` is what hid the 404 on /auth/* in the
+    # e2e smoke. The previous ``except NotImplementedError`` branch is
+    # removed on purpose; the engine is still disposed in the finally
+    # below so a failed container construction does not leak connections.
     container = LanzaderaContainer(
         session_factory=session_factory,
         secret_manager=secret_manager,
@@ -133,6 +142,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # error, not a startup failure — the readiness probe will surface it.
         _logger.warning("bootstrap skipped at startup: %s", exc)
     app.state.container = container
+    # W62 (#543), e2e-smoke (#876): Starlette 0.50+ no longer iterates
+    # ``app.router.on_startup`` during the lifespan, so the auth / admin
+    # / presence / apps routers must be registered from the lifespan
+    # itself (the original ``@app.on_event("startup")`` is removed below).
+    await _register_admin_routes()
     yield
     await _engine.dispose()
 
@@ -153,6 +167,43 @@ app = FastAPI(
     ),
 )
 
+
+# ---------------------------------------------------------------------------
+# Middleware installed at import time
+# ---------------------------------------------------------------------------
+# W62 (#543), e2e-smoke (#876): Starlette 0.50+ refuses ``add_middleware``
+# after the first ASGI call (the lifespan is that first call), so the
+# auth + container-mirror middlewares must be installed here, before any
+# request reaches the app. The signer is wrapped in a lazy proxy that
+# resolves ``app.state.container.jwt_signer`` on every request because
+# the container itself is created in the lifespan.
+
+
+class _LazyAuthSigner:
+    """``JwtSignerPort`` proxy that defers resolution to request time.
+
+    The lifespan builds the real ``Hs256JwtSigner`` after this proxy is
+    installed. Each ``verify()`` call looks up the container from
+    ``app.state`` so the middleware always uses the live signer.
+    """
+
+    def verify(self, token: str, now: int | None = None) -> dict[str, object]:
+        container = getattr(app.state, "container", None)
+        if container is None:
+            from app.src.modules.lanzadera.domain.errors import (
+                InvalidTokenError,
+            )
+
+            raise InvalidTokenError("auth not initialised yet")
+        if now is None:
+            now = int(container._clock().timestamp())
+        result: dict[str, object] = container.jwt_signer.verify(token, now=now)
+        return result
+
+
+_ensure_container_middleware(app)
+app.add_middleware(AuthMiddleware, jwt_signer=_LazyAuthSigner())
+
 # ---------------------------------------------------------------------------
 # Healthcheck
 # ---------------------------------------------------------------------------
@@ -170,35 +221,19 @@ async def healthcheck() -> dict[str, str]:
 _admin_templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 
-@app.on_event("startup")  # type: ignore[unused-ignore]
 async def _register_admin_routes() -> None:
     """Attach admin routes after the app is built.
 
     The container lives in ``app.state.container`` (set by the lifespan).
     Registering the routes here rather than at import-time avoids a circular
-    import with the admin module.
+    import with the admin module. W62 (#543), e2e-smoke (#876): called
+    from the lifespan because Starlette 0.50+ no longer runs
+    ``@app.on_event("startup")`` handlers.
     """
     # Import here to avoid circular imports at module-load time.
     from fastapi import APIRouter
 
     container: LanzaderaContainer = app.state.container  # type: ignore[unused-ignore]
-    _ensure_container_middleware(app)
-    # W62 PR-6: mount the auth middleware so the destructive admin
-    # routes (``require_global_admin``) and the new ``/auth/logout``
-    # route can read ``request.state.user_id`` / ``session_id`` from
-    # the Bearer token. Starlette applies middleware in reverse order,
-    # so the last ``add_middleware`` call wraps the stack innermost —
-    # AuthMiddleware fires first on each request, ahead of the
-    # container mirror middleware installed above.
-    from app.src.modules.lanzadera.delivery.http.auth_middleware import (
-        AuthMiddleware,
-    )
-
-    app.add_middleware(
-        AuthMiddleware,
-        jwt_signer=container.jwt_signer,
-        now=lambda: int(container._clock().timestamp()),
-    )
     admin_router = APIRouter(prefix="/admin", tags=["admin"])
     register_routes(
         admin_router,
