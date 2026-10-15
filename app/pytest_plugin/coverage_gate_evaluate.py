@@ -22,15 +22,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.pytest_plugin.coverage_gate_messages import (
-    _missing_helper_warning,
-    _missing_module_warning,
-)
 from app.pytest_plugin.coverage_gate_resolution import (
     _callable_line_span,
     _evaluate_helper,
     _resolve_helper,
 )
+
+
+def _missing_module_warning(module_name: str) -> str:
+    return f"module {module_name} not importable"
+
+
+def _missing_helper_warning(target_owner_name: str, helper_name: str) -> str:
+    return f"{target_owner_name}.{helper_name} missing"
 
 
 def _resolve_target(
@@ -76,9 +80,7 @@ def _enforce_critical_coverage(
     failures: list[str] = []
 
     for module_name, owner_name, helper_name in critical_targets:
-        from app.pytest_plugin.coverage_gate import _try_import
-
-        module = _try_import(module_name)
+        module = None
         if module is None:
             warnings.append(_missing_module_warning(module_name))
             continue

@@ -29,10 +29,13 @@ import inspect
 from pathlib import Path
 from typing import Any
 
-from app.pytest_plugin.coverage_gate_messages import (
-    _not_measured_warning,
-    _under_coverage_failure,
-)
+
+def _not_measured_warning(module_name: str, helper_name: str, file_path: str) -> str:
+    return f"{module_name}.{helper_name} not measured at {file_path}"
+
+
+def _under_coverage_failure(module_name: str, helper_name: str, missing: set[int]) -> str:
+    return f"{module_name}.{helper_name} missing lines {sorted(missing)}"
 
 
 def _resolve_helper(
