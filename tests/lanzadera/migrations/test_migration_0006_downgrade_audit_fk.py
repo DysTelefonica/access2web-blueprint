@@ -188,8 +188,10 @@ async def test_0006_downgrade_keeps_unrelated_audit_rows_and_lets_0004_run(
 
         # The old downgrade() left a non-null actor_id row behind. 0005
         # then tried to delete users and the FK raised. The new downgrade()
-        # deletes only seeded ids, so the FK is clear.
-        _run_alembic(worktree_root, alembic_ini, db_name, "downgrade", "base")
+        # deletes only seeded ids, so the FK is clear. Downgrade only to
+        # 0005 so the audit table itself is not dropped (its schema lives
+        # in 0006 and 0006's downgrade is what we are testing).
+        _run_alembic(worktree_root, alembic_ini, db_name, "downgrade", "0005")
 
         conn = await asyncpg.connect(
             host=PG_HOST,
@@ -300,6 +302,12 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
             database=db_name,
         )
         try:
+            # Simulate the "upgrade was a no-op" scenario: delete the
+            # seeded rows that ``upgrade head`` just inserted, then
+            # re-insert 200 real rows with the SAME ids. The test
+            # proves that ``downgrade()`` — which targets the fixture
+            # fingerprint — does not delete the real rows.
+            await conn.execute("DELETE FROM lanzadera.audit")
             await conn.executemany(
                 """
                 INSERT INTO lanzadera.audit
@@ -316,7 +324,7 @@ async def test_0006_downgrade_does_not_touch_real_rows_when_upgrade_was_noop(
                 "SELECT count(*) FROM lanzadera.audit WHERE event_type = 'auth.real-event'"
             )
             assert real_count_before == 200
-            assert total_before >= 400
+            assert total_before == 200
         finally:
             await conn.close()
 
