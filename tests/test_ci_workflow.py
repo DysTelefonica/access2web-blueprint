@@ -933,3 +933,65 @@ def test_mutation_runs_only_on_schedule_and_workflow_dispatch(
         f"`mutation` must run only on schedule + workflow_dispatch "
         f"(issue #857, PR-A). Current `if`: {mutation['if']!r}"
     )
+
+
+# --- Issue #857, PR-B: pull_request type set -----------------------------
+#
+# `pull_request:` without an explicit `types:` uses the GitHub default
+# (opened, synchronize, reopened). That set misses two events that DO
+# invalidate an already-published pr-gate verdict:
+#
+#   * `edited`     — when the maintainer pastes `Closes #N` into the PR
+#                    body after opening, the issue-spec gate does not
+#                    re-run.
+#   * `labeled` /
+#     `unlabeled` — when the maintainer applies `size:exception` after
+#                    the gate went red, the size verdict does not
+#                    re-evaluate.
+#
+# Pinning the type set here is what guarantees a verdict refresh on
+# those events. The list MUST stay exact (the order is the contract
+# `check_workflows.py` proves).
+
+
+PR_GATE_PULL_REQUEST_TYPES = (
+    "opened",
+    "synchronize",
+    "reopened",
+    "edited",
+    "labeled",
+    "unlabeled",
+)
+
+
+def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
+    """Issue #857, PR-B: pr-gate must re-run when body edits or labels change.
+
+    The default ``pull_request`` trigger only fires on opened,
+    synchronize, reopened. Editing the PR body or applying/removing
+    ``size:exception`` after opening does NOT re-run the pr-gate, so a
+    stale verdict sticks until the next synchronize. Pinning the type
+    list here is what closes that drift.
+    """
+    # yaml.safe_load maps the `on` keyword to the Python boolean `True`
+    # unless quoted; the existing tests guard both spellings already.
+    triggers = workflow.get(True) or workflow.get("on") or {}
+    pull_request = triggers.get("pull_request")
+    assert isinstance(pull_request, dict), (
+        "ci.yml must declare `pull_request:` with a body so `types:` "
+        "can be pinned (issue #857, PR-B). A bare `pull_request:` falls "
+        "back to the GitHub default type set and misses `edited`, "
+        "`labeled` and `unlabeled`."
+    )
+    types = pull_request.get("types")
+    assert types is not None, (
+        "ci.yml must declare `pull_request.types:` — relying on the "
+        "default leaves edit and label events out of the pr-gate "
+        "(issue #857, PR-B)."
+    )
+    assert list(types) == list(PR_GATE_PULL_REQUEST_TYPES), (
+        f"ci.yml `pull_request.types:` is {list(types)!r}, expected "
+        f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include "
+        "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
+        "when the body or labels change after opening (issue #857, PR-B)."
+    )

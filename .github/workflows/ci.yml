@@ -22,6 +22,28 @@ name: ci
 
 on:
   pull_request:
+    # Issue #857, PR-B: the default `pull_request:` type set is
+    # [opened, synchronize, reopened] only. Two events that DO
+    # invalidate an already-published pr-gate verdict must trigger a
+    # refresh and the default leaves them out:
+    #   * `edited`     — when the maintainer pastes `Closes #N` into
+    #                    the PR body after opening, the issue-spec
+    #                    gate does not re-run.
+    #   * `labeled` /
+    #     `unlabeled` — when the maintainer applies `size:exception`
+    #                    after the gate went red, the size verdict
+    #                    does not re-evaluate.
+    # Pinning the set here is what guarantees the verdict refreshes
+    # on those events. `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
+    # pins the exact list — order and contents — so a silent drift
+    # cannot pass review.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - edited
+      - labeled
+      - unlabeled
   merge_group:
   schedule:
     # Weekly mutation run. Mutation is the only mechanical answer to "do these tests assert
