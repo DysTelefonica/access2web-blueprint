@@ -187,6 +187,15 @@ testpaths = [
 markers = [
     "integration: touches a real database or another out-of-process dependency",
     "e2e: end-to-end test that exercises a live deployment-shaped stack (ASGI server + DB + fixtures)",
+    # ``allow_uncaught_hosts`` is a marker that the ``pytest-socket``
+    # plugin reads: tests decorated with it may open sockets to
+    # ``hosts`` listed in ``--allow-hosts`` even when ``--disable-socket``
+    # is on. The unit suite uses it on the loopback-connect probe in
+    # ``tests/test_isolation.py`` (W88 #883). With ``--strict-markers``
+    # on, the marker must be declared here, otherwise collection fails
+    # with ``'allow_uncaught_hosts' not found in 'markers' configuration
+    # option`` before a single assertion runs.
+    "allow_uncaught_hosts: opt a single test out of --disable-socket for the hosts listed in --allow-hosts (used by pytest-socket)",
 ]
 # ``asyncio_mode = "auto"`` lets the existing test files (which use
 # ``await`` inside sync ``def test_*``) keep working without an explicit
