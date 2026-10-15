@@ -42,7 +42,14 @@ USERS_TABLE = sa.Table(
     sa.Column("name", sa.Text(), nullable=False),
     sa.Column("dni_encrypted", sa.LargeBinary(), nullable=False),
     sa.Column("password_hash", sa.Text(), nullable=True),
-    sa.Column("status", sa.Enum(UserStatus, name="user_status")),
+    sa.Column(
+        "status",
+        sa.Enum(
+            UserStatus,
+            name="user_status",
+            values_callable=lambda e: [m.value for m in e],
+        ),
+    ),
     sa.Column("failed_attempts", sa.Integer(), nullable=False, default=0),
     sa.Column("last_login_at", sa.DateTime(timezone=True), nullable=True),
     sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
