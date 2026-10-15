@@ -4,18 +4,17 @@
  * Global Playwright fixtures for the Lanzadera E2E suite.
  *
  * Responsibilities:
- *  1. Run Alembic migrations against the live container before any test fires.
- *     This ensures the DB schema is up-to-date regardless of how the image was
- *     built (the Dockerfile does not bake in migrations).
- *  2. Seed known admin and regular users directly into SQLite.
- *     The seed script runs Python inside the container (where argon2-cffi is
- *     available) so it can hash passwords with the real hasher.
- *  3. Provide `getAdminToken()` and `getUserToken()` to every test via module
+ *  1. Seed two known users (admin and regular) into the real `lanzadera`
+ *     schema, after the CI runner has applied `alembic upgrade head`.
+ *     The migrations are not run here: they live in ci.yml, next to the
+ *     service that hosts the database.
+ *  2. Provide `getAdminToken()` and `getUserToken()` to every test via module
  *     exports — each spec calls them per test or caches at describe-level.
  *
  * Runtime contract (read from env):
  *  - `TEST_CONTAINER_NAME`  — defaults to `test-app` (matches the release workflow).
- *  - `DATABASE_URL`         — defaults to `sqlite+aiosqlite:///./test.db`.
+ *  - `DATABASE_URL`         — `postgresql+asyncpg://...` (the same value the
+ *                             app container receives).
  *
  * Usage in a spec:
  *
@@ -59,67 +58,47 @@ export async function globalSetup(_config: FullConfig): Promise<void> {
   //    run in the container: 0003 reads `data/fixtures/` from the repo
   //    root, which the image does not contain.
 
-  // 2. Seed test users — Python script runs inside the container where
-  //    argon2-cffi is available, so we get real hashes for the test passwords.
+  // 2. Seed the two test users into the real schema. The script runs in the
+  //    container, where argon2-cffi and asyncpg are installed, so the hashes
+  //    come from the same hasher family the app uses for login.
   //
-  //    argon2-cffi 23+ renamed `PasswordHash` to `PasswordHasher`. The
-  //    container pins argon2-cffi==25.1.0 (see app/pyproject.toml); the
-  //    app's own hasher (`credential_hasher_argon2id.py`) also uses
-  //    `PasswordHasher`. The old `PasswordHash` import worked against
-  //    an earlier binding; the PR's release-yml / nightly runs hit the
-  //    `ImportError` on the new image.
-  //
-  //    The DB path is taken from $DATABASE_URL (same env var alembic
-  //    consumes) and resolved to an absolute path with `os.path.abspath`
-  //    when relative. With the migrations step now pointing at
-  //    `/app/migrations/alembic.ini` and the container's WORKDIR=/app,
-  //    alembic creates the file at `/app/test.db`; the seed opens the
-  //    same path so both writes agree.
+  //    `dni_encrypted` is NOT NULL in the schema. The login flow never reads
+  //    it, so the test rows carry a fixed placeholder instead of an AES-GCM
+  //    ciphertext. Status is `active`, because login rejects any other state.
+  //    The insert is idempotent (ON CONFLICT on the fixed UUID).
   const seedScript = `
-import os, sqlite3, sys, uuid
+import asyncio, os, uuid
+import asyncpg
 from argon2 import PasswordHasher
 
-db_url = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./test.db")
-db_path = db_url.split("///", 1)[1]
-if db_path and not db_path.startswith("/"):
-    db_path = os.path.abspath(db_path)
-print(f"[e2e:seed] cwd={os.getcwd()} db_url={db_url} db_path={db_path}")
-if not os.path.exists(db_path):
-    sys.exit(f"seed: database file not found at {db_path}")
-
-# Generate real Argon2id hashes using the container's argon2-cffi
+dsn = os.environ["DATABASE_URL"].replace("postgresql+asyncpg://", "postgresql://", 1)
 h = PasswordHasher()
-admin_hash = h.hash("${TEST_ADMIN_PASSWORD}")
-user_hash  = h.hash("${TEST_USER_PASSWORD}")
+users = [
+    (uuid.UUID("00000000-0000-0000-0000-000000000001"), "${TEST_ADMIN_EMAIL}", "${TEST_ADMIN_NAME}", h.hash("${TEST_ADMIN_PASSWORD}")),
+    (uuid.UUID("00000000-0000-0000-0000-000000000002"), "${TEST_USER_EMAIL}", "${TEST_USER_NAME}", h.hash("${TEST_USER_PASSWORD}")),
+]
 
-conn = sqlite3.connect(db_path)
-cur = conn.cursor()
+async def main():
+    conn = await asyncpg.connect(dsn)
+    try:
+        for uid, email, name, pw_hash in users:
+            await conn.execute(
+                """
+                INSERT INTO lanzadera.users (id, email, name, dni_encrypted, password_hash, status)
+                VALUES ($1, $2, $3, $4, $5, 'active')
+                ON CONFLICT (id) DO NOTHING
+                """,
+                uid, email, name, b"e2e-placeholder", pw_hash,
+            )
+        rows = await conn.fetch(
+            "SELECT email, status::text AS status FROM lanzadera.users WHERE email IN ($1, $2)",
+            "${TEST_ADMIN_EMAIL}", "${TEST_USER_EMAIL}",
+        )
+        print(f"Seeded users: {[(r['email'], r['status']) for r in rows]}")
+    finally:
+        await conn.close()
 
-admin_id = str(uuid.UUID("00000000-0000-0000-0000-000000000001"))
-user_id  = str(uuid.UUID("00000000-0000-0000-0000-000000000002"))
-
-# Insert admin — use INSERT OR IGNORE so re-runs are idempotent
-cur.execute("""
-    INSERT OR IGNORE INTO users (id, email, name, password_hash, active,
-                                 created_at, updated_at, legacy_hash)
-    VALUES (?, ?, ?, ?, 1, datetime('now'), datetime('now'), NULL)
-""", (admin_id, "${TEST_ADMIN_EMAIL}", "${TEST_ADMIN_NAME}", admin_hash))
-
-# Insert regular user
-cur.execute("""
-    INSERT OR IGNORE INTO users (id, email, name, password_hash, active,
-                                 created_at, updated_at, legacy_hash)
-    VALUES (?, ?, ?, ?, 1, datetime('now'), datetime('now'), NULL)
-""", (user_id, "${TEST_USER_EMAIL}", "${TEST_USER_NAME}", user_hash))
-
-conn.commit()
-
-# Verify both inserted
-cur.execute("SELECT email, active FROM users WHERE email IN (?, ?)",
-            ("${TEST_ADMIN_EMAIL}", "${TEST_USER_EMAIL}"))
-rows = cur.fetchall()
-print(f"Seeded users: {rows}")
-conn.close()
+asyncio.run(main())
 `;
 
   const seedResult = await runInContainer(containerName, [
