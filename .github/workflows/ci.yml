@@ -44,15 +44,20 @@ on:
       - edited
       - labeled
       - unlabeled
-  merge_group:
+  push:
+    # Issue #857, PR-D: after the merge lands on `main`, the safety net runs
+    # `ci` on the new commit. The PR's `pr-gate` does NOT run on push (its
+    # own `if:` excludes every event except `pull_request`), so the heavy
+    # jobs that wait on `needs: pr-gate` must accept its `skipped` result
+    # here. This is the gentle-ai model: one CI run on the PR, one safety
+    # net on the push, no merge queue.
+    branches: [main]
   schedule:
-    # Weekly mutation run. Mutation is the only mechanical answer to "do these tests assert
-    # anything", and it is far too slow for every PR — so it runs on a cadence and ratchets.
-    # `merge_group` keeps the protected branch honest: a queue that bypasses mutation
-    # would silently erode the ratchet. The queue runs mutation via the same `schedule`
-    # event the cron does, so the ratchet is what `required` aggregates against, not
-    # what a single PR pays for.
-    - cron: "0 3 * * 1"
+    # Issue #857, PR-D: nightly safety net on `main`, mirroring gentle-ai's
+    # `cron: "0 3 * * *"`. The schedule runs the full heavy-jobs suite; the
+    # weekly `0 3 * * 1` from the merge-queue era is gone with the queue
+    # itself and with the mutation job.
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -139,9 +144,13 @@ jobs:
 
   quality:
     needs: pr-gate
-    # Los nombres de check requeridos se publican solo desde eventos que evaluan
-    # el PR o la rama base (HR-30): schedule y workflow_dispatch no los publican.
-    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    # Issue #857, PR-D: en el modelo gentle-ai, los heavy jobs corren en los
+    # cuatro eventos que la red de seguridad del repo evalúa: la PR
+    # (`pull_request`), el post-merge (`push` a `main`), el nightly
+    # (`schedule`) y el manual (`workflow_dispatch`). `pr-gate` solo se
+    # ejecuta en `pull_request`, así que en los otros tres su `result`
+    # es `skipped` y este `if:` lo acepta explícitamente.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     # This job executes code from public pull requests, so it must use isolated,
     # ephemeral GitHub-hosted infrastructure.
     runs-on: ubuntu-24.04
@@ -503,9 +512,10 @@ jobs:
     # via `uses: ./...` still has an ordinary job id and result.
     needs: pr-gate
     uses: ./.github/workflows/security.yml
-    # Mismo criterio que `quality` (HR-30): ningun nombre de check requerido
-    # desde eventos que no evaluan el PR.
-    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    # Mismo criterio que `quality` (HR-30, #857 PR-D): los heavy jobs
+    # aceptan `pr-gate` saltado en cualquier evento en el que este
+    # tiene `if: github.event_name == 'pull_request'`.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     permissions:
       contents: read
     concurrency:
@@ -518,8 +528,8 @@ jobs:
     # reusable workflow cannot exceed the permissions its caller grants it.
     needs: pr-gate
     uses: ./.github/workflows/codeql.yml
-    # Mismo criterio que `quality` y `security` (HR-30).
-    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    # Mismo criterio que `quality` y `security` (HR-30, #857 PR-D).
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
     permissions:
       contents: read
       security-events: write
@@ -544,8 +554,10 @@ jobs:
     # `if:` sin `always()` literal y con la comparacion de evento: la guarda de
     # HR-30 no puede probar un `always()` suelto, y `!cancelled()` conserva el
     # motivo original —un dependency saltado no debe saltar este check, que es
-    # el requerido de la proteccion de rama—.
-    if: (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !cancelled()
+    # el requerido de la proteccion de rama—. Issue #857, PR-D: el conjunto de
+    # eventos pasa a `pull_request || push || schedule || workflow_dispatch`;
+    # `merge_group` desaparece con la cola de merge.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
     needs: [pr-gate, quality, security, codeql]
     runs-on: ubuntu-24.04
     concurrency:
