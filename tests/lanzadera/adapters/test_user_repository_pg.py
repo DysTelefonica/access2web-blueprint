@@ -89,16 +89,33 @@ async def test_async_session_factory_emits_callable_factory() -> None:
 INTEGRATION_URL_ENV = "APAP_INTEGRATION_URL"
 
 
-def _integration_url_or_skip() -> str:
-    """Return the integration Postgres URL, or skip the test."""
+def _integration_url_or_fail() -> str:
+    """Return the integration Postgres URL, or fail the test.
+
+    Issue #882 (PR-2): a missing integration DSN must fail the gate, not
+    skip it. ``pytest.skip`` made the Postgres coverage silently optional
+    — a green CI with zero DSN tests was a false guarantee. The follow-up
+    PR in release runs real Postgres on every tag; before that lands, the
+    PR-time rollup must surface the missing DSN as a red build.
+    """
     import os
 
     if os.environ.get("APAP_INTEGRATION_ENABLED") != "1":
-        pytest.skip("APAP_INTEGRATION_ENABLED is not 1 — Postgres round-trip skipped")
+        pytest.fail(
+            "Issue #882: APAP_INTEGRATION_ENABLED is not 1. The integration "
+            "DSN fixture must fail closed, not skip, so a missing Postgres "
+            "shows up as a red CI instead of a silently green one. The "
+            "follow-up integration job wires ci.yml to a real Postgres "
+            "service; until then, run the suite locally with "
+            "`APAP_INTEGRATION_ENABLED=1` and `APAP_INTEGRATION_URL=...` set."
+        )
     url = os.environ.get(INTEGRATION_URL_ENV)
     if not url:
-        pytest.skip(
-            f"{INTEGRATION_URL_ENV} is not set; set it to a Postgres URL to exercise the round-trip"
+        pytest.fail(
+            f"Issue #882: {INTEGRATION_URL_ENV} is not set. The integration "
+            f"DSN fixture must fail closed, not skip. Set "
+            f"`{INTEGRATION_URL_ENV}=postgresql://...` (or remove the "
+            f"integration test from the suite)."
         )
     return url
 
@@ -110,9 +127,9 @@ async def repo_and_engine() -> AsyncIterator[tuple[UserRepositoryPg, Any]]:
     Migrations are applied via the test harness's bootstrap script
     (out of scope here; PR 4 — #288 — owns that). Without a clean
     Postgres at the configured URL the round-trip test
-    (``test_user_repository_pg_round_trip``) skips.
+    (``test_user_repository_pg_round_trip``) fails (issue #882: skip → fail).
     """
-    url = _integration_url_or_skip()
+    url = _integration_url_or_fail()
     engine, factory = async_session_factory(url)
     yield UserRepositoryPg(factory), engine
     await engine.dispose()

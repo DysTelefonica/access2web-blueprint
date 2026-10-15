@@ -158,7 +158,11 @@ def roundtripped_db(
     `information_schema` directly.
     """
     if not integration_enabled:
-        pytest.skip("APAP_INTEGRATION_ENABLED=1 required for migration tests")
+        pytest.fail(
+            "Issue #882: APAP_INTEGRATION_ENABLED is not 1. The integration "
+            "DSN gate must fail closed, not skip, so a missing Postgres "
+            "shows up as a red CI instead of a silently green one."
+        )
     asyncio.run(_create_test_database(test_db_name))
     try:
         _run_alembic(worktree_root, alembic_ini, test_db_name, "upgrade", "head")
