@@ -7,7 +7,7 @@
 # VERIFICATION ORDER (Hard Rule 13) — declared once, never reordered:
 #   1. pr-gate (pr-size, walkthrough schema)      cheap, and it gates reviewability, not code
 #   2. format, lint, typecheck                     mechanical, fix before reading anything else
-#   3. tests + coverage                            produces coverage.json
+#   3. tests                                      runs the pytest suite
 #   4. layers -> complexity -> DRY                 run by scripts/quality_report.py, in that order
 #
 # The code gates are NOT separate YAML steps on purpose. Their order is load-bearing —
@@ -329,13 +329,15 @@ jobs:
         # `-c app/pyproject.toml --rootdir=app` is load-bearing. The pytest contract
         # lives in app/pyproject.toml and is written for rootdir=app: `pythonpath =
         # [".."]` is what makes `from app.src...` resolve, `testpaths = ["../tests"]`
-        # is where the tests actually are, and addopts loads the coverage-gate plugin
-        # by its `app.` path. Invoked from the repository root with no -c, pytest finds
-        # no configuration at all and every test fails with ModuleNotFoundError: app.
+        # is where the tests actually are. Invoked from the repository root with no
+        # -c, pytest finds no configuration at all and every test fails with
+        # ModuleNotFoundError: app.
         #
-        # cwd stays at the repository root so coverage.json lands where the downstream
-        # gates look for it.
-        run: pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov --cov-report=json:coverage.json --cov-report=term
+        # Coverage and the coverage-gate plugin were retired in #877; the previous
+        # `--cov --cov-report=json:coverage.json --cov-report=term` flags depended
+        # on pytest-cov, which is no longer in app/pyproject.toml. The unit suite
+        # and the quality gates downstream run without coverage data.
+        run: pytest -c app/pyproject.toml --rootdir=app -m "not integration"
 
 
       - name: quality gates and indicators
