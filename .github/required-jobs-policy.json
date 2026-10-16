@@ -2,16 +2,13 @@
   "events": {
     "pull_request": {
       "accepted_skips": []
-    },
-    "merge_group": {
-      "accepted_skips": ["pr-gate"]
     }
   },
   "required_jobs": [
     "pr-gate",
     "quality",
+    "integration",
     "security",
-    "codeql",
-    "required"
+    "codeql"
   ]
 }

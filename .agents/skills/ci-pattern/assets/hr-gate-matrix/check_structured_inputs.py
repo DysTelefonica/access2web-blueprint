@@ -38,6 +38,10 @@ SELF = Path(__file__).resolve()  # este propio gate también es gate declarado
 
 
 def load_matrix(path: Path) -> list[dict]:
+    # #513: la matriz HR→gate se retira del repositorio (#540); el gate
+    # opera sin reglas cuando el fichero falta (sale 0 sin findings).
+    if not path.exists():
+        return []
     try:
         doc = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -97,8 +101,17 @@ def main(argv):
     ap.add_argument("--matrix", default=None, help="override de la ruta de la matriz")
     args = ap.parse_args(argv)
     skill_root = Path(args.skill_root).resolve()
+    if not skill_root.is_dir():
+        print(f"HR-1 ERROR: skill root {str(skill_root)!r} not found",
+              file=sys.stderr)
+        return 2
     matrix_path = Path(args.matrix) if args.matrix else \
         skill_root / "references" / "hr-gate-matrix.json"
+    # #513: la matriz HR→gate se retira del repositorio; sin matriz no hay
+    # sujetos que escanear y el gate sale 0 (limpio). Si la matriz volviera,
+    # este atajo se retira y se restaura la guarda 'empty subject'.
+    if not matrix_path.exists():
+        return 0
     try:
         rules = load_matrix(matrix_path)
     except GateError as exc:

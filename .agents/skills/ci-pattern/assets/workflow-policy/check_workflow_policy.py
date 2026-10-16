@@ -128,6 +128,24 @@ def parse_node(lines: list[Line], i: int, indent: int):
             rest = lines[i].text[1:].strip()
             n = lines[i].number
             if rest:
+                if not KEY.match(rest):
+                    # Bare scalar list item (e.g. "- opened" under
+                    # `types:`). The block form
+                    #   types:
+                    #     - opened
+                    #     - synchronize
+                    # is semantically equivalent to the flow form
+                    #   types: [opened, synchronize]
+                    # and the parser must accept both: parse as a
+                    # scalar and move to the next line. The previous
+                    # behaviour of recursing into parse_node here
+                    # raised 'unsupported construct' for any bare
+                    # scalar under a list, which is a YAML conformant
+                    # form (#BP-857, #BP-951, gate regression noted in
+                    # the consumer's PR-B review).
+                    seq.append(parse_scalar(rest))
+                    i += 1
+                    continue
                 lines[i] = Line(n, indent + 2, rest)
                 val, i = parse_node(lines, i, indent + 2)
             else:

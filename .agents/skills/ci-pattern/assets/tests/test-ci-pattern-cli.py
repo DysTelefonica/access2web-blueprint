@@ -407,7 +407,6 @@ class VerifyAdoptionTests(unittest.TestCase):
                         {"gate": "workflow-policy",
                          "args": ["--workflow", "@.github/workflows/ci.yml",
                                   "--required-jobs", "@.github/required-jobs-policy.json"]},
-                        {"gate": "hr-matrix", "args": ["@skill"]},
                     ]
                 },
                 "5": {"operating_doc": {"doc": "docs/ci-pattern-flow.md",
@@ -1737,44 +1736,14 @@ class WindowsPortabilityTests(unittest.TestCase):
         self.assertEqual(modes, ["100755"])
 
 class AssetInventoryTests(unittest.TestCase):
-    """#190: asset-inventory.md coincide con el árbol real de la skill y
-    su deriva de rutas es detectada automáticamente (HR-10)."""
+    """#190: cobertura de coherencia del inventario de la skill con el árbol
+    real (HR-10). Con #541 el documento asset-inventory.md se retira del
+    repositorio y los tres tests que lo leen (test_no_legacy_skill_prefix,
+    test_every_cited_skill_path_exists, test_governance_wave_assets_are_documented)
+    pierden su sujeto; solo test_branch_name_helper_is_withdrawn conserva
+    valor porque verifica ausencia de un activo en el árbol."""
 
-    DOC = SKILL_DIR / "references" / "asset-inventory.md"
     REPO_ROOT = SKILL_DIR.parents[2]
-
-    def test_no_legacy_skill_prefix(self):
-        """El prefijo 'skills/ci-pattern/' ya no existe en el repo: el
-        inventario debe citar 'personal/ardelperal/ci-pattern/'."""
-        doc = self.DOC.read_text(encoding="utf-8")
-        self.assertNotIn("skills/ci-pattern", doc)
-
-    def test_every_cited_skill_path_exists(self):
-        doc = self.DOC.read_text(encoding="utf-8")
-        cited = sorted(set(re.findall(
-            r"`(personal/ardelperal/ci-pattern/[^`\s]+)`", doc
-        )))
-        self.assertTrue(cited, "el inventario debe citar rutas de la skill")
-        missing = [
-            p for p in cited
-            if not (self.REPO_ROOT / p).exists()
-        ]
-        self.assertEqual(missing, [])
-
-    def test_governance_wave_assets_are_documented(self):
-        """Los activos entregados por la wave de gobernanza figuran en el
-        inventario (si no, el mapa de huecos miente)."""
-        doc = self.DOC.read_text(encoding="utf-8")
-        for rel in (
-            "assets/bin/ci-pattern",
-            "assets/parameters.schema.json",
-            "assets/ci-pattern.example.yaml",
-            "assets/host-readback/check_host_drift.py",
-            "assets/tests/test-ci-pattern-cli.py",
-            "references/cli-spec.md",
-            "references/delegation-template.md",
-        ):
-            self.assertIn(rel, doc)
 
     def test_branch_name_helper_is_withdrawn(self):
         """#518: el generador de nombre de rama está retirado (el ruleset

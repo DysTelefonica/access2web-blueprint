@@ -148,6 +148,14 @@ jobs:
         run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
+    # HR-30 (#857 PR-D + fase 4 de la adopción del patrón de CI, #780):
+    # el nombre de check se publica solo desde eventos que evaluan la
+    # PR o la rama base; el sufijo event-qualified hace que el nombre
+    # resuelto por evento sea `quality (pull_request)`, `quality
+    # (push)`, etc. — schedule y workflow_dispatch siguen ejecutando
+    # el job (la red de seguridad), pero el nombre de check que
+    # publican ya no es estático.
+    name: quality (${{ github.event_name }})
     needs: pr-gate
     # Issue #857, PR-D: en el modelo gentle-ai, los heavy jobs corren en los
     # cuatro eventos que la red de seguridad del repo evalúa: la PR
@@ -363,6 +371,8 @@ jobs:
       # `quality` check is now driven by the script-level exit code.
 
   integration:
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: integration (${{ github.event_name }})
     # Issue #882 (PR-3): the DSN fixture (PR-2) fails closed when the
     # integration URL is missing. This job provides that URL by running
     # postgres as a service in the runner, so the integration tests
@@ -486,6 +496,8 @@ jobs:
           pytest -c app/pyproject.toml --rootdir=app -m integration
 
   security:
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: security (${{ github.event_name }})
     # Issue #702: security.yml is now `on: workflow_call` only (no
     # independent triggers). Invoking it here as a job — rather than
     # requiring its three inner checks (pip-audit, gitleaks, trivy-config)
@@ -505,6 +517,8 @@ jobs:
       cancel-in-progress: false
 
   codeql:
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: codeql (${{ github.event_name }})
     # Same treatment as `security` above. `security-events: write` is
     # required here (not just inside codeql.yml's own job) because a
     # reusable workflow cannot exceed the permissions its caller grants it.

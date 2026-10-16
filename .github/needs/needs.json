@@ -1,5 +1,5 @@
 {
-  "codeql": {
+  "pr-gate": {
     "outputs": {},
     "result": "success"
   },
@@ -7,15 +7,15 @@
     "outputs": {},
     "result": "success"
   },
-  "required": {
-    "outputs": {},
-    "result": "success"
-  },
-  "review-budget": {
+  "integration": {
     "outputs": {},
     "result": "success"
   },
   "security": {
+    "outputs": {},
+    "result": "success"
+  },
+  "codeql": {
     "outputs": {},
     "result": "success"
   }
