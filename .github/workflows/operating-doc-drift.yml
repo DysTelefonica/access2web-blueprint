@@ -15,8 +15,10 @@
 # El pin es un SHA de 40 hexadecimales, nunca una rama móvil: el documento se
 # compara contra el generador exacto que lo emitió. Cambiarlo es una decisión
 # explícita que exige regenerar el documento en el mismo cambio. El pin actual
-# (07711e6a40b188e0d2a01ab345231e2f2b8af3c3) trae P51–P53 y el gate
-# `runner-profile/check_runner_profile.py` (PR #477, punta de la cadena #435).
+# (e099a75f0c06189b0184f941a0960f0a9d58b71c) es el head de team-skills tras
+# el merge del fix de listas en bloque en el reader de workflow-policy
+# (PR #621, Closes #620). Coincide con el catálogo vendored tras la PR
+# #954 de BP y con el doc que este gate compara.
 
 name: operating-doc-drift
 
@@ -74,7 +76,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: DysTelefonica/team-skills
-          ref: 07711e6a40b188e0d2a01ab345231e2f2b8af3c3
+          ref: e099a75f0c06189b0184f941a0960f0a9d58b71c
           token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
           path: .ci-pattern-pin
           persist-credentials: false
