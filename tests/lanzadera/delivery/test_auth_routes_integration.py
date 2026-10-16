@@ -398,13 +398,17 @@ def test_me_returns_401_without_token(auth_client: TestClient) -> None:
 def test_me_returns_enriched_identity(auth_client: TestClient, fake_fixtures: FakeFixtures) -> None:
     """Valid Bearer → 200 + user identity + assigned apps.
 
-    The JWT ``sub`` must be ``user.id`` so that ``get_my_apps`` finds
-    the seeded assignments (the middleware puts ``sub`` into
-    ``request.state.user_id``).
+    The JWT ``sub`` is ``session.id`` (production convention; the W62
+    login route signs ``sub=str(session.id)``). ``AuthMiddleware``
+    looks up the session row, populates ``state.user_id`` with
+    ``session.user_id`` and ``state.session_id`` with ``session.id``
+    (issue #773 closed the conflation that mapped both fields to
+    ``session.id``). ``/auth/me`` reads ``state.user_id`` to find the
+    user and ``get_my_apps`` to find the assignments.
     """
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
     profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
@@ -441,7 +445,8 @@ def test_require_global_admin_returns_403_for_non_admin(
 ) -> None:
     """JWT present but caller not in ``global_admins`` → 403 Forbidden."""
     user = _seed_active_user(fake_fixtures)
-    token = _mint_jwt(sub=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=_session.id)
     # Intentionally NOT calling ``fake_fixtures.global_admins.grant(user.id)``.
 
     response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
@@ -456,7 +461,8 @@ def test_require_global_admin_passes_for_admin(
     """Caller IS in ``global_admins`` → 200 OK (the gate passes)."""
     user = _seed_active_user(fake_fixtures)
     fake_fixtures.global_admins.members.add(user.id)
-    token = _mint_jwt(sub=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     response = protected_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
@@ -467,12 +473,14 @@ def test_require_global_admin_passes_for_admin(
 def test_require_global_admin_returns_503_without_container(
     fake_fixtures: FakeFixtures,
 ) -> None:
-    """``app.state.container = None`` → 503 Service Unavailable.
+    """``app.state.container = None`` → 401 (fail-closed, #773).
 
-    The lifespan logs a warning when the container is not initialised
-    (e.g. ``DATABASE_URL`` not configured); the gate must not silently
-    bypass — it returns 503 so the caller can distinguish a missing
-    backend from a real auth decision.
+    Issue #773 closes the silent bypass path: when the lifespan cannot
+    build a container, ``AuthMiddleware`` cannot verify the session,
+    so ``state.user_id`` stays empty and the gate returns 401. The
+    previous assertion of 503 (gate-only check) relied on the JWT
+    signature being trusted without a session lookup — that contract
+    changed with the fix.
     """
     container = _build_container(fake_fixtures)
     app = _build_protected_app(container)
@@ -480,12 +488,13 @@ def test_require_global_admin_returns_503_without_container(
 
     user = _seed_active_user(fake_fixtures)
     fake_fixtures.global_admins.members.add(user.id)
-    token = _mint_jwt(sub=user.id)
+    _session = _seed_session(fake_fixtures, user_id=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     with TestClient(app) as test_client:
         response = test_client.get("/protected", headers={"Authorization": f"Bearer {token}"})
 
-    assert response.status_code == 503
+    assert response.status_code == 401
 
 
 # ---------------------------------------------------------------------------
@@ -519,8 +528,7 @@ def test_my_apps_returns_apps_with_profiles_and_capabilities(
     """User with one assignment gets the app + profile + capabilities."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    # JWT sub must be user.id so that get_my_apps finds the assignment
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _app = _seed_app(fake_fixtures, id=3, name="Expedientes", short_code="EXP")
     profile = _seed_profile(fake_fixtures, app_id=3, code="ADMIN", capabilities={"Calidad": True})
@@ -571,8 +579,7 @@ def test_my_capabilities_returns_profile_keys(
     """User assigned to app → returns the profile's capability names."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    # JWT sub must be user.id so effective_permissions finds the assignment
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
     profile = _seed_profile(
@@ -664,150 +671,6 @@ from app.src.modules.lanzadera.domain.app import (  # noqa: E402
 from app.src.modules.lanzadera.domain.assignment import Assignment  # noqa: E402
 from app.src.modules.lanzadera.domain.profile import Profile  # noqa: E402
 
-
-def test_DEBUG_print_routes(auth_client: TestClient) -> None:
-    """Debug: print registered routes."""
-    print("\nRegistered routes:")
-    for route in auth_client.app.routes:
-        # starlette 1.x also yields `_IncludedRouter` entries, which carry no `path`.
-        print(f"  {getattr(route, 'path', type(route).__name__)}")
-
-
-def test_DEBUG_source_contains_my_apps(auth_client: TestClient) -> None:
-    """Debug: check if the auth_routes source contains my_apps."""
-    import inspect
-
-    from app.src.modules.lanzadera.delivery.http import auth_routes
-
-    src = inspect.getsource(auth_routes.register_auth_routes)
-    print(f"\nmy_apps in source: {'my_apps' in src}")
-    print(f"my_capabilities in source: {'my_capabilities' in src}")
-    print(f"last 200 chars: {repr(src[-200:])}")
-
-
-def test_DEBUG_call_register(auth_client: TestClient, fake_fixtures: FakeFixtures) -> None:
-    """Debug: call register_auth_routes and print routes."""
-    from fastapi import APIRouter
-
-    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
-
-    router2 = APIRouter()
-    register_auth_routes(router2, container=auth_client.app.state.container)
-    print("\nRoutes from register_auth_routes:")
-    for route in router2.routes:
-        print(f"  {route.path}")
-
-
-def test_DEBUG_patch_then_register(auth_client: TestClient) -> None:
-    """Debug: re-patch and re-register to see routes."""
-    from fastapi import Request
-
-    from app.src.modules.lanzadera.delivery.http import auth_routes as _ar
-
-    _ar.Request = Request  # type: ignore[attr-defined]
-
-    from fastapi import APIRouter
-
-    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
-
-    router3 = APIRouter()
-    container = auth_client.app.state.container
-    register_auth_routes(router3, container=container)
-    print("\nRoutes from re-registered router:")
-    for route in router3.routes:
-        print(f"  {route.path}")
-
-    # Also check the _build_app function's router
-    print("\nRoutes from auth_client.app:")
-    for route in auth_client.app.routes:
-        # starlette 1.x also yields `_IncludedRouter` entries, which carry no `path`.
-        print(f"  {getattr(route, 'path', type(route).__name__)}")
-
-
-def test_DEBUG_reload_and_register(auth_client: TestClient) -> None:
-    """Debug: reload the module and check routes."""
-    import importlib
-
-    from app.src.modules.lanzadera.delivery.http import auth_routes
-
-    importlib.reload(auth_routes)
-
-    from fastapi import APIRouter
-
-    from app.src.modules.lanzadera.delivery.http.auth_routes import register_auth_routes
-
-    router4 = APIRouter()
-    container = auth_client.app.state.container
-    register_auth_routes(router4, container=container)
-    print("\nRoutes from reload:")
-    for route in router4.routes:
-        print(f"  {route.path}")
-
-
-def test_DEBUG_source_vs_bytecode(auth_client: TestClient) -> None:
-    """Debug: compare inspect.getsource with actual execution."""
-    import dis
-    import inspect
-
-    from app.src.modules.lanzadera.delivery.http import auth_routes
-
-    src = inspect.getsource(auth_routes.register_auth_routes)
-
-    # Count @router.get occurrences in source
-    count = src.count("@router.get")
-    print(f"\n@router.get occurrences in source: {count}")
-
-    # Also check what bytecode says
-    co = auth_routes.register_auth_routes.__code__
-    print(f"Bytecode argcount: {co.co_argcount}")
-    print(f"Bytecode nlocals: {co.co_nlocals}")
-
-    # Print the first few bytecode instructions
-    print("\nFirst 30 bytecode instructions:")
-    for i, instr in enumerate(dis.get_instructions(auth_routes.register_auth_routes)):
-        if i >= 30:
-            break
-        print(f"  {instr.offset:4d} {instr.opname:20s} {instr.argrepr}")
-
-
-def test_DEBUG_raw_source(auth_client: TestClient) -> None:
-    """Debug: print raw source of register_auth_routes."""
-    import inspect
-
-    from app.src.modules.lanzadera.delivery.http import auth_routes
-
-    src = inspect.getsource(auth_routes.register_auth_routes)
-    print(f"\nTotal source length: {len(src)}")
-    print(f"Contains my_apps: {'my_apps' in src}")
-    print(f"Contains my_capabilities: {'my_capabilities' in src}")
-    print(f"Contains /auth/me/apps: {'/auth/me/apps' in src}")
-
-    # Print the last 1000 chars
-    print("\nLast 1000 chars of source:")
-    print(src[-1000:])
-
-
-def test_DEBUG_file_mtime(auth_client: TestClient) -> None:
-    """Debug: check file modification times."""
-    import os
-
-    from app.src.modules.lanzadera.delivery.http import auth_routes
-
-    py_file = auth_routes.__file__
-    py_stat = os.stat(py_file)
-    print(f"\n.py file mtime: {py_stat.st_mtime}")
-
-    # Check if there's a .pyc
-
-    pyc_file = py_file + "c"
-    if os.path.exists(pyc_file):
-        pyc_stat = os.stat(pyc_file)
-        print(f".pyc file mtime: {pyc_stat.st_mtime}")
-        print(f".pyc older than .py: {pyc_stat.st_mtime < py_stat.st_mtime}")
-    else:
-        print("No .pyc file found")
-
-
 # ---------------------------------------------------------------------------
 # require_capability gate — tests for issue #589
 # ---------------------------------------------------------------------------
@@ -855,7 +718,7 @@ def test_require_capability_returns_403_when_user_lacks_cap(
     """User has no assignment for app_id → 403."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     response = cap_client.get("/apps/7/records", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 403
@@ -867,7 +730,7 @@ def test_require_capability_passes_when_user_has_capability(
     """User assigned to app with 'Calidad' capability → 200."""
     user = _seed_active_user(fake_fixtures)
     _session = _seed_session(fake_fixtures, user_id=user.id)
-    token = _mint_jwt(sub=user.id)
+    token = _mint_jwt(sub=_session.id)
 
     _app = _seed_app(fake_fixtures, id=7, name="Brass", short_code="BRA")
     profile = _seed_profile(fake_fixtures, app_id=7, code="CALIDAD", capabilities={"Calidad": True})

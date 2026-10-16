@@ -468,22 +468,43 @@ def test_schema_lanzadera_exists(migrated_db: str) -> None:
 
 
 @pytest.mark.integration
-def test_all_nine_tables_created(migrated_db: str) -> None:
+def test_all_nine_tables_created(
+    integration_enabled: bool,
+    worktree_root: Path,
+    alembic_ini: Path,
+) -> None:
     """All nine production tables exist under `lanzadera` after 0001.
 
-    Alembic's bookkeeping table (`alembic_version`) also lives inside
-    `lanzadera` — see `app/migrations/env.py` for the rationale. The
-    test asserts the production set is a strict subset of the schema.
+    Uses ``alembic upgrade 0001`` (not head) so the test asserts what
+    0001 actually creates. The module-level ``migrated_db`` fixture
+    applies ``upgrade head`` and would couple this test to whatever
+    downstream migrations ship (e.g. ``0008_presence_sessions_schema``
+    adds a tenth table); the docstring has always said "after 0001"
+    and this aligns the test with that intent. #771 surfaced the
+    coupling; the fix keeps the strict nine-table pin for the
+    revision that owns it.
     """
-    actual = asyncio.run(_fetch_table_names(migrated_db))
+    if not integration_enabled:
+        pytest.fail(
+            "Issue #882: APAP_INTEGRATION_ENABLED is not 1. The integration "
+            "DSN gate must fail closed, not skip."
+        )
+    db_name = f"lanzadera_test_0001_tables_{secrets.token_hex(4)}"
+    asyncio.run(_create_test_database(db_name))
+    try:
+        _run_alembic(worktree_root, alembic_ini, db_name, "upgrade", "0001")
+        actual = asyncio.run(_fetch_table_names(db_name))
+    finally:
+        asyncio.run(_drop_test_database(db_name))
+
     expected = set(EXPECTED_TABLES)
     assert expected <= actual, (
         f"missing tables in `lanzadera`: {sorted(expected - actual)}; got {sorted(actual)}"
     )
-    # Hard pin: nothing extra inside `lanzadera` apart from the nine
-    # production tables plus Alembic's bookkeeping.
+    # Hard pin for revision 0001: nothing extra inside `lanzadera` apart
+    # from the nine production tables plus Alembic's bookkeeping.
     assert actual - expected == {"alembic_version"}, (
-        f"unexpected extra tables: {sorted(actual - expected)}"
+        f"unexpected extra tables in 0001: {sorted(actual - expected)}"
     )
 
 

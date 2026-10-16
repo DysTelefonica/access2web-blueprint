@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime
 from uuid import UUID
 
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -93,10 +94,40 @@ class AuthMiddleware(BaseHTTPMiddleware):
                         except (ValueError, TypeError, AttributeError):
                             session_id = None
                         if session_id is not None:
-                            request.state.session_id = session_id
-                            request.state.user_id = session_id
+                            await self._attach_session(request, session_id)
 
         return await call_next(request)
+
+    async def _attach_session(self, request: Request, session_id: UUID) -> None:
+        """Resolve ``session_id`` against the session repo and populate state.
+
+        #773 contract: ``POST /auth/logout`` shortens
+        ``sessions.expires_at``; the middleware now consults the repo
+        so a revoked / non-existent / dead row leaves state empty and
+        the route's gate returns 401. The lookup also fixes the
+        pre-existing conflation where ``state.user_id`` and
+        ``state.session_id`` were both set to ``session.id`` — so
+        ``/auth/me`` was reading the session id back as a user id.
+        """
+        container = getattr(request.app.state, "container", None)
+        sessions = getattr(container, "sessions", None) if container is not None else None
+        if sessions is None:
+            # Pre-lifespan / unit tests without a container: AD-W62-2
+            # silent-failure path; the destructive routes' gate fires.
+            return
+        try:
+            session = await sessions.get_by_id(session_id)
+        except Exception:  # noqa: BLE001 — fail-closed (#773)
+            return
+        if session is None:
+            return
+        # Wall-clock microsecond precision catches the revoke-and-
+        # recheck-in-the-same-second case the JWT verifier rounds out
+        # (HS256 ``exp`` is integer seconds).
+        if session.expires_at <= datetime.now(UTC):
+            return
+        request.state.session_id = session.id
+        request.state.user_id = session.user_id
 
     @staticmethod
     def _coerce_session_id(value: object) -> UUID | None:
