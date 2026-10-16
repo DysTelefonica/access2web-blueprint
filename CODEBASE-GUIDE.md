@@ -4,9 +4,11 @@ globs: *
 alwaysApply: true
 ---
 
+> **Aviso de reubicación (Issue #902).** El codeguide canónico vive ahora en [`docs/CODEBASE-GUIDE.md`](docs/CODEBASE-GUIDE.md) (índice corto) y en [`docs/codebase/`](docs/codebase/) (páginas detalladas: `mental-model.md`, `repository-map.md`, `interfaces.md`, `testing-and-ci.md`, `what-is-not-here.md`, `maintainer-playbook.md`). Este fichero se conserva temporalmente para no romper enlaces externos; se eliminará en la cadena de PRs de la issue #902.
+
 [← Back to README](../README.md)
 
-# access2web-blueprint — Codebase Guide
+# access2web-blueprint — Codebase Guide (legacy)
 
 **This guide is for maintainers and contributors who need to understand how blueprint + platform responsibilities coexist in this monorepo, where research, code and documentation live, and where to add new content when the platform grows.**
 
