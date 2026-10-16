@@ -81,9 +81,7 @@ def _migration_uses_get_with_default(src: str) -> tuple[bool, list[str]]:
                 and isinstance(slice_node, ast.Constant)
                 and slice_node.value == "PLATFORM_SECRET_KEY"
             ):
-                bad_subscripts.append(
-                    "Subscript on os.environ with the env-var key"
-                )
+                bad_subscripts.append("Subscript on os.environ with the env-var key")
         elif isinstance(node, ast.Call):
             func = node.func
             if (
