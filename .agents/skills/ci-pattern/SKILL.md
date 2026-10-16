@@ -4,8 +4,8 @@ description: "Trigger: CI pattern, deterministic CI gates, review budget, SHA ev
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.15.21"
-  last_verified: 2026-10-15
+  version: "1.15.22"
+  last_verified: 2026-10-16
   based_on: "auditoría issue→merge de ardelperal/APAP_WEB (épica ardelperal/APAP_WEB#935, 2026-09-29/30)"
   scope: ['universal', 'ops']
   auto_invoke: ['adopt the CI pattern in another repo', 'apply the CI pattern in a new repo', 'audit this CI pattern', 'review budget and chained PRs', 'SHA deploy evidence', 'CI adoption gate', 'porting guide']

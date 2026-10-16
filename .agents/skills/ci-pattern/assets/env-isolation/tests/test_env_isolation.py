@@ -108,6 +108,45 @@ class Clean(unittest.TestCase):
             code, out = run_gate(root, ALLOWLIST)
             self.assertEqual((code, "HR-28" in out), (0, False))
 
+    def test_dotenv_in_python_docstring_is_not_a_finding(self):
+        """Refs #618: DOTENV must not match literal '.env' inside Python
+        triple-quoted docstrings. Prosa is not a runtime reference to the
+        developer's .env file."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, {"suites/doc.py":
+                         '"""Module docstring mentioning ``.env`` as runtime example."""\n'
+                         'def f():\n'
+                         '    """The fixture wipes the developer\'s ``.env`` before the body."""\n'
+                         '    return None\n'})
+            code, out = run_gate(root, ALLOWLIST)
+            self.assertEqual((code, "HR-28" in out), (0, False), out)
+
+    def test_python_write_only_environ_assign_is_not_a_read(self):
+        """Refs #618: PY_READ must not match `os.environ["X"] = value` as a
+        read. The LHS of `=` is a write; only RHS references are reads."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, {"suites/write.py":
+                         'import os\n'
+                         'os.environ["PYTEST_CANARY"] = "value"\n'})
+            code, out = run_gate(root, ALLOWLIST)
+            self.assertEqual((code, "HR-28" in out), (0, False), out)
+
+    def test_python_environ_ref_inside_docstring_is_not_a_read(self):
+        """Refs #618: PY_READ must not match `os.environ['X']` references
+        that appear inside Python triple-quoted docstrings. Documentation
+        of an API is not a real environment read at test time."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, {"suites/doc_env.py":
+                         '"""os.environ[\'X\'] is mentioned in the docstring."""\n'
+                         'def f():\n'
+                         '    """Use os.environ.get(\'X\') to read X."""\n'
+                         '    return None\n'})
+            code, out = run_gate(root, ALLOWLIST)
+            self.assertEqual((code, "HR-28" in out), (0, False), out)
+
 
 class Findings(unittest.TestCase):
     def test_dotenv_source_is_a_finding(self):
@@ -149,6 +188,44 @@ class Findings(unittest.TestCase):
             code, out = run_gate(root, ALLOWLIST)
             self.assertEqual(code, 1)
             self.assertIn("suites/deep/e.sh", out)
+
+    def test_python_environ_rhs_read_still_finds(self):
+        """Refs #618 (regression): `x = os.environ[\"X\"]` (RHS) is a real read
+        and must keep being flagged. The fix for LHS-as-write must not silence
+        RHS reads."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, {"suites/rhs.py":
+                         'import os\n'
+                         'x = os.environ["UNLISTED_VAR"]\n'})
+            code, out = run_gate(root, ALLOWLIST)
+            self.assertEqual(code, 1, out)
+            self.assertIn("UNLISTED_VAR", out)
+
+    def test_python_environ_equality_still_finds(self):
+        """Refs #618 (regression): `os.environ[\"X\"] == \"y\"` is a comparison
+        that reads the env. Must keep being flagged."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, {"suites/eq.py":
+                         'import os\n'
+                         'if os.environ["UNLISTED_VAR"] == "x":\n'
+                         '    pass\n'})
+            code, out = run_gate(root, ALLOWLIST)
+            self.assertEqual(code, 1, out)
+            self.assertIn("UNLISTED_VAR", out)
+
+    def test_python_environ_aug_assign_still_finds(self):
+        """Refs #618 (regression): `os.environ[\"X\"] += \"y\"` reads then
+        writes. Must keep being flagged as a read."""
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, {"suites/aug.py":
+                         'import os\n'
+                         'os.environ["UNLISTED_VAR"] += "x"\n'})
+            code, out = run_gate(root, ALLOWLIST)
+            self.assertEqual(code, 1, out)
+            self.assertIn("UNLISTED_VAR", out)
 
 
 class InvalidInput(unittest.TestCase):
