@@ -29,8 +29,9 @@ container's properties (``container.jwt_signer``, ``container.sessions``,
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
+from uuid import UUID
 
-from fastapi import APIRouter, Body, HTTPException, Request, status
+from fastapi import APIRouter, Body, HTTPException, Request, Response, status
 
 from app.src.modules.lanzadera.application.login import login
 from app.src.modules.lanzadera.application.logout import logout
@@ -70,6 +71,21 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
 
     def _now() -> datetime:
         return datetime.now(UTC)
+
+    def _require_user_id(req: Request) -> UUID:
+        """Return the authenticated user id, or raise 401 if missing.
+
+        The middleware (PR-5) populates ``req.state.user_id`` from the
+        JWT ``sub`` claim. When the token is absent or invalid, the
+        middleware leaves it ``None`` and the route gate fires 401.
+        """
+        user_id: UUID | None = getattr(req.state, "user_id", None)
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="authentication required",
+            )
+        return user_id
 
     @router.post("/auth/login", status_code=status.HTTP_200_OK, tags=["auth"])
     async def login_route(
@@ -126,7 +142,7 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
         return {"token": token, "session_id": str(session.id)}
 
     @router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT, tags=["auth"])
-    async def logout_route(req: Request) -> None:
+    async def logout_route(req: Request) -> Response:
         """Revoke the session identified by the JWT in ``Authorization``.
 
         The middleware (PR-5) populates both ``request.state.user_id`` and
@@ -157,7 +173,7 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="session not found",
             ) from exc
-        return None
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     @router.get("/auth/me", status_code=status.HTTP_200_OK, tags=["auth"])
     async def me_route(req: Request) -> dict[str, object]:
@@ -170,12 +186,7 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
         Returns 401 if no token is present (the middleware leaves the
         state empty when the header is missing or the token is invalid).
         """
-        user_id = getattr(req.state, "user_id", None)
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="authentication required",
-            )
+        user_id = _require_user_id(req)
 
         use_cases = container.use_cases
 
@@ -210,12 +221,7 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
         Returns 401 if no token is present. Returns an empty ``apps`` list
         when the user has no live assignments.
         """
-        user_id = getattr(req.state, "user_id", None)
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="authentication required",
-            )
+        user_id = _require_user_id(req)
         use_cases = container.use_cases
         apps = await use_cases["get_my_apps"](user_id=user_id)
         return {
@@ -247,12 +253,7 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
         Returns 401 if no token is present. Returns 200 with an empty
         ``capabilities`` list when the user has no live assignment for the app.
         """
-        user_id = getattr(req.state, "user_id", None)
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="authentication required",
-            )
+        user_id = _require_user_id(req)
         use_cases = container.use_cases
         caps = await use_cases["get_my_capabilities_for_app"](user_id=user_id, app_id=app_id)
         return {
