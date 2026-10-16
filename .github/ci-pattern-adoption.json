@@ -168,6 +168,15 @@
         },
         {
           "args": [
+            "--repo",
+            "@.",
+            "--policy",
+            "@.github/local-ci-parity-policy.json"
+          ],
+          "gate": "local-ci-parity"
+        },
+        {
+          "args": [
             "--workflow",
             "@.github/workflows/ci.yml",
             "--base-branch",
@@ -176,10 +185,6 @@
             "@.github/required-jobs-policy.json"
           ],
           "gate": "workflow-policy"
-        },
-        {
-          "args": [],
-          "gate": "hr-matrix"
         }
       ]
     },
