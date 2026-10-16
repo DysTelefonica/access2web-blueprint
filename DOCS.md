@@ -28,7 +28,7 @@ This is the complete technical reference for the blueprint. For getting started,
 
 | It is not | Use this boundary |
 |---|---|
-| El mapa de ownership, flows y guardrails para mantenedores. | [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) es la guía de ownership + reading path + cómo agregar una app nueva. |
+| El mapa de ownership, flows y guardrails para mantenedores. | [`docs/CODEBASE-GUIDE.md`](docs/CODEBASE-GUIDE.md) es el entry point; las páginas [`docs/codebase/`](docs/codebase/) desarrollan ownership, reading path y cómo agregar una app nueva. |
 | La fuente de verdad de las decisiones arquitectónicas D-<n> y DA-<n>. | [`docs/architecture.md`](docs/architecture.md) cataloga decisiones vigentes y obsoletas con paths; este doc sólo las referencia en `§Decisiones metodológicas`. |
 | El manual de los `check_*.py` y de los workflows de CI. | [`docs/gates.md`](docs/gates.md) es el manual de uso: qué mide cada gate, cómo se lee su fallo, el contrato de los workflows y cómo añadir uno. |
 | El walkthrough por form individual. | Cada `walkthrough-*.json` por app vive en `docs/03-aplicaciones/<app>/walkthrough-*.json`; este doc sólo explica el método v3/v4. |
@@ -55,7 +55,7 @@ For other docs:
 |-------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
 | [README](README.md)                                         | Overview de 5 minutos: qué es esto, para quién, cómo empezar.                                               |
 | [Agent Setup](docs/AGENT-SETUP.md)                          | Configuración de agentes (Claude, OpenCode, Gemini, Codex) para trabajar en este repo.                      |
-| [Codebase Guide](CODEBASE-GUIDE.md)                          | Para mantenedores: 90-second mental model, ownership de artefactos, quick map inverso.                     |
+| [Codebase Guide](docs/CODEBASE-GUIDE.md)                          | Para mantenedores: índice corto en `docs/CODEBASE-GUIDE.md` + páginas detalladas en `docs/codebase/`.                     |
 | [Architecture §CI gates](docs/architecture.md)               | Quality gates del MVP: hexagonal layer gate, ruff, mypy, security scanning; los workflows en `.github/workflows/`. |
 | [CONTRIBUTING](CONTRIBUTING.md)                             | Workflow de contribución, conventional commits, label system.                                                |
 | [CHANGELOG](CHANGELOG.md)                                   | Cambios por versión del blueprint (cierre de épicas, PRs merged, etc.).                                     |
@@ -114,7 +114,7 @@ Estado del walkthrough de cada app (8/8 cerradas):
 
 **Total forms walkthroughed** (research cerrado): ~268 forms.
 
-Cada `epic.md` por app sigue la misma estructura (7 secciones + 2 anexos + checklist). Ver [Codebase Guide](CODEBASE-GUIDE.md) para detalles.
+Cada `epic.md` por app sigue la misma estructura (7 secciones + 2 anexos + checklist). Ver [Codebase Guide](docs/CODEBASE-GUIDE.md) para detalles.
 
 ---
 
@@ -238,7 +238,7 @@ Output por form:
 }
 ```
 
-Ver [Codebase Guide — Walkthrough patterns](CODEBASE-GUIDE.md#walkthrough-patterns) para detalles.
+Ver [Codebase Guide — Repository map](docs/codebase/repository-map.md) y [Mental model](docs/codebase/mental-model.md) para detalles sobre walkthroughs.
 
 ---
 
@@ -306,4 +306,4 @@ Si este `DOCS.md` no se entiende en 5 minutos por un humano nuevo, o si una IA n
 - [ ] El PR respeta los 5 gates del workflow (`check_branch_name`, `check_pr_size`, `check_workflows`, ruff, mypy).
 - [ ] Si toca `app/`, `tests/` u `openspec/`, leyó [`docs/architecture.md`](docs/architecture.md) §Decisiones D-<n> cross-cutting antes de empezar.
 
-[Next: CODEBASE-GUIDE → CODEBASE-GUIDE.md]
+[Next: Codebase Guide → docs/CODEBASE-GUIDE.md]
