@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v020f582 -->
+<!-- personal-skills:slice:access2web-blueprint @ vadc9ffe -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -48,9 +48,9 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
 
 ### Presupuesto de revisión
 
-- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por `scripts/check_pr_size.py` o equivalente. Las rutas vendorizadas `.agents/skills/**` y `skills/**` no cuentan (copia generada desde team-skills, issue #918); si el desglose por fichero no está disponible, se cuenta el total del PR.
+- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por `scripts/check_pr_size.py` o equivalente.
 - 400 líneas es **techo de revisión, no techo de tamaño**: a partir de esa cifra la revisión pasa de atenta a vistazo. La justificación completa vive en el `CONTRIBUTING.md` de cada consumer; este partial la enuncia sin duplicar.
-- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**; tampoco hay `SIZE_EXCEPTION_APPROVER` ni gate que lo lea.
+- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**; la identidad del aprobador llega al gate en la variable de entorno `SIZE_EXCEPTION_APPROVER` y `check_pr_size.py` (`override_has_separate_approver`, HR-33) falla cerrado si el aprobador coincide con el autor.
 - La etiqueta `size:exception` la aplica **solo el mantenedor**, nunca el agente, y solo cuando partir el PR rompería `main` (no por tests, refactor o cambio menor). Antes de aplicarla, el agente responde las cuatro preguntas de `## Excepción de tamaño` en el cuerpo de la PR; sin las cuatro respuestas la etiqueta no se pide. El merge sigue siendo una decisión humana.
 - **Borrar siempre es divisible.** Retirar tests, código muerto o configuración nunca justifica `size:exception`: se borra por trozos de ≤400 líneas, aunque sea dentro del mismo fichero, dejando `main` en verde entre trozos; lo que comparten los trozos (helpers, fixtures) se borra en el último.
 - Cuando la diff supera el presupuesto, el orden de escape es: (1) partir por unidad de trabajo, (2) encadenar PRs vía `chained-pr`, (3) `size:exception` (la pone el mantenedor) como último recurso. Si la excepción se vuelve habitual, el problema está en el troceado del issue, no en el presupuesto.
@@ -62,7 +62,8 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
   por llamadas directas a funciones internas) y vive en el directorio e2e que
   el consumer declare en su política de CI (p. ej. `tests/e2e_ci/`).
 - **La exención es explícita y está justificada.** Solo se concede con una
-  sección dedicada (`## Exencion e2e` por defecto) en el cuerpo de la PR con la
+  sección dedicada (`## Exención e2e` por defecto; el matching es tilde-
+  tolerant y también acepta `## Exencion e2e`) en el cuerpo de la PR con la
   razón escrita; una sección vacía no exonera nada.
 - **El control es detectivo y parametrizado.** El gate `e2e-evidence` del
   patrón (copia instalada en `.agents/skills/ci-pattern/assets/e2e-evidence/`)
@@ -131,10 +132,14 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 - **Los recursos protegidos son intocables.** Nunca se tocan los que llevan
   etiqueta de protección, los de la plataforma (Coolify o su proxy) ni los de
   los runners.
-- **La producción se identifica sola.** Sus recursos llevan nombre `*-prod-*`,
-  volumen con nombre —nunca anónimo— y etiqueta de protección
-  `apap.protect=true` (parametrizable por consumer). Sin esas tres señales, un
-  recurso de producción es indistinguible de uno de prueba.
+- **La producción se identifica sola por disciplina del agente.** El gate
+  `check_docker_ownership.py` solo enforça la **etiqueta de protección**
+  (`apap.protect=true` por defecto, parametrizable por consumer): recorre
+  `protect_labels` y rechaza el borrado de cualquier recurso que la lleve,
+  sea de producción o no. El **patrón `*-prod-*`** en el nombre y el
+  **volumen con nombre** —nunca anónimo— son disciplina del agente que el
+  gate no verifica; siguen siendo obligatorios como convención operativa
+  (Refs DysTelefonica/team-skills#454).
 - **Los barridos automáticos excluyen la etiqueta.** Todo reaper de recursos
   huérfanos deja fuera lo etiquetado como protegido; limpiar no es borrado
   preventivo.
@@ -257,10 +262,7 @@ nombres propios — solo roles y rutas instaladas. El detective post-push y
 el guard de force-push abren el incidente.
 
 <!-- ci-pattern:hr-block:begin -->
-| HR | Resumen | Clase |
-| --- | --- | --- |
-| HR-48 | Toda la documentación de un proyecto vive en su repositorio, con rutas relativas | gate |
-| HR-54 | La cadena de PRs se declara como dato y el enlace de la issue no admite mezclas | gate |
+
 <!-- ci-pattern:hr-block:end -->
 
 <!-- ci-pattern-agents:begin -->
@@ -309,7 +311,7 @@ La documentación tiene tres capas. Confundirlas es el error más caro de este r
 
 | Capa | Ubicación | Quién la mantiene |
 |---|---|---|
-| Narrativa del producto | `README.md`, `AGENTS.md`, `DOCS.md`, `docs/CODEBASE-GUIDE.md`, `docs/codebase/`, `CONTRIBUTING.md`, `CHANGELOG.md` | Una persona, cuando cambia el enfoque |
+| Narrativa del producto | `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `docs/` | Una persona, cuando cambia el enfoque |
 | Contrato vivo de capacidades | `openspec/specs/` | La fase `archive` lo genera mecánicamente |
 | Historia del porqué | `openspec/changes/archive/` | Inmutable. Nadie la escribe. |
 
@@ -320,7 +322,7 @@ La documentación tiene tres capas. Confundirlas es el error más caro de este r
 Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de proponer una decisión arquitectónica nueva (D-<n>), leer en este orden:
 
 1. `AGENTS.md` — alcance del repo y skills disponibles
-2. `docs/CODEBASE-GUIDE.md` y `docs/codebase/` — índice corto y páginas de ownership, reading path raíz
+2. `CODEBASE-GUIDE.md` — overview, ownership, reading path raíz
 3. `docs/architecture.md` — fuente de verdad única arquitectónica
 4. `CONTRIBUTING.md` — workflow de contribución + convention multi-app + label system
 5. `openspec/changes/<change>/design.md` (si el cambio pertenece a un change vivo)
