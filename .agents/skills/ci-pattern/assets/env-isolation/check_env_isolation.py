@@ -47,8 +47,51 @@ def strip_comment(line: str) -> str:
         elif c == "#" and (i == 0 or line[i - 1] in " \t"):
             return line[:i]
     return line
+def strip_py_strings(text: str) -> str:
+    """Replace Python triple-quoted string contents with spaces (Refs #618).
+
+    The scanner uses this so a regex match inside a docstring (e.g.
+    ``os.environ["X"]`` documented in a docstring, or ``.env`` mentioned
+    in prose) is not treated as a real environment read or a real
+    reference to the developer's ``.env`` file. Single-line strings are
+    NOT stripped because they often appear as arguments that name the
+    variable being read (``os.getenv("X")``); stripping them would hide
+    the actual env var name from the scanner. Line numbers are preserved
+    (string contents become spaces; newlines are kept) so findings still
+    cite the original line.
+
+    Note: this intentionally does not detect reads inside f-strings that
+    interpolate env vars (e.g. ``f"prefix {os.environ['X']} suffix"``).
+    The current PY_READ regex does not match that form either, so the
+    correction does not introduce a new false negative.
+    """
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    in_triple: str | None = None  # '"""' or "'''" while inside
+    while i < n:
+        c = text[i]
+        if in_triple is not None:
+            if text[i:i + 3] == in_triple:
+                out.append(in_triple)
+                in_triple = None
+                i += 3
+                continue
+            out.append('\n' if c == '\n' else ' ')
+            i += 1
+            continue
+        # Triple-quoted string start
+        if c in ('"', "'") and text[i:i + 3] in ('"""', "'''"):
+            delim = text[i:i + 3]
+            in_triple = delim
+            out.append(delim)
+            i += 3
+            continue
+        out.append(c)
+        i += 1
+    return ''.join(out)
 SH_READ = re.compile(r"\$\{([A-Z_][A-Z0-9_]*)(?:\[|[:=+-]|\}|\b)|\$([A-Z_][A-Z0-9_]*)\b")
-PY_READ = re.compile(r"os\.environ(?:\.get)?\[\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]|"
+PY_READ = re.compile(r"os\.environ(?:\.get)?\[\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\]|"
                      r"os\.environ\.get\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]|"
                      r"os\.getenv\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]")
 DOTENV = re.compile(r"\.env\b|\bdotenv\b|load_dotenv")
@@ -144,8 +187,14 @@ def scan_sh(path: Path, rel: str, allow: set, report: list) -> None:
 
 
 def scan_py(path: Path, rel: str, allow: set, report: list) -> None:
-    for number, raw in enumerate(path.read_text(encoding="utf-8",
-                                                 errors="replace").splitlines(), 1):
+    # Refs #618: prose inside Python string literals (docstrings, regular
+    # strings) is not a real env read or a real reference to the
+    # developer's ``.env``. Strip string contents before applying the
+    # regex surface. ``strip_comment`` is still applied per-line
+    # afterwards to drop ``#`` comments.
+    text = path.read_text(encoding="utf-8", errors="replace")
+    stripped = strip_py_strings(text)
+    for number, raw in enumerate(stripped.splitlines(), 1):
         # La exención solo ampara la coincidencia .env de plantilla; las
         # lecturas de os.environ de la misma línea se siguen escaneando.
         # El strip de comentarios es quote-aware también aquí.
@@ -156,6 +205,13 @@ def scan_py(path: Path, rel: str, allow: set, report: list) -> None:
         for m in PY_READ.finditer(line):
             name = m.group(1) or m.group(2) or m.group(3)
             if name in allow:
+                continue
+            # Refs #618: ``os.environ["X"] = value`` (LHS of plain ``=``)
+            # is a write, not a read. Skip it. Augmented assignments
+            # (``+=``, ``-=``, ...) and equality (``==``) keep being
+            # treated as reads.
+            after = line[m.end():].lstrip()
+            if after and after[0] == '=' and (len(after) < 2 or after[1] != '='):
                 continue
             report.append(f"HR-28 {rel}:{number}: reads environment variable "
                           f"{name!r} via os.environ/getenv not declared in the "
