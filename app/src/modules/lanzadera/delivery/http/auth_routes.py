@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Annotated
 
-from fastapi import APIRouter, Body, HTTPException, Request, status
+from fastapi import APIRouter, Body, HTTPException, Request, Response, status
 
 from app.src.modules.lanzadera.application.login import login
 from app.src.modules.lanzadera.application.logout import logout
@@ -126,7 +126,7 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
         return {"token": token, "session_id": str(session.id)}
 
     @router.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT, tags=["auth"])
-    async def logout_route(req: Request) -> None:
+    async def logout_route(req: Request) -> Response:
         """Revoke the session identified by the JWT in ``Authorization``.
 
         The middleware (PR-5) populates both ``request.state.user_id`` and
@@ -157,7 +157,7 @@ def register_auth_routes(router: APIRouter, *, container: LanzaderaContainer) ->
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="session not found",
             ) from exc
-        return None
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
 
     @router.get("/auth/me", status_code=status.HTTP_200_OK, tags=["auth"])
     async def me_route(req: Request) -> dict[str, object]:
