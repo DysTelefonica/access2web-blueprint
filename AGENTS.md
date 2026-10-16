@@ -309,7 +309,7 @@ La documentación tiene tres capas. Confundirlas es el error más caro de este r
 
 | Capa | Ubicación | Quién la mantiene |
 |---|---|---|
-| Narrativa del producto | `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `docs/` | Una persona, cuando cambia el enfoque |
+| Narrativa del producto | `README.md`, `AGENTS.md`, `DOCS.md`, `docs/CODEBASE-GUIDE.md`, `docs/codebase/`, `CONTRIBUTING.md`, `CHANGELOG.md` | Una persona, cuando cambia el enfoque |
 | Contrato vivo de capacidades | `openspec/specs/` | La fase `archive` lo genera mecánicamente |
 | Historia del porqué | `openspec/changes/archive/` | Inmutable. Nadie la escribe. |
 
@@ -320,7 +320,7 @@ La documentación tiene tres capas. Confundirlas es el error más caro de este r
 Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de proponer una decisión arquitectónica nueva (D-<n>), leer en este orden:
 
 1. `AGENTS.md` — alcance del repo y skills disponibles
-2. `CODEBASE-GUIDE.md` — overview, ownership, reading path raíz
+2. `docs/CODEBASE-GUIDE.md` y `docs/codebase/` — índice corto y páginas de ownership, reading path raíz
 3. `docs/architecture.md` — fuente de verdad única arquitectónica
 4. `CONTRIBUTING.md` — workflow de contribución + convention multi-app + label system
 5. `openspec/changes/<change>/design.md` (si el cambio pertenece a un change vivo)
