@@ -220,10 +220,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # W62 (#543) and e2e-smoke (#876) PR-A: main.py went 105 -> 122
     # (lazy signer + import-time middleware install) -> 118 (removing
     # the now-dead ``except NotImplementedError`` lifespan branch once
-    # #926 wired SessionRepositoryPg) -> 130 (adding ``sign`` to
-    # ``_LazyAuthSigner`` so the ``/auth/login`` route can issue a
-    # JWT through the same lazy proxy). Lock the gain in.
-    "app/src/main.py": (BaselineEntry(sites=130, target=100, target_date="2027-02-13")),
+    # #926 wired SessionRepositoryPg) -> 130 (PR #941 added ``sign``
+    # to ``_LazyAuthSigner`` so the ``/auth/login`` route could issue
+    # a JWT through the same lazy proxy) -> 118 (this change: the
+    # ``getattr / if-container-is-None / raise-InvalidTokenError``
+    # block PR #941 duplicated in ``verify`` and ``sign`` is now a
+    # single ``_container()`` helper on the proxy, both methods
+    # route through it). Back to the pre-#941 floor.
+    "app/src/main.py": (BaselineEntry(sites=118, target=100, target_date="2027-02-13")),
     # C02 (#227): ExpedienteEditService.execute() is a 4-step pipeline
     # (load + validate version + apply_edit + UoW with audit + change
     # records) that lands at 160 sites. Each step has its own

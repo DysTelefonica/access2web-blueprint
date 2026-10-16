@@ -63,14 +63,6 @@ _container_mirror_installed: bool = False
 
 
 class _ContainerMirrorMiddleware(BaseHTTPMiddleware):
-    """HTTP middleware that exposes ``app.state.container`` as
-    ``request.state.container`` on every request. The middleware is
-    installed at startup by the ``_register_admin_routes`` callback so
-    the admin and presence slices share a single per-request view of
-    the container (the lifespan may replace ``app.state.container``
-    mid-flight; the mirror re-reads it every request).
-    """
-
     async def dispatch(
         self,
         request: _StarletteRequest,
@@ -180,14 +172,7 @@ app = FastAPI(
 
 
 class _LazyAuthSigner:
-    """``JwtSignerPort`` proxy that defers resolution to request time.
-
-    The lifespan builds the real ``Hs256JwtSigner`` after this proxy is
-    installed. Each ``verify()`` call looks up the container from
-    ``app.state`` so the middleware always uses the live signer.
-    """
-
-    def verify(self, token: str, now: int | None = None) -> dict[str, object]:
+    def _container(self) -> LanzaderaContainer:
         container = getattr(app.state, "container", None)
         if container is None:
             from app.src.modules.lanzadera.domain.errors import (
@@ -195,25 +180,17 @@ class _LazyAuthSigner:
             )
 
             raise InvalidTokenError("auth not initialised yet")
+        return container  # type: ignore[no-any-return]
+
+    def verify(self, token: str, now: int | None = None) -> dict[str, object]:
+        container = self._container()
         if now is None:
             now = int(container._clock().timestamp())
         result: dict[str, object] = container.jwt_signer.verify(token, now=now)
         return result
 
     def sign(self, claims: dict[str, object]) -> str:
-        """Issue a JWT. Called by the ``/auth/login`` use case after a
-        successful credential check. The lifespan builds the real
-        ``Hs256JwtSigner`` after this proxy is installed, so we look it
-        up from ``app.state.container`` per call.
-        """
-        container = getattr(app.state, "container", None)
-        if container is None:
-            from app.src.modules.lanzadera.domain.errors import (
-                InvalidTokenError,
-            )
-
-            raise InvalidTokenError("auth not initialised yet")
-        token: str = container.jwt_signer.sign(claims)
+        token: str = self._container().jwt_signer.sign(claims)
         return token
 
 
@@ -238,15 +215,8 @@ _admin_templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 
 async def _register_admin_routes() -> None:
-    """Attach admin routes after the app is built.
-
-    The container lives in ``app.state.container`` (set by the lifespan).
-    Registering the routes here rather than at import-time avoids a circular
-    import with the admin module. W62 (#543), e2e-smoke (#876): called
-    from the lifespan because Starlette 0.50+ no longer runs
-    ``@app.on_event("startup")`` handlers.
-    """
-    # Import here to avoid circular imports at module-load time.
+    # W62 (#543), e2e-smoke (#876): called from the lifespan because
+    # Starlette 0.50+ no longer runs ``@app.on_event("startup")`` handlers.
     from fastapi import APIRouter
 
     container: LanzaderaContainer = app.state.container  # type: ignore[unused-ignore]
