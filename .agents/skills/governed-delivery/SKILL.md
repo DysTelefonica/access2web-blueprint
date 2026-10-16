@@ -4,8 +4,8 @@ description: "Trigger: actualizar mi rama, abrir un pull request, encadenar PRs,
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.0"
-  last_verified: 2026-10-07
+  version: "1.1"
+  last_verified: 2026-10-15
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
   tiers: ['universal', 'ops']
@@ -28,6 +28,7 @@ Para ADOPTAR o AUDITAR el patrón (gates, contratos, HRs, fases) cargue
 | El diff pasa de 400 líneas | 5 — partir o `size-exception-reason:`, nunca recortar |
 | Después del merge | 6 — la rama remota se conserva |
 | Empujé algo que la política prohíbe | 7 — el detective/guard abre el incidente |
+| El consumer decide la estrategia de merge | 8 — `--squash` o `--no-ff`, ambos válidos; la rama remota sobrevive |
 
 Estructura de una cadena, por posición:
 
@@ -77,6 +78,14 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
    reescritura de historia—: se repara con post-mortem y registro de la
    causa, nunca borrando el rastro. — *referencia: `ci-pattern`, HR-49
    (detective) y HR-51 (guard).*
+
+8. **La estrategia de merge la decide el consumer.** `--squash` y `--no-ff`
+   son ambas válidas; la invariante del catálogo es que la rama remota
+   sobreviva al merge, no la forma del commit en la base activa
+   (Refs DysTelefonica/team-skills#528 §3.13 D1; `slices/partials/web.md`
+   §Divergencias documentadas). Si el partial del consumer prescribe una
+   concreta, gana el partial; en ausencia de prescripción, el agente
+   respeta el método configurado en el host o pregunta al mantenedor.
 
 ## Anti-patrones
 

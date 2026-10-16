@@ -4,8 +4,8 @@ description: Trigger: CI/CD audit, pipeline quality, issue policy, PR policy, la
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.1"
-  last_verified: 2026-09-13
+  version: "1.2"
+  last_verified: 2026-10-15
   scope: ['universal', 'ops']
   auto_invoke: ['auditing repository delivery governance', 'bootstrapping issue and pull request templates', 'configuring branch protection or deployment policy']
   tiers: ['universal', 'ops']
@@ -124,6 +124,17 @@ when the task crosses their scope.
   any deployment or promotion step trusts the digest. A vulnerability scan
   proves the artifact was clean at scan time, not that the digest reaching
   deployment is the one that was scanned.
+
+- **HR-25 — Multi-app label system.** When the consumer migrates several
+  applications, the issue and commit prefix identifies the scope: every
+  issue/PR carries `<type>(<app>): ...` and every commit carries the same
+  prefix (`feat(<app>): ...`, `fix(<app>): ...`, `refactor(<app>): ...`).
+  Cross-cutting changes that affect several apps use `chore(platform): ...`.
+  The set of valid `<app>` values and the mapping between `<app>` and
+  GitHub labels are documented in `CONTRIBUTING.md` of the repo before the
+  first PR is opened; without that declaration the contributor asks the
+  maintainer. The prefix is the consumer's decision, not the agent's
+  (Refs DysTelefonica/team-skills#528 §3.13 D4).
 
 ## §3 Decision Gates
 
