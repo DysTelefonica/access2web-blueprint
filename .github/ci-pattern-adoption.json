@@ -100,7 +100,8 @@
         "scripts/install-skills.sh",
         "scripts/local-preflight.sh",
         "scripts/mutation_shards.py",
-        "skills/"
+        "skills/",
+        "tests/test_ci_workflow.py"
       ],
       "host_labels": ".github/host-labels-snapshot.json",
       "removal_confirmed": true,
