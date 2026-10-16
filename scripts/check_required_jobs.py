@@ -40,8 +40,9 @@ from collections.abc import Mapping
 #: not the inner jobs of `security.yml` / `codeql.yml`). Issue #882, PR-3:
 #: `integration` joins the set — it runs the Postgres service and the
 #: `-m integration` suite; a red integration gate holds the PR just like
-#: a red quality gate does.
-ALL_JOBS = frozenset({"pr-gate", "quality", "integration", "security", "codeql"})
+#: a red quality gate does. e2e-smoke (#876) is added by the smoke
+#: branch once the auth routers mount.
+ALL_JOBS = frozenset({"pr-gate", "quality", "integration", "security", "codeql", "e2e-smoke"})
 
 #: `pr-gate` only runs `if: github.event_name == 'pull_request'`
 #: (issue #135, #857 PR-B). On every other trigger that fires `ci.yml`
@@ -53,9 +54,9 @@ ALL_JOBS = frozenset({"pr-gate", "quality", "integration", "security", "codeql"}
 #: with the gentle-ai model (#857 PR-D).
 SKIPS_BY_EVENT = {
     "pull_request": frozenset(),
-    "push": frozenset({"pr-gate"}),
-    "schedule": frozenset({"pr-gate"}),
-    "workflow_dispatch": frozenset({"pr-gate"}),
+    "push": frozenset({"pr-gate", "e2e-smoke"}),
+    "schedule": frozenset({"pr-gate", "e2e-smoke"}),
+    "workflow_dispatch": frozenset({"pr-gate", "e2e-smoke"}),
 }
 
 

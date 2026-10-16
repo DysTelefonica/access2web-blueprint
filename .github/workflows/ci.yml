@@ -519,6 +519,125 @@ jobs:
       group: gate-codeql-call-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
 
+  e2e-smoke:
+    # Issue #876: humo E2E en cada PR. Imagen de la PR, /health y 2 specs
+    # de Playwright (smoke + login). La suite completa va en release.yml.
+    if: github.event_name == 'pull_request'
+    needs: [pr-gate]
+    runs-on: ubuntu-24.04
+    # Cada PR tiene su propio run; no lo cancela el workflow.
+    concurrency:
+      group: gate-e2e-smoke-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    # Mismo service que el job `integration` (#882/#901); puerto dinámico.
+    services:
+      postgres:
+        image: postgres:16-alpine@sha256:1a66d744c1b459e13b05a8fca341da84cb63383e99ce262210efee5a319d4551
+        env:
+          POSTGRES_DB: lanzadera
+          POSTGRES_USER: lanzadera
+          POSTGRES_PASSWORD: lanzadera-dev-only
+        ports:
+          - 5432
+        options: >-
+          --health-cmd "pg_isready -U lanzadera -d lanzadera"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.11"
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version-file: e2e/package.json
+
+      - name: Build the PR image
+        working-directory: app
+        run: docker build --tag test-app:pr .
+
+      - name: Resolve the DSN from the assigned host port
+        env:
+          POSTGRES_HOST_PORT: ${{ job.services.postgres.ports['5432'] }}
+        run: |
+          set -euo pipefail
+          if [ -z "$POSTGRES_HOST_PORT" ]; then
+            echo "::error::service port did not resolve; refusing to run with a DSN that cannot connect" >&2
+            exit 1
+          fi
+          echo "E2E_DATABASE_URL=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
+
+      - name: Install the lockfile and apply the real migrations
+        # Igual que `integration`: 0003 lee data/fixtures/, fuera de la imagen.
+        run: |
+          set -euo pipefail
+          if [ -f app/pyproject.toml ]; then
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
+          elif [ -f pyproject.fragment.toml ]; then
+            echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
+            echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
+            exit 1
+          else
+            echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
+            echo "::error::The CI cannot install a Python project that does not exist. See issue #117 F2."
+            exit 1
+          fi
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          DATABASE_URL="$E2E_DATABASE_URL" PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
+            alembic -c app/migrations/alembic.ini upgrade head
+
+      - name: Start the app and wait for /health
+        env:
+          E2E_SECRET_KEY: e2e-smoke-test-key-not-a-real-secret
+        run: |
+          set -euo pipefail
+          if ! timeout 30 docker info > /dev/null 2>&1; then
+            echo "::error::docker daemon is not responding on the runner."
+            exit 1
+          fi
+          # PLATFORM_SECRET_KEY: 0004_seed_users cifra el DNI con AES-256-GCM
+          # y necesita la clave; mismo valor que el job `integration`.
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          # --network host: el contenedor llega al Postgres en 127.0.0.1.
+          docker run -d --name test-app --network host \
+            -e DATABASE_URL="$E2E_DATABASE_URL" \
+            -e SECRET_KEY="$E2E_SECRET_KEY" \
+            -e PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
+            test-app:pr
+          # Espera a /health hasta 120 s (cold start del runner hospedado).
+          for i in $(seq 1 120); do
+            if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+              echo "App is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::app did not respond on /health within 120s"
+          exit 1
+
+      - name: Install Playwright dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Chromium browser
+        run: npx playwright install chromium
+
+      - name: Run the E2E smoke specs
+        # Desde e2e/: ahí está la copia de @playwright/test que usan los specs.
+        # Desde la raíz, npx baja otra y Playwright no encuentra tests.
+        working-directory: e2e
+        env:
+          BASE_URL: http://localhost:8000
+          TEST_CONTAINER_NAME: test-app
+        run: |
+          set -euo pipefail
+          npx playwright test smoke.spec.ts auth.spec.ts
+
   required:
     # Issue #702: deterministic replacement for the six hand-configured
     # branch-protection checks (quality, pr-gate, pip-audit,
@@ -543,8 +662,9 @@ jobs:
     # Issue #882, PR-3: `integration` joins the required aggregator. The
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
-    # does.
-    needs: [pr-gate, quality, integration, security, codeql]
+    # does. e2e-smoke (#876) is the E2E gate added by the smoke branch
+    # once the auth routers mount; a red e2e-smoke also holds the PR.
+    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

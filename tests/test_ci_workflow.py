@@ -594,7 +594,14 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
         "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
         "&& !cancelled()"
     )
-    assert required["needs"] == ["pr-gate", "quality", "integration", "security", "codeql"]
+    assert required["needs"] == [
+        "pr-gate",
+        "quality",
+        "integration",
+        "security",
+        "codeql",
+        "e2e-smoke",
+    ]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
     assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
@@ -1112,4 +1119,39 @@ def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
         f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include "
         "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
         "when the body or labels change after opening (issue #857, PR-B)."
+    )
+
+
+def test_e2e_smoke_job_exists_and_runs_on_pull_request(workflow: dict) -> None:
+    """Issue #876: E2E smoke en cada PR (espejo gentle-ai).
+
+    El job construye la imagen de la PR, espera a `/health` (60 s) y
+    ejecuta 2-3 specs de Playwright. Solo se dispara en `pull_request`
+    (en `push`/`schedule`/`workflow_dispatch` se salta y el agregador
+    `required` lo acepta como `skipped` por la entrada correspondiente
+    en `SKIPS_BY_EVENT`).
+    """
+    jobs = workflow["jobs"]
+    assert "e2e-smoke" in jobs, "ci.yml debe declarar el job `e2e-smoke` (#876)"
+
+    e2e = jobs["e2e-smoke"]
+    assert e2e["if"] == "github.event_name == 'pull_request'", (
+        f"`e2e-smoke.if` is {e2e['if']!r}; debe limitarse a pull_request "
+        "para no ralentizar push/schedule/workflow_dispatch"
+    )
+    # Runner hospedado (#876: nunca runner propio; las PRs de fork son
+    # input no confiable).
+    assert e2e["runs-on"] == "ubuntu-24.04", (
+        f"`e2e-smoke.runs-on` is {e2e['runs-on']!r}; debe ser hosted ubuntu-24.04"
+    )
+    # Tope 5 min (#876 criterio 3).
+    assert e2e["timeout-minutes"] == 5, (
+        f"`e2e-smoke.timeout-minutes` is {e2e['timeout-minutes']!r}; debe ser 5"
+    )
+    # El agregador `required` exige el job (#876: «Se añade a los jobs
+    # que exige required»).
+    required = jobs["required"]
+    assert "e2e-smoke" in required["needs"], (
+        f"`required.needs` is {required['needs']!r}; debe incluir "
+        "`e2e-smoke` para que branch protection lo exija (#876)"
     )
