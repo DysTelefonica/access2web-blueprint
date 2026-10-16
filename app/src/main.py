@@ -187,7 +187,7 @@ class _LazyAuthSigner:
     ``app.state`` so the middleware always uses the live signer.
     """
 
-    def verify(self, token: str, now: int | None = None) -> dict[str, object]:
+    def _container(self) -> LanzaderaContainer:
         container = getattr(app.state, "container", None)
         if container is None:
             from app.src.modules.lanzadera.domain.errors import (
@@ -195,25 +195,17 @@ class _LazyAuthSigner:
             )
 
             raise InvalidTokenError("auth not initialised yet")
+        return container  # type: ignore[no-any-return]
+
+    def verify(self, token: str, now: int | None = None) -> dict[str, object]:
+        container = self._container()
         if now is None:
             now = int(container._clock().timestamp())
         result: dict[str, object] = container.jwt_signer.verify(token, now=now)
         return result
 
     def sign(self, claims: dict[str, object]) -> str:
-        """Issue a JWT. Called by the ``/auth/login`` use case after a
-        successful credential check. The lifespan builds the real
-        ``Hs256JwtSigner`` after this proxy is installed, so we look it
-        up from ``app.state.container`` per call.
-        """
-        container = getattr(app.state, "container", None)
-        if container is None:
-            from app.src.modules.lanzadera.domain.errors import (
-                InvalidTokenError,
-            )
-
-            raise InvalidTokenError("auth not initialised yet")
-        token: str = container.jwt_signer.sign(claims)
+        token: str = self._container().jwt_signer.sign(claims)
         return token
 
 

@@ -220,10 +220,22 @@ BASELINE: dict[str, BaselineEntry] = {
     # W62 (#543) and e2e-smoke (#876) PR-A: main.py went 105 -> 122
     # (lazy signer + import-time middleware install) -> 118 (removing
     # the now-dead ``except NotImplementedError`` lifespan branch once
-    # #926 wired SessionRepositoryPg) -> 130 (adding ``sign`` to
-    # ``_LazyAuthSigner`` so the ``/auth/login`` route can issue a
-    # JWT through the same lazy proxy). Lock the gain in.
-    "app/src/main.py": (BaselineEntry(sites=130, target=100, target_date="2027-02-13")),
+    # #926 wired SessionRepositoryPg) -> 130 (PR #941 added ``sign``
+    # to ``_LazyAuthSigner`` so the ``/auth/login`` route could issue
+    # a JWT through the same lazy proxy) -> 121 (this change: the
+    # ``getattr / if-container-is-None / raise-InvalidTokenError``
+    # block PR #941 duplicated in ``verify`` and ``sign`` is now a
+    # single ``_container()`` helper on the proxy; the helper itself
+    # is 9 sites, the two method bodies route through it and shed the
+    # 9 sites each — net saving 9, not 18). The file does NOT reach the
+    # pre-#941 floor of 118 because ``_ContainerMirrorMiddleware``,
+    # ``_LazyAuthSigner`` and ``_register_admin_routes`` each carry a
+    # multiline docstring; every docstring is one ``ast.Constant`` str
+    # node and ``_count_sites`` counts every such node, so the three
+    # restored docstrings add 3 sites. Excluding docstrings the file is
+    # at 118; with them, 121. The counter's blind spot is tracked in a
+    # separate type:bug issue (#946 body cites it).
+    "app/src/main.py": (BaselineEntry(sites=121, target=100, target_date="2027-02-13")),
     # C02 (#227): ExpedienteEditService.execute() is a 4-step pipeline
     # (load + validate version + apply_edit + UoW with audit + change
     # records) that lands at 160 sites. Each step has its own
