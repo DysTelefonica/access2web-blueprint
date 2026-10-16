@@ -163,18 +163,18 @@ BASELINE: dict[str, BaselineEntry] = {
     # on 2027-02-13.
     # W64 (#585): container.py is now at 197 sites after DI re-wiring.
     "app/src/modules/lanzadera/di/container.py": (
-        BaselineEntry(sites=197, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=175, target=100, target_date="2027-02-13")
     ),
     # W61 (#524): app_repository_pg.py is at 145 sites because it now
     # implements 5 methods (get_by_id, list_active, list_visible_to, create,
     # update, disable) each with a session context manager block.
     "app/src/modules/lanzadera/adapters/persistence/repositories/app_repository_pg.py": (
-        BaselineEntry(sites=145, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=136, target=100, target_date="2027-02-13")
     ),
     # W61 (#524): admin_routes_apps.py is at 151 sites because it implements
     # 4 REST endpoints (create, get, update, disable) with validation helpers.
     "app/src/modules/lanzadera/delivery/http/admin_routes_apps.py": (
-        BaselineEntry(sites=149, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=141, target=100, target_date="2027-02-13")
     ),
     # W62 (#539): login.py landed at 165 mutation sites because the
     # single function unpacks 5 dependency ports, builds the Session
@@ -183,18 +183,18 @@ BASELINE: dict[str, BaselineEntry] = {
     # is responsible for bringing it below 100 before the BASELINE
     # expires on 2027-02-13.
     "app/src/modules/lanzadera/application/login.py": (
-        BaselineEntry(sites=166, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=162, target=100, target_date="2027-02-13")
     ),
     # W64 (#587): seed_profiles.py at 129 mutation sites (CLI runner
     # with 8-app x 8-profile nested loop and dry-run / idempotency logic).
     "app/src/modules/lanzadera/application/seed_profiles.py": (
-        BaselineEntry(sites=236, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=234, target=100, target_date="2027-02-13")
     ),
     # W62 (#541): jwt.py at 118 mutation sites (HS256 signer with
     # base64url codec + 2-branch verify). Follow-up WU splits the
     # codec into _codec.py to bring it below 100 before BASELINE expires.
     "app/src/modules/lanzadera/adapters/crypto/jwt.py": (
-        BaselineEntry(sites=118, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=112, target=100, target_date="2027-02-13")
     ),
     # W62 (PR-6): auth_routes.py landed at 112 mutation sites because
     # three endpoints each carry their own try/except ladders (one per
@@ -203,17 +203,15 @@ BASELINE: dict[str, BaselineEntry] = {
     # mapping into a helper module to bring it below 100 before the
     # BASELINE expires on 2027-02-13.
     "app/src/modules/lanzadera/delivery/http/auth_routes.py": (
-        BaselineEntry(sites=179, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=172, target=100, target_date="2027-02-13")
     ),
     # W64 (#585): use_cases.py grew to 101 sites after wiring new use cases.
-    "app/src/modules/lanzadera/di/use_cases.py": (
-        BaselineEntry(sites=101, target=100, target_date="2027-02-13")
-    ),
+    # Issue #947: counter now skips docstrings; use_cases.py is at 99,
+    # under the ceiling — entry removed (see comments above for context).
     # W64 (#585): assignment_repository_pg.py at 102 mutation sites
     # (6 methods with session context manager each).
-    "app/src/modules/lanzadera/adapters/persistence/repositories/assignment_repository_pg.py": (
-        BaselineEntry(sites=102, target=100, target_date="2027-02-13")
-    ),
+    # Issue #947: counter now skips docstrings; assignment_repository_pg.py
+    # is at 94, under the ceiling — entry removed (see comments above).
     # W65 Phase 2 E2E (#605): main.py grew from 100 to 105 mutation sites
     # due to wiring the new users_json_router (import + include_router).
     # At ceiling on main (100 sites); now 5 sites over. Add to BASELINE.
@@ -222,20 +220,18 @@ BASELINE: dict[str, BaselineEntry] = {
     # the now-dead ``except NotImplementedError`` lifespan branch once
     # #926 wired SessionRepositoryPg) -> 130 (PR #941 added ``sign``
     # to ``_LazyAuthSigner`` so the ``/auth/login`` route could issue
-    # a JWT through the same lazy proxy) -> 121 (this change: the
+    # a JWT through the same lazy proxy) -> 121 (PR #946 extracted the
+    # ``_container()`` helper to consolidate the duplicated
     # ``getattr / if-container-is-None / raise-InvalidTokenError``
-    # block PR #941 duplicated in ``verify`` and ``sign`` is now a
-    # single ``_container()`` helper on the proxy; the helper itself
-    # is 9 sites, the two method bodies route through it and shed the
-    # 9 sites each — net saving 9, not 18). The file does NOT reach the
-    # pre-#941 floor of 118 because ``_ContainerMirrorMiddleware``,
-    # ``_LazyAuthSigner`` and ``_register_admin_routes`` each carry a
-    # multiline docstring; every docstring is one ``ast.Constant`` str
-    # node and ``_count_sites`` counts every such node, so the three
-    # restored docstrings add 3 sites. Excluding docstrings the file is
-    # at 118; with them, 121. The counter's blind spot is tracked in a
-    # separate type:bug issue (#946 body cites it).
-    "app/src/main.py": (BaselineEntry(sites=121, target=100, target_date="2027-02-13")),
+    # block from ``verify`` and ``sign``; net 9 sites saved but the
+    # file stayed at 121 because three restored structural docstrings
+    # were 3 ``Constant`` str nodes) -> 116 (issue #947: counter no
+    # longer counts docstrings, so the five docstrings on main.py
+    # — module, ``_ContainerMirrorMiddleware``, ``_ensure_container_middleware``,
+    # ``_LazyAuthSigner``, ``_register_admin_routes`` — drop from the
+    # site count; PR #946's comment listed three, the fix uncovers
+    # five).
+    "app/src/main.py": (BaselineEntry(sites=116, target=100, target_date="2027-02-13")),
     # C02 (#227): ExpedienteEditService.execute() is a 4-step pipeline
     # (load + validate version + apply_edit + UoW with audit + change
     # records) that lands at 160 sites. Each step has its own
@@ -243,14 +239,14 @@ BASELINE: dict[str, BaselineEntry] = {
     # pipeline. C03 (delete) and C04 (lifecycle) will reuse the same
     # shape, so a follow-up extraction is better than a one-off.
     "app/src/modules/expedientes/application/edit_expediente/service.py": (
-        BaselineEntry(sites=160, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=143, target=100, target_date="2027-02-13")
     ),
     # C04 (#229): transition_expediente/service.py is at 180
     # mutation sites after splitting execute() into helpers
     # to keep complexity under the ceiling (10). The 4-step
     # pipeline cannot be split without breaking the unit.
     "app/src/modules/expedientes/application/transition_expediente/service.py": (
-        BaselineEntry(sites=180, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=173, target=100, target_date="2027-02-13")
     ),
     "app/src/modules/expedientes/application/autosave_general/service.py": (
         BaselineEntry(sites=127, target=100, target_date="2027-02-13")
@@ -259,7 +255,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # because it implements 5 REST endpoints (list, create, get, update,
     # revoke) following the same delivery-layer pattern as admin_routes_apps.py.
     "app/src/modules/lanzadera/delivery/http/admin_routes_users_json.py": (
-        BaselineEntry(sites=151, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=143, target=100, target_date="2027-02-13")
     ),
     # R03 (#272): AnexosService carries the size-limit and retention
     # checks, the UoW transactions, and the audit-evidence wiring for
@@ -268,7 +264,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # helpers whose only purpose is to drop the mutation count below
     # the ceiling. Same class as the C02/C04 baselines.
     "app/src/modules/expedientes/application/anexos/service.py": (
-        BaselineEntry(sites=116, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=114, target=100, target_date="2027-02-13")
     ),
     # R07 (#276): RegisterSuministradorService carries the tree
     # invariant check, the parent-existence lookup and the
@@ -276,7 +272,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # baselines; splitting would break the load/tree-check/commit
     # sequence.
     "app/src/modules/expedientes/application/register_suministrador/service.py": (
-        BaselineEntry(sites=127, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=123, target=100, target_date="2027-02-13")
     ),
     # Q01 (#231): CatalogsService is a thin layer over the storage
     # port, but each per-catalog branch (comerciales, cpv, ejercitos,
@@ -285,26 +281,25 @@ BASELINE: dict[str, BaselineEntry] = {
     # baselines; splitting would duplicate the permission/error
     # handling helpers.
     "app/src/modules/expedientes/application/catalogs/service.py": (
-        BaselineEntry(sites=129, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=126, target=100, target_date="2027-02-13")
     ),
     # E02 (#238): JsonCanonicalService renders the canonical E2E
     # envelope; the surface is small but the helper is shared with
     # future E03+ verticals, so ratcheting at 104 keeps the option
     # open. Same class as the C02/C04/R03/R07/Q01 baselines.
-    "app/src/modules/expedientes/application/json_canonical/service.py": (
-        BaselineEntry(sites=104, target=100, target_date="2027-02-13")
-    ),
+    # Issue #947: counter now skips docstrings; json_canonical/service.py
+    # is at 100, at the ceiling — entry removed (see comments above).
     # E04 (#240): OrdinalE2EService is a small DFS + cycle detector;
     # the surface is in the same ratchet class as the C02/C04/R03/R07
     # baselines (cycle walk + per-node check).
     "app/src/modules/expedientes/application/ordinal_e2e/command.py": (
-        BaselineEntry(sites=135, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=126, target=100, target_date="2027-02-13")
     ),
     # E07 (#243): E2ESessionService is a small state machine with
     # open/resume/close branches. Same ratchet class as the
     # C02/C04/R03/R07/Q01/E02/E04/E05/E06 baselines.
     "app/src/modules/expedientes/application/e2e_session/service.py": (
-        BaselineEntry(sites=128, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=126, target=100, target_date="2027-02-13")
     ),
     # W02 (#235): AutosaveRelatedService covers hitos, modificados and
     # anualidades inside one UoW. The three per-section validators and
@@ -312,7 +307,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # mutation count exceeds the ceiling because of the per-section
     # construction lines. Same class as C02/C04/R03/R07.
     "app/src/modules/expedientes/application/autosave_related/service.py": (
-        BaselineEntry(sites=166, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=164, target=100, target_date="2027-02-13")
     ),
     # H01 (#248): HpsService.submit builds the HpsSubmission from a frozen
     # dataclass, hashes (idempotency_key, payload) via blake2b for the
@@ -322,7 +317,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # path (deny / dedupe / submit / wrapper) adds to the structural
     # surface even after extracting helpers. Target = 100 by 2027-02-13.
     "app/src/modules/expedientes/application/hps/service.py": (
-        BaselineEntry(sites=108, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=105, target=100, target_date="2027-02-13")
     ),
     # M02 + M03 (#258 #259): Extractor.run_once handles each table with
     # watermark filtering, writes staging rows, and updates watermarks.
@@ -330,7 +325,7 @@ BASELINE: dict[str, BaselineEntry] = {
     # (dataclass, for row count) push the structural surface above the
     # 100-site ceiling on first contribution. Target = 100 by 2027-02-13.
     "app/src/modules/expedientes/migration/extractor.py": (
-        BaselineEntry(sites=137, target=100, target_date="2027-02-13")
+        BaselineEntry(sites=129, target=100, target_date="2027-02-13")
     ),
 }
 
@@ -362,12 +357,50 @@ class Measurement:
     sites: int
 
 
+def _docstring_node_ids(tree: ast.AST) -> set[int]:
+    """Return the ``id()`` of every ``ast.Constant`` ``str`` that is a docstring.
+
+    A docstring, per CPython's reference grammar, is the first
+    statement of a ``Module`` / ``FunctionDef`` / ``AsyncFunctionDef``
+    / ``ClassDef`` when that statement is ``Expr(value=Constant(str))``.
+    Anything else is a regular expression and counts.
+
+    Returning the set of node ids (not the nodes themselves) lets
+    ``_count_sites`` do a cheap membership check in its main loop
+    without re-walking the tree.
+    """
+    doc_ids: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        if not node.body:
+            continue
+        first = node.body[0]
+        if (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        ):
+            doc_ids.add(id(first.value))
+    return doc_ids
+
+
 def _count_sites(tree: ast.AST) -> int:
+    # Issue #947: skip docstrings so the ratchet doesn't reward deleting
+    # documentation. ``_docstring_node_ids`` returns the ids of every
+    # ``Constant`` ``str`` that is a docstring on its enclosing scope;
+    # the Constant branch below checks the set and only counts when the
+    # node is not a docstring.
+    doc_ids = _docstring_node_ids(tree)
     total = 0
     for node in ast.walk(tree):
         if isinstance(node, _MUTABLE_NODES):
             total += 1
-        elif isinstance(node, ast.Constant) and isinstance(node.value, (int, float, str, bool)):
+        elif (
+            isinstance(node, ast.Constant)
+            and isinstance(node.value, (int, float, str, bool))
+            and not (isinstance(node.value, str) and id(node) in doc_ids)
+        ):
             total += 1
         elif isinstance(node, ast.Call):
             total += len(node.args) + len(node.keywords)
