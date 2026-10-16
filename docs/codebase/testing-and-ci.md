@@ -4,17 +4,19 @@
 
 > Esta página rastrea `main`, que puede contener cambios sin liberar. Para la última versión liberada, véase la etiqueta correspondiente.
 
-Este repo separa el veredicto en **tres niveles** — PR, nightly y release — y cada nivel tiene un contrato propio. La superficie común está en `.github/workflows/ci.yml` (PR + nightly) y `.github/workflows/release.yml` (release); el contrato manual de los quality gates vive en `docs/gates.md`.
+Este repo separa el veredicto en **cinco niveles de disparo** sobre dos workflows — PR, post-merge, nightly, manual y release — y cada nivel tiene un contrato propio. La superficie común está en `.github/workflows/ci.yml` (PR + post-merge + nightly + manual) y `.github/workflows/release.yml` (release); el contrato manual de los quality gates vive en `docs/gates.md`.
 
 ## Mapa de niveles
 
 | Nivel | Workflow | Disparador | Jobs | Veredicto |
 |---|---|---|---|---|
 | **PR** | `.github/workflows/ci.yml` | `pull_request` (cualquier rama) | `pr-gate`, `quality`, `integration`, `security`, `codeql`, `required` | Branch protection exige `required` verde. |
-| **Nightly** | `.github/workflows/ci.yml` | `schedule` (cron diario) | `quality`, `integration`, `security`, `codeql`, `required` | Sin rama; alimenta el snapshot del quality report. |
+| **Post-merge** | `.github/workflows/ci.yml` | `push` a `branches: [main]` (red de seguridad tras el merge) | `quality`, `integration`, `security`, `codeql`, `required` | Misma matriz que la PR, sin `pr-gate` (su `if: github.event_name == 'pull_request'` lo excluye; el `if:` de los heavy jobs acepta `skipped` de `pr-gate`). Issue #857, PR-D. |
+| **Nightly** | `.github/workflows/ci.yml` | `schedule` (`cron: "0 3 * * *"`) | `quality`, `integration`, `security`, `codeql`, `required` | Sin rama; alimenta el snapshot del quality report. |
+| **Manual** | `.github/workflows/ci.yml` | `workflow_dispatch` | `quality`, `integration`, `security`, `codeql`, `required` | El mismo set de jobs que el push a `main`; útil para reproducir el veredicto sin abrir una PR. |
 | **Release** | `.github/workflows/release.yml` | `push tags: "v*"` | `preflight`, `mutation`, `e2e`, `publish`, `verify` | `verify` cierra la ratchet de provenance. |
 
-`schedule` y `workflow_dispatch` reusan los mismos jobs del PR (excepto `pr-gate`, que se salta por su `if: github.event_name == 'pull_request'`).
+`schedule`, `push` a `main` y `workflow_dispatch` reusan los mismos jobs del PR (excepto `pr-gate`, que se salta por su `if: github.event_name == 'pull_request'`). El `if:` de cada heavy job lista explícitamente los cuatro eventos y acepta `needs.pr-gate.result == 'skipped'` para no abortar la red de seguridad cuando `pr-gate` no corre.
 
 ## Nivel PR (`.github/workflows/ci.yml`)
 
@@ -24,7 +26,7 @@ Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.r
 |---|---|---|---|
 | `pr-gate` | `ubuntu-24.04` | `pr size`, `issue spec`, `walkthrough schema` | Llama a `scripts/check_pr_size.py`, `scripts/check_issue_spec.py` y `scripts/check_walkthrough_schema.py`. Solo corre si `event == pull_request`. |
 | `quality` | `ubuntu-24.04` | `install`, `format scripts`, `format`, `lint`, `typecheck`, `workflow gate`, `suites populated`, `tests`, `quality gates and indicators` | `pytest -c app/pyproject.toml --rootdir=app -m "not integration"`; al final, `scripts/quality_report.py`. |
-| `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | `pytest -c app/pyproject.toml --rootdir=app -m integration` (con `pytest-postgresql` resolviendo el DSN del host port efímero). |
+| `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | `pytest -c app/pyproject.toml --rootdir=app -m integration`. El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera`) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
 | `security` | — (workflow reutilizado, jobs `gitleaks`, `trivy-config`, `pip-audit`) | Escaneo estático y de dependencias | `gitleaks`, `trivy config`, `pip-audit`. |
 | `codeql` | `ubuntu-24.04` | Análisis estático de GitHub | Lenguajes: python, javascript. |
 | `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta `scripts/check_required_jobs.py` — es el agregador que la branch protection exige. |
@@ -33,7 +35,7 @@ Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.r
 
 Sólo corre en `pull_request`. Los tres gates son baratos y rechazan PRs que no deberían gastar minutos de runner:
 
-- `pr size`: rechaza PRs de más de 400 líneas (`additions + deletions`). Override imposible sin justificación en el cuerpo.
+- `pr size`: rechaza PRs de más de 400 líneas (`additions + deletions` = `MAX_CHANGED_LINES` en `scripts/check_pr_size.py`). La única exención es la etiqueta `size:exception` aplicada por el mantenedor (`SIZE_EXCEPTION_LABEL`, función `has_size_exception_label`); el cuerpo del PR no se lee. El modo local del mismo script no tiene exención: `El modo local no tiene excepción: reduzca el diff o parta el PR.`
 - `issue spec`: verifica que el cuerpo del PR cita una issue (Refs/Closes) y, si es una epic de walkthrough, que el bloque de spec está bien formado.
 - `walkthrough schema`: valida que cada `docs/03-aplicaciones/<app>/walkthrough-G*.json` cumple el esquema vigente.
 
@@ -55,13 +57,13 @@ Cobertura: el plugin `coverage` se retiró en #877; el `pytest-cov` ya no está 
 
 ### `integration` (Postgres + Alembic)
 
-El job arranca Postgres como service y aplica el esquema con `alembic upgrade head` antes de correr los tests. La fixture de tests/migrations (`tests/lanzadera/migrations/test_seed_migrations.py`) verifica el seed. El comando es `pytest -c app/pyproject.toml --rootdir=app -m integration`.
+El job arranca Postgres como service y aplica el esquema con `alembic upgrade head` antes de correr los tests. La fixture de tests/migrations (`tests/lanzadera/migrations/test_seed_migrations.py`) verifica el seed. El comando es `pytest -c app/pyproject.toml --rootdir=app -m integration`. El driver es `asyncpg` (no `psycopg2`) y no se usa `pytest-postgresql`: el DSN lo calcula y exporta el step `Resolve the DSN from the assigned host port` como se describe arriba.
 
 ## Level nightly
 
-El trigger `schedule` en `ci.yml` (línea 55) corre los mismos jobs `quality`, `integration`, `security`, `codeql` y `required`. La diferencia operacional es:
+El trigger `schedule` en `ci.yml` corre los mismos jobs `quality`, `integration`, `security`, `codeql` y `required`. La diferencia operacional es:
 
-- Sin `pr-gate` (su `if` lo excluye): las verificaciones baratas se duplican en `quality`/`workflow gate` así que no hay regresión de cobertura.
+- Sin `pr-gate` (su `if: github.event_name == 'pull_request'` lo excluye): las verificaciones baratas se duplican en `quality`/`workflow gate` así que no hay regresión de cobertura.
 - Snapshots de `scripts/quality_report.py` se acumulan para auditoría de tendencia (no se exponen en este repo; ver `docs/gates.md` §3).
 
 No hay un workflow nightly separado; el schedule vive en `ci.yml` a propósito para mantener una sola fuente de verdad.
