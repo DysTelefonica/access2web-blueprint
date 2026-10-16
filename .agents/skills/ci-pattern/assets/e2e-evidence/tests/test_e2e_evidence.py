@@ -210,6 +210,24 @@ class E2eEvidenceGateTests(unittest.TestCase):
                         "--exemption-section", "## Motivo de exclusion visual")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
+    def test_exemption_section_accepts_tilde(self) -> None:
+        # Discrepancia 3 del inventario #528 §5: el default del gate es
+        # la grafía sin tilde («## Exencion e2e»). Castellano peninsular
+        # prescribe «Exención» con tilde; un consumer que documente la
+        # exención con la grafía correcta debe pasar el gate con el
+        # default del parámetro, sin necesidad de configurar
+        # --exemption-section. El matching debe aceptar ambas grafías
+        # como equivalentes.
+        add_commit(self.repo, {"app/pages/Home.tsx": "// cambio de UI\n"},
+                   "ui change")
+        body = Path(self._tmp.name) / "pr-body-tilde.md"
+        body.write_text("## Exención e2e\n\nSolo cambia el texto de un "
+                        "label, sin lógica ni navegación nueva.\n",
+                        encoding="utf-8")
+        proc = run_gate(self.repo, "--head", "HEAD",
+                        "--pr-body-file", str(body))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

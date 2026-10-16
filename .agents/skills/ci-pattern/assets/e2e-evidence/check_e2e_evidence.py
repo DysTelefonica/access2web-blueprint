@@ -20,7 +20,10 @@ Parametros del consumer:
 - ``--e2e-pattern <glob>``: patron de ficheros de flujo e2e (default:
   ``*.spec.{ts,js,py}``); admite UN grupo ``{a,b,c}`` que se expande.
 - ``--exemption-section <string>``: seccion del cuerpo de la PR donde
-  se documenta la exencion (default: ``## Exencion e2e``).
+  se documenta la exencion (default: ``## Exención e2e``). La busqueda
+  es case-insensitive y tilde-tolerant: ``Exencion e2e`` y
+  ``Exención e2e`` casan como equivalentes (Refs #528, discrepancia 3
+  del inventario).
 
 Exit codes:
 
@@ -35,6 +38,7 @@ import fnmatch
 import re
 import subprocess
 import sys
+import unicodedata
 from pathlib import Path
 
 DEFAULT_UI_GLOBS = ["app/**", "web/**", "src/**", "pages/**",
@@ -113,15 +117,35 @@ def is_ui_path(path: str, ui_globs: list[str],
     return False
 
 
+def _normalize_header(s: str) -> str:
+    """Devuelve una forma diacritic-insensitive de ``s``.
+
+    Castellano peninsular prescribe «Exención» con tilde sobre la «o».
+    La busqueda de la seccion de exencion es tilde-tolerant para que
+    un consumer que documente la seccion como ``## Exencion e2e``
+    (sin tilde, grafia heredada) siga casando con el default
+    ``## Exención e2e`` y un consumer que use la grafia castellana
+    propia tambien, sin necesidad de configurar ``--exemption-section``
+    (Refs #528, discrepancia 3 del inventario).
+    """
+    nfkd = unicodedata.normalize("NFKD", s)
+    return "".join(c for c in nfkd if not unicodedata.combining(c))
+
+
 def has_exemption_section(body: str, section: str) -> bool:
     """True si el cuerpo de la PR tiene la seccion de exencion con
-    contenido no vacio."""
+    contenido no vacio. La busqueda es case-insensitive y tilde-
+    tolerant: ``## Exencion e2e`` y ``## Exención e2e`` se aceptan
+    como equivalentes (Refs #528, discrepancia 3 del inventario).
+    """
     lines = body.splitlines()
     in_section = False
+    target = _normalize_header(section).lower()
     for line in lines:
         stripped = line.strip()
         lowered = stripped.lower()
-        if lowered == section.lower() or lowered.startswith(section.lower() + " "):
+        normalized = _normalize_header(lowered)
+        if normalized == target or normalized.startswith(target + " "):
             in_section = True
             # El resto de la linea despues del titulo.
             after = stripped[len(section):].strip()
@@ -157,7 +181,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--pr-body-file", default=None,
                         help="Path al fichero con el cuerpo de la PR "
                              "(para verificar la seccion de exencion)")
-    parser.add_argument("--exemption-section", default="## Exencion e2e")
+    parser.add_argument("--exemption-section", default="## Exención e2e")
     args = parser.parse_args(argv)
 
     repo = Path(args.repo).resolve()

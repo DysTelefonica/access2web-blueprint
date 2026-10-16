@@ -404,5 +404,52 @@ class Cross(GateCase):
                          "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683")
 
 
+class PullRequestTypesListStyle(GateCase):
+    """`pull_request.types:` admite dos formas equivalentes de YAML
+    (lista en bloque y lista en flujo). El reader estructural del gate
+    debe producir el mismo veredicto para ambas. La forma en bloque
+    es la más común en workflows reales (#857 PR-B de BP) y el parser
+    debe soportarla igual que la forma en flujo (que ya pasaba)."""
+
+    BLOCK_TYPES = (
+        "on:\n"
+        "  pull_request:\n"
+        "    types:\n"
+        "      - opened\n"
+        "      - synchronize\n"
+        "      - reopened\n"
+    )
+    FLOW_TYPES = "on:\n  pull_request:\n    types: [opened, synchronize, reopened]\n"
+    TAIL = (
+        "  push:\n"
+        "    branches: [main]\n"
+        "jobs:\n"
+        "  build:\n"
+        "    name: build (${{ github.event_name }})\n"
+        "    steps:\n"
+        "      - " + PINNED + "\n"
+        "        run: |\n"
+        "          set -u\n"
+        "          exit \"$fail\"\n"
+    )
+
+    def test_block_style_parses_clean(self):
+        """La lista en bloque bajo `types:` no es 'unsupported construct':
+        el reader la acepta y el gate sale 0 sobre el mismo cuerpo que
+        sale 0 en la forma en flujo."""
+        got, out = self.run_gate(self.BLOCK_TYPES + self.TAIL)
+        self.assertEqual(got, 0, out)
+
+    def test_block_and_flow_yield_same_verdict(self):
+        """Dos workflows que difieren solo en la forma de `types:` deben
+        producir el mismo veredicto del gate: 'mismo resultado'."""
+        got_b, out_b = self.run_gate(self.BLOCK_TYPES + self.TAIL)
+        got_f, out_f = self.run_gate(self.FLOW_TYPES + self.TAIL)
+        self.assertEqual(
+            got_b, got_f,
+            f"block exit {got_b}: {out_b!r}\nflow exit {got_f}: {out_f!r}",
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
