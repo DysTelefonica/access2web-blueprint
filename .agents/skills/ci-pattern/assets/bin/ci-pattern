@@ -1997,7 +1997,6 @@ ADOPTION_GATES = {
     "required-jobs": "assets/required-jobs/check_required_jobs.py",
     "local-ci-parity": "assets/local-ci-parity/check_local_ci_parity.py",
     "workflow-policy": "assets/workflow-policy/check_workflow_policy.py",
-    "hr-matrix": "assets/hr-gate-matrix/check_hr_matrix.py",
 }
 ENV_ISOLATION_GATE = "assets/env-isolation/check_env_isolation.py"
 
@@ -2227,7 +2226,17 @@ def _referenced_governance_scripts(repo, refs, declared=()):
                 text = path.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            for match in token_re.finditer(text):
+            # #607: la fase 0 no cuenta como gobierno las rutas que solo
+            # viven en un comentario YAML. `_strip_comment` ya trata
+            # correctamente el `#` dentro de comillas (simples y dobles)
+            # y el `#` precedido de espacio/tab o a inicio de línea, así
+            # que una mención de prosa del estilo `# referencia
+            # app/migrations/env.py` se descarta sin tocar una invocación
+            # real en `run:` / `uses:` / `with:` / `paths:`. El
+            # comportamiento se cubre con dos tests en
+            # `PhaseZeroWorkflowCommentsTests` (S1 comentario, S2 run:).
+            cleaned = "\n".join(_strip_comment(line) for line in text.splitlines())
+            for match in token_re.finditer(cleaned):
                 found.add(match.group(1))
     for entry in refs.get("policy_entrypoints") or []:
         policy = repo / entry["path"]

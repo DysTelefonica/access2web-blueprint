@@ -51,8 +51,8 @@ ejecutable se registra `documented-only`, no como control.
 | Checks requeridos por evento | HR-30 | CI-enforced | check publicado desde schedule | workflow-policy gate | `assets/workflow-policy/` |
 | Verde obsoleto | HR-31 | CI-enforced | gate que lee datos mutables | comparación contra la rama base | `assets/required-jobs/` |
 | Baselines/allowlists editables por el PR | HR-15 | CI-enforced | relajación sin motivo | comparación contra la rama base | `assets/ratchet/` |
-| Dormant con policy file | HR-18 | CI-enforced | gate dormido sin candado | re-activación por review | `assets/hr-gate-matrix/` |
-| Todo control falla ante su violación | HR-32 | CI-enforced | gate sin fixture violador | receta en el meta-test | `assets/hr-gate-matrix/tests/test_gate_violations.py` |
+| Liveness de la medición (gates dormibles con policy file) | HR-18 | CI-enforced | medición degenerada (sujeto vacío o exit 2 falso) o gate dormible sin policy file con `target_date` | aplicar HR-3 (liveness) o declarar el policy file (parámetro 14) | `assets/host-readback/` (+ `assets/parameters.md` §Policy file) |
+| Todo control falla ante su violación | HR-32 | CI-enforced | control sin test de comportamiento que ejecute su lógica contra un fixture violador | añadir el test al propio control (mismo baremo que `deterministic-quality-harness`) | el test de comportamiento del propio control (`assets/<gate>/tests/`) |
 | Exenciones por identidad | HR-33 | CI-enforced | exención sin responsable | escaneo de documentos de gobierno | `assets/exemptions/` |
 | Deriva del host | HR-34 | CI-enforced | regla declarada sin readback | drift check de solo lectura | `assets/host-readback/` |
 | Evidencia de deploy por SHA | HR-10 | CI-enforced | evidencia sobre rama o variable global | gate de evidencia | `assets/deploy-evidence/` |

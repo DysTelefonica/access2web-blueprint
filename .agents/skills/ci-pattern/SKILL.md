@@ -5,7 +5,7 @@ license: Apache-2.0
 metadata:
   author: ardelperal
   version: "1.15.21"
-  last_verified: 2026-10-16
+  last_verified: 2026-10-15
   based_on: "auditoría issue→merge de ardelperal/APAP_WEB (épica ardelperal/APAP_WEB#935, 2026-09-29/30)"
   scope: ['universal', 'ops']
   auto_invoke: ['adopt the CI pattern in another repo', 'apply the CI pattern in a new repo', 'audit this CI pattern', 'review budget and chained PRs', 'SHA deploy evidence', 'CI adoption gate', 'porting guide']
@@ -28,12 +28,9 @@ El patrón combina siete piezas sobre un mismo repositorio:
    automatización.
 5. **Release con evidencia**: releases como tags semver anotados, hotfix con
    bump de PATCH y deploy inmediato, y post-mortem blameless tras todo
-   incidente de producción (HR-19 a HR-22).
-6. **Gobernanza de orquestación**: esperas resueltas por la jerarquía
-   determinista (mecanismo > script > IA), un worktree por actor concurrente,
-   prescripciones del orquestador verificadas en vivo, toolchains pineadas
-   para medir, read-back doble de settings y suite aislada del entorno local
-   (HR-23 a HR-28).
+   incidente de producción (HR-19 a HR-21).
+6. **Gobernanza de orquestación**: toolchains pineadas para medir y suite
+   aislada del entorno local (HR-26, HR-28).
 
 El catálogo destilado y el veredicto de gates viven en `references/`; los
 parámetros portables, en `assets/parameters.md`. La ubicación actual de los
@@ -147,9 +144,7 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
 - **HR-1 — Los gates `MUST` leer datos estructurados** (nombre de rama, etiquetas,
   campos de la API, campos del cuerpo del PR) y `MUST NOT` deducir nada de prosa,
   gestos ni etiquetas aplicadas tarde. (evidencia: R2; fricciones F-004, B4)
-- **HR-2 — Todo gate nuevo que toque producción `MUST` ejecutarse una vez real**
-  contra el entorno antes de darlo por terminado; ninguna prueba de escritorio lo
-  sustituye. (evidencia: R3; fricción B1)
+- **HR-2 retirada (2026-10-15)**
 - **HR-3 — Un gate `MUST` fallar en voz alta cuando no ha medido** y `MUST NOT`
   imprimir «OK» sin ejecución real detrás. (evidencia: R4; fricción A9; gate:
   `assets/workflow-policy/check_workflow_policy.py`)
@@ -163,9 +158,7 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   (evidencia: R5; F-001, B3; friccion F1 #396; enmienda
   DysTelefonica/team-skills#156, #396; gate:
   `assets/local-ci-parity/check_local_ci_parity.py`)
-- **HR-5 — Tras corregir el primer paso rojo de un job, el autor `MUST` reproducir
-  también todos los pasos posteriores** antes de empujar: el runner se detiene en
-  el primer fallo y los pasos posteriores nunca se han visto verdes. (R12; playbook regla 7)
+- **HR-5 retirada (2026-10-15)**
 - **HR-6 — Las etiquetas del PR `MUST` aplicarse en el comando de creación**
   (higiene del autor): aplicadas tarde, alguien tiene que reejecutar o empujar
   para que el gate lea el dato nuevo, y esa higiene `MUST NOT` tratarse como
@@ -176,11 +169,7 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   `<tipo>/<N>-<slug>`, el autor `MUST` verificar `closingIssuesReferences` tras
   crear el PR y `MUST NOT` escribir palabras de cierre en el título. (R2; B11; playbook reglas 3-4)
 - **HR-8 retirada (2026-10-15)**
-- **HR-9 — El agente `MUST NOT` mantener procesos vivos sondeando CI**: arme
-  el auto-merge —si el read-back de HR-27 confirma `allow_auto_merge`— y siga
-  con otra cosa; para verificar el re-disparo tras actualizar la rama use una
-  sonda a los dos minutos, nunca un bucle. Sin auto-merge verificado, aplique
-  la fila de §3 «auto-merge no disponible en el host» (jerarquía de HR-23).
+- **HR-9 retirada (2026-10-15)**
   (R14; vigías zombis del 2026-09-29)
 - **HR-10 — La evidencia de deploy o batería `MUST` registrarse sobre el SHA de la
   revisión desplegada** (estado de commit por SHA) y `MUST NOT` colgar de una
@@ -193,11 +182,7 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   (clasificación explícita, saneado y deduplicación por huella; el comentario de
   ocurrencia lleva el recuento y la segunda ocurrencia marca la etiqueta no
   protegida `friction:recurrent`). (R14; protocolo de mejora continua)
-- **HR-12 — Los registros acumulativos de varias sesiones se guardan sin
-  pérdida**: la regla vive en la documentación de `engram` (una observación
-  nueva por entrada; el upsert sustituye el contenido y destruye el
-  histórico) y este patrón no la duplica. (R9;
-  `references/fricciones.md`)
+- **HR-12 retirada (2026-10-15)**
 - **HR-13 — Los mensajes de un gate `MUST` describir la causa real** y, cuando el
   fallo depende de un dato que el autor no puede corregir, `MUST` decirlo y ofrecer
   una vía manual auditable. (R10; B4, B11)
@@ -265,45 +250,17 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   2017; `references/incidents.md`; decisión del operador, 2026-10-06;
   DysTelefonica/team-skills#322; gate: `assets/bin/ci-pattern adoption check
   --phase 5`)
-- **HR-22 — Cada deploy `MUST` llevar su playbook por release**
-  (`RELEASE-<TAG>.md`: build/push si aplica, apply, rollout, verificación y
-  rollback), y la imagen de rollback `MUST` capturarse antes de desplegar.
-  (incidente de pérdida de datos; `references/incidents.md`)
-- **HR-23 — Toda espera `MUST` diseñarse por la jerarquía determinista
-  mecanismo > script > IA**, con la disponibilidad de cada mecanismo
-  verificada por el read-back de HR-27: el auto-merge armado espera el CI,
-  `allow_update_branch` actualiza la rama, los required checks bloquean y los
-  workflows programados recuerdan sin sesión viva; donde no hay mecanismo, un
-  script versionado con deadline y fallback explícitos; la IA `MUST`
-  reservarse para juicios (disposiciones, conflictos de contenido, gobierno)
-  y la prohibición de procesos vivos de sondeo rige en HR-9. (épica
-  ardelperal/APAP_WEB#935; playbook regla 19; vigías zombis de la sesión cerrada, 2026-09-29)
-- **HR-24 — Todo actor concurrente `MUST` trabajar en su propio worktree**: dos
-  workers `MUST NOT` compartir un working tree ni una rama; la tarea delegada
-  lleva worktree y rama propios desde su encargo, y el trabajo abandonado se
-  reclama desde el estado real (git, PR, issue), no desde la memoria de la
-  sesión. (colisión de shared-checkout, 2026-10-01: un worker commiteó sobre
-  la rama del otro a mitad de vuelo)
-- **HR-25 — Las prescripciones del orquestador `MUST` verificarse en vivo antes
-  de ejecutarse**: SHA, conteos de pasos, rutas de tests y superficies
-  editables son hipótesis hasta que el worker las confirma contra el
-  repositorio real (`rev-parse`, preflight, inventario de ficheros) y
-  reutiliza lo que exista; `MUST NOT` ejecutarse un snapshot obsoleto ni
-  duplicar trabajo ya verificable. (vivid cuatro veces en el tramo final de la
-  épica: preflight con 19 vs 20 pasos, sección §15.8 inexistente, SHA de
-  slice-2 distinto, ruta de tests inexistente)
+- **HR-22 retirada (2026-10-15)**
+- **HR-23 retirada (2026-10-15)**
+- **HR-24 retirada (2026-10-15)**
+- **HR-25 retirada (2026-10-15)**
 - **HR-26 — Todo gate que compara números `MUST` medir con la toolchain
   versionada que lo juzga en CI** (pin de versiones en la stack de medición o
   re-medición por la toolchain del juez) y `MUST NOT` comparar una medición
   local con un baseline producido por otra versión: cobertura y baselines no
   son comparables entre toolchains. (baseline local 11503 vs runner 11559 por
   xdebug sin pinear; gate: `assets/workflow-policy/check_workflow_policy.py`)
-- **HR-27 — Tras cualquier PATCH de settings el resultado `MUST` confirmarse
-  con read-back doble con delay** y verificación del plan de la organización
-  antes de concluir: el API puede responder 200 OK y descartar en silencio
-  campos paywalled (`allow_auto_merge` en org free plan); un valor obsoleto en
-  la primera lectura no autoriza a repetir el PATCH en bucle.
-  (ardelperal/APAP_WEB#1150; única regla del read-back de settings)
+- **HR-27 retirada (2026-10-15)**
 - **HR-28 — El entorno de la suite `MUST` aislar del `.env` local del
   desarrollador, y el gate de aislamiento `MUST` declarar su dominio y fallar
   fuera de él**: un `.env` gitignored en la raíz filtra sus variables
@@ -354,8 +311,9 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   del control. Extiende a los controles fuera del harness la exigencia de
   `deterministic-quality-harness` de observar cada gate saliendo con `1` ante
   una violación real; no la sustituye ni la copia. (team-skills#136; derivada
-  de la lectura del código de origen, 2026-10-01; fricciones D7; gate:
-  `assets/hr-gate-matrix/tests/test_gate_violations.py`)
+  de la lectura del código de origen, 2026-10-01; fricciones D7; gate: el
+  test de comportamiento del propio control — ver
+  `assets/audit-issue-to-merge.md` bloque 2, fila HR-32)
 - **HR-33 — Toda exención de gate `MUST` concederse por identidad verificable**
   — actor verificado por el host **y** origen de la rama en el mismo
   repositorio que el gate juzga — y `MUST NOT` concederse por un prefijo de
@@ -394,37 +352,26 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   el ejecutable (`assets/host-readback/`). (team-skills#138; API del host
   de origen, 2026-10-01; fricciones D9)
 - **HR-35 retirada (2026-10-15)**
-- **HR-36 — Toda delegación `MUST` usar `references/delegation-template.md`,
-  y toda prescripción `MUST` llevar su comando de verificación**: el
-  orquestador llena cada bloque de la plantilla (repo, base y tip, worktree,
-  superficies editables, hechos en vivo) desde una lectura en vivo con el
-  comando y la salida estampados junto al dato y un `verified_at` en UTC; lo
-  que no tiene comando es hipótesis, y el worker la trata como tal: reporta
-  el desajuste y se detiene, nunca se adapta en silencio (HR-25). (repo
+- **HR-36 retirada (2026-10-15)**
+  el desajuste y se detiene, nunca se adapta en silencio. (repo
   equivocado en un encargo y superficies prescritas de memoria, 2026-10-02;
   hueco G10 del inventario de activos portable)
-- **HR-37 — Con un único mantenedor y cero aprobaciones requeridas, un diff
-  que toca rutas de alto riesgo —lista de globs mantenida como dato con la
-  misma forma del parámetro 5 («rutas sensibles»); la regla no nombra
-  rutas— `MUST` llevar en el cuerpo del PR un campo estructurado de evidencia
-  de revisión —lente, veredicto y referencia; el nombre del campo es dato del
-  parámetro 19—, validado por un gate, y `MUST NOT` aceptarse prosa libre
-  como evidencia**: sin segunda persona, la lente de revisión exigida por la
-  documentación es prosa que ningún gate lee, exactamente lo que HR-1
-  prohíbe. La regla no introduce aprobación obligatoria de una segunda
-  persona ni cambia el presupuesto de 400 líneas; la autoridad del
+- **HR-37 retirada (2026-10-15)**
   presupuesto y su excepción es de `repository-delivery-governance` (HR-10)
   y se referencia, no se copia. (auditoría issue→merge del consumer de
   origen, solo lectura, 2026-10-01: de los últimos 60 PRs fusionados, 60 de
   60 con autor y quien fusiona en la misma cuenta, 3 de 60 con alguna
   revisión registrada y 0 aprobaciones requeridas;
   DysTelefonica/team-skills#139; fricciones D10)
-Cada HR de esta lista está registrada en `references/hr-gate-matrix.json`
-(enforcement `gate` con asset+test, o `manual` con reason+issue) y el meta-gate
-`assets/hr-gate-matrix/check_hr_matrix.py` falla si una HR queda sin registro o
-cita un gate inexistente.
+Cada HR de esta lista figura en este SKILL.md y su clase de enforcement y la
+evidencia actual están registradas en el bloque 2 de
+`assets/audit-issue-to-merge.md` (matriz de enforcement con la clase
+`documented-only` / `locally-validated` / `CI-enforced` / `host-enforced` /
+`manual` y la ruta del activo que la sostiene; la antigua matriz
+`references/hr-gate-matrix.json` y su meta-gate
+`assets/hr-gate-matrix/check_hr_matrix.py` se retiraron por #513/#540).
 
-Las HR-6, HR-7, HR-14 y HR-31 están gobernadas por el gate
+Las HR-6 y HR-7 y HR-14 y HR-31 están gobernadas por el gate
 `assets/pr-contract/check_pr_contract.py` (etiquetas obligatorias, Closes
 solo en la punta de cadena, excepciones como dato, commits convencionales
 sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
@@ -449,8 +396,8 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
   `MUST NOT` deducirse de heurísticas de listas de runs, índices de array o
   HEAD de la rama por defecto; si la fuente de resolución no está
   disponible, el gate `MUST` fallar en voz alta nombrándolo — nunca caer a
-  un sustituto aproximado. (ardelperal/APAP_WEB#1221: el gate resolvió la
-  revisión previa por head_sha `[0]` de la lista de runs y bloqueó todos
+  un sustituto aproximado. (ardelperal / APAP_WEB#1221: el gate resolvió la
+  revisión previa por head_sha `[0]` de la lista de runs / bloqueó todos
   los deploys; complementa HR-10 —dónde se registra el veredicto— sin
   duplicarla: esta fija cómo se resuelve la entrada)
 - **HR-41 — Toda exención de bootstrap (revisión desplegada antes de que
@@ -467,7 +414,7 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
   confirmed seeded» sin comando detrás es un defecto del runbook, no un
   estado de producción. (runbook del gate de release asumía la fila
   `e2e@apap.local` que producción había perdido —
-  ardelperal/APAP_WEB#1223; gobierna el runbook, complementa HR-2/HR-3/HR-13
+  ardelperal / APAP_WEB#1223; gobierna el runbook / complementa HR-3 / HR-13
   sin duplicarlas)
 - **HR-43 — La salida de un agregador verde `MUST` listar los jobs saltados
   con el marcador que los autoriza**, y un agregador que no distinga medido
@@ -475,14 +422,14 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
   requeridos no midieron (carril docs-only, marcador fail-closed) sin
   publicar qué miembros midieron y cuáles saltaron es un falso verde
   indistinguible del real. (auditoría del CI de
-  `ardelperal/APAP_WEB#1219`, clase F1; complementa HR-3 sin duplicarla)
+  `ardelperal / APAP_WEB#1219` / clase F1; complementa HR-3 sin duplicarla)
 - **HR-44 — Toda edición material de una skill `MUST` incrementar
   `metadata.version`** (parche para reglas y evidencia, menor para piezas
   de ola), y una sync de espejo `MUST` partir de un SHA resuelto de la
   fuente (`fetch` + `rev-parse`) verificando el readback contra ese SHA —
-  nunca contra un working tree. (la v0.3 ganó HR-29/30/31 sin bump y el
+  nunca contra un working tree. (la v0.3 ganó HR-29 / 30 / 31 sin bump / el
   espejo del consumer quedó desincronizado; segunda deriva por sync desde
-  checkout atrasado: `ardelperal/APAP_WEB#1211`)
+  checkout atrasado: `ardelperal / APAP_WEB#1211`)
 - **HR-45 — La adopción del patrón se gobierna por contrato de datos y gate
   por fase**: el consumer declara su adopción en
   `.github/ci-pattern-adoption.json` (esquema versionado en `assets/adoption/`)
@@ -524,12 +471,12 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
 - **HR-51 retirada (2026-10-15)**
 - **HR-52 retirada (2026-10-15)**
 - **HR-53 — Toda issue se triagea por causa raíz antes de tocar código y se cierra contra un test con nombre.** La clasificación `MUST` ser exactamente una de cinco clases —(A) cubierta por un cambio en curso, nombrando el cambio y su test; (B) duplicada de una clase conocida, nombrando la issue canónica; (C) bug nuevo, asignado a su clúster de causa raíz; (D) feature; (E) poco clara, se pregunta al autor sin suponer—, y el juicio de clasificación, la unicidad de raíz y la prueba de sobreingeniería son `documented-only`, sin gate (HR-34). Dos o más issues con la misma raíz se resuelven con UN solo fix en la raíz que las cierra todas, cada una con su test con nombre. Un PR que cierra una issue `MUST` nombrar el test que demuestra el comportamiento corregido, y ese test `MUST` existir en el árbol: un «debería estar arreglado» no cierra nada, y una issue que mezcla dos fallos de los que solo se resuelve uno no se cierra —se comenta qué se resolvió y qué sigue pendiente—. Si el fix añade un estado, un verbo, un flag, un gate o una representación paralela de un dato existente, el PR `MUST` justificar por qué no basta con borrar o relajar algo. Un gate publicado sin el cambio que permite cumplirlo bloquea a todos sus consumers y es incidente, no fricción (HR-21). El mecanismo que describe una issue es una hipótesis y el síntoma es la evidencia: `MUST` reproducirse el síntoma antes de implementar, y un test escrito contra el mecanismo descrito que pasa en main sin cambios invalida el diagnóstico, no la issue. (decisión del operador, 2026-10-06; DysTelefonica/team-skills#334; gate: `assets/pr-contract/check_pr_contract.py`)
-- **HR-54 — La cadena de PRs se declara como dato y el enlace de la issue no admite mezclas.** Todo PR `MUST` declarar la sección **Chain Context** como dato: los que llevan `chain:partial` y **todo PR cuya base es la rama por defecto** —la punta de una cadena o un PR suelto, que el gate no distingue por el cuerpo y por eso exige la sección a los dos—; un PR suelto declara `position: 1/1`, `depends-on: none` y `follow-up: none`. La sección lleva los campos `chain`, `position` (N/M), `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget` (líneas añadidas + borradas / 400) y un diagrama que marca el PR actual con exactamente un `📍`: el gate verifica que `base` coincida con el `baseRefName` del PR, que `position` y `review-budget` tengan forma N/M y que haya un solo marcador. El cuerpo `MUST NOT` cerrar y referenciar la MISMA issue a la vez (`Closes #N` junto a `Refs #N`) ni enlazar una issue de otro repositorio: el enlace apunta al repositorio del PR. El presupuesto de revisión limita **cómo se corta** el trabajo, nunca el código: queda prohibido quitar comentarios, líneas en blanco, documentación o tests, y comprimir código, para caber; si ninguna pasada honesta de corte cabe, se entrega el mejor corte con `size-exception-reason:` (HR-8), y el borrado íntegro de un fichero es un caso válido de esa excepción. Cada commit es una unidad entregable —comportamiento con sus tests y su documentación— convertible en un PR de la cadena, y el PR declara su frontera de reversión (qué desaparece al revertirlo). Las ramas publicadas se sincronizan con `git merge origin/main`, **nunca** con rebase; un PR solo está listo con el CI en verde sobre su último commit, y si el consumer no ejecuta CI en PRs cuya base no es main la receta documenta cómo forzarlo (push, no retarget); una cadena en conflicto con main no permite declarar lista su punta. Los checks obligatorios se leen de la política real del host (`required_checks` y su clase, #303), no de la costumbre: si su obligatoriedad se desconoce, el PR no está listo para mergear. (gate: la sección Chain Context, el `base` contra `baseRefName`, el marcador único y el enlace sin mezclas, en `assets/pr-contract/check_pr_contract.py`; **también es gate la regla 7 cuando el contrato la declara**: con `tracker_branch` en el contrato del host, el detective post-push (`assets/runner-controls/check_push_compliance.py`, HR-49) exige que el PR mergeado en una rama protegida tenga esa rama como cabeza —lo que llega a `main` viene del PR del tracker— y un `tracker_branch` vacío falla cerrado; documented-only, sin gate (HR-34): la elección entre los dos modelos de cadena y sus compromisos —**apilada hacia main** (cada PR con su base en el anterior; no exige contrato y mergea PR a PR, a cambio de que el orden y las bases solo se lean del cuerpo) o **rama de feature con PR tracker en borrador** (concentra la revisión en un PR y exige declarar su rama en el contrato del host, a cambio de un paso más de gobierno)—, la honestidad del corte, la unidad de commit con su frontera de reversión, la sincronía con main y la lectura de los checks obligatorios son juicio verificable en revisión, no en binario.) (decisión del operador, 2026-10-06; DysTelefonica/team-skills#333; gate: `assets/pr-contract/check_pr_contract.py`)
+- **HR-54 — La cadena de PRs se declara como dato y el enlace de la issue no admite mezclas.** Todo PR `MUST` declarar la sección **Chain Context** como dato: los que llevan `chain:partial` y **todo PR cuya base es la rama por defecto** —la punta de una cadena o un PR suelto, que el gate no distingue por el cuerpo y por eso exige la sección a los dos—; un PR suelto declara `position: 1/1`, `depends-on: none` y `follow-up: none`. La sección lleva los campos `chain`, `position` (N/M), `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget` (líneas añadidas + borradas / 400) y un diagrama que marca el PR actual con exactamente un `📍`: el gate verifica que `base` coincida con el `baseRefName` del PR, que `position` y `review-budget` tengan forma N/M y que haya un solo marcador. El cuerpo `MUST NOT` cerrar y referenciar la MISMA issue a la vez (`Closes #N` junto a `Refs #N`) ni enlazar una issue de otro repositorio: el enlace apunta al repositorio del PR. El presupuesto de revisión limita **cómo se corta** el trabajo, nunca el código: queda prohibido quitar comentarios, líneas en blanco, documentación o tests, y comprimir código, para caber; si ninguna pasada honesta de corte cabe, se entrega el mejor corte con `size-exception-reason:` (HR-8), y el borrado íntegro de un fichero es un caso válido de esa excepción. Cada commit es una unidad entregable —comportamiento con sus tests y su documentación— convertible en un PR de la cadena, y el PR declara su frontera de reversión (qué desaparece al revertirlo). Las ramas publicadas se sincronizan con `git merge origin/main`, **nunca** con rebase; un PR solo está listo con el CI en verde sobre su último commit, y si el consumer no ejecuta CI en PRs cuya base no es main la receta documenta cómo forzarlo (push, no retarget); una cadena en conflicto con main no permite declarar lista su punta. Los checks obligatorios se leen de la política real del host (`required_checks` y su clase, #303), no de la costumbre: si su obligatoriedad se desconoce, el PR no está listo para mergear. (gate: la sección Chain Context, el `base` contra `baseRefName`, el marcador único y el enlace sin mezclas, en `assets/pr-contract/check_pr_contract.py`; **también es gate la regla 7 cuando el contrato la declara**: con `tracker_branch` en el contrato del host, el detective post-push (`assets / runner-controls / check_push_compliance.py` / HR-49) exige que el PR mergeado en una rama protegida tenga esa rama como cabeza —lo que llega a `main` viene del PR del tracker— y un `tracker_branch` vacío falla cerrado; documented-only, sin gate (HR-34): la elección entre los dos modelos de cadena y sus compromisos —**apilada hacia main** (cada PR con su base en el anterior; no exige contrato y mergea PR a PR, a cambio de que el orden y las bases solo se lean del cuerpo) o **rama de feature con PR tracker en borrador** (concentra la revisión en un PR y exige declarar su rama en el contrato del host, a cambio de un paso más de gobierno)—, la honestidad del corte, la unidad de commit con su frontera de reversión, la sincronía con main y la lectura de los checks obligatorios son juicio verificable en revisión, no en binario.) (decisión del operador, 2026-10-06; DysTelefonica/team-skills#333; gate: `assets/pr-contract/check_pr_contract.py`)
 - **HR-55 — El `AGENTS.md` de un consumer propagado es título + bloque propagado + como máximo una sección local.** Tras la adopción (#341), el fichero `MUST` constar de: una línea de título, el bloque entre marcas `personal-skills:slice:<consumer> @ v…` cuyo cuerpo, byte a byte, tiene el sha256 `slice_block_sha256` declarado en `.team-skills.yaml`, y —como mucho— UNA sección local `## ` después del cierre. Cualquier texto antes del bloque (que no sea el título), entre el cierre y la sección, o una segunda sección `MUST` moverse a `docs/` o a esa única sección local; los enlaces de la sección local `MUST` existir en el repo (incluidos los skills del tier en `.agents/skills/`). La activación NO es autoselección: depende de la declaración explícita `agents_md: "propagated"` en el contrato de adopción. Sin declaración, el gate informa en `stderr` que la estructura todavía no se exige y sale 0 (la adopción previa no se rompe); con declaración aplica completo, aunque el AGENTS no lleve el bloque. El fail-open de que ningún consumer se declare lo cierra por fuera el doctor de flota, que exige el bloque a todo consumer con `governance: ci-pattern` en el registro, aunque no lo declare. (decisión del operador, 2026-10-06; DysTelefonica/team-skills#341; gate: `assets/bin/ci-pattern` (`_check_agents_structure`, `adoption check --phase 3` / `--phase 5`) con fixtures en `assets/adoption/tests/test_adoption_check.py`)
 - **HR-56 — Lo que compone la propagación no lleva nombres propios, rutas personales ni texto de mantenimiento.** Partials, fragmentos y bloques generados nombran roles («cualquier mantenedor», «el autor del PR»), nunca logins ni personas, y citan rutas instaladas (`.agents/skills/<skill>/…`), nunca `personal/<usuario>/…` ni rutas de usuario como `C:\Users\…` o `/home/…`. Las instrucciones de mantenimiento del catálogo viven entre `<!-- maintenance:begin -->` y `<!-- maintenance:end -->` y el compositor las excluye: lo que no se propaga no está sujeto al control. El gate `MUST` fallar nombrando `fichero:línea` ante cualquier login de `maintainers` en `fleet/registry.json`, ruta `personal/<x>/` o ruta de usuario en la región propagable; sin esa lista declarada el control falla también, porque sin dato no hay medición (HR-3). (decisión del usuario, 2026-10-07; DysTelefonica/team-skills#358; gate: `assets/bin/ci-pattern` (`_check_slice_content`), exclusión en `scripts/lib/compose-slice.ps1`, fixtures en `assets/adoption/tests/test_adoption_check.py`)
-- **HR-57 — Una migración versionada ya en la rama base no se renombra, borra ni edita.** En consumers con migraciones SQL versionadas el runner registra las aplicadas por nombre de fichero: renombrar, mover, borrar o editar una migración ya aplicada hace que el próximo deploy re-ejecute su DDL o la pierda (#431). El gate compara el árbol de migraciones de HEAD contra la rama base (`--base`, `origin/main` por defecto) sobre `--migrations-dir` y `--pattern` declarados: **rename**, **delete** y **edit** son rojos; las migraciones nuevas requieren prefijo numérico **estrictamente mayor** al máximo de la base; los prefijos ya duplicados en la base se toleran, los nuevos duplicados se rechazan. Exit codes: 0 limpio · 1 hallazgos · 2 fail-closed (no es git, dir ausente, patrón sin matches, base no resuelta). El gate se distribuye como asset copiado y `MUST NOT` invocar la CLI del patrón como subproceso (lección fork-bomb #342); el recursado se cierra por identidad con `CI_PATTERN_SMOKE_TESTS` (HR-45/46/48). (decisión del usuario, 2026-10-12; DysTelefonica/team-skills#431; gate: `assets/migrations-immutable/check_migrations_immutable.py`, fixtures en `assets/migrations-immutable/tests/test_migrations_immutable.py` y `test_migrations_immutable_new.py`)
+- **HR-57 — Una migración versionada ya en la rama base no se renombra, borra ni edita.** En consumers con migraciones SQL versionadas el runner registra las aplicadas por nombre de fichero: renombrar, mover, borrar o editar una migración ya aplicada hace que el próximo deploy re-ejecute su DDL o la pierda (#431). El gate compara el árbol de migraciones de HEAD contra la rama base (`--base`, `origin/main` por defecto) sobre `--migrations-dir` y `--pattern` declarados: **rename**, **delete** y **edit** son rojos; las migraciones nuevas requieren prefijo numérico **estrictamente mayor** al máximo de la base; los prefijos ya duplicados en la base se toleran, los nuevos duplicados se rechazan. Exit codes: 0 limpio · 1 hallazgos · 2 fail-closed (no es git, dir ausente, patrón sin matches, base no resuelta). El gate se distribuye como asset copiado y `MUST NOT` invocar la CLI del patrón como subproceso (lección fork-bomb #342); el recursado se cierra por identidad con `CI_PATTERN_SMOKE_TESTS` (HR-45 / 46 / 48). (decisión del usuario, 2026-10-12; DysTelefonica/team-skills#431; gate: `assets/migrations-immutable/check_migrations_immutable.py`, fixtures en `assets/migrations-immutable/tests/test_migrations_immutable.py` y `test_migrations_immutable_new.py`)
 - **HR-58 — Toda PR que toca una superficie de UI lleva su evidencia e2e o una exención justificada.** En consumers web, una PR que cambia UI sin flujo e2e degrada la promesa «cada cambio de UI trae su prueba de navegador» a una norma de revisión. El gate `MUST` detectar el cambio de UI por globs declarables (`--ui-glob`) menos una lista blanca de rutas no-UI (`--non-ui-prefix`, detección invertida), y exigir en el rango base..head un fichero de flujo e2e **añadido o actualizado** bajo `--e2e-dir` matcheando `--e2e-pattern`, o una sección de exención (`--exemption-section`) **no vacía** en el cuerpo de la PR (`--pr-body-file`): una sección vacía no exonera. Exit codes: 0 sin UI, con e2e o con exención justificada · 1 UI sin evidencia ni exención · 2 fail-closed (no es git, git falla, cuerpo inexistente). El gate se distribuye como asset copiado y `MUST NOT` invocar la CLI del patrón como subproceso (lección fork-bomb #342); es detectivo —vale en repos privados Free sin protección de rama ni rulesets— y no usa funciones de pago del host. La invariante propagada vive en el partial `web.md` (§Evidencia e2e por PR). (decisión del usuario, 2026-10-12; DysTelefonica/team-skills#425, piloto ardelperal/APAP_WEB#1487; gate: `assets/e2e-evidence/check_e2e_evidence.py`, fixtures en `assets/e2e-evidence/tests/test_e2e_evidence.py`)
-- **HR-61 — El perfil de runners se declara, gatea y mantiene en ci-pattern.yaml.** El parámetro `P51_runners_profile` (`hosted` default | `self-hosted` para repos privados Free) gobierna el pool de runners: con `self-hosted`, todo job de `pull_request` o `push` debe correr en el pool de `P52_runners_pool_labels` o tener una excepción `P53_hosted_exceptions` con motivo no vacío. Sin perfil declarado, el gate es inocuo (retrocompatibilidad). Un job `runs-on` dinámico (`${{ ... }}`) o sin `runs-on:` es hallazgo, no silencio. El gate es fail-closed (HR-3): `ci-pattern.yaml` ausente o P51 inválido → exit 2. (gate: `assets/runner-profile/check_runner_profile.py`)
+- **HR-61 — El perfil de runners se declara, gatea y mantiene en ci-pattern.yaml.** El parámetro `P51_runners_profile` (`hosted` default | `self-hosted` para repos privados Free) gobierna el pool de runners: con `self-hosted`, todo job de `pull_request` o `push` debe correr en el pool de `P52_runners_pool_labels` o tener una excepción `P53_hosted_exceptions` con motivo no vacío. Sin perfil declarado, el gate es inocuo (retrocompatibilidad). Un job `runs-on` dinámico (`${{... }}`) o sin `runs-on:` es hallazgo, no silencio. El gate es fail-closed (HR-3): `ci-pattern.yaml` ausente o P51 inválido → exit 2. (gate: `assets/runner-profile/check_runner_profile.py`)
 - **HR-62 — La adopción del perfil self-hosted incluye guía ARM64 y alerta de consumo.** No es ejecutable en CI: documenta la compatibilidad del pool ARM64 (setup-python, setup-node, Playwright/Chromium, Postgres) y el snippet de alerta temprana de consumo de minutos hosted. (decisión del operador; guía en `references/runner-profile.md` y Fase 4 de porting-guide.md)
 
 ## §3 Decision Gates
@@ -543,29 +490,29 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
 | El rojo exige un push de corrección | Empuje y deje que la CI se dispare sola; `rerun --failed` solo para transitorios; `workflow_dispatch` solo cuando el workflow cambió: si publica checks requeridos, resuelva el PR desde el SHA y evalúelo completo. |
 | Va a disparar un evento manual o programado sobre la rama de un PR | Solo si el job evalúa el PR completo; si no, publique bajo otro nombre de contexto o falle — nunca un check requerido en verde sin evaluación (HR-30). |
 | El cuerpo del PR, sus etiquetas o la issue enlazada cambian después del verde | Reejecute el gate si el host dispara algún evento para ese dato; si no lo dispara (cambio en la issue enlazada), reevalúe en el momento del merge antes de dar el verde por válido (HR-31). |
-| El read-back de HR-27 muestra `allow_auto_merge` descartado (plan gratuito) y el verde del PR depende de un gate requerido | Auto-merge no disponible: aplique la jerarquía de HR-23 sin él —required checks bloquean, workflow programado recuerda, script versionado con deadline como último recurso— y haga el merge cuando el CI esté verde; un verde por auto-merge sin verificación no existe (HR-39). |
+| El read-back7 muestra `allow_auto_merge` descartado (plan gratuito) y el verde del PR depende de un gate requerido | Auto-merge no disponible: aplique la jerarquía sin él —required checks bloquean, workflow programado recuerda, script versionado con deadline como último recurso— y haga el merge cuando el CI esté verde; un verde por auto-merge sin verificación no existe (HR-39). |
 | Un rojo de avisos de dependencias aparece en un PR que no toca los manifiestos (parámetro 22) | Clasifíquelo como rojo externo: abra una issue con la evidencia (IDs de ejecución) y no lo corrija en ese PR; el gate corre programado sobre la rama por defecto y en los PRs que tocan los manifiestos (HR-39). |
 | Un gate rojo cuya causa posible es un prerrequisito del runbook (fila, usuario, flag, secreto) | Verifique el prerrequisito con el comando del runbook antes de diagnosticar código; una premisa sin comando detrás es un defecto del runbook (HR-42). |
 | Va a declarar un control —gate, auditoría, workflow programado o compensatorio | Primero el fixture violador: sin test de comportamiento que observe su veredicto de fallo no se declara como control; se clasifica `documented-only` hasta tenerlo (HR-32). |
 | Llega un PR de reversión creado por la plataforma (el botón Revert genera su propia rama) | Admítalo por identidad verificable — actor y origen en el mismo repositorio, según el parámetro 16 — nunca por el patrón de su nombre; su trazabilidad es el PR que revierte, no una issue nueva: el PR de reversión referencia ese PR (HR-33). |
 | Llega una rama de propagación o de bot (actualización de dependencias, propagación del catálogo) | Admítala por identidad verificable — actor exento Y rama del mismo repositorio, según el parámetro 16; su trazabilidad es el manifiesto o registro que la rama actualiza — y exija que esa identidad se pueda verificar en el consumer; el patrón del nombre por sí solo no admite ni rechaza (HR-33). |
-| Falla un paso del job de lint | Ejecute el preflight completo antes de empujar, no solo el paso roto (HR-5). |
+| Falla un paso del job de lint | Ejecute el preflight completo antes de empujar, no solo el paso roto. |
 | Va a añadir, renombrar o eliminar un job del workflow | Actualice los tres conjuntos en el mismo PR — jobs del workflow, `needs` del agregador y conjunto conocido por el evaluador; una clave de `needs` desconocida es violación, no se ignora (HR-29). |
 | Aparece una fricción que ninguna regla cubre | Aplique el protocolo de HR-11: registrar con evidencia, arreglar por el pipeline, destilar en regla. |
 | El PR sube una baseline o una entrada a un manifest declarado | El gate compara la entrada contra la copia de la rama base; la relajación solo pasa con su campo de datos de motivo y referencia, validado por el propio gate (HR-15). |
-| Va a guardar un registro acumulativo entre sesiones | Sin clave de upsert: una observación nueva por entrada (HR-12). |
+| Va a guardar un registro acumulativo entre sesiones | Sin clave de upsert: una observación nueva por entrada. |
 | Debe reiniciar la aplicación de producción | Use el procedimiento del runbook de deploy; el reinicio directo redespliega el HEAD de la rama por defecto sin gate de evidencia. |
 | Hereda un proceso vivo (vigía) de otra sesión | Verifique qué hace leyendo su script; cumplido su propósito, termínelo; inesperado, deténgase y reporte su contenido. |
 | Se declara un incidente de producción | Hotfix: issue `type:bug` → fix en main → deploy inmediato → release PATCH → post-mortem blameless con action items como issues (HR-20, HR-21). |
-| Va a esperar un resultado de CI o de otro actor | Aplique la jerarquía de HR-23: cola de merge nativa (auto-merge del host), required checks, workflow programado; solo si no hay mecanismo, un script versionado con deadline y fallback; nunca un vigía IA. |
-| Va a delegar una tarea que correrá en paralelo con otra | Asígnele worktree y rama propios en el encargo (HR-24); nunca dos actores sobre el mismo working tree. |
-| Va a emitir un encargo de delegación | Llene `references/delegation-template.md` bloque a bloque desde lectura en vivo, con comando, salida y `verified_at`; una prescripción sin comando es hipótesis, no hecho (HR-36, HR-25). |
-| Recibe SHA, conteos, rutas o superficies prescritos por el orquestador | Verifíquelos en vivo antes de ejecutar y reutilice lo que exista (HR-25). |
+| Va a esperar un resultado de CI o de otro actor | Aplique el modelo gentle-ai: required checks en la PR, sin strict; push a main más un nightly diario como red de seguridad; nunca un vigía IA. |
+| Va a delegar una tarea que correrá en paralelo con otra | Asígnele worktree y rama propios en el encargo ; nunca dos actores sobre el mismo working tree. |
+| Va a emitir un encargo de delegación | Llene `references/delegation-template.md` bloque a bloque desde lectura en vivo, con comando, salida y `verified_at`; una prescripción sin comando es hipótesis, no hecho. |
+| Recibe SHA, conteos, rutas o superficies prescritos por el orquestador | Verifíquelos en vivo antes de ejecutar y reutilice lo que exista. |
 | Va a comparar una medición local contra un baseline o gate de CI | Mida con la toolchain pineada del juez o re-mida con ella; sin pin no hay comparación válida (HR-26). |
-| Un PATCH de settings respondió 200 pero el read-back no muestra el valor | Lea de vuelta dos veces con delay y verifique el plan de la org: el campo puede ser paywalled y descartarse en silencio (HR-27). |
+| Un PATCH de settings respondió 200 pero el read-back no muestra el valor | Lea de vuelta dos veces con delay y verifique el plan de la org: el campo puede ser paywalled y descartarse en silencio. |
 | Tests rojos solo en local y verdes en CI | Sospeche del `.env` local filtrando variables a `Settings`; aísle el entorno de tests o registre el rojo como ambiental (HR-28). |
-| Va a cortar un release | Tag semver anotado + GitHub Release `Latest` + notas concisas + playbook `RELEASE-<TAG>.md` con imagen de rollback capturada antes de desplegar (HR-19, HR-22). |
-| El diff toca rutas de alto riesgo (parámetro 18) y no hay segundo revisor | El cuerpo del PR lleva el campo de evidencia de revisión (parámetro 19) con lente, veredicto y referencia, validado por el gate; la prosa libre no cuenta como evidencia (HR-37). |
+| Va a cortar un release | Tag semver anotado + GitHub Release `Latest` + notas concisas + playbook `RELEASE-<TAG>.md` con imagen de rollback capturada antes de desplegar (HR-19). |
+| El diff toca rutas de alto riesgo (parámetro 18) y no hay segundo revisor | El cuerpo del PR lleva el campo de evidencia de revisión (parámetro 19) con lente, veredicto y referencia, validado por el gate; la prosa libre no cuenta como evidencia. |
 
 ## §4 Execution Steps
 
@@ -600,7 +547,7 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
    adapte los scripts de referencia (ubicación declarada en `assets/parameters.md`),
    configure la protección de rama (checks requeridos, sin force-push) y el
    preflight canónico que lee los pasos del job de lint del propio workflow.
-5. **Valide en real.** Ejecute de verdad cada gate que toque producción (HR-2) y
+5. **Valide en real.** Ejecute de verdad cada gate que toque producción  y
    complete una cadena de PRs encadenados de extremo a extremo con CI en cada
    tramo antes de declarar el patrón adoptado.
 
@@ -620,16 +567,16 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled).
    destino se gobierna en DysTelefonica/team-skills#279).
 2. Worktree dedicado y rama propia generada según el ruleset del repo
    (parámetro 1). Cuando la tarea corre en paralelo con otro actor, el
-   worktree es propio y exclusivo (HR-24). El encargo al worker se llena
-   con `references/delegation-template.md` (HR-36).
-3. Preflight completo en local antes de cada push (HR-4, HR-5).
+   worktree es propio y exclusivo. El encargo al worker se llena
+   con `references/delegation-template.md`.
+3. Preflight completo en local antes de cada push (HR-4).
 4. PR con todas las etiquetas en el comando de creación; `Closes #<issue>` solo
    en la punta de la cadena (HR-6, HR-7).
 5. Verifique `closingIssuesReferences` tras crear el PR; si no aparece, declare
    la excepción en el cuerpo y cierre a mano tras el merge (HR-7).
 6. CI en vuelta: clasifique rojos solo tras identificar el paso que falla vía
-   API; empuje los fixes; rerun solo para transitorios (HR-9, gates del §3).
-7. Merge con auto-merge —si el read-back de HR-27 confirma
+   API; empuje los fixes; rerun solo para transitorios (gates del §3).
+7. Merge con auto-merge —si el read-back7 confirma
    `allow_auto_merge`; si no, merge manual tras el verde por la fila de §3— y
    commit de fusión, sin borrar la rama remota; con `strict`, actualice la
    rama con la secuencia determinista de HR-17.
@@ -683,7 +630,7 @@ con los actores y patrones concretos como datos del parámetro 16:
    causa raíz completa vive en su doc dedicado, nunca dentro de las notas (HR-21).
 4. Ejecute el playbook de deploy: `RELEASE-<TAG>.md` con build/push si aplica,
    apply, rollout, verificación y rollback; capture la imagen de rollback
-   antes de desplegar (HR-22).
+   antes de desplegar.
 
 **Hotfix (incidente de producción).**
 
@@ -762,10 +709,10 @@ no vacías.
 | PR de reversión de la plataforma bloqueado por el gate de nombre en el momento de más prisa | El botón Revert genera su propia rama: admítala por identidad verificable según el parámetro 16, con el PR revertido como trazabilidad; exigirle el patrón canónico bloquea el revert sin proteger nada (HR-33). |
 | Control compensatorio documentado y nunca visto fallar | Mismo baremo que un gate: fixture violador y veredicto de fallo observado; sin eso es `documented-only`, no control (HR-32). |
 | Etiqueta documentada que no existe en el host: la doc ordena aplicarla y ningún gate la encontrará jamás | Contraste con la API del host mediante el drift check de solo lectura (`assets/host-readback/`); la etiqueta que el host no tiene se crea o se borra de la doc en la misma sesión (HR-34). |
-| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back de HR-27—; donde no hay mecanismo, script versionado con deadline y fallback; sin procesos vivos de sondeo, ni siquiera como vigía que sobrevive a la sesión (HR-23, HR-9). |
+| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back7—; donde no hay mecanismo, script versionado con deadline y fallback; sin procesos vivos de sondeo, ni siquiera como vigía que sobrevive a la sesión. |
 | Variable global que aprueba o bloquea deploys para siempre | Estado de commit por SHA; la evidencia viaja con la revisión (HR-10). |
 | Fix de fricción aplicado a mano sin registrar | El rojo vuelve con la próxima sesión; registre con evidencia y destile en regla. |
-| Registro acumulativo guardado con upsert por clave | Una observación nueva por entrada; el upsert sustituye el contenido (HR-12). |
+| Registro acumulativo guardado con upsert por clave | Una observación nueva por entrada; el upsert sustituye el contenido. |
 | Rerun de un run cuyo SHA ya está corregido en local | Empuje; el rerun reproduce el SHA original y quema un ciclo de espera. |
 | Batería ejecutada con los tests de la rama por defecto contra un deploy anterior | Worktree en la revisión desplegada; los fallos por desfase se clasifican, no se registran como fallo del deploy. |
 | Baseline de un ratchet editada a mano en cada reducción | Comando de regeneración de baseline; el gate solo rechaza entradas nuevas (HR-15). |
@@ -773,19 +720,19 @@ no vacías.
 | Causa raíz enterrada en las notas de release o en el cuerpo del PR | Notas concisas con enlace; el post-mortem vive en su doc dedicado (HR-19, HR-21). |
 | Fix de incidente viviendo solo en una rama paralela esperando el release regular | Hotfix aterriza en main, deploy inmediato y release PATCH (HR-20). |
 | Post-mortem que nombra personas como causa | Blameless: causas de sistema; falló el proceso, no la persona (HR-21). |
-| Deploy sin imagen de rollback capturada | Capture la imagen de rollback en el playbook antes de aplicar (HR-22). |
-| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back de HR-27—; donde no hay mecanismo, script versionado con deadline y fallback (HR-23). |
-| Dos workers sobre el mismo working tree | Un worktree por actor concurrente; el síntoma es el commit sobre la rama ajena a mitad de vuelo (HR-24). |
-| Prescripción del orquestador ejecutada sin verificarla | El snapshot puede ser stale: verifique SHA, conteos y rutas en vivo y reutilice lo existente (HR-25). |
-| Encargo que nombra repo, superficies o SHAs sin comando de verificación | Use `references/delegation-template.md`: cada dato con comando y salida en vivo; el worker reporta el desajuste en vez de adaptarse (HR-36, HR-25). |
+| Deploy sin imagen de rollback capturada | Capture la imagen de rollback en el playbook antes de aplicar. |
+| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back7—; donde no hay mecanismo, script versionado con deadline y fallback. |
+| Dos workers sobre el mismo working tree | Un worktree por actor concurrente; el síntoma es el commit sobre la rama ajena a mitad de vuelo. |
+| Prescripción del orquestador ejecutada sin verificarla | El snapshot puede ser stale: verifique SHA, conteos y rutas en vivo y reutilice lo existente. |
+| Encargo que nombra repo, superficies o SHAs sin comando de verificación | Use `references/delegation-template.md`: cada dato con comando y salida en vivo; el worker reporta el desajuste en vez de adaptarse. |
 | Medición local comparada contra el juez de CI sin toolchain pineada | Pin de versiones en la stack de medición o re-medición por la toolchain del juez (HR-26). |
-| PATCH de settings dado por bueno por su 200 OK | Read-back doble con delay y verificación del plan: paywalled se descarta sin error (HR-27). |
+| PATCH de settings dado por bueno por su 200 OK | Read-back doble con delay y verificación del plan: paywalled se descarta sin error. |
 | Suite que solo pasa con el `.env` del desarrollador delante | Aísle el entorno de tests del `.env` local y documente los rojos ambientales conocidos (HR-28). |
 | Rojo de CI diagnosticado grepeando logs del runner en vez de pedir la evidencia por paso | `gh api repos/<org>/<repo>/actions/jobs/<id>` separa el paso que falla; el log del runner equivocado (hosted frente a self-hosted) fabricó el diagnóstico «Docker daemon» ×3 (C2 del porting-guide). |
 | Premisa de propagación o de gobernanza del destino tomada de su documentación | Audite el mecanismo real en vivo (hooks, reconciliador, markers, manifest) antes de depender de él; la premisa falsa dejó espejos stale medio tramo (C4 del porting-guide). |
 | Adopción del patrón lanzada sin el checklist de pre-vuelo | GATE DE ADOPCIÓN del §1: sin `references/porting-guide.md` completado no hay workers, ni toques al repo destino, ni PR (anclaje: Cadete, 2026-09-30/10-01). |
 | Re-implementar autoridad de review en el patrón (linajes, recibos, rondas de jueces, consentimientos como reglas de CI) | Es capacidad del harness (`gentle-ai`); el patrón la asume instalada, no la duplica ni la documenta como propia. |
-| Lente de revisión exigida solo en prosa (ningún gate la lee) | Para diffs de alto riesgo, campo estructurado de evidencia (lente, veredicto, referencia) en el cuerpo del PR, validado por un gate; la prosa libre no es evidencia (HR-37). |
+| Lente de revisión exigida solo en prosa (ningún gate la lee) | Para diffs de alto riesgo, campo estructurado de evidencia (lente, veredicto, referencia) en el cuerpo del PR, validado por un gate; la prosa libre no es evidencia. |
 
 ## §7 Companion skills
 
@@ -830,18 +777,18 @@ es obligatorio y la etiqueta es mecanismo opcional por consumer).
   declarada como dato — `relaxation`, `exemption` — lleve una identidad
   verificable: `actor` no vacío o `issue` positivo; una exención sin
   responsable auditable no es gobierno.
-- `assets/hr-gate-matrix/` — meta-gate de la matriz HR→gate y meta-test de
-  HR-32 (`tests/test_gate_violations.py`): cada entrada `gate` de la matriz
-  debe tener un test que exista y una receta de violación cuya ejecución del
-  gate real sale con código distinto de 0; un control que no falla ante su
-  violación —o sin receta— es hallazgo.
+- `assets/hr-gate-matrix/` — directorio con el gate HR-1
+  (`check_structured_inputs.py`) y su suite; el nombre del directorio es
+  histórico y se conserva hasta una eventual reubicación del gate HR-1
+  (la matriz HR→gate y su meta-gate se retiraron por #513/#540; el bloque 2
+  de `assets/audit-issue-to-merge.md` registra la nueva forma de la matriz
+  de enforcement).
 - `assets/required-jobs/` — primer asset ejecutable de la skill: agregador
   fail-closed de jobs requeridos con política externa (sin nombres de jobs,
   eventos ni skips en el código), política de ejemplo y suite con test de
   paridad workflow↔política; el `README.md` del asset documenta el destino
   en el consumer y el cableado de `toJSON(needs)`.
-- `assets/workflow-policy/` — gate de política de workflows (HR-3, HR-26 y
-  HR-30): lector YAML estructural fail-closed, solo stdlib y sin red, que
+- `assets/workflow-policy/` — gate de política de workflows (HR-3 y HR-26 y HR-30): lector YAML estructural fail-closed, solo stdlib y sin red, que
   verifica `uses:` por SHA/digest, toolchain exacta, fail-loud en los jobs
   requeridos y publicación de checks requeridos solo desde eventos de PR;
   la lista de jobs requeridos viene de la política de `required-jobs` y un
@@ -856,7 +803,7 @@ es obligatorio y la etiqueta es mecanismo opcional por consumer).
   valores del consumer de origen como ejemplo y la ubicación de los scripts
   de referencia.
 - `references/delegation-template.md` — plantilla canónica de encargo de
-  delegación (HR-36): repo verificado en vivo, base y tip, worktree y rama
+  delegación: repo verificado en vivo, base y tip, worktree y rama
   generada, superficies editables verificadas, hechos en vivo a confirmar por
   el worker, condiciones de parada y plazo con reporte por transición.
 - `references/fricciones.md` — catálogo destilado: fricción, antídoto y evidencia.
@@ -879,4 +826,3 @@ es obligatorio y la etiqueta es mecanismo opcional por consumer).
   `scripts/production_smoke.py` y `.github/release-e2e-paths.txt`), pendiente
   de publicarse como asset portátil de esta skill; el agregador de jobs
   requeridos ya vive aquí (`assets/required-jobs/`). Detalles en
-  `assets/parameters.md`.

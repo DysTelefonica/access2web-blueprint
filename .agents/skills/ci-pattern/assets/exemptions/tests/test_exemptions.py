@@ -123,9 +123,15 @@ class Dogfooding(unittest.TestCase):
         """Dogfooding: la matriz HR→gate y los JSON de .github/ de este repo
         pasan el escaneo de identidad de exenciones."""
         repo_root = ASSET.parents[4]
-        docs = [MATRIX,
-                repo_root / ".github" / "host-contract.json",
-                repo_root / ".github" / "workflow-policy.json"]
+        candidates = [MATRIX,
+                      repo_root / ".github" / "host-contract.json",
+                      repo_root / ".github" / "workflow-policy.json"]
+        # #513: la matriz HR→gate se retira del repositorio; si el fichero
+        # falta, se omite del escaneo (el resto de documentos sigue
+        # verificando el contrato de exenciones sobre datos reales).
+        docs = [d for d in candidates if d.exists()]
+        if not docs:
+            self.fail("no hay documentos para escanear")
         code, out = run_gate(docs)
         self.assertEqual(code, 0, out)
 

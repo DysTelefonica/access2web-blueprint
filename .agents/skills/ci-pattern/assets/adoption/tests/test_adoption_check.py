@@ -141,15 +141,13 @@ def make_contract_repo(tmp, contract=None, contract_raw=None, complete_upto=0):
     (repo / "api" / "rulesets.json").write_text(
         '[{"name": "branch-protection", "enforcement": "active", "class": "host-enforced"}]\n',
         encoding="utf-8")
-    # mini-skill para hr-matrix (el gate verifica la matriz de la skill adoptada)
+    # mini-skill con un gate inventariado (HR-1) bajo `assets/gate/`; sirve
+    # de sujeto gobernado a los tests de cobertura de la fase 0 sin acoplarse
+    # al catálogo canónico de la skill adoptada.
     (repo / "skill" / "assets" / "gate" / "tests").mkdir(parents=True)
     (repo / "skill" / "references").mkdir()
     (repo / "skill" / "SKILL.md").write_text(
         "---\nname: mini\n---\n\n- **HR-1 — regla**\n", encoding="utf-8")
-    (repo / "skill" / "references" / "hr-gate-matrix.json").write_text(json.dumps(
-        {"rules": [{"id": "HR-1", "title": "regla", "enforcement": "gate",
-                    "asset": "assets/gate/gate.py",
-                    "test": "assets/gate/tests/test_gate.py"}]}), encoding="utf-8")
     (repo / "skill" / "assets" / "gate" / "gate.py").write_text("# gate\n", encoding="utf-8")
     (repo / "skill" / "assets" / "gate" / "tests" / "test_gate.py").write_text(
         "print('ok')\n", encoding="utf-8")
@@ -203,7 +201,6 @@ def full_phase4_gates(extra=None):
         {"gate": "workflow-policy",
          "args": ["--workflow", "@.github/workflows/ci.yml",
                   "--required-jobs", "@.github/required-jobs-policy.json"]},
-        {"gate": "hr-matrix", "args": ["@skill"]},
     ]
     if extra:
         gates.extend(extra)
@@ -1307,7 +1304,7 @@ class ExecutionGateTests(unittest.TestCase):
             seed_evidence(repo, 3)
             code, _, err = run_cli(["adoption", "check", "--phase", "4", str(repo)])
             self.assertEqual(code, 1)
-            for expected in ("host-readback", "required-jobs", "local-ci-parity", "hr-matrix"):
+            for expected in ("host-readback", "required-jobs", "local-ci-parity"):
                 self.assertIn(expected, err)
 
     def test_phase_4_duplicate_gate_is_finding(self):
@@ -2670,57 +2667,12 @@ class RecursionGuardTests(unittest.TestCase):
                 "la fase 3 no debe invocar subcomandos ci-pattern como subproceso")
         self.assertIn("_manifest_identity_findings", phase_three)
 
-PHASE_FOUR_BAIT_TEST = '''
-import os
-import subprocess
-import sys
-
-with open(os.environ["SMOKE_PROBE"], "a", encoding="utf-8") as handle:
-    handle.write("ran\\n")
-skill = os.environ["CI_PATTERN_SKILL_DIR"]
-nested = subprocess.run(
-    [sys.executable, skill + "/assets/bin/ci-pattern", "adoption", "check",
-     "--phase", "4", os.environ["SMOKE_TARGET"]],
-    timeout=120,
-)
-print(f"nested adoption check rc={nested.returncode}", flush=True)
-sys.exit(nested.returncode)
-'''
-
-
-class PhaseFourSmokeBoundedTests(unittest.TestCase):
-    """#342: la fase 4 no recursa cuando el test declarado por una regla del
-    meta-gate HR vuelve a llamar a la CLI. Es el caso real: HR-45/46/48
-    declaran esta misma suite como su test, y la suite llama a la CLI en
-    proceso. Sin la guarda de profundidad, la cadena es smoke-run → test →
-    CLI → meta-gate → smoke-run → …, la forma del incidente del 2026-10-05
-    (más de 1.300 procesos y el VPS caído dos veces)."""
-
-    def test_phase_four_is_bounded_when_a_rule_test_calls_the_cli(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            contract = complete_contract(upto=4)
-            contract["phases"]["4"] = full_phase4_gates()
-            repo, _ = make_contract_repo(tmp, contract=contract)
-            seed_evidence(repo, 3)
-            probe = Path(tmp) / "probe.txt"
-            # El test que declara el mini-skill del fixture llama a la CLI otra
-            # vez, como la suite real: si la cadena recursara, el fichero de
-            # sonda tendría más de una línea (o la ejecución no terminaría).
-            (repo / "skill" / "assets" / "gate" / "tests" / "test_gate.py").write_text(
-                PHASE_FOUR_BAIT_TEST, encoding="utf-8")
-            os.environ["SMOKE_PROBE"] = str(probe)
-            os.environ["SMOKE_TARGET"] = str(repo)
-            try:
-                code, _, err = run_cli(["adoption", "check", "--phase", "4", str(repo)])
-            finally:
-                os.environ.pop("SMOKE_PROBE", None)
-                os.environ.pop("SMOKE_TARGET", None)
-            self.assertEqual(code, 0, err)
-            self.assertEqual(
-                probe.read_text(encoding="utf-8").splitlines(), ["ran"],
-                "el test declarado se ejecuta UNA vez: un meta-gate anidado valida "
-                "solo estructura y no vuelve a smoke-ejecutar (#277, #342)")
-
+# #513 / #540: PhaseFourSmokeBoundedTests y PHASE_FOUR_BAIT_TEST se retiraron
+# con el meta-gate y la matriz HR→gate. La guarda de profundidad que
+# verificaban (#342) ya no es necesaria: sin meta-gate, ningún gate del
+# patrón ejecuta el test declarado por una regla HR, así que la cadena
+# CLI → meta-gate → CLI nunca se dispara. Si volviera a haber un meta-gate,
+# reintroducir también este test con la misma sonda.
 
 PLAN_403_SNAPSHOT = {
     "message": "Upgrade to GitHub Pro or make this repository public to enable this feature.",
@@ -2861,15 +2813,60 @@ class RunnerEnforcedAdoptionTests(unittest.TestCase):
 
 
 class AdoptionContractSchemaTests(unittest.TestCase):
-    """#369: el esquema publicado y la CLI del mismo asset admiten las mismas
-    claves de fase. La CLI no lee el esquema, así que sin este test la deriva
-    entre los dos pasa inadvertida."""
+    """#369 + #606: el esquema publicado y la CLI del mismo asset admiten
+    las mismas claves de fase (claves 0..ADOPTION_PHASES-1) y los mismos
+    nombres de gate en la fase 4. La CLI no lee el esquema, así que sin
+    estos tests la deriva entre los dos pasa inadvertida y un consumer
+    (p. ej. CADETE, #606) queda bloqueado con `gate desconocido en el
+    contrato` aunque su contrato sea semánticamente válido."""
 
     SCHEMA_PATH = SKILL_ROOT / "assets" / "adoption" / "adoption-contract.schema.json"
 
     def phase_pattern(self):
         schema = json.loads(self.SCHEMA_PATH.read_text(encoding="utf-8"))
         return schema["properties"]["phases"]["propertyNames"]["pattern"]
+
+    def phase4_comment(self):
+        schema = json.loads(self.SCHEMA_PATH.read_text(encoding="utf-8"))
+        return schema["$defs"]["phase"]["$comment"]
+
+    def phase4_gates(self):
+        """Extrae del `$comment` de `phase` el conjunto de gates que el
+        esquema nombra para la fase 4: la lista explícita dentro de la
+        cláusula «cubriendo EXACTAMENTE el conjunto conocido (...)» y la
+        condicional «+ X cuando el host declara camino runner». El
+        anclaje en la sub-frase única de la fase 4 es deliberado: la
+        fase 3 también usa «+ X cuando el host declara camino runner»
+        (con `actions-runners`), y un parseo ingenuo se la llevaría
+        puesta. Si la sub-frase cambia, este test rompe y obliga a
+        actualizar el parseo junto con la documentación — es la
+        invariante que protege contra la regresión #606."""
+        comment = self.phase4_comment()
+        anchor = ("fase 4 exige gates cubriendo EXACTAMENTE el conjunto "
+                  "conocido (")
+        start = comment.find(anchor)
+        if start < 0:
+            self.fail(
+                "$comment no contiene la cláusula 'fase 4 ... conjunto "
+                "conocido (...)' que el regresor analiza; actualice el "
+                "anchor de `phase4_gates` junto con el texto del "
+                "$comment")
+        start += len(anchor)
+        end = comment.find(")", start)
+        if end < 0:
+            self.fail("$comment: la cláusula de fase 4 no cierra paréntesis")
+        body = comment[start:end]
+        chunks = body.split(";", 1)
+        base = chunks[0].strip()
+        base_gates = [g.strip() for g in base.split("/") if g.strip()]
+        conditional = []
+        if len(chunks) > 1:
+            m = re.search(
+                r"\+\s*([\w-]+)\s+cuando el host declara camino runner",
+                chunks[1])
+            if m:
+                conditional = [m.group(1)]
+        return set(base_gates) | set(conditional)
 
     def test_schema_phase_keys_match_the_cli(self):
         pattern = self.phase_pattern()
@@ -2880,6 +2877,164 @@ class AdoptionContractSchemaTests(unittest.TestCase):
         self.assertIsNone(
             re.fullmatch(pattern, str(CLI.ADOPTION_PHASES)),
             "el esquema admite una clave de fase que la CLI no admite")
+
+    def test_schema_phase4_gate_set_matches_the_cli(self):
+        """#606 gemelo de #369 para los nombres de gate del `$comment`:
+        el conjunto que el esquema enumera para la fase 4 debe coincidir
+        exactamente con `ADOPTION_GATES ∪ RUNNER_BINDING_GATES` del
+        binario `assets/bin/ci-pattern`. Si el esquema nombra un gate
+        que la CLI no conoce, el contrato del consumer lo acepta y la
+        CLI lo rechaza con `gate desconocido en el contrato` (#606,
+        CADETE). Si la CLI añade un gate y el `$comment` no lo nombra,
+        el contrato del consumer aceptará cualquier coincidencia parcial
+        y la auditoría de cobertura será ciega al hueco."""
+        mentioned = self.phase4_gates()
+        known = set(CLI.ADOPTION_GATES) | set(CLI.RUNNER_BINDING_GATES)
+        self.assertTrue(
+            mentioned.issubset(known),
+            f"el $comment nombra gates que la CLI no conoce: "
+            f"{sorted(mentioned - known)}; "
+            f"registro vivo de la CLI: {sorted(known)}")
+        self.assertTrue(
+            known.issubset(mentioned),
+            f"el $comment omite gates que la CLI sí conoce: "
+            f"{sorted(known - mentioned)}; "
+            f"mencionados en el $comment: {sorted(mentioned)}")
+
+    def test_schema_phase4_comment_does_not_name_retired_hr_matrix(self):
+        """#606 defensa específica contra la regresión original: el
+        `$comment` no nombra `hr-matrix` como gate del conjunto
+        conocido. La retirada del meta-gate por #513/#540 lo deja fuera
+        del registro vivo; reintroducirlo requiere reintroducir la regla
+        y su `CI-enforcement`, no basta con añadir el nombre al
+        `$comment`."""
+        self.assertNotIn(
+            "hr-matrix", self.phase4_comment(),
+            "el $comment cita 'hr-matrix' como gate de la fase 4, pero "
+            "la CLI lo retiró por #513/#540; reintroducir requiere "
+            "reintroducir la regla completa, no basta con citar el "
+            "nombre")
+
+
+class PhaseZeroWorkflowCommentsTests(unittest.TestCase):
+    """#607: la fase 0 no cuenta como gobierno las rutas que solo viven en
+    un comentario YAML de un workflow. Solo cuentan las referenciadas por
+    claves ejecutables (`run:`, `uses:`, `with:`, `paths:`). El bug actual
+    exige inventario para cualquier path que case con las extensiones del
+    catálogo, sin distinguir entre una referencia «ejecutable» y una
+    mención en prosa dentro de un comentario `# ...`."""
+
+    def _build_repo(self, *, workflow_body, paths_with_files):
+        """Construye un repo mínimo con un workflow y los archivos que el
+        bug detecta por referencia. Devuelve la ruta del repo.
+
+        - `workflow_body`: contenido del workflow en ``.github/workflows/ci.yml``.
+        - `paths_with_files`: lista de rutas relativas (str) que el fixture
+          debe crear vacías en el árbol; el bug las exige cuando aparecen
+          en el texto del workflow, exista el archivo o no, pero el filtro
+          de existencia de ``_scan_governed_paths`` exige que el archivo
+          exista para que la falsa exigencia llegue al gate."""
+        d = tempfile.mkdtemp(prefix="ci-pattern-607-")
+        # mktemp no borra el dir al salir: la regla del operador
+        # («no borres temporales») deja el árbol bajo /tmp/ci-pattern-607-*;
+        # el sistema limpia /tmp por su cuenta.
+        repo = Path(d) / "repo"
+        (repo / ".github" / "workflows").mkdir(parents=True)
+        (repo / ".github" / "workflows" / "ci.yml").write_text(
+            workflow_body, encoding="utf-8")
+        (repo / ".github" / "host-labels-snapshot.json").write_text(
+            "[]", encoding="utf-8")
+        (repo / ".github" / "ci-pattern-adoption.json").write_text(json.dumps({
+            "schema_version": 1,
+            "phases": {
+                "0": {
+                    "inventory": [
+                        {"artifact": ".github/workflows/ci.yml",
+                         "disposition": "adopted",
+                         "target": ".github/workflows/ci.yml"},
+                    ],
+                    "host_labels": ".github/host-labels-snapshot.json",
+                    "removal_confirmed": True,
+                }
+            },
+        }, indent=2, ensure_ascii=False), encoding="utf-8")
+        for rel in paths_with_files:
+            target = repo / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if not target.exists():
+                target.write_text("", encoding="utf-8")
+        return repo
+
+    def test_path_in_yaml_comment_is_not_a_governed_artifact(self):
+        """#607 S1: una ruta que solo aparece en un comentario YAML del
+        workflow NO exige entrada de inventario en la fase 0. Antes del
+        fix, la fase 0 marca la ruta como «artefacto de gobierno sin
+        entrada de inventario» y sale con ``exit=1``; después del fix,
+        la fase 0 no ve la ruta y sale con ``exit=0``."""
+        repo = self._build_repo(
+            workflow_body=(
+                "name: ci\n"
+                "on: [push]\n"
+                "jobs:\n"
+                "  test:\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                # La ruta está SOLO en este comentario: el run: de abajo
+                # no la invoca. El bug actual exige inventario igualmente.
+                "      # this references app/migrations/env.py but it is just a comment\n"
+                "      # and tests/lanzadera/migrations/test_seed_migrations.py too\n"
+                "      - run: echo hello\n"
+            ),
+            paths_with_files=[
+                "app/migrations/env.py",
+                "tests/lanzadera/migrations/test_seed_migrations.py",
+            ],
+        )
+        code, out, err = run_cli(["adoption", "check", "--phase", "0", str(repo)])
+        joined = out + err
+        # La fase 0 no debe exigir las rutas en comentario.
+        self.assertNotIn(
+            "app/migrations/env.py", joined,
+            f"la fase 0 exige app/migrations/env.py aunque solo aparece en "
+            f"un comentario YAML; salida del CLI:\n{joined}")
+        self.assertNotIn(
+            "tests/lanzadera/migrations/test_seed_migrations.py", joined,
+            f"la fase 0 exige tests/lanzadera/migrations/test_seed_migrations.py "
+            f"aunque solo aparece en un comentario YAML; salida del CLI:\n{joined}")
+        # Y la fase 0 debe pasar limpia (rc=0): no debe fallar por otra razón
+        # (cambio de contrato, cobertura de etiquetas, etc.).
+        self.assertEqual(
+            code, 0,
+            f"fase 0 en verde: ningún hallazgo para paths en comentarios YAML; "
+            f"salida del CLI:\n{joined}")
+
+    def test_path_in_run_is_a_governed_artifact(self):
+        """#607 S2 (regresión negativa): una ruta invocada en ``run:`` SÍ
+        exige entrada de inventario. El fix no debe debilitar este caso
+        ni eliminar el hallazgo que ya era correcto."""
+        repo = self._build_repo(
+            workflow_body=(
+                "name: ci\n"
+                "on: [push]\n"
+                "jobs:\n"
+                "  test:\n"
+                "    runs-on: ubuntu-latest\n"
+                "    steps:\n"
+                "      - run: bash scripts/coverage-ratchet.sh\n"
+            ),
+            paths_with_files=["scripts/coverage-ratchet.sh"],
+        )
+        code, out, err = run_cli(["adoption", "check", "--phase", "0", str(repo)])
+        joined = out + err
+        # El path en run: SÍ debe seguir exigiéndose.
+        self.assertIn(
+            "scripts/coverage-ratchet.sh", joined,
+            f"la fase 0 debe exigir scripts/coverage-ratchet.sh cuando "
+            f"aparece en run:; salida del CLI:\n{joined}")
+        self.assertEqual(
+            code, 1,
+            f"fase 0 sigue exigiendo paths referenciados en run: "
+            f"(regresión negativa del fix #607); salida del CLI:\n{joined}")
 
 
 if __name__ == "__main__":

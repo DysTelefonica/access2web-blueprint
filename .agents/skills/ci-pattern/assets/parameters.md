@@ -37,7 +37,7 @@ solo como ejemplo verificado.
 | 26 | Superficies de UI (globs) | defaults del gate: `app/**`, `web/**`, `src/**`, `pages/**`, `components/**`, `views/**`, `templates/**`; el consumer los reemplaza con `--ui-glob` | argumentos del gate `assets/e2e-evidence/check_e2e_evidence.py` | HR-58 (evidencia e2e por PR); invariante `web.md` |
 | 27 | Lista blanca no-UI | 25 prefijos por defecto (`.github/`, `docs/`, `scripts/`, `tests/`, manifiestos…); se reemplaza con `--non-ui-prefix` | ídem (`--non-ui-prefix`) | HR-58 |
 | 28 | Directorio y patrón de flujos e2e | `tests/e2e_ci` y `*.spec.{ts,js,py}` | ídem (`--e2e-dir`, `--e2e-pattern`) | HR-58 |
-| 29 | Sección de exención en el cuerpo de la PR | `## Exencion e2e` (una sección vacía no exonera) | ídem (`--exemption-section`, `--pr-body-file`) | HR-58; HR-8 (la excepción como dato) |
+| 29 | Sección de exención en el cuerpo de la PR | `## Exención e2e` (tilde-tolerant: `Exencion e2e` también casa; una sección vacía no exonera) | ídem (`--exemption-section`, `--pr-body-file`) | HR-58; HR-8 (la excepción como dato) |
 EAD
 | 30 | Perfil de runners del consumer | `self-hosted` en APAP_WEB (repo privado, cuenta Free: los minutos hosted agotados bloquean el CI entero — piloto ardelperal/APAP_WEB#1386) | `ci-pattern.yaml` (`P51_runners_profile`, default `hosted`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61) |
 | 31 | Etiquetas del pool self-hosted | conjunto exacto declarado por el consumer (precedente APAP_WEB: `self-hosted, Linux, ARM64, apap, oracle, coolify, noble, deploy` → P29 en `references/asset-inventory.md`) | `ci-pattern.yaml` (`P52_runners_pool_labels`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61); vacio con perfil self-hosted = entrada invalida |
