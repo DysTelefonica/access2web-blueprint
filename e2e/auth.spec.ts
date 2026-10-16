@@ -9,7 +9,9 @@
  *  - GET  /auth/me (authenticated + unauthenticated)
  *  - GET  /auth/me/apps (authenticated + unauthenticated)
  *  - GET  /auth/me/apps/:id/capabilities (authenticated + unauthenticated)
- *  - POST /auth/me/apps/:id/capabilities/revoke (authenticated + unauthenticated)
+ *
+ * Self-revoke (`POST /auth/me/apps/:id/capabilities/revoke`) is not in
+ * scope of this PR — it depends on a capability tracked separately.
  *
  * Prerequisites:
  *  - globalSetup (fixtures/auth-fixture.ts) ran alembic upgrade head and seeded
@@ -34,7 +36,6 @@ import {
   getMyCapabilities,
   login,
   logout,
-  revokeAssignment,
 } from "./helpers/api-client";
 
 // ---------------------------------------------------------------------------
@@ -221,51 +222,5 @@ test.describe("GET /auth/me/apps/:app_id/capabilities", () => {
       `${process.env.BASE_URL}/auth/me/apps/1/capabilities`
     );
     expect(res.status()).toBe(401);
-  });
-});
-
-// ---------------------------------------------------------------------------
-// POST /auth/me/apps/:app_id/capabilities/revoke
-// ---------------------------------------------------------------------------
-
-test.describe("POST /auth/me/apps/:app_id/capabilities/revoke", () => {
-  test("returns 204 when authenticated", async ({ request }) => {
-    const token = await getUserToken();
-    // Revoke for a non-existent app — idempotent, returns 204 regardless
-    const { status } = await revokeAssignment(token, 999_999_999);
-    expect(status).toBe(204);
-  });
-
-  test("returns 401 when no token is provided", async ({ request }) => {
-    const res = await request.post(
-      `${process.env.BASE_URL}/auth/me/apps/1/capabilities/revoke`
-    );
-    expect(res.status()).toBe(401);
-  });
-
-  test("revoke + re-fetch confirms the assignment is gone", async ({
-    request,
-  }) => {
-    // This test requires a user with an app assignment.
-    // It revokes the assignment and verifies subsequent GET returns empty.
-    // Skip if the test user has no assignments (early E2E before app CRUD).
-    const token = await getUserToken();
-    const { data: appsData } = await getMyApps(token);
-    const apps = (appsData as { apps: { app_id: number }[] }).apps;
-    if (apps.length === 0) {
-      test.skip("No apps assigned to test user — skip (assign via admin API first)");
-      return;
-    }
-
-    const appId = apps[0].app_id;
-
-    // Revoke
-    const revokeRes = await revokeAssignment(token, appId);
-    expect(revokeRes.status).toBe(204);
-
-    // Re-fetch
-    const { status, data } = await getMyCapabilities(token, appId);
-    expect(status).toBe(200);
-    expect((data as { capabilities: string[] }).capabilities).toEqual([]);
   });
 });
