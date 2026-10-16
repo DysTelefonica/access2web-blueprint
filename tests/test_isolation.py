@@ -79,7 +79,7 @@ def test_unit_test_env_var_outside_allowlist_is_invisible() -> None:
 
 @pytest.mark.integration
 @pytest.mark.allow_uncaught_hosts
-def test_integration_test_marker_bypasses_env_isolation() -> None:
+def test_integration_test_marker_bypasses_env_isolation(monkeypatch: pytest.MonkeyPatch) -> None:
     """``@pytest.mark.integration`` opts out of ``_isolate_unit_env`` and ``--disable-socket``.
 
     A canary set in this body must survive to the assertion. The
@@ -88,8 +88,14 @@ def test_integration_test_marker_bypasses_env_isolation() -> None:
     ``allow_uncaught_hosts`` marker lets the loopback ``connect`` call
     through to the OS (it'll fail with ``ConnectionRefusedError`` on
     port 1, but the test is about the bypass, not the handshake).
+
+    The canary is fixed by the suite itself via ``monkeypatch.setenv``
+    (the pytest idiom for tests that own their own env state) and is
+    declared in ``.github/env-isolation-allowlist.json`` so HR-28
+    recognises it as part of the suite contract instead of an escape
+    from the developer's ``.env``.
     """
-    os.environ["PYTEST_INTEGRATION_CANARY"] = "integration-test-set-this"
+    monkeypatch.setenv("PYTEST_INTEGRATION_CANARY", "integration-test-set-this")
     try:
         assert os.environ.get("PYTEST_INTEGRATION_CANARY") == "integration-test-set-this", (
             "Integration tests should bypass the autouse env-isolation; "
