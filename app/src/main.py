@@ -63,6 +63,14 @@ _container_mirror_installed: bool = False
 
 
 class _ContainerMirrorMiddleware(BaseHTTPMiddleware):
+    """HTTP middleware that exposes ``app.state.container`` as
+    ``request.state.container`` on every request. The middleware is
+    installed at startup by the ``_register_admin_routes`` callback so
+    the admin and presence slices share a single per-request view of
+    the container (the lifespan may replace ``app.state.container``
+    mid-flight; the mirror re-reads it every request).
+    """
+
     async def dispatch(
         self,
         request: _StarletteRequest,
@@ -172,6 +180,13 @@ app = FastAPI(
 
 
 class _LazyAuthSigner:
+    """``JwtSignerPort`` proxy that defers resolution to request time.
+
+    The lifespan builds the real ``Hs256JwtSigner`` after this proxy is
+    installed. Each ``verify()`` call looks up the container from
+    ``app.state`` so the middleware always uses the live signer.
+    """
+
     def _container(self) -> LanzaderaContainer:
         container = getattr(app.state, "container", None)
         if container is None:
@@ -215,8 +230,15 @@ _admin_templates = Jinja2Templates(directory=str(_TEMPLATES_DIR))
 
 
 async def _register_admin_routes() -> None:
-    # W62 (#543), e2e-smoke (#876): called from the lifespan because
-    # Starlette 0.50+ no longer runs ``@app.on_event("startup")`` handlers.
+    """Attach admin routes after the app is built.
+
+    The container lives in ``app.state.container`` (set by the lifespan).
+    Registering the routes here rather than at import-time avoids a circular
+    import with the admin module. W62 (#543), e2e-smoke (#876): called
+    from the lifespan because Starlette 0.50+ no longer runs
+    ``@app.on_event("startup")`` handlers.
+    """
+    # Import here to avoid circular imports at module-load time.
     from fastapi import APIRouter
 
     container: LanzaderaContainer = app.state.container  # type: ignore[unused-ignore]
