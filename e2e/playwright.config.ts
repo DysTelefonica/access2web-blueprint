@@ -47,7 +47,7 @@
 
 import { defineConfig, devices } from "@playwright/test";
 
-import { globalSetup } from "./fixtures/auth-fixture";
+export const BASE_URL = process.env.BASE_URL ?? "http://localhost:8000";
 
 export default defineConfig({
   testDir: ".",
@@ -60,10 +60,18 @@ export default defineConfig({
   workers: 1,
   reporter: process.env.CI ? "list" : "list",
   use: {
-    baseURL: process.env.BASE_URL ?? "http://localhost:8000",
+    baseURL: BASE_URL,
     trace: "retain-on-failure",
   },
-  globalSetup,
+  // Playwright 1.64+ requires `globalSetup` to be a string path AND the
+  // pointed-to module must export a single function via `export default`
+  // (no other named exports). `auth-fixture.ts` carries several public
+  // helpers (TEST_ADMIN_*, getAdminToken, getUserToken) that specs
+  // import directly, so it cannot satisfy the single-export rule.
+  // `fixtures/global-setup.ts` is the single-export sibling: it imports
+  // only the credentials it needs, keeps the docker-exec helper private,
+  // and re-exports nothing else.
+  globalSetup: "./fixtures/global-setup.ts",
   projects: [
     {
       name: "chromium",

@@ -4,18 +4,13 @@
  * Global Playwright fixtures for the Lanzadera E2E suite.
  *
  * Responsibilities:
- *  1. Run Alembic migrations against the live container before any test fires.
- *     This ensures the DB schema is up-to-date regardless of how the image was
- *     built (the Dockerfile does not bake in migrations).
- *  2. Seed known admin and regular users directly into SQLite.
- *     The seed script runs Python inside the container (where argon2-cffi is
- *     available) so it can hash passwords with the real hasher.
- *  3. Provide `getAdminToken()` and `getUserToken()` to every test via module
- *     exports — each spec calls them per test or caches at describe-level.
+ *  1. Seed two known users into the `lanzadera` schema (migrations run on
+ *     the CI runner first, see ci.yml).
+ *  2. Provide `getAdminToken()` and `getUserToken()` to every test.
  *
  * Runtime contract (read from env):
- *  - `TEST_CONTAINER_NAME`  — defaults to `test-app` (matches the release workflow).
- *  - `DATABASE_URL`         — defaults to `sqlite+aiosqlite:///./test.db`.
+ *  - `TEST_CONTAINER_NAME`  — defaults to `test-app`.
+ *  - `DATABASE_URL`         — `postgresql+asyncpg://...`.
  *
  * Usage in a spec:
  *
@@ -54,51 +49,43 @@ export const TEST_USER_NAME = "Alice E2E";
 export async function globalSetup(_config: FullConfig): Promise<void> {
   const containerName = process.env.TEST_CONTAINER_NAME ?? "test-app";
 
-  // 1. Apply schema migrations
-  await runInContainer(containerName, [
-    "python", "-m", "alembic", "upgrade", "head",
-  ]);
-  console.log("[e2e:globalSetup] Migrations applied.");
-
-  // 2. Seed test users — Python script runs inside the container where
-  //    argon2-cffi is available, so we get real hashes for the test passwords.
+  // Migrations run on the CI runner (ci.yml), not here. The seed runs in
+  // the container, where argon2-cffi and asyncpg are installed. `dni_encrypted`
+  // is NOT NULL but login never reads it, so it carries a placeholder. Status
+  // is `active` because login rejects any other state. Insert is idempotent.
   const seedScript = `
-import sqlite3, sys, uuid
-from argon2 import PasswordHash
+import asyncio, os, uuid
+import asyncpg
+from argon2 import PasswordHasher
 
-# Generate real Argon2id hashes using the container's argon2-cffi
-h = PasswordHash()
-admin_hash = h.hash("${TEST_ADMIN_PASSWORD}")
-user_hash  = h.hash("${TEST_USER_PASSWORD}")
+dsn = os.environ["DATABASE_URL"].replace("postgresql+asyncpg://", "postgresql://", 1)
+h = PasswordHasher()
+users = [
+    (uuid.UUID("00000000-0000-0000-0000-000000000001"), "${TEST_ADMIN_EMAIL}", "${TEST_ADMIN_NAME}", h.hash("${TEST_ADMIN_PASSWORD}")),
+    (uuid.UUID("00000000-0000-0000-0000-000000000002"), "${TEST_USER_EMAIL}", "${TEST_USER_NAME}", h.hash("${TEST_USER_PASSWORD}")),
+]
 
-conn = sqlite3.connect("test.db")
-cur = conn.cursor()
+async def main():
+    conn = await asyncpg.connect(dsn)
+    try:
+        for uid, email, name, pw_hash in users:
+            await conn.execute(
+                """
+                INSERT INTO lanzadera.users (id, email, name, dni_encrypted, password_hash, status)
+                VALUES ($1, $2, $3, $4, $5, 'active')
+                ON CONFLICT (id) DO NOTHING
+                """,
+                uid, email, name, b"e2e-placeholder", pw_hash,
+            )
+        rows = await conn.fetch(
+            "SELECT email, status::text AS status FROM lanzadera.users WHERE email IN ($1, $2)",
+            "${TEST_ADMIN_EMAIL}", "${TEST_USER_EMAIL}",
+        )
+        print(f"Seeded users: {[(r['email'], r['status']) for r in rows]}")
+    finally:
+        await conn.close()
 
-admin_id = str(uuid.UUID("00000000-0000-0000-0000-000000000001"))
-user_id  = str(uuid.UUID("00000000-0000-0000-0000-000000000002"))
-
-# Insert admin — use INSERT OR IGNORE so re-runs are idempotent
-cur.execute("""
-    INSERT OR IGNORE INTO users (id, email, name, password_hash, active,
-                                 created_at, updated_at, legacy_hash)
-    VALUES (?, ?, ?, ?, 1, datetime('now'), datetime('now'), NULL)
-""", (admin_id, "${TEST_ADMIN_EMAIL}", "${TEST_ADMIN_NAME}", admin_hash))
-
-# Insert regular user
-cur.execute("""
-    INSERT OR IGNORE INTO users (id, email, name, password_hash, active,
-                                 created_at, updated_at, legacy_hash)
-    VALUES (?, ?, ?, ?, 1, datetime('now'), datetime('now'), NULL)
-""", (user_id, "${TEST_USER_EMAIL}", "${TEST_USER_NAME}", user_hash))
-
-conn.commit()
-
-# Verify both inserted
-cur.execute("SELECT email, active FROM users WHERE email IN (?, ?)",
-            ("${TEST_ADMIN_EMAIL}", "${TEST_USER_EMAIL}"))
-rows = cur.fetchall()
-print(f"Seeded users: {rows}")
-conn.close()
+asyncio.run(main())
 `;
 
   const seedResult = await runInContainer(containerName, [

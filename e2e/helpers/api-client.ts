@@ -69,13 +69,19 @@ async function request<T>(
 export async function login(
   email: string,
   password: string
-): Promise<{ status: number; token?: string; session_id?: string; detail?: string }> {
+): Promise<{
+  status: number;
+  data?: { token?: string; session_id?: string; detail?: string };
+  token?: string;
+  session_id?: string;
+  detail?: string;
+}> {
   const { status, data } = await request<{
     token?: string;
     session_id?: string;
     detail?: string;
   }>("POST", "/auth/login", null, { email, password });
-  return { status, ...(data as object) };
+  return { status, ...(data as object), data };
 }
 
 /** POST /auth/logout — 204 on success, 401 if not authenticated */
