@@ -1,4 +1,4 @@
-[← Back to CODEBASE-GUIDE](../../CODEBASE-GUIDE.md)
+[← Back to CODEBASE-GUIDE](../CODEBASE-GUIDE.md)
 
 # access2web-blueprint — Architecture
 
@@ -302,9 +302,9 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 | Step | Doc | Read this when… |
 |---|---|---|
-| 1 | [README](../../README.md) | Necesita entender el producto en 5 min. |
-| 2 | [DOCS](../../DOCS.md) | Quiere el technical reference raíz. |
-| 3 | [CODEBASE-GUIDE](../../CODEBASE-GUIDE.md) | Es mantenedor o contribuidor nuevo. |
+| 1 | [README](../README.md) | Necesita entender el producto en 5 min. |
+| 2 | [DOCS](../DOCS.md) | Quiere el technical reference raíz. |
+| 3 | [CODEBASE-GUIDE](../CODEBASE-GUIDE.md) | Es mantenedor o contribuidor nuevo. |
 | 4 | **Esta guía** | Va a tocar código de plataforma o necesita una decisión arquitectónica. |
 | 5 | `openspec/changes/<change>/design.md` | Está implementando un change específico. |
 | 6 | `docs/03-aplicaciones/<app>/epic.md` | Necesita entender una app legacy concreta. |
@@ -323,7 +323,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 ## What this is NOT
 
 - **No** es el lugar para introducir decisiones nuevas — eso es un PR al `design.md` del change correspondiente (vía SDD).
-- **No** documenta el plan de release — eso es [CHANGELOG](../../CHANGELOG.md).
+- **No** documenta el plan de release — eso es [CHANGELOG](../CHANGELOG.md).
 - **No** es el manual de uso de los `check_*.py` — cada script tiene su docstring; este doc mapea cuál aplica a qué decisión.
 - **No** reemplaza a `CODEBASE-GUIDE.md` (overview + ownership) ni a `DOCS.md` (technical reference).
 
@@ -349,8 +349,8 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 ## Navigation
 
-Previous: [CODEBASE-GUIDE](../../CODEBASE-GUIDE.md) | Next: [AGENT-SETUP](AGENT-SETUP.md)
+Previous: [CODEBASE-GUIDE](../CODEBASE-GUIDE.md) | Next: [AGENT-SETUP](AGENT-SETUP.md)
 
 ---
 
-[Next: CHANGELOG →](../../CHANGELOG.md)
+[Next: CHANGELOG →](../CHANGELOG.md)

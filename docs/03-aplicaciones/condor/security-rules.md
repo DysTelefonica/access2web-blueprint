@@ -38,7 +38,7 @@ Las operaciones de Solicitud (alta, edición, cambio de estado) usan transaccion
 
 ## D93 · Password hardcoded como fallback en `GetPasswordDB`
 
-**Estado**: PROPUESTO. **CRÍTICO** ⚠️⚠️⚠️. Detalle completo en [Matriz de migración § D93](migration-matrix.md#d93--password-hardcodeado-como-fallback-en-getpassworddb).
+**Estado**: PROPUESTO. **CRÍTICO** ⚠️⚠️⚠️. Detalle completo en [Matriz de migración § D93](migration-matrix.md#d93--password-hardcoded-como-fallback-en-getpassworddb).
 
 Resumen:
 

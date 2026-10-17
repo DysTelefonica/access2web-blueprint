@@ -94,4 +94,4 @@ El nombre con prefijo `Tb` es la forma canónica y es la que se usa en las tranc
 
 Tranche anterior: [Source Dictionary Tranche 04 — Tablas 31–40](source-dictionary-04.md).
 Tranche siguiente: — (última tranche).
-[← Back to Expedientes migration](README.md).
+[← Back to Expedientes migration](../migration-matrix.md).

@@ -255,4 +255,4 @@ Todas las tablas de esta tranche (excepto la 31, detallada en data-model.md) req
 
 Tranche anterior: [Source Dictionary Tranche 03 — Tablas 21–30](source-dictionary-03.md).
 Tranche siguiente: [Source Dictionary Tranche 05 — Tablas 41–49 (re-entries)](source-dictionary-05.md).
-[← Back to Expedientes migration](README.md).
+[← Back to Expedientes migration](../migration-matrix.md).

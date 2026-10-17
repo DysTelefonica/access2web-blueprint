@@ -44,7 +44,7 @@ Lote 5 del plan de discovery (siguiente a NoConformidades). Posicionado por ser 
 - Se excluyen valores personales, correos, credenciales, hashes, hosts y nombres de máquina.
 - Las rutas UNC y hosts no se reproducen (regla de evidencia transversal).
 - APAP y APAP_WEB no se mencionan.
-- ⚠️ **Hallazgo de seguridad crítico**: el módulo `FUNCIONES UTILES.bas` tiene un fallback hardcoded `GetPasswordDB = "dpddpd"` cuando el INI no tiene la contraseña (línea 150). **Esta contraseña está expuesta en código fuente**. Ver [Seguridad § D93](security-rules.md#d93--password-hardcodeado-como-fallback-en-getpassworddb).
+- ⚠️ **Hallazgo de seguridad crítico**: el módulo `FUNCIONES UTILES.bas` tiene un fallback hardcoded `GetPasswordDB = "dpddpd"` cuando el INI no tiene la contraseña (línea 150). **Esta contraseña está expuesta en código fuente**. Ver [Seguridad § D93](security-rules.md#d93--password-hardcoded-como-fallback-en-getpassworddb).
 
 ## Hallazgos críticos del lote
 

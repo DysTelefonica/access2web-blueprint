@@ -225,4 +225,4 @@ No hay tablas en cuarentena o rechazo en esta tranche.
 Tranche anterior: [Source Dictionary Tranche 02 — Tablas 11–20](source-dictionary-02.md).
 Tranche siguiente: [Source Dictionary Tranche 04 — Tablas 31–40](source-dictionary-04.md).
 Mapping relacionado: [Field Mapping Tranche 03 — Tablas 21–30](field-mapping-03.md).
-[← Back to Expedientes migration](README.md).
+[← Back to Expedientes migration](../migration-matrix.md).

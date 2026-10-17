@@ -1,8 +1,8 @@
-[← Back to capabilities-index](index.md) · [← Back to DOCS](../../../DOCS.md)
+[← Back to capabilities-index](index.md) · [← Back to DOCS](../../../../DOCS.md)
 
 # CAP-039 — Selección manual
 
-Capacidad de Expedientes. Resumen a nivel repo derivado del [spec fuente](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-039-selección-manual). El spec contiene los escenarios G/W/T completos; este doc los resume y los vincula a las decisiones operativas vigentes.
+Capacidad de Expedientes. Resumen a nivel repo derivado del [spec fuente](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-039--selección-manual). El spec contiene los escenarios G/W/T completos; este doc los resume y los vincula a las decisiones operativas vigentes.
 
 ## Escenario clave
 

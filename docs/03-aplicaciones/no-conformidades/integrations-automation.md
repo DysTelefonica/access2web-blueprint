@@ -32,7 +32,7 @@ Implicaciones para la nueva plataforma:
 
 ## Capa de caché propia (referencia de diseño)
 
-NoConformidades tiene la **capa de caché selectivo más rica del ecosistema**. Se detalla en [Matriz de migración § D91](migration-matrix.md#d91-caché-selectivo-maduro-como-referencia-del-puerto-de-caché). Resumen:
+NoConformidades tiene la **capa de caché selectivo más rica del ecosistema**. Se detalla en [Matriz de migración § D91](migration-matrix.md#d91--caché-selectivo-maduro-como-referencia-del-puerto-de-caché). Resumen:
 
 - **Tabla `TbCacheNCProyecto`** con snapshots JSON por NC (`DatosNC`, `DatosACs`, `DatosARs`), hits, tamaño, fecha de uso, versión, validez.
 - **Comandos de mantenimiento** bien documentados y expuestos (invalidar, eliminar, regenerar, poblar masivamente, limpiar logs, diagnosticar, estadísticas).
