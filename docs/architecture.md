@@ -87,7 +87,6 @@ access2web-blueprint/
 │   ├── architecture.md           ← este fichero
 │   ├── CODEBASE-GUIDE.md, codebase/   ← mapa del código (hub + páginas)
 │   ├── 03-aplicaciones/<app>/   ← epic, walkthrough, capabilities per app
-│   ├── design/mockups/          ← UI Mistica autocontenida
 │   └── prompts/                 ← reportes a mantenedor dysflow
 ├── app/                         ← hexagonal Python (renombrado desde platform/)
 │   ├── README.md                ← naming deviation justificada
