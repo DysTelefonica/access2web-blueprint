@@ -10,6 +10,9 @@
     "integration",
     "security",
     "codeql",
+    "docs-codeguide",
+    "docs-links",
+    "docs-decisions",
     "docs-architecture"
   ]
 }

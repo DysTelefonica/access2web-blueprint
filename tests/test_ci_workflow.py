@@ -601,6 +601,9 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
         "integration",
         "security",
         "codeql",
+        "docs-codeguide",
+        "docs-links",
+        "docs-decisions",
         "docs-architecture",
     ]
 

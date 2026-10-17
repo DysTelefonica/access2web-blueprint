@@ -30,6 +30,7 @@
         {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
         {"artifact": ".github/required-jobs-policy.json", "disposition": "adopted", "target": ".github/required-jobs-policy.json"},
+        {"artifact": ".github/docs-links.json", "disposition": "adopted", "target": ".github/docs-links.json"},
         {"artifact": ".github/local-ci-parity-policy.json", "disposition": "adopted", "target": ".github/local-ci-parity-policy.json"},
         {"artifact": "scripts/local-preflight.sh", "disposition": "adopted", "target": "scripts/local-preflight.sh"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
@@ -212,5 +213,20 @@
         {"number": 834, "sha": "34cbcb32f639f4e3adfd6d1f42554680428e345b", "conclusion": "success"}
       ]
     }
+  },
+  "docs_map": {
+    "hub": "docs/CODEBASE-GUIDE.md",
+    "docs_path": "docs/codebase",
+    "code_roots": [{"root": "app/src/modules", "glob": "*.py"}],
+    "job": "docs-codeguide"
+  },
+  "docs_links": {
+    "hub": "docs/CODEBASE-GUIDE.md",
+    "spokes": "docs/codebase",
+    "job": "docs-links"
+  },
+  "docs_decisions": {
+    "dir": "docs/decisions",
+    "job": "docs-decisions"
   }
 }

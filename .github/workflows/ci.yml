@@ -573,6 +573,70 @@ jobs:
             --code-root app/src/modules/expedientes --code-glob "*.py" \
             --stack python --linter-config .importlinter
 
+  docs-codeguide:
+    # HR-63: mapa del codigo <-> codigo, en los dos sentidos. Mismo script que en
+    # local (canon vendorizado). Check requerido por PR (HR-29, `required_jobs`).
+    name: docs-codeguide (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-codeguide-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Map and code in sync
+        run: |
+          python3 .agents/skills/ci-pattern/assets/docs-codeguide/check_docs_codeguide.py . \
+            --docs-path docs/codebase \
+            --code-root app/src/modules \
+            --code-glob "*.py"
+
+  docs-links:
+    # HR-66: enlaces locales de README.md, AGENTS.md y docs/. Check requerido por PR.
+    name: docs-links (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-links-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Local links resolve
+        run: python3 .agents/skills/ci-pattern/assets/docs-links/run_docs_links.py . --config .github/docs-links.json
+
+  docs-decisions:
+    # HR-67: registro de decisiones (formato, sustitucion, citas e indice). El canon
+    # no da entrada de linea de comandos al gate: se llama a su funcion `check`.
+    name: docs-decisions (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-decisions-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Decision register
+        run: |
+          python3 -I - <<'PY'
+          import importlib.util, sys
+          path = ".agents/skills/ci-pattern/assets/docs-decisions/check_docs_decisions.py"
+          spec = importlib.util.spec_from_file_location("check_docs_decisions", path)
+          gate = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(gate)
+          findings = gate.check(".", {"dir": "docs/decisions"})
+          print("\n".join(findings) if findings else "docs-decisions: OK")
+          sys.exit(1 if findings else 0)
+          PY
+
   required:
     # Issue #702: deterministic replacement for the six hand-configured
     # branch-protection checks (quality, pr-gate, pip-audit,
@@ -598,7 +662,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, codeql, docs-architecture]
+    needs: [pr-gate, quality, integration, security, codeql, docs-codeguide, docs-links, docs-decisions, docs-architecture]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

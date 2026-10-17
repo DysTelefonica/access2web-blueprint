@@ -42,7 +42,17 @@ from collections.abc import Mapping
 #: `-m integration` suite; a red integration gate holds the PR just like
 #: a red quality gate does.
 ALL_JOBS = frozenset(
-    {"pr-gate", "quality", "integration", "security", "codeql", "docs-architecture"}
+    {
+        "pr-gate",
+        "quality",
+        "integration",
+        "security",
+        "codeql",
+        "docs-codeguide",
+        "docs-links",
+        "docs-decisions",
+        "docs-architecture",
+    }
 )
 
 #: `pr-gate` only runs `if: github.event_name == 'pull_request'`
