@@ -13,13 +13,13 @@ Documenta el rol transversal de Lanzadera como origen de identidad, permisos y c
 
 ## Estado del contenido
 
-**Lote 1 completado (2026-08-04).** El catálogo consultado contiene 19 filas y confirma IDs para Lanzadera, Expedientes, HPS, Solicitudes HPS, Condor, Gestion_Riesgos, No Conformidades y Brass. El detalle y los límites están en [`docs/03-aplicaciones/lanzadera/`](../../03-aplicaciones/lanzadera/README.md).
+**Lote 1 completado (2026-08-04).** El catálogo consultado contiene 19 filas y confirma IDs para Lanzadera, Expedientes, HPS, Solicitudes HPS, Condor, Gestion_Riesgos, No Conformidades y Brass. El detalle y los límites están en [`docs/03-aplicaciones/lanzadera/`](../03-aplicaciones/lanzadera/README.md).
 
 `TbUsuariosAplicacionesPermisos` usa la pareja `CorreoUsuario` + `IDAplicacion` y siete flags de rol. `Usuario.ColAplicacionesPermisos` carga la asignación; los formularios de aplicaciones convierten la asignación en botones habilitados/deshabilitados. Esto es evidencia estática/runtime de inventario, no una prueba de autorización exhaustiva.
 
 ## Disposiciones finales sobre Lanzadera (post-Lote 1)
 
-Las decisiones APROBADAS que cierran el debate abierto por capacidad detectada están resumidas en [`03-aplicaciones/lanzadera/capabilities.md`](../../03-aplicaciones/lanzadera/capabilities.md#disposiciones-finales-post-lote-1). Esta subsección deja constancia del efecto sobre el rol transversal de Lanzadera como **origen de identidad y permisos**, no del detalle técnico.
+Las decisiones APROBADAS que cierran el debate abierto por capacidad detectada están resumidas en [`03-aplicaciones/lanzadera/capabilities.md`](../03-aplicaciones/lanzadera/capabilities.md#disposiciones-finales-post-lote-1). Esta subsección deja constancia del efecto sobre el rol transversal de Lanzadera como **origen de identidad y permisos**, no del detalle técnico.
 
 | Mecanismo Lanzadera hoy | Disposición |
 |---|---|

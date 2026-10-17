@@ -165,6 +165,6 @@ El fragmento HTML se intercambia con `hx-get` cuando el usuario expande un nodo.
 
 ### Implicaciones
 
-- **D88** (registrada en [migration-matrix.md](migration-matrix.md#d88-modelo-de-árbol-de-riesgos-en-la-nueva-plataforma)): se descarta el modelo de cadena jerárquica `nuevo/antiguo` y el control `MSComctlLib.TreeView`; se adopta el modelo HTMX + CTE recursivo + lazy expansion por nivel. Esta decisión queda **propuesta** y debe revisarse antes de la fase SDD.
+- **D88** (registrada en [migration-matrix.md](migration-matrix.md#d88--modelo-de-árbol-de-riesgos-en-la-nueva-plataforma)): se descarta el modelo de cadena jerárquica `nuevo/antiguo` y el control `MSComctlLib.TreeView`; se adopta el modelo HTMX + CTE recursivo + lazy expansion por nivel. Esta decisión queda **propuesta** y debe revisarse antes de la fase SDD.
 - `CadenaJerarquicaModelo`, `JPMesesAvisoEntreEdiciones`, `JPDiasPreviosParaElAviso`, `CalDiaInicialMesAviso` se conservan como configuración del módulo (con sus defaults); algunos se reinterpretan (ej. los avisos entre ediciones podrían implementarse como una tarea del scheduler en lugar de un flag temporal).
 - La validación de carga (latencia esperada < 1 segundo por nivel con índices) se hará en la fase de diseño con datos sintéticos representativos antes de promover a implementación.

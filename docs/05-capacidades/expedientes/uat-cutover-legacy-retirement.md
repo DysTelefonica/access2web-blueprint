@@ -2,19 +2,19 @@
 
 # Expedientes · uat-cutover-legacy-retirement (D54 / EXP-CAP-057..063)
 
-Resumen a nivel repo del slice D54 del task plan. Fuente de verdad: [`openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md`](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md).
+Resumen a nivel repo del slice D54 del task plan. Fuente de verdad: [`openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md`](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md).
 
 ## Capacidades
 
 | ID | Título | Sustitución | Puerta de retirada |
 |---|---|---|---|
-| [EXP-CAP-057](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-057--retirada-win32-red) | Retirada Win32 red | Llamadas Win32 al filesystem/red → `DocumentStoragePort` + Postgres | Cobertura de tests ≥ 95 % + 30 días sin invocación legacy |
-| [EXP-CAP-058](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-058--retirada-procesos-win32) | Retirada procesos Win32 | `Shell()` y `CreateProcess` → `CommandExecutorPort` async | Cobertura de tests ≥ 95 % + 30 días sin invocación legacy |
-| [EXP-CAP-059](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-059--retirada-oleactivex) | Retirada OLE/ActiveX | Controles OLE embebidos (`MSComctlLib.TreeView`, `MSComctlLib.ImageList`) → componentes web (HTMX + Alpine.js) | Reemplazo verificado en UAT + 30 días sin uso legacy |
-| [EXP-CAP-060](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-060--retirada-globals) | Retirada globals | `Variables Globales.bas` con flags temporales → `Configuration` tipada + `ContextVar` | Tests `Test_NoMutableGlobals` verdes + 30 días sin `SetVariableGlobales*` |
-| [EXP-CAP-061](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-061--retirada-selector-backend) | Retirada selector backend | `TbConfiguracionBackends` con test/modo en frontend → `BackendSelectorPort` en backend | Cobertura de tests ≥ 95 % + 30 días sin acceso directo al `.accdb` |
-| [EXP-CAP-062](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-062--retirada-popups) | Retirada popups | `MsgBox`, `DoCmd.OpenForm` con popup → notificaciones in-app (HTMX + toast) | Cobertura de tests ≥ 95 % + 30 días sin popup legacy |
-| [EXP-CAP-063](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-063--retirada-menú-json-hub) | Retirada menú JSON-hub | Tabla `TbMenuLanzaderaJson` con prompts en Access → endpoints REST del backend | Cobertura de tests ≥ 95 % + 30 días sin escritura legacy |
+| [EXP-CAP-057](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-057--retirada-win32-red) | Retirada Win32 red | Llamadas Win32 al filesystem/red → `DocumentStoragePort` + Postgres | Cobertura de tests ≥ 95 % + 30 días sin invocación legacy |
+| [EXP-CAP-058](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-058--retirada-procesos-win32) | Retirada procesos Win32 | `Shell()` y `CreateProcess` → `CommandExecutorPort` async | Cobertura de tests ≥ 95 % + 30 días sin invocación legacy |
+| [EXP-CAP-059](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-059--retirada-oleactivex) | Retirada OLE/ActiveX | Controles OLE embebidos (`MSComctlLib.TreeView`, `MSComctlLib.ImageList`) → componentes web (HTMX + Alpine.js) | Reemplazo verificado en UAT + 30 días sin uso legacy |
+| [EXP-CAP-060](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-060--retirada-globals) | Retirada globals | `Variables Globales.bas` con flags temporales → `Configuration` tipada + `ContextVar` | Tests `Test_NoMutableGlobals` verdes + 30 días sin `SetVariableGlobales*` |
+| [EXP-CAP-061](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-061--retirada-selector-backend) | Retirada selector backend | `TbConfiguracionBackends` con test/modo en frontend → `BackendSelectorPort` en backend | Cobertura de tests ≥ 95 % + 30 días sin acceso directo al `.accdb` |
+| [EXP-CAP-062](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-062--retirada-popups) | Retirada popups | `MsgBox`, `DoCmd.OpenForm` con popup → notificaciones in-app (HTMX + toast) | Cobertura de tests ≥ 95 % + 30 días sin popup legacy |
+| [EXP-CAP-063](../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-063--retirada-menú-json-hub) | Retirada menú JSON-hub | Tabla `TbMenuLanzaderaJson` con prompts en Access → endpoints REST del backend | Cobertura de tests ≥ 95 % + 30 días sin escritura legacy |
 
 Cada Requirement tiene escenarios de validación y de concurrencia o fallo. Ver el spec.
 

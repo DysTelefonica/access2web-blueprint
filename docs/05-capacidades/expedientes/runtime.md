@@ -2,16 +2,16 @@
 
 # Expedientes · runtime (D52 / EXP-CAP-047..050)
 
-Resumen a nivel repo del slice D52 del task plan. Fuente de verdad: [`openspec/changes/expedientes-web-migration/specs/runtime.md`](../../../../openspec/changes/expedientes-web-migration/specs/runtime.md).
+Resumen a nivel repo del slice D52 del task plan. Fuente de verdad: [`openspec/changes/expedientes-web-migration/specs/runtime.md`](../../../openspec/changes/expedientes-web-migration/specs/runtime.md).
 
 ## Capacidades
 
 | ID | Título | Escenario clave |
 |---|---|---|
-| [EXP-CAP-047](../../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-047--readiness) | Readiness | Camino feliz: sistema arrancado y dependencias (Lanzadera, Riesgos, NC) disponibles → contrato `/readyz` verde. |
-| [EXP-CAP-048](../../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-048--configuración-tipada) | Configuración tipada | Camino feliz: env vars declaradas y validadas con tipos → runtime rechaza config inválida en arranque, no a mitad de request. |
-| [EXP-CAP-049](../../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-049--caché-reconstruible) | Caché reconstruible | Camino feliz: caché con TTL y fingerprint de config → se reconstruye automáticamente al cambiar config sin reinicio. |
-| [EXP-CAP-050](../../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-050--binding-de-backend) | Binding de backend | Camino feliz: secret + backend selector + test sandbox → binding explícito por entorno, sin fallback a credenciales hardcoded. |
+| [EXP-CAP-047](../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-047--readiness) | Readiness | Camino feliz: sistema arrancado y dependencias (Lanzadera, Riesgos, NC) disponibles → contrato `/readyz` verde. |
+| [EXP-CAP-048](../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-048--configuración-tipada) | Configuración tipada | Camino feliz: env vars declaradas y validadas con tipos → runtime rechaza config inválida en arranque, no a mitad de request. |
+| [EXP-CAP-049](../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-049--caché-reconstruible) | Caché reconstruible | Camino feliz: caché con TTL y fingerprint de config → se reconstruye automáticamente al cambiar config sin reinicio. |
+| [EXP-CAP-050](../../../openspec/changes/expedientes-web-migration/specs/runtime.md#requirement-exp-cap-050--binding-de-backend) | Binding de backend | Camino feliz: secret + backend selector + test sandbox → binding explícito por entorno, sin fallback a credenciales hardcoded. |
 
 Cada Requirement tiene además escenarios de validación y de concurrencia o fallo. Ver el spec.
 

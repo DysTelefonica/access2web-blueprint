@@ -6,7 +6,7 @@ Fuente física: `C:\00repos\datos\Expedientes_datos.accdb`, resuelta explícitam
 
 ## Diccionario completo
 
-El diccionario fuente completo, con **cada tabla y cada campo**, está cosechado en [Estructura_Datos.md](../../../../documentacion/OPENSPEC/00_EXPEDIENTES/docs/ERD/Estructura_Datos.md). Ese documento se conserva como fuente primaria del inventario de columnas; esta página añade la normalización, procedencia, relaciones y perfilado exigidos para la migración. No se han copiado valores de filas.
+El diccionario fuente completo, con **cada tabla y cada campo**, está cosechado en `Estructura_Datos.md` (`documentacion/OPENSPEC/00_EXPEDIENTES/docs/ERD/Estructura_Datos.md`, fuera de este repositorio). Ese documento se conserva como fuente primaria del inventario de columnas; esta página añade la normalización, procedencia, relaciones y perfilado exigidos para la migración. No se han copiado valores de filas.
 
 ## Tabla de mapeo ordinal → nombre de tabla
 

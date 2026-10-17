@@ -294,4 +294,4 @@ La tabla 14 (TbExpedientes) es **crítica**: condiciona el mapeo de todas las de
 Tranche anterior: [Source Dictionary Tranche 01 — Tablas 01–10](source-dictionary-01.md).
 Tranche siguiente: [Source Dictionary Tranche 03 — Tablas 21–30](source-dictionary-03.md).
 Mapping relacionado: [Field Mapping Tranche 02 — Tablas 16–30](field-mapping-02.md), [Field Mapping Tranche 03](field-mapping-03.md).
-[← Back to Expedientes migration](README.md).
+[← Back to Expedientes migration](../migration-matrix.md).

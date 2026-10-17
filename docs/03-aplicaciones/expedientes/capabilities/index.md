@@ -50,10 +50,10 @@ Este índice enlaza las capacidades del Expedientes que ya están documentadas e
 | CAP-036 | Hash versionado | [`CAP-036-hash-versionado.md`](CAP-036-hash-versionado.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-036--hash-versionado)) | E2E |
 | CAP-037 | Paquete E2E | [`CAP-037-paquete-e2e.md`](CAP-037-paquete-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-037--paquete-e2e)) | E2E |
 | CAP-038 | Trazabilidad E2E | [`CAP-038-trazabilidad-e2e.md`](CAP-038-trazabilidad-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-038--trazabilidad-e2e)) | E2E |
-| CAP-039 | Selección manual | [`CAP-039-seleccion-manual.md`](CAP-039-seleccion-manual.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-039-selección-manual)) | E2E |
+| CAP-039 | Selección manual | [`CAP-039-seleccion-manual.md`](CAP-039-seleccion-manual.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-039--selección-manual)) | E2E |
 | CAP-040 | Destino por usuario | `data/staging/expedientes/docs/capabilities/CAP-040-tareas-bandeja.md` | Tareas (E2E) |
-| CAP-041 | Sesión E2E | [`CAP-041-sesion-e2e.md`](CAP-041-sesion-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-041-sesión-e2e)) | E2E |
-| CAP-042 | Ordinal E2E | [`CAP-042-ordinal-e2e.md`](CAP-042-ordinal-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-042-ordinal-e2e)) | E2E |
+| CAP-041 | Sesión E2E | [`CAP-041-sesion-e2e.md`](CAP-041-sesion-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-041--sesión-e2e)) | E2E |
+| CAP-042 | Ordinal E2E | [`CAP-042-ordinal-e2e.md`](CAP-042-ordinal-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-042--ordinal-e2e)) | E2E |
 | CAP-040 | Tareas (bandeja) | `data/staging/expedientes/docs/capabilities/CAP-040-tareas-bandeja.md` | Tareas |
 
 ## Capacidades pendientes de documentar
@@ -74,4 +74,4 @@ Este índice es el hub de las capacidades del Expedientes a nivel repo. La fuent
 
 ## Navigation
 
-Previous: [Expedientes README](../README.md) | Next: [DOCS](../../../DOCS.md)
+Previous: [Expedientes README](../README.md) | Next: [DOCS](../../../../DOCS.md)

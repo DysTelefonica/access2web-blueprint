@@ -1,6 +1,6 @@
 # NoConformidades — matriz de migración (scaffold de preservación)
 
-Esta matriz no decide el esquema PostgreSQL. Su regla es conservadora: todo campo/registro se conserva hasta que negocio apruebe una disposición. La capa de caché maduro se preserva como referencia (D91). El diagnóstico del fallo de inventario Dysflow se aborda en [D89](security-rules.md#d89-diagnóstico-del-fallo-de-list_objects-de-dysflow) y el hallazgo de seguridad en [D90](security-rules.md#d90-riesgo-de-seguridad--backendsjson-con-contraseña-en-claro).
+Esta matriz no decide el esquema PostgreSQL. Su regla es conservadora: todo campo/registro se conserva hasta que negocio apruebe una disposición. La capa de caché maduro se preserva como referencia (D91). El diagnóstico del fallo de inventario Dysflow se aborda en [D89](security-rules.md#d89--diagnóstico-del-fallo-de-list_objects-de-dysflow--invalidado) y el hallazgo de seguridad en [D90](security-rules.md#d90--riesgo-de-seguridad-backendsjson-con-contraseña-en-claro).
 
 | Fuente | Significado/candidato de dominio | Transformación | Estado | Validación/rechazo | Decisión abierta |
 |---|---|---|---|---|---|

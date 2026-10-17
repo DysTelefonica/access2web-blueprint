@@ -2,16 +2,16 @@
 
 # Expedientes · access-control (D51 / EXP-CAP-043..046)
 
-Resumen a nivel repo del slice D51 del task plan de la epic #170. La fuente de verdad por Requirement es [`openspec/changes/expedientes-web-migration/specs/access-control.md`](../../../../openspec/changes/expedientes-web-migration/specs/access-control.md).
+Resumen a nivel repo del slice D51 del task plan de la epic #170. La fuente de verdad por Requirement es [`openspec/changes/expedientes-web-migration/specs/access-control.md`](../../../openspec/changes/expedientes-web-migration/specs/access-control.md).
 
 ## Capacidades
 
 | ID | Título | Escenario clave |
 |---|---|---|
-| [EXP-CAP-043](../../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-043--deny-by-default) | Deny-by-default | Camino feliz: actor autenticado con permiso efectivo → autorización registrada y auditable. |
-| [EXP-CAP-044](../../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-044--principal-lanzadera) | Principal Lanzadera | Camino feliz: Lanzadera disponible → sesión con principal suministrado. |
-| [EXP-CAP-045](../../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-045--estado-de-sesión) | Estado de sesión | Camino feliz: request y sesión del mismo usuario → estado aislado sin globals mutables. |
-| [EXP-CAP-046](../../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-046--auditoría) | Auditoría | Camino feliz: cualquier decisión → registro con actor/fecha y contexto. |
+| [EXP-CAP-043](../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-043--deny-by-default) | Deny-by-default | Camino feliz: actor autenticado con permiso efectivo → autorización registrada y auditable. |
+| [EXP-CAP-044](../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-044--principal-lanzadera) | Principal Lanzadera | Camino feliz: Lanzadera disponible → sesión con principal suministrado. |
+| [EXP-CAP-045](../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-045--estado-de-sesión) | Estado de sesión | Camino feliz: request y sesión del mismo usuario → estado aislado sin globals mutables. |
+| [EXP-CAP-046](../../../openspec/changes/expedientes-web-migration/specs/access-control.md#requirement-exp-cap-046--auditoría) | Auditoría | Camino feliz: cualquier decisión → registro con actor/fecha y contexto. |
 
 Cada Requirement tiene además escenarios de validación (datos inválidos, permiso ausente, dependencia no resoluble → denegación sin efecto parcial) y de concurrencia o fallo (preservación de invariantes y reintentabilidad). Ver el spec para los G/W/T completos.
 

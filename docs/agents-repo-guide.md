@@ -4,7 +4,7 @@ globs: *
 alwaysApply: true
 ---
 
-[← Back to README](README.md)
+[← Back to README](../README.md)
 
 # access2web-blueprint — Agent Skills Index
 > **Procedencia.** Este documento vivía en `AGENTS.md` y se retiró de ahí al
@@ -15,11 +15,11 @@ alwaysApply: true
 
 When working on this project, load the relevant skill(s) BEFORE writing any code or docs.
 
-> **Las skills de este proyecto viven en [`skills/`](skills/README.md), versionadas con el código.** Instálelas con `scripts/install-skills.sh` (o `.ps1` en Windows). Fuera de ahí sólo puede asumirse instalado `gentle-ai` y `engram`.
+> **Las skills de este proyecto viven en [`skills/`](../skills/README.md), versionadas con el código.** Instálelas con `scripts/install-skills.sh` (o `.ps1` en Windows). Fuera de ahí sólo puede asumirse instalado `gentle-ai` y `engram`.
 >
 > La disciplina documental (tono, nombres, formato, plantillas, anti-patrones) vive en `skills/documentation-alan-style/`. Su contrato es la única referencia; `CONTRIBUTING.md` y los documentos de `docs/` la aplican.
 
-El flujo operativo del repositorio vive en [`docs/ci-pattern-flow.md`](docs/ci-pattern-flow.md). Es un documento generado: no lo edite a mano; regenérelo con `ci-pattern adoption generate-doc`.
+El flujo operativo del repositorio vive en [`ci-pattern-flow.md`](ci-pattern-flow.md). Es un documento generado: no lo edite a mano; regenérelo con `ci-pattern adoption generate-doc`.
 
 ## How to Use
 
@@ -36,7 +36,7 @@ These skills are **mandatory** — load them before any work in their scope:
 |---|---|
 | **`branch-pr`** | **Any** commit, PR creation, or merge to `main`. Conventional commits, PR pequeño y reversible. En el merge, **sin** `--delete-branch`: la rama remota se conserva; lo que se limpia es el worktree local (`git worktree remove <path>`). Vive en `~/.config/opencode/skills/branch-pr/SKILL.md` (distribuida por `gentle-ai`). |
 | **`worktree-reorg-per-project`** | **Any** worktree op en este repo: `git worktree add`, `git worktree move`, `git worktree remove`, `git worktree prune`, pre-PR cleanup, fresh project setup. El layout canónico es main en la raíz del proyecto + container hermano `<project>-worktrees\` con linked WTs adentro (v2.0). v1 está deprecated — si el proyecto está en v1, migrar a v2 antes de trabajar. Vive en `~/.config/opencode/skills/worktree-reorg-per-project/SKILL.md`. Author: ardelperal. |
-| **`architecture-guardrails`** | **Any** cambio estructural en `app/`, `tests/` u `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`docs/architecture.md`](docs/architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
+| **`architecture-guardrails`** | **Any** cambio estructural en `app/`, `tests/` u `openspec/`; al proponer una decisión arquitectónica nueva (D-<n>); al llegar al repo por primera vez; al extender o contradecir una D-<n> existente. Operacionaliza el front-door a [`architecture.md`](architecture.md) como single source of truth. Skill hermana de `documentation-alan-style`: esa prescribe cómo se escribe, esta prescribe qué se debe saber antes de escribir. Vive en este repo: `skills/architecture-guardrails/SKILL.md`. Author: ardelperal. |
 | **`documentation-alan-style`** | **Any** redacción o revisión de `README.md`, `AGENTS.md`, `DOCS.md`, `CODEBASE-GUIDE.md`, `CONTRIBUTING.md`, `CHANGELOG.md`, `epic.md` o `walkthrough-*.json`. Plantillas en `references/templates/`. Vive en este repo: `skills/documentation-alan-style/SKILL.md`. |
 | **`repository-delivery-governance`** | **Any** auditoría o cambio de CI/CD, política de issues o PRs, labels, branch protection, rulesets, permisos de merge, artefactos, despliegue o rollback. Vive en `~/.agents/skills/repository-delivery-governance/SKILL.md`, distribuida por `DysTelefonica/team-skills`. Si falta, deténgase y sincronice el catálogo antes de trabajar. La política específica de este repo prevalece sobre su baseline portable. |
 | **`gentle-ai-ai-slop-discipline`** | **Any** implementación de PR (código, tests, docs). Carga la skill **antes** de escribir la primera línea y **antes** de pedir `size:exception` o merged. Las 4 preguntas self-check y las 3 firmas de AI-slop son el gate que el AI pasa sobre su propio diff antes de notificar al humano. Sin este gate, los AI-invented tests, los `object` types como placeholder, los duck-typed `hasattr` checks, y los comentarios que duplican la autoridad existente pasan como código permanente. Vive en `~/.agents/skills/gentle-ai-ai-slop-discipline/SKILL.md` (distribuida por `gentle-ai`). |
@@ -71,7 +71,7 @@ These skills are **mandatory** — load them before any work in their scope:
 
 ## Hard rule — `CONTRIBUTING.md` es vinculante
 
-Lea [`CONTRIBUTING.md`](CONTRIBUTING.md) **antes** de crear un issue, una rama, un commit o un PR. Sus convenciones no son recomendaciones: el workflow `ci` las comprueba y rechaza el PR cuando no se cumplen.
+Lea [`../CONTRIBUTING.md`](../CONTRIBUTING.md) **antes** de crear un issue, una rama, un commit o un PR. Sus convenciones no son recomendaciones: el workflow `ci` las comprueba y rechaza el PR cuando no se cumplen.
 
 | Gate | Comprueba | Si se ignora |
 |---|---|---|
@@ -113,18 +113,18 @@ El resto es configuración personal y **no está garantizada** para todo el equi
 | `repository-delivery-governance` | `DysTelefonica/team-skills` — obligatoria en su scope; si falta, deténgase y sincronice el catálogo antes de trabajar |
 | `telefonica-brand-design`, `frontend-design`, `dysflow-*`, `access-*` | externas — no garantizadas |
 
-Regla: una convención obligatoria de este repositorio no puede vivir sólo en una skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en `docs/` o en [`skills/`](skills/README.md), versionado dentro del repositorio. `repository-delivery-governance` aporta el método portable de auditoría; no sustituye esas fuentes locales.
+Regla: una convención obligatoria de este repositorio no puede vivir sólo en una skill personal. Si es obligatoria, su contenido va en `CONTRIBUTING.md`, en `docs/` o en [`skills/`](../skills/README.md), versionado dentro del repositorio. `repository-delivery-governance` aporta el método portable de auditoría; no sustituye esas fuentes locales.
 
-Las entradas marcadas como personales se trasladan o se retiran en las entregas siguientes de #167. El contrato de `skills/` y las instrucciones de instalación para un colaborador nuevo están en [`skills/README.md`](skills/README.md).
+Las entradas marcadas como personales se trasladan o se retiran en las entregas siguientes de #167. El contrato de `skills/` y las instrucciones de instalación para un colaborador nuevo están en [`../skills/README.md`](../skills/README.md).
 
 ## Mandatory reads before contributing
 
 Antes de tocar `app/`, `tests/`, `openspec/`, `docs/architecture.md`, o de proponer una decisión arquitectónica nueva, lea en este orden:
 
 1. [`CODEBASE-GUIDE.md`](CODEBASE-GUIDE.md) — overview + ownership + reading path.
-2. [`docs/architecture.md`](docs/architecture.md) — fuente de verdad única de la arquitectura (capas hexagonales, decisiones D-<n> cross-cutting vigentes y obsoletas, patrones transversales).
+2. [`architecture.md`](architecture.md) — fuente de verdad única de la arquitectura (capas hexagonales, decisiones D-<n> cross-cutting vigentes y obsoletas, patrones transversales).
 3. Los gates de calidad: los 14 `scripts/check_*.py` y los 5 workflows que los invocan.
-4. [`CONTRIBUTING.md`](CONTRIBUTING.md) — workflow + label system + convention multi-app.
+4. [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — workflow + label system + convention multi-app.
 5. Si el cambio pertenece a un OpenSpec change vivo, su `openspec/changes/<change>/design.md`.
 6. Si toca una app específica, su `docs/03-aplicaciones/<app>/epic.md`.
 
@@ -208,5 +208,5 @@ Toda implementación de un PR (código, tests, docs, configuración) pasa por la
 
 > Esta sección se queda como disciplina del agente, no como gate del CI. Ningún código de este repositorio rechaza PRs por AI-slop: quien opera con IA debe autorregularse.
 
-[← Back to README](README.md) · [Next: DOCS.md →](DOCS.md)
+[← Back to README](../README.md) · [Next: ../DOCS.md →](../DOCS.md)
 

@@ -59,7 +59,7 @@ Cruzar esta tabla con la matriz de dependencias en `02-topologia-ecosistema/matr
 
 ## Actualización del Lote 3 · 2026-08-05
 
-Gestion_Riesgos tiene descubrimiento funcional, técnico y de migración documentado en `docs/03-aplicaciones/gestion-riesgos/`. La queja histórica del árbol de ediciones/riesgos queda caracterizada en [data-model.md § Rendimiento del árbol](docs/03-aplicaciones/gestion-riesgos/data-model.md#rendimiento-del-árbol-de-riesgos--causa-raíz-y-opciones-de-implementación) con propuesta técnica **D88** (HTMX + CTE recursivo + lazy expansion por nivel, descartando MSComctlLib.TreeView y el doble modelo `nuevo/antiguo`). El acoplamiento declarado con Lanzadera vía `getdbLanzadera()` se incorpora a D86/D87 como punto de migración. La inspección Dysflow sobre el binario y el backend autoritativo queda pendiente para una segunda pasada por límite de tiempo en esta sesión.
+Gestion_Riesgos tiene descubrimiento funcional, técnico y de migración documentado en `docs/03-aplicaciones/gestion-riesgos/`. La queja histórica del árbol de ediciones/riesgos queda caracterizada en [data-model.md § Rendimiento del árbol](03-aplicaciones/gestion-riesgos/data-model.md#rendimiento-del-árbol-de-riesgos--causa-raíz-y-opciones-de-implementación) con propuesta técnica **D88** (HTMX + CTE recursivo + lazy expansion por nivel, descartando MSComctlLib.TreeView y el doble modelo `nuevo/antiguo`). El acoplamiento declarado con Lanzadera vía `getdbLanzadera()` se incorpora a D86/D87 como punto de migración. La inspección Dysflow sobre el binario y el backend autoritativo queda pendiente para una segunda pasada por límite de tiempo en esta sesión.
 
 ## Foundation · 2026-08-06
 

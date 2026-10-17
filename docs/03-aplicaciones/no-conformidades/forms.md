@@ -73,4 +73,4 @@ Form_FormCorreo (modal de envío de correo)
 
 ## Nota de evidencia
 
-CodeGraph-VBA se consultó primero sobre `00_main` y devolvió call paths dinámicos con 51 símbolos en 2 archivos para la query de caché. Dysflow `list_objects` **NO se pudo ejercitar** por el fallo documentado en [Seguridad § D89](security-rules.md#d89-diagnóstico-del-fallo-de-list_objects-de-dysflow). La inspección de UI se mantiene read-only y no se han alterado formularios.
+CodeGraph-VBA se consultó primero sobre `00_main` y devolvió call paths dinámicos con 51 símbolos en 2 archivos para la query de caché. Dysflow `list_objects` **NO se pudo ejercitar** por el fallo documentado en [Seguridad § D89](security-rules.md#d89--diagnóstico-del-fallo-de-list_objects-de-dysflow--invalidado). La inspección de UI se mantiene read-only y no se han alterado formularios.

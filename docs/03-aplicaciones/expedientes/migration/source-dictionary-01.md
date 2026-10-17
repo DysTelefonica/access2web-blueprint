@@ -191,4 +191,4 @@ Las tablas 04, 05 y 09 carecen de descripción detallada en `data-model.md`. La 
 Tranche anterior: — (es el primero).
 Tranche siguiente: [Source Dictionary Tranche 02 — Tablas 11–20](source-dictionary-02.md).
 Mapping relacionado: [Field Mapping Tranche 01 — Tablas 01–15](field-mapping-01.md).
-[← Back to Expedientes migration](README.md).
+[← Back to Expedientes migration](../migration-matrix.md).
