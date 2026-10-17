@@ -15,10 +15,11 @@
 # El pin es un SHA de 40 hexadecimales, nunca una rama móvil: el documento se
 # compara contra el generador exacto que lo emitió. Cambiarlo es una decisión
 # explícita que exige regenerar el documento en el mismo cambio. El pin actual
-# (e099a75f0c06189b0184f941a0960f0a9d58b71c) es el head de team-skills tras
-# el merge del fix de listas en bloque en el reader de workflow-policy
-# (PR #621, Closes #620). Coincide con el catálogo vendored tras la PR
-# #954 de BP y con el doc que este gate compara.
+# (e770ec6d4f83f4da332fa3eb474667b84cf3d2e1) es el catálogo
+# de team-skills que BP vendoriza desde la repropagación #1016 a #1020 (incluye
+# #752 y las claves docs_*, architecture y docs_manifest del contrato). El CLI
+# vendorizado en .agents/skills/ci-pattern es idéntico byte a byte al de ese pin,
+# y coincide con el doc que este gate compara.
 
 name: operating-doc-drift
 
@@ -76,7 +77,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: DysTelefonica/team-skills
-          ref: e099a75f0c06189b0184f941a0960f0a9d58b71c
+          ref: e770ec6d4f83f4da332fa3eb474667b84cf3d2e1
           token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
           path: .ci-pattern-pin
           persist-credentials: false
