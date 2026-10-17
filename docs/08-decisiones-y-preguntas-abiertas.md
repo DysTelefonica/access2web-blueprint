@@ -6,6 +6,8 @@ Registro vivo de las decisiones tomadas durante el descubrimiento y de las pregu
 
 ## Decisiones (mínimo inicial)
 
+> El registro de decisiones con estado, fecha, quién decide y motivo vive en [`docs/decisions/`](decisions/README.md). Las D-n de esta página se migran allí en la issue #985; hasta entonces, esta página sigue siendo la fuente de las que aún no están en el registro.
+
 | # | Decisión | Fecha | Origen | Impacto |
 |---|---|---|---|---|
 | D1 | El alcance del descubrimiento se limita a las **ocho aplicaciones** listadas en `00-alcance-y-evidencia.md`. APAP y APAP_WEB quedan **fuera de alcance**. | 2026-08-04 | Usuario y `exploration.md` | Fija el universo de discovery. |
