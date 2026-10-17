@@ -32,6 +32,35 @@ Dos piezas, ambas obligatorias:
 ```
 ````
 
+## Capas por patrón de ruta (bloque v2, #751)
+
+Cuando una capa atraviesa módulos (en un slice hexagonal, `domain/`, `application/` y `adapters/`
+viven dentro del mismo módulo), cada capa declara `paths` en lugar de `modules`:
+
+````markdown
+```architecture
+{"layers": [{"name": "domain", "paths": ["app/modules/*/domain/**"], "allowed": ["domain"]},
+            {"name": "delivery", "paths": ["app/modules/**"], "allowed": ["domain", "delivery"]}],
+ "exempt": ["app/__init__.py", "app/static/**"]}
+```
+````
+
+| Regla | Detalle |
+|---|---|
+| Patrones | `*` no cruza `/`, `**` cruza directorios, `?` es un carácter; rutas relativas al repo |
+| Primera coincidencia | decide la capa el primer patrón que casa, en el orden de las capas; `exempt` gana a las capas |
+| Cobertura | todo fichero fuente de los code-roots cae en una capa o en `exempt`; uno sin capa es rojo y se nombra |
+| Patrón vacío | un patrón (o de `exempt`) que no casa ningún fichero es rojo |
+| `allowed` | dentro de cada capa o como mapa de primer nivel; lo que no se permite está prohibido |
+| Expansión | para los linters, los patrones se expanden a los paquetes y módulos concretos: el directorio entero cuando todos sus ficheros son de la capa, los ficheros si no (los exentos no cuentan). Un slice mixto genera contratos sobre sus subpaquetes y sus ficheros, sin falsos positivos entre capas del mismo módulo |
+| Marcas | además del fence `architecture`, se acepta el primer bloque entre `<!-- architecture:begin -->` y `<!-- architecture:end -->` (fence `json`) |
+| Árbol | las filas pueden terminar en `/`; un módulo está descrito si tiene fila él o alguno de sus descendientes; una fila describe un camino que existe |
+
+`independent`, `pure` y `tolerated` (#749) siguen igual y se escriben con los nombres del canon:
+un consumer con otros nombres (`pure_layers` por `pure`, `forbidden_external` por
+`forbidden_externals`, `baseline` por `tolerated`) los adapta al adoptar HR-68. Las capas por
+`modules` (v1) siguen funcionando; no se mezclan `modules` y `paths` en una misma capa.
+
 ## Qué comprueba
 
 | Sentido | Falla cuando |
@@ -81,6 +110,22 @@ python3 check_docs_architecture.py . --doc docs/architecture.md \
 `--linter-config` valida los imports y `--write-config` escribe esa configuración desde el
 bloque. `--code-root` y `--code-glob` van por pares, como en `docs-codeguide`. En el contrato de
 adopción lo ejecuta la fase 5 cuando el consumer declara `architecture` (HR-68).
+
+## Reglas adicionales del bloque (#749, solo Python)
+
+Tres claves opcionales del bloque `architecture` permiten sustituir un verificador de capas
+propio sin perder reglas. Sin ellas la configuración derivada no cambia.
+
+| Clave | Forma | Qué se deriva |
+|---|---|---|
+| `independent` | `[{"modules": ["app/lan", "app/exp"]}]` | Un contrato `forbidden` por par ordenado del grupo, con `allow_indirect_imports = True` (importaciones directas): ningún módulo del grupo importa a otro. Lo que no está en el grupo (módulos transversales) no se restringe. |
+| `pure` | `{"layers": ["domain"], "forbidden_externals": ["fastapi"]}` | Un recorrido AST (stdlib) de los módulos de esas capas: un `import` o `from … import` de un paquete externo prohibido es `fichero:línea: la capa pura «domain» importa el framework «fastapi»`, también bajo `TYPE_CHECKING`. Un fichero que no se puede analizar es rojo (HR-3). No exige tener instalados los paquetes. |
+| `tolerated` | `[{"from": "delivery", "to": "di", "imports": ["origen -> destino"]}]` | `ignore_imports` del contrato de ese par. Una importación no listada sigue siendo violación y una entrada que ya no coincide con ninguna es `STALE en tolerated` (rojo): la deuda solo puede encoger. La lista enumerada es el recuento. |
+
+`tolerated` solo admite pares cuya dependencia no está permitida en `allowed`. Los módulos de
+`independent`, `pure` y `tolerated` se escriben con barras, como el resto del bloque. Los módulos
+de las capas han de ser paquetes importables: un directorio sin `__init__.py` hace fallar a
+import-linter con «Module … does not exist».
 
 ## Tests
 

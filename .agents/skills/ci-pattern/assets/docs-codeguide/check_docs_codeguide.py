@@ -25,7 +25,6 @@ que solo cubría ``internal/components``.
 from __future__ import annotations
 
 import argparse
-import glob
 import importlib.util
 import itertools
 import re
@@ -103,6 +102,23 @@ def extract_path_refs(content: str) -> list[str]:
     return refs
 
 
+_MIN_BRACE_OPTIONS = 2
+
+
+class NoRootsError(ValueError):
+    """Se pidió medir sin ningún par (code_root, code_glob)."""
+
+    def __init__(self) -> None:
+        super().__init__("at least one (code_root, code_glob) pair is required")
+
+
+class RepoNotDirectoryError(FileNotFoundError):
+    """La ruta del repo no es un directorio."""
+
+    def __init__(self, repo: Path) -> None:
+        super().__init__(f"repo path is not a directory: {repo}")
+
+
 def _expand_braces(token: str) -> list[str]:
     """Expande la primera alternancia ``{a,b}`` (recursivo); sin llaves válidas devuelve ``[token]``."""
     start = token.find("{")
@@ -117,7 +133,7 @@ def _expand_braces(token: str) -> list[str]:
                 if depth == 0:
                     parts = [*cuts, pos]
                     options = [token[a + 1 : b] for a, b in itertools.pairwise(parts)]
-                    if len(options) < 2:
+                    if len(options) < _MIN_BRACE_OPTIONS:
                         break
                     head, tail = token[:start], token[pos + 1 :]
                     return [out for opt in options for out in _expand_braces(head + opt + tail)]
@@ -128,7 +144,15 @@ def _expand_braces(token: str) -> list[str]:
 
 
 def _glob_matches(repo: Path, pattern: str) -> bool:
-    return bool(glob.glob(str(Path(glob.escape(str(repo))) / pattern), recursive=True))
+    """El patrón (relativo al repo) casa con algún fichero o directorio.
+
+    ``Path.glob`` admite ``**`` y llaves ya expandidas; a diferencia de
+    ``glob.glob`` también casa ficheros ocultos. Un patrón que ``Path.glob``
+    no admite (absoluto o vacío) no casa nada."""
+    try:
+        return next(repo.glob(pattern), None) is not None
+    except (NotImplementedError, ValueError):
+        return False
 
 
 def _citation_problem(repo: Path, token: str) -> str | None:
@@ -240,6 +264,35 @@ def check_docs_codeguide(
     return check_docs_codeguide_roots(repo, [(code_root, code_glob)], docs_path)
 
 
+def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str]:
+    """Sentido adelante: citas del codeguide que no existen (o ``<empty docs/>``)."""
+    if not pages:
+        # Fail-closed: el codeguide sin páginas nunca declara OK.
+        return [f"<empty {docs_path}/>"]
+    cited: set[str] = set()
+    for page in pages:
+        cited.update(extract_path_refs(page.read_text(encoding="utf-8")))
+    problems = (check_citation(repo, path) for path in sorted(cited))
+    return [problem for problem in problems if problem is not None]
+
+
+def _backward_findings(repo: Path, roots: list[tuple[str, str]], docs_text: str) -> list[str]:
+    """Sentido atrás: módulos de cada raíz que el codeguide no menciona por su nombre.
+
+    El nombre debe aparecer literalmente en el texto del codeguide: una PR que
+    cambie un nombre de módulo debe actualizar el codeguide, mientras tanto el
+    gate lo nombra."""
+    missing: list[str] = []
+    for code_root, code_glob in roots:
+        modules = _list_modules(repo / code_root, code_glob)
+        if not modules:
+            missing.append(f"<empty {code_root}/>")
+            continue
+        missing += [module if len(roots) == 1 else f"{module} ({code_root})"
+                    for module in modules if module not in docs_text]
+    return missing
+
+
 def check_docs_codeguide_roots(
     repo: Path,
     roots: list[tuple[str, str]],
@@ -255,39 +308,13 @@ def check_docs_codeguide_roots(
     medición.
     """
     if not roots:
-        raise ValueError("at least one (code_root, code_glob) pair is required")
+        raise NoRootsError
     if not repo.is_dir():
-        raise FileNotFoundError(f"repo path is not a directory: {repo}")
+        raise RepoNotDirectoryError(repo)
 
     docs_text, pages = _read_docs(repo / docs_path)
-    missing_in_repo: list[str] = []
-
-    if not pages:
-        # Fail-closed: el codeguide sin páginas nunca declara OK.
-        missing_in_repo.append(f"<empty {docs_path}/>")
-    else:
-        cited: set[str] = set()
-        for page in pages:
-            cited.update(extract_path_refs(page.read_text(encoding="utf-8")))
-        for path in sorted(cited):
-            problem = check_citation(repo, path)
-            if problem is not None:
-                missing_in_repo.append(problem)
-
-    missing_in_codeguide: list[str] = []
-    for code_root, code_glob in roots:
-        modules = _list_modules(repo / code_root, code_glob)
-        if not modules:
-            missing_in_codeguide.append(f"<empty {code_root}/>")
-            continue
-        # El nombre debe aparecer literalmente en el texto del
-        # codeguide: una PR que cambie un nombre de módulo debe
-        # actualizar el codeguide, mientras tanto el gate lo nombra.
-        for module in modules:
-            if module not in docs_text:
-                missing_in_codeguide.append(
-                    module if len(roots) == 1 else f"{module} ({code_root})"
-                )
+    missing_in_repo = _forward_findings(repo, docs_path, pages)
+    missing_in_codeguide = _backward_findings(repo, roots, docs_text)
 
     return {
         "missing_in_repo": missing_in_repo,
