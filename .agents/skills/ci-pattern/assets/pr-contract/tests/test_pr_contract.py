@@ -29,9 +29,10 @@ def make_repo(tmp, commits=None, base_branch="main"):
     repo = Path(tmp) / "repo"
     repo.mkdir(parents=True)
     env = dict(os.environ)
-    run = lambda *a: subprocess.run(a, cwd=repo, capture_output=True, text=True, check=True,
-                                    env={**env, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
-                                         "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"})
+    def run(*a):
+        return subprocess.run(a, cwd=repo, capture_output=True, text=True, check=True,
+                              env={**env, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                                   "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"})
     run("git", "init", "-q", "-b", base_branch)
     (repo / "f.txt").write_text("base\n")
     (repo / "tests").mkdir(exist_ok=True)
@@ -58,7 +59,7 @@ def make_event(tmp, body=None, labels=None, base="main", base_sha=None, head_sha
             "number": 1,
             "base": {"ref": base, "sha": base_sha or "0" * 40},
             "head": {"ref": "feature/x", "sha": head_sha or "0" * 40},
-            "labels": [{"name": l} for l in (labels or [])],
+            "labels": [{"name": item} for item in (labels or [])],
             "body": body,
             "title": "test PR",
         },
