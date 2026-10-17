@@ -499,6 +499,64 @@ class TestMultipleRoots(unittest.TestCase):
             self.assertIn("code-root", proc.stderr)
 
 
+class TestGlobMatchesEquivalence(unittest.TestCase):
+    """#757: ``_glob_matches`` usa ``Path.glob``; el comportamiento observable se mantiene."""
+
+    def _repo(self, tmp: str) -> Path:
+        repo = Path(tmp)
+        _write(repo / "src" / "a" / "deep" / "m.py", "x = 1\n")
+        _write(repo / "src" / "b.py", "y = 1\n")
+        _write(repo / "src" / ".hidden.py", "z = 1\n")
+        return repo
+
+    def test_star_and_recursive_patterns_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertTrue(gate._glob_matches(repo, "src/*.py"))
+            self.assertTrue(gate._glob_matches(repo, "src/**/*.py"))
+            self.assertTrue(gate._glob_matches(repo, "src/a/**/m.py"))
+
+    def test_pattern_without_matches_does_not_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertFalse(gate._glob_matches(repo, "src/*.go"))
+            self.assertFalse(gate._glob_matches(repo, "nothing/**/*.py"))
+
+    def test_hidden_file_counts_as_a_match(self) -> None:
+        """Único cambio respecto a ``glob.glob``: los ficheros ocultos también casan."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            _write(repo / "src" / ".hidden.py", "z = 1\n")
+            self.assertTrue(gate._glob_matches(repo, "src/*.py"))
+
+    def test_unsupported_patterns_do_not_match_and_do_not_raise(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertFalse(gate._glob_matches(repo, "/etc/*"))
+            self.assertFalse(gate._glob_matches(repo, ""))
+
+    def test_repo_path_with_glob_metacharacters_is_literal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "we[ir]d*dir"
+            _write(repo / "src" / "b.py", "y = 1\n")
+            self.assertTrue(gate._glob_matches(repo, "src/*.py"))
+
+
+class TestPublicErrorTypes(unittest.TestCase):
+    """#757: los errores con mensaje propio siguen siendo ``ValueError`` y ``FileNotFoundError``."""
+
+    def test_no_roots_is_a_value_error_with_the_same_message(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError) as ctx:
+                gate.check_docs_codeguide_roots(Path(tmp), [])
+            self.assertEqual(str(ctx.exception), "at least one (code_root, code_glob) pair is required")
+
+    def test_missing_repo_is_a_file_not_found_error_with_the_same_message(self) -> None:
+        with self.assertRaises(FileNotFoundError) as ctx:
+            gate.check_docs_codeguide_roots(Path("/path/that/does/not/exist"), [("a", "*.py")])
+        self.assertEqual(str(ctx.exception), "repo path is not a directory: /path/that/does/not/exist")
+
+
 # --------------------------------------------------------------------- #
 # Cobertura: contrato del binario (exit 0/1/2)
 # --------------------------------------------------------------------- #

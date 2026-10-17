@@ -10,6 +10,7 @@ Stdlib exclusivamente, sin red.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 from pathlib import Path
@@ -18,6 +19,18 @@ CONTRACT_KEYS = ("extend",)
 EMBEDDED_BEGIN = "<!-- ci-pattern-agents:begin -->"
 EMBEDDED_END = "<!-- ci-pattern-agents:end -->"
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(?:\d+\.\s+)?(.*?)\s*#*\s*$")
+
+
+def _load_fences():
+    """Carga el módulo compartido ``assets/markdown_fences.py`` por ruta, en el mismo proceso."""
+    path = Path(__file__).resolve().parent.parent / "markdown_fences.py"
+    spec = importlib.util.spec_from_file_location("markdown_fences", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_FENCES = _load_fences()
 
 
 class ManifestError(Exception):
@@ -50,13 +63,11 @@ def load_manifest(path):
 def _sections(text):
     """{título normalizado: cuerpo}; el cuerpo llega hasta el siguiente título
     de nivel igual o superior (los subtítulos pertenecen a su sección)."""
-    heads, lines, fenced = [], text.splitlines(), False
-    for number, line in enumerate(lines):
-        if line.lstrip().startswith("```"):
-            fenced = not fenced
+    heads, lines = [], text.splitlines()
+    for number, line, fenced in _FENCES.classify_lines(text):
         match = None if fenced else _HEADING_RE.match(line)
         if match:
-            heads.append((number, len(match.group(1)), match.group(2).casefold()))
+            heads.append((number - 1, len(match.group(1)), match.group(2).casefold()))
     found = {}
     for k, (number, level, title) in enumerate(heads):
         end = next((n for n, lv, _t in heads[k + 1:] if lv <= level), len(lines))
