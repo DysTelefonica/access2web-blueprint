@@ -54,7 +54,9 @@ def run(files, body=LINK, evidence=EVIDENCE, labels=("type:feature",)):
         git(repo, "commit", "-q", "-m", "cambio")
         pr = {"body": body, "labels": [{"name": n} for n in labels]}
         findings = []
-        MOD.check_docs_evidence(pr, repo, base, sha(repo), {"docs_evidence": evidence}, findings)
+        changed = subprocess.run(["git", "-C", str(repo), "diff", "--name-only", f"{base}..{sha(repo)}"],
+                                 check=True, capture_output=True, text=True).stdout.split()
+        MOD.check_docs_evidence(pr, repo, changed, {"docs_evidence": evidence}, findings)
         return findings
 
 
@@ -80,7 +82,7 @@ class DocsEvidenceTests(unittest.TestCase):
     def test_sin_declaracion_avisa_por_stderr_y_no_falla(self):
         buf, findings = io.StringIO(), []
         with contextlib.redirect_stderr(buf):
-            MOD.check_docs_evidence({"body": ""}, Path("."), "a", "b", {}, findings)
+            MOD.check_docs_evidence({"body": ""}, Path("."), [], {}, findings)
         self.assertEqual(findings, [])
         self.assertIn("HR-64: docs_evidence no declarado", buf.getvalue())
 

@@ -1,59 +1,126 @@
 #!/usr/bin/env python3
-"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31. Sin API."""
+"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31. Sin API ni procesos.
+
+El gate no ejecuta `git`: el workflow genera los datos del rango y se los pasa
+por fichero (`--changed-files`, `--numstat-file`, `--commits-file`,
+`--tracked-files`), de modo que un consumer lo copia byte a byte sin hallazgos
+de S603/S607 (DysTelefonica/team-skills#753). Un fichero necesario que falta
+sale 2 (HR-3)."""
 
 import argparse
 import fnmatch
 import json
 import re
-import subprocess
 import sys
 from pathlib import Path
+
+MIN_MERGE_PARENTS = 2
+
+
+class EventFileMissingError(FileNotFoundError):
+    def __init__(self, path):
+        super().__init__(f"payload del evento ausente: {path}")
+
+
+class PullRequestMissingError(TypeError):
+    def __init__(self):
+        super().__init__("el payload no contiene `pull_request`.")
+
+
+class PolicyFileMissingError(FileNotFoundError):
+    def __init__(self, path):
+        super().__init__(f"política ausente: {path}")
+
+
+class ChecksConfigError(ValueError):
+    """`checks` declarado pero inválido: falla cerrado (exit 2)."""
+
+
+class ChecksNotObjectError(ChecksConfigError, TypeError):
+    def __init__(self):
+        super().__init__("`checks` debe ser un objeto {comprobación: true|false}")
+
+
+class UnknownChecksError(ChecksConfigError):
+    def __init__(self, names, valid):
+        super().__init__(
+            f"`checks` nombra comprobaciones desconocidas: {', '.join(names)} "
+            f"(válidas: {', '.join(valid)})")
+
+
+class NonBooleanChecksError(ChecksConfigError, TypeError):
+    def __init__(self, names):
+        super().__init__(f"`checks` exige valores booleanos; no lo son: {', '.join(names)}")
+
+
+class NoActiveChecksError(ChecksConfigError):
+    def __init__(self):
+        super().__init__("`checks` apaga las ocho comprobaciones: ninguna activa")
+
+
+class DocsEvidenceConfigError(ValueError):
+    """`docs_evidence` declarado pero inválido: falla cerrado (exit 2)."""
+
+    def __init__(self):
+        super().__init__(
+            "docs_evidence necesita 'pages' (lista de {page, covers}) y 'checklists' (objeto)")
 
 
 def load_event(path):
     p = Path(path)
     if not p.is_file():
-        raise FileNotFoundError(f"payload del evento ausente: {path}")
+        raise EventFileMissingError(path)
     data = json.loads(p.read_text(encoding="utf-8"))
     pr = data.get("pull_request")
     if not isinstance(pr, dict):
-        raise ValueError("el payload no contiene `pull_request`.")
+        raise PullRequestMissingError
     return data, pr
 
 def load_policy(path):
     p = Path(path)
     if not p.is_file():
-        raise FileNotFoundError(f"política ausente: {path}")
+        raise PolicyFileMissingError(path)
     return json.loads(p.read_text(encoding="utf-8"))
 
-def git_range(repo, base_sha, head_sha, fmt):
-    result = subprocess.run(
-        ["git", "-C", str(repo), "log", f"--format={fmt}", f"{base_sha}..{head_sha}"],
-        capture_output=True, text=True, check=False,
-    )
-    return result.stdout if result.returncode == 0 else ""
-
-def git_shortstat(repo, base_sha, head_sha):
-    result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--shortstat", f"{base_sha}..{head_sha}"],
-        capture_output=True, text=True, check=False,
-    )
-    # " 5 files changed, 100 insertions(+), 50 deletions(-)"
-    m = re.search(r"(\d+) insertion", result.stdout)
-    ins = int(m.group(1)) if m else 0
-    m = re.search(r"(\d+) deletion", result.stdout)
-    dele = int(m.group(1)) if m else 0
-    return ins + dele
-
-class DocsEvidenceConfigError(ValueError):
-    """`docs_evidence` declarado pero inválido: falla cerrado (exit 2)."""
+def read_data_file(path):
+    """Texto de un fichero de datos del rango; ausente o ilegible: FileNotFoundError."""
+    return Path(path).read_text(encoding="utf-8")
 
 
-def changed_files(repo, base_sha, head_sha):
-    result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--name-only", f"{base_sha}..{head_sha}"],
-        capture_output=True, text=True, check=False, timeout=GIT_TIMEOUT)
-    return result.stdout.split() if result.returncode == 0 else []
+def numstat_total(numstat):
+    """Adiciones + eliminaciones de `git diff --numstat`; los binarios (`-`) no suman."""
+    total = 0
+    for line in numstat.splitlines():
+        added, _, rest = line.partition("\t")
+        deleted = rest.partition("\t")[0]
+        total += int(added) if added.isdigit() else 0
+        total += int(deleted) if deleted.isdigit() else 0
+    return total
+
+
+CHECK_NAMES = ("labels", "closes", "chain_context", "issue_links", "closure_tests",
+               "docs_evidence", "budget", "commits")
+
+
+def active_checks(policy):
+    """#735: comprobaciones activas. Sin `checks` lo están todas; con `checks`,
+    una ausente está activa y `false` la apaga. Valor inválido o ninguna
+    activa: ChecksConfigError (HR-3, un gate sin nada que comprobar no da OK)."""
+    config = policy.get("checks")
+    if config is None:
+        return set(CHECK_NAMES)
+    if not isinstance(config, dict):
+        raise ChecksNotObjectError
+    unknown = sorted(set(config) - set(CHECK_NAMES))
+    if unknown:
+        raise UnknownChecksError(unknown, CHECK_NAMES)
+    bad = sorted(name for name, value in config.items() if not isinstance(value, bool))
+    if bad:
+        raise NonBooleanChecksError(bad)
+    active = {name for name in CHECK_NAMES if config.get(name, True)}
+    if not active:
+        raise NoActiveChecksError
+    return active
 
 
 def _anchor_exists(text, anchor):
@@ -62,9 +129,10 @@ def _anchor_exists(text, anchor):
     return anchor.lower() in slugs
 
 
-def check_docs_evidence(pr, repo, base_sha, head_sha, policy, findings):
+def check_docs_evidence(pr, repo, files, policy, findings):
     """#710 (HR-64): un PR que toca codigo cubierto por una pagina del mapa toca
-    la pagina o lleva la seccion «Documentacion» no vacia; las checklists por
+    la pagina o lleva la seccion «Documentacion» no vacia (`files`: ficheros del
+    rango, uno por elemento); las checklists por
     tipo de cambio existen y el cuerpo enlaza la de su tipo. Activacion por
     DECLARACION `docs_evidence` en la politica: sin ella avisa y no falla."""
     config = policy.get("docs_evidence")
@@ -76,9 +144,7 @@ def check_docs_evidence(pr, repo, base_sha, head_sha, policy, findings):
     checklists = config.get("checklists", {}) if isinstance(config, dict) else None
     if not isinstance(pages, list) or not pages or not isinstance(checklists, dict) \
             or not all(isinstance(p, dict) and p.get("page") and p.get("covers") for p in pages):
-        raise DocsEvidenceConfigError(
-            "docs_evidence necesita 'pages' (lista de {page, covers}) y 'checklists' (objeto)")
-    files = changed_files(repo, base_sha, head_sha)
+        raise DocsEvidenceConfigError
     reason = re.sub(r"<!--.*?-->", "", section_body(pr.get("body"), "Documentación"), flags=re.S).strip()
     for entry in pages:
         touched = [f for f in files if any(fnmatch.fnmatch(f, g) for g in entry["covers"])]
@@ -161,14 +227,13 @@ def size_exception_applied(pr, policy):
     return label_name in labels
 
 
-def check_budget(pr, repo, base_sha, head_sha, policy, findings):
+def check_budget(pr, diff_lines, policy, findings):
     """A1: el presupuesto es 400 (adiciones + eliminaciones del PR, sin
     exclusiones). Si el diff lo supera, la única vía válida es la
     etiqueta `size:exception` aplicada por el mantenedor; el campo
     `size-exception-reason:` del cuerpo está retirado."""
     budget = policy.get("review_budget_lines", 400)
     label_name = policy.get("size_exception_label", "size:exception")
-    diff_lines = git_shortstat(repo, base_sha, head_sha)
     if diff_lines <= budget:
         return
     if not size_exception_applied(pr, policy):
@@ -179,7 +244,7 @@ def check_budget(pr, repo, base_sha, head_sha, policy, findings):
             "4 preguntas de '## Excepción de tamaño' en el cuerpo."
         )
 
-def check_commits(repo, base_sha, head_sha, policy, findings):
+def check_commits(messages, policy, findings):
     pattern = policy.get("conventional_commit_pattern",
                          r"^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\([^)]+\))?!?: ")
     ai_patterns = policy.get("ai_attribution_patterns",
@@ -187,14 +252,13 @@ def check_commits(repo, base_sha, head_sha, policy, findings):
     # %P delante: un commit de merge no tiene asunto conventional —la regla
     # mide los commits de trabajo— y la disciplina de cadenas obliga a
     # sincronizar con `git merge origin/main` en vez de rebase (#333).
-    messages = git_range(repo, base_sha, head_sha, "%P%n%B%n---COMMIT-END---")
     for block in messages.split("---COMMIT-END---"):
         msg = block.strip()
         if not msg:
             continue
         parents, _, message = msg.partition("\n")
         subject = message.split("\n", 1)[0].strip()
-        if len(parents.split()) < 2 and not re.match(pattern, subject):
+        if len(parents.split()) < MIN_MERGE_PARENTS and not re.match(pattern, subject):
             findings.append(f"HR-14: commit no convencional: '{subject[:80]}'.")
         for pat in ai_patterns:
             if re.search(pat, msg, re.IGNORECASE):
@@ -220,7 +284,6 @@ CASE_DEF_PATTERNS = (
     r"\bfunc\s+{name}\b",                      # Go
     r"\b(?:it|test)\s*\(\s*['\"]{name}['\"]",  # JS/TS (Jest, Mocha)
 )
-GIT_TIMEOUT = 60
 DEFAULT_CLOSURE_HEADING = "Tests que prueban el cierre"
 
 
@@ -261,18 +324,6 @@ def closure_entries(text):
     return CLOSURE_ENTRY_RX.findall(text)
 
 
-def is_tracked(repo, rel):
-    """La ruta está versionada en git. Un fichero sin versionar no demuestra
-    nada: no entra en el PR. Timeout explícito y fallo cerrado."""
-    try:
-        proc = subprocess.run(
-            ["git", "-C", str(repo), "ls-files", "--error-unmatch", "--", rel],
-            capture_output=True, text=True, check=False, timeout=GIT_TIMEOUT)
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-    return proc.returncode == 0
-
-
 def case_is_defined(repo, rel, case):
     """El caso está DEFINIDO en el fichero (no basta con que la cadena
     aparezca). Se lee solo ese fichero: nada de recorrer el árbol."""
@@ -284,10 +335,10 @@ def case_is_defined(repo, rel, case):
                for pattern in CASE_DEF_PATTERNS)
 
 
-def check_closure_tests(pr, repo, policy, findings):
+def check_closure_tests(pr, repo, tracked, policy, findings):
     """#334 (HR-53): un PR que cierra una issue nombra el test que demuestra
     el comportamiento corregido, en formato estructurado y con el test
-    existiendo de verdad. Un «debería estar arreglado» no cierra nada."""
+    existiendo de verdad (`tracked`: rutas de `git ls-files`). Un «debería estar arreglado» no cierra nada."""
     body = pr.get("body") or ""
     if not CLOSES_RX.search(body):
         return
@@ -312,7 +363,7 @@ def check_closure_tests(pr, repo, policy, findings):
         if not TEST_FILE_RX.search(rel):
             problems.append(f"`{entry}` (no es un fichero de test)")
             continue
-        if not is_tracked(repo, rel):
+        if rel not in tracked:
             problems.append(f"`{entry}` (la ruta no está versionada en git)")
             continue
         if case and not case_is_defined(repo, rel, case):
@@ -412,52 +463,115 @@ def _pin_output_encoding() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
+# Cada comprobación activa que lee el rango git exige su fichero de datos; la
+# ausencia sale 2 (HR-3), nunca pasa en silencio.
+DATA_FLAGS = (
+    ("closure_tests", "tracked_files", "--tracked-files"),
+    ("docs_evidence", "changed_files", "--changed-files"),
+    ("budget", "numstat_file", "--numstat-file"),
+    ("commits", "commits_file", "--commits-file"),
+)
+
+
+def _load_inputs(args):
+    """Evento y política; (data, pr, policy, error). `error` es el mensaje de salida 2."""
+    try:
+        data, pr = load_event(args.event_file)
+    except (FileNotFoundError, ValueError, TypeError) as exc:
+        return None, None, None, str(exc)
+    except json.JSONDecodeError as exc:
+        return None, None, None, f"payload JSON inválido: {exc}"
+    try:
+        policy = load_policy(args.policy_file)
+    except (FileNotFoundError, json.JSONDecodeError) as exc:
+        return None, None, None, f"política ilegible: {exc}"
+    return data, pr, policy, None
+
+
+def _load_range_data(args, active):
+    """Textos de los ficheros del rango que las comprobaciones activas necesitan."""
+    texts = {}
+    for check, attr, flag in DATA_FLAGS:
+        if check not in active:
+            continue
+        path = getattr(args, attr)
+        if not path:
+            return None, f"la comprobación '{check}' está activa y falta {flag} (el gate no ejecuta git)."
+        try:
+            texts[attr] = read_data_file(path)
+        except OSError as exc:
+            return None, f"{flag} ilegible: {exc}"
+    return texts, None
+
+
+def _pr_level_checks(active, data, pr, ctx, findings):
+    repo, policy = ctx
+    base_ref = pr.get("base", {}).get("ref", "main")
+    default_branch = data.get("repository", {}).get("default_branch", "main")
+    if "labels" in active:
+        check_labels(pr, policy, findings)
+    if "closes" in active:
+        check_closes(pr, base_ref, default_branch, policy, findings)
+    if "chain_context" in active:
+        check_chain_context(pr, base_ref, default_branch, policy, findings)
+    if "issue_links" in active:
+        check_issue_links(pr, data, findings)
+    return repo
+
+
+def _range_checks(active, pr, ctx, texts, findings):
+    """Comprobaciones sobre el rango git; `DocsEvidenceConfigError` sube a main."""
+    repo, policy = ctx
+    if "closure_tests" in active:
+        check_closure_tests(pr, repo, set(texts["tracked_files"].split("\n")), policy, findings)
+    if "docs_evidence" in active:
+        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, findings)
+    if "budget" in active:
+        check_budget(pr, numstat_total(texts["numstat_file"]), policy, findings)
+    if "commits" in active:
+        check_commits(texts["commits_file"], policy, findings)
+
+
 def main(argv=None):
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description="Gate de contrato de PR y commits (#193).")
     parser.add_argument("--event-file", required=True, help="Payload del evento de PR.")
     parser.add_argument("--policy-file", required=True, help="Política del gate.")
-    parser.add_argument("--repo", default=".", help="Ruta del repo para git log/diff.")
-    args = parser.parse_args()
+    parser.add_argument("--repo", default=".", help="Raíz del repo, para leer ficheros (no ejecuta git).")
+    parser.add_argument("--changed-files", help="`git diff --name-only BASE..HEAD`.")
+    parser.add_argument("--numstat-file", help="`git diff --numstat BASE..HEAD`.")
+    parser.add_argument("--commits-file",
+                        help="`git log --format='%%P%%n%%B%%n---COMMIT-END---' BASE..HEAD`.")
+    parser.add_argument("--tracked-files", help="`git ls-files`.")
+    args = parser.parse_args(argv)
+
+    data, pr, policy, error = _load_inputs(args)
+    if error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 2
 
     try:
-        data, pr = load_event(args.event_file)
-    except (FileNotFoundError, ValueError) as exc:
+        active = active_checks(policy)
+    except ChecksConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
-    except json.JSONDecodeError as exc:
-        print(f"ERROR: payload JSON inválido: {exc}", file=sys.stderr)
+    off = [name for name in CHECK_NAMES if name not in active]
+    if off:
+        print(f"PR-CONTRACT: apagadas por política: {', '.join(off)}", file=sys.stderr)
+
+    texts, error = _load_range_data(args, active)
+    if error:
+        print(f"ERROR: {error}", file=sys.stderr)
         return 2
 
-    try:
-        policy = load_policy(args.policy_file)
-    except (FileNotFoundError, json.JSONDecodeError) as exc:
-        print(f"ERROR: política ilegible: {exc}", file=sys.stderr)
-        return 2
-
-    base_ref = pr.get("base", {}).get("ref", "main")
-    base_sha = pr.get("base", {}).get("sha", "")
-    head_sha = pr.get("head", {}).get("sha", "")
-    repo = Path(args.repo)
-    action = data.get("action", "opened")
-
+    ctx = (Path(args.repo), policy)
     findings = []
-    check_labels(pr, policy, findings)
-    check_closes(pr, base_ref, data.get("repository", {}).get("default_branch", "main"), policy, findings)
-    check_chain_context(pr, base_ref,
-                        data.get("repository", {}).get("default_branch", "main"),
-                        policy, findings)
-    check_issue_links(pr, data, findings)
-    check_closure_tests(pr, repo, policy, findings)
-
-    if base_sha and head_sha and base_sha != head_sha:
-        try:
-            check_docs_evidence(pr, repo, base_sha, head_sha, policy, findings)
-        except DocsEvidenceConfigError as exc:
-            print(f"ERROR: {exc}", file=sys.stderr)
-            return 2
-        check_budget(pr, repo, base_sha, head_sha, policy, findings)
-        check_commits(repo, base_sha, head_sha, policy, findings)
+    _pr_level_checks(active, data, pr, ctx, findings)
+    try:
+        _range_checks(active, pr, ctx, texts, findings)
+    except DocsEvidenceConfigError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
 
@@ -467,7 +581,7 @@ def main(argv=None):
             print(f"  ✗ {f}")
         return 1
 
-    print(f"PR-CONTRACT OK: PR #{pr.get('number', '?')} ({action}) sin hallazgos.")
+    print(f"PR-CONTRACT OK: PR #{pr.get('number', '?')} ({data.get('action', 'opened')}) sin hallazgos.")
     return 0
 
 if __name__ == "__main__":
