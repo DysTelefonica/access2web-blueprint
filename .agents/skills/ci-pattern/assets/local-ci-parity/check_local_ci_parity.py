@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 
 
-
 def fail2(msg):
     print(f"fail-closed: {msg}", file=sys.stderr)
     return 2
@@ -153,8 +152,8 @@ def _side_local(path, root):
 def _run_blocks(workflow_text, job):
     # Accepts ``- run:``/block and named forms deeper than ``steps:``.
     lines = workflow_text.splitlines()
-    starts = [i for i, l in enumerate(lines)
-              if re.match(rf"^  {re.escape(job)}:\s*(#.*)?$", l)]
+    starts = [i for i, item in enumerate(lines)
+              if re.match(rf"^  {re.escape(job)}:\s*(#.*)?$", item)]
     if len(starts) != 1:
         raise ValueError(f"job '{job}' no aparece exactamente una vez en el workflow.")
     head = re.compile(r"^(\s*)(-\s+)?run:\s*(.*)$")
@@ -232,7 +231,15 @@ def _excluded(sig, exclusions, side, used):
     return False
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv=None):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(
         description="Read-only local/CI parity gate (HR-4, #196).")
     ap.add_argument("--policy", required=True)
