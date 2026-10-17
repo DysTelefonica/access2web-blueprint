@@ -13,6 +13,13 @@ edit to a fragment already on base does not satisfy the rule.
 No PR writes ``metadata.version`` or ``CHANGELOG.md`` for its own change:
 the release PR consolidates pending fragments (issue #665).
 
+The release PR itself is the one exception, recognised only by its exact
+shape for a skill: it deletes at least one fragment, adds none, changes in
+``SKILL.md`` only the ``metadata.version`` line, changes nothing else inside
+the skill but a ``CHANGELOG.md``, and the diff touches a ``CHANGELOG.md``
+(root or in the skill). Any other change in that skill keeps requiring a
+fragment.
+
 Fail-closed: a base ref that does not resolve, an empty merge-base, or a
 fragment that cannot be read at head exits 2 (HR-3). The diff is taken
 against the merge-base, so only commits the PR introduces are counted.
@@ -30,6 +37,7 @@ from pathlib import Path
 
 FRAGMENT_DIR = "changelog.d"
 TYPE_LINE = re.compile(r"type:\s*(patch|minor)")
+VERSION_LINE = re.compile(r"\s*version:\s*[\"']?\d+\.\d+\.\d+[\"']?\s*")
 
 
 class GateError(Exception):
@@ -91,6 +99,44 @@ def added_fragments(repo: Path, mb: str, head: str, skill_dir: str) -> list[str]
             if p.endswith(".md") and Path(p).name != "README.md"]
 
 
+def deleted_fragments(repo: Path, mb: str, head: str, skill_dir: str) -> list[str]:
+    out = git(repo, "diff", "--name-only", "--no-renames", "--diff-filter=D",
+              f"{mb}..{head}", "--", f"{skill_dir}/{FRAGMENT_DIR}")
+    return [p for p in out.splitlines()
+            if p.endswith(".md") and Path(p).name != "README.md"]
+
+
+def only_version_line_changed(repo: Path, mb: str, head: str, skill_dir: str) -> bool:
+    """True when SKILL.md differs from the merge-base by exactly one
+    ``metadata.version`` line (one line removed, one added)."""
+    out = git(repo, "diff", "-U0", "--no-renames", f"{mb}..{head}", "--",
+              f"{skill_dir}/SKILL.md")
+    gone = [ln[1:] for ln in out.splitlines() if ln.startswith("-") and not ln.startswith("---")]
+    came = [ln[1:] for ln in out.splitlines() if ln.startswith("+") and not ln.startswith("+++")]
+    return (len(gone) == 1 and len(came) == 1
+            and bool(VERSION_LINE.fullmatch(gone[0]))
+            and bool(VERSION_LINE.fullmatch(came[0])) and gone[0] != came[0])
+
+
+def is_release_shape(repo: Path, mb: str, head: str, skill_dir: str) -> bool:
+    """The consolidation PR (HR-44), by its exact shape; see the module docstring."""
+    if not deleted_fragments(repo, mb, head, skill_dir) \
+            or added_fragments(repo, mb, head, skill_dir):
+        return False
+    if not only_version_line_changed(repo, mb, head, skill_dir):
+        return False
+    allowed_changelog = f"{skill_dir}/CHANGELOG.md"
+    for f in changed_files(repo, mb, head, skill_dir):
+        if f == f"{skill_dir}/SKILL.md" or f == allowed_changelog \
+                or (f.startswith(f"{skill_dir}/{FRAGMENT_DIR}/") and f.endswith(".md")
+                    and Path(f).name != "README.md"):
+            continue
+        return False
+    touched = git(repo, "diff", "--name-only", "--no-renames", f"{mb}..{head}",
+                  "--", "CHANGELOG.md", allowed_changelog)
+    return bool(touched.strip())
+
+
 def validate_fragment(text: str) -> str | None:
     """Return a finding reason, or None when the fragment is valid."""
     lines = [line.strip() for line in text.splitlines() if line.strip()]
@@ -120,6 +166,7 @@ def main(argv):
     args = ap.parse_args(argv)
     repo = Path(args.repo)
     report = []
+    releases = []
     try:
         base_sha = rev_parse(repo, args.base)
         head_sha = rev_parse(repo, args.head)
@@ -129,6 +176,9 @@ def main(argv):
                 continue
             if not skill_exists(repo, base_sha, sd):
                 continue  # new skill: no base to edit, no fragment owed
+            if is_release_shape(repo, mb, head_sha, sd):
+                releases.append(sd)
+                continue
             frags = added_fragments(repo, mb, head_sha, sd)
             if not frags:
                 report.append(f"HR-44 skill {sd!r} changed without an added "
@@ -151,8 +201,9 @@ def main(argv):
         for line in report:
             print(f"  - {line}")
         return 1
+    note = f" (release consolidation of {', '.join(releases)})" if releases else ""
     print("CHANGELOG-FRAGMENT OK: every material skill edit ships a valid "
-          f"fragment between {args.base!r} and {args.head!r}.")
+          f"fragment between {args.base!r} and {args.head!r}{note}.")
     return 0
 
 
