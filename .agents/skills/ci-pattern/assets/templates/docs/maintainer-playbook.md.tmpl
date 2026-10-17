@@ -1,0 +1,29 @@
+# Guía de mantenimiento
+
+[Volver a la guía](../CODEBASE-GUIDE.md)
+
+## Checklists por tipo de cambio
+
+Cada PR enlaza en su cuerpo la checklist de su tipo (etiqueta `type:*`). Si el
+cambio toca código cubierto por una página del mapa, cambie también esa página o
+explique en la sección «Documentación» por qué no hace falta.
+
+### Feature
+
+- [ ] La página del mapa del área describe el comportamiento nuevo.
+- [ ] Un módulo nuevo bajo el code-root figura en el mapa y, si aplica, en la arquitectura.
+- [ ] Tests nuevos y ayuda/docs de cualquier comando u opción tocados.
+
+### Bug
+
+- [ ] Reproducido antes de arreglar; el test que lo cubre tiene nombre.
+- [ ] La página del mapa sigue siendo cierta tras el arreglo.
+
+### Refactor
+
+- [ ] Sin cambio de comportamiento observable.
+- [ ] Rutas y módulos movidos actualizados en el mapa.
+
+### Docs
+
+- [ ] Los enlaces locales resuelven y los comandos citados existen.
