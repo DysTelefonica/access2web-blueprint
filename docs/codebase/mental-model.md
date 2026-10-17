@@ -12,7 +12,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 |---|---|
 | Blueprint del refactor de 8 apps legadas a web hexagonal. | `docs/03-aplicaciones/<app>/{epic.md,walkthrough-*.json,capabilities.md}` para `lanzadera`, `expedientes`, `hps`, `hps-solicitudes`, `brass`, `gestion-riesgos`, `no-conformidades`, `condor`. |
 | Plataforma web hexagonal (FastAPI + HTMX + Alembic). | `app/src/main.py` (composition root) + `app/src/modules/<app>/{domain,ports,application,adapters,di,delivery}/`. |
-| Catálogo de decisiones arquitectónicas (D1-D178, DA-1..DA-13). | `docs/architecture.md` §Decisiones arquitectónicas D-<n> y DA-<n>. |
+| Catálogo de decisiones arquitectónicas (D1-D178, DA-1..DA-13). | `docs/decisions/README.md` (D-<n>) y `docs/architecture.md` §Decisiones de diseño del MVP (DA-<n>). |
 | Suite de quality gates deterministas. | `scripts/check_*.py` + `docs/gates.md` (manual de uso de cada gate). |
 | Pipeline de CI por nivel (PR / nightly / release) y agregador de branch protection. | `.github/workflows/ci.yml` (jobs `pr-gate`, `quality`, `integration`, `security`, `codeql`, `required`). |
 | Suite de tests: unit, integration, e2e, gate-smoke. | `tests/lanzadera/`, `tests/expedientes/`, `e2e/*.spec.ts`, marker `@pytest.mark.e2e_smoke` (gate-smoke subprocess tests). |
@@ -83,7 +83,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 ## Lista de comprobación del contribuidor
 
 - [ ] El cambio respeta los 5 gates del workflow (`check_branch_name`, `check_pr_size`, `check_workflows`, ruff, mypy) — ver `docs/gates.md` §2.
-- [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/architecture.md` §Decisiones D-<n> cross-cutting antes de empezar.
+- [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/decisions/README.md` antes de empezar.
 - [ ] Si toca `docs/`, leyó `skills/documentation-alan-style/SKILL.md` y aplica tono castellano peninsular formal con usted.
 - [ ] El commit usa Conventional Commits con el scope `(app)` o `(platform)` correspondiente.
 - [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, parte por unidad de trabajo o encadena.
