@@ -780,7 +780,10 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
     assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
     step = steps[0]
-    assert step["run"] == 'python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"'
+    assert step["run"] == (
+        'python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" '
+        "--required-sections scripts/required-sections.json"
+    )
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
 

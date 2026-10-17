@@ -135,9 +135,15 @@ jobs:
       - name: issue spec
         # The PR body is attacker-controlled: the event file is read as data by the
         # gate, and the token is only used for the read-only issue lookup.
+        # --required-sections cablea la regla 7 del canon (DysTelefonica/team-skills#644):
+        # la lista de secciones obligatorias la declara el consumer en
+        # scripts/required-sections.json (las 6 secciones del contrato de issue de
+        # .github/ISSUE_TEMPLATE/issue-canonical.yml). Sin la bandera, el gate solo
+        # ejecuta las reglas 1..6; con ella, la regla 7 se aplica al cuerpo de la
+        # issue consultada por la API en modo pr-event.
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"
+        run: python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" --required-sections scripts/required-sections.json
 
       - name: walkthrough schema
         # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST
