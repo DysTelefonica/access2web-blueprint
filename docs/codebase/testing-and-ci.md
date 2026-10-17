@@ -25,8 +25,8 @@ Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.r
 | Job | Runs-on | Steps principales | Comando / coste |
 |---|---|---|---|
 | `pr-gate` | `ubuntu-24.04` | `pr size`, `issue spec`, `walkthrough schema` | Llama a `scripts/check_pr_size.py`, `scripts/check_issue_spec.py` y `scripts/check_walkthrough_schema.py`. Solo corre si `event == pull_request`. |
-| `quality` | `ubuntu-24.04` | `install`, `format scripts`, `format`, `lint`, `typecheck`, `workflow gate`, `suites populated`, `tests`, `quality gates and indicators` | `pytest -c app/pyproject.toml --rootdir=app -m "not integration"`; al final, `scripts/quality_report.py`. |
-| `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | `pytest -c app/pyproject.toml --rootdir=app -m integration`. El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera`) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
+| `quality` | `ubuntu-24.04` | `install`, `format scripts`, `format`, `lint`, `typecheck`, `workflow gate`, `suites populated`, `tests`, `quality gates and indicators` | la suite sin el marker `integration` (comando 1 de «Comandos de referencia»); al final, `scripts/quality_report.py`. |
+| `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg` sobre `127.0.0.1` y el puerto asignado) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
 | `security` | — (workflow reutilizado, jobs `gitleaks`, `trivy-config`, `pip-audit`) | Escaneo estático y de dependencias | `gitleaks`, `trivy config`, `pip-audit`. |
 | `codeql` | `ubuntu-24.04` | Análisis estático de GitHub | Lenguajes: python, javascript. |
 | `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta `scripts/check_required_jobs.py` — es el agregador que la branch protection exige. |
@@ -37,27 +37,27 @@ Sólo corre en `pull_request`. Los tres gates son baratos y rechazan PRs que no 
 
 - `pr size`: rechaza PRs de más de 400 líneas (`additions + deletions` = `MAX_CHANGED_LINES` en `scripts/check_pr_size.py`). La única exención es la etiqueta `size:exception` aplicada por el mantenedor (`SIZE_EXCEPTION_LABEL`, función `has_size_exception_label`); el cuerpo del PR no se lee. El modo local del mismo script no tiene exención: `El modo local no tiene excepción: reduzca el diff o parta el PR.`
 - `issue spec`: verifica que el cuerpo del PR cita una issue (Refs/Closes) y, si es una epic de walkthrough, que el bloque de spec está bien formado.
-- `walkthrough schema`: valida que cada `docs/03-aplicaciones/<app>/walkthrough-G*.json` cumple el esquema vigente.
+- `walkthrough schema`: valida que cada `docs/03-aplicaciones/` (ficheros `walkthrough-G*.json`) cumple el esquema vigente.
 
 ### `quality` (suite principal)
 
 Orden interno de los steps (ver `ci.yml` línea 188 a línea 360):
 
-1. `install` — `pip install --require-hashes --requirement app/requirements-dev.lock`. Hard Rule 2: pins exactos en `app/pyproject.toml` y `app/requirements-dev.lock`.
+1. `install` — instalación con hashes exigidos desde `app/requirements-dev.lock`. Hard Rule 2: pins exactos en `app/pyproject.toml` y `app/requirements-dev.lock`.
 2. `format scripts` — `ruff format` sobre `scripts/` (no sobre `app/`).
 3. `format` — `ruff format --check` sobre `app/src`, `tests/`, `openspec/`. Si falla, el runner reporta el diff.
 5. `lint` — `ruff check` con la `select` de `app/pyproject.toml`.
 6. `typecheck` — `mypy --explicit-package-bases` con la config en `app/pyproject.toml` (Hard Rule 15: pins de mypy==1.13.0).
 7. `workflow gate` — ejecuta `scripts/check_workflows.py` y `scripts/check_required_jobs.py` (parte de la matriz `required`).
 8. `suites populated` — ejecuta `scripts/check_suites_populated.py`. Issue #882: una suite obligatoria vacía es una garantía falsa; cada suite (`unit`, `integration`, `e2e_smoke`) debe recoger al menos un test bajo `--collect-only -m <expr>`.
-9. `tests` — `pytest -c app/pyproject.toml --rootdir=app -m "not integration"`. El flag `--rootdir=app` es load-bearing: sin él, `pytest` no encuentra la configuración y cada test falla con `import error`.
+9. `tests` — la suite sin el marker `integration` (comando 1 de «Comandos de referencia»). El flag `--rootdir=app` es load-bearing: sin él, `pytest` no encuentra la configuración y cada test falla con `import error`.
 10. `quality gates and indicators` — ejecuta `scripts/quality_report.py`. Renderiza el quality report en el step summary del job.
 
 Cobertura: el plugin `coverage` se retiró en #877; el `pytest-cov` ya no está en `app/pyproject.toml` y los flags `--cov` no existen. La ratchet shrink-only actual es la de mutación (release), no de cobertura.
 
 ### `integration` (Postgres + Alembic)
 
-El job arranca Postgres como service y aplica el esquema con `alembic upgrade head` antes de correr los tests. La fixture de tests/migrations (`tests/lanzadera/migrations/test_seed_migrations.py`) verifica el seed. El comando es `pytest -c app/pyproject.toml --rootdir=app -m integration`. El driver es `asyncpg` (no `psycopg2`) y no se usa `pytest-postgresql`: el DSN lo calcula y exporta el step `Resolve the DSN from the assigned host port` como se describe arriba.
+El job arranca Postgres como service y aplica el esquema con `alembic upgrade head` antes de correr los tests. La fixture de tests/migrations (`tests/lanzadera/migrations/test_seed_migrations.py`) verifica el seed. El comando es la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El driver es `asyncpg` (no `psycopg2`) y no se usa `pytest-postgresql`: el DSN lo calcula y exporta el step `Resolve the DSN from the assigned host port` como se describe arriba.
 
 ## Level nightly
 
@@ -76,8 +76,8 @@ Sólo se dispara con push de tags (`v*`). El veredicto final es `cosign verify` 
 |---|---|---|---|
 | `preflight` | `ubuntu-24.04` | 15 min | Identidad del tag (`scripts/release-preflight.sh`) y CI verde en el SHA (`scripts/require-ci-success.sh`). Clasifica el canal como `rc` o `stable`. |
 | `mutation` | `ubuntu-24.04-arm` | 150 min | Cosmic-ray sobre el dominio (`scripts/mutation_shards.py`, 10 tramos deterministas) y ratchet `scripts/check_mutation.py`. Issue #857, PR-C1d: la mutación salió de `ci.yml` (#881) y vive aquí porque un release es raro y la latencia es aceptable. |
-| `e2e` | `ubuntu-24.04-arm` | 20 min | Pull de la imagen publicada en `ghcr.io`, arranque con `docker run`, suite Playwright (`e2e/*.spec.ts`) contra `http://localhost:8000`. |
-| `publish` | `ubuntu-24.04-arm` | 45 min | Buildx multi-arch + push a `ghcr.io/<owner>/access2web-blueprint:<tag>` + firma keyless con `cosign sign`. Necesita `e2e` y `mutation` verdes. |
+| `e2e` | `ubuntu-24.04-arm` | 20 min | Pull de la imagen publicada en `ghcr.io`, arranque con `docker run`, suite Playwright (`e2e/` (ficheros `*.spec.ts`)) contra `http://localhost:8000`. |
+| `publish` | `ubuntu-24.04-arm` | 45 min | Buildx multi-arch + push a `ghcr.io` (imagen del repositorio, con la etiqueta de la release) + firma keyless con `cosign sign`. Necesita `e2e` y `mutation` verdes. |
 | `verify` | `ubuntu-24.04` | 15 min | `cosign verify` con `--certificate-identity` y `--certificate-oidc-issuer` anclados al workflow y a la identidad OIDC de GitHub Actions. Pull del digest verificado. |
 
 ARM64 conservado: la imagen que `publish` produce se consume en `e2e`; si cambia la arquitectura, el smoke falla. Documentado en `docs/10-runners.md`.
@@ -98,7 +98,7 @@ Las suites obligatorias — `unit`, `integration`, `e2e_smoke` — son las que `
 
 ## Quality gates
 
-Los quality gates son scripts `scripts/check_*.py` que el runner invoca como steps. El contrato manual está en `docs/gates.md`; el contrato de wiring está en `tests/test_ci_workflow.py`. Aquí solo la tabla de responsabilidad:
+Los quality gates son scripts `scripts/` (ficheros `check_*.py`) que el runner invoca como steps. El contrato manual está en `docs/gates.md`; el contrato de wiring está en `tests/test_ci_workflow.py`. Aquí solo la tabla de responsabilidad:
 
 | Gate | Job que lo invoca | Protege |
 |---|---|---|
@@ -123,13 +123,32 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 
 | Tipo de test | Carpeta | Marker | Comando local |
 |---|---|---|---|
-| Unit (caso de uso) | `tests/lanzadera/application/<case>/` | (sin marker) | `pytest -c app/pyproject.toml --rootdir=app tests/lanzadera/application/<case>/` |
+| Unit (caso de uso) | `tests/lanzadera/application/` | (sin marker) | la suite de un caso de uso (comando 3 de «Comandos de referencia») |
 | Unit (adapter) | `tests/lanzadera/adapters/` | (sin marker) | Igual, con la subcarpeta del adapter. |
-| Unit (gate smoke) | `tests/lanzadera/scripts/` | `@pytest.mark.e2e_smoke` | `pytest -c app/pyproject.toml --rootdir=app -m e2e_smoke` |
+| Unit (gate smoke) | `tests/lanzadera/scripts/` | `@pytest.mark.e2e_smoke` | la suite con el marker `e2e_smoke` (comando 4 de «Comandos de referencia») |
 | Integration | `tests/lanzadera/` (subcarpeta específica) | `@pytest.mark.integration` | Requiere Postgres en `localhost:5432` o DSN exportado. |
-| E2E (Playwright) | `e2e/<spec>.spec.ts` | (no aplica, es TS) | `npx playwright test e2e/<spec>.spec.ts` (no corre en PR). |
+| E2E (Playwright) | `e2e/` (ficheros `<spec>.spec.ts`) | (no aplica, es TS) | Playwright sobre una spec (comando 5 de «Comandos de referencia») (no corre en PR). |
 
 La regla práctica: si el test toca Postgres, márquelo `integration`; si toca una dependencia de runtime externa (HTTP live, SMTP, S3), cree un fake o un adapter y déjelo en unit. Las pruebas que necesitan un servidor en vivo viven sólo en `e2e/` y se reservan al release.
+
+## Comandos de referencia
+
+Se ejecutan desde la raíz del repositorio. Los números son los que citan las secciones de arriba.
+
+```
+# 1. Suite sin el marker integration (job quality)
+pytest -c app/pyproject.toml --rootdir=app -m "not integration"
+# 2. Suite con el marker integration (job integration, con Postgres)
+pytest -c app/pyproject.toml --rootdir=app -m integration
+# 3. Suite de un caso de uso
+pytest -c app/pyproject.toml --rootdir=app tests/lanzadera/application/<case>/
+# 4. Suite con el marker e2e_smoke
+pytest -c app/pyproject.toml --rootdir=app -m e2e_smoke
+# 5. Playwright sobre una spec (no corre en PR)
+npx playwright test e2e/<spec>.spec.ts
+# Instalación con hashes exigidos
+pip install --require-hashes --requirement app/requirements-dev.lock
+```
 
 ## Pre-flight local
 

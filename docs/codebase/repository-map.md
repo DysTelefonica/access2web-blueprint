@@ -10,11 +10,11 @@
 |---|---|---|
 | `app/src/main.py` | Composition root de FastAPI: lifespan, container mirror middleware, healthcheck `/health`, registro de routers `/admin` y `/auth`. | Reglas de negocio o lógica de mutación. |
 | `app/src/shared/` | Cross-cutting entre módulos (cache, audit, lockout). | Casos de uso de una app concreta. |
-| `app/src/modules/lanzadera/` | MVP de Lanzadera (F01, mother): users, apps, permissions, presence, audit, CLI de bootstrap. | Código de otra app; usar `app/src/modules/<app>/`. |
+| `app/src/modules/lanzadera/` | MVP de Lanzadera (F01, mother): users, apps, permissions, presence, audit, CLI de bootstrap. | Código de otra app; usar `app/src/modules/`. |
 | `app/src/modules/lanzadera/domain/` | Entidades y value objects: `user.py`, `app.py`, `assignment.py`, `profile.py`, `session.py`, `audit_event.py`, `presence.py`, `global_admin.py`, `reset_token.py`, `legacy_role_map.py`, `errors.py`. Puertos en `app/src/modules/lanzadera/domain/ports/`. | Frameworks, adaptadores, entrega. |
 | `app/src/modules/lanzadera/ports/` | Protocolos driving/driven: `cache.py`, `location.py`, `notification_delivery.py`, `bootstrap_admin_source.py`, `jwt_signer.py`, etc. | Implementaciones concretas. |
 | `app/src/modules/lanzadera/application/` | Use cases puros: `bootstrap_global_admins.py`, `disable_app.py`, `disable_user.py`, `get_connected_users.py`, `logout.py`, `revoke_assignment.py`, `update_app.py`, `list_effective_apps.py`, `audit_append.py`, `seed_profiles.py`, `issue_reset_token` y `consume_reset_token` (servicios en `app/src/modules/lanzadera/domain/services/`). | Adaptadores o entrega. |
-| `app/src/modules/lanzadera/adapters/` | Implementaciones driven: `adapters/persistence/repositories/<x>_pg.py` (Postgres), `app/src/modules/lanzadera/adapters/cross/secret_manager.py`, `app/src/modules/lanzadera/adapters/crypto/credential_hasher_argon2id.py`, `app/src/modules/lanzadera/adapters/bootstrap/env_admin_source_adapter.py`. | Routers HTTP o CLI. |
+| `app/src/modules/lanzadera/adapters/` | Implementaciones driven: los repositorios Postgres `*_pg.py` bajo `app/src/modules/lanzadera/adapters/persistence/repositories/`, `app/src/modules/lanzadera/adapters/cross/secret_manager.py`, `app/src/modules/lanzadera/adapters/crypto/credential_hasher_argon2id.py`, `app/src/modules/lanzadera/adapters/bootstrap/env_admin_source_adapter.py`. | Routers HTTP o CLI. |
 | `app/src/modules/lanzadera/di/` | Composition root: `container.py` (LanzaderaContainer), `bootstrap.py` (run_bootstrap), `use_cases.py` (factorías). | UI o escrituras. |
 | `app/src/modules/lanzadera/delivery/http/` | Routers FastAPI: `auth_routes.py` (`/auth/login`, `/auth/logout`, `/auth/me`, `/auth/me/apps`), `admin_routes.py` (legacy admin), `admin_routes_users.py`, `admin_routes_users_json.py`, `admin_routes_apps.py`, `admin_routes_misc.py`, `admin_routes_presence.py` (SSE), `admin.py` (records), `auth_middleware.py`, `admin_ports.py`. | Lógica de dominio. |
 | `app/src/modules/lanzadera/delivery/http/templates/` | Plantillas Jinja2: `base.html`, `app/src/modules/lanzadera/delivery/http/templates/admin/apps.html`, `app/src/modules/lanzadera/delivery/http/templates/admin/users.html`, `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html`, `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html`, `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html`, `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html`, `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html`. | Lógica de control; queda en los routers. |
@@ -26,40 +26,40 @@
 | `app/requirements-dev.lock` | Lockfile con hashes de la transitiva (Hard Rule 15). | — |
 | `tests/lanzadera/`, `tests/expedientes/` | Suites TDD por módulo. | Generadores de legacy. |
 | `e2e/` | Suite Playwright (F1-F5, 5 fases merged). | Tests unitarios. |
-| `scripts/check_*.py` | Quality gates deterministas (ver `docs/gates.md` §2). | Lógica de aplicación. |
-| `docs/03-aplicaciones/<app>/` | Research por app: `epic.md`, `walkthrough-G*.json`, `capabilities.md`, `data-model.md`, `forms.md`, `integrations-security.md`, `ERD`. | Código fuente. |
-| `data/staging/<app>/` | Binarios `.accdb` R2-pulled (NO se commitean). | Scripts reproducibles; van en `scripts/`. |
-| `openspec/changes/<change>/` | Specs SDD: `proposal.md`, `design.md`, `specs/<capability>/spec.md`, `tasks.md`. | Implementación. |
+| `scripts/` (ficheros `check_*.py`) | Quality gates deterministas (ver `docs/gates.md` §2). | Lógica de aplicación. |
+| `docs/03-aplicaciones/` | Research por app: `epic.md`, `walkthrough-G*.json`, `capabilities.md`, `data-model.md`, `forms.md`, `integrations-security.md`, `ERD`. | Código fuente. |
+| `data/staging/` | Binarios `.accdb` R2-pulled (NO se commitean). | Scripts reproducibles; van en `scripts/`. |
+| `openspec/changes/` | Specs SDD: `proposal.md`, `design.md`, un `spec.md` por capacidad bajo `specs`, `tasks.md`. | Implementación. |
 | `inputs/` | Material externo versionado ligero (automatizaciones-legacy, etc.). | — |
 
 ## Si necesitas X, lee/toca Y
 
 | Si necesita... | Empiece por... | Revise después... |
 |---|---|---|
-| Cambiar una decisión arquitectónica (D-<n> / DA-<n>) | `docs/architecture.md` §Decisiones | `openspec/changes/<change>/design.md` si está dentro de un change vivo |
-| Cambiar un gate de CI | `scripts/<check>.py` (código) | `docs/gates.md` (manual de uso) y `.github/workflows/ci.yml` (qué job lo invoca) |
+| Cambiar una decisión arquitectónica (D-<n> / DA-<n>) | `docs/architecture.md` §Decisiones | `openspec/changes/` (ficheros `design.md`) si está dentro de un change vivo |
+| Cambiar un gate de CI | `scripts/` (ficheros `<check>.py`) (código) | `docs/gates.md` (manual de uso) y `.github/workflows/ci.yml` (qué job lo invoca) |
 | Añadir una ruta HTTP de Lanzadera | `app/src/modules/lanzadera/delivery/http/` (router) | `app/src/modules/lanzadera/application/` (use case) y `tests/lanzadera/` (test del flujo) |
 | Añadir un subcomando CLI | `app/src/modules/lanzadera/delivery/cli/` (argparse) | `app/src/modules/lanzadera/application/` y `scripts/local-preflight.sh` (smoke) |
-| Cambiar la migración de esquema | `app/migrations/versions/<NNNN>_<slug>.py` | `app/migrations/env.py` y `tests/lanzadera/migrations/` |
+| Cambiar la migración de esquema | `app/migrations/versions/` (ficheros `<NNNN>_<slug>.py`) | `app/migrations/env.py` y `tests/lanzadera/migrations/` |
 | Cambiar Argon2id o el reset flow | `app/src/modules/lanzadera/adapters/crypto/credential_hasher_argon2id.py` | `app/src/modules/lanzadera/application/` (`issue_reset_token`, `consume_reset_token`) y `docs/architecture.md` §Auth (D88-D91) |
 | Cambiar bootstrap de admins | `app/src/modules/lanzadera/di/bootstrap.py` + `app/src/modules/lanzadera/adapters/bootstrap/env_admin_source_adapter.py` | `scripts/setup-staging.ps1` y `app/src/modules/lanzadera/delivery/cli/platform_user.py` (camino CLI) |
-| Añadir un test de Expedientes | `tests/expedientes/application/<use-case>/` | `app/src/modules/expedientes/application/<use-case>/service.py` |
-| Cambiar la suite E2E | `e2e/<spec>.spec.ts` | `e2e/helpers/api-client.ts` y `e2e/fixtures/auth-fixture.ts` (globalSetup) |
-| Cambiar walkthrough de forms | `docs/03-aplicaciones/<app>/walkthrough-G<N>.json` (data) | `docs/03-aplicaciones/<app>/epic.md` (spec) |
-| Cambiar mockups UI | `docs/design/mockups/<mockup>.html` | Skill `telefonica-brand-design` y skill `frontend-design` |
-| Cambiar la doc de un gates | `docs/gates.md` (manual) | `scripts/<check>.py` (código) y `tests/test_ci_workflow.py` (wiring) |
+| Añadir un test de Expedientes | `tests/expedientes/application/` | `app/src/modules/expedientes/application/` (ficheros `service.py`) |
+| Cambiar la suite E2E | `e2e/` (ficheros `<spec>.spec.ts`) | `e2e/helpers/api-client.ts` y `e2e/fixtures/auth-fixture.ts` (globalSetup) |
+| Cambiar walkthrough de forms | `docs/03-aplicaciones/` (ficheros `walkthrough-G<N>.json`) (data) | `docs/03-aplicaciones/` (ficheros `epic.md`) (spec) |
+| Cambiar mockups UI | No hay mockups en el repo (ver `docs/codebase/what-is-not-here.md`) | Skill `telefonica-brand-design` y skill `frontend-design` |
+| Cambiar la doc de un gates | `docs/gates.md` (manual) | `scripts/` (ficheros `<check>.py`) (código) y `tests/test_ci_workflow.py` (wiring) |
 | Cambiar la suite de skills | `skills/documentation-alan-style/SKILL.md` (estilo) | `skills/README.md` (índice) y `AGENTS.md` (tabla de skills) |
 
 ## Regla de colocación
 
 Coloque el código en el owner estable más estrecho:
 
-1. **Una app sólo** → `app/src/modules/<app>/{domain,ports,application,adapters,di,delivery}/`.
+1. **Una app sólo** → `app/src/modules/`.
 2. **Cross-cutting entre apps** → `app/src/shared/` (cache, audit, lockout). NO duplicar por app.
-3. **Adaptador Postgres nuevo** → `app/src/modules/<app>/adapters/persistence/repositories/<x>_pg.py` con su tabla en `app/src/modules/<app>/adapters/persistence/repositories/<x>_table.py`.
-4. **Caso de uso de Expedientes** → `app/src/modules/expedientes/application/<use-case>/{command,service}.py` (estructura observada en `app/src/modules/expedientes/application/catalogs/`).
-5. **Investigación no convertida en código** → `docs/03-aplicaciones/<app>/` o `openspec/changes/<change>/`. No vive en `app/`.
-6. **Gate nuevo** → `scripts/check_<name>.py` + entrada en `docs/gates.md` + wiring en `tests/test_ci_workflow.py` + invocación en `.github/workflows/ci.yml::quality` o en `scripts/quality_report.py`.
+3. **Adaptador Postgres nuevo** → `app/src/modules/` (ficheros `<x>_pg.py`) con su tabla en `app/src/modules/` (ficheros `<x>_table.py`).
+4. **Caso de uso de Expedientes** → `app/src/modules/expedientes/application/` (ficheros `{command,service}.py`) (estructura observada en `app/src/modules/expedientes/application/catalogs/`).
+5. **Investigación no convertida en código** → `docs/03-aplicaciones/` o `openspec/changes/`. No vive en `app/`.
+6. **Gate nuevo** → `scripts/` (ficheros `check_<name>.py`) + entrada en `docs/gates.md` + wiring en `tests/test_ci_workflow.py` + invocación en `.github/workflows/ci.yml::quality` o en `scripts/quality_report.py`.
 
 ## Lista de comprobación del contribuidor
 

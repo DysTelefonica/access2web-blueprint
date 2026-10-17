@@ -11,12 +11,12 @@ Este repo expone **HTTP (FastAPI + Jinja2)**, **CLI de plataforma** y **scripts 
 | Interface | Estado en este repo | Ficheros primarios | Detalle |
 |---|---|---|---|
 | HTTP API (JSON) | Implementada (MVP de Lanzadera) | `app/src/main.py`, `app/src/modules/lanzadera/delivery/http/admin_routes_apps.py`, `admin_routes_users_json.py`, `admin_routes_presence.py`, `auth_routes.py` | [Rutas HTTP](#rutas-http) abajo |
-| HTTP HTML (HTMX) | Implementada (admin + auth) | `app/src/modules/lanzadera/delivery/http/admin_routes_*.py`, `templates/admin/*.html` | [Plantillas](#plantillas) abajo |
+| HTTP HTML (HTMX) | Implementada (admin + auth) | `app/src/modules/lanzadera/delivery/http/` (ficheros `admin_routes_*.py`), `app/src/modules/lanzadera/delivery/http/templates/admin/` | [Plantillas](#plantillas) abajo |
 | CLI de plataforma | Implementada (5 subcomandos) | `app/src/modules/lanzadera/delivery/cli/platform_user.py`, `platform_user_auth.py`, `platform_user_apps.py`, `platform_user_types.py`, `seed_profiles_cli.py` | [CLI de plataforma](#cli-de-plataforma) abajo |
-| Scripts operativos | Implementados | `scripts/check_*.py`, `scripts/local-preflight.sh`, `scripts/release-preflight.sh`, `scripts/quality_report.py`, `scripts/mutation_shards.py`, `scripts/setup-staging.ps1`, `scripts/sync-to-r2.ps1`, `scripts/migrate_from_access.py` | [Scripts](#scripts) abajo |
+| Scripts operativos | Implementados | `scripts/` (ficheros `check_*.py`), `scripts/local-preflight.sh`, `scripts/release-preflight.sh`, `scripts/quality_report.py`, `scripts/mutation_shards.py`, `scripts/setup-staging.ps1`, `scripts/sync-to-r2.ps1`, `scripts/migrate_from_access.py` | [Scripts](#scripts) abajo |
 | API HTTP local en puerto separado | No presente | Ningún paquete de dashboard o servidor separado | Use la propia FastAPI app (puerto único) |
 | Dashboard SPA | No presente | No existe un bundle JS de UI | Use las plantillas Jinja2 + HTMX + Alpine.js |
-| gRPC / WebSocket persistente | No presente | Sólo SSE puntual en `/admin/presence/stream` | Si necesita más, abra una epic en `openspec/changes/<change>/` |
+| gRPC / WebSocket persistente | No presente | Sólo SSE puntual en `/admin/presence/stream` | Si necesita más, abra una epic en `openspec/changes/` |
 
 ## Rutas HTTP
 
@@ -79,14 +79,14 @@ Jinja2 vive bajo `app/src/modules/lanzadera/delivery/http/templates/`. El compos
 
 | Plantilla | Sirve a | Notas |
 |---|---|---|
-| `base.html` | Layout común | Heredada por todas las `admin/*.html`. |
-| `app/src/modules/lanzadera/delivery/http/templates/admin/apps.html` | `GET /admin/apps` | Listado HTMX. |
-| `app/src/modules/lanzadera/delivery/http/templates/admin/users.html` | `GET /admin/users` | Listado HTMX. |
-| `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html` | `POST /admin/users` | Confirmación parcial HTMX. |
-| `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html` | `PATCH /admin/users/{user_id}/disable` | Confirmación parcial. |
-| `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | `POST /admin/apps/{app_id}/activate` | Confirmación parcial. |
-| `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | `POST /admin/assignments` | Confirmación parcial. |
-| `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | `GET /admin/audit` | Tabla de eventos. |
+| `base.html` | Layout común | Heredada por todas las las plantillas de `admin`. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/apps.html` | GET `/admin/apps` | Listado HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/users.html` | GET `/admin/users` | Listado HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html` | POST `/admin/users` | Confirmación parcial HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html` | PATCH `/admin/users/{user_id}/disable` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | POST `/admin/apps/{app_id}/activate` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | POST `/admin/assignments` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | GET `/admin/audit` | Tabla de eventos. |
 
 Si añade una plantilla nueva, declárela en la tabla de arriba y mantenga el tono castellano peninsular formal con usted (ver `skills/documentation-alan-style/SKILL.md`).
 
@@ -122,7 +122,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/check_workflows.py` | Gate | `ci.yml::quality` | Valida `.github/workflows/*.yml`. |
 | `scripts/check_required_jobs.py` | Gate | `ci.yml::quality` | Valida la matriz `required`. |
 | `scripts/check_decision_guards.py` | Gate | `ci.yml::quality` | Decisiones D-<n> con guardia. |
-| `scripts/check_walkthrough_schema.py` | Gate | `ci.yml::pr-gate` | `docs/03-aplicaciones/<app>/walkthrough-G*.json`. |
+| `scripts/check_walkthrough_schema.py` | Gate | `ci.yml::pr-gate` | `docs/03-aplicaciones/` (ficheros `walkthrough-G*.json`). |
 | `scripts/check_issue_spec.py` | Gate | `ci.yml::pr-gate` | Cuerpo de issue conforme a `docs/08-decisiones-y-preguntas-abiertas.md`. |
 | `scripts/check_suites_populated.py` | Gate | `ci.yml::quality` | Suites obligatorias no vacías. |
 | `scripts/check_test_classification.py` | Gate | `ci.yml::quality` | Marca tests según marcador. |
@@ -133,7 +133,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/require-ci-success.sh` | Tool | `release.yml::preflight` | Exige CI verde en el SHA. |
 | `scripts/quality_report.py` | Tool | `ci.yml::quality` (step final) | Renderiza el quality report a markdown. |
 | `scripts/mutation_shards.py` | Tool | `release.yml::mutation` | Reparte mutantes en 10 tramos deterministas. |
-| `scripts/setup-staging.ps1` | Tool | Local (desarrollador) | Pull de `data/staging/<app>/` desde R2. |
+| `scripts/setup-staging.ps1` | Tool | Local (desarrollador) | Pull de `data/staging/` desde R2. |
 | `scripts/sync-to-r2.ps1` | Tool | Local (desarrollador) | Sube binarios a R2. |
 | `scripts/migrate_from_access.py` | Tool | Local (desarrollador) | Migración legacy → hexagonal. |
 | `scripts/migrate_walkthrough_schema.py` | Tool | Local (desarrollador) | Migración de `walkthrough-*.json`. |
@@ -147,7 +147,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 2. Si es HTTP JSON → router en `app/src/modules/lanzadera/delivery/http/`, use case en `application`, test en `tests/lanzadera/delivery/` o `tests/lanzadera/application/`.
 3. Si es HTTP HTML → router + plantilla nueva en `app/src/modules/lanzadera/delivery/http/templates/admin/`; actualice esta tabla.
 4. Si es CLI → `app/src/modules/lanzadera/delivery/cli/`; añada `sub.add_parser(...)` en `build_parser()` y registre la rama en `scripts/check_test_classification.py`.
-5. Si es script → `scripts/<name>.py` o `.sh`; añada el wiring en `.github/workflows/*.yml` y la entrada en `docs/gates.md` si es un gate.
+5. Si es script → `scripts/` (ficheros `<name>.py`) o `.sh`; añada el wiring en `.github/workflows/*.yml` y la entrada en `docs/gates.md` si es un gate.
 
 ## Fronteras explícitas
 
