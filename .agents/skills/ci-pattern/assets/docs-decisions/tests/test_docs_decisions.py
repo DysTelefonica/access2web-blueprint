@@ -32,7 +32,7 @@ def decision(estado="adoptada", extra="", fecha="2026-10-06", decide="el dueño"
             f"- motivo: {motivo}\n{extra}")
 
 
-A, B = "2026-10-06-alfa", "2026-10-10-beta"
+A, B, C = "2026-10-06-alfa", "2026-10-10-beta", "2026-10-12-gamma"
 INDEX = f"# Decisiones\n\n| Decisión | Estado |\n|---|---|\n| [{A}]({A}.md) | adoptada |\n"
 FILES = {"docs/decisions/README.md": INDEX, f"docs/decisions/{A}.md": decision()}
 
@@ -94,8 +94,8 @@ class DocsDecisionsTests(unittest.TestCase):
         self.assertEqual(findings(with_beta(ok)), [])
 
     def test_una_cita_a_una_decision_inexistente_es_roja_y_a_una_existente_verde(self):
-        found = findings({"docs/guia.md": f"Ver decisión: {A} y decisión: nada.\n"})
-        self.assertTrue(any("docs/guia.md:1" in f and "nada" in f for f in found), found)
+        found = findings({"docs/guia.md": f"Ver decisión: {A} y decisión: 2026-01-01-nada.\n"})
+        self.assertTrue(any("docs/guia.md:1" in f and "2026-01-01-nada" in f for f in found), found)
         self.assertEqual(findings({"docs/guia.md": f"Ver decisión: {A}.\n"}), [])
 
     def test_indice_y_directorio_no_pueden_divergir(self):
@@ -113,6 +113,40 @@ class DocsDecisionsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(buf):
             self.assertEqual(CLI._check_docs_decisions(Path(d), {}), [])
         self.assertIn("HR-67: docs_decisions no declarado", buf.getvalue())
+
+    def test_sustituida_por_acepta_una_lista_de_slugs(self):
+        files = with_beta(decision("sustituida", f"- sustituida-por: {A}, {C}\n"))
+        files[f"docs/decisions/{C}.md"] = decision()
+        files["docs/decisions/README.md"] += f"| [{C}]({C}.md) | x |\n"
+        self.assertEqual(findings(files), [])
+
+    def test_lista_con_un_destino_inexistente_nombra_ese_slug(self):
+        beta = decision("sustituida", f"- sustituida-por: {A}, fantasma\n")
+        found = findings(with_beta(beta))
+        self.assertTrue(any("«fantasma»" in f and B in f for f in found), found)
+        self.assertFalse(any(f"«{A}»" in f for f in found), found)
+
+    def test_ciclo_por_el_segundo_destino_es_rojo(self):
+        files = with_beta(decision("sustituida", f"- sustituida-por: {A}, {C}\n"))
+        files[f"docs/decisions/{C}.md"] = decision("sustituida", f"- sustituida-por: {B}\n")
+        files["docs/decisions/README.md"] += f"| [{C}]({C}.md) | x |\n"
+        self.assertTrue(any("ciclo" in f for f in findings(files)), findings(files))
+
+    def test_prosa_tras_decision_no_es_una_cita(self):
+        prosa = "Falta fijar la decisión: tabla única o 6 tablas + vista.\n"
+        self.assertEqual(findings({"docs/guia.md": prosa}), [])
+
+    def test_cita_con_forma_de_slug_inexistente_sigue_en_rojo(self):
+        found = findings({"docs/guia.md": "Ver decisión: 2026-01-01-nada.\n"})
+        self.assertTrue(any("2026-01-01-nada" in f for f in found), found)
+
+    def test_cita_entre_comillas_o_en_enlace_se_valida(self):
+        ok = f"Ver decisión: `{A}` y [decisión: {A}](decisions/{A}.md).\n"
+        self.assertEqual(findings({"docs/guia.md": ok}), [])
+        bad = "Ver decisión: `fantasma` y [decisión: otra](decisions/otra.md).\n"
+        found = findings({"docs/guia.md": bad})
+        self.assertTrue(any("fantasma" in f for f in found), found)
+        self.assertTrue(any("otra" in f for f in found), found)
 
 
 if __name__ == "__main__":

@@ -39,6 +39,48 @@ def _repo(root, doc, modules=("routes", "domain")):
     return repo
 
 
+class ExtendedRulesValidationTests(unittest.TestCase):
+    """Claves opcionales del bloque (#749): forma válida y rechazos."""
+
+    def _findings(self, **extra):
+        block = {**BLOCK, **extra}
+        with tempfile.TemporaryDirectory() as d:
+            return gate.check_architecture(_repo(d, _doc(block=block)), "docs/architecture.md", ROOTS)
+
+    def test_las_tres_claves_bien_formadas_dan_verde(self):
+        self.assertEqual(self._findings(
+            independent=[{"modules": ["app/a", "app/b"]}],
+            pure={"layers": ["core"], "forbidden_externals": ["fastapi"]},
+            tolerated=[{"from": "core", "to": "web", "imports": ["app/domain/x -> app/routes/y"]}]), [])
+
+    def test_independent_con_un_solo_modulo_es_rojo(self):
+        found = self._findings(independent=[{"modules": ["app/a"]}])
+        self.assertTrue(any("«independent»" in f for f in found), found)
+
+    def test_pure_con_capa_no_declarada_es_roja(self):
+        found = self._findings(pure={"layers": ["nube"], "forbidden_externals": ["fastapi"]})
+        self.assertTrue(any("«pure» nombra la capa nube" in f for f in found), found)
+
+    def test_pure_sin_externos_es_roja(self):
+        found = self._findings(pure={"layers": ["core"], "forbidden_externals": []})
+        self.assertTrue(any("«pure» necesita" in f for f in found), found)
+
+    def test_tolerated_de_una_dependencia_ya_permitida_es_roja(self):
+        found = self._findings(tolerated=[{"from": "web", "to": "core", "imports": ["a -> b"]}])
+        self.assertTrue(any("no tiene sentido" in f for f in found), found)
+
+    def test_tolerated_con_capa_no_declarada_o_forma_invalida_es_roja(self):
+        found = self._findings(tolerated=[{"from": "core", "to": "nube", "imports": ["a -> b"]},
+                                          {"from": "core", "to": "web", "imports": ["sin flecha"]}])
+        self.assertTrue(any("capa no declarada" in f for f in found), found)
+        self.assertTrue(any("origen -> destino" in f for f in found), found)
+
+    def test_claves_que_no_son_listas_son_rojas(self):
+        found = self._findings(independent={"modules": ["a", "b"]}, tolerated="x")
+        self.assertTrue(any("«independent» debe ser una lista" in f for f in found), found)
+        self.assertTrue(any("«tolerated» debe ser una lista" in f for f in found), found)
+
+
 class TreeAndLayersTests(unittest.TestCase):
     def _findings(self, doc, modules=("routes", "domain"), roots=ROOTS):
         with tempfile.TemporaryDirectory() as d:
@@ -68,6 +110,15 @@ class TreeAndLayersTests(unittest.TestCase):
             repo = _repo(d, _doc())
             (repo / "app" / "__init__.py").write_text("", encoding="utf-8")
             self.assertEqual(gate.check_architecture(repo, "docs/architecture.md", ROOTS), [])
+
+    def test_las_subsecciones_del_arbol_cuentan_hasta_un_titulo_de_su_nivel(self):
+        """Regresión #751: el árbol bajo subtítulos `###` se lee entero."""
+        doc = ("# Arquitectura\n\n## Árbol de módulos\n\n### Raíz\n\n| Módulo | Responsabilidad |\n|---|---|\n"
+               "| `app/routes` | HTTP |\n\n### Núcleo\n\n| Módulo | Responsabilidad |\n|---|---|\n"
+               "| `app/domain` | reglas |\n\n## Otra sección\n\n| `app/ghost` | no es del árbol |\n\n"
+               "## Capas y dependencias\n\n```architecture\n" + json.dumps(BLOCK) + "\n```\n")
+        self.assertEqual(gate.parse_tree(doc), ["app/routes", "app/domain"])
+        self.assertEqual(self._findings(doc), [])
 
     def test_documento_ausente_falla_nombrandolo(self):
         found = self._findings(None)

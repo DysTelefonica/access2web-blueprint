@@ -42,6 +42,15 @@ def _load_fences():
 _FENCES = _load_fences()
 
 
+def _load_paths():
+    """Carga ``architecture_paths.py`` (capas por patrón de ruta) hermano, por ruta."""
+    path = Path(__file__).resolve().parent / "architecture_paths.py"
+    spec = importlib.util.spec_from_file_location("architecture_paths", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load_imports():
     """Carga el adaptador de imports ``architecture_imports.py`` hermano, por ruta."""
     path = Path(__file__).resolve().parent / "architecture_imports.py"
@@ -72,35 +81,50 @@ def list_module_paths(repo: Path, code_root: str, code_glob: str) -> list[str]:
 
 
 def parse_tree(text: str) -> list[str]:
-    """Rutas de la primera columna de la tabla bajo «Árbol de módulos»."""
-    in_tree, paths = False, []
+    """Rutas de la primera columna de las tablas bajo «Árbol de módulos».
+
+    Los subtítulos más profundos pertenecen al árbol; la sección acaba en el
+    siguiente título de su nivel o superior."""
+    tree_level, paths = 0, []
     for _number, line in _FENCES.unfenced_lines(text):
         heading = _HEADING_RE.match(line)
         if heading:
-            in_tree = heading.group(1).casefold() == TREE_HEADING
+            level = len(line) - len(line.lstrip("#"))
+            if heading.group(1).casefold() == TREE_HEADING:
+                tree_level = level
+            elif tree_level and level <= tree_level:
+                tree_level = 0
             continue
-        if in_tree and line.lstrip().startswith("|"):
+        if tree_level and line.lstrip().startswith("|"):
             cell = _CELL_PATH_RE.match(line.strip().strip("|").split("|")[0].strip())
             if cell:
-                paths.append(cell.group(1))
+                paths.append(cell.group(1).rstrip("/"))
     return paths
 
 
 def parse_block(text: str):
-    """``(datos, error)`` del primer bloque cercado con información ``architecture``."""
-    for info, body, _line in _FENCES.fenced_blocks(text):
-        if info == BLOCK_INFO:
-            try:
-                data = json.loads(body)
-            except json.JSONDecodeError as exc:
-                return None, f"el bloque «{BLOCK_INFO}» no es JSON válido: {exc}"
-            if not isinstance(data, dict):
-                return None, f"el bloque «{BLOCK_INFO}» debe ser un objeto"
-            return data, None
-    return None, f"falta el bloque cercado «{BLOCK_INFO}» con las capas y las dependencias"
+    """``(datos, error)`` del bloque de capas.
+
+    Es el primer bloque cercado con información ``architecture`` o, si no hay, el primer
+    bloque cercado entre las marcas ``<!-- architecture:begin -->`` y ``<!-- architecture:end -->``."""
+    lines = text.splitlines()
+    begin = next((n for n, line in enumerate(lines, 1) if line.strip() == "<!-- architecture:begin -->"), 0)
+    end = next((n for n, line in enumerate(lines, 1) if line.strip() == "<!-- architecture:end -->"), 0)
+    blocks = list(_FENCES.fenced_blocks(text))
+    chosen = next((b for b in blocks if b[0] == BLOCK_INFO), None) or next(
+        (b for b in blocks if begin and end and begin < b[2] < end), None)
+    if chosen is None:
+        return None, f"falta el bloque cercado «{BLOCK_INFO}» con las capas y las dependencias"
+    try:
+        data = json.loads(chosen[1])
+    except json.JSONDecodeError as exc:
+        return None, f"el bloque «{BLOCK_INFO}» no es JSON válido: {exc}"
+    if not isinstance(data, dict):
+        return None, f"el bloque «{BLOCK_INFO}» debe ser un objeto"
+    return data, None
 
 
-def _layer_findings(data: dict, tree: list[str]) -> list[str]:
+def _layer_findings(data: dict, tree: list[str] | None) -> list[str]:
     layers, allowed = data.get("layers"), data.get("allowed")
     if not isinstance(layers, list) or not layers or not isinstance(allowed, dict):
         return ["el bloque necesita «layers» (lista no vacía) y «allowed» (objeto)"]
@@ -115,13 +139,15 @@ def _layer_findings(data: dict, tree: list[str]) -> list[str]:
             findings.append(f"capa duplicada: {name}")
         names.append(name)
         for module in modules:
+            if tree is None:
+                continue
             if module not in tree:
                 findings.append(f"la capa {name} declara {module} y no está en el árbol")
             elif module in owner:
                 findings.append(f"el módulo {module} pertenece a varias capas: {owner[module]}, {name}")
             else:
                 owner[module] = name
-    findings += [f"el módulo {m} no pertenece a ninguna capa declarada" for m in tree if m not in owner]
+    findings += [f"el módulo {m} no pertenece a ninguna capa declarada" for m in tree or [] if m not in owner]
     for name in names:
         if name not in allowed:
             findings.append(f"la capa {name} no tiene regla en «allowed» (use [] si no puede depender de ninguna)")
@@ -131,6 +157,34 @@ def _layer_findings(data: dict, tree: list[str]) -> list[str]:
         for target in targets if isinstance(targets, list) else [None]:
             if target not in names:
                 findings.append(f"«allowed» permite {source} → {target}, capa no declarada")
+    return findings + _rule_findings(data, names, allowed)
+
+
+def _rule_findings(data: dict, names: list, allowed: dict) -> list[str]:
+    """Claves opcionales del bloque (#749): ``independent``, ``pure`` y ``tolerated``."""
+    findings = [f"«{key}» debe ser una lista" for key in ("independent", "tolerated")
+                if key in data and not isinstance(data[key], list)]
+    if findings:
+        return findings
+    for group in data.get("independent", []):
+        mods = group.get("modules") if isinstance(group, dict) else None
+        if not isinstance(mods, list) or len(mods) < 2 or not all(isinstance(m, str) and m for m in mods):
+            findings.append(f"«independent» necesita grupos con al menos dos módulos: {group!r}")
+    pure = data.get("pure")
+    if pure is not None:
+        layers, externals = (pure.get("layers"), pure.get("forbidden_externals")) if isinstance(pure, dict) else (None, None)
+        if not isinstance(layers, list) or not layers or not isinstance(externals, list) or not externals:
+            findings.append("«pure» necesita «layers» y «forbidden_externals» no vacíos")
+        else:
+            findings += [f"«pure» nombra la capa {n}, que no está declarada" for n in layers if n not in names]
+    for item in data.get("tolerated", []):
+        src, dst, edges = (item.get("from"), item.get("to"), item.get("imports")) if isinstance(item, dict) else (None, None, None)
+        if src not in names or dst not in names:
+            findings.append(f"«tolerated» nombra una capa no declarada: {src} → {dst}")
+        elif src == dst or dst in allowed.get(src, []):
+            findings.append(f"«tolerated» {src} → {dst} no tiene sentido: la dependencia ya está permitida")
+        if not isinstance(edges, list) or not edges or not all(isinstance(e, str) and e.count("->") == 1 for e in edges):
+            findings.append(f"«tolerated» {src} → {dst} necesita «imports» no vacío con la forma «origen -> destino»")
     return findings
 
 
@@ -148,6 +202,17 @@ STACKS = ("python", "typescript")
 
 def _adapter(stack: str):
     return _load_imports_ts() if stack == "typescript" else _load_imports()
+
+
+def _resolved_block(repo: Path, text: str, tree: list[str], roots: list[tuple[str, str]]):
+    """``(bloque con modules por capa, hallazgos)``; los patrones de ruta se expanden a paquetes."""
+    data, error = parse_block(text)
+    if error:
+        return None, [error]
+    if any(isinstance(layer, dict) and "paths" in layer for layer in data.get("layers", [])):
+        data, path_findings = _load_paths().normalize(repo, data, roots)
+        return data, path_findings + _layer_findings(data, None)
+    return data, _layer_findings(data, tree)
 
 
 def check_architecture(repo: Path, doc: str, roots: list[tuple[str, str]],
@@ -176,23 +241,23 @@ def check_architecture(repo: Path, doc: str, roots: list[tuple[str, str]],
         if not modules:
             findings.append(f"<empty {code_root}/>")
         actual += modules
-    findings += [f"árbol → código: {doc} describe {m} y no es un módulo de los code-roots"
-                 for m in tree if m not in actual]
+    findings += [f"árbol → código: {doc} describe {m} y no existe" for m in tree if not (repo / m).exists()]
     findings += [f"código → árbol: el módulo {m} no está descrito en {doc}"
-                 for m in actual if m not in tree]
-    data, error = parse_block(text)
-    layer_findings = [error] if error else _layer_findings(data, tree)
+                 for m in actual if not any(t == m or t.startswith(m + "/") for t in tree)]
+    data, layer_findings = _resolved_block(repo, text, tree, roots)
     findings += layer_findings
     if linter_config and not layer_findings:
         findings += _adapter(stack).check_imports(repo, data, linter_config)
     return findings
 
 
-def write_config(repo: Path, doc: str, linter_config: str, stack: str = "python") -> list[str]:
-    """Escribe la configuración del linter derivada del bloque; devuelve los hallazgos si no es válido."""
+def write_config(repo: Path, doc: str, linter_config: str, stack: str = "python",
+                 roots: list[tuple[str, str]] | None = None) -> list[str]:
+    """Escribe la configuración del linter derivada del bloque; devuelve los hallazgos si no es válido.
+
+    Con capas por patrón de ruta necesita los code-roots para expandirlas a paquetes."""
     text = (repo / doc).read_text(encoding="utf-8") if (repo / doc).is_file() else ""
-    data, error = parse_block(text)
-    problems = [error] if error else _layer_findings(data, parse_tree(text))
+    data, problems = _resolved_block(repo, text, parse_tree(text), roots or [])
     if not problems:
         render = _load_imports_ts().render_depcruise if stack == "typescript" else _load_imports().render_importlinter
         (repo / linter_config).write_text(render(data), encoding="utf-8")
@@ -235,7 +300,7 @@ def main(argv: list[str]) -> int:
     roots = list(zip(args.code_root, args.code_glob, strict=True))
     if args.write_config:
         problems = write_config(Path(args.repo), args.doc, args.linter_config or ".importlinter",
-                                args.stack)
+                                args.stack, roots)
         for problem in problems:
             print(f"FAIL architecture: {problem}", file=sys.stderr)
         return 1 if problems else 0
