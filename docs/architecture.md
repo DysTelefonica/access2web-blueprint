@@ -106,34 +106,9 @@ access2web-blueprint/
 └── skills/                      ← copia internalizada de skills del proyecto
 ```
 
-## Decisiones arquitectónicas D-<n> cross-cutting vigentes
+## Decisiones arquitectónicas D-<n>
 
-Las decisiones se numeran con D-<n> por orden de aprobación, no secuencial. Las obsoletas se reemplazan por una decisión nueva; las duplicadas se descartan. Esta tabla es **discontinua por diseño**.
-
-| ID | Decisión | Aplica a | Estado |
-|---|---|---|---|
-| D5 | Plataforma modular permission-aware | Todas | vigente |
-| D8 | Hexagonal global | Todas | vigente |
-| D14 | Esquema por módulo en PostgreSQL | Todas | vigente |
-| D16 | Object storage S3-compatible | NC, GR, Brass, Lanzadera | vigente |
-| D21, D42, D48 | Bootstrap de admins globales aislado | Lanzadera | vigente |
-| D27, D28 | Logs estructurados (no tablas TbLog) | Cross-cutting | vigente |
-| D36+D37 | Hash heredado sin sal | — | **OBSOLETO** — reemplazado por D88+D89 |
-| D52, D53 | Topología de las apps | Todas | vigente |
-| D55 | Sin telemetría (SSID/ubicación/coordenadas) | Cross-cutting | vigente |
-| D65 | Notificación cola-por-tabla | Lanzadera | vigente |
-| D66-D68 | Stack (Python/FastAPI) + monolito modular | Todas | vigente |
-| D70 | No caché de contadores ni métricas | Cross-cutting | vigente |
-| D71 | Redis detrás del CachePort, no dependencia | Cross-cutting | vigente |
-| D77 | Docker desde día uno | Plataforma | vigente |
-| D82 | Expand and Contract en migraciones | Todas | vigente |
-| D85 | Catálogo de 20 aplicaciones | Lanzadera | vigente |
-| D88 | Argon2id vía argon2-cffi==25.1.0 | Auth | vigente |
-| D89 | Sin columna legacy_hash; `password_hash=NULL` para migrados | Auth | vigente |
-| D90 | Reset flow con tokens one-time 24 h | Auth | vigente |
-| D91 | CLI exclusivo para primer admin global | Lanzadera | vigente |
-| D110 | Anti-patrón campos dinámicos F3..F9 | Lanzadera | vigente |
-| D112 | TbAplicacionesAperturas: limpieza de telemetría | Lanzadera | vigente |
+Las D-<n> viven en el [registro de decisiones](decisions/README.md): una por fichero, con estado (`adoptada`, `rechazada`, `sustituida`, `aplazada`), fecha, quién decide y motivo. Una decisión sustituida enlaza a la que la sustituye (por ejemplo D36 y D37 por D88 y D89).
 
 ## Decisiones de diseño del MVP (DA-<n>)
 
@@ -343,7 +318,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 | Tocar autenticación, bootstrap o reset | Esta guía §Auth + DA-2..DA-5 | `lanzadera-mvp/design.md` DA-2..DA-5 |
 | Modificar la migración Alembic | Esta guía §Persistence + D82 | `lanzadera-mvp/design.md` DA-7 |
 | Añadir un puerto o adapter cross-cutting | Esta guía §Caché / §Audit / §Secret / §Notificaciones | `lanzadera-mvp/design.md` §Adaptadores y puertos |
-| Auditar un cambio que afecta varias apps | Esta guía §Decisiones D-<n> cross-cutting | las `epic.md` de las apps afectadas |
+| Auditar un cambio que afecta varias apps | `docs/decisions/README.md` | las `epic.md` de las apps afectadas |
 
 ## What this is NOT
 
@@ -355,7 +330,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 ## Core invariants
 
 - **Hexagonalidad verificable, no discutida**: cada capa (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`) tiene reglas de importación que `scripts/check_layers.py` enforza con `ROOT_PACKAGE = "app.src.modules"`. Tests en `tests/test_ci_workflow.py` pinean `ROOT_PACKAGE`, `ALLOWED_IMPORTS` y `PURE_LAYERS` contra drift.
-- **D-<n> vigentes son vinculantes**: las decisiones de la tabla §Decisiones arquitectónicas D-<n> con estado `vigente` son contrato. Modificarlas exige PR al `design.md` del change correspondiente (vía SDD) o un issue que las reemplace por una decisión nueva; el doc nunca se edita a mano para «relajar» una regla.
+- **D-<n> vigentes son vinculantes**: las decisiones de `docs/decisions/` con estado `adoptada` son contrato. Modificarlas exige PR al `design.md` del change correspondiente (vía SDD) o un issue que las reemplace por una decisión nueva; el doc nunca se edita a mano para «relajar» una regla.
 - **Expand and Contract en cada release (D82)**: toda migración Alembic es aditiva. Rollback = `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. Las migraciones 0001..0006 son la línea base del MVP; cada futura app abre su propia serie.
 - **Audit en la misma transacción que la mutación auth (DA-11)**: los eventos canónicos (`auth.bootstrap.set_password`, `auth.login.success`, `auth.login.failure`, `app.open`, `global_admins.bootstrap`) se persisten atómicamente con la mutación. Si el insert de audit falla, la mutación hace rollback.
 - **Sin telemetría sensible (D55)**: nunca se persiste `ssid`, `bssid`, `coordinates`, `machine_name`, `ip_address` en logs estructurados ni en argumentos CLI. El check AST `scripts/check_legacy_hashes.py` pinea este invariante.
@@ -363,14 +338,14 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 ## Contributor checklist
 
-- [ ] La decisión propuesta (D-<n> nueva) se discute primero en un PR al `openspec/changes/<change>/design.md`, no se añade directamente a la tabla §Decisiones arquitectónicas.
+- [ ] La decisión propuesta (D-<n> nueva) se discute primero en un PR al `openspec/changes/<change>/design.md`, no se añade directamente al registro `docs/decisions/`.
 - [ ] Si la decisión cruza varias apps, se marca como `cross-cutting` y se referencia desde la `epic.md` correspondiente.
 - [ ] El cambio de código respeta las 6 reglas de §Core invariants; el `ci / quality` check pasa verde.
 - [ ] El pin AST de `check_legacy_hashes.py` se mantiene verde (no se reintroducen `legacy_hash`, `sha256` ni `migrate_password`).
 - [ ] Si la decisión toca un puerto (`CachePort`, `AuditLogPort`, `SecretManagerPort`, `LocationPort`, `NotificationDeliveryPort`), el adapter mantiene la signatura del puerto y el dominio no importa el framework concreto.
 - [ ] Si la decisión introduce una migración Alembic, sigue `expand_and_contract` (D82): añadir columnas nullable o tablas nuevas, sin `DROP` ni `ALTER` destructivos en la misma release.
 - [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, partir por unidad de trabajo o encadenar.
-- [ ] Se actualiza la tabla §Decisiones arquitectónicas D-<n> y §Gaps conocidos si corresponde.
+- [ ] Se actualiza el registro `docs/decisions/` y §Gaps conocidos si corresponde.
 
 ## Navigation
 

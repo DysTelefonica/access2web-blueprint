@@ -336,9 +336,9 @@ Saltarse cualquiera deja a la IA operando contra arquitectura obsoleta.
 
 ## §F.4 Reglas de decisiones arquitectónicas (D-<n>)
 
-- Toda D-<n> tiene estado: `vigente` u `OBSOLETO`. Las obsoletas se reemplazan, no se duplican.
-- Buscar en `docs/architecture.md` §Decisiones arquitectónicas D-<n> cross-cutting vigentes antes de proponer una nueva.
-- Las decisiones cross-cutting se promueven a `docs/architecture.md` con estado `vigente`. NO se quedan en `app/src/modules/<app>/`.
+- Toda D-<n> tiene estado: `adoptada`, `rechazada`, `sustituida` o `aplazada`. Las sustituidas enlazan a su sucesora, no se duplican.
+- Buscar en `docs/decisions/README.md` antes de proponer una D-<n> nueva.
+- Las decisiones cross-cutting se registran en `docs/decisions/` con estado `adoptada`. NO se quedan en `app/src/modules/<app>/`.
 - Las D-<n> no se inventan. Si la decisión es nueva y cross-cutting, abrir issue `##ABIERTO##` en `openspec/changes/<change>/design.md` y bloquear el código hasta que la design doc declare la D-<n>.
 
 ## §F.5 Regeneración de walkthroughs
