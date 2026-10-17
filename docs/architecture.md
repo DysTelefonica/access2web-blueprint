@@ -94,7 +94,7 @@ access2web-blueprint/
 │   ├── Dockerfile               ← python:3.12-slim-bookworm
 │   ├── src/
 │   │   ├── main.py              ← FastAPI composition root
-│   │   └── modules/{lanzadera,expedientes}/   ← ver §Módulos y capas
+│   │   └── modules/{lanzadera,expedientes}/   ← ver §Árbol de módulos
 │   └── migrations/versions/     ← Alembic (D82)
 ├── tests/                       ← TDD + `test_ci_workflow.py` (QC-9) + `test_architecture_doc.py`
 ├── e2e/                         ← suite Playwright (gate de release)
@@ -130,47 +130,110 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 | DA-12 | Mapping legacy → profiles en tabla inmutable, regla `SinAcceso` exclusivo. |
 | DA-13 | Pin test AST rechaza símbolos `legacy_hash`, `sha256`, `migrate_password`. |
 
-## Módulos y capas (HR-68)
+## Árbol de módulos
 
-Módulos de primer nivel bajo `app/src/modules/` (un módulo por aplicación migrada):
+Módulos de primer nivel de cada aplicación migrada bajo `app/src/modules/`: cada carpeta de capa de `lanzadera` y de `expedientes`. Un gate compara esta tabla con el código en los dos sentidos.
 
-| Módulo | Responsabilidad | Capas |
-|---|---|---|
-| `lanzadera` | MVP de Lanzadera: usuarios, aplicativos, permisos, presencia, auditoría y CLI de bootstrap. | `domain`, `ports`, `application`, `adapters`, `delivery`, `di` |
-| `expedientes` | Expedientes (F04, scaffold): casos de uso y migración desde el legacy. | las de `lanzadera` más `migration` y el paquete `shared` del módulo |
+| Módulo | Responsabilidad |
+|---|---|
+| `app/src/modules/lanzadera/adapters` | Lanzadera: Implementaciones de los puertos (Postgres, correo, criptografía, secretos). |
+| `app/src/modules/lanzadera/application` | Lanzadera: Casos de uso; orquestan dominio y puertos. |
+| `app/src/modules/lanzadera/delivery` | Lanzadera: Entrada HTTP y CLI; traduce peticiones a casos de uso. |
+| `app/src/modules/lanzadera/di` | Lanzadera: Raíz de composición: construye el contenedor de dependencias. |
+| `app/src/modules/lanzadera/domain` | Lanzadera: Entidades y reglas de negocio; sin frameworks. |
+| `app/src/modules/lanzadera/ports` | Lanzadera: Interfaces que el dominio y los casos de uso necesitan del exterior. |
+| `app/src/modules/expedientes/adapters` | Expedientes: Implementaciones de los puertos (Postgres, correo, criptografía, secretos). |
+| `app/src/modules/expedientes/application` | Expedientes: Casos de uso; orquestan dominio y puertos. |
+| `app/src/modules/expedientes/delivery` | Expedientes: Entrada HTTP y CLI; traduce peticiones a casos de uso. |
+| `app/src/modules/expedientes/di` | Expedientes: Raíz de composición: construye el contenedor de dependencias. |
+| `app/src/modules/expedientes/domain` | Expedientes: Entidades y reglas de negocio; sin frameworks. |
+| `app/src/modules/expedientes/migration` | Expedientes: Extractores y promoción de datos desde el legacy. |
+| `app/src/modules/expedientes/ports` | Expedientes: Interfaces que el dominio y los casos de uso necesitan del exterior. |
+| `app/src/modules/expedientes/shared` | Expedientes: Soporte común del módulo (unidad de trabajo). |
 
-Las capas y las dependencias que cada una puede importar se declaran en este bloque, que es la fuente que el test `tests/test_architecture_doc.py` compara con `ALLOWED_IMPORTS`, `PURE_LAYERS` y `CROSS_CUTTING_MODULES` de `scripts/check_layers.py`. Cambiar una regla exige cambiar el código del gate y este bloque en el mismo PR.
+## Capas y dependencias
 
-```json
+Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carpeta del mismo nombre de `lanzadera` y de `expedientes`. `allowed` dice de qué otras capas puede depender cada una; lo que no se permite está prohibido. Este bloque es la única fuente de las reglas de imports: de él se deriva la configuración de import-linter (`.importlinter`) y lo compara `tests/test_architecture_doc.py` con `ALLOWED_IMPORTS`, `PURE_LAYERS` y `CROSS_CUTTING_MODULES` de `scripts/check_layers.py`. Cambiar una regla exige cambiar el código del gate, este bloque y la configuración derivada en el mismo PR.
+
+```architecture
 {
-  "layers": {
-    "domain": [
+  "layers": [
+    {
+      "name": "domain",
+      "modules": [
+        "app/src/modules/lanzadera/domain",
+        "app/src/modules/expedientes/domain"
+      ]
+    },
+    {
+      "name": "ports",
+      "modules": [
+        "app/src/modules/lanzadera/ports",
+        "app/src/modules/expedientes/ports"
+      ]
+    },
+    {
+      "name": "application",
+      "modules": [
+        "app/src/modules/lanzadera/application",
+        "app/src/modules/expedientes/application"
+      ]
+    },
+    {
+      "name": "adapters",
+      "modules": [
+        "app/src/modules/lanzadera/adapters",
+        "app/src/modules/expedientes/adapters"
+      ]
+    },
+    {
+      "name": "shared",
+      "modules": [
+        "app/src/modules/expedientes/shared"
+      ]
+    },
+    {
+      "name": "delivery",
+      "modules": [
+        "app/src/modules/lanzadera/delivery",
+        "app/src/modules/expedientes/delivery"
+      ]
+    },
+    {
+      "name": "di",
+      "modules": [
+        "app/src/modules/lanzadera/di",
+        "app/src/modules/expedientes/di"
+      ]
+    },
+    {
+      "name": "migration",
+      "modules": [
+        "app/src/modules/expedientes/migration"
+      ]
+    }
+  ],
+  "allowed": {
+    "domain": [],
+    "ports": [
       "domain"
     ],
-    "ports": [
-      "domain",
-      "ports"
-    ],
     "application": [
-      "application",
       "domain",
       "ports"
     ],
     "adapters": [
-      "adapters",
       "domain",
       "ports",
       "shared"
     ],
     "shared": [
       "domain",
-      "ports",
-      "shared"
+      "ports"
     ],
     "delivery": [
       "adapters",
       "application",
-      "delivery",
       "domain",
       "ports",
       "shared"
@@ -179,7 +242,6 @@ Las capas y las dependencias que cada una puede importar se declaran en este blo
       "adapters",
       "application",
       "delivery",
-      "di",
       "domain",
       "ports",
       "shared"
@@ -187,15 +249,46 @@ Las capas y las dependencias que cada una puede importar se declaran en este blo
     "migration": [
       "adapters",
       "domain",
-      "migration",
       "ports",
       "shared"
     ]
   },
-  "pure_layers": [
-    "application",
-    "domain",
-    "ports"
+  "independent": [
+    {
+      "modules": [
+        "app/src/modules/lanzadera",
+        "app/src/modules/expedientes"
+      ]
+    }
+  ],
+  "pure": {
+    "layers": [
+      "application",
+      "domain",
+      "ports"
+    ],
+    "forbidden_externals": [
+      "alembic",
+      "asyncpg",
+      "fastapi",
+      "httpx",
+      "jinja2",
+      "pydantic_settings",
+      "sqlalchemy",
+      "starlette"
+    ]
+  },
+  "tolerated": [
+    {
+      "from": "delivery",
+      "to": "di",
+      "imports": [
+        "app/src/modules/lanzadera/delivery/http/admin_routes -> app/src/modules/lanzadera/di/container",
+        "app/src/modules/lanzadera/delivery/http/admin_routes_misc -> app/src/modules/lanzadera/di/container",
+        "app/src/modules/lanzadera/delivery/http/admin_routes_users -> app/src/modules/lanzadera/di/container",
+        "app/src/modules/lanzadera/delivery/http/auth_routes -> app/src/modules/lanzadera/di/container"
+      ]
+    }
   ],
   "cross_cutting_modules": [
     "core"
@@ -203,7 +296,7 @@ Las capas y las dependencias que cada una puede importar se declaran en este blo
 }
 ```
 
-`PURE_LAYERS` no importa frameworks (`FORBIDDEN_IN_PURE_LAYERS` en `scripts/check_layers.py`). `app/src/main.py` es la única excepción de capa declarada (`UNLAYERED_FILES`). Cuando aparece un módulo nuevo bajo `app/src/modules/`, se añade a la tabla de arriba en el mismo PR: el test falla nombrándolo.
+`independent` fija que `lanzadera` y `expedientes` no se importan entre sí (segmentación vertical); `pure` lista las capas que no importan frameworks (`FORBIDDEN_IN_PURE_LAYERS` en `scripts/check_layers.py`); `tolerated` enumera las importaciones `delivery→di` heredadas, que solo pueden encoger, y `cross_cutting_modules` son los módulos de los que cualquiera puede depender (informativa). De este bloque se deriva `.importlinter`; hasta retirar `scripts/check_layers.py` ambos imponen las mismas reglas. `app/src/main.py` es la única excepción de capa declarada (`UNLAYERED_FILES`). Cuando aparece una capa nueva bajo `app/src/modules/<módulo>/`, se añade a la tabla de arriba y al bloque en el mismo PR: el gate falla nombrándola.
 
 ## Auth (D88-D91 + DA-2..DA-5)
 
