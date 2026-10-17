@@ -3,11 +3,11 @@
 
 import argparse
 import json
-from pathlib import Path
-import os
 import re
 import subprocess
 import sys
+from pathlib import Path
+
 
 def load_event(path):
     p = Path(path)
@@ -46,7 +46,7 @@ def git_shortstat(repo, base_sha, head_sha):
 
 def check_labels(pr, policy, findings):
     required = policy.get("required_labels", [])
-    labels = {l["name"] for l in pr.get("labels", [])}
+    labels = {item["name"] for item in pr.get("labels", [])}
     if not required:
         return
     if not labels:
@@ -64,7 +64,7 @@ def check_closes(pr, base, default_branch, policy, findings):
     pattern = policy.get("closes_pattern", "Closes|Fixes|Resolves")
     requires = policy.get("chain_tip_requires_closes", True)
     chain_label = policy.get("chain_partial_label", "chain:partial")
-    labels = {l["name"] for l in pr.get("labels", [])}
+    labels = {item["name"] for item in pr.get("labels", [])}
     rx = re.compile(rf"\b(?:{pattern})\s+#\d+", re.IGNORECASE)
     refs_rx = re.compile(r"\bRefs\s+#\d+", re.IGNORECASE)
     is_tip = base == default_branch
@@ -104,7 +104,7 @@ def size_exception_applied(pr, policy):
     Devuelve True si la etiqueta está aplicada, False en caso contrario.
     """
     label_name = policy.get("size_exception_label", "size:exception")
-    labels = {l.get("name") for l in pr.get("labels", []) if isinstance(l, dict)}
+    labels = {item.get("name") for item in pr.get("labels", []) if isinstance(item, dict)}
     return label_name in labels
 
 
@@ -298,7 +298,7 @@ def chain_fields(text):
 def check_chain_context(pr, base, default_branch, policy, findings):
     """#333: la cadena se declara como dato, no se reconstruye a mano."""
     body = pr.get("body") or ""
-    labels = {l["name"] for l in pr.get("labels", [])}
+    labels = {item["name"] for item in pr.get("labels", [])}
     chain_label = policy.get("chain_partial_label", "chain:partial")
     if chain_label not in labels and base != default_branch:
         return  # ni forma parte de una cadena ni es su punta
@@ -352,7 +352,15 @@ def check_issue_links(pr, data, findings):
                 f"({owner_repo}#{number}): el enlace apunta al repositorio del PR.")
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv=None):
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(description="Gate de contrato de PR y commits (#193).")
     parser.add_argument("--event-file", required=True, help="Payload del evento de PR.")
     parser.add_argument("--policy-file", required=True, help="Política del gate.")

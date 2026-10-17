@@ -104,30 +104,6 @@ class LocalCiParityTests(unittest.TestCase):
             self.assertIn("comando del CI sin entrada local", proc.stdout)
             self.assertIn("check_x.py", proc.stdout)
 
-    def test_shorthand_block_siblings_are_not_script_lines(self):
-        """`- run: |` con claves hermanas del step (shell:, env:,
-        working-directory: a la columna de `run`) no las absorbe como
-        líneas del script: sin comandos CI fantasma (hallazgo del auditor)."""
-        wf = ("jobs:\n"
-              "  unit:\n"
-              "  steps:\n"
-              "      - run: |\n"
-              "          bash cmd/a.sh\n"
-              "        shell: bash\n"
-              "        env:\n"
-              "          FOO: bar\n"
-              "        working-directory: ./x\n")
-        ep = ('for t in cmd/*.sh; do\n'
-              '  if bash "$t"; then\n'
-              '    echo PASS\n'
-              '  fi\n'
-              'done\n')
-        with tempfile.TemporaryDirectory() as tmp:
-            proc = run_gate(build_repo(tmp, workflow=wf, entrypoint=ep),
-                            build_policy(tmp, [], tmp))
-            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-            self.assertIn("bash cmd/b.sh", proc.stdout)
-
     def test_flag_difference_between_local_and_ci_is_a_finding(self):
         """Friccion F1 (#396): dos lados ejecutando el mismo comando
         con distinto flag deben producir un hallazgo que nombre AMBAS

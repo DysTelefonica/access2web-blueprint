@@ -14,7 +14,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _helpers import (
-    BaseMigrationTest, add_files, make_repo, run_gate,
+    BaseMigrationTest,
+    add_files,
+    make_repo,
+    run_gate,
 )
 
 

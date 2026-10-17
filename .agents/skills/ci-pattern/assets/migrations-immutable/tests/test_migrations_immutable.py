@@ -17,7 +17,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _helpers import (
-    BaseMigrationTest, add_files, git, make_repo, run_gate,
+    BaseMigrationTest,
+    git,
+    make_repo,
+    run_gate,
 )
 
 

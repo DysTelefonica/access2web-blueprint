@@ -58,7 +58,7 @@ def load_event(path: str) -> dict:
     return {
         "base_ref": base_ref.strip(),
         "number": pr.get("number"),
-        "labels": {str(l.get("name", "")) for l in labels if isinstance(l, dict)},
+        "labels": {str(item.get("name", "")) for item in labels if isinstance(item, dict)},
     }
 
 
@@ -102,7 +102,15 @@ def evaluate(pr: dict, open_heads: set[str], default_branch: str,
     return []
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv=None) -> int:
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="merge-target gate (#420)")
     ap.add_argument("--event", required=True,
                     help="JSON con el payload github.event (objeto pull_request)")
