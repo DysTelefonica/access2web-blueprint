@@ -19,7 +19,13 @@ from pathlib import Path
 CONFIG_KEYS = ("dir", "cite_roots", "job")
 STATES = ("adoptada", "rechazada", "sustituida", "aplazada")
 _FIELD_RE = re.compile(r"^-\s+(estado|fecha|decide|motivo|sustituida-por|revision):\s*(.*?)\s*$")
-_CITE_RE = re.compile(r"decisión:\s*([\w\-]+)")
+# Una cita es «decisión: <slug>» con forma de nombre de decisión (AAAA-MM-DD-…), entre
+# comillas invertidas o como texto de un enlace Markdown; una palabra suelta es prosa (#754).
+_CITE_RE = re.compile(
+    r"\[decisión:\s*([\w\-]+)\]\("
+    r"|decisión:\s*`([^`\s]+)`"
+    r"|decisión:\s*(\d{4}-\d{2}-\d{2}-[\w\-]+)"
+)
 _INDEX_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)#\s]+)\)")
 
 
@@ -43,26 +49,35 @@ def _format_findings(rel, fields, known):
         out.append(f"HR-67: {rel}:{fields['estado'][1]}: estado «{state}» fuera de {', '.join(STATES)}")
     if fields.get("fecha", ("",))[0] and not _valid_date(fields["fecha"][0]):
         out.append(f"HR-67: {rel}:{fields['fecha'][1]}: fecha «{fields['fecha'][0]}» no es ISO (AAAA-MM-DD)")
-    target = fields.get("sustituida-por", ("",))[0]
-    if state == "sustituida" and not target:
+    targets = _targets(fields)
+    if state == "sustituida" and not targets:
         out.append(f"HR-67: {rel}: una decisión sustituida necesita «sustituida-por»")
-    elif target and target not in known:
-        out.append(f"HR-67: {rel}:{fields['sustituida-por'][1]}: sustituida-por apunta a «{target}», que no existe")
+    out += [f"HR-67: {rel}:{fields['sustituida-por'][1]}: sustituida-por apunta a «{t}», que no existe"
+            for t in targets if t not in known]
     if state == "aplazada" and not fields.get("revision", ("",))[0]:
         out.append(f"HR-67: {rel}: una decisión aplazada necesita su «revision» (condición o fecha)")
     return out
 
 
+def _targets(fields):
+    """Slugs de ``sustituida-por``: uno o una lista separada por comas."""
+    return [t.strip() for t in fields.get("sustituida-por", ("",))[0].split(",") if t.strip()]
+
+
 def _cycles(decisions):
     out = []
-    for slug, fields in sorted(decisions.items()):
-        seen, cur = [slug], fields.get("sustituida-por", ("",))[0]
-        while cur and cur in decisions:
-            if cur in seen:
-                out.append(f"HR-67: ciclo de sustitución: {' -> '.join(seen + [cur])}")
-                break
-            seen.append(cur)
-            cur = decisions[cur].get("sustituida-por", ("",))[0]
+    for slug in sorted(decisions):
+        stack, seen = [(slug, [slug])], set()
+        while stack:
+            node, path = stack.pop()
+            for nxt in _targets(decisions[node]):
+                if nxt == slug:
+                    out.append(f"HR-67: ciclo de sustitución: {' -> '.join(path + [nxt])}")
+                    stack.clear()
+                    break
+                if nxt in decisions and nxt not in seen:
+                    seen.add(nxt)
+                    stack.append((nxt, path + [nxt]))
     return out
 
 
@@ -90,6 +105,7 @@ def check(repo, config):
             if (repo / base) in doc.parents:
                 continue
             for number, line in enumerate(doc.read_text(encoding="utf-8").splitlines(), 1):
+                cited = [next(g for g in m.groups() if g) for m in _CITE_RE.finditer(line)]
                 findings += [f"HR-67: {doc.relative_to(repo).as_posix()}:{number} cita la decisión «{s}», que no existe"
-                             for s in _CITE_RE.findall(line) if s not in decisions]
+                             for s in cited if s not in decisions]
     return findings

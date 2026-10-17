@@ -54,6 +54,26 @@ class DocsManifestTests(unittest.TestCase):
     def test_conforme_da_verde(self):
         self.assertEqual(_findings(OK), [])
 
+    def test_un_titulo_dentro_de_un_bloque_de_tildes_no_satisface_la_seccion(self):
+        found = _findings({"README.md": "# P\n\n~~~\n## Uso\ntexto\n~~~\n"})
+        self.assertTrue(any("README.md" in f and "«Uso»" in f for f in found), found)
+
+    def test_un_titulo_dentro_de_un_bloque_de_cuatro_comillas_con_uno_de_tres_no_cuenta(self):
+        text = "# P\n\n````md\n```sh\n## Uso\ntexto\n```\n````\n"
+        found = _findings({"README.md": text})
+        self.assertTrue(any("«Uso»" in f for f in found), found)
+
+    def test_un_bloque_anidado_no_invierte_la_deteccion_de_los_titulos_siguientes(self):
+        text = "# P\n\n````md\n```\n````\n\n## Uso\n\ntexto\n"
+        self.assertEqual(_findings({"README.md": text}), [])
+
+    def test_un_bloque_sin_cerrar_deja_fuera_el_resto_del_fichero(self):
+        found = _findings({"README.md": "# P\n\n```\n## Uso\ntexto\n"})
+        self.assertTrue(any("«Uso»" in f for f in found), found)
+
+    def test_el_gate_no_conserva_su_propia_logica_de_delimitadores(self):
+        self.assertNotIn('startswith("```")', (ASSET / "check_docs_manifest.py").read_text(encoding="utf-8"))
+
     def test_documento_ausente_nombra_el_fichero(self):
         found = _findings({})
         self.assertTrue(any("README.md" in f and "falta el documento" in f for f in found), found)
