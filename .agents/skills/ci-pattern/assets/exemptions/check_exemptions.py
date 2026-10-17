@@ -71,7 +71,15 @@ def load_document(path: str) -> object:
     return doc
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Exemption identity gate (HR-33).")
     ap.add_argument("--file", action="append", default=[],
                     help="JSON document to scan for exemptions (repeatable)")

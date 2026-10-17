@@ -309,6 +309,74 @@ class DomainDeclaration(unittest.TestCase):
             self.assertEqual(code, 2)
 
 
+class DotenvPrecision(unittest.TestCase):
+    """#635: DOTENV casaba `templates.env` (acceso a atributo) y `dotenv` como
+    palabra suelta. Solo el fichero `.env`, el cargador y las lecturas de
+    entorno son hallazgos; los datos declarados por fichero no."""
+
+    def scan(self, files, allowlist=ALLOWLIST):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d, "testing")
+            build(root, files)
+            return run_gate(root, allowlist)
+
+    def test_jinja_env_attribute_is_not_a_dotenv_reference(self):
+        code, out = self.scan({"suites/t.py":
+                               'def f(templates):\n    return templates.env.from_string("x")\n'})
+        self.assertEqual((code, "HR-28" in out), (0, False), out)
+
+    def test_uppercase_env_attribute_is_not_a_dotenv_reference(self):
+        code, out = self.scan({"suites/t.py":
+                               'TEMPLATES = object()\nautoescape = TEMPLATES.env.autoescape\n'})
+        self.assertEqual((code, "HR-28" in out), (0, False), out)
+
+    def test_dotenv_word_in_url_is_not_a_loader(self):
+        code, out = self.scan({"suites/t.py":
+                               'URL = "postgresql://dotenv"\n'})
+        self.assertEqual((code, "HR-28" in out), (0, False), out)
+
+    def test_open_dotenv_file_is_a_finding(self):
+        code, out = self.scan({"suites/o.py": 'open(".env").read()\n'})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-28", out)
+
+    def test_dotenv_file_in_fixture_is_a_finding_without_declaration(self):
+        code, out = self.scan({"suites/f.py":
+                               'def t(tmp_path):\n'
+                               '    (tmp_path / ".env").write_text("X=1")\n'})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-28", out)
+
+    def test_declared_data_file_may_mention_dotenv(self):
+        allow = {**ALLOWLIST, "dotenv_data_files": [
+            {"file": "suites/f.py", "reason": "fixture escribe un .env en tmp_path"}]}
+        code, out = self.scan({"suites/f.py":
+                               'def t(tmp_path):\n'
+                               '    (tmp_path / ".env").write_text("X=1")\n'}, allow)
+        self.assertEqual(code, 0, out)
+
+    def test_declaration_does_not_exempt_a_loader_in_the_same_file(self):
+        allow = {**ALLOWLIST, "dotenv_data_files": [
+            {"file": "suites/f.py", "reason": "fixture escribe un .env en tmp_path"}]}
+        code, out = self.scan({"suites/f.py":
+                               'from dotenv import load_dotenv\n'
+                               'load_dotenv()\n'}, allow)
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-28", out)
+
+    def test_declaration_without_reason_is_exit_two(self):
+        allow = {**ALLOWLIST, "dotenv_data_files": [{"file": "suites/f.py", "reason": " "}]}
+        code, out = self.scan({"suites/f.py": 'x = 1\n'}, allow)
+        self.assertEqual(code, 2, out)
+
+    def test_stale_declaration_is_a_finding(self):
+        allow = {**ALLOWLIST, "dotenv_data_files": [
+            {"file": "suites/f.py", "reason": "ya no escribe .env"}]}
+        code, out = self.scan({"suites/f.py": 'x = 1\n'}, allow)
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-28 STALE", out)
+
+
 class Dogfooding(unittest.TestCase):
     """Dogfooding (#195): en team-skills el escaneo real NO puede saltarse —
     la allowlist vive en .github/ y su ausencia es un fallo, no un skip."""

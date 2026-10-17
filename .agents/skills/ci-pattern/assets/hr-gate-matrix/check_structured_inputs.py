@@ -22,11 +22,11 @@ Exit codes: 0 clean · 1 findings · 2 invalid input or empty subject.
 from __future__ import annotations
 
 import argparse
-import ast
 import json
 import re
 import sys
 from pathlib import Path
+
 
 class GateError(Exception):
     """A condition the gate refuses to interpret; maps to exit 2."""
@@ -78,7 +78,7 @@ def python_scrape_calls(text: str):
 
 def logical_lines(text: str):
     """Une continuaciones con backslash y cita el número de línea física inicial."""
-    logical, start, pending = [], None, []
+    logical, pending = [], []
     for number, raw in enumerate(text.splitlines(), 1):
         if raw.endswith("\\") and not raw.endswith("\\\\"):
             pending.append((number, raw[:-1]))
@@ -94,7 +94,15 @@ def logical_lines(text: str):
     return logical
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Structured inputs contract gate (HR-1).")
     ap.add_argument("--skill-root", default=str(Path(__file__).resolve().parents[2]),
                     help="raíz de la skill (donde viven assets/ y references/)")

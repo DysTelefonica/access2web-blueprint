@@ -39,7 +39,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture
-def allow_network() -> "_AllowNetwork":
+def allow_network() -> _AllowNetwork:
     return _AllowNetwork()
 
 
