@@ -129,4 +129,4 @@ Tras el título, una lista con estas claves:
 | [D86](2026-08-05-d86-la-forma-hexagonal-del-legacy-dominio-en.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 | [D87](2026-08-05-d87-los-tests-vba-existentes-en-staging-por.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 
-Las D-n anteriores a este registro viven en `../08-decisiones-y-preguntas-abiertas.md` y se migran aquí en la issue #985; hasta entonces, las cuatro primeras filas de arriba (D36, D37, D88, D89) son la única cadena de sustitución migrada.
+Las D1 a D91 de la antigua tabla de `../08-decisiones-y-preguntas-abiertas.md` están migradas completas; `tests/test_decisions_registry.py` falla si falta alguna o si un documento vuelve a repetir sus filas. Las decisiones que comparten `origen` (por ejemplo D70, D71 y D72) comparten también el motivo de esa resolución conjunta.

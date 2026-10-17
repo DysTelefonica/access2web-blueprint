@@ -132,3 +132,46 @@ def test_red_index_out_of_sync_both_ways(tmp_path: Path) -> None:
 
 def test_red_empty_directory_fails_closed(tmp_path: Path) -> None:
     assert registry_findings(tmp_path)
+
+
+DOCS = REGISTRY.parent
+_DECISION_FILE = re.compile(r"^\d{4}-\d{2}-\d{2}-d(\d+)-")
+_DECISION_ROW = re.compile(r"^\| D\d+ ", re.MULTILINE)
+LAST_MIGRATED = 91
+
+
+def migration_findings(directory: Path, texts: dict[str, str]) -> list[str]:
+    """Every D-n of the old register has its own file and no document repeats the rows."""
+    present = {
+        int(m.group(1)) for p in directory.glob("*.md") if (m := _DECISION_FILE.match(p.name))
+    }
+    out = [f"falta el fichero de D{n}" for n in range(1, LAST_MIGRATED + 1) if n not in present]
+    out += [
+        f"{name}: repite filas de decisión" for name, t in texts.items() if _DECISION_ROW.search(t)
+    ]
+    return out
+
+
+def _texts() -> dict[str, str]:
+    names = (
+        "08-decisiones-y-preguntas-abiertas.md",
+        "09-arquitectura-objetivo-y-principios.md",
+        "architecture.md",
+    )
+    return {n: (DOCS / n).read_text("utf-8") for n in names}
+
+
+def test_real_migration_is_complete_and_not_duplicated() -> None:
+    assert migration_findings(REGISTRY, _texts()) == []
+
+
+def test_red_missing_decision_file(tmp_path: Path) -> None:
+    for n in range(1, LAST_MIGRATED + 1):
+        if n != 50:
+            (tmp_path / f"2026-01-01-d{n}-x.md").write_text("")
+    assert migration_findings(tmp_path, {}) == ["falta el fichero de D50"]
+
+
+def test_red_document_repeats_decision_rows() -> None:
+    found = migration_findings(REGISTRY, {"08.md": "| D5 | texto | APROBADO |"})
+    assert found == ["08.md: repite filas de decisión"]

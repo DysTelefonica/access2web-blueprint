@@ -36,7 +36,7 @@
 
 | Si necesita... | Empiece por... | Revise después... |
 |---|---|---|
-| Cambiar una decisión arquitectónica (D-<n> / DA-<n>) | `docs/architecture.md` §Decisiones | `openspec/changes/<change>/design.md` si está dentro de un change vivo |
+| Cambiar una decisión arquitectónica (D-<n> / DA-<n>) | `docs/decisions/README.md` (una decisión por fichero) | `openspec/changes/<change>/design.md` si está dentro de un change vivo |
 | Cambiar un gate de CI | `scripts/<check>.py` (código) | `docs/gates.md` (manual de uso) y `.github/workflows/ci.yml` (qué job lo invoca) |
 | Añadir una ruta HTTP de Lanzadera | `app/src/modules/lanzadera/delivery/http/` (router) | `app/src/modules/lanzadera/application/` (use case) y `tests/lanzadera/` (test del flujo) |
 | Añadir un subcomando CLI | `app/src/modules/lanzadera/delivery/cli/` (argparse) | `app/src/modules/lanzadera/application/` y `scripts/local-preflight.sh` (smoke) |
