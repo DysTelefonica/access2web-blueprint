@@ -33,7 +33,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 - **No duplique referencias**: enlace a `docs/gates.md`, `docs/architecture.md` o las páginas de `docs/codebase/` en vez de copiar el detalle.
 - **No rebase ni force-push en una PR abierta**: use merge de origin/main (Hard Rule 12).
 
-## Listas por tipo de cambio
+## Checklists por tipo de cambio
 
 ### Cambiar una ruta HTTP de Lanzadera
 

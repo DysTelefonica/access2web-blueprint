@@ -35,7 +35,7 @@ Apps legadas (Access/VBA)         Este monorepo                          Código
 
 ★ = Lanzadera es la «madre»: ahí nacen usuarios, aplicativos y permisos que las otras 7 apps consumen.
 
-## Tabla de páginas
+## Páginas
 
 | Página | Trabajo |
 |---|---|
@@ -46,7 +46,7 @@ Apps legadas (Access/VBA)         Este monorepo                          Código
 | [Lo que no está aquí](codebase/what-is-not-here.md) | Lo que NO existe en este repo y cómo no inventarlo. |
 | [Manual del mantenedor](codebase/maintainer-playbook.md) | Listas de comprobación por tipo de cambio. |
 
-## Camino de lectura
+## Ruta de lectura
 
 1. [Modelo mental](codebase/mental-model.md) — lea esto primero.
 2. [Mapa del repositorio](codebase/repository-map.md) — antes de editar código.
