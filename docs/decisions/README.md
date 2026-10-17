@@ -95,4 +95,38 @@ Tras el título, una lista con estas claves:
 | [D59](2026-08-05-d59-scheduler-unificado-sustituye-flags-y.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 | [D60](2026-08-05-d60-configuracion-global-de-horarios-y.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
 
+### D61–D91 migradas desde 08
+
+| Decisión | Estado | Fecha | Decide |
+|---|---|---|---|
+| [D90](2026-08-08-d90-reset-flow-con-tokens-one-time-de-24-h.md) | adoptada | 2026-08-08 | usuario (dueño del producto) |
+| [D91](2026-08-08-d91-primer-global-admin-se-aprovisiona-con.md) | adoptada | 2026-08-08 | usuario (dueño del producto) |
+| [D61](2026-08-05-d61-ejecucion-manual-bajo-demanda-de.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D62](2026-08-05-d62-vista-previa-de-informe-sin-envio.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D63](2026-08-05-d63-generar-y-enviar-directamente-sin-vista.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D64](2026-08-05-d64-dashboard-global-de-operaciones-de.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D65](2026-08-05-d65-evidencia-legacy-cola-por-tabla.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D66](2026-08-05-d66-stack-backend-python-3-12-con-fastapi-0.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D67](2026-08-05-d67-stack-frontend-htmx-2-0-4-jinja2-3-1.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D68](2026-08-05-d68-estructura-del-repositorio-monorepo-con.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D69](2026-08-05-d69-actualizacion-de-contadores-pendientes.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D70](2026-08-05-d70-cache-de-aplicacion-selectiva-y.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D71](2026-08-05-d71-redis-queda-como-opcion-detras-del.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D72](2026-08-05-d72-rendimiento-http-etag-304-not-modified.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D73](2026-08-05-d73-no-usar-insforge-como-baas-el-backend.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D74](2026-08-05-d74-no-introducir-kubernetes-ni-openshift.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D75](2026-08-05-d75-topologia-de-despliegue-abierta.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D76](2026-08-05-d76-postgresql-gestionado-preferido-sobre.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D77](2026-08-05-d77-contenedores-docker-desde-el-dia-uno.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D78](2026-08-05-d78-versionado-semantico-por-modulo-y.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D79](2026-08-05-d79-trunk-based-development-conventional.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D80](2026-08-05-d80-catalogo-de-versiones-compatibles-entre.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D81](2026-08-05-d81-despliegue-coexistente-estable-rc-en-uat.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D82](2026-08-05-d82-migraciones-de-bd-backward-compatibles.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D83](2026-08-05-d83-hps-solicitudes-se-documenta-como.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D84](2026-08-05-d84-baseline-de-release-de-condor-y-brass.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D85](2026-08-05-d85-baseline-operativo-actual-catalogo-con-8.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D86](2026-08-05-d86-la-forma-hexagonal-del-legacy-dominio-en.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D87](2026-08-05-d87-los-tests-vba-existentes-en-staging-por.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+
 Las D-n anteriores a este registro viven en `../08-decisiones-y-preguntas-abiertas.md` y se migran aquí en la issue #985; hasta entonces, las cuatro primeras filas de arriba (D36, D37, D88, D89) son la única cadena de sustitución migrada.
