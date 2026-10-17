@@ -164,29 +164,12 @@ def rule_has_reference(refs: tuple[Reference, ...]) -> str | None:
 # --------------------------------------------------------------------------------------------
 
 
-def extract_headings(body: str) -> frozenset[str]:
-    """Títulos Markdown (H1..H6) del cuerpo, fuera de spans de código y bloques cercados.
-
-    Reutiliza ``strip_code`` para que el mismo criterio de la regla 1
-    (dentro de un span o de un bloque cercado no cuenta) aplique a los
-    títulos. La comparación es exacta y case-sensitive, como el contrato
-    de formularios de cada consumer publica los nombres literales.
-    """
-    cleaned = strip_code(body or "")
-    found: set[str] = set()
-    for line in cleaned.splitlines():
-        match = HEADING_RX.match(line)
-        if match:
-            found.add(match.group(2).strip())
-    return frozenset(found)
-
-
 def extract_sections(body: str) -> dict[str, bool]:
     """Heading Markdown → True si la sección tiene contenido no vacío bajo el heading.
 
     Recorre el cuerpo fuera de código (vía ``strip_code``, mismo criterio
-    que ``extract_headings`` y ``references``: dentro de un span de código o
-    de un bloque cercado ni el heading ni el contenido cuentan). Para cada
+    que ``references``: dentro de un span de código o de un bloque cercado
+    ni el heading ni el contenido cuentan). Para cada
     heading encontrado registra un flag de contenido que pasa a True en
     cuanto aparece una línea no vacía entre este heading y el siguiente (o
     el final del cuerpo). El caso «heading presente, contenido ausente» es
