@@ -1,6 +1,6 @@
 # Flujo operativo del repositorio
 
-Documento GENERADO por `ci-pattern adoption generate-doc` a partir de los datos del
+Documento generado por `ci-pattern adoption generate-doc` a partir de los datos del
 repositorio (ci-pattern.yaml, .github/host-contract.json, .github/required-jobs-policy.json,
 formularios de issue). NO lo edite a mano: regenérelo con el mismo comando. La deriva la
 detecta el gate de documentación operativa de `ci-pattern adoption check`.
@@ -38,12 +38,12 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 ## 4. Pull requests
 
 - Presupuesto: 400 líneas (añadidas + borradas, tests y docs incluidos). Si no cabe, cadena de PRs.
-- Slice intermedio de cadena: etiqueta `chain:partial` y `Refs #N` en el cuerpo; CERO palabras de cierre.
-- Con `chain:partial` o en la punta de cadena, el cuerpo lleva la sección Chain Context (HR-54): posición N/M, base igual a la del PR, dependencias, presupuesto y un único `📍`.
+- Slice intermedio de cadena: etiqueta `chain:partial` y `Refs #N` en el cuerpo; sin palabras de cierre.
+- Con `chain:partial` o en la punta de cadena, el cuerpo lleva la sección Chain Context (HR-54): posición N/M, base igual a la del PR, dependencias, presupuesto y un único marcador del PR actual en el diagrama.
 - Solo el PR punta de cadena lleva `Closes #N`.
 - Antes de un `Closes #N`, compruebe la matriz HR→gate de la skill adoptada: `rg '"issue": <número>' <skill>/references/hr-gate-matrix.json`; una entrada `manual` apuntando a la issue exige reclasificarla en el mismo PR.
 - Exactamente una etiqueta `type:*` por PR: type:bug, type:chore, type:docs, type:feature, type:refactor.
-- Toda edición material de una skill sube su `metadata.version` (HR-44).
+- Toda edición material de una skill añade un fragmento válido en `changelog.d/` (HR-44, #665).
 
 <!-- ci-pattern-doc:end pull-request -->
 
@@ -82,10 +82,10 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin incidents -->
 ## 8. Registrar un incidente
 
-Un incidente de producción deja cuatro niveles, enlazados por identificadores (ID de incidente, número de ticket, SHA, ejecución de CI, issues y PRs); el CONTENIDO de los datos personales nunca entra en el repo.
+Un incidente de producción deja cuatro niveles, enlazados por identificadores (ID de incidente, número de ticket, SHA, ejecución de CI, issues y PRs); el contenido de los datos personales nunca entra en el repo.
 - **1. Post-mortem** (parámetro 9): `docs/postmortems/<AAAA-MM-DD>-<slug>.md`, blameless, con causas de sistema y cada action item como issue con owner. Aquí sí van identificadores y nombres de sistemas: qué pasó, por qué y qué lo evita.
 - **2. Registro operativo**: `docs/incidents/<AAAA-MM-DD>-<slug>.md` —todo el detalle necesario para seguir atendiendo los tickets abiertos (IPs, hostnames, comandos, logs, cronología fina y el estado con el siguiente paso de cada ticket)—. Con el parámetro por defecto vive en este mismo repositorio; el post-mortem lo enlaza por ruta o por identificador.
-- **3. Secretos**: credenciales y tokens viven en GitHub Actions repository secrets, NUNCA en git, ni siquiera en un repositorio privado. El post-mortem y el registro los citan por su identificador en el gestor.
+- **3. Secretos**: credenciales y tokens viven en GitHub Actions repository secrets, nunca en git, ni siquiera en un repositorio privado. El post-mortem y el registro los citan por su identificador en el gestor.
 - **4. Datos personales y conversaciones con terceros**: se quedan en el sistema de tickets y se referencian por su número; nunca se copian al repositorio.
 - La evidencia se cita con su `sha256` y su ubicación de acceso controlado. Lo que se redacta se marca de forma explícita (`[IP interna redactada]`): nunca se borra en silencio.
 - El gate de esta fase rechaza secretos y datos personales en el post-mortem y en el registro operativo, y la evidencia declarada sin hash ni ubicación. Las IPs, los hostnames y los comandos internos están permitidos.
@@ -118,12 +118,12 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
   Hecho: `git worktree list` muestra la ruta nueva.
 - **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; Conventional Commits (sección 3); sin atribución de IA.
   Hecho: `git log --oneline <rama-base>..HEAD` muestra una entrada por unidad.
-- **5. Integración de la base y preflight local idéntico al CI (HR-4).** Sincronice la rama de feature con la base remota ANTES de publicar: tráigala con `git merge` —nunca rebase, `--amend` ni force-push sobre la rama publicada—, resuelva los conflictos si los hay y ejecute el preflight sobre el resultado integrado:
+- **5. Integración de la base y preflight local idéntico al CI (HR-4).** Sincronice la rama de feature con la base remota antes de publicar: tráigala con `git merge` —nunca rebase, `--amend` ni force-push sobre la rama publicada—, resuelva los conflictos si los hay y ejecute el preflight sobre el resultado integrado:
   `git fetch origin && git merge origin/<rama-base>`
   `bash scripts/local-preflight.sh`
   Hecho: exit 0 sobre el árbol integrado.
 - **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con `Refs #N` (o `Closes #N` solo en la punta de cadena), exactamente una etiqueta `type:*` (sección 4) y presupuesto de 400 líneas; si no cabe, cadena:
-  Con `chain:partial` o en la punta de cadena (base = rama por defecto) el cuerpo lleva ADEMÁS la sección **Chain Context** (HR-54) como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget`, con `base` igual a la base del PR y un único `📍` en el diagrama.
+  Con `chain:partial` o en la punta de cadena (base = rama por defecto) el cuerpo lleva ADEMÁS la sección **Chain Context** (HR-54) como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget`, con `base` igual a la base del PR y un único marcador del PR actual en el diagrama de la plantilla de PR.
   `gh pr create --base <rama-base> --head <rama-nueva> --title "<tipo>(<ámbito>): <resumen>" --body-file <cuerpo-del-pr.md>`
   Hecho: `gh pr view <número> --json number,url` devuelve número y URL.
 - **7. Checks.** Consulte la tabla de checks requeridos (sección 5) y el estado del PR:
@@ -133,7 +133,7 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
   Hecho: todos los checks en pass sobre la cabeza y la base actuales.
 - **9. Merge gobernado.** El merge lo decide un humano con CI en verde; ningún agente mergea. Métodos permitidos (host-contract): merge commit, rebase, squash.
   Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.
-- **10. Limpieza.** Solo después del merge verificado y sin cambios pendientes, retire el worktree local; la rama remota se conserva SIEMPRE (nunca `git push origin --delete`, `--delete-branch` ni borrado de ramas):
+- **10. Limpieza.** Solo después del merge verificado y sin cambios pendientes, retire el worktree local; la rama remota se conserva siempre (nunca `git push origin --delete`, `--delete-branch` ni borrado de ramas):
   `git worktree remove ../<repo>-<número>-<tema>`
   Hecho: `git worktree list` ya no muestra la ruta y la rama sigue en `origin`.
 
@@ -181,7 +181,7 @@ pregunte en la issue o al mantenedor.
 
 ## Dónde vive la documentación
 
-Toda la documentación de este proyecto vive en ESTE repositorio, bajo `docs/`
+Toda la documentación de este proyecto vive en este mismo repositorio, bajo `docs/`
 por materia; los post-mortems en `docs/postmortems/<AAAA-MM-DD>-<slug>.md`.
 Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
 backups, los datos en bruto y el material privado. Nunca ubique documentación
