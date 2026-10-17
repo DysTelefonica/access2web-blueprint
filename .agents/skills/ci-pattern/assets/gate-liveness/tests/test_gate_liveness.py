@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Suite del liveness gate (F3, #396, HR-3/HR-21)."""
-import subprocess, sys, tempfile, unittest
+import subprocess
+import sys
+import tempfile
+import unittest
 from pathlib import Path
 
 GATE = Path(__file__).resolve().parents[1] / "check_gate_liveness.py"
@@ -28,7 +31,8 @@ def _mk_repo(workflows: dict[str, str]) -> Path:
 
 def _gate(repo, threshold=24, check=False):
     cmd = [sys.executable, str(GATE), "--repo", str(repo), "--threshold", str(threshold)]
-    if check: cmd.append("--check")
+    if check:
+        cmd.append("--check")
     return SUBP(cmd, capture_output=True, text=True, check=False)
 
 

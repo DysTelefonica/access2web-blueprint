@@ -323,7 +323,7 @@ def compare(contract: dict, snaps: dict) -> tuple[list[str], list[str], list[str
     host_rs = {e["name"]: e.get("enforcement") for e in snaps["rulesets"]
                if isinstance(e, dict) and isinstance(e.get("name"), str)}
     if rs_unavailable:
-        for name, enforcement, cls in contract["rulesets"]:
+        for name, _enforcement, cls in contract["rulesets"]:
             if cls == HOST_ENFORCED:
                 findings.append(f"ruleset '{name}' is declared host-enforced but the readback recorded "
                                 f"the plan 403 limit for 'rulesets': the host cannot apply it")
@@ -362,7 +362,15 @@ def compare(contract: dict, snaps: dict) -> tuple[list[str], list[str], list[str
             findings.append(f"ruleset '{name}' on the host has no known enforcement mode but is not declared host-enforced in the contract")
     return ok, documented, findings, notes
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main() -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(
         description="Read-only drift check: declared host contract vs JSON snapshots of the host API (HR-34).")
     parser.add_argument("--contract", required=True)

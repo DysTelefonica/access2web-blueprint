@@ -7,8 +7,8 @@ hallazgo de drift; con ella, pasa. RED: el contrato no existe aún.
 """
 
 import json
-import sys
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -51,16 +51,16 @@ class RepoHostContractTests(unittest.TestCase):
 
     def test_contract_exists_and_declares_chain_partial(self):
         """El contrato existe y declara chain:partial como host-enforced."""
-        self.assertTrue(CONTRACT.is_file(), f".github/host-contract.json no existe")
+        self.assertTrue(CONTRACT.is_file(), ".github/host-contract.json no existe")
         contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
-        labels = {l["name"]: l["class"] for l in contract.get("labels", [])}
+        labels = {item["name"]: item["class"] for item in contract.get("labels", [])}
         self.assertEqual(labels.get("chain:partial"), "host-enforced")
         self.assertEqual(labels.get("status:approved"), "host-enforced")
 
     @staticmethod
     def _contract_labels():
         contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
-        return [l["name"] for l in contract.get("labels", []) if l.get("class") == "host-enforced"]
+        return [item["name"] for item in contract.get("labels", []) if item.get("class") == "host-enforced"]
 
     def test_drift_without_chain_partial_produces_finding(self):
         """Snapshot sin chain:partial → drift (hallazgo HR-34)."""
