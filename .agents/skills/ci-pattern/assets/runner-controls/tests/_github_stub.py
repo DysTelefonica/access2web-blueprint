@@ -76,7 +76,10 @@ class _Handler(BaseHTTPRequestHandler):
         body = json.loads(raw) if raw else {}
         url = urllib.parse.urlsplit(self.path)
         state = self.server.state
-        base = f"http://{self.headers.get('Host')}"
+        # La URL base sale de la direccion del servidor, no del Host de la
+        # peticion: un Host ajeno acabaria copiado en la cabecera Link.
+        host, port = self.server.server_address[:2]
+        base = f"http://{host}:{port}"
         status, payload, headers = _route(self.command, url.path.lstrip("/"),
                                           urllib.parse.parse_qs(url.query), body, state, base)
         Path(self.server.state_path).write_text(json.dumps(state), encoding="utf-8")
