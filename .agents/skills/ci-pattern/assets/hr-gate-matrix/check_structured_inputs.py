@@ -33,7 +33,6 @@ class GateError(Exception):
 
 
 SCRAPING = re.compile(r"\bgh\s+(?:pr|issue)\s+(?:view|list)\b")
-SCRAPING_PY = re.compile(r"['\"]gh['\"],\s*['\"](?:pr|issue)['\"],\s*['\"](?:view|list)['\"]")
 SELF = Path(__file__).resolve()  # este propio gate también es gate declarado
 
 

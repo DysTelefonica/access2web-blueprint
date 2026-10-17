@@ -16,7 +16,11 @@ The allowlist (``--allowlist``, versioned JSON: ``{"env_vars": [...]}``) is
 the contract of what the suites may read from the environment; anything
 outside it is a finding with file and line. ``dotenv_data_files`` (#635)
 declares, per file and with a reason, literal ``.env`` mentions that are data
-and not a read; a declaration that no longer applies is a finding. Shell variables that a file
+and not a read; a declaration that no longer applies is a finding. By their
+form alone (#626), a ``.env`` built under a test temp dir (``tmp_path / ".env"``),
+a regex-escaped ``\\.env``, a ``.env`` passed to a git query that does not emit its
+content (``check-ignore``, ``log``, ``ls-files``) and the prose of an assertion
+message are not findings. Shell variables that a file
 assigns are locals, not environment reads; a shell variable that is read
 but never assigned in its file is treated as an environment read (fail
 closed: the scanner cannot prove it is local, HR-1).
@@ -100,7 +104,29 @@ PY_READ = re.compile(r"os\.environ(?:\.get)?\[\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['
 # `templates.env` (acceso a atributo) y `TEMPLATES.env` no lo son. El cargador
 # se detecta por su forma (`load_dotenv`, `from dotenv`, `import dotenv`), no
 # por la palabra suelta: `postgresql://dotenv` es un dato, no una lectura.
-DOTENV_FILE = re.compile(r"(?<!\w)\.env\b")
+# #626: un `\.env` con barra de escape es un patrón de regex, no una ruta.
+DOTENV_FILE = re.compile(r"(?<!\w)(?<!(?<!\\)\\)\.env\b")
+# #626 B: un `.env` colgado de un directorio temporal del test (`tmp_path / ".env"`)
+# es un fixture propio, no el `.env` del desarrollador.
+TMP_DOTENV = re.compile(r"\b(?:Path\(\s*)?tmp\w*\s*\)?\s*/\s*['\"]\.env['\"]")
+# #626 C: consultar a git por el `.env` (ignorado, historial, índice) no lee su
+# contenido. `git show HEAD:.env` sí lo emite y sigue siendo hallazgo.
+GIT_META = re.compile(r"(?<![^\W_])check[_-]ignored?\b|\bgit\b['\",\s]+(?:-C['\",\s]+\S+['\",\s]+)?"
+                      r"(?:log|ls-files|status|add|rm)\b")
+# #626 C: el mensaje en prosa de una aserción o de un fallo (literal con espacios).
+ASSERT_LINE = re.compile(r"^\s*(?:assert|raise|pytest\.fail|self\.(?:fail|assert\w+))\b")
+PROSE_LITERAL = re.compile(r"(['\"])(?=[^'\"]*\s)[^'\"]*\1")
+
+
+def dotenv_file_ref(line: str, python: bool) -> bool:
+    """True si la línea nombra el `.env` local como fichero (#626)."""
+    if GIT_META.search(line):
+        return False
+    if python:
+        line = TMP_DOTENV.sub(" ", line)
+        if ASSERT_LINE.search(line):
+            line = PROSE_LITERAL.sub(" ", line)
+    return bool(DOTENV_FILE.search(line))
 DOTENV_LOADER = re.compile(r"\bload_dotenv\b|(?:^|\s)(?:from|import)\s+dotenv\b")
 DOTENV_EXEMPT = re.compile(r"\.env\.(?:example|sample|template)\b")
 
@@ -202,7 +228,7 @@ def scan_sh(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bo
         # Comments are stripped (quote-aware) before scanning: a ${VAR:-x}
         # mentioned in a comment is documentation, not an environment read.
         line = strip_comment(raw)
-        file_ref = bool(DOTENV_FILE.search(line)) and not DOTENV_EXEMPT.search(line)
+        file_ref = dotenv_file_ref(line, False) and not DOTENV_EXEMPT.search(line)
         found_ref = found_ref or file_ref
         if DOTENV_LOADER.search(line) or (file_ref and not data_ok):
             report.append(f"HR-28 {rel}:{number}: references a local .env file — "
@@ -230,7 +256,7 @@ def scan_py(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bo
         # lecturas de os.environ de la misma línea se siguen escaneando.
         # El strip de comentarios es quote-aware también aquí.
         line = strip_comment(raw)
-        file_ref = bool(DOTENV_FILE.search(line)) and not DOTENV_EXEMPT.search(line)
+        file_ref = dotenv_file_ref(line, True) and not DOTENV_EXEMPT.search(line)
         found_ref = found_ref or file_ref
         if DOTENV_LOADER.search(line) or (file_ref and not data_ok):
             report.append(f"HR-28 {rel}:{number}: references a local .env file — "
