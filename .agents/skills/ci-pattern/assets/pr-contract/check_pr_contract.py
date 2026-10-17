@@ -2,6 +2,7 @@
 """Gate de contrato de PR y commits (#193): HR-6/7/8/14/31. Sin API."""
 
 import argparse
+import fnmatch
 import json
 import re
 import subprocess
@@ -43,6 +44,58 @@ def git_shortstat(repo, base_sha, head_sha):
     m = re.search(r"(\d+) deletion", result.stdout)
     dele = int(m.group(1)) if m else 0
     return ins + dele
+
+class DocsEvidenceConfigError(ValueError):
+    """`docs_evidence` declarado pero inválido: falla cerrado (exit 2)."""
+
+
+def changed_files(repo, base_sha, head_sha):
+    result = subprocess.run(
+        ["git", "-C", str(repo), "diff", "--name-only", f"{base_sha}..{head_sha}"],
+        capture_output=True, text=True, check=False, timeout=GIT_TIMEOUT)
+    return result.stdout.split() if result.returncode == 0 else []
+
+
+def _anchor_exists(text, anchor):
+    slugs = {re.sub(r"[^\w\- ]", "", m.group(1)).strip().lower().replace(" ", "-")
+             for m in re.finditer(r"^#{1,6}\s+(.*?)\s*#*$", text, re.M)}
+    return anchor.lower() in slugs
+
+
+def check_docs_evidence(pr, repo, base_sha, head_sha, policy, findings):
+    """#710 (HR-64): un PR que toca codigo cubierto por una pagina del mapa toca
+    la pagina o lleva la seccion «Documentacion» no vacia; las checklists por
+    tipo de cambio existen y el cuerpo enlaza la de su tipo. Activacion por
+    DECLARACION `docs_evidence` en la politica: sin ella avisa y no falla."""
+    config = policy.get("docs_evidence")
+    if config is None:
+        print("HR-64: docs_evidence no declarado en la politica; la evidencia de "
+              "documentacion por PR todavia no se exige.", file=sys.stderr)
+        return
+    pages = config.get("pages") if isinstance(config, dict) else None
+    checklists = config.get("checklists", {}) if isinstance(config, dict) else None
+    if not isinstance(pages, list) or not pages or not isinstance(checklists, dict) \
+            or not all(isinstance(p, dict) and p.get("page") and p.get("covers") for p in pages):
+        raise DocsEvidenceConfigError(
+            "docs_evidence necesita 'pages' (lista de {page, covers}) y 'checklists' (objeto)")
+    files = changed_files(repo, base_sha, head_sha)
+    reason = re.sub(r"<!--.*?-->", "", section_body(pr.get("body"), "Documentación"), flags=re.S).strip()
+    for entry in pages:
+        touched = [f for f in files if any(fnmatch.fnmatch(f, g) for g in entry["covers"])]
+        if touched and entry["page"] not in files and not reason:
+            findings.append(
+                f"HR-64: el PR toca {', '.join(touched)}, cubierto por {entry['page']}, y ni "
+                "cambia la pagina ni lleva la seccion «Documentación» con el motivo.")
+    body = pr.get("body") or ""
+    types = {label["name"] for label in pr.get("labels", [])}
+    for label, link in sorted(checklists.items()):
+        path, _, anchor = link.partition("#")
+        target = Path(repo) / path
+        if not target.is_file() or (anchor and not _anchor_exists(target.read_text(encoding="utf-8"), anchor)):
+            findings.append(f"HR-64: la checklist de {label} apunta a {link} y no existe.")
+        elif label in types and link not in body:
+            findings.append(f"HR-64: el cuerpo del PR ({label}) no enlaza su checklist {link}.")
+
 
 def check_labels(pr, policy, findings):
     required = policy.get("required_labels", [])
@@ -398,6 +451,11 @@ def main(argv=None):
     check_closure_tests(pr, repo, policy, findings)
 
     if base_sha and head_sha and base_sha != head_sha:
+        try:
+            check_docs_evidence(pr, repo, base_sha, head_sha, policy, findings)
+        except DocsEvidenceConfigError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 2
         check_budget(pr, repo, base_sha, head_sha, policy, findings)
         check_commits(repo, base_sha, head_sha, policy, findings)
     # HR-31: el gate procesa el estado actual sin importar la acción
