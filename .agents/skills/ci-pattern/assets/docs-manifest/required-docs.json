@@ -1,0 +1,104 @@
+{
+  "documents": [
+    {
+      "path": "README.md",
+      "purpose": "Qué es el proyecto y cómo empezar",
+      "sections": [],
+      "required_by": "HR-48"
+    },
+    {
+      "path": "AGENTS.md",
+      "purpose": "Instrucciones para agentes: bloque gobernado de ci-pattern y como mucho una sección local",
+      "sections": [
+        "Flujo operativo y mandato de no invención",
+        "Dónde vive la documentación"
+      ],
+      "required_by": "HR-55"
+    },
+    {
+      "path": "docs/ci-pattern-flow.md",
+      "purpose": "Flujo operativo generado: issues, ramas, commits, PRs, checks y ciclo de vida",
+      "sections": [
+        "Issues",
+        "Ramas",
+        "Commits",
+        "Pull requests",
+        "Checks requeridos",
+        "Merge",
+        "Release y hotfix",
+        "Registrar un incidente",
+        "Fricciones",
+        "Ciclo de vida de un cambio",
+        "Dónde vive la documentación",
+        "Bloque canónico para AGENTS.md"
+      ],
+      "required_by": "HR-47"
+    },
+    {
+      "path": "docs/CODEBASE-GUIDE.md",
+      "purpose": "Hub del mapa del código: dónde hacer cada trabajo",
+      "sections": [
+        "Modelo mental en 90 segundos",
+        "Páginas",
+        "Ruta de lectura"
+      ],
+      "required_by": "HR-63",
+      "activated_by": "docs_map",
+      "route": {
+        "when": "Cambiar código o buscar dónde va algo nuevo",
+        "read": "`docs/CODEBASE-GUIDE.md` y, desde ella, la página de `docs/codebase/` del área que toque"
+      }
+    },
+    {
+      "path": "docs/codebase/maintainer-playbook.md",
+      "purpose": "Checklists por tipo de cambio que el cuerpo del PR enlaza",
+      "sections": [
+        "Checklists por tipo de cambio"
+      ],
+      "required_by": "HR-64",
+      "activated_by": "docs_map",
+      "route": {
+        "when": "Abrir un pull request",
+        "read": "la checklist de su tipo de cambio en `docs/codebase/maintainer-playbook.md`"
+      }
+    },
+    {
+      "path": "docs/decisions/README.md",
+      "purpose": "Índice del registro de decisiones: adoptadas, rechazadas, sustituidas y aplazadas",
+      "sections": [
+        "Decisiones"
+      ],
+      "required_by": "HR-67",
+      "activated_by": "docs_decisions",
+      "route": {
+        "when": "Proponer o cambiar algo que quizá ya se decidió",
+        "read": "`docs/decisions/README.md`: consulte antes si ya se rechazó, sustituyó o aplazó"
+      }
+    },
+    {
+      "path": "docs/architecture.md",
+      "purpose": "Arquitectura: árbol de módulos con su responsabilidad y capas con las dependencias permitidas",
+      "sections": [
+        "Árbol de módulos",
+        "Capas y dependencias"
+      ],
+      "required_by": "HR-68",
+      "activated_by": "architecture",
+      "route": {
+        "when": "Crear un módulo o importar entre módulos",
+        "read": "`docs/architecture.md`: árbol de módulos, capas y dependencias permitidas, antes de añadir un módulo o un import entre capas"
+      }
+    },
+    {
+      "path": "docs/codebase/*.md",
+      "purpose": "Spokes del mapa del código, uno por área",
+      "sections": [],
+      "required_by": "HR-63",
+      "activated_by": "docs_map",
+      "route": {
+        "when": "Dudar de si algo existe en el repositorio",
+        "read": "las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código"
+      }
+    }
+  ]
+}
