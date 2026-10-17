@@ -71,9 +71,7 @@ def layer_findings(text: str) -> list[str]:
         return ["falta el bloque architecture de capas y reglas"]
     declared = json.loads(match.group(1))
     expected = {
-        "allowed": {
-            k: sorted(set(v) - {k}) for k, v in check_layers.ALLOWED_IMPORTS.items()
-        },
+        "allowed": {k: sorted(set(v) - {k}) for k, v in check_layers.ALLOWED_IMPORTS.items()},
         "pure": {
             "layers": sorted(check_layers.PURE_LAYERS),
             "forbidden_externals": sorted(check_layers.FORBIDDEN_IN_PURE_LAYERS),
@@ -129,9 +127,7 @@ def test_red_empty_side_fails_closed(doc_text: str) -> None:
 
 
 def test_red_rule_changed_in_doc_only(doc_text: str) -> None:
-    doctored = doc_text.replace(
-        '"domain": []', '"domain": [\n      "ports"\n    ]', 1
-    )
+    doctored = doc_text.replace('"domain": []', '"domain": [\n      "ports"\n    ]', 1)
     assert doctored != doc_text
     assert "allowed difiere de scripts/check_layers.py" in layer_findings(doctored)
 
