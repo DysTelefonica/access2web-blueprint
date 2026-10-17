@@ -1,0 +1,339 @@
+# Generado desde el bloque `architecture` del documento (HR-68); no editar a mano.
+[importlinter]
+root_packages =
+    app
+
+[importlinter:contract:domain-must-not-import-ports]
+name = domain must not import ports
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.domain
+    app.src.modules.expedientes.domain
+forbidden_modules =
+    app.src.modules.lanzadera.ports
+    app.src.modules.expedientes.ports
+
+[importlinter:contract:domain-must-not-import-application]
+name = domain must not import application
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.domain
+    app.src.modules.expedientes.domain
+forbidden_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+
+[importlinter:contract:domain-must-not-import-adapters]
+name = domain must not import adapters
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.domain
+    app.src.modules.expedientes.domain
+forbidden_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+
+[importlinter:contract:domain-must-not-import-shared]
+name = domain must not import shared
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.domain
+    app.src.modules.expedientes.domain
+forbidden_modules =
+    app.src.modules.expedientes.shared
+
+[importlinter:contract:domain-must-not-import-delivery]
+name = domain must not import delivery
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.domain
+    app.src.modules.expedientes.domain
+forbidden_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+
+[importlinter:contract:domain-must-not-import-di]
+name = domain must not import di
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.domain
+    app.src.modules.expedientes.domain
+forbidden_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+
+[importlinter:contract:domain-must-not-import-migration]
+name = domain must not import migration
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.domain
+    app.src.modules.expedientes.domain
+forbidden_modules =
+    app.src.modules.expedientes.migration
+
+[importlinter:contract:ports-must-not-import-application]
+name = ports must not import application
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.ports
+    app.src.modules.expedientes.ports
+forbidden_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+
+[importlinter:contract:ports-must-not-import-adapters]
+name = ports must not import adapters
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.ports
+    app.src.modules.expedientes.ports
+forbidden_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+
+[importlinter:contract:ports-must-not-import-shared]
+name = ports must not import shared
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.ports
+    app.src.modules.expedientes.ports
+forbidden_modules =
+    app.src.modules.expedientes.shared
+
+[importlinter:contract:ports-must-not-import-delivery]
+name = ports must not import delivery
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.ports
+    app.src.modules.expedientes.ports
+forbidden_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+
+[importlinter:contract:ports-must-not-import-di]
+name = ports must not import di
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.ports
+    app.src.modules.expedientes.ports
+forbidden_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+
+[importlinter:contract:ports-must-not-import-migration]
+name = ports must not import migration
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.ports
+    app.src.modules.expedientes.ports
+forbidden_modules =
+    app.src.modules.expedientes.migration
+
+[importlinter:contract:application-must-not-import-adapters]
+name = application must not import adapters
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+forbidden_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+
+[importlinter:contract:application-must-not-import-shared]
+name = application must not import shared
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+forbidden_modules =
+    app.src.modules.expedientes.shared
+
+[importlinter:contract:application-must-not-import-delivery]
+name = application must not import delivery
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+forbidden_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+
+[importlinter:contract:application-must-not-import-di]
+name = application must not import di
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+forbidden_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+
+[importlinter:contract:application-must-not-import-migration]
+name = application must not import migration
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+forbidden_modules =
+    app.src.modules.expedientes.migration
+
+[importlinter:contract:adapters-must-not-import-application]
+name = adapters must not import application
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+forbidden_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+
+[importlinter:contract:adapters-must-not-import-delivery]
+name = adapters must not import delivery
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+forbidden_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+
+[importlinter:contract:adapters-must-not-import-di]
+name = adapters must not import di
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+forbidden_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+
+[importlinter:contract:adapters-must-not-import-migration]
+name = adapters must not import migration
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+forbidden_modules =
+    app.src.modules.expedientes.migration
+
+[importlinter:contract:shared-must-not-import-application]
+name = shared must not import application
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.shared
+forbidden_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+
+[importlinter:contract:shared-must-not-import-adapters]
+name = shared must not import adapters
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.shared
+forbidden_modules =
+    app.src.modules.lanzadera.adapters
+    app.src.modules.expedientes.adapters
+
+[importlinter:contract:shared-must-not-import-delivery]
+name = shared must not import delivery
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.shared
+forbidden_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+
+[importlinter:contract:shared-must-not-import-di]
+name = shared must not import di
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.shared
+forbidden_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+
+[importlinter:contract:shared-must-not-import-migration]
+name = shared must not import migration
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.shared
+forbidden_modules =
+    app.src.modules.expedientes.migration
+
+[importlinter:contract:delivery-must-not-import-di]
+name = delivery must not import di
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+forbidden_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+ignore_imports =
+    app.src.modules.lanzadera.delivery.http.admin_routes -> app.src.modules.lanzadera.di.container
+    app.src.modules.lanzadera.delivery.http.admin_routes_misc -> app.src.modules.lanzadera.di.container
+    app.src.modules.lanzadera.delivery.http.admin_routes_users -> app.src.modules.lanzadera.di.container
+    app.src.modules.lanzadera.delivery.http.auth_routes -> app.src.modules.lanzadera.di.container
+
+[importlinter:contract:delivery-must-not-import-migration]
+name = delivery must not import migration
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+forbidden_modules =
+    app.src.modules.expedientes.migration
+
+[importlinter:contract:di-must-not-import-migration]
+name = di must not import migration
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+forbidden_modules =
+    app.src.modules.expedientes.migration
+
+[importlinter:contract:migration-must-not-import-application]
+name = migration must not import application
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.migration
+forbidden_modules =
+    app.src.modules.lanzadera.application
+    app.src.modules.expedientes.application
+
+[importlinter:contract:migration-must-not-import-delivery]
+name = migration must not import delivery
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.migration
+forbidden_modules =
+    app.src.modules.lanzadera.delivery
+    app.src.modules.expedientes.delivery
+
+[importlinter:contract:migration-must-not-import-di]
+name = migration must not import di
+type = forbidden
+source_modules =
+    app.src.modules.expedientes.migration
+forbidden_modules =
+    app.src.modules.lanzadera.di
+    app.src.modules.expedientes.di
+
+[importlinter:contract:independent-app-src-modules-lanzadera-must-not-import-app-src-modules-expedientes]
+name = app.src.modules.lanzadera must not import app.src.modules.expedientes
+type = forbidden
+source_modules =
+    app.src.modules.lanzadera
+forbidden_modules =
+    app.src.modules.expedientes
+allow_indirect_imports = True
+
+[importlinter:contract:independent-app-src-modules-expedientes-must-not-import-app-src-modules-lanzadera]
+name = app.src.modules.expedientes must not import app.src.modules.lanzadera
+type = forbidden
+source_modules =
+    app.src.modules.expedientes
+forbidden_modules =
+    app.src.modules.lanzadera
+allow_indirect_imports = True
