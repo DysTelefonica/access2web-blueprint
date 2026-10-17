@@ -19,16 +19,6 @@ CONTRACT = REPO_ROOT / ".github" / "host-contract.json"
 
 SKILL = "personal/ardelperal/ci-pattern"
 
-GOV_LABELS = [
-    {"name": "status:approved", "class": "host-enforced"},
-    {"name": "chain:partial", "class": "host-enforced"},
-    {"name": "type:bug", "class": "host-enforced"},
-    {"name": "type:feature", "class": "host-enforced"},
-    {"name": "type:docs", "class": "host-enforced"},
-    {"name": "type:chore", "class": "host-enforced"},
-    {"name": "type:refactor", "class": "host-enforced"},
-]
-
 
 def _run_drift(labels_snapshot):
     with tempfile.TemporaryDirectory() as tmp:

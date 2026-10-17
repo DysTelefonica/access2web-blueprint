@@ -20,9 +20,6 @@ from __future__ import annotations
 
 PLAN_403_MARKER = "Upgrade to GitHub Pro"
 
-# Áreas que declara `host_capabilities` en el contrato del host.
-CAPABILITY_AREAS = ("branch_protection", "rulesets", "required_checks")
-
 # Vocabulario cerrado de la capacidad. Un valor fuera de él no se puede
 # interpretar: es DUDA (fail closed), nunca drift.
 CAPABILITY_VALUES = frozenset({"available", "unavailable"})
