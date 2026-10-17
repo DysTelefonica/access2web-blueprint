@@ -84,8 +84,19 @@ class ConsolidateTests(unittest.TestCase):
         code, out = self.run_script("--write")
         self.assertEqual(code, 0, out)
         text = self.changelog.read_text(encoding="utf-8")
-        self.assertIn("- **`sk`** (v1.19.12 → v1.19.13): Corrige A.", text)
+        self.assertIn("- **`sk`** (v1.19.12 → v1.19.13):\n  - Corrige A.\n", text)
         self.assertLess(text.index("- **`sk`**"), text.index("- **`otra`**"))
+
+    def test_one_sub_bullet_per_fragment_under_the_version_header(self):
+        self.fragment("a.md", "type: patch\n\nCorrige A.\n")
+        self.fragment("b.md", "type: minor\n\nAñade B\ncon dos líneas.\n")
+        code, out = self.run_script("--write")
+        self.assertEqual(code, 0, out)
+        text = self.changelog.read_text(encoding="utf-8")
+        self.assertIn("- **`sk`** (v1.19.12 → v1.20.0):\n"
+                      "  - Corrige A.\n"
+                      "  - Añade B con dos líneas.\n", text)
+        self.assertNotIn("Corrige A. Añade B", text)
 
     def test_consumed_fragments_are_deleted_and_readme_kept(self):
         self.fragment("a.md", "type: patch\n\nCorrige A.\n")
