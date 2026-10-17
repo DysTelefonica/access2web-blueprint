@@ -15,7 +15,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 | Auth (Argon2id + JWT) | ¿La ruta nueva pasa por el middleware y los servicios `app/src/modules/lanzadera/domain/services/issue_reset_token.py` / `consume_reset_token.py` si toca reset? |
 | CI por niveles | ¿El cambio sabe en qué nivel corre (PR, nightly, release) y respeta `scripts/check_pr_size.py` (≤400)? |
 | Migración Alembic | ¿La nueva migración sigue Expand & Contract (D82), tiene una de bajada y un test en `tests/lanzadera/migrations/`? |
-| E2E | ¿El test nuevo usa `e2e/` (ficheros `<spec>.spec.ts`) y se reserva al release, no al PR? |
+| E2E | ¿El test nuevo usa `e2e/<spec>.spec.ts` y se reserva al release, no al PR? |
 | Quality gates | ¿Si añadió un gate, lo cableó en `.github/workflows/ci.yml`, en `docs/gates.md` y en `tests/test_ci_workflow.py`? |
 
 ## Cómo navegar como mantenedor
@@ -27,7 +27,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 
 ## Guardrails
 
-- **No toque el estado de runtime local**: `data/staging/` se R2-pullea; las fixtures viven en `tests/lanzadera/` o las crea `scripts/generate_lanzadera_fixtures.py`.
+- **No toque el estado de runtime local**: `data/staging/<app>/` se R2-pullea; las fixtures viven en `tests/lanzadera/` o las crea `scripts/generate_lanzadera_fixtures.py`.
 - **No invente internos externos**: Engram, dysflow y Gentleman-Programming tienen owner externo; apunte a su contrato en vez de replicarlo.
 - **No evite los adapters**: las rutas HTTP y los paths de `scripts/` viven en sus paquetes, no en `application`.
 - **No duplique referencias**: enlace a `docs/gates.md`, `docs/architecture.md` o las páginas de `docs/codebase/` en vez de copiar el detalle.
@@ -45,13 +45,13 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 
 ### Cambiar un caso de uso de Expedientes
 
-- [ ] Cree o edite `app/src/modules/expedientes/application/` (ficheros `{command,service}.py`).
-- [ ] Añada test en `tests/expedientes/application/`.
+- [ ] Cree o edite `app/src/modules/expedientes/application/<case>/{command,service}.py`.
+- [ ] Añada test en `tests/expedientes/application/<case>/`.
 - [ ] Si la ruta HTTP la expone Lanzadera o Expedientes, coordine el router en su `app/src/modules/lanzadera/delivery/http/`.
 
 ### Cambiar un quality gate
 
-- [ ] Implemente en `scripts/` (ficheros `check_<name>.py`).
+- [ ] Implemente en `scripts/check_<name>.py`.
 - [ ] Documente el contrato en `docs/gates.md` §2.
 - [ ] Añada el wiring en `tests/test_ci_workflow.py`.
 - [ ] Invoque el gate en `.github/workflows/ci.yml::quality` o en `scripts/quality_report.py`.
@@ -62,7 +62,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 - [ ] Si añade un job, declárelo en la matriz `required` de `.github/workflows/ci.yml`.
 - [ ] Si añade un trigger nuevo (`schedule`, `workflow_dispatch`), verifique que el `if` del job no lo excluye por error.
 - [ ] Si renombra un step, actualice `tests/test_ci_workflow.py` (wiring pinado).
-- [ ] No cree un gate de CI adicional sin PR que documente el contrato: este repo modela los gates como `scripts/` (ficheros `check_*.py`), no como workflows nuevos.
+- [ ] No cree un gate de CI adicional sin PR que documente el contrato: este repo modela los gates como `scripts/check_*.py`, no como workflows nuevos.
 
 ### Cambiar doc
 

@@ -37,7 +37,7 @@ Sólo corre en `pull_request`. Los tres gates son baratos y rechazan PRs que no 
 
 - `pr size`: rechaza PRs de más de 400 líneas (`additions + deletions` = `MAX_CHANGED_LINES` en `scripts/check_pr_size.py`). La única exención es la etiqueta `size:exception` aplicada por el mantenedor (`SIZE_EXCEPTION_LABEL`, función `has_size_exception_label`); el cuerpo del PR no se lee. El modo local del mismo script no tiene exención: `El modo local no tiene excepción: reduzca el diff o parta el PR.`
 - `issue spec`: verifica que el cuerpo del PR cita una issue (Refs/Closes) y, si es una epic de walkthrough, que el bloque de spec está bien formado.
-- `walkthrough schema`: valida que cada `docs/03-aplicaciones/` (ficheros `walkthrough-G*.json`) cumple el esquema vigente.
+- `walkthrough schema`: valida que cada `docs/03-aplicaciones/<app>/walkthrough-G*.json` cumple el esquema vigente.
 
 ### `quality` (suite principal)
 
@@ -76,7 +76,7 @@ Sólo se dispara con push de tags (`v*`). El veredicto final es `cosign verify` 
 |---|---|---|---|
 | `preflight` | `ubuntu-24.04` | 15 min | Identidad del tag (`scripts/release-preflight.sh`) y CI verde en el SHA (`scripts/require-ci-success.sh`). Clasifica el canal como `rc` o `stable`. |
 | `mutation` | `ubuntu-24.04-arm` | 150 min | Cosmic-ray sobre el dominio (`scripts/mutation_shards.py`, 10 tramos deterministas) y ratchet `scripts/check_mutation.py`. Issue #857, PR-C1d: la mutación salió de `ci.yml` (#881) y vive aquí porque un release es raro y la latencia es aceptable. |
-| `e2e` | `ubuntu-24.04-arm` | 20 min | Pull de la imagen publicada en `ghcr.io`, arranque con `docker run`, suite Playwright (`e2e/` (ficheros `*.spec.ts`)) contra `http://localhost:8000`. |
+| `e2e` | `ubuntu-24.04-arm` | 20 min | Pull de la imagen publicada en `ghcr.io`, arranque con `docker run`, suite Playwright (`e2e/*.spec.ts`) contra `http://localhost:8000`. |
 | `publish` | `ubuntu-24.04-arm` | 45 min | Buildx multi-arch + push a `ghcr.io` (imagen del repositorio, con la etiqueta de la release) + firma keyless con `cosign sign`. Necesita `e2e` y `mutation` verdes. |
 | `verify` | `ubuntu-24.04` | 15 min | `cosign verify` con `--certificate-identity` y `--certificate-oidc-issuer` anclados al workflow y a la identidad OIDC de GitHub Actions. Pull del digest verificado. |
 
@@ -98,7 +98,7 @@ Las suites obligatorias — `unit`, `integration`, `e2e_smoke` — son las que `
 
 ## Quality gates
 
-Los quality gates son scripts `scripts/` (ficheros `check_*.py`) que el runner invoca como steps. El contrato manual está en `docs/gates.md`; el contrato de wiring está en `tests/test_ci_workflow.py`. Aquí solo la tabla de responsabilidad:
+Los quality gates son scripts `scripts/check_*.py` que el runner invoca como steps. El contrato manual está en `docs/gates.md`; el contrato de wiring está en `tests/test_ci_workflow.py`. Aquí solo la tabla de responsabilidad:
 
 | Gate | Job que lo invoca | Protege |
 |---|---|---|
@@ -123,11 +123,11 @@ Los quality gates son scripts `scripts/` (ficheros `check_*.py`) que el runner i
 
 | Tipo de test | Carpeta | Marker | Comando local |
 |---|---|---|---|
-| Unit (caso de uso) | `tests/lanzadera/application/` | (sin marker) | la suite de un caso de uso (comando 3 de «Comandos de referencia») |
+| Unit (caso de uso) | `tests/lanzadera/application/<case>/` | (sin marker) | la suite de un caso de uso (comando 3 de «Comandos de referencia») |
 | Unit (adapter) | `tests/lanzadera/adapters/` | (sin marker) | Igual, con la subcarpeta del adapter. |
 | Unit (gate smoke) | `tests/lanzadera/scripts/` | `@pytest.mark.e2e_smoke` | la suite con el marker `e2e_smoke` (comando 4 de «Comandos de referencia») |
 | Integration | `tests/lanzadera/` (subcarpeta específica) | `@pytest.mark.integration` | Requiere Postgres en `localhost:5432` o DSN exportado. |
-| E2E (Playwright) | `e2e/` (ficheros `<spec>.spec.ts`) | (no aplica, es TS) | Playwright sobre una spec (comando 5 de «Comandos de referencia») (no corre en PR). |
+| E2E (Playwright) | `e2e/<spec>.spec.ts` | (no aplica, es TS) | Playwright sobre una spec (comando 5 de «Comandos de referencia») (no corre en PR). |
 
 La regla práctica: si el test toca Postgres, márquelo `integration`; si toca una dependencia de runtime externa (HTTP live, SMTP, S3), cree un fake o un adapter y déjelo en unit. Las pruebas que necesitan un servidor en vivo viven sólo en `e2e/` y se reservan al release.
 
