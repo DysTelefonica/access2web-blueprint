@@ -595,7 +595,16 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
         "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
         "&& !cancelled()"
     )
-    assert required["needs"] == ["pr-gate", "quality", "integration", "security", "codeql"]
+    assert required["needs"] == [
+        "pr-gate",
+        "quality",
+        "integration",
+        "security",
+        "codeql",
+        "docs-codeguide",
+        "docs-links",
+        "docs-decisions",
+    ]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
     assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"

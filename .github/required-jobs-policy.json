@@ -9,6 +9,9 @@
     "quality",
     "integration",
     "security",
-    "codeql"
+    "codeql",
+    "docs-codeguide",
+    "docs-links",
+    "docs-decisions"
   ]
 }
