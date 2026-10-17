@@ -13,7 +13,9 @@ HR-26 (pinned toolchain), on every job, required or not: every ``uses:``
 action is pinned to a full 40-hex commit SHA, and ``docker://`` images
 by digest (``@sha256:`` + 64 hex; local ``./`` actions are exempt);
 ``actions/setup-python`` / ``actions/setup-node`` declare an exact
-``X.Y.Z`` version; ``pip install`` declares ``==`` inline, or a
+``X.Y.Z`` version (``python-version-file`` also counts when the file exists
+in the repository and holds exactly ``X.Y.Z``; an inline ``python-version``
+wins over it, as in the action); ``pip install`` declares ``==`` inline, or a
 requirements file (``-r``) with ``--require-hashes``. Constraint files
 (``-c``) are always a finding: the pins inside are invisible to a
 structural gate, and reporting OK without measuring them would be the
@@ -28,11 +30,24 @@ and no masking statement in run blocks — ``|| true``, ``|| :``,
 HR-30 (required names from PR events only), on required jobs: the
 workflow triggers on ``pull_request``; ``schedule`` and
 ``workflow_dispatch`` do not publish the required check name — the job
-either skips them via a job-level ``if`` whose ``event_name ==
-'<event>'`` comparisons prove it, or its name is event-qualified
-(``name: x (${{ github.event_name }})``); ``push`` must be filtered to
-the base branch. An ``if`` containing ``!=``, ``always()``, ``${{`` or
-``needs.`` is not provable and is treated as running on every event.
+either skips them via a job-level ``if`` that is provably false on
+``pull_request`` or its name is event-qualified
+(``name: x (${{ github.event_name }})``). The ``if`` is evaluated per event in
+three-valued logic: ``github.event_name ==``/``!=`` tests, ``!``, ``&&``,
+``||`` and groups are decided; any other atom (``needs.*``, ``always()``,
+``startsWith(...)``) is unknown and counts as "may run". A condition that
+cannot be parsed or is wrapped in ``${{`` is treated as running on every
+event. ``push`` is a finding only when it runs on the base branch and on
+others: a filter limited to the base, one that never reaches it (other
+branches, ``branches-ignore`` covering it, tags only) is fine; negations,
+unsupported globs and malformed filters are findings.
+
+With ``--host-contract`` the ``schedule``/``workflow_dispatch`` rule applies
+only to the job check names the contract lists in ``required_checks`` (a job
+that is not a required check cannot satisfy one from a run that is not the
+PR's), whether or not they are in the required-jobs policy; a name no
+analyzed job publishes is a finding, and a malformed contract exits 2.
+Without the option every job of the required-jobs policy is in scope.
 
 The list of required jobs always comes from the required-jobs policy,
 never from code. A required job named by the policy but absent from every
@@ -60,7 +75,6 @@ KEY = re.compile(r"""^('[^']*'|"[^"]*"|[^:\s][^:]*?):(?:\s+(.*))?$""")
 PIP_INSTALL = re.compile(r"\bpip3? install\b")
 PIP_REQUIREMENTS = re.compile(r"\s(-r|--requirement)(\s|=)")
 PIP_CONSTRAINTS = re.compile(r"\s(-c|--constraint)(\s|=)")
-EVENT_IF = re.compile(r"event_name\s*==\s*['\"]([^'\"]+)['\"]")
 MASK_TOKENS = ("|| true", "|| :", "|| exit 0")
 NORUN_TOKENS = ("set +e", "set +o errexit")
 SETUP_KEYS = {"actions/setup-python": "python-version", "actions/setup-node": "node-version"}
@@ -210,14 +224,170 @@ def workflow_events(doc: dict) -> dict:
     raise InvalidInput("unsupported 'on:' value")
 
 
-def allowed_events(job: dict):
-    """Events provably allowed by the job-level if; None when not provable."""
+EVENT_CMP = re.compile(r"""github\.event_name\s*(==|!=)\s*(?:'([^']*)'|"([^"]*)")""")
+
+
+def _cond_tokens(text: str) -> list | None:
+    """Split a job `if` into parens, `&&`, `||`, `!` and opaque atoms; None if malformed."""
+    toks, i, n = [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c.isspace():
+            i += 1
+        elif c in "()":
+            toks.append((c,))
+            i += 1
+        elif text.startswith(("&&", "||"), i):
+            toks.append((text[i:i + 2],))
+            i += 2
+        elif c == "!" and not text.startswith("!=", i):
+            toks.append(("!",))
+            i += 1
+        else:
+            j, depth, quote = i, 0, None
+            while j < n:
+                d = text[j]
+                if quote:
+                    quote = None if d == quote else quote
+                elif d in "'\"":
+                    quote = d
+                elif d == "(":
+                    depth += 1
+                elif d == ")":
+                    if depth == 0:
+                        break
+                    depth -= 1
+                elif depth == 0 and text.startswith(("&&", "||"), j):
+                    break
+                j += 1
+            if quote or depth:
+                return None
+            toks.append(("atom", text[i:j].strip()))
+            i = j
+    return toks
+
+
+def _parse_cond(text: str):
+    """Boolean tree of a job `if`; atoms are `github.event_name` tests or unknown. None on error."""
+    toks = _cond_tokens(text)
+    if not toks:
+        return None
+    pos = 0
+
+    def peek():
+        return toks[pos][0] if pos < len(toks) else None
+
+    def chain(op, sub):
+        nonlocal pos
+        parts = [sub()]
+        while peek() == op:
+            pos += 1
+            parts.append(sub())
+        return parts[0] if len(parts) == 1 else ("and" if op == "&&" else "or", parts)
+
+    def unary():
+        nonlocal pos
+        kind = peek()
+        if kind == "!":
+            pos += 1
+            return ("not", unary())
+        if kind == "(":
+            pos += 1
+            node = chain("||", lambda: chain("&&", unary))
+            if peek() != ")":
+                raise ValueError("unbalanced group")
+            pos += 1
+            return node
+        if kind == "atom":
+            atom = toks[pos][1]
+            pos += 1
+            m = EVENT_CMP.fullmatch(atom)
+            return ("ev", m.group(1), m.group(2) if m.group(2) is not None else m.group(3)) if m else ("unk",)
+        raise ValueError("unexpected token")
+
+    try:
+        tree = chain("||", lambda: chain("&&", unary))
+        return tree if pos == len(toks) else None
+    except (ValueError, RecursionError):
+        return None
+
+
+def _cond_value(node, event: str):
+    """True / False / None (unknown) of a condition tree when `github.event_name` is `event`."""
+    kind = node[0]
+    if kind == "ev":
+        hit = event == node[2]
+        return hit if node[1] == "==" else not hit
+    if kind == "unk":
+        return None
+    if kind == "not":
+        v = _cond_value(node[1], event)
+        return None if v is None else not v
+    vals = [_cond_value(n, event) for n in node[1]]
+    if kind == "and":
+        return False if any(v is False for v in vals) else (True if all(v is True for v in vals) else None)
+    return True if any(v is True for v in vals) else (False if all(v is False for v in vals) else None)
+
+
+def _cond_events(node) -> set:
+    if node[0] == "ev":
+        return {node[2]}
+    if node[0] == "not":
+        return _cond_events(node[1])
+    return set().union(*map(_cond_events, node[1])) if node[0] in ("and", "or") else set()
+
+
+def allowed_events(job: dict, events=()):
+    """Events the job-level if may run on; None when the condition is not provable.
+
+    The condition is evaluated once per event of the workflow (plus those it
+    names) in three-valued logic: a `github.event_name` test is true or false,
+    every other atom (`needs.*`, `always()`, `startsWith(...)`) is unknown and
+    counts as "may run". Only a provably false condition drops an event."""
     cond = job.get("if")
-    if not isinstance(cond, str) or not cond:
+    if not isinstance(cond, str) or not cond or "${{" in cond:
         return None
-    if "!=" in cond or "always()" in cond or "${{" in cond or "needs." in cond:
+    tree = _parse_cond(cond)
+    if tree is None:
         return None
-    return set(EVENT_IF.findall(cond))
+    return {ev for ev in set(events) | _cond_events(tree) if _cond_value(tree, ev) is not False}
+
+
+def _branch_glob(pattern: str, name: str) -> bool | None:
+    """Whether a push branch filter matches `name`; None when the pattern is not provable."""
+    if not pattern or any(c in pattern for c in "!?+[]"):
+        return None
+    rx, i = "", 0
+    while i < len(pattern):
+        if pattern.startswith("**", i):
+            rx, i = rx + ".*", i + 2
+        elif pattern[i] == "*":
+            rx, i = rx + "[^/]*", i + 1
+        else:
+            rx, i = rx + re.escape(pattern[i]), i + 1
+    return re.fullmatch(rx, name) is not None
+
+
+def push_reaches_base_and_others(cfg: dict, base: str) -> bool:
+    """HR-30: a `push` that runs on the base and also on other branches.
+
+    A push filtered to the base alone, or one that never reaches the base
+    (other branches, tags only), publishes no check on a PR commit. Anything
+    not provable (negations, malformed filters, both filter kinds) reports True."""
+    branches, ignore = cfg.get("branches"), cfg.get("branches-ignore")
+    if branches is not None and ignore is not None:
+        return True
+    for flt in (branches, ignore):
+        if flt is not None and not (isinstance(flt, list) and flt and all(isinstance(x, str) for x in flt)):
+            return True
+    if branches is not None and set(branches) == {base}:
+        return False
+    if branches is None and ignore is None:
+        return not ("tags" in cfg or "tags-ignore" in cfg)
+    hits = [_branch_glob(x, base) for x in (branches if branches is not None else ignore)]
+    if None in hits:
+        return True
+    return any(hits) if branches is not None else not any(hits)
 
 
 def scan_run(text: str) -> list[str]:
@@ -230,6 +400,22 @@ def scan_run(text: str) -> list[str]:
         if re.fullmatch(r"exit 0\s*;?", line) or line.endswith(("; exit 0", "; exit 0;")):
             found.append("bare `exit 0` masks failure (fail loud, HR-3)")
     return found
+
+
+def version_file_finding(ref: object, root: Path) -> str | None:
+    """HR-26: why a `python-version-file` is not an exact pin, or None when it holds X.Y.Z."""
+    if not isinstance(ref, str) or not ref or "${{" in ref or Path(ref).is_absolute():
+        return "is not a plain repository-relative path"
+    target = (root / ref).resolve()
+    if not target.is_relative_to(root.resolve()):
+        return "escapes the repository"
+    try:
+        text = target.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return "is not a readable file in the repository"
+    if not EXACT_VERSION.fullmatch(text.strip()):
+        return "does not hold exactly X.Y.Z"
+    return None
 
 
 def pin_finding(uses: str) -> str | None:
@@ -246,31 +432,56 @@ def pin_finding(uses: str) -> str | None:
     return None
 
 
-def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list):
+def load_declared_checks(path: str) -> list[str]:
+    """`required_checks` names of a host contract (same shape host-readback validates)."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise InvalidInput(f"host contract unreadable: {exc}") from exc
+    entries = data.get("required_checks", []) if isinstance(data, dict) else None
+    if not isinstance(entries, list) or not all(
+            isinstance(e, dict) and isinstance(e.get("name"), str) and e["name"] for e in entries):
+        raise InvalidInput("host contract: `required_checks` must be a list of entries with a "
+                           "non-empty `name`")
+    return [e["name"] for e in entries]
+
+
+def declared_name(jid: str, job: dict, declared: list[str]) -> str | None:
+    """The declared required check this job publishes, or None. `${{ }}` in a name matches anything."""
+    name = job.get("name") if isinstance(job.get("name"), str) else jid
+    rx = ".+".join(re.escape(part) for part in re.split(r"\$\{\{.*?\}\}", name))
+    return next((d for d in declared if re.fullmatch(rx, d)), None)
+
+
+def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list,
+              root: Path = Path("."), declared: list[str] | None = None):
     def finding(msg):
         out.append(f"{wf} job '{jid}': {msg}")
 
+    events = workflow_events(doc)
+    allowed = allowed_events(job, events)
+    qualified = isinstance(job.get("name"), str) and "github.event_name" in job["name"]
+    # A job whose provable if excludes pull_request never publishes a PR check name,
+    # so its schedule/dispatch runs cannot satisfy one (HR-30).
+    never_on_pr = allowed is not None and "pull_request" not in allowed
     if required:
         if doc.get("continue-on-error") is True:
             finding("workflow-level `continue-on-error: true` masks failure (HR-3)")
         if job.get("continue-on-error") is True or isinstance(job.get("continue-on-error"), str):
             finding("`continue-on-error` masks failure (HR-3)")
-        events = workflow_events(doc)
         if "pull_request" not in events:
             finding("required check name is never published from a PR event (HR-30)")
-        allowed = allowed_events(job)
-        qualified = isinstance(job.get("name"), str) and "github.event_name" in job["name"]
-        # A job whose provable if excludes pull_request never publishes a PR check name,
-        # so its schedule/dispatch runs cannot satisfy one (HR-30).
-        never_on_pr = allowed is not None and "pull_request" not in allowed
+        if "push" in events:
+            if not qualified and push_reaches_base_and_others(events["push"], base) and \
+                    (allowed is None or "push" in allowed):
+                finding("`push` trigger reaches branches other than the base (HR-30)")
+    # With a host contract, only the names it requires are in scope for schedule/dispatch;
+    # without one, every job of the required-jobs policy is (a job that is not a required
+    # check cannot satisfy one from a run that is not the PR's).
+    if (declared_name(jid, job, declared) is not None) if declared is not None else required:
         for ev in ("schedule", "workflow_dispatch"):
             if ev in events and not qualified and not never_on_pr and (allowed is None or ev in allowed):
                 finding(f"publishes its check name on '{ev}', which does not evaluate the PR (HR-30)")
-        if "push" in events:
-            branches = events["push"].get("branches")
-            base_only = isinstance(branches, list) and branches and set(branches) == {base}
-            if not qualified and not base_only and (allowed is None or "push" in allowed):
-                finding("`push` trigger reaches branches other than the base (HR-30)")
 
     steps = job.get("steps") or []
     for st in steps:
@@ -284,8 +495,14 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
             for repo, key in SETUP_KEYS.items():
                 if uses.startswith(repo + "@"):
                     with_block = st.get("with")
-                    version = with_block.get(key) if isinstance(with_block, dict) else None
-                    if not isinstance(version, str) or not EXACT_VERSION.fullmatch(version):
+                    with_block = with_block if isinstance(with_block, dict) else {}
+                    version = with_block.get(key)
+                    if version is None and key == "python-version" and "python-version-file" in with_block:
+                        # The inline key wins in actions/setup-python; the file is judged only without it.
+                        why = version_file_finding(with_block["python-version-file"], root)
+                        if why:
+                            finding(f"`{repo}` python-version-file {why} (HR-26)")
+                    elif not isinstance(version, str) or not EXACT_VERSION.fullmatch(version):
                         finding(f"`{repo}` does not declare an exact {key} X.Y.Z (HR-26)")
         if required and (st.get("continue-on-error") is True or
                          isinstance(st.get("continue-on-error"), str)):
@@ -453,6 +670,15 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
                        "sin alerta, el rojo programado queda sin abrir issue.")
 
 
+def repo_root(workflow: str, explicit: str | None) -> Path:
+    if explicit:
+        return Path(explicit)
+    wf = Path(workflow).resolve()
+    if wf.parent.name == "workflows" and wf.parent.parent.name == ".github":
+        return wf.parent.parent.parent
+    return Path(".")
+
+
 def _pin_output_encoding() -> None:
     """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
     if hasattr(sys.stdout, "reconfigure"):
@@ -467,19 +693,31 @@ def main(argv):
     ap.add_argument("--workflow", action="append", required=True)
     ap.add_argument("--required-jobs", required=True)
     ap.add_argument("--base-branch", default="main")
+    ap.add_argument("--host-contract", help="host contract (JSON): HR-30 for schedule/dispatch then "
+                    "applies only to the check names its `required_checks` lists")
+    ap.add_argument("--repo-root", help="directory a `python-version-file` is resolved against "
+                    "(default: the checkout holding .github/workflows/<file>, else the cwd)")
     args = ap.parse_args(argv)
     try:
         required, data = load_required(args.required_jobs)
+        declared = load_declared_checks(args.host_contract) if args.host_contract else None
         docs = [(w, parse_workflow(Path(w).read_text(encoding="utf-8"), w)) for w in args.workflow]
     except (InvalidInput, OSError) as exc:
         print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
         return 2
-    findings, seen = [], set()
+    findings, seen, published = [], set(), set()
     for w, doc in docs:
         for jid, job in doc["jobs"].items():
             if jid in required:
                 seen.add(jid)
-            check_job(w, jid, job, doc, jid in required, args.base_branch, findings)
+            if declared is not None:
+                published.add(declared_name(jid, job, declared))
+            check_job(w, jid, job, doc, jid in required, args.base_branch, findings,
+                      repo_root(w, args.repo_root), declared)
+    for name in (declared or []):
+        if name not in published:
+            findings.append(f"host contract requires check '{name}' but no analyzed workflow job "
+                            "publishes it; pass the workflow that does (HR-30)")
     for jid in required:
         if jid not in seen:
             findings.append(f"required job '{jid}' is absent from every analyzed workflow")
