@@ -6,13 +6,13 @@ runner label and invokes the covering asset, and the three compensating
 assets must all be wired on that runner. Missing wiring is exit 1 naming
 the gap; unscannable input fails closed (exit 2). No gh, no network."""
 import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 ASSET = Path(__file__).resolve().parent.parent / "check_runner_binding.py"
-import subprocess
-import sys
 
 LABEL = "cadete"
 GUARD = "check_force_push_guard.py"

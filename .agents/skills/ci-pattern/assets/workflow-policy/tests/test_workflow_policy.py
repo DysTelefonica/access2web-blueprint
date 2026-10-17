@@ -71,7 +71,7 @@ class InvalidInput(GateCase):
     ]
 
     def test_exit_two(self):
-        self.table([(l, t, 2, None) for l, t, _ in self.CASES])
+        self.table([(item, t, 2, None) for item, t, _ in self.CASES])
 
     def test_invalid_policy(self):
         for label, pol in [("no required_jobs", {"events": {}}),
@@ -164,6 +164,9 @@ class HR30PrEventOnly(GateCase):
             ("dispatch with static name", yml(name="build",
                 on="on:\n  pull_request:\n  workflow_dispatch:\n"), 1, "HR-30"),
             ("no pull_request trigger", yml(on="on:\n  push:\n    branches: [main]\n"), 1, "HR-30"),
+            ("mixed PR and dispatch job (mutation shape)", yml(name="build",
+                job="  build:\n    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'",
+                on="on:\n  pull_request:\n  workflow_dispatch:\n"), 1, "HR-30"),
             ("push to non-base branch", yml(name="build",
                 on="on:\n  pull_request:\n  push:\n    branches: [develop]\n"), 1, "HR-30"),
             ("push without branch filter", yml(name="build", on="on:\n  pull_request:\n  push:\n"), 1, "HR-30"),
@@ -176,6 +179,9 @@ class HR30PrEventOnly(GateCase):
             ("job if excludes non-PR events", yml(name="build",
                 job="  build:\n    if: github.event_name == 'pull_request' || github.event_name == 'push'",
                 on="on:\n  pull_request:\n  push:\n    branches: [main]\n  workflow_dispatch:\n"), 0, None),
+            ("job if excludes PR, schedule and dispatch only (security-deep shape)", yml(name="build",
+                job="  build:\n    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'",
+                on="on:\n  pull_request:\n  schedule:\n    - cron: '0 3 * * *'\n  workflow_dispatch:\n"), 0, None),
             ("push base only", yml(name="build", on="on:\n  pull_request:\n  push:\n    branches: [main]\n"), 0, None),
             ("non-required static job beside required one", yml(
                 on="on:\n  pull_request:\n  schedule:\n    - cron: '0 3 * * *'\n",
@@ -392,7 +398,7 @@ class Cross(GateCase):
 
     def test_reader_helpers(self):
         lines = gate.read_lines("a: 1  # comment\n# full comment\n\nb: 'x'\n")
-        self.assertEqual([l.text for l in lines], ["a: 1", "b: 'x'"])
+        self.assertEqual([item.text for item in lines], ["a: 1", "b: 'x'"])
         self.assertEqual(gate.parse_scalar("'3.12.7'"), "3.12.7")
         self.assertTrue(gate.parse_scalar("true") is True)
 
