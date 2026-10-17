@@ -43,7 +43,7 @@
 │  └── pytest_plugin/   (coverage_gate, etc.)                       │
 │                                                                   │
 │  openspec/changes/<change>/{proposal,design,specs/*,tasks}.md    │
-│  scripts/check_*.py   (12 quality gates, ver §CI)                  │
+│  scripts/check_*.py   (16 quality gates, ver §CI)                  │
 │  skills/    (copy de las skills internalizadas)                    │
 └──────────────────────────────────────────────────────────────────┘
                                    │
@@ -82,9 +82,10 @@
 ```text
 access2web-blueprint/
 ├── README.md, CONTRIBUTING.md, AGENTS.md, CODEBASE-GUIDE.md
-├── DOCS.md, CHANGELOG.md
+├── DOCS.md, CHANGELOG.md, docker-compose.yml, ci-pattern.yaml
 ├── docs/
 │   ├── architecture.md           ← este fichero
+│   ├── CODEBASE-GUIDE.md, codebase/   ← mapa del código (hub + páginas)
 │   ├── 03-aplicaciones/<app>/   ← epic, walkthrough, capabilities per app
 │   ├── design/mockups/          ← UI Mistica autocontenida
 │   └── prompts/                 ← reportes a mantenedor dysflow
@@ -92,19 +93,18 @@ access2web-blueprint/
 │   ├── README.md                ← naming deviation justificada
 │   ├── pyproject.toml           ← ruff==0.15.21, mypy==1.13.0, argon2-cffi==25.1.0
 │   ├── Dockerfile               ← python:3.12-slim-bookworm
-│   ├── docker-compose.yml       ← postgres + minio + dev
 │   ├── src/
 │   │   ├── main.py              ← FastAPI composition root
-│   │   ├── shared/              ← cross-cutting (cache, audit, lockout)
-│   │   └── modules/<app>/{domain,ports,application,adapters,di,delivery}
-│   ├── migrations/versions/     ← Alembic 0001..0006 (D82)
-│   ├── tests/                   ← TDD + Playwright + `test_ci_workflow.py` (QC-9)
-│   └── pytest_plugin/           ← coverage_gate, etc.
+│   │   └── modules/{lanzadera,expedientes}/   ← ver §Módulos y capas
+│   └── migrations/versions/     ← Alembic (D82)
+├── tests/                       ← TDD + `test_ci_workflow.py` (QC-9) + `test_architecture_doc.py`
+├── e2e/                         ← suite Playwright (gate de release)
+├── inputs/                      ← material de entrada legacy (automatizaciones-legacy)
 ├── openspec/changes/<change>/{proposal,design,specs/*,tasks}.md
-├── scripts/check_*.py           ← 12 quality gates (ver §CI gates)
-├── .github/workflows/{ci,security,security-deep,codeql,release}.yml
+├── scripts/check_*.py           ← 16 quality gates (ver §CI gates)
+├── .github/workflows/{ci,security,security-deep,codeql,release,operating-doc-drift}.yml
 ├── data/staging/                ← binarios legacy (R2-pulled)
-└── skills/                      ← copy internalizada de skills del proyecto
+└── skills/                      ← copia internalizada de skills del proyecto
 ```
 
 ## Decisiones arquitectónicas D-<n> cross-cutting vigentes
@@ -156,19 +156,80 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 | DA-12 | Mapping legacy → profiles en tabla inmutable, regla `SinAcceso` exclusivo. |
 | DA-13 | Pin test AST rechaza símbolos `legacy_hash`, `sha256`, `migrate_password`. |
 
-## Patrón hexagonal (DA-1)
+## Módulos y capas (HR-68)
 
-| Capa | Pureza | Puede importar | Lo prohíbe `scripts/check_layers.py` |
-|---|---|---|---|
-| `domain/` | PURE | Sólo el propio módulo | frameworks, ports, adapters |
-| `ports/` | PURE | `typing.Protocol` | implementaciones concretas, frameworks |
-| `application/` | PURE | domain + ports | adapters, delivery |
-| `adapters/` | driven | domain, ports, frameworks | delivery |
-| `di/` | composition root | todos | — |
-| `delivery/` | driving | application, ports, adapters | domain |
-| `shared/` (cross-cutting) | mixto | cache, audit, lockout | slicing vertical entre módulos |
+Módulos de primer nivel bajo `app/src/modules/` (un módulo por aplicación migrada):
 
-`scripts/check_layers.py` con `ROOT_PACKAGE = "app.src.modules"` enforza esta tabla. Tests en `tests/test_ci_workflow.py` pinean el wiring contra drift.
+| Módulo | Responsabilidad | Capas |
+|---|---|---|
+| `lanzadera` | MVP de Lanzadera: usuarios, aplicativos, permisos, presencia, auditoría y CLI de bootstrap. | `domain`, `ports`, `application`, `adapters`, `delivery`, `di` |
+| `expedientes` | Expedientes (F04, scaffold): casos de uso y migración desde el legacy. | las de `lanzadera` más `migration` y el paquete `shared` del módulo |
+
+Las capas y las dependencias que cada una puede importar se declaran en este bloque, que es la fuente que el test `tests/test_architecture_doc.py` compara con `ALLOWED_IMPORTS`, `PURE_LAYERS` y `CROSS_CUTTING_MODULES` de `scripts/check_layers.py`. Cambiar una regla exige cambiar el código del gate y este bloque en el mismo PR.
+
+```json
+{
+  "layers": {
+    "domain": [
+      "domain"
+    ],
+    "ports": [
+      "domain",
+      "ports"
+    ],
+    "application": [
+      "application",
+      "domain",
+      "ports"
+    ],
+    "adapters": [
+      "adapters",
+      "domain",
+      "ports",
+      "shared"
+    ],
+    "shared": [
+      "domain",
+      "ports",
+      "shared"
+    ],
+    "delivery": [
+      "adapters",
+      "application",
+      "delivery",
+      "domain",
+      "ports",
+      "shared"
+    ],
+    "di": [
+      "adapters",
+      "application",
+      "delivery",
+      "di",
+      "domain",
+      "ports",
+      "shared"
+    ],
+    "migration": [
+      "adapters",
+      "domain",
+      "migration",
+      "ports",
+      "shared"
+    ]
+  },
+  "pure_layers": [
+    "application",
+    "domain",
+    "ports"
+  ],
+  "cross_cutting_modules": [
+    "core"
+  ]
+}
+```
+
+`PURE_LAYERS` no importa frameworks (`FORBIDDEN_IN_PURE_LAYERS` en `scripts/check_layers.py`). `app/src/main.py` es la única excepción de capa declarada (`UNLAYERED_FILES`). Cuando aparece un módulo nuevo bajo `app/src/modules/`, se añade a la tabla de arriba en el mismo PR: el test falla nombrándolo.
 
 ## Auth (D88-D91 + DA-2..DA-5)
 
@@ -225,13 +286,16 @@ Las DA-<n> extienden las D-<n> dentro del change `openspec/changes/lanzadera-mvp
 
 ## CI gates
 
-Trece `scripts/check_*.py` + `.github/workflows/`:
+Dieciséis `scripts/check_*.py` + `.github/workflows/`:
 
 | Gate | Vive en | QC |
 |---|---|---|
-| `check_branch_name.py` | scripts/ | QC-6 |
 | `check_pr_size.py` | scripts/ | QC-6 |
 | `check_layers.py` | scripts/ | QC-2, QC-9 |
+| `check_deadcode.py` | scripts/ | Código muerto (vulture) |
+| `check_issue_spec.py` | scripts/ | Trazabilidad PR→issue aprobada y tipada |
+| `check_required_jobs.py` | scripts/ | Jobs requeridos del agregador `required` |
+| `check_suites_populated.py` | scripts/ | Las suites obligatorias no están vacías |
 | `check_complexity.py` | scripts/ | QC-1, QC-10 |
 | `check_dry.py` | scripts/ | QC-11 |
 | `check_decision_guards.py` | scripts/ | Decisiones críticas |
@@ -242,13 +306,14 @@ Trece `scripts/check_*.py` + `.github/workflows/`:
 | `check_test_classification.py` | scripts/ | Clasificación de tests |
 | `check_workflows.py` | scripts/ | Integridad YAML, pins, concurrencia y aislamiento de PRs públicos |
 | `quality_report.py` | scripts/ | QC-11 (agregador) |
-| `check_walkthrough_schema.py` | scripts/ | MUST fields del template `walkthrough.json` (53 walkthroughs) |
+| `check_walkthrough_schema.py` | scripts/ | MUST fields del template `walkthrough.json` |
 | `pytest_plugin/coverage_gate.py` | app/ | QC-5 |
 | ci.yml | .github/workflows/ | orquesta todo por PR |
 | security.yml | .github/workflows/ | pip-audit, gitleaks, trivy config |
 | security-deep.yml | .github/workflows/ | semanal |
 | codeql.yml | .github/workflows/ | cada PR, push a main y semanal |
 | release.yml | .github/workflows/ | tags + identidad + firma keyless del digest |
+| operating-doc-drift.yml | .github/workflows/ | deriva del documento operativo generado |
 
 ## Gaps conocidos (lo que la doc dice y el código no)
 
@@ -256,9 +321,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 | Gap | Impacto | Acción propuesta |
 |---|---|---|
-| `CODEBASE-GUIDE.md` y `DOCS.md` aún dicen `platform/`, pero la realidad es `app/` desde 2026-08-09. | IAs que leen CODEBASE-GUIDE antes de actuar rompen el layout actual. | Editar ambos docs para usar `app/` consistentemente. PR aparte. |
 | `openspec/changes/lanzadera-mvp/design.md` se escribió antes del rename — sigue diciendo `platform.src.modules`. | Drift entre design histórico y código actual. | PR a design.md para apuntar a `app.src.modules`. Mantener el change como histórico. |
-| `inputs/` existe en el repo pero no aparece en CODEBASE-GUIDE ni en DOCS. | IAs no saben qué va ahí. | Documentar en §Layout o eliminar si quedó vacío. |
 | D-<n> numeración no es contigua (D36+D37 obsoletos, huecos varios). | IA que busca «todos los D» queda descolocada. | Esta tabla los cataloga con estado `vigente` u `OBSOLETO`; mantenerla viva. |
 
 ## Recommended reading path
