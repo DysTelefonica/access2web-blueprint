@@ -104,7 +104,7 @@ class InvalidInput(GateCase):
     ]
 
     def test_exit_two(self):
-        self.table([(l, f, b, 2, None) for l, f, b, _ in self.CASES])
+        self.table([(item, f, b, 2, None) for item, f, b, _ in self.CASES])
 
     def test_missing_required_argument(self):
         out = subprocess.run([sys.executable, str(GATE)], capture_output=True, text=True)

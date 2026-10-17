@@ -1084,7 +1084,7 @@ class LaterPhasesTests(unittest.TestCase):
             init_git_with_commit(repo)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("historial", err)
@@ -1146,7 +1146,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("12", err)
@@ -1160,7 +1160,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("failure", err)
@@ -1172,7 +1172,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("fase 6", err)
@@ -1201,7 +1201,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--all", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("fase 6", err)
@@ -1910,7 +1910,7 @@ class DocFidelityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = self.consumer_with_contract_types(tmp)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(l for l in doc.splitlines() if "etiqueta `type:*` por PR" in l)
+            line = next(item for item in doc.splitlines() if "etiqueta `type:*` por PR" in item)
             for label in ("type:bug", "type:chore", "type:docs", "type:feature"):
                 self.assertIn(label, line)
 
@@ -1923,7 +1923,7 @@ class DocFidelityTests(unittest.TestCase):
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(l for l in doc.splitlines() if "etiqueta `type:*` por PR" in l)
+            line = next(item for item in doc.splitlines() if "etiqueta `type:*` por PR" in item)
             self.assertIn("type:bug", line)
             self.assertIn("type:feature", line)
 
@@ -1953,7 +1953,7 @@ class DocFidelityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = self.governed_merge_repo(tmp)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(l for l in doc.splitlines() if "Camino gobernado" in l)
+            line = next(item for item in doc.splitlines() if "Camino gobernado" in item)
             self.assertIn("mantenedor", line)
             self.assertNotIn("operador", line)
 
@@ -2310,6 +2310,24 @@ class OperatingDocTests(unittest.TestCase):
                 out1.read_bytes(), out2.read_bytes(),
                 "el documento operativo no es determinista byte a byte")
 
+    def test_generate_doc_prose_has_no_decorative_emoji_or_shouting_caps(self):
+        # #652: check_alantyle (ALAN002/ALAN003) rechaza el documento generado.
+        # El 📍 de Chain Context vive en el diagrama de la plantilla de PR, no
+        # en la prosa, y las instrucciones van en minúsculas.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            out = Path(tmp) / "docs" / "ci-pattern-flow.md"
+            code, _, err = run_cli(
+                ["adoption", "generate-doc", str(repo), "--out", str(out)])
+            self.assertEqual(code, 0, err)
+            text = out.read_text(encoding="utf-8")
+            self.assertNotIn("\U0001F4CD", text,
+                             "el 📍 no puede ir en la prosa del documento generado")
+            shouting = re.findall(
+                r"\b(GENERADO|CERO|CONTENIDO|NUNCA|ANTES|SIEMPRE|ESTE)\b", text)
+            self.assertEqual(shouting, [],
+                             "mayúsculas de prosa en el documento generado")
+
     def test_generate_doc_out_writes_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = make_docs_repo(tmp)
@@ -2357,8 +2375,6 @@ class LifecycleRecipeTests(unittest.TestCase):
         code, _, err = run_cli(
             ["adoption", "generate-doc", str(repo), "--out", str(out)])
         self.assertEqual(code, 0, err)
-        sections = dict(zip(
-            ("begin",), (None,))) if False else None
         text = out.read_text(encoding="utf-8")
         start = text.index("<!-- ci-pattern-doc:begin lifecycle -->")
         end = text.index("<!-- ci-pattern-doc:end lifecycle -->")
@@ -2372,7 +2388,7 @@ class LifecycleRecipeTests(unittest.TestCase):
                   "Limpieza")
         positions = [body.find(f"**{n}. {name}")
                      for n, name in enumerate(stages, start=1)]
-        for pos, (n, name) in zip(positions, enumerate(stages, start=1)):
+        for pos, (n, name) in zip(positions, enumerate(stages, start=1), strict=True):
             self.assertGreaterEqual(pos, 0, f"falta la etapa {n} ({name})")
         self.assertEqual(positions, sorted(positions),
                          "las etapas del ciclo no están en orden")
@@ -2502,8 +2518,8 @@ class ChecksTableTests(unittest.TestCase):
             seed_operating_doc(repo)
             doc = repo / "docs" / "ci-pattern-flow.md"
             text = doc.read_text(encoding="utf-8")
-            line = next(l for l in text.splitlines()
-                        if l.startswith("| `unit` |"))
+            line = next(item for item in text.splitlines()
+                        if item.startswith("| `unit` |"))
             doc.write_text(text.replace(line + "\n", "", 1), encoding="utf-8")
             code, _, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
             self.assertEqual(code, 1)
@@ -2519,8 +2535,8 @@ class ChecksTableTests(unittest.TestCase):
             seed_operating_doc(repo)
             doc = repo / "docs" / "ci-pattern-flow.md"
             text = doc.read_text(encoding="utf-8")
-            line = next(l for l in text.splitlines()
-                        if l.startswith("| `unit` |"))
+            line = next(item for item in text.splitlines()
+                        if item.startswith("| `unit` |"))
             doc.write_text(
                 text.replace(line, line + "\n| `ghost-check` | inventado | no | no |", 1),
                 encoding="utf-8")
@@ -2733,13 +2749,13 @@ class RunnerEnforcedAdoptionTests(unittest.TestCase):
     def wire_workflows(self, repo):
         touch(repo, ".github/workflows/guard.yml",
               "name: guard\non: push\njobs:\n  guard:\n"
-              "    runs-on: [self-hosted, %s]\n    steps:\n"
+              f"    runs-on: [self-hosted, {RUNNER_LABEL}]\n    steps:\n"
               "      - run: python3 x/check_force_push_guard.py\n"
-              "      - run: python3 x/check_push_compliance.py\n" % RUNNER_LABEL)
+              "      - run: python3 x/check_push_compliance.py\n")
         touch(repo, ".github/workflows/merge.yml",
               "name: merge\non: workflow_dispatch\njobs:\n  merge:\n"
-              "    runs-on: [self-hosted, %s]\n    steps:\n"
-              "      - run: python3 x/check_governed_merge.py\n" % RUNNER_LABEL)
+              f"    runs-on: [self-hosted, {RUNNER_LABEL}]\n    steps:\n"
+              "      - run: python3 x/check_governed_merge.py\n")
         # los workflows nuevos son gobierno del consumer: inventariados (fase 0)
         # y el contrato re-sellado tras el cambio.
         contract = json.loads(

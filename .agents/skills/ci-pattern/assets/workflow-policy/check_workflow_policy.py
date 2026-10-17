@@ -260,8 +260,11 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
             finding("required check name is never published from a PR event (HR-30)")
         allowed = allowed_events(job)
         qualified = isinstance(job.get("name"), str) and "github.event_name" in job["name"]
+        # A job whose provable if excludes pull_request never publishes a PR check name,
+        # so its schedule/dispatch runs cannot satisfy one (HR-30).
+        never_on_pr = allowed is not None and "pull_request" not in allowed
         for ev in ("schedule", "workflow_dispatch"):
-            if ev in events and not qualified and (allowed is None or ev in allowed):
+            if ev in events and not qualified and not never_on_pr and (allowed is None or ev in allowed):
                 finding(f"publishes its check name on '{ev}', which does not evaluate the PR (HR-30)")
         if "push" in events:
             branches = events["push"].get("branches")
@@ -450,7 +453,15 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
                        "sin alerta, el rojo programado queda sin abrir issue.")
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Workflow policy gate "
                                 "(HR-3, HR-26, HR-30, HR-39).")
     ap.add_argument("--workflow", action="append", required=True)

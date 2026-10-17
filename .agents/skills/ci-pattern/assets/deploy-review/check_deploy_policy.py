@@ -109,7 +109,15 @@ def check_symmetry(doc: dict, report: list) -> None:
                       "ad-hoc configuration")
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Deploy review policy gate (HR-40, HR-41).")
     ap.add_argument("--policy", required=True)
     args = ap.parse_args(argv)

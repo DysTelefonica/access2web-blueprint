@@ -48,7 +48,15 @@ def must_git(repo, *args) -> str:
     return r.stdout.strip()
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Release gate (HR-19, HR-20).")
     ap.add_argument("--repo", required=True)
     ap.add_argument("--tag", required=True)

@@ -12,8 +12,6 @@ a base ref and a head ref, diffs the skill directory, and reports:
 - no skill files changed → clean (0).
 
 Exit codes: 0 clean · 1 findings · 2 invalid input."""
-import json
-import os
 import subprocess
 import sys
 import tempfile

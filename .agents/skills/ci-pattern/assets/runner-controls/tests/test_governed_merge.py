@@ -4,16 +4,16 @@
 check, with exactly one type label, within the review budget and without
 Closes in an intermediate, is merged through the API (exit 0); any
 contract violation blocks the merge (exit 1) and an unscannable
-environment fails closed (exit 2). ``gh`` simulated with real API shapes."""
+environment fails closed (exit 2). The API is a local HTTP stub with real shapes."""
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from test_push_compliance import CHECK, GH_SHIM, REPO, SHA
+from _github_stub import github_stub, stub_env
+from test_push_compliance import CHECK, REPO, SHA
 
 ASSET = Path(__file__).resolve().parent.parent / "check_governed_merge.py"
 
@@ -41,15 +41,10 @@ def base_state() -> dict:
 
 def run_gate(root: Path, contract_data: dict, state: dict) -> subprocess.CompletedProcess:
     (root / "contract.json").write_text(json.dumps(contract_data), encoding="utf-8")
-    (root / "state.json").write_text(json.dumps(state), encoding="utf-8")
-    shim = root / "bin" / "gh"
-    shim.parent.mkdir(exist_ok=True)
-    shim.write_text(GH_SHIM.format(state_path=str(root / "state.json")), encoding="utf-8")
-    shim.chmod(0o755)
-    env = {**os.environ, "PATH": f"{root / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}"}
-    return subprocess.run([sys.executable, str(ASSET), "--repo", REPO, "--pr", "7",
-                           "--contract", str(root / "contract.json")],
-                          capture_output=True, text=True, env=env, timeout=60)
+    with github_stub(root / "state.json", state) as base:
+        return subprocess.run([sys.executable, str(ASSET), "--repo", REPO, "--pr", "7",
+                               "--contract", str(root / "contract.json")],
+                              capture_output=True, text=True, env=stub_env(base), timeout=60)
 
 
 class GovernedMergeTests(unittest.TestCase):

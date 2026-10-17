@@ -16,7 +16,6 @@ import importlib.util
 import io
 import json
 import os
-import re
 import subprocess
 import sys
 import tempfile
@@ -1532,7 +1531,7 @@ class ReportFrictionPublishTests(unittest.TestCase):
         .github/host-contract.json (HR-34); si gh falla al añadirla, el
         comentario confirmado se separa de la etiqueta fallida (exit 0)."""
         contract = json.loads((SKILL_ROOT.parents[2] / ".github" / "host-contract.json").read_text())
-        names = [l["name"] for l in contract["labels"]]
+        names = [item["name"] for item in contract["labels"]]
         self.assertIn("friction:recurrent", names)
         self.assertEqual(contract["labels"][names.index("friction:recurrent")]["class"],
                          "host-enforced")

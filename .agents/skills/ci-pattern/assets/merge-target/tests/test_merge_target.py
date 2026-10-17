@@ -27,7 +27,7 @@ class Base(unittest.TestCase):
         p.write_text(json.dumps({"pull_request": {
             "number": number,
             "base": {"ref": base_ref},
-            "labels": [{"name": l} for l in labels],
+            "labels": [{"name": item} for item in labels],
         }}), encoding="utf-8")
         return str(p)
 

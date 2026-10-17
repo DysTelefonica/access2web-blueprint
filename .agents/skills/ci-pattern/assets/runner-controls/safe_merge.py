@@ -26,8 +26,78 @@ CLOSING = re.compile(r"\b(closes|fixes|resolves)\s+#?\d+", re.IGNORECASE)
 REFS = re.compile(r"\brefs\s+#\d+", re.IGNORECASE)
 
 
-class FailClosed(Exception):
-    """A condition the merge refuses to interpret; maps to exit 2."""
+class MergeFailClosedError(Exception):
+    """A condition the merge refuses to interpret; maps to exit 2.
+
+    Each subclass owns its message template; raise sites pass data only.
+    """
+
+    template = "fail closed"
+
+    def __init__(self, *details: object) -> None:
+        super().__init__(self.template.format(*details))
+
+
+class GhCallFailedError(MergeFailClosedError):
+    template = "gh api call failed: {0}"
+
+
+class GhApiFailedError(MergeFailClosedError):
+    template = "gh api failed ({0}): {1}"
+
+
+class GhJsonInvalidError(MergeFailClosedError):
+    template = "gh api returned no valid JSON: {0}"
+
+
+class MergeCallFailedError(MergeFailClosedError):
+    template = "the merge call failed: {0}"
+
+
+class HeadChangedError(MergeFailClosedError):
+    template = "the head changed between check and merge (409): {0}"
+
+
+class MergeBodyInvalidError(MergeFailClosedError):
+    template = "gh returned no valid JSON body: {0}"
+
+
+class MergeNotMergedError(MergeFailClosedError):
+    template = "the merge response does not report a merged PR: {0!r}"
+
+
+class PrNotPositiveError(MergeFailClosedError):
+    template = "--pr must be a positive number"
+
+
+class RepoUnresolvedError(MergeFailClosedError):
+    template = "no --repo given and could not resolve from cwd; pass --repo OWNER/NAME explicitly"
+
+
+class PullShapeError(MergeFailClosedError):
+    template = "PR #{0} is not the API pull shape"
+
+
+class PullNoHeadShaError(MergeFailClosedError):
+    template = "PR #{0} has no head SHA"
+
+
+class PullMissingFieldsError(MergeFailClosedError):
+    template = "PR #{0} is missing labels or base info"
+
+
+class RepoShapeError(MergeFailClosedError):
+    template = "repo info is not the API shape"
+
+
+class CompareShapeError(MergeFailClosedError):
+    template = "compare result is not the API shape"
+
+
+class CheckRunsShapeError(MergeFailClosedError):
+    template = "check-runs for PR #{0} is not the API shape"
+
+
 
 
 def gh_json(path: str) -> object:
@@ -37,15 +107,15 @@ def gh_json(path: str) -> object:
             capture_output=True, text=True, timeout=GH_TIMEOUT,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        raise FailClosed(f"gh api call failed: {exc}") from exc
+        raise GhCallFailedError(exc) from exc
     if proc.returncode != 0:
         stderr = proc.stderr.strip()
         # Un error de la API (5xx) es falla cerrada, nunca verde (HR-3).
-        raise FailClosed(f"gh api failed ({proc.returncode}): {stderr}")
+        raise GhApiFailedError(proc.returncode, stderr)
     try:
         return json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
-        raise FailClosed(f"gh api returned no valid JSON: {exc}") from exc
+        raise GhJsonInvalidError(exc) from exc
 
 
 def gh_merge(repo: str, number: int, sha: str) -> str:
@@ -58,19 +128,19 @@ def gh_merge(repo: str, number: int, sha: str) -> str:
             capture_output=True, text=True, timeout=GH_TIMEOUT,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        raise FailClosed(f"the merge call failed: {exc}") from exc
+        raise MergeCallFailedError(exc) from exc
     if proc.returncode != 0:
         stderr = proc.stderr.strip()
         # 409 = la rama cambio entre la verificacion y el merge: fallar cerrado.
         if "409" in stderr or "conflict" in stderr.lower():
-            raise FailClosed(f"the head changed between check and merge (409): {stderr}")
-        raise FailClosed(f"the merge call failed: {stderr}")
+            raise HeadChangedError(stderr)
+        raise MergeCallFailedError(stderr)
     try:
         data = json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
-        raise FailClosed(f"gh returned no valid JSON body: {exc}") from exc
+        raise MergeBodyInvalidError(exc) from exc
     if not isinstance(data, dict) or data.get("merged") is not True:
-        raise FailClosed(f"the merge response does not report a merged PR: {proc.stdout.strip()!r}")
+        raise MergeNotMergedError(proc.stdout.strip())
     return data.get("sha", "unknown")
 
 
@@ -132,7 +202,15 @@ def resolve_repo() -> str:
     return ""
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main() -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(
         description="merge seguro para repos sin branch protection (HR-3, HR-49, #426)",
     )
@@ -145,27 +223,24 @@ def main() -> int:
     args = parser.parse_args()
     try:
         if args.pr < 1:
-            raise FailClosed("--pr must be a positive number")
+            raise PrNotPositiveError()
         if not args.repo:
             args.repo = resolve_repo()
             if not args.repo:
-                raise FailClosed(
-                    "no --repo given and could not resolve from cwd; "
-                    "pass --repo OWNER/NAME explicitly"
-                )
+                raise RepoUnresolvedError()
         # -----------------------------------------------------------
         # Paso 1: estado del PR
         # -----------------------------------------------------------
         pull = gh_json(f"repos/{args.repo}/pulls/{args.pr}")
         if not isinstance(pull, dict):
-            raise FailClosed(f"PR #{args.pr} is not the API pull shape")
+            raise PullShapeError(args.pr)
         if not isinstance(pull.get("head"), dict) or not isinstance(pull["head"].get("sha"), str):
-            raise FailClosed(f"PR #{args.pr} has no head SHA")
+            raise PullNoHeadShaError(args.pr)
         if not isinstance(pull.get("labels"), list) or not isinstance(pull.get("base"), dict):
-            raise FailClosed(f"PR #{args.pr} is missing labels or base info")
+            raise PullMissingFieldsError(args.pr)
         body = pull.get("body") if isinstance(pull.get("body"), str) else ""
-        labels = {l.get("name") for l in pull["labels"]
-                  if isinstance(l, dict) and isinstance(l.get("name"), str)}
+        labels = {label.get("name") for label in pull["labels"]
+                  if isinstance(label, dict) and isinstance(label.get("name"), str)}
         findings = []
         if pull.get("state") != "open":
             findings.append(f"PR #{args.pr} is not open (state: {pull.get('state')!r})")
@@ -177,7 +252,7 @@ def main() -> int:
         # obtiene el default_branch por separado.
         repo_info = gh_json(f"repos/{args.repo}")
         if not isinstance(repo_info, dict):
-            raise FailClosed("repo info is not the API shape")
+            raise RepoShapeError()
         default_branch = repo_info.get("default_branch", "main")
         if base_ref != default_branch:
             findings.append(
@@ -191,7 +266,7 @@ def main() -> int:
             f"repos/{args.repo}/compare/{default_branch}...{pull['head']['sha']}"
         )
         if not isinstance(compare, dict) or not isinstance(compare.get("behind_by"), int):
-            raise FailClosed(f"compare result is not the API shape")
+            raise CompareShapeError()
         behind = compare.get("behind_by", -1)
         if behind > 0:
             findings.append(
@@ -208,7 +283,7 @@ def main() -> int:
             "&Accept=application/vnd.github+json"
         )
         if not isinstance(check_runs_data, dict) or not isinstance(check_runs_data.get("check_runs"), list):
-            raise FailClosed(f"check-runs for PR #{args.pr} is not the API shape")
+            raise CheckRunsShapeError(args.pr)
         latest: dict = {}
         for run in check_runs_data.get("check_runs", []):
             if isinstance(run, dict) and isinstance(run.get("name"), str):
@@ -273,7 +348,7 @@ def main() -> int:
         print(f"MERGED: PR #{args.pr} merged by safe-merge as {sha}")
         cleanup_branch(args.repo, pull["head"]["ref"], default_branch)
         return 0
-    except FailClosed as exc:
+    except MergeFailClosedError as exc:
         print(f"fail-closed: {exc}", file=sys.stderr)
         return 2
 

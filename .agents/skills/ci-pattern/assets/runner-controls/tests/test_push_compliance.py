@@ -2,14 +2,15 @@
 # ci-pattern asset tests — post-push compliance detective (DysTelefonica/team-skills#303)
 """Post-push detective suite (black-box): a violating push opens an issue
 with SHA, author and check evidence (exit 1); a broken environment fails
-closed (exit 2). ``gh`` is simulated with the real API shapes; stdlib only."""
+closed (exit 2). The API is a local HTTP stub with the real shapes; stdlib only."""
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+from _github_stub import github_stub, stub_env
 
 ASSET = Path(__file__).resolve().parent.parent / "check_push_compliance.py"
 REPO = "DysTelefonica/team-skills"
@@ -17,84 +18,9 @@ SHA = "1f4e9a2c7b8d3e6f5a0c9b8d7e6f5a4c3b2d1e0f"
 BASE = "0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d"
 CHECK = "unit suite (≤3min)"
 
-# Simulacro de `gh` con las rutas reales de la API; path del estado incrustado (HR-28).
-GH_SHIM = '''#!/usr/bin/env python3
-import json, sys
-STATE_PATH = {state_path!r}
-state = json.load(open(STATE_PATH, encoding="utf-8"))
-args = sys.argv[1:]
-state["calls"].append(" ".join(args))
-if state.get("api_error"):
-    sys.stderr.write("gh: HTTP 500 (api_error fixture)\\n"); sys.exit(1)
-if "-X" in args and "POST" in args:
-    if state.get("issue_post_error"):
-        sys.stderr.write("gh: HTTP 503 (issue_post_error fixture)\\n"); sys.exit(1)
-    endpoint = next((a for a in args if a.startswith("repos/") and a.endswith("/issues")), None)
-    if endpoint is None:
-        sys.stderr.write("gh: unsupported POST endpoint\\n"); sys.exit(1)
-    fields = {{k: v for i, a in enumerate(args) if a in ("-f", "-F") and i + 1 < len(args)
-               for k, _, v in [args[i + 1].partition("=")]}}
-    state["created_issues"].append(fields)
-    json.dump(state, open(STATE_PATH, "w", encoding="utf-8"))
-    print(json.dumps({{"number": 42, "html_url": "https://github.com/" + endpoint.split("/issues")[0].replace("repos/", "") + "/issues/42", "title": fields.get("title", "")}}))
-    sys.exit(0)
-if "-X" in args and "PUT" in args:
-    endpoint = next((a for a in args if a.startswith("repos/") and a.endswith("/merge")), None)
-    if endpoint is None:
-        sys.stderr.write("gh: unsupported PUT endpoint\\n"); sys.exit(1)
-    if state.get("merge_rejected"):
-        sys.stderr.write("gh: HTTP 405 (merge_rejected fixture)\\n"); sys.exit(1)
-    if state.get("head_changed") and any(a.startswith("sha=") for a in args):
-        sys.stderr.write("gh: HTTP 409 (Head branch was modified)\\n"); sys.exit(1)
-    state["merges"].append(endpoint)
-    json.dump(state, open(STATE_PATH, "w", encoding="utf-8"))
-    print(json.dumps({{"sha": "2c7d9b1a4e", "merged": True, "message": "Pull Request successfully merged"}}))
-    sys.exit(0)
-path = next((a for a in args if a.startswith("repos/")), None)
-if path is None:
-    sys.stderr.write("gh: no endpoint\\n"); sys.exit(1)
-if path.endswith("/pulls") and "/commits/" in path:
-    sha = path.split("/commits/")[1].split("/")[0]
-    if state.get("invalid_body"):
-        print("{{not valid json"); sys.exit(0)
-    pages = state.get("pulls_pages", {{}}).get(sha)
-    if pages is not None:
-        print(" ".join(json.dumps(page) for page in pages))
-    else:
-        print(json.dumps(state["pulls"].get(sha, [])))
-elif "/check-runs" in path:
-    sha = path.split("/commits/")[1].split("/")[0]
-    runs = state["check_runs"].get(sha, [])
-    print(json.dumps({{"total_count": len(runs), "check_runs": runs}}))
-elif "/compare/" in path:
-    print(json.dumps(state.get("compare", {{"total_commits": 0, "commits": []}})))
-elif "/pulls/" in path:
-    detail = state["pr_details"].get(path.rsplit("/pulls/", 1)[1])
-    if detail is None:
-        sys.stderr.write("gh: 404 Not Found\\n"); sys.exit(1)
-    print(json.dumps(detail))
-elif "/commits/" in path and path.count("/") == 4:
-    # GET /repos/{{repo}}/commits/{{sha}} — devuelve el commit con su arbol.
-    sha = path.split("/commits/")[1]
-    commit = state.get("commits", {{}}).get(sha, {{}})
-    if commit:
-        print(json.dumps(commit))
-    else:
-        sys.stderr.write("gh: 404 Not Found\\n"); sys.exit(1)
-else:
-    sys.stderr.write("gh: unsupported endpoint " + path + "\\n"); sys.exit(1)
-json.dump(state, open(STATE_PATH, "w", encoding="utf-8"))
-'''
-
-
-def write_fixture(root: Path, event: dict, contract: dict, state: dict) -> None:
+def write_fixture(root: Path, event: dict, contract: dict) -> None:
     (root / "event.json").write_text(json.dumps(event), encoding="utf-8")
     (root / "contract.json").write_text(json.dumps(contract), encoding="utf-8")
-    (root / "state.json").write_text(json.dumps(state), encoding="utf-8")
-    shim = root / "bin" / "gh"
-    shim.parent.mkdir(exist_ok=True)
-    shim.write_text(GH_SHIM.format(state_path=str(root / "state.json")), encoding="utf-8")
-    shim.chmod(0o755)
 
 
 def push_event(ref: str = "refs/heads/main", commits: list | None = None) -> dict:
@@ -125,11 +51,11 @@ def base_state() -> dict:
 
 
 def run_gate(root: Path, event: dict, contract_data: dict, state: dict) -> subprocess.CompletedProcess:
-    write_fixture(root, event, contract_data, state)
-    env = {**os.environ, "PATH": f"{root / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}"}
-    return subprocess.run([sys.executable, str(ASSET), "--event", str(root / "event.json"),
-                           "--contract", str(root / "contract.json")],
-                          capture_output=True, text=True, env=env, timeout=60)
+    write_fixture(root, event, contract_data)
+    with github_stub(root / "state.json", state) as base:
+        return subprocess.run([sys.executable, str(ASSET), "--event", str(root / "event.json"),
+                               "--contract", str(root / "contract.json")],
+                              capture_output=True, text=True, env=stub_env(base), timeout=60)
 
 
 class DetectiveTests(unittest.TestCase):

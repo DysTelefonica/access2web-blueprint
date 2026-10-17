@@ -39,9 +39,9 @@ _URL_PREFIXES = ("http://", "https://", "mailto:", "ftp://", "file://")
 
 def _pin_output_encoding() -> None:
     """Hace la salida del gate independiente de la locale del runner."""
-    for stream in (sys.stdout, sys.stderr):
-        if hasattr(stream, "reconfigure"):
-            stream.reconfigure(encoding="utf-8")
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
 
 
 def extract_path_refs(content: str) -> list[str]:

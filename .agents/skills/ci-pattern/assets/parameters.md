@@ -153,7 +153,13 @@ Contrato de la política del agregador:
 El agregador de jobs requeridos ya está distribuido como asset portátil de
 esta skill: `assets/required-jobs/` (gate fail-closed + comprobación de
 paridad contra el workflow del consumer + política de ejemplo + suite; véase
-su `README.md`). El resto sigue
+su `README.md`). El presupuesto de revisión también: `assets/pr-size/`
+(gate de presupuesto con la regla BP portada como dato
+`VENDORED_ROOTS = (".agents/skills/", "skills/")` — las rutas vendorizadas
+por el propagador quedan fuera del presupuesto de 400, pero un renombrado
+desde una ruta de autoría hacia una vendorizada sigue contando porque el
+trabajo fue authored — más suite RED/GREEN de 15 tests; `#623`). El resto
+sigue
 versionado en el repositorio de origen del patrón, `ardelperal/APAP_WEB`
 (bajo `scripts/` y `.github/`), pendiente de publicarse como asset portátil;
 adáptelos a los parámetros de arriba, no al revés:
@@ -161,7 +167,6 @@ adáptelos a los parámetros de arriba, no al revés:
 | Script | Función |
 |---|---|
 | `scripts/preflight.py` | Lee el job de lint del workflow y lo reproduce en local, paso a paso |
-| `scripts/check_pr_size.py` | Presupuesto de revisión con excepción declarada en el cuerpo |
 | `scripts/check_issue_specs.py` | Trazabilidad determinista: rama, etiquetas, cierre de issue |
 | `scripts/check_release_evidence.py` | Evaluador fail-closed de un contexto de estado por SHA |
 | `scripts/check_release_e2e_required.py` | Decide si el rango toca rutas sensibles |
