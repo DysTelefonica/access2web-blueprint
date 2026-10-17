@@ -41,7 +41,7 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         sha = path.split("/commits/")[1].split("/")[0]
         if state.get("invalid_body"):
             return 200, "{not valid json", {}
-        return _pulls_page(state, sha, query, f"{base}/{path}")
+        return _pulls_page(state, sha, query, base)
     if "/check-runs" in path:
         sha = path.split("/commits/")[1].split("/")[0]
         runs = state["check_runs"].get(sha, [])
@@ -57,15 +57,21 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     return 404, {"message": "unsupported endpoint"}, {}
 
 
-def _pulls_page(state: dict, sha: str, query: dict, url: str) -> tuple:
-    """Pulls de un commit; `pulls_pages` sirve varias paginas enlazadas con Link."""
-    pages = state.get("pulls_pages", {}).get(sha)
-    if pages is None:
+def _pulls_page(state: dict, sha: str, query: dict, base: str) -> tuple:
+    """Pulls de un commit; `pulls_pages` sirve varias paginas enlazadas con Link.
+
+    La cabecera Link solo lleva datos que el servidor ya tiene: su direccion (`base`), el SHA
+    guardado en `pulls_pages` (la clave que coincide, no el segmento de la peticion) y una
+    plantilla de ruta fija. Nada de lo que envia el cliente llega a una cabecera de respuesta.
+    """
+    stored = next((key for key in state.get("pulls_pages", {}) if key == sha), None)
+    if stored is None:
         return 200, state["pulls"].get(sha, []), {}
+    pages = state["pulls_pages"][stored]
     number = int(query.get("page", ["1"])[0])
     headers = {}
     if number < len(pages):
-        headers["Link"] = f'<{url}?page={number + 1}>; rel="next"'
+        headers["Link"] = f'<{base}/repos/stub/stub/commits/{stored}/pulls?page={number + 1}>; rel="next"'
     return 200, pages[number - 1] if 0 < number <= len(pages) else [], headers
 
 
