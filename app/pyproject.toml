@@ -104,6 +104,13 @@ extend-exclude = [
     # this repo to the catalog's formatting and be undone by the next
     # propagation. PR-1 of #960 keeps the SHA256 byte a byte with the canon.
     "scripts/check_issue_spec.py",
+    # Canonical suite for the issue-spec gate, same boundary as the gate itself
+    # (DysTelefonica/team-skills blob 807cb123, byte a byte desde
+    # personal/ardelperal/ci-pattern/assets/issue-spec/tests/test_check_issue_spec.py).
+    # La línea con la ruta a `scripts/check_issue_spec.py` se ajusta 1 línea
+    # (parents[1] / "scripts" / "check_issue_spec.py") y se comenta con la
+    # referencia; el resto del fichero no se reforma. PR-3 de #960.
+    "tests/test_check_issue_spec.py",
 ]
 
 [tool.ruff.lint]
