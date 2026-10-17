@@ -3,17 +3,17 @@
 """Force-push guard suite (black-box): ``forced`` or ``deleted`` on a
 contract-protected branch opens an incident issue with the evidence
 (exit 1); ordinary pushes and unprotected branches exit 0; a broken
-environment fails closed (exit 2). ``gh`` simulated with the real API
+environment fails closed (exit 2). The API is a local HTTP stub with the real
 shapes; stdlib only, no network."""
 import json
-import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from test_push_compliance import BASE, GH_SHIM, REPO, SHA, contract, push_event
+from _github_stub import github_stub, stub_env
+from test_push_compliance import BASE, SHA, contract, push_event
 
 ASSET = Path(__file__).resolve().parent.parent / "check_force_push_guard.py"
 
@@ -21,15 +21,10 @@ ASSET = Path(__file__).resolve().parent.parent / "check_force_push_guard.py"
 def run_gate(root: Path, event: dict, contract_data: dict, state: dict) -> subprocess.CompletedProcess:
     (root / "event.json").write_text(json.dumps(event), encoding="utf-8")
     (root / "contract.json").write_text(json.dumps(contract_data), encoding="utf-8")
-    (root / "state.json").write_text(json.dumps(state), encoding="utf-8")
-    shim = root / "bin" / "gh"
-    shim.parent.mkdir(exist_ok=True)
-    shim.write_text(GH_SHIM.format(state_path=str(root / "state.json")), encoding="utf-8")
-    shim.chmod(0o755)
-    env = {**os.environ, "PATH": f"{root / 'bin'}{os.pathsep}{os.environ.get('PATH', '')}"}
-    return subprocess.run([sys.executable, str(ASSET), "--event", str(root / "event.json"),
-                           "--contract", str(root / "contract.json")],
-                          capture_output=True, text=True, env=env, timeout=60)
+    with github_stub(root / "state.json", state) as base:
+        return subprocess.run([sys.executable, str(ASSET), "--event", str(root / "event.json"),
+                               "--contract", str(root / "contract.json")],
+                              capture_output=True, text=True, env=stub_env(base), timeout=60)
 
 
 def guard_state() -> dict:
