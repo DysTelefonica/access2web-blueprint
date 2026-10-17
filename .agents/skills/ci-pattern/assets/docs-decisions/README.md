@@ -11,11 +11,13 @@ aplazadas con motivo, rechazadas):
 | `fecha` | ISO `AAAA-MM-DD` |
 | `decide` | Rol o persona que decide |
 | `motivo` | Por qué; no vacío |
-| `sustituida-por` | Obligatorio si `sustituida`: slug de una decisión que existe, sin ciclos ni autorreferencia |
+| `sustituida-por` | Obligatorio si `sustituida`: uno o varios slugs separados por comas, cada uno de una decisión que existe, sin ciclos ni autorreferencia |
 | `revision` | Obligatorio si `aplazada`: condición o fecha de revisión |
 
-Cada línea tiene la forma `- campo: valor`. Toda cita `decisión: <slug>` de
-`README.md`, `AGENTS.md` o `docs/` apunta a una decisión que existe, y el índice
+Cada línea tiene la forma `- campo: valor`. Toda cita de
+`README.md`, `AGENTS.md` o `docs/` apunta a una decisión que existe. Una cita es
+`decisión: AAAA-MM-DD-<slug>`, `decisión: `<slug>`` entre comillas invertidas o
+`[decisión: <slug>](…)` como enlace; una palabra suelta tras «decisión:» es prosa y no cuenta, y el índice
 lista exactamente las decisiones del directorio. Un directorio sin decisiones
 falla (HR-3).
 
