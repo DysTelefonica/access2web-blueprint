@@ -30,5 +30,9 @@
   "docs-decisions": {
     "outputs": {},
     "result": "success"
+  },
+  "docs-architecture": {
+    "outputs": {},
+    "result": "success"
   }
 }

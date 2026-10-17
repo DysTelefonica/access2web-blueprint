@@ -539,6 +539,40 @@ jobs:
       group: gate-codeql-call-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
 
+  docs-architecture:
+    # HR-68 (#1013): docs/architecture.md no puede mentir. El gate compara el arbol
+    # de modulos con el codigo en los dos sentidos, valida el bloque de capas y
+    # ejecuta import-linter con la configuracion derivada de ese mismo bloque.
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: docs-architecture (${{ github.event_name }})
+    needs: pr-gate
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: gate-docs-architecture-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.11"
+
+      - name: Install import-linter
+        # Version exacta, igual que los demas pines de herramientas (Hard Rule 2).
+        run: python -m pip install "import-linter==2.15"
+
+      - name: Documento de arquitectura frente al codigo
+        run: |
+          PYTHONPATH="$PWD" python .agents/skills/ci-pattern/assets/docs-architecture/check_docs_architecture.py . \
+            --doc docs/architecture.md \
+            --code-root app/src/modules/lanzadera --code-glob "*.py" \
+            --code-root app/src/modules/expedientes --code-glob "*.py" \
+            --stack python --linter-config .importlinter
+
   docs-codeguide:
     # HR-63: mapa del codigo <-> codigo, en los dos sentidos. Mismo script que en
     # local (canon vendorizado). Check requerido por PR (HR-29, `required_jobs`).
@@ -628,7 +662,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, codeql, docs-codeguide, docs-links, docs-decisions]
+    needs: [pr-gate, quality, integration, security, codeql, docs-codeguide, docs-links, docs-decisions, docs-architecture]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

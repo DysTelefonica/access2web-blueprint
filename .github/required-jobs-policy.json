@@ -12,6 +12,7 @@
     "codeql",
     "docs-codeguide",
     "docs-links",
-    "docs-decisions"
+    "docs-decisions",
+    "docs-architecture"
   ]
 }

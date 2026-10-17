@@ -51,6 +51,7 @@ ALL_JOBS = frozenset(
         "docs-codeguide",
         "docs-links",
         "docs-decisions",
+        "docs-architecture",
     }
 )
 
