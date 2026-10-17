@@ -18,6 +18,7 @@ reportarlo como hallazgo.
 
 import fnmatch
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -1928,7 +1929,7 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
             _operating_doc_lifecycle_lines(params, host, jobs, entrypoint)),
         "incidents": _operating_doc_incident_lines(params),
         "docs-location": _operating_doc_docs_location_lines(params),
-        "agents-block": OPERATING_DOC_AGENTS_BLOCK,
+        "agents-block": _agents_block_for(repo),
     }
 
 
@@ -2959,6 +2960,43 @@ def _check_docs_phase(repo, decl):
     return findings + _check_checks_table_coverage(existing, repo) + incidents
 
 
+def _agents_block_for(repo):
+    """#716 (HR-69): bloque gobernado `ci-pattern-agents` de este consumer. Sin
+    `docs_manifest` en su contrato es la constante canonica (byte a byte); con
+    el, anade la tabla «Donde trabajar» generada del manifiesto y del contrato."""
+    try:
+        contract = json.loads((Path(repo) / ADOPTION_CONTRACT_NAME).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return OPERATING_DOC_AGENTS_BLOCK
+    if not isinstance(contract, dict) or "docs_manifest" not in contract:
+        return OPERATING_DOC_AGENTS_BLOCK
+    gate, manifest_path = _load_docs_manifest()
+    rows = gate.routing_rows(gate.load_manifest(manifest_path), contract)
+    if not rows:
+        return OPERATING_DOC_AGENTS_BLOCK
+    table = "\n".join(f"| {when} | {read} |" for when, read, _path in rows)
+    section = ("\n## Dónde trabajar\n\nAntes de actuar, vaya al documento de su situación; "
+               "no deduzca dónde va el trabajo.\n\n| Si vas a… | Lee… |\n| --- | --- |\n" + table + "\n")
+    return OPERATING_DOC_AGENTS_BLOCK.replace("\n<!-- ci-pattern-agents:end -->",
+                                              section + "<!-- ci-pattern-agents:end -->")
+
+
+def _routed_path_findings(repo):
+    """#716: toda ruta enrutada por el contrato existe en el repo del consumer."""
+    try:
+        contract = json.loads((Path(repo) / ADOPTION_CONTRACT_NAME).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    if not isinstance(contract, dict) or "docs_manifest" not in contract:
+        return []
+    gate, manifest_path = _load_docs_manifest()
+    findings = []
+    for _when, _read, path in gate.routing_rows(gate.load_manifest(manifest_path), contract):
+        if not (Path(repo) / path.split("*")[0].rstrip("/")).exists():
+            findings.append(f"fase 5: el enrutado de AGENTS.md apunta a {path} y no existe en el repositorio")
+    return findings
+
+
 def _check_agents_block(repo):
     """#305: AGENTS.md del consumer contiene el bloque canónico generado
     (índice de skills por situación + mandato «no inventar, deténgase y
@@ -2981,13 +3019,14 @@ def _check_agents_block(repo):
             "bloque del documento operativo generado"]
     start = text.index(begin)
     found = text[start:text.index(end, start) + len(end)]
-    if found != OPERATING_DOC_AGENTS_BLOCK:
+    expected = _agents_block_for(repo)
+    if found != expected:
         return [
             "fase 5: el bloque de AGENTS.md está alterado respecto al "
             "canónico generado; una copia alterada es peor que la ausencia: "
             "la IA confiaría en una regla que el patrón no emitió; regenere "
             "el documento y vuelva a copiar el bloque 'agents-block'"]
-    return []
+    return _routed_path_findings(repo)
 
 
 def _check_checks_table_coverage(doc_text, repo):
@@ -3184,6 +3223,316 @@ def _check_slice_content(catalog, paths):
     return findings
 
 
+DOCS_MAP_KEYS = ("hub", "docs_path", "job")
+DOCS_MAP_ROOTS_HINT = "code_roots (o code_root y code_glob)"
+_MD_LINK_RE = re.compile(r"\]\(([^)#\s]+)(?:#[^)]*)?\)")
+
+
+def _load_codeguide():
+    """Importa el gate de assets/docs-codeguide en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "docs-codeguide" / "check_docs_codeguide.py"
+    spec = importlib.util.spec_from_file_location("check_docs_codeguide", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_ABSENT_HEAD_RE = re.compile(r"^#{1,6}\s+No existe en este repo\s*$", re.I)
+
+
+def _absent_path_findings(repo, docs_path):
+    """#709: paginas negativas. Las rutas listadas (en texto plano, no entre
+    comillas invertidas, para no cruzarse con el sentido docs->repo) bajo el
+    encabezado «No existe en este repo» NO pueden existir; si aparecen, rojo
+    hasta que la pagina se actualice."""
+    findings = []
+    for page in sorted((repo / docs_path).rglob("*.md")):
+        in_section = False
+        for number, line in enumerate(page.read_text(encoding="utf-8").splitlines(), 1):
+            if line.startswith("#"):
+                in_section = bool(_ABSENT_HEAD_RE.match(line))
+            elif in_section and line.lstrip().startswith(("- ", "* ")):
+                path = line.lstrip()[2:].strip().split(" ")[0]
+                if path and (repo / path).exists():
+                    findings.append(
+                        f"HR-63: {page.relative_to(repo).as_posix()}:{number} declara "
+                        f"ausente {path} y existe; actualice la pagina")
+    return findings
+
+
+def _required_job_findings(repo, job, hr="HR-63"):
+    """#709: el job del mapa tiene que figurar en `required_jobs` de la politica
+    del consumer; sin politica legible no hay medicion (HR-3)."""
+    path = repo / ".github" / "required-jobs-policy.json"
+    try:
+        policy = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return [f"{hr}: falta o es ilegible .github/required-jobs-policy.json; "
+                f"no se puede comprobar que {job} sea un job requerido"]
+    jobs = policy.get("required_jobs") if isinstance(policy, dict) else None
+    if not isinstance(jobs, list) or job not in jobs:
+        return [f"{hr}: el job {job} no figura en required_jobs de "
+                ".github/required-jobs-policy.json"]
+    return []
+
+
+def _workflow_job_findings(repo, job, hr="HR-63"):
+    """Algun workflow define el job `job` (clave de primer nivel de `jobs:`)."""
+    job_re = re.compile(r"^\s+" + re.escape(job) + r":\s*$", re.M)
+    workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+    if any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+        return []
+    return [f"{hr}: ningun workflow define el job {job}"]
+
+
+def _docs_map_roots(decl):
+    """#727: raíces de código de `docs_map` como lista de pares (raíz, glob).
+
+    Forma nueva `code_roots: [{root, glob}, ...]`; las claves escalares
+    `code_root` y `code_glob` siguen valiendo (una lista de un elemento).
+    Mezclar las dos formas, una lista vacía o un elemento incompleto fallan
+    cerrado nombrando la clave (HR-3: sin dato no hay medición)."""
+    scalar = [k for k in ("code_root", "code_glob") if str(decl.get(k, "")).strip()]
+    if "code_roots" in decl:
+        if scalar:
+            return None, ["HR-63: docs_map mezcla code_roots con "
+                          + ", ".join(scalar) + "; declare una sola forma"]
+        items = decl["code_roots"]
+        if not isinstance(items, list) or not items:
+            return None, ["HR-63: docs_map.code_roots debe ser una lista no vacia "
+                          "de {root, glob}"]
+        roots = []
+        for index, item in enumerate(items):
+            ok = (isinstance(item, dict)
+                  and all(isinstance(item.get(k), str) and item[k].strip()
+                          for k in ("root", "glob")))
+            if not ok:
+                return None, [f"HR-63: docs_map.code_roots[{index}] debe ser "
+                              "{root, glob} con ambos no vacios"]
+            roots.append((item["root"], item["glob"]))
+        return roots, []
+    if len(scalar) == 2:
+        return [(decl["code_root"], decl["code_glob"])], []
+    return None, []
+
+
+def _check_docs_map(repo, contract):
+    """#709 (HR-63): mapa del codigo hub+spokes en fase 5.
+
+    Activacion por DECLARACION explicita `docs_map` en el contrato de
+    adopcion (como agents_md en HR-55): sin ella avisa por stderr y sale 0.
+    Con ella exige el hub, los spokes enlazados en los dos sentidos, la
+    sincronia mapa<->codigo de docs-codeguide y el job requerido en un
+    workflow."""
+    decl = contract.get("docs_map") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-63: docs_map no declarado en el contrato de adopcion; el mapa "
+              "del codigo todavia no se exige (se activa con docs_map).",
+              file=sys.stderr)
+        return []
+    missing = [k for k in DOCS_MAP_KEYS
+               if not isinstance(decl, dict) or not str(decl.get(k, "")).strip()]
+    roots, root_findings = _docs_map_roots(decl) if isinstance(decl, dict) else (None, [])
+    if root_findings:
+        return root_findings
+    if roots is None:
+        missing.append(DOCS_MAP_ROOTS_HINT)
+    if missing:
+        return ["HR-63: docs_map incompleto, faltan: " + ", ".join(missing)]
+    findings = []
+    hub = repo / decl["hub"]
+    if not hub.is_file():
+        return [f"HR-63: falta el hub {decl['hub']}"]
+    linked = set()
+    for target in _MD_LINK_RE.findall(hub.read_text(encoding="utf-8")):
+        if "://" in target or target.startswith("mailto:"):
+            continue
+        resolved = (hub.parent / target).resolve()
+        if not resolved.exists():
+            findings.append(f"HR-63: {decl['hub']} enlaza {target} y no existe")
+        linked.add(resolved)
+    for page in sorted((repo / decl["docs_path"]).rglob("*.md")):
+        if page.resolve() not in linked:
+            rel = page.relative_to(repo).as_posix()
+            findings.append(f"HR-63: el spoke {rel} no esta enlazado desde el hub")
+    findings += _absent_path_findings(repo, decl["docs_path"])
+    try:
+        verdict = _load_codeguide().check_docs_codeguide_roots(
+            repo, roots, decl["docs_path"])
+    except FileNotFoundError as exc:
+        return findings + [f"HR-63: {exc}"]
+    findings += [f"HR-63: docs -> repo: la pagina cita {p} y no existe"
+                 for p in verdict["missing_in_repo"]]
+    findings += [f"HR-63: repo -> docs: el modulo {m} no esta descrito"
+                 for m in verdict["missing_in_codeguide"]]
+    findings += _workflow_job_findings(repo, decl["job"])
+    findings += _required_job_findings(repo, decl["job"])
+    return findings
+
+
+ARCHITECTURE_KEYS = ("doc", "job", "stack", "linter_config")
+ARCHITECTURE_STACKS = ("python", "typescript")
+
+
+def _load_architecture():
+    """Importa el gate de assets/docs-architecture en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "docs-architecture" / "check_docs_architecture.py"
+    spec = importlib.util.spec_from_file_location("check_docs_architecture", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _check_architecture(repo, contract):
+    """#714 (HR-68): documento de arquitectura en fase 5.
+
+    Activacion por DECLARACION `architecture` en el contrato de adopcion (como
+    docs_map): sin ella avisa por stderr y sale 0. Con ella exige el documento
+    con su arbol de modulos cuadrando con el codigo en los dos sentidos, el bloque
+    de capas coherente, las reglas de imports del stack (python o typescript) impuestas por su linter
+    (`stack`, `linter_config`) y el job requerido por PR. Las raices de codigo se
+    declaran igual que en docs_map (`code_roots`, o `code_root` y `code_glob`)."""
+    decl = contract.get("architecture") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-68: architecture no declarado en el contrato de adopcion; el "
+              "documento de arquitectura todavia no se exige (se activa con "
+              "architecture).", file=sys.stderr)
+        return []
+    missing = [k for k in ARCHITECTURE_KEYS
+               if not isinstance(decl, dict) or not str(decl.get(k, "")).strip()]
+    roots, root_findings = _docs_map_roots(decl) if isinstance(decl, dict) else (None, [])
+    if root_findings:
+        return [f.replace("HR-63", "HR-68").replace("docs_map", "architecture") for f in root_findings]
+    if roots is None:
+        missing.append(DOCS_MAP_ROOTS_HINT)
+    if missing:
+        return ["HR-68: architecture incompleto, faltan: " + ", ".join(missing)]
+    if decl["stack"] not in ARCHITECTURE_STACKS:
+        return [f"HR-68: architecture.stack {decl['stack']!r} no soportado; use uno de: "
+                + ", ".join(ARCHITECTURE_STACKS)]
+    try:
+        found = _load_architecture().check_architecture(
+            repo, decl["doc"], roots, decl["linter_config"], decl["stack"])
+    except FileNotFoundError as exc:
+        return [f"HR-68: {exc}"]
+    return ([f"HR-68: {f}" for f in found]
+            + _workflow_job_findings(repo, decl["job"], "HR-68")
+            + _required_job_findings(repo, decl["job"], "HR-68"))
+
+
+def _load_docs_manifest():
+    """Importa el gate de assets/docs-manifest en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "docs-manifest" / "check_docs_manifest.py"
+    spec = importlib.util.spec_from_file_location("check_docs_manifest", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module, path.parent / "required-docs.json"
+
+
+def _check_docs_manifest(repo, contract):
+    """#719 (HR-70): documentos exigidos y sus secciones, desde el manifiesto
+    canonico. Activacion por DECLARACION `docs_manifest`: sin ella avisa por
+    stderr y sale 0; con ella cada documento activado existe y cada seccion
+    obligatoria existe y no esta vacia."""
+    declared = contract.get("docs_manifest") if isinstance(contract, dict) else None
+    if declared is None:
+        print("HR-70: docs_manifest no declarado en el contrato de adopcion; la "
+              "lista de documentos exigidos todavia no se mide (se activa con "
+              "docs_manifest).", file=sys.stderr)
+        return []
+    if not isinstance(declared, dict):
+        return ["HR-70: docs_manifest debe ser un objeto"]
+    gate, manifest_path = _load_docs_manifest()
+    try:
+        return gate.check(repo, gate.load_manifest(manifest_path), contract)
+    except gate.ManifestError as exc:
+        raise UsageError(f"HR-70: {exc}") from exc
+
+
+def _check_docs_links(repo, contract):
+    """#712 (HR-66): enlaces locales de README, AGENTS.md y docs/. Activacion por
+    DECLARACION `docs_links`: sin ella avisa por stderr y sale 0; con ella la
+    fase 5 exige enlaces que resuelven, navegacion hub<->spokes, retirados al
+    margen y, si declara `job`, el check requerido por PR."""
+    decl = contract.get("docs_links") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-66: docs_links no declarado en el contrato de adopcion; los "
+              "enlaces locales todavia no se miden (se activa con docs_links).",
+              file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-66: docs_links debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_docs_links", skill_dir() / "assets" / "docs-links" / "check_docs_links.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    unknown = sorted(set(decl) - set(gate.CONFIG_KEYS))
+    findings = [f"HR-66: clave desconocida en docs_links: {k}" for k in unknown]
+    findings += gate.check(repo, decl)
+    job = decl.get("job")
+    if job:
+        job_re = re.compile(r"^\s+" + re.escape(job) + r":\s*$", re.M)
+        workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+        if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+            findings.append(f"HR-66: ningun workflow define el job {job}")
+        findings += _required_job_findings(repo, job, "HR-66")
+    return findings
+
+
+def _check_docs_commands(repo, contract):
+    """#711 (HR-65): comandos documentados probados. Activacion por DECLARACION
+    `docs_commands`: sin ella avisa por stderr y sale 0. La fase 5 solo valida
+    la declaracion y el job requerido; los comandos los EJECUTA el job
+    (assets/docs-commands/run_docs_commands.py), nunca esta CLI como subproceso
+    (leccion #342: el recursado de la CLI del patron es un fork-bomb)."""
+    decl = contract.get("docs_commands") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-65: docs_commands no declarado en el contrato de adopcion; los "
+              "comandos documentados todavia no se prueban (se activa con docs_commands).",
+              file=sys.stderr)
+        return []
+    keys = ("cli_name", "cli_command", "job")
+    missing = [k for k in keys if not isinstance(decl, dict) or not decl.get(k)]
+    if missing:
+        return ["HR-65: docs_commands incompleto, faltan: " + ", ".join(missing)]
+    job_re = re.compile(r"^\s+" + re.escape(decl["job"]) + r":\s*$", re.M)
+    workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+    findings = []
+    if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+        findings.append(f"HR-65: ningun workflow define el job {decl['job']}")
+    return findings + _required_job_findings(repo, decl["job"], "HR-65")
+
+
+def _check_docs_decisions(repo, contract):
+    """#713 (HR-67): registro de decisiones por consumer. Activacion por
+    DECLARACION `docs_decisions`: sin ella avisa por stderr y sale 0; con ella la
+    fase 5 exige el formato de cada decision, la sustitucion enlazada, las citas
+    que existen, el indice alineado y, si declara `job`, el check requerido."""
+    decl = contract.get("docs_decisions") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-67: docs_decisions no declarado en el contrato de adopcion; el "
+              "registro de decisiones todavia no se exige (se activa con docs_decisions).",
+              file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-67: docs_decisions debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_docs_decisions", skill_dir() / "assets" / "docs-decisions" / "check_docs_decisions.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    findings = [f"HR-67: clave desconocida en docs_decisions: {k}"
+                for k in sorted(set(decl) - set(gate.CONFIG_KEYS))]
+    findings += gate.check(repo, decl)
+    job = decl.get("job")
+    if job:
+        job_re = re.compile(r"^\s+" + re.escape(job) + r":\s*$", re.M)
+        workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+        if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+            findings.append(f"HR-67: ningun workflow define el job {job}")
+        findings += _required_job_findings(repo, job, "HR-67")
+    return findings
+
+
 def _phase_findings(repo, n, decl, contract):
     """Hallazgos de la fase n contra el árbol real; [] si cumple."""
     if not isinstance(decl, dict):
@@ -3201,7 +3550,12 @@ def _phase_findings(repo, n, decl, contract):
     if n == 4:
         return _check_gates_phase(repo, decl, contract)
     if n == 5:
-        return _check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
+        return (_check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
+                + _check_docs_map(repo, contract) + _check_architecture(repo, contract)
+                + _check_docs_manifest(repo, contract)
+                + _check_docs_links(repo, contract)
+                + _check_docs_commands(repo, contract)
+                + _check_docs_decisions(repo, contract))
     if n == 6:
         return _check_acceptance_phase(repo, decl)
     return [f"fase {n}: fase fuera del rango 0..{ADOPTION_PHASES - 1}"]
@@ -3213,6 +3567,11 @@ def cmd_adoption(args):
         return EXIT_OK
     if args[:1] == ["generate-doc"]:
         return _cmd_adoption_generate_doc(args[1:])
+    if args[:1] == ["render-agents-block"]:
+        if len(args) != 2:
+            raise UsageError("uso: ci-pattern adoption render-agents-block <repo>")
+        print(_agents_block_for(Path(args[1])))
+        return EXIT_OK
     if args[:1] != ["check"]:
         raise UsageError(
             "adoption: subcomando desconocido; use 'adoption check (--phase N | --all) <repo>' "
