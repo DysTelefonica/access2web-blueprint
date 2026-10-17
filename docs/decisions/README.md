@@ -61,4 +61,38 @@ Tras el título, una lista con estas claves:
 | [D28](2026-08-04-d28-retencion-por-niveles-configurable-con.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
 | [D29](2026-08-04-d29-retencion-provisional-90-dias-hot-1-ano.md) | aplazada | 2026-08-04 | usuario (dueño del producto) |
 
+### D30–D60 migradas desde 08
+
+| Decisión | Estado | Fecha | Decide |
+|---|---|---|---|
+| [D30](2026-08-04-d30-cli-soporta-diagnosticos-operativos.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D31](2026-08-04-d31-toda-remediacion-requiere-aprobacion-del.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D32](2026-08-04-d32-inspecciones-de-salud-bajo-demanda.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D33](2026-08-04-d33-destinatarios-de-anomalias-configurables.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D34](2026-08-04-d34-solo-administrador-global-configura.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D35](2026-08-04-d35-resultado-del-estudio-roadmap-global.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D38](2026-08-04-d38-umbral-de-lockout-configurable-default.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D39](2026-08-04-d39-bloqueo-durante-una-hora-por-defecto.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D40](2026-08-04-d40-notificacion-a-administradores-globales.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D41](2026-08-04-d41-caducidad-de-contrasena-configurable.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D42](2026-08-04-d42-activacion-baja-y-creacion-de-roles-solo.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D43](2026-08-04-d43-notificacion-de-cambios-de-permiso-solo.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D44](2026-08-05-d44-suplantacion-para-pruebas-restringida-al.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D45](2026-08-04-d45-capabilities-declaradas-por-modulo.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D46](2026-08-04-d46-vista-unica-por-defecto-vistas.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D47](2026-08-04-d47-uat-asignacion-explicita-de.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D48](2026-08-04-d48-uat-gobernanza-reservada-al.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D49](2026-08-04-d49-uat-excepciones-auditadas-y-visibles-en.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D50](2026-08-04-d50-uat-excepciones-visibles-para-usuarios.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D51](2026-08-04-d51-lanzadera-retira-formacion-videos.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D52](2026-08-04-d52-lanzadera-retira-mecanismo-de.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D53](2026-08-04-d53-lanzadera-retira-segmentacion-oficina.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D54](2026-08-05-d54-lanzadera-retira-gestion-de-rutas-y.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D55](2026-08-05-d55-lanzadera-moderniza-auditoria-retira.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D56](2026-08-04-d56-lanzadera-preserva-y-moderniza-identidad.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D57](2026-08-04-d57-lanzadera-uat-detallado-y-diseno-de.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D58](2026-08-04-d58-registro-de-aplicaciones-hibrido.md) | adoptada | 2026-08-04 | usuario (dueño del producto) |
+| [D59](2026-08-05-d59-scheduler-unificado-sustituye-flags-y.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+| [D60](2026-08-05-d60-configuracion-global-de-horarios-y.md) | adoptada | 2026-08-05 | usuario (dueño del producto) |
+
 Las D-n anteriores a este registro viven en `../08-decisiones-y-preguntas-abiertas.md` y se migran aquí en la issue #985; hasta entonces, las cuatro primeras filas de arriba (D36, D37, D88, D89) son la única cadena de sustitución migrada.
