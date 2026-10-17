@@ -74,8 +74,8 @@ def scan_runbook(path: Path, rel: str, patterns: list[str], report: list) -> Non
         (code_lines if in_fence else premises).append((number, line))
     # Solo líneas EJECUTABLES cuentan como comando: sin comentarios (#, //)
     # ni líneas vacías — un comentario «asume presente» no verifica nada.
-    executable = [l for _, l in code_lines
-                  if l.strip() and not l.lstrip().startswith(("#", "//"))]
+    executable = [item for _, item in code_lines
+                  if item.strip() and not item.lstrip().startswith(("#", "//"))]
     code_text = "\n".join(executable).lower()
     for number, line in premises:
         if not any(p.lower() in line.lower() for p in patterns):
@@ -94,7 +94,15 @@ def scan_runbook(path: Path, rel: str, patterns: list[str], report: list) -> Non
                           "defect, not production state")
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Runbook premises gate (HR-42).")
     ap.add_argument("--root", required=True)
     ap.add_argument("--patterns", required=True)
