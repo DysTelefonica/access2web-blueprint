@@ -10,13 +10,12 @@ palabra de cierre) y el fail-closed ante errores de la API de GitHub
 Los tests de validaciones de estado/CI viven en
 test_safe_merge.py. Shim y fixtures compartidos en _shim.py.
 """
-import json
 import sys
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _shim import BaseSafeMergeTest, base_state, pull, run_gate
+from _shim import BaseSafeMergeTest, base_state, run_gate
 
 
 class ChainAndApiTest(BaseSafeMergeTest):

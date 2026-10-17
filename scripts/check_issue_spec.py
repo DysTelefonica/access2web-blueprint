@@ -46,6 +46,7 @@ import os
 import re
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
@@ -79,6 +80,31 @@ class GitHubApiError(RuntimeError):
 
 class IssueSpecConfigError(ValueError):
     """Raised when the required-sections config is unreadable or invalid (regla 7)."""
+
+
+class ConfigUnreadableError(IssueSpecConfigError):
+    def __init__(self, path: str, exc: BaseException) -> None:
+        super().__init__(f"no se puede leer {path}: {exc}")
+
+
+class ConfigNotJsonError(IssueSpecConfigError):
+    def __init__(self, path: str, exc: BaseException) -> None:
+        super().__init__(f"{path} no es JSON válido: {exc}")
+
+
+class ConfigNotObjectError(IssueSpecConfigError):
+    def __init__(self, path: str) -> None:
+        super().__init__(f"{path} debe ser un objeto JSON con la clave 'required_sections'")
+
+
+class ConfigSectionsNotListError(IssueSpecConfigError):
+    def __init__(self, path: str) -> None:
+        super().__init__(f"{path}: 'required_sections' debe ser una lista de strings no vacíos")
+
+
+class ConfigSectionInvalidError(IssueSpecConfigError):
+    def __init__(self, path: str, item: object) -> None:
+        super().__init__(f"{path}: cada sección debe ser un string no vacío (recibido: {item!r})")
 
 
 @dataclass(frozen=True)
@@ -200,23 +226,19 @@ def load_required_sections(path: str) -> tuple[str, ...]:
     try:
         text = Path(path).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
-        raise IssueSpecConfigError(f"no se puede leer {path}: {exc}") from exc
+        raise ConfigUnreadableError(path, exc) from exc
     try:
         data = json.loads(text)
     except json.JSONDecodeError as exc:
-        raise IssueSpecConfigError(f"{path} no es JSON válido: {exc}") from exc
+        raise ConfigNotJsonError(path, exc) from exc
     if not isinstance(data, dict):
-        raise IssueSpecConfigError(
-            f"{path} debe ser un objeto JSON con la clave 'required_sections'")
+        raise ConfigNotObjectError(path)
     sections = data.get("required_sections")
     if not isinstance(sections, list):
-        raise IssueSpecConfigError(
-            f"{path}: 'required_sections' debe ser una lista de strings no vacíos")
+        raise ConfigSectionsNotListError(path)
     for item in sections:
         if not isinstance(item, str) or not item.strip():
-            raise IssueSpecConfigError(
-                f"{path}: cada sección debe ser un string no vacío "
-                f"(recibido: {item!r})")
+            raise ConfigSectionInvalidError(path, item)
     return tuple(sections)
 
 
@@ -369,6 +391,35 @@ def validate_remote(
 # --------------------------------------------------------------------------------------------
 
 
+class GitHubIssueFailedError(GitHubApiError):
+    def __init__(self, repository: str, number: int, exc: BaseException) -> None:
+        super().__init__(f"GET /repos/{repository}/issues/{number} failed: {exc}")
+
+
+class UnsupportedApiUrlError(GitHubApiError):
+    def __init__(self, api_url: str) -> None:
+        super().__init__(f"api url must be https (loopback http only): {api_url}")
+
+
+def _open(api_url: str, path: str, headers: Mapping[str, str]):
+    """Abre el GET con el esquema validado: https, o http solo en loopback.
+
+    Cada rama lleva su literal dentro de la llamada: ruff S310 solo acepta
+    una URL con esquema literal.
+    """
+    parts = urllib.parse.urlsplit(api_url)
+    tail = parts.path.rstrip("/") + path
+    if parts.scheme == "https":
+        return urllib.request.urlopen(
+            urllib.request.Request(f"https://{parts.netloc}{tail}", headers=dict(headers)),
+            timeout=30)
+    if parts.scheme == "http" and parts.hostname in ("127.0.0.1", "localhost"):
+        return urllib.request.urlopen(
+            urllib.request.Request(f"http://{parts.netloc}{tail}", headers=dict(headers)),
+            timeout=30)
+    raise UnsupportedApiUrlError(api_url)
+
+
 class GitHubClient:
     def __init__(self, token: str = "", api_url: str = "https://api.github.com") -> None:
         self._token = token
@@ -382,13 +433,11 @@ class GitHubClient:
         }
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
-        request = urllib.request.Request(
-            f"{self._api_url}/repos/{repository}/issues/{number}", headers=headers)
         try:
-            with urllib.request.urlopen(request, timeout=30) as response:
+            with _open(self._api_url, f"/repos/{repository}/issues/{number}", headers) as response:
                 return json.load(response)
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
-            raise GitHubApiError(f"GET /repos/{repository}/issues/{number} failed: {exc}") from exc
+            raise GitHubIssueFailedError(repository, number, exc) from exc
 
 
 def _make_fetcher(repository: str) -> Callable[[int], Mapping[str, Any]]:
