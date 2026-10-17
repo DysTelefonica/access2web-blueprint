@@ -11,7 +11,7 @@ Este repo expone **HTTP (FastAPI + Jinja2)**, **CLI de plataforma** y **scripts 
 | Interface | Estado en este repo | Ficheros primarios | Detalle |
 |---|---|---|---|
 | HTTP API (JSON) | Implementada (MVP de Lanzadera) | `app/src/main.py`, `app/src/modules/lanzadera/delivery/http/admin_routes_apps.py`, `admin_routes_users_json.py`, `admin_routes_presence.py`, `auth_routes.py` | [Rutas HTTP](#rutas-http) abajo |
-| HTTP HTML (HTMX) | Implementada (admin + auth) | `app/src/modules/lanzadera/delivery/http/admin_routes_*.py`, `templates/admin/*.html` | [Plantillas](#plantillas) abajo |
+| HTTP HTML (HTMX) | Implementada (admin + auth) | `app/src/modules/lanzadera/delivery/http/admin_routes_*.py`, `app/src/modules/lanzadera/delivery/http/templates/admin/*.html` | [Plantillas](#plantillas) abajo |
 | CLI de plataforma | Implementada (5 subcomandos) | `app/src/modules/lanzadera/delivery/cli/platform_user.py`, `platform_user_auth.py`, `platform_user_apps.py`, `platform_user_types.py`, `seed_profiles_cli.py` | [CLI de plataforma](#cli-de-plataforma) abajo |
 | Scripts operativos | Implementados | `scripts/check_*.py`, `scripts/local-preflight.sh`, `scripts/release-preflight.sh`, `scripts/quality_report.py`, `scripts/mutation_shards.py`, `scripts/setup-staging.ps1`, `scripts/sync-to-r2.ps1`, `scripts/migrate_from_access.py` | [Scripts](#scripts) abajo |
 | API HTTP local en puerto separado | No presente | Ningún paquete de dashboard o servidor separado | Use la propia FastAPI app (puerto único) |
@@ -31,7 +31,7 @@ El composition root en `app/src/main.py` monta los routers de Lanzadera con los 
 | `GET` | `/auth/me` | `auth_routes.py` | Devuelve el usuario actual. |
 | `GET` | `/auth/me/apps` | `auth_routes.py` | Lista de aplicativos efectivos. |
 | `POST` | `/auth/reset/request` | `auth_routes.py` | Solicita reset (issue #885, dominio). |
-| `POST` | `/auth/reset/consume` | `auth_routes.py` | Consume token; ver `domain/services/issue_reset_token.py` y `domain/services/consume_reset_token.py`. |
+| `POST` | `/auth/reset/consume` | `auth_routes.py` | Consume token; ver `app/src/modules/lanzadera/domain/services/issue_reset_token.py` y `app/src/modules/lanzadera/domain/services/consume_reset_token.py`. |
 
 ### Admin JSON (`admin_routes_users_json.py` + `admin_routes_apps.py`)
 
@@ -48,17 +48,17 @@ El composition root en `app/src/main.py` monta los routers de Lanzadera con los 
 | `DELETE` | `/admin/apps/{app_id}` | `admin_routes_apps.py` | Baja (204). |
 | `GET` | `/admin/apps/{app_id}/records` | `admin.py` | Registros legacy. |
 
-### Admin HTML (`admin_routes_*.py` + `templates/admin/`)
+### Admin HTML (`admin_routes_*.py` + `app/src/modules/lanzadera/delivery/http/templates/admin/`)
 
 | Método | Ruta | Fichero de router | Plantilla | Notas |
 |---|---|---|---|---|
-| `GET` | `/admin/apps` | `admin_routes_misc.py` | `admin/apps.html` | Listado HTMX. |
-| `POST` | `/admin/apps/{app_id}/activate` | `admin_routes_misc.py` | `admin/app_activated.html` | Activación. |
-| `POST` | `/admin/assignments` | `admin_routes_misc.py` | `admin/assignment_created.html` | Crea asignación (201). |
-| `GET` | `/admin/audit` | `admin_routes_misc.py` | `admin/audit.html` | Eventos de auditoría. |
-| `GET` | `/admin/users` | `admin_routes_users.py` | `admin/users.html` | Listado. |
-| `POST` | `/admin/users` | `admin_routes_users.py` | `admin/user_created.html` | Alta (201). |
-| `PATCH` | `/admin/users/{user_id}/disable` | `admin_routes_users.py` | `admin/user_disabled.html` | Desactivación. |
+| `GET` | `/admin/apps` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/apps.html` | Listado HTMX. |
+| `POST` | `/admin/apps/{app_id}/activate` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | Activación. |
+| `POST` | `/admin/assignments` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | Crea asignación (201). |
+| `GET` | `/admin/audit` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | Eventos de auditoría. |
+| `GET` | `/admin/users` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/users.html` | Listado. |
+| `POST` | `/admin/users` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html` | Alta (201). |
+| `PATCH` | `/admin/users/{user_id}/disable` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html` | Desactivación. |
 | `POST` | `/admin/presence/heartbeat` | `admin_routes_presence.py` | — | Latido de presencia (#771). |
 | `GET` | `/admin/presence` | `admin_routes_presence.py` | — | Snapshot. |
 | `GET` | `/admin/presence/stream` | `admin_routes_presence.py` | — | SSE puntual; `presence_stream` resuelve el container vía `request.state.container` (W60, #522). |
@@ -79,14 +79,14 @@ Jinja2 vive bajo `app/src/modules/lanzadera/delivery/http/templates/`. El compos
 
 | Plantilla | Sirve a | Notas |
 |---|---|---|
-| `base.html` | Layout común | Heredada por todas las `admin/*.html`. |
-| `admin/apps.html` | `GET /admin/apps` | Listado HTMX. |
-| `admin/users.html` | `GET /admin/users` | Listado HTMX. |
-| `admin/user_created.html` | `POST /admin/users` | Confirmación parcial HTMX. |
-| `admin/user_disabled.html` | `PATCH /admin/users/{user_id}/disable` | Confirmación parcial. |
-| `admin/app_activated.html` | `POST /admin/apps/{app_id}/activate` | Confirmación parcial. |
-| `admin/assignment_created.html` | `POST /admin/assignments` | Confirmación parcial. |
-| `admin/audit.html` | `GET /admin/audit` | Tabla de eventos. |
+| `base.html` | Layout común | Heredada por todas las `app/src/modules/lanzadera/delivery/http/templates/admin/*.html`. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/apps.html` | GET `/admin/apps` | Listado HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/users.html` | GET `/admin/users` | Listado HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html` | POST `/admin/users` | Confirmación parcial HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html` | PATCH `/admin/users/{user_id}/disable` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | POST `/admin/apps/{app_id}/activate` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | POST `/admin/assignments` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | GET `/admin/audit` | Tabla de eventos. |
 
 Si añade una plantilla nueva, declárela en la tabla de arriba y mantenga el tono castellano peninsular formal con usted (ver `skills/documentation-alan-style/SKILL.md`).
 
@@ -144,8 +144,8 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 ## Cómo añadir una ruta, plantilla o subcomando
 
 1. Identifique la capa correcta en [Mapa del repositorio](repository-map.md).
-2. Si es HTTP JSON → router en `app/src/modules/lanzadera/delivery/http/`, use case en `application/`, test en `tests/lanzadera/delivery/` o `tests/lanzadera/application/`.
-3. Si es HTTP HTML → router + plantilla nueva en `templates/admin/`; actualice esta tabla.
+2. Si es HTTP JSON → router en `app/src/modules/lanzadera/delivery/http/`, use case en `application`, test en `tests/lanzadera/delivery/` o `tests/lanzadera/application/`.
+3. Si es HTTP HTML → router + plantilla nueva en `app/src/modules/lanzadera/delivery/http/templates/admin/`; actualice esta tabla.
 4. Si es CLI → `app/src/modules/lanzadera/delivery/cli/`; añada `sub.add_parser(...)` en `build_parser()` y registre la rama en `scripts/check_test_classification.py`.
 5. Si es script → `scripts/<name>.py` o `.sh`; añada el wiring en `.github/workflows/*.yml` y la entrada en `docs/gates.md` si es un gate.
 
@@ -155,6 +155,19 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 - **No duplique rutas entre routers.** El orden en `app/src/main.py` es determinista; cambiarlo requiere justificación en la PR y un test en `tests/lanzadera/delivery/`.
 - **No exponga un puerto separado.** Toda la superficie HTTP va por la app FastAPI única (`/auth`, `/admin`, `/health`). Un puerto nuevo abre un riesgo de red distinto al que el repo ha modelado.
 - **No invoque los CLI desde los routers.** Los CLI son paths de bootstrap, no API. Si una vista necesita la misma operación, expóngala como endpoint (router + use case + test).
+
+## Si necesitas X, lee/toca Y
+
+| Si necesitas... | Empieza por... | Luego revisa... |
+|---|---|---|
+| Añadir o cambiar una ruta HTTP de administración | `app/src/modules/lanzadera/delivery/http/admin_routes.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/` y `docs/codebase/testing-and-ci.md` |
+| Cambiar la autenticación HTTP | `app/src/modules/lanzadera/delivery/http/auth_routes.py` | `app/src/modules/lanzadera/delivery/http/auth_middleware.py` |
+| Añadir un subcomando de CLI | `app/src/modules/lanzadera/delivery/cli/platform_user.py` | `app/src/modules/lanzadera/delivery/cli/` |
+| Añadir un gate de CI | `scripts/check_layers.py` como modelo | `docs/gates.md` y `.github/workflows/ci.yml` |
+
+## Regla de colocación
+
+Las rutas y plantillas HTTP van en el paquete `delivery` del módulo dueño; la lógica de negocio nunca va en una ruta, sino en `application`.
 
 ## Lista de comprobación del contribuidor
 
