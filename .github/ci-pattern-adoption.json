@@ -2,6 +2,16 @@
   "schema_version": 1,
   "agents_md": "propagated",
   "docs_manifest": {},
+  "architecture": {
+    "doc": "docs/architecture.md",
+    "job": "docs-architecture",
+    "stack": "python",
+    "linter_config": ".importlinter",
+    "code_roots": [
+      {"root": "app/src/modules/lanzadera", "glob": "*.py"},
+      {"root": "app/src/modules/expedientes", "glob": "*.py"}
+    ]
+  },
   "phases": {
     "0": {
       "inventory": [
