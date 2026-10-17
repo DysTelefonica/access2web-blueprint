@@ -50,11 +50,14 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin required-checks -->
 ## 5. Checks requeridos
 
-- Jobs requeridos del agregador: codeql, integration, pr-gate, quality, security. Tabla generada 1:1 desde ellos: ningún check puede fallar por una regla que no esté aquí.
+- Jobs requeridos del agregador: codeql, docs-codeguide, docs-decisions, docs-links, integration, pr-gate, quality, security. Tabla generada 1:1 desde ellos: ningún check puede fallar por una regla que no esté aquí.
 - Contextos requeridos declarados: required.
 - Checks del contrato de host: required.
 
 | `codeql` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
+| `docs-codeguide` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
+| `docs-decisions` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
+| `docs-links` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `integration` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `pr-gate` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `quality` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
@@ -103,7 +106,7 @@ Un incidente de producción deja cuatro niveles, enlazados por identificadores (
 <!-- ci-pattern-doc:begin lifecycle -->
 ## 10. Ciclo de vida de un cambio
 
-Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs requeridos que debe ver en verde antes del merge: codeql, integration, pr-gate, quality, security.
+Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs requeridos que debe ver en verde antes del merge: codeql, docs-codeguide, docs-decisions, docs-links, integration, pr-gate, quality, security.
 - **1. Issue.** Con el formulario del consumer (sección 1), busque duplicados y cree la issue:
   `gh issue list --search "<términos>" --json number,title,state --state all --limit 20`
   `gh issue create --title "<título>" --body-file <cuerpo-de-la-issue.md>`
@@ -187,6 +190,16 @@ Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
 backups, los datos en bruto y el material privado. Nunca ubique documentación
 en una ruta absoluta o externa al repositorio (HR-48): el gate de la fase 5 la
 rechaza. Detalle: la sección «Dónde vive la documentación» del flujo operativo.
+## Dónde trabajar
+
+Antes de actuar, vaya al documento de su situación; no deduzca dónde va el trabajo.
+
+| Si vas a… | Lee… |
+| --- | --- |
+| Cambiar código o buscar dónde va algo nuevo | `docs/CODEBASE-GUIDE.md` y, desde ella, la página de `docs/codebase/` del área que toque |
+| Abrir un pull request | la checklist de su tipo de cambio en `docs/codebase/maintainer-playbook.md` |
+| Proponer o cambiar algo que quizá ya se decidió | `docs/decisions/README.md`: consulte antes si ya se rechazó, sustituyó o aplazó |
+| Dudar de si algo existe en el repositorio | las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código |
 <!-- ci-pattern-agents:end -->
 
 <!-- ci-pattern-doc:end agents-block -->
