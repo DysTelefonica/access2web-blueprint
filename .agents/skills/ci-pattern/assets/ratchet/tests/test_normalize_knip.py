@@ -22,7 +22,7 @@ SCRIPT = ASSET / "normalize_knip.py"
 
 
 def fingerprint(rule: str, path: str, symbol: str) -> str:
-    return hashlib.sha1(f"{rule}|{path}|{symbol}".encode("utf-8")).hexdigest()
+    return hashlib.sha1(f"{rule}|{path}|{symbol}".encode()).hexdigest()
 
 
 def run_adapter(raw_bytes: bytes) -> subprocess.CompletedProcess:

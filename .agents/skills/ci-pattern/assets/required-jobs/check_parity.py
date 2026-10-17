@@ -276,7 +276,15 @@ def parity_mismatches(jobs: list[str], needs: list[str], policy_jobs: list[str],
     return problems
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(description="fail-closed workflow/needs/policy parity check")
     parser.add_argument("--workflow", required=True, help="path to the workflow YAML file")
     parser.add_argument("--aggregator", required=True, help="job id of the aggregator job")

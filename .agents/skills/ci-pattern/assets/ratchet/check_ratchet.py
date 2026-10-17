@@ -151,7 +151,15 @@ def load_baseline(path: str) -> dict:
     return doc
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Ratchet gate (HR-15 core, HR-16).")
     ap.add_argument("--findings", required=True, help="normalized findings JSON from the measuring tool")
     ap.add_argument("--baseline", required=True, help="versioned baseline JSON")
