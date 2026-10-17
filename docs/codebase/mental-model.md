@@ -72,13 +72,25 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 
 ## Invariantes del proyecto
 
-- **Naming multi-app**: cada issue y commit declara a qué app pertenece con el prefijo `[<APP>]` o `[XCUT]` en el título y el scope `(app)` o `(platform)` en el commit. El label `app/<slug>` aplica cuando afecta una sola app.
+- **Naming multi-app**: cada issue y commit declara a qué app pertenece con el prefijo `[<APP>]` o `[XCUT]` en el título y el scope `(app)` o `(platform)` en el commit. El label etiquetas con prefijo `app` aplica cuando afecta una sola app.
 - **Ownership de `data/staging/<app>/`**: los binarios legacy viven en R2 y se pull-ean con `scripts/setup-staging.ps1` y `scripts/sync-to-r2.ps1`. NO se commitean nuevas adiciones a `data/`; el staging se mantiene reproducible desde R2.
 - **Walkthrough JSONs son data**: los `walkthrough-*.json` viven en commits separados de la `epic.md` correspondiente. Mezclarlos dificulta la revisión y bloquea el ciclo de dysflow walkthrough.
 - **Issues a dysflow son work-in-progress**: los `docs/prompts/prompt-ia-mantenedora-dysflow-round-*.md` NO se mergean en `main` hasta que el issue upstream en DysTelefonica/dysflow se cierre.
 - **Ramas de MVP se conservan en remoto**: cada PR se integra con `--squash` y la rama remota se queda; la limpieza es local (`git worktree remove <ruta>`). Borrar la rama remota rompe la trazabilidad por unidad de trabajo.
 - **Hexagonalidad enforced por gate**: `scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `PURE_LAYERS = {domain, ports, application}`. Mover un adapter a la capa equivocada es un gate failure, no un estilo (DA-1, `docs/architecture.md` §Patrón hexagonal).
 - **Pin test AST rechaza símbolos legacy**: `scripts/check_mutation_sites.py` y `scripts/check_legacy_hashes.py` prohíben `legacy_hash`, `sha256`, `migrate_password` en código de plataforma (DA-13).
+
+## Si necesitas X, lee/toca Y
+
+| Si necesitas... | Empieza por... | Luego revisa... |
+|---|---|---|
+| Entender qué es Lanzadera y qué consumen las otras apps | Esta página | `docs/08-decisiones-y-preguntas-abiertas.md` |
+| Saber en qué capa va un cambio | `docs/codebase/repository-map.md` | `docs/architecture.md` |
+| Comprobar si algo existe antes de inventarlo | `docs/codebase/what-is-not-here.md` | `docs/codebase/interfaces.md` |
+
+## Regla de colocación
+
+El código nuevo sigue el orden `domain`, `ports`, `application`, `adapters`, `delivery`, `di`; una capa solo importa de las que su regla permite en `scripts/check_layers.py`.
 
 ## Lista de comprobación del contribuidor
 
