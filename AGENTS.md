@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ vadc9ffe -->
+<!-- personal-skills:slice:access2web-blueprint @ v4011235 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -293,7 +293,7 @@ pregunte en la issue o al mantenedor.
 
 ## Dónde vive la documentación
 
-Toda la documentación de este proyecto vive en ESTE repositorio, bajo `docs/`
+Toda la documentación de este proyecto vive en este mismo repositorio, bajo `docs/`
 por materia; los post-mortems en `docs/postmortems/<AAAA-MM-DD>-<slug>.md`.
 Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
 backups, los datos en bruto y el material privado. Nunca ubique documentación
