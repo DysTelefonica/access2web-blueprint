@@ -577,8 +577,8 @@ jobs:
         run: python3 .agents/skills/ci-pattern/assets/docs-links/run_docs_links.py . --config .github/docs-links.json
 
   docs-decisions:
-    # HR-67: registro de decisiones (formato, sustitucion, citas e indice). El gate
-    # no tiene entrada propia: lo ejecuta la fase 5 del verificador de adopcion.
+    # HR-67: registro de decisiones (formato, sustitucion, citas e indice). El canon
+    # no da entrada de linea de comandos al gate: se llama a su funcion `check`.
     name: docs-decisions (${{ github.event_name }})
     if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
     runs-on: ubuntu-24.04
@@ -591,7 +591,17 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Decision register
-        run: python3 .agents/skills/ci-pattern/assets/bin/ci-pattern adoption check --phase 5 .
+        run: |
+          python3 -I - <<'PY'
+          import importlib.util, sys
+          path = ".agents/skills/ci-pattern/assets/docs-decisions/check_docs_decisions.py"
+          spec = importlib.util.spec_from_file_location("check_docs_decisions", path)
+          gate = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(gate)
+          findings = gate.check(".", {"dir": "docs/decisions"})
+          print("\n".join(findings) if findings else "docs-decisions: OK")
+          sys.exit(1 if findings else 0)
+          PY
 
   required:
     # Issue #702: deterministic replacement for the six hand-configured
