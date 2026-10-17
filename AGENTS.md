@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ vb718a10 -->
+<!-- personal-skills:slice:access2web-blueprint @ v503f666 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -299,6 +299,16 @@ Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
 backups, los datos en bruto y el material privado. Nunca ubique documentación
 en una ruta absoluta o externa al repositorio (HR-48): el gate de la fase 5 la
 rechaza. Detalle: la sección «Dónde vive la documentación» del flujo operativo.
+## Dónde trabajar
+
+Antes de actuar, vaya al documento de su situación; no deduzca dónde va el trabajo.
+
+| Si vas a… | Lee… |
+| --- | --- |
+| Cambiar código o buscar dónde va algo nuevo | `docs/CODEBASE-GUIDE.md` y, desde ella, la página de `docs/codebase/` del área que toque |
+| Abrir un pull request | la checklist de su tipo de cambio en `docs/codebase/maintainer-playbook.md` |
+| Proponer o cambiar algo que quizá ya se decidió | `docs/decisions/README.md`: consulte antes si ya se rechazó, sustituyó o aplazó |
+| Dudar de si algo existe en el repositorio | las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código |
 <!-- ci-pattern-agents:end -->
 
 # Fragment access2web-blueprint — convenciones operacionales del repo

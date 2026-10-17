@@ -7,7 +7,7 @@ tiers:
 overlays:
   - shared
 agents_md_path: AGENTS.md
-slice_block_sha256: b718a1073dcc10c525645fe976770b5f380c9190be5a412bd72bbd1998c8cc95
+slice_block_sha256: 503f66603d01cb2e8c4ad1322d946ab5774a5c27d1ff5c393ca8f0c52f5dd88b
 include_skills:
   - ai-slop-discipline
   - ci-pattern
