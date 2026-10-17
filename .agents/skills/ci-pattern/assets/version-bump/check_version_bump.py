@@ -31,7 +31,6 @@ Exit codes: 0 clean · 1 findings · 2 invalid input.
 from __future__ import annotations
 
 import argparse
-import json
 import re
 import subprocess
 import sys
@@ -100,7 +99,7 @@ def changed_files(repo: Path, base: str, head: str, skill_dir: str) -> list[str]
     """Diff desde el merge-base de la base y el head del PR (T6a, Refs #509)."""
     mb = merge_base(repo, base, head)
     out = git(repo, "diff", "--name-only", f"{mb}..{head}", "--", skill_dir)
-    return [l for l in out.splitlines() if l.strip()]
+    return [item for item in out.splitlines() if item.strip()]
 
 
 def discover_skill_dirs(repo: Path, base: str, head: str) -> list[str]:
@@ -122,7 +121,15 @@ def discover_skill_dirs(repo: Path, base: str, head: str) -> list[str]:
     return sorted(dirs)
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Version bump gate (HR-44).")
     ap.add_argument("--repo", required=True)
     ap.add_argument("--base", required=True)

@@ -108,7 +108,7 @@ class PreservationTests(unittest.TestCase):
         """Caso 2: la rama fue mergeada a main, asi que su punta es
         ancestro de origin/main."""
         repo = make_repo(self.tmp)
-        tip = make_branch(repo, "feat-anc")
+        make_branch(repo, "feat-anc")
         _run(["git", "checkout", "-q", "main"], cwd=repo)
         merge = _run(["git", "merge", "--ff-only", "feat-anc"], cwd=repo)
         self.assertEqual(merge.returncode, 0, merge.stderr)
@@ -144,7 +144,7 @@ class RefusalTests(unittest.TestCase):
     def test_branch_not_preserved_refuses(self):
         """Sin remote, sin pr_head, sin ancestro: rc=3, nada se borra."""
         repo = make_repo(self.tmp)
-        tip = make_branch(repo, "feat-orphan")
+        make_branch(repo, "feat-orphan")
         _run(["git", "push", "origin", ":feat-orphan"], cwd=repo)
         _run(["git", "checkout", "-q", "main"], cwd=repo)
         (repo / "main-advance.txt").write_text("adv\n", encoding="utf-8")
@@ -268,7 +268,7 @@ class BundleTests(unittest.TestCase):
         se llena igual: el bundle es un respaldo que el operador puede
         reutilizar aunque no se borre."""
         repo = make_repo(self.tmp)
-        tip = make_branch(repo, "feat-bundle-reject")
+        make_branch(repo, "feat-bundle-reject")
         # Hacer que no sea preservada: borrar remote y avanzar main.
         _run(["git", "push", "origin", ":feat-bundle-reject"], cwd=repo)
         _run(["git", "checkout", "-q", "main"], cwd=repo)
@@ -320,7 +320,7 @@ class CLITests(unittest.TestCase):
     def test_cli_refusal_returns_3_and_prints_refused(self):
         """El CLI con rechazo retorna 3, imprime REFUSED y BUNDLE."""
         repo = make_repo(self.tmp)
-        tip = make_branch(repo, "feat-cli-ref")
+        make_branch(repo, "feat-cli-ref")
         _run(["git", "push", "origin", ":feat-cli-ref"], cwd=repo)
         _run(["git", "checkout", "-q", "main"], cwd=repo)
         (repo / "main-advance.txt").write_text("adv\n", encoding="utf-8")

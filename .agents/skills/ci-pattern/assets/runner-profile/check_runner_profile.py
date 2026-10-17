@@ -253,7 +253,15 @@ def gate_workflow(path: Path, pool_labels, exceptions) -> list:
     return findings
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv) -> int:
+    _pin_output_encoding()
     repo_arg = argv[1] if len(argv) > 1 else "."
     repo = Path(repo_arg)
     if not repo.is_dir():
