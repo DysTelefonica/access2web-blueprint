@@ -36,7 +36,6 @@
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
         {"artifact": ".team-skills.yaml (manifiesto de skills de la flota: lo escribe el propagador de DysTelefonica/team-skills en cada corrida, y el catálogo del patrón lo lista como artefacto de gobierno)", "disposition": "adopted", "target": ".team-skills.yaml"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
-        {"artifact": "scripts/check_issue_spec.py (canon DysTelefonica/team-skills blob 75518d0, regla 7 opt-in --required-sections para las 6 secciones del contrato de issue; gate del job review-budget de .github/workflows/ci.yml; Refs #960, PR-2 de la cadena)", "disposition": "adopted", "target": "scripts/check_issue_spec.py"},
         {"artifact": "scripts/check_suites_populated.py (gate del job de tests garantizando que ninguna suite declarada quede vacía en el workflow de CI)", "disposition": "adopted", "target": "scripts/check_suites_populated.py"},
         {"artifact": "scripts/mutation_shards.py (gate de shards de mutación ejecutado desde el job mutation de .github/workflows/release.yml)", "disposition": "adopted", "target": "scripts/mutation_shards.py"},
         {"artifact": "scripts/check_branch_name.py (no existe en el árbol del repositorio y no queda ningún run: de CI que lo invoque tras la retirada de las plantillas de flota; se conserva la entrada solo para trazabilidad del fantasma de una adopción previa)", "disposition": "retired", "path": "scripts/check_branch_name.py"},
@@ -103,7 +102,6 @@
       "declared_governed_paths": [
         "scripts/check_complexity.py",
         "scripts/check_decision_guards.py",
-        "scripts/check_issue_spec.py",
         "scripts/check_legacy_hashes.py",
         "scripts/check_legacy_retirement.py",
         "scripts/check_suites_populated.py",
