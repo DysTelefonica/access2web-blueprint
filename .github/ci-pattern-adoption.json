@@ -1,57 +1,104 @@
 {
+  "schema_version": 1,
   "agents_md": "propagated",
+  "docs_manifest": {},
   "architecture": {
-    "code_roots": [
-      {
-        "glob": "*.py",
-        "root": "app/src/modules/lanzadera"
-      },
-      {
-        "glob": "*.py",
-        "root": "app/src/modules/expedientes"
-      }
-    ],
     "doc": "docs/architecture.md",
     "job": "docs-architecture",
+    "stack": "python",
     "linter_config": ".importlinter",
-    "stack": "python"
-  },
-  "docs_decisions": {
-    "dir": "docs/decisions",
-    "job": "docs-decisions"
-  },
-  "docs_links": {
-    "hub": "docs/CODEBASE-GUIDE.md",
-    "job": "docs-links",
-    "spokes": "docs/codebase"
-  },
-  "docs_manifest": {},
-  "docs_map": {
     "code_roots": [
-      {
-        "glob": "*.py",
-        "root": "app/src/modules"
-      },
-      {
-        "glob": "*.py",
-        "root": "scripts"
-      },
-      {
-        "glob": "**/*.bas",
-        "root": "data"
-      }
-    ],
-    "docs_path": "docs/codebase",
-    "exclude_dirs": [
-      "e2e",
-      "skills",
-      "tests"
-    ],
-    "hub": "docs/CODEBASE-GUIDE.md",
-    "job": "docs-codeguide"
+      {"root": "app/src/modules/lanzadera", "glob": "*.py"},
+      {"root": "app/src/modules/expedientes", "glob": "*.py"}
+    ]
   },
   "phases": {
     "0": {
+      "inventory": [
+        {"artifact": ".github/workflows/ci.yml", "disposition": "adopted", "target": ".github/workflows/ci.yml"},
+        {"artifact": ".github/workflows/codeql.yml", "disposition": "adopted", "target": ".github/workflows/codeql.yml"},
+        {"artifact": ".github/workflows/release.yml", "disposition": "adopted", "target": ".github/workflows/release.yml"},
+        {"artifact": ".github/workflows/security.yml", "disposition": "adopted", "target": ".github/workflows/security.yml"},
+        {"artifact": ".github/workflows/security-deep.yml", "disposition": "adopted", "target": ".github/workflows/security-deep.yml"},
+        {"artifact": ".github/ISSUE_TEMPLATE/bug.yml (formulario de defecto por aplicación; lo sustituye el formulario canónico del patrón en la fase 3, y la dimensión de aplicación sobrevive como etiqueta app/<slug> y prefijo de título)", "disposition": "retired", "path": ".github/ISSUE_TEMPLATE/bug.yml"},
+        {"artifact": ".github/ISSUE_TEMPLATE/docs.yml (formulario de documentación y épicas; lo sustituye el formulario canónico del patrón en la fase 3)", "disposition": "retired", "path": ".github/ISSUE_TEMPLATE/docs.yml"},
+        {"artifact": ".github/ISSUE_TEMPLATE/feature.yml (formulario de capacidad nueva por aplicación; lo sustituye el formulario canónico del patrón en la fase 3, y la dimensión de aplicación sobrevive como etiqueta app/<slug> y prefijo de título)", "disposition": "retired", "path": ".github/ISSUE_TEMPLATE/feature.yml"},
+        {"artifact": ".github/ISSUE_TEMPLATE/issue-canonical.yml", "disposition": "adopted", "target": ".github/ISSUE_TEMPLATE/issue-canonical.yml"},
+        {"artifact": ".github/ISSUE_TEMPLATE/config.yml", "disposition": "adopted", "target": ".github/ISSUE_TEMPLATE/config.yml"},
+        {"artifact": ".github/PULL_REQUEST_TEMPLATE.md", "disposition": "adopted", "target": ".github/PULL_REQUEST_TEMPLATE.md"},
+        {"artifact": ".github/dependabot.yml", "disposition": "adopted", "target": ".github/dependabot.yml"},
+        {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
+        {"artifact": ".github/required-jobs-policy.json", "disposition": "adopted", "target": ".github/required-jobs-policy.json"},
+        {"artifact": ".github/docs-links.json", "disposition": "adopted", "target": ".github/docs-links.json"},
+        {"artifact": ".github/local-ci-parity-policy.json", "disposition": "adopted", "target": ".github/local-ci-parity-policy.json"},
+        {"artifact": "scripts/local-preflight.sh", "disposition": "adopted", "target": "scripts/local-preflight.sh"},
+        {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
+        {"artifact": ".team-skills.yaml (manifiesto de skills de la flota: lo escribe el propagador de DysTelefonica/team-skills en cada corrida, y el catálogo del patrón lo lista como artefacto de gobierno)", "disposition": "adopted", "target": ".team-skills.yaml"},
+        {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
+        {"artifact": "scripts/check_suites_populated.py (gate del job de tests garantizando que ninguna suite declarada quede vacía en el workflow de CI)", "disposition": "adopted", "target": "scripts/check_suites_populated.py"},
+        {"artifact": "scripts/mutation_shards.py (gate de shards de mutación ejecutado desde el job mutation de .github/workflows/release.yml)", "disposition": "adopted", "target": "scripts/mutation_shards.py"},
+        {"artifact": "scripts/check_branch_name.py (no existe en el árbol del repositorio y no queda ningún run: de CI que lo invoque tras la retirada de las plantillas de flota; se conserva la entrada solo para trazabilidad del fantasma de una adopción previa)", "disposition": "retired", "path": "scripts/check_branch_name.py"},
+        {"artifact": "scripts/check_dry.py", "disposition": "adopted", "target": "scripts/check_dry.py"},
+        {"artifact": "scripts/check_mutation.py", "disposition": "adopted", "target": "scripts/check_mutation.py"},
+        {"artifact": "scripts/check_mutation_sites.py", "disposition": "adopted", "target": "scripts/check_mutation_sites.py"},
+        {"artifact": "scripts/check_pr_size.py", "disposition": "adopted", "target": "scripts/check_pr_size.py"},
+        {"artifact": "scripts/check_required_jobs.py (BP#1040: el job required ejecuta el gate del canon desde .agents/skills/ci-pattern/assets/required-jobs/; la política vive en .github/required-jobs-policy.json)", "disposition": "retired", "path": "scripts/check_required_jobs.py"},
+        {"artifact": "scripts/check_walkthrough_schema.py", "disposition": "adopted", "target": "scripts/check_walkthrough_schema.py"},
+        {"artifact": "scripts/check_workflows.py", "disposition": "adopted", "target": "scripts/check_workflows.py"},
+        {"artifact": "scripts/quality_report.py", "disposition": "adopted", "target": "scripts/quality_report.py"},
+        {"artifact": "scripts/release-preflight.sh", "disposition": "adopted", "target": "scripts/release-preflight.sh"},
+        {"artifact": "scripts/require-ci-success.sh", "disposition": "adopted", "target": "scripts/require-ci-success.sh"},
+        {"artifact": "scripts/check_complexity.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_complexity.py"},
+        {"artifact": "scripts/check_decision_guards.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_decision_guards.py"},
+        {"artifact": "scripts/check_layers.py (verificador de capas del harness de calidad; lo sustituye el job docs-architecture, que impone las capas desde el bloque architecture de docs/architecture.md con import-linter, con el mismo veredicto sobre sus fixtures; #1013)", "disposition": "retired", "path": "scripts/check_layers.py"},
+        {"artifact": "scripts/check_legacy_hashes.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_legacy_hashes.py"},
+        {"artifact": "scripts/check_legacy_retirement.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_legacy_retirement.py"},
+        {"artifact": "scripts/check_test_classification.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_test_classification.py"},
+        {"artifact": "tests/test_ci_workflow.py (meta-gate del arnés de CI: falla si un paso del workflow se envuelve en || true o continue-on-error, y pinea el orden de verificación)", "disposition": "adopted", "target": "tests/test_ci_workflow.py"},
+        {"artifact": "scripts/install-skills.sh (materializa el catálogo de skills vendidas en skills/ hacia las copias que consume cada agente)", "disposition": "adopted", "target": "scripts/install-skills.sh"},
+        {"artifact": "scripts/install-skills.ps1 (la misma materialización en Windows)", "disposition": "adopted", "target": "scripts/install-skills.ps1"},
+        {"artifact": "skills/ (catálogo de skills vendidas por la flota: 50 skills versionadas con el código)", "disposition": "adopted", "target": "skills/"},
+        {"artifact": "docs/calidad-de-codigo-y-ci.md (documento operativo escrito a mano; su deriva frente a .github/dependabot.yml está registrada en la issue #776 y lo sustituye el documento generado en la fase 5)", "disposition": "retired", "path": "docs/calidad-de-codigo-y-ci.md"},
+        {"artifact": "protección de rama de main: un contexto requerido 'required' (app 15368), strict, administradores sujetos a la protección, force-push y borrado de la rama bloqueados y conversaciones resueltas; sin revisiones aprobatorias exigidas", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "settings de merge del repositorio: commit de fusión, squash y rebase permitidos, borrado de la rama al integrar desactivado y auto-merge desactivado", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "ruleset:main-maintainers-and-admins-merge", "disposition": "adopted", "target": "ruleset:main-maintainers-and-admins-merge"},
+        {"artifact": "label:app/brass", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:app/condor", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:app/expedientes", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:app/gestion-riesgos", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:app/hps", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:app/hps-solicitudes", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:app/lanzadera", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:app/no-conformidades", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:bug (nombre anterior del juego de tipos, duplicado de type:bug; sin issues abiertas que la lleven)", "disposition": "retired", "label": "bug"},
+        {"artifact": "label:chore (nombre anterior del juego de tipos, duplicado de type:chore; sin issues abiertas que la lleven)", "disposition": "retired", "label": "chore"},
+        {"artifact": "label:ci (etiqueta de cambios de CI del flujo anterior; sin issues abiertas, la cubre type:chore)", "disposition": "retired", "label": "ci"},
+        {"artifact": "label:cross-cutting", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:dependencies (la escribe Dependabot en cada actualización)", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:documentation (nombre anterior del juego de tipos, duplicado de type:docs; sin issues abiertas que la lleven)", "disposition": "retired", "label": "documentation"},
+        {"artifact": "label:duplicate", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:enhancement (nombre anterior del juego de tipos, duplicado de type:feature; sin issues abiertas que la lleven)", "disposition": "retired", "label": "enhancement"},
+        {"artifact": "label:epic:lanzadera-mvp", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:feat (nombre anterior del juego de tipos, duplicado de type:feature; la llevan 5 issues abiertas, que se reetiquetan en la fase 3 antes de retirarla)", "disposition": "retired", "label": "feat"},
+        {"artifact": "label:good first issue", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:help wanted", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:invalid", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:python:uv (la escribe Dependabot para las actualizaciones del ecosistema uv)", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:question", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:refactor (nombre anterior del juego de tipos, duplicado de type:refactor; sin issues abiertas que la lleven)", "disposition": "retired", "label": "refactor"},
+        {"artifact": "label:size:exception", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:status:approved", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:status:needs-triage", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:test (etiqueta de cambios de solo test del flujo anterior; la llevan 2 issues abiertas, que se reetiquetan a type:chore en la fase 3 antes de retirarla)", "disposition": "retired", "label": "test"},
+        {"artifact": "label:type:bug", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:type:chore", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:type:docs", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:type:feature", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:type:refactor", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": "label:wontfix", "disposition": "adopted", "target": ".github/host-contract.json"},
+        {"artifact": ".github/workflows/operating-doc-drift.yml", "disposition": "adopted", "target": ".github/workflows/operating-doc-drift.yml"}
+      ],
       "declared_governed_paths": [
         "scripts/check_complexity.py",
         "scripts/check_decision_guards.py",
@@ -66,429 +113,12 @@
         "skills/",
         "tests/test_ci_workflow.py"
       ],
+      "host_labels": ".github/host-labels-snapshot.json",
+      "removal_confirmed": true,
       "deploy_binding": {
         "applicable": false,
-        "reason": "El repositorio no aloja ning\u00fan mecanismo de despliegue: docs/11-releases.md se declara \u00abNo es: una gu\u00eda de despliegue en producci\u00f3n\u00bb, release.yml publica la imagen y verifica su firma sin desplegar, y no existe ninguna etiqueta ni release. Sin deploy no hay evidencia que registrar por SHA desplegado, as\u00ed que el binding evidencia\u2194deploy no se instala (G4.5)."
-      },
-      "host_labels": ".github/host-labels-snapshot.json",
-      "inventory": [
-        {
-          "artifact": ".github/workflows/ci.yml",
-          "disposition": "adopted",
-          "target": ".github/workflows/ci.yml"
-        },
-        {
-          "artifact": ".github/workflows/codeql.yml",
-          "disposition": "adopted",
-          "target": ".github/workflows/codeql.yml"
-        },
-        {
-          "artifact": ".github/workflows/release.yml",
-          "disposition": "adopted",
-          "target": ".github/workflows/release.yml"
-        },
-        {
-          "artifact": ".github/workflows/security.yml",
-          "disposition": "adopted",
-          "target": ".github/workflows/security.yml"
-        },
-        {
-          "artifact": ".github/workflows/security-deep.yml",
-          "disposition": "adopted",
-          "target": ".github/workflows/security-deep.yml"
-        },
-        {
-          "artifact": ".github/ISSUE_TEMPLATE/bug.yml (formulario de defecto por aplicaci\u00f3n; lo sustituye el formulario can\u00f3nico del patr\u00f3n en la fase 3, y la dimensi\u00f3n de aplicaci\u00f3n sobrevive como etiqueta app/<slug> y prefijo de t\u00edtulo)",
-          "disposition": "retired",
-          "path": ".github/ISSUE_TEMPLATE/bug.yml"
-        },
-        {
-          "artifact": ".github/ISSUE_TEMPLATE/docs.yml (formulario de documentaci\u00f3n y \u00e9picas; lo sustituye el formulario can\u00f3nico del patr\u00f3n en la fase 3)",
-          "disposition": "retired",
-          "path": ".github/ISSUE_TEMPLATE/docs.yml"
-        },
-        {
-          "artifact": ".github/ISSUE_TEMPLATE/feature.yml (formulario de capacidad nueva por aplicaci\u00f3n; lo sustituye el formulario can\u00f3nico del patr\u00f3n en la fase 3, y la dimensi\u00f3n de aplicaci\u00f3n sobrevive como etiqueta app/<slug> y prefijo de t\u00edtulo)",
-          "disposition": "retired",
-          "path": ".github/ISSUE_TEMPLATE/feature.yml"
-        },
-        {
-          "artifact": ".github/ISSUE_TEMPLATE/issue-canonical.yml",
-          "disposition": "adopted",
-          "target": ".github/ISSUE_TEMPLATE/issue-canonical.yml"
-        },
-        {
-          "artifact": ".github/ISSUE_TEMPLATE/config.yml",
-          "disposition": "adopted",
-          "target": ".github/ISSUE_TEMPLATE/config.yml"
-        },
-        {
-          "artifact": ".github/PULL_REQUEST_TEMPLATE.md",
-          "disposition": "adopted",
-          "target": ".github/PULL_REQUEST_TEMPLATE.md"
-        },
-        {
-          "artifact": ".github/dependabot.yml",
-          "disposition": "adopted",
-          "target": ".github/dependabot.yml"
-        },
-        {
-          "artifact": ".github/host-contract.json",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": ".github/env-isolation-allowlist.json",
-          "disposition": "adopted",
-          "target": ".github/env-isolation-allowlist.json"
-        },
-        {
-          "artifact": ".github/required-jobs-policy.json",
-          "disposition": "adopted",
-          "target": ".github/required-jobs-policy.json"
-        },
-        {
-          "artifact": ".github/docs-links.json",
-          "disposition": "adopted",
-          "target": ".github/docs-links.json"
-        },
-        {
-          "artifact": ".github/local-ci-parity-policy.json",
-          "disposition": "adopted",
-          "target": ".github/local-ci-parity-policy.json"
-        },
-        {
-          "artifact": "scripts/local-preflight.sh",
-          "disposition": "adopted",
-          "target": "scripts/local-preflight.sh"
-        },
-        {
-          "artifact": "AGENTS.md",
-          "disposition": "adopted",
-          "target": "AGENTS.md"
-        },
-        {
-          "artifact": ".team-skills.yaml (manifiesto de skills de la flota: lo escribe el propagador de DysTelefonica/team-skills en cada corrida, y el cat\u00e1logo del patr\u00f3n lo lista como artefacto de gobierno)",
-          "disposition": "adopted",
-          "target": ".team-skills.yaml"
-        },
-        {
-          "artifact": "CONTRIBUTING.md",
-          "disposition": "adopted",
-          "target": "CONTRIBUTING.md"
-        },
-        {
-          "artifact": "scripts/check_suites_populated.py (gate del job de tests garantizando que ninguna suite declarada quede vac\u00eda en el workflow de CI)",
-          "disposition": "adopted",
-          "target": "scripts/check_suites_populated.py"
-        },
-        {
-          "artifact": "scripts/mutation_shards.py (gate de shards de mutaci\u00f3n ejecutado desde el job mutation de .github/workflows/release.yml)",
-          "disposition": "adopted",
-          "target": "scripts/mutation_shards.py"
-        },
-        {
-          "artifact": "scripts/check_branch_name.py (no existe en el \u00e1rbol del repositorio y no queda ning\u00fan run: de CI que lo invoque tras la retirada de las plantillas de flota; se conserva la entrada solo para trazabilidad del fantasma de una adopci\u00f3n previa)",
-          "disposition": "retired",
-          "path": "scripts/check_branch_name.py"
-        },
-        {
-          "artifact": "scripts/check_dry.py",
-          "disposition": "adopted",
-          "target": "scripts/check_dry.py"
-        },
-        {
-          "artifact": "scripts/check_mutation.py",
-          "disposition": "adopted",
-          "target": "scripts/check_mutation.py"
-        },
-        {
-          "artifact": "scripts/check_mutation_sites.py",
-          "disposition": "adopted",
-          "target": "scripts/check_mutation_sites.py"
-        },
-        {
-          "artifact": "scripts/check_pr_size.py",
-          "disposition": "adopted",
-          "target": "scripts/check_pr_size.py"
-        },
-        {
-          "artifact": "scripts/check_required_jobs.py (BP#1040: el job required ejecuta el gate del canon desde .agents/skills/ci-pattern/assets/required-jobs/; la pol\u00edtica vive en .github/required-jobs-policy.json)",
-          "disposition": "retired",
-          "path": "scripts/check_required_jobs.py"
-        },
-        {
-          "artifact": "scripts/check_walkthrough_schema.py",
-          "disposition": "adopted",
-          "target": "scripts/check_walkthrough_schema.py"
-        },
-        {
-          "artifact": "scripts/check_workflows.py",
-          "disposition": "adopted",
-          "target": "scripts/check_workflows.py"
-        },
-        {
-          "artifact": "scripts/quality_report.py",
-          "disposition": "adopted",
-          "target": "scripts/quality_report.py"
-        },
-        {
-          "artifact": "scripts/release-preflight.sh",
-          "disposition": "adopted",
-          "target": "scripts/release-preflight.sh"
-        },
-        {
-          "artifact": "scripts/require-ci-success.sh",
-          "disposition": "adopted",
-          "target": "scripts/require-ci-success.sh"
-        },
-        {
-          "artifact": "scripts/check_complexity.py (gate de calidad de c\u00f3digo invocado desde quality_report.py y el preflight local)",
-          "disposition": "adopted",
-          "target": "scripts/check_complexity.py"
-        },
-        {
-          "artifact": "scripts/check_decision_guards.py (gate de calidad de c\u00f3digo invocado desde quality_report.py y el preflight local)",
-          "disposition": "adopted",
-          "target": "scripts/check_decision_guards.py"
-        },
-        {
-          "artifact": "scripts/check_layers.py (verificador de capas del harness de calidad; lo sustituye el job docs-architecture, que impone las capas desde el bloque architecture de docs/architecture.md con import-linter, con el mismo veredicto sobre sus fixtures; #1013)",
-          "disposition": "retired",
-          "path": "scripts/check_layers.py"
-        },
-        {
-          "artifact": "scripts/check_legacy_hashes.py (gate de calidad de c\u00f3digo invocado desde quality_report.py y el preflight local)",
-          "disposition": "adopted",
-          "target": "scripts/check_legacy_hashes.py"
-        },
-        {
-          "artifact": "scripts/check_legacy_retirement.py (gate de calidad de c\u00f3digo invocado desde quality_report.py y el preflight local)",
-          "disposition": "adopted",
-          "target": "scripts/check_legacy_retirement.py"
-        },
-        {
-          "artifact": "scripts/check_test_classification.py (gate de calidad de c\u00f3digo invocado desde quality_report.py y el preflight local)",
-          "disposition": "adopted",
-          "target": "scripts/check_test_classification.py"
-        },
-        {
-          "artifact": "tests/test_ci_workflow.py (meta-gate del arn\u00e9s de CI: falla si un paso del workflow se envuelve en || true o continue-on-error, y pinea el orden de verificaci\u00f3n)",
-          "disposition": "adopted",
-          "target": "tests/test_ci_workflow.py"
-        },
-        {
-          "artifact": "scripts/install-skills.sh (materializa el cat\u00e1logo de skills vendidas en skills/ hacia las copias que consume cada agente)",
-          "disposition": "adopted",
-          "target": "scripts/install-skills.sh"
-        },
-        {
-          "artifact": "scripts/install-skills.ps1 (la misma materializaci\u00f3n en Windows)",
-          "disposition": "adopted",
-          "target": "scripts/install-skills.ps1"
-        },
-        {
-          "artifact": "skills/ (cat\u00e1logo de skills vendidas por la flota: 50 skills versionadas con el c\u00f3digo)",
-          "disposition": "adopted",
-          "target": "skills/"
-        },
-        {
-          "artifact": "docs/calidad-de-codigo-y-ci.md (documento operativo escrito a mano; su deriva frente a .github/dependabot.yml est\u00e1 registrada en la issue #776 y lo sustituye el documento generado en la fase 5)",
-          "disposition": "retired",
-          "path": "docs/calidad-de-codigo-y-ci.md"
-        },
-        {
-          "artifact": "protecci\u00f3n de rama de main: un contexto requerido 'required' (app 15368), strict, administradores sujetos a la protecci\u00f3n, force-push y borrado de la rama bloqueados y conversaciones resueltas; sin revisiones aprobatorias exigidas",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "settings de merge del repositorio: commit de fusi\u00f3n, squash y rebase permitidos, borrado de la rama al integrar desactivado y auto-merge desactivado",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "ruleset:main-maintainers-and-admins-merge",
-          "disposition": "adopted",
-          "target": "ruleset:main-maintainers-and-admins-merge"
-        },
-        {
-          "artifact": "label:app/brass",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:app/condor",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:app/expedientes",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:app/gestion-riesgos",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:app/hps",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:app/hps-solicitudes",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:app/lanzadera",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:app/no-conformidades",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:bug (nombre anterior del juego de tipos, duplicado de type:bug; sin issues abiertas que la lleven)",
-          "disposition": "retired",
-          "label": "bug"
-        },
-        {
-          "artifact": "label:chore (nombre anterior del juego de tipos, duplicado de type:chore; sin issues abiertas que la lleven)",
-          "disposition": "retired",
-          "label": "chore"
-        },
-        {
-          "artifact": "label:ci (etiqueta de cambios de CI del flujo anterior; sin issues abiertas, la cubre type:chore)",
-          "disposition": "retired",
-          "label": "ci"
-        },
-        {
-          "artifact": "label:cross-cutting",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:dependencies (la escribe Dependabot en cada actualizaci\u00f3n)",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:documentation (nombre anterior del juego de tipos, duplicado de type:docs; sin issues abiertas que la lleven)",
-          "disposition": "retired",
-          "label": "documentation"
-        },
-        {
-          "artifact": "label:duplicate",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:enhancement (nombre anterior del juego de tipos, duplicado de type:feature; sin issues abiertas que la lleven)",
-          "disposition": "retired",
-          "label": "enhancement"
-        },
-        {
-          "artifact": "label:epic:lanzadera-mvp",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:feat (nombre anterior del juego de tipos, duplicado de type:feature; la llevan 5 issues abiertas, que se reetiquetan en la fase 3 antes de retirarla)",
-          "disposition": "retired",
-          "label": "feat"
-        },
-        {
-          "artifact": "label:good first issue",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:help wanted",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:invalid",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:python:uv (la escribe Dependabot para las actualizaciones del ecosistema uv)",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:question",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:refactor (nombre anterior del juego de tipos, duplicado de type:refactor; sin issues abiertas que la lleven)",
-          "disposition": "retired",
-          "label": "refactor"
-        },
-        {
-          "artifact": "label:size:exception",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:status:approved",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:status:needs-triage",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:test (etiqueta de cambios de solo test del flujo anterior; la llevan 2 issues abiertas, que se reetiquetan a type:chore en la fase 3 antes de retirarla)",
-          "disposition": "retired",
-          "label": "test"
-        },
-        {
-          "artifact": "label:type:bug",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:type:chore",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:type:docs",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:type:feature",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:type:refactor",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": "label:wontfix",
-          "disposition": "adopted",
-          "target": ".github/host-contract.json"
-        },
-        {
-          "artifact": ".github/workflows/operating-doc-drift.yml",
-          "disposition": "adopted",
-          "target": ".github/workflows/operating-doc-drift.yml"
-        }
-      ],
-      "removal_confirmed": true
+        "reason": "El repositorio no aloja ningún mecanismo de despliegue: docs/11-releases.md se declara «No es: una guía de despliegue en producción», release.yml publica la imagen y verifica su firma sin desplegar, y no existe ninguna etiqueta ni release. Sin deploy no hay evidencia que registrar por SHA desplegado, así que el binding evidencia↔deploy no se instala (G4.5)."
+      }
     },
     "1": {
       "evidence": {
@@ -497,18 +127,11 @@
     },
     "2": {
       "env_isolation": {
-        "allowlist": ".github/env-isolation-allowlist.json",
-        "root": "tests"
+        "root": "tests",
+        "allowlist": ".github/env-isolation-allowlist.json"
       }
     },
     "3": {
-      "evidence": {
-        "path": "docs/adoption/governance-replacement-pr.md"
-      },
-      "host_snapshots": {
-        "branch-protection": "docs/adoption/branch-protection.json",
-        "rulesets": "docs/adoption/rulesets.json"
-      },
       "pattern_paths": [
         ".github/ISSUE_TEMPLATE/config.yml",
         ".github/ISSUE_TEMPLATE/issue-canonical.yml",
@@ -516,7 +139,14 @@
         ".github/env-isolation-allowlist.json",
         ".github/host-contract.json",
         ".github/host-labels-snapshot.json"
-      ]
+      ],
+      "host_snapshots": {
+        "branch-protection": "docs/adoption/branch-protection.json",
+        "rulesets": "docs/adoption/rulesets.json"
+      },
+      "evidence": {
+        "path": "docs/adoption/governance-replacement-pr.md"
+      }
     },
     "4": {
       "gates": [
@@ -576,13 +206,32 @@
     },
     "6": {
       "prs": [
-        {
-          "conclusion": "success",
-          "number": 1050,
-          "sha": "832d66a"
-        }
+        {"number": 1050, "sha": "832d66a", "conclusion": "success"}
       ]
     }
   },
-  "schema_version": 1
+  "docs_map": {
+    "hub": "docs/CODEBASE-GUIDE.md",
+    "docs_path": "docs/codebase",
+    "code_roots": [
+      {"root": "app/src/modules", "glob": "*.py"},
+      {"root": "scripts", "glob": "*.py"},
+      {"root": "data", "glob": "**/*.bas"}
+    ],
+    "job": "docs-codeguide",
+    "exclude_dirs": [
+      "e2e",
+      "skills",
+      "tests"
+    ]
+  },
+  "docs_links": {
+    "hub": "docs/CODEBASE-GUIDE.md",
+    "spokes": "docs/codebase",
+    "job": "docs-links"
+  },
+  "docs_decisions": {
+    "dir": "docs/decisions",
+    "job": "docs-decisions"
+  }
 }
