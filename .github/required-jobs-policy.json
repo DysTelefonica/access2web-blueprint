@@ -2,7 +2,27 @@
   "events": {
     "pull_request": {
       "accepted_skips": []
+    },
+    "push": {
+      "accepted_skips": [
+        "pr-gate"
+      ]
+    },
+    "schedule": {
+      "accepted_skips": [
+        "pr-gate"
+      ]
+    },
+    "workflow_dispatch": {
+      "accepted_skips": [
+        "pr-gate"
+      ]
     }
+  },
+  "relaxation": {
+    "reason": "El script propio aceptaba saltar pr-gate en push, schedule y workflow_dispatch (ci.yml dispara los cuatro eventos) pero la politica solo declaraba pull_request; al ejecutar el canon, la politica pasa a declarar esos tres eventos con ese unico salto aceptado, sin cambiar el comportamiento previo.",
+    "reference": "DysTelefonica/access2web-blueprint#1040",
+    "issue": 1040
   },
   "required_jobs": [
     "pr-gate",

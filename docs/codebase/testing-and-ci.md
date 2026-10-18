@@ -29,7 +29,7 @@ Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.r
 | `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg` sobre `127.0.0.1` y el puerto asignado) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
 | `security` | — (workflow reutilizado, jobs `gitleaks`, `trivy-config`, `pip-audit`) | Escaneo estático y de dependencias | `gitleaks`, `trivy config`, `pip-audit`. |
 | `codeql` | `ubuntu-24.04` | Análisis estático de GitHub | Lenguajes: python, javascript. |
-| `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta `scripts/check_required_jobs.py` — es el agregador que la branch protection exige. |
+| `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta el `check_required_jobs.py` del canon (`.agents/skills/ci-pattern/assets/required-jobs/`) contra `.github/required-jobs-policy.json` — es el agregador que la branch protection exige. |
 
 ### `pr-gate` (rápido, primer filtro)
 
@@ -48,7 +48,7 @@ Orden interno de los steps (ver `ci.yml` línea 188 a línea 360):
 3. `format` — `ruff format --check` sobre `app/src`, `tests/`, `openspec/`. Si falla, el runner reporta el diff.
 5. `lint` — `ruff check` con la `select` de `app/pyproject.toml`.
 6. `typecheck` — `mypy --explicit-package-bases` con la config en `app/pyproject.toml` (Hard Rule 15: pins de mypy==1.13.0).
-7. `workflow gate` — ejecuta `scripts/check_workflows.py` y `scripts/check_required_jobs.py` (parte de la matriz `required`).
+7. `workflow gate` — ejecuta `scripts/check_workflows.py`; la matriz `required` la comprueba el job `required` con el gate del canon.
 8. `suites populated` — ejecuta `scripts/check_suites_populated.py`. Issue #882: una suite obligatoria vacía es una garantía falsa; cada suite (`unit`, `integration`, `e2e_smoke`) debe recoger al menos un test bajo `--collect-only -m <expr>`.
 9. `tests` — la suite sin el marker `integration` (comando 1 de «Comandos de referencia»). El flag `--rootdir=app` es load-bearing: sin él, `pytest` no encuentra la configuración y cada test falla con `import error`.
 10. `quality gates and indicators` — ejecuta `scripts/quality_report.py`. Renderiza el quality report en el step summary del job.
@@ -106,7 +106,7 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 | `scripts/check_issue_spec.py` | `pr-gate` | Cuerpo de issue conforme. |
 | `scripts/check_walkthrough_schema.py` | `pr-gate` | `walkthrough-*.json` válidos. |
 | `scripts/check_workflows.py` | `quality` (`workflow gate`) | `.github/workflows/*.yml` bien formado. |
-| `scripts/check_required_jobs.py` | `quality` (`workflow gate`) + `required` (enforce) | Matriz `required` completa. |
+| `.agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py` (canon) | `required` (enforce) | Matriz `required` completa. |
 | `.importlinter` | `docs-architecture` (job requerido) | DA-1 hexagonalidad: derivado del bloque `architecture` de `docs/architecture.md`. |
 | `scripts/check_legacy_hashes.py` | `quality` | DA-13 prohibición legacy. |
 | `scripts/check_mutation_sites.py` | `quality` | DA-13 pin AST. |
@@ -162,7 +162,7 @@ El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `c
 
 ## Fronteras explícitas
 
-- **No añada un job nuevo a `ci.yml` sin pasar por `scripts/check_workflows.py` y `scripts/check_required_jobs.py`.** Ambos gates validan la matriz y rompen la ratchet si se omite una actualización.
+- **No añada un job nuevo a `ci.yml` sin pasar por `scripts/check_workflows.py` y por la política `.github/required-jobs-policy.json`.** Ambos gates validan la matriz y rompen la ratchet si se omite una actualización.
 - **No mueva un step entre jobs sin revisar `tests/test_ci_workflow.py`.** El wiring está pinado por tests (`test_pull_request_types_cover_edit_and_label_events` y similares).
 - **No cambie los markers sin actualizar `docs/gates.md` §2 y `scripts/check_suites_populated.py`.** Con `--strict-markers` activo, un marker nuevo no declarado falla la recolección.
 - **No cubra un test que requiere servidor con la suite `unit`.** Use `e2e_smoke` (subproceso real) o `e2e` (release).
@@ -172,7 +172,7 @@ El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `c
 | Si necesitas... | Empieza por... | Luego revisa... |
 |---|---|---|
 | Ejecutar los tests de un PR | La sección «Nivel PR» de esta página | `scripts/local-preflight.sh` |
-| Añadir un gate | `scripts/check_required_jobs.py` como modelo | `.github/workflows/ci.yml` y `tests/test_ci_workflow.py` |
+| Añadir un gate | `.github/required-jobs-policy.json` y su `needs` en el job `required` | `.github/workflows/ci.yml` y `tests/test_ci_workflow.py` |
 | Cambiar la suite E2E | `e2e/` | `.github/workflows/release.yml` |
 
 ## Regla de colocación

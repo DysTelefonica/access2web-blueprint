@@ -120,7 +120,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/check_deadcode.py` | Gate | `ci.yml::quality` | Código muerto. |
 | `scripts/check_pr_size.py` | Gate | `ci.yml::pr-gate` | ≤400 líneas. |
 | `scripts/check_workflows.py` | Gate | `ci.yml::quality` | Valida `.github/workflows/*.yml`. |
-| `scripts/check_required_jobs.py` | Gate | `ci.yml::quality` | Valida la matriz `required`. |
+| `.github/required-jobs-policy.json` | Política del gate del canon | `ci.yml::required` | Declara la matriz `required` y los saltos aceptados por evento. |
 | `scripts/check_decision_guards.py` | Gate | `ci.yml::quality` | Decisiones D-<n> con guardia. |
 | `scripts/check_walkthrough_schema.py` | Gate | `ci.yml::pr-gate` | `docs/03-aplicaciones/<app>/walkthrough-G*.json`. |
 | `scripts/check_issue_spec.py` | Gate | `ci.yml::pr-gate` | Cuerpo de issue conforme a `docs/08-decisiones-y-preguntas-abiertas.md`. |

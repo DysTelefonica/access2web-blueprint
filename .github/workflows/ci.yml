@@ -672,7 +672,24 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Enforce the required-job policy
+        # Canon DysTelefonica/team-skills#806 (BP#1040): el agregador ya no es un script
+        # propio. Jobs, eventos y saltos aceptados viven en la política; la paridad
+        # workflow <-> `needs` <-> política y la comparación con la política de la base
+        # (cada relajación necesita su `relaxation`) las hace el canon. El objeto `needs`,
+        # el evento y el SHA base llegan por `env:`, nunca interpolados en el script.
         env:
-          CI_NEEDS_JSON: ${{ toJSON(needs) }}
-          CI_EVENT_NAME: ${{ github.event_name }}
-        run: python scripts/check_required_jobs.py
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          policy=.github/required-jobs-policy.json
+          python3 .agents/skills/ci-pattern/assets/required-jobs/check_parity.py --workflow .github/workflows/ci.yml --aggregator required --policy "$policy"
+          set -- --policy "$policy" --event "$EVENT_NAME"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            if git cat-file -e "$BASE_SHA:$policy" 2>/dev/null; then
+              git show "$BASE_SHA:$policy" > "$RUNNER_TEMP/base-policy.json"
+              set -- "$@" --base-policy "$RUNNER_TEMP/base-policy.json"
+            fi
+          fi
+          printf '%s' "$NEEDS_JSON" | python3 .agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py "$@"

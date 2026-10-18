@@ -28,7 +28,7 @@ REQUIRED_COMMANDS = (
     "python scripts/check_pr_size.py",
     "python scripts/check_issue_spec.py",
     "python scripts/check_walkthrough_schema.py --strict",
-    "python scripts/check_required_jobs.py",
+    ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
 )
 
 #: Gates CI runs that `make verify` deliberately does not (Hard Rule 19).
@@ -46,7 +46,7 @@ VERIFY_EXCLUSIONS = (
     "trivy",  # docker
     # needs the real `needs:` context (toJSON(needs)) from a GitHub Actions
     # run; there is nothing meaningful to feed it on a workstation (#702).
-    "python scripts/check_required_jobs.py",
+    ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
 )
 
 #: The code gates, in the order they must run. Deduplication moves code, which changes
@@ -611,9 +611,11 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert jobs["codeql"]["permissions"]["security-events"] == "write"
 
     step = required["steps"][-1]
-    assert step["run"] == "python scripts/check_required_jobs.py"
-    assert step["env"]["CI_NEEDS_JSON"] == "${{ toJSON(needs) }}"
-    assert step["env"]["CI_EVENT_NAME"] == "${{ github.event_name }}"
+    assert ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py" in step["run"]
+    assert step["env"]["NEEDS_JSON"] == "${{ toJSON(needs) }}"
+    assert step["env"]["EVENT_NAME"] == "${{ github.event_name }}"
+    assert step["env"]["BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
+    assert "--base-policy" in step["run"], "the relaxation check against the base policy must stay wired"
 
 
 def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
@@ -1054,9 +1056,9 @@ def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
 
     `merge_group` was the queue's verdict event; without the queue there
     is no merge-group run to listen to. Leaving the trigger in place
-    would re-introduce a class of `unsupported event` failures in
-    `scripts/check_required_jobs.py` (#857 PR-D dropped it from
-    `SKIPS_BY_EVENT`).
+    would re-introduce a class of `undeclared event` failures in the canon
+    required-jobs gate (#857 PR-D dropped it from the event set; the policy
+    declares no `merge_group`).
     """
     triggers = workflow.get(True) or workflow.get("on") or {}
     if isinstance(triggers, dict):
