@@ -1,4 +1,4 @@
-# Auto-generado por propagate-team-skills.ps1 (catalog @ 858f4eee8).
+# Auto-generado por propagate-team-skills.ps1 (catalog @ 6b1c1e6ec).
 # La lista include_skills se regenera en cada corrida; los demas campos
 # se preservan del manifest previo para no pisar hand-edits del consumer.
 project_type: web
@@ -7,7 +7,7 @@ tiers:
 overlays:
   - shared
 agents_md_path: AGENTS.md
-slice_block_sha256: d045b45ce5e59b1c11384c13fa97ae94ca97f1046b489fa2aadcb8b9b1d08b03
+slice_block_sha256: 6343a3966c0d33374d7f0d5ce38a911140b8bc8039b3012283c4bd24b2e63f16
 include_skills:
   - ai-slop-discipline
   - ci-pattern
