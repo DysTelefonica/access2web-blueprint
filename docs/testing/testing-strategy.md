@@ -93,7 +93,7 @@ Aquí se aplica la regla «no testeamos lo que no se rompe». Cuando una pieza e
 | Pieza sin test | Sustitución activa | Documentada en |
 |---|---|---|
 | Contrato del container DI | `tests/lanzadera/di/test_lanzadera_container.py` (sí existe — ejemplo de lo que sí testeamos). | — |
-| Capas hexagonal purity | `scripts/check_layers.py` (QC-2, QC-9). | `docs/architecture.md` §Patrón hexagonal (DA-1). |
+| Capas hexagonal purity | Job `docs-architecture` y `.importlinter` (QC-2, QC-9). | `docs/architecture.md` §Patrón hexagonal (DA-1). |
 | Naming de branches | `scripts/check_branch_name.py` (QC-6). | `docs/architecture.md` §CI gates. |
 | Tamaño de PR | `scripts/check_pr_size.py` (QC-6). | `CONTRIBUTING.md` §Tamaño de los PRs. |
 | Workflow YAML drift | `scripts/check_workflows.py` (QC-9). | `docs/architecture.md` §CI gates. |

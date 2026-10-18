@@ -1,6 +1,6 @@
 # HARNESS-PROVENANCE: deterministic-quality-harness v1.4 + lanzadera-mvp PR 2
 # DA-1, DA-3, D89 — pure domain entity; only stdlib imports allowed.
-# Layer gate (scripts/check_layers.py) classifies this file as
+# The layer gate (docs-architecture job) classifies this file as
 # `app.src.modules.lanzadera.domain`; any framework import here is a violation.
 """User identity record (lanzadera-mvp/users).
 
