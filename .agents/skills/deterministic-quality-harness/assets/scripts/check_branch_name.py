@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/check_branch_name.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/scripts/check_branch_name.py
 """Branch-name gate.
 
 A branch whose name does not carry its type and its issue number is unreadable two years later,

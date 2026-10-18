@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/check_crap.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/scripts/check_crap.py
 """CRAP gate — Change Risk Anti-Patterns, per function.
 
     CRAP(f) = CC(f)^2 * (1 - coverage(f))^3 + CC(f)

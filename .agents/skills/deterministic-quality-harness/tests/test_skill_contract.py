@@ -2,7 +2,6 @@ import json
 import re
 from pathlib import Path
 
-
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SKILL_FILE = SKILL_ROOT / "SKILL.md"
 ASSETS_ROOT = SKILL_ROOT / "assets"
