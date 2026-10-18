@@ -1679,6 +1679,21 @@ def _operating_doc_docs_location_lines(params):
     ])
 
 
+def _branch_takes_issue_number(pattern):
+    """#842: True si P01 exige el número de la issue tras el tipo (`[0-9]+`).
+    Sin esa declaración (default `<tipo>/<slug>`) el texto del documento no cambia."""
+    return re.search(r"\[0-9\]\+", pattern or "") is not None
+
+
+def _branch_form(params):
+    """#842: forma del nombre de rama que declara P01, con su condición de hecho."""
+    if _branch_takes_issue_number(params["P01_branch_name_pattern"]):
+        return ("<tipo>/<número>-<slug>",
+                "con el número de la issue y el `<slug>` del título en minúsculas y guiones")
+    return ("<tipo>/<slug>",
+            "con el `<slug>` del título de la issue en minúsculas y guiones, sin número de issue")
+
+
 def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
     """Ciclo de vida completo (#305), de la issue al CI verde sin pasos
     implícitos: cada etapa con su comando exacto y su condición de «hecho»."""
@@ -1701,8 +1716,7 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
         "cumpla la regex "
         f"`{params['P01_branch_name_pattern']}`:\n"
         "  `git fetch origin && git switch <rama-base> && git pull --ff-only`\n"
-        "  `<rama-nueva>` = `<tipo>/<slug>`, con el `<slug>` del título de la "
-        "issue en minúsculas y guiones, sin número de issue\n"
+        f"  `<rama-nueva>` = `{_branch_form(params)[0]}`, {_branch_form(params)[1]}\n"
         "  `git worktree add ../<repo>-<número>-<tema> -b <rama-nueva>`\n"
         "  Hecho: `git worktree list` muestra la ruta nueva.",
         "- **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; "
@@ -1870,12 +1884,16 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
         "- Antes de crear la issue, busque duplicados en issues abiertas y cerradas.",
         f"- La implementación solo arranca con la etiqueta `{params['P10_label_approval']}` en la issue.",
     ]
+    numbered = _branch_takes_issue_number(params["P01_branch_name_pattern"])
     return {
         "issues": "\n".join(issues_lines),
         "branch": "\n".join([
-            "- Nombre de rama: `<tipo>/<slug>`, con el slug del título de la issue en "
-            "minúsculas y guiones y sin número de issue:",
-            "  `git switch -c <tipo>/<slug>`",
+            ("- Nombre de rama: `<tipo>/<número>-<slug>`, con el número de la issue y el slug "
+             "del título en minúsculas y guiones:" if numbered else
+             "- Nombre de rama: `<tipo>/<slug>`, con el slug del título de la issue en "
+             "minúsculas y guiones y sin número de issue:"),
+            ("  `git switch -c <tipo>/<número>-<slug>`" if numbered else
+             "  `git switch -c <tipo>/<slug>`"),
             f"- Regex obligatoria: `{params['P01_branch_name_pattern']}`",
             "- La regex la aplica el ruleset del host; en un host sin rulesets, el gate "
             "de nombre de rama del patrón.",

@@ -19,10 +19,10 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin branch -->
 ## 2. Ramas
 
-- Nombre de rama: `<tipo>/<slug>`, con el slug del título de la issue en minúsculas y guiones y sin número de issue:
-  `git switch -c <tipo>/<slug>`
+- Genere el nombre de rama; nunca lo escriba a mano (HR-35): `<tipo>/<número>-<slug>`, con el slug del título de la issue en minúsculas y guiones:
+  `git switch -c <tipo>/<número>-<slug>`
 - Regex obligatoria: `^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$`
-- La regex la aplica el ruleset del host; en un host sin rulesets, el gate de nombre de rama del patrón.
+- El generador que construye y valida el nombre (HR-35) es un activo de la skill del patrón: no se instala en el consumer, así que aquí se compone el nombre y se valida contra la regex.
 
 <!-- ci-pattern-doc:end branch -->
 
@@ -115,9 +115,9 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
 - **2. Aprobación.** No empiece sin ella; consulte la issue:
   `gh issue view <número> --json labels --jq '.labels[].name'`
   Hecho: la lista contiene `status:approved`.
-- **3. Worktree.** Desde la rama base actualizada, con un nombre de rama que cumpla la regex `^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$`:
+- **3. Worktree.** Desde la rama base actualizada, y con el nombre de rama compuesto aquí, nunca escrito a mano (regex `^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$`):
   `git fetch origin && git switch <rama-base> && git pull --ff-only`
-  `<rama-nueva>` = `<tipo>/<slug>`, con el `<slug>` del título de la issue en minúsculas y guiones, sin número de issue
+  `<rama-nueva>` = `<tipo>/<número>-<slug>`, con el `<slug>` del título de la issue en minúsculas y guiones
   `git worktree add ../<repo>-<número>-<tema> -b <rama-nueva>`
   Hecho: `git worktree list` muestra la ruta nueva.
 - **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; Conventional Commits (sección 3); sin atribución de IA.

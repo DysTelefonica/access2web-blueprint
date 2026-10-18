@@ -12,8 +12,9 @@ validate_remote):
 3. La issue lleva `status:approved` y exactamente un `type:*`. En un eslabón
    intermedio (`chain:partial`) basta el `type:*`: la aprobación se exige en
    la punta de cadena (#787).
-4. El cuerpo no cierra y referencia la MISMA issue a la vez (HR-54). Es un
-   aviso, no un fallo: gana `Closes` (#787).
+4. Retirada: `Closes #N` junto a `Refs #N` de la misma issue es válido y no
+   produce hallazgo (HR-54, #787). El número se conserva para no renumerar las
+   reglas citadas.
 5. La referencia apunta al repositorio del PR (HR-54).
 6. Un fallo de la API no es un verde: fail-closed (HR-3).
 7. El cuerpo (o el cuerpo de la issue citada) lleva las secciones declaradas
@@ -260,17 +261,6 @@ def rule_required_sections(
     return violations
 
 
-def rule_closes_and_refs_same_issue(refs: tuple[Reference, ...]) -> list[str]:
-    """Regla 4: Closes y Refs del mismo número son una contradicción (aviso: gana Closes)."""
-    closed = {r.number for r in refs if r.kind == "close"}
-    referred = {r.number for r in refs if r.kind == "refs"}
-    return [
-        f"#{number}: el cuerpo cierra y referencia la MISMA issue a la vez; use "
-        "Closes o Refs, nunca los dos (se aplica Closes)"
-        for number in sorted(closed & referred)
-    ]
-
-
 def rule_same_repository(refs: tuple[Reference, ...], repository: str) -> list[str]:
     """Regla 5: el enlace apunta al repositorio del PR. Sin repositorio, no se juzga."""
     if not repository:
@@ -287,20 +277,16 @@ def validate_body(
     body: str,
     repository: str = "",
     required_sections: tuple[str, ...] = (),
-    warnings: list[str] | None = None,
 ) -> list[str]:
     """Modo local: forma del cuerpo, sin tocar la red.
 
     La regla 7 (secciones obligatorias) es opt-in: solo se aplica si
-    ``required_sections`` no está vacío. Los avisos (regla 4) se añaden a
-    ``warnings`` si se pasa; no son hallazgos.
+    ``required_sections`` no está vacío.
     """
     refs = references(body)
     violation = rule_has_reference(refs)
     if violation:
         return [violation]
-    if warnings is not None:
-        warnings.extend(rule_closes_and_refs_same_issue(refs))
     return rule_same_repository(refs, repository) + rule_required_sections(body, required_sections)
 
 
@@ -382,7 +368,7 @@ def validate_remote(
     context = context or PrContext()
     # Regla 7 no se aplica al cuerpo del PR: validate_body se llama con la
     # lista vacía para que las reglas 1–5 sí corran y la 7 no.
-    violations = validate_body(body, repository, (), context.warnings)
+    violations = validate_body(body, repository, ())
     if not refs:
         return violations
     numbers = sorted({
@@ -625,11 +611,9 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, UnicodeDecodeError) as exc:
             print(f"issue-spec: no se puede leer el cuerpo: {exc}", file=sys.stderr)
             return 2
-        violations = validate_body(body, args.repository, required, warnings)
+        violations = validate_body(body, args.repository, required)
         success = ("issue-spec local: forma de las referencias correcta. La aprobación, "
                    "el tipo y si la referencia es una PR los verifica el gate remoto.")
-        for warning in warnings:
-            print(f"issue-spec: aviso: {warning}", file=sys.stderr)
         for violation in violations:
             print(f"issue-spec: {violation}", file=sys.stderr)
         if violations:
