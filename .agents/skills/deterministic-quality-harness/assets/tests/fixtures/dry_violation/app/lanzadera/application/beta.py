@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — negative fixture, do not "fix"
 """Second half of the copy-paste pair.
 
 Every identifier differs from alpha.py, so a text-based clone detector finds nothing here. The
