@@ -12,7 +12,7 @@ acoplamiento a infraestructura). DA-1 estricto.
 
 Histórico: este módulo se movió de `app/src/modules/expedientes/e2e/`
 al directorio `domain/hash/` tras el primer round del CI: `e2e` no
-es una capa reconocida por `scripts/check_layers.py` (DA-1 layers:
+es una capa reconocida por el bloque `architecture` de `docs/architecture.md` (DA-1 layers:
 domain, ports, application, adapters, shared, delivery, di, migration).
 Moverlo a `domain/` cumple con el gate sin añadir capas nuevas.
 """

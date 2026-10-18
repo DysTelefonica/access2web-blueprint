@@ -1,7 +1,7 @@
 """HPS integration port (CAP-051, H01).
 
 Duck-typed Protocol to keep cross-module application→driver imports out
-of the application layer (see ``scripts/check_layers.py``).
+of the application layer (see the ``architecture`` block of ``docs/architecture.md``).
 """
 
 from __future__ import annotations

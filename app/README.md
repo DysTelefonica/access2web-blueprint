@@ -5,7 +5,7 @@
 This package is the Phase 0 foundation of the platform that replaces the legacy
 Access/VBA `lanzadera.accdb` admin slice. The architecture is hexagonal
 (`domain`/`ports`/`application`/`adapters`/`di`/`delivery`) and every layer
-boundary is enforced by the gate at `scripts/check_layers.py`.
+boundary is enforced by the `docs-architecture` job (the `architecture` block of `docs/architecture.md` and `.importlinter`).
 
 > **Naming deviation (2026-08-09)**: the on-disk directory is `app/` instead of
 > the openspec `platform/`. Python's stdlib ships a `platform` module that

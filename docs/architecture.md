@@ -153,7 +153,7 @@ Módulos de primer nivel de cada aplicación migrada bajo `app/src/modules/`: ca
 
 ## Capas y dependencias
 
-Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carpeta del mismo nombre de `lanzadera` y de `expedientes`. `allowed` dice de qué otras capas puede depender cada una; lo que no se permite está prohibido. Este bloque es la única fuente de las reglas de imports: de él se deriva la configuración de import-linter (`.importlinter`) y lo compara `tests/test_architecture_doc.py` con `ALLOWED_IMPORTS`, `PURE_LAYERS` y `CROSS_CUTTING_MODULES` de `scripts/check_layers.py`. Cambiar una regla exige cambiar el código del gate, este bloque y la configuración derivada en el mismo PR.
+Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carpeta del mismo nombre de `lanzadera` y de `expedientes`. `allowed` dice de qué otras capas puede depender cada una; lo que no se permite está prohibido. Este bloque es la única fuente de las reglas de imports: de él se deriva la configuración de import-linter (`.importlinter`) y lo impone el job `docs-architecture`. Cambiar una regla exige cambiar este bloque y regenerar la configuración derivada (`check_docs_architecture.py --write-config`) en el mismo PR.
 
 ```architecture
 {
@@ -304,7 +304,7 @@ Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carp
 }
 ```
 
-`covered_roots` y `exempt` cierran el hueco de los ficheros fuera de las capas: todo `.py` bajo `app` está en un módulo de una capa o en `exempt` (el punto de composición, el marcador de paquete de `shared` y las migraciones). `independent` fija que `lanzadera` y `expedientes` no se importan entre sí (segmentación vertical); `pure` lista las capas que no importan frameworks (`FORBIDDEN_IN_PURE_LAYERS` en `scripts/check_layers.py`); `tolerated` enumera las importaciones `delivery→di` heredadas, que solo pueden encoger, y `cross_cutting_modules` son los módulos de los que cualquiera puede depender (informativa). De este bloque se deriva `.importlinter`; hasta retirar `scripts/check_layers.py` ambos imponen las mismas reglas. `app/src/main.py` es la única excepción de capa declarada (`UNLAYERED_FILES`). Cuando aparece una capa nueva bajo `app/src/modules/<módulo>/`, se añade a la tabla de arriba y al bloque en el mismo PR: el gate falla nombrándola.
+`covered_roots` y `exempt` cierran el hueco de los ficheros fuera de las capas: todo `.py` bajo `app` está en un módulo de una capa o en `exempt` (el punto de composición, el marcador de paquete de `shared` y las migraciones). `independent` fija que `lanzadera` y `expedientes` no se importan entre sí (segmentación vertical); `pure` lista las capas que no importan frameworks y los paquetes externos prohibidos (`forbidden_externals`); `tolerated` enumera las importaciones `delivery→di` heredadas, que solo pueden encoger, y `cross_cutting_modules` son los módulos de los que cualquiera puede depender (informativa). De este bloque se deriva `.importlinter`, que impone el job `docs-architecture`. Los ficheros que están fuera de las capas a propósito se declaran en `exempt`: el punto de composición `app/src/main.py`, el marcador de paquete `app/src/shared/__init__.py` y las migraciones `app/migrations/**`; un fichero fuera de las capas que no esté ahí es un gate failure. Cuando aparece una capa nueva bajo `app/src/modules/<módulo>/`, se añade a la tabla de arriba y al bloque en el mismo PR: el gate falla nombrándola.
 
 ## Auth (D88-D91 + DA-2..DA-5)
 
@@ -366,7 +366,7 @@ Dieciséis `scripts/check_*.py` + `.github/workflows/`:
 | Gate | Vive en | QC |
 |---|---|---|
 | `check_pr_size.py` | scripts/ | QC-6 |
-| `check_layers.py` | scripts/ | QC-2, QC-9 |
+| `docs-architecture` (job) | ci.yml | QC-2, QC-9: capas, independencia y pureza desde el bloque `architecture` |
 | `check_deadcode.py` | scripts/ | Código muerto (vulture) |
 | `check_issue_spec.py` | scripts/ | Trazabilidad PR→issue aprobada y tipada |
 | `check_required_jobs.py` | scripts/ | Jobs requeridos del agregador `required` |
@@ -414,7 +414,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 | If you need to… | Open first | Then check |
 |---|---|---|
-| Validar que un cambio respeta las capas hexagonales | Esta guía §Patrón hexagonal | `scripts/check_layers.py` |
+| Validar que un cambio respeta las capas hexagonales | Esta guía §Capas y dependencias | `.importlinter` y el job `docs-architecture` |
 | Crear un nuevo módulo (app) | Esta guía §Layout + DA-1 | `openspec/changes/lanzadera-mvp/design.md` §Estructura física |
 | Tocar autenticación, bootstrap o reset | Esta guía §Auth + DA-2..DA-5 | `lanzadera-mvp/design.md` DA-2..DA-5 |
 | Modificar la migración Alembic | Esta guía §Persistence + D82 | `lanzadera-mvp/design.md` DA-7 |
@@ -430,7 +430,7 @@ Estos gaps están aquí hasta que se cierren. No se disimulan; se documentan par
 
 ## Core invariants
 
-- **Hexagonalidad verificable, no discutida**: cada capa (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`) tiene reglas de importación que `scripts/check_layers.py` enforza con `ROOT_PACKAGE = "app.src.modules"`. Tests en `tests/test_ci_workflow.py` pinean `ROOT_PACKAGE`, `ALLOWED_IMPORTS` y `PURE_LAYERS` contra drift.
+- **Hexagonalidad verificable, no discutida**: cada capa (`domain/`, `ports/`, `application/`, `adapters/`, `di/`, `delivery/`) tiene reglas de importación que el job `docs-architecture` enforza desde el bloque `architecture` (`.importlinter` se deriva de él). `tests/test_architecture_doc.py` pinea contra drift que `independent`, `pure` y `covered_roots` sigan declarados.
 - **D-<n> vigentes son vinculantes**: las decisiones de `docs/decisions/` con estado `adoptada` son contrato. Modificarlas exige PR al `design.md` del change correspondiente (vía SDD) o un issue que las reemplace por una decisión nueva; el doc nunca se edita a mano para «relajar» una regla.
 - **Expand and Contract en cada release (D82)**: toda migración Alembic es aditiva. Rollback = `DROP SCHEMA <módulo> CASCADE;` con el legacy intacto. Las migraciones 0001..0006 son la línea base del MVP; cada futura app abre su propia serie.
 - **Audit en la misma transacción que la mutación auth (DA-11)**: los eventos canónicos (`auth.bootstrap.set_password`, `auth.login.success`, `auth.login.failure`, `app.open`, `global_admins.bootstrap`) se persisten atómicamente con la mutación. Si el insert de audit falla, la mutación hace rollback.

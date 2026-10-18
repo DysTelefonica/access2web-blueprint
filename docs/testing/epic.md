@@ -87,7 +87,7 @@ Distribución por capa (ver `testing-strategy.md` §Evidencia para la tabla comp
 La taxonomía de las 5 categorías **existe en la práctica** pero **no está escrita en ningún sitio**. Se mantiene por:
 
 - Convenciones en docstrings de tests (p. ej. `test_user_repository_pg.py` línea 4–19 declara explícitamente qué categorías cubre).
-- `check_layers.py` (QC-2, QC-9) — enforza pureza de capa hexagonal, no clasificación de tests.
+- El job `docs-architecture` (QC-2, QC-9) — enforza pureza de capa hexagonal, no clasificación de tests.
 - `check_mutation.py` semanal — detecta asserts vacíos sin importar la categoría.
 - Revisión manual de PRs por el equipo.
 

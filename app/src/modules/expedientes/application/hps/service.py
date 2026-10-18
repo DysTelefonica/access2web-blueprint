@@ -4,7 +4,7 @@
 per decision, and dedupe by ``idempotency_key`` via the existing
 ``IdempotencyPort``. ``submit`` and ``query`` are duck-typed to keep
 cross-module imports out of the application layer
-(``scripts/check_layers.py``).
+(``docs-architecture`` job).
 """
 
 from __future__ import annotations

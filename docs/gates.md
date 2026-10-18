@@ -43,7 +43,7 @@ Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos
 
 | Script | Qué mide | Cómo se lee su fallo | Dónde corre |
 |---|---|---|---|
-| `check_layers.py` | dirección de dependencias entre capas hexagonales, vertical slicing y pureza de capa | nombra cada violación y su clase; publica cuánto comprobó de verdad (un árbol que no pudo clasificar es fallo, no verde) | `quality_report.py` |
+| `docs-architecture` (job de `ci.yml`) | dirección de dependencias entre capas hexagonales, independencia entre aplicaciones, pureza de capa y ficheros fuera de las capas, desde el bloque `architecture` de `docs/architecture.md` | nombra `fichero:línea` y la regla incumplida; un fichero que no pertenece a ninguna capa ni a `exempt` es fallo, no verde | `ci.yml` |
 | `check_complexity.py` | complejidad ciclomática por función, con techo global absoluto | indica la función y su valor frente al techo | `quality_report.py` |
 | `check_mutation_sites.py` | densidad estática de sitios mutables | indica los ficheros con densidad fuera de rango | `ci.yml` + `quality_report.py` |
 | `check_dry.py` | bloques duplicados tipo 1 y 2 sobre el AST | nombra los pares de bloques y su ubicación | `ci.yml` + `quality_report.py` |

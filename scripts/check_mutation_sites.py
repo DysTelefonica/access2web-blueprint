@@ -419,7 +419,7 @@ def measure(root: Path) -> list[Measurement]:
             try:
                 tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
             except SyntaxError:
-                continue  # check_layers.py owns the unparseable-file failure
+                continue  # the docs-architecture job owns the unparseable-file failure
             display = str(path.relative_to(root)).replace("\\", "/")
             measurements.append(Measurement(file=display, sites=_count_sites(tree)))
     return sorted(measurements, key=lambda item: item.file)
