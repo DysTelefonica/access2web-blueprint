@@ -35,25 +35,45 @@ def _needs(**overrides: str) -> dict[str, dict[str, str]]:
 
 
 def _gate(event: str, needs: dict, policy: Path = POLICY, base: Path | None = None):
-    argv = [sys.executable, str(CANON / "check_required_jobs.py"), "--policy", str(policy),
-            "--event", event]
+    argv = [
+        sys.executable,
+        str(CANON / "check_required_jobs.py"),
+        "--policy",
+        str(policy),
+        "--event",
+        event,
+    ]
     if base is not None:
         argv += ["--base-policy", str(base)]
-    return subprocess.run(argv, input=json.dumps(needs), capture_output=True, text=True, check=False)
+    return subprocess.run(
+        argv, input=json.dumps(needs), capture_output=True, text=True, check=False
+    )
 
 
 def test_workflow_needs_and_policy_name_the_same_jobs() -> None:
     result = subprocess.run(
-        [sys.executable, str(CANON / "check_parity.py"), "--workflow", str(WORKFLOW),
-         "--aggregator", "required", "--policy", str(POLICY)],
-        capture_output=True, text=True, check=False,
+        [
+            sys.executable,
+            str(CANON / "check_parity.py"),
+            "--workflow",
+            str(WORKFLOW),
+            "--aggregator",
+            "required",
+            "--policy",
+            str(POLICY),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 @pytest.mark.parametrize("event", EVENTS)
 def test_every_event_ci_listens_to_is_declared(event: str) -> None:
-    assert event in _policy()["events"], f"ci.yml fires on {event} but the policy does not declare it"
+    assert event in _policy()["events"], (
+        f"ci.yml fires on {event} but the policy does not declare it"
+    )
     assert _gate(event, _needs()).returncode == 0
 
 
