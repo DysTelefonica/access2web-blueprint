@@ -81,6 +81,73 @@ class ExtendedRulesValidationTests(unittest.TestCase):
         self.assertTrue(any("«tolerated» debe ser una lista" in f for f in found), found)
 
 
+class UnlayeredFilesTests(unittest.TestCase):
+    """``covered_roots`` y ``exempt`` (#771): todo fichero fuente bajo un paquete cubierto
+    cae en una capa o en ``exempt``; sin la clave nada cambia. Disposición como la de un
+    monolito modular: los code-roots son las aplicaciones y los módulos, sus carpetas de capa."""
+
+    BLOCK = {"layers": [{"name": "web", "modules": ["app/mods/a/web"]},
+                        {"name": "core", "modules": ["app/mods/a/core"]}],
+             "allowed": {"web": ["core"], "core": []}}
+    TREE = ("app/mods/a/web", "app/mods/a/core")
+    CODE_ROOTS = [("app/mods/a", "*.py")]
+
+    def _findings(self, files=None, **extra):
+        block = {**self.BLOCK, **extra}
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d)
+            for rel in ("app/mods/a/web/x.py", "app/mods/a/core/x.py"):
+                (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+                (repo / rel).write_text("x = 1\n", encoding="utf-8")
+            (repo / "docs").mkdir()
+            (repo / "docs" / "architecture.md").write_text(_doc(self.TREE, block), encoding="utf-8")
+            for rel, text in (files or {}).items():
+                (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+                (repo / rel).write_text(text, encoding="utf-8")
+            return gate.check_architecture(repo, "docs/architecture.md", self.CODE_ROOTS)
+
+    def test_un_fichero_suelto_bajo_el_paquete_cubierto_es_rojo_y_se_nombra(self):
+        found = self._findings({"app/loose_helper.py": "x = 1\n"}, covered_roots=["app"])
+        self.assertEqual(found, ["el fichero app/loose_helper.py no pertenece a ninguna capa ni a «exempt»"])
+
+    def test_sin_la_clave_el_mismo_fichero_pasa(self):
+        self.assertEqual(self._findings({"app/loose_helper.py": "x = 1\n"}), [])
+
+    def test_los_ficheros_de_los_modulos_de_una_capa_pertenecen_a_ella(self):
+        files = {"app/mods/a/web/sub/deep.py": "x = 1\n", "app/mods/a/core/more.py": "x = 1\n"}
+        self.assertEqual(self._findings(files, covered_roots=["app"]), [])
+
+    def test_un_fichero_exento_pasa(self):
+        found = self._findings({"app/main.py": "x = 1\n"}, covered_roots=["app"], exempt=["app/main.py"])
+        self.assertEqual(found, [])
+
+    def test_exempt_admite_patrones(self):
+        files = {"app/scripts/a.py": "x = 1\n", "app/scripts/b.py": "x = 1\n"}
+        self.assertEqual(self._findings(files, covered_roots=["app"], exempt=["app/scripts/*.py"]), [])
+
+    def test_una_entrada_de_exempt_que_no_casa_nada_es_stale(self):
+        found = self._findings(covered_roots=["app"], exempt=["app/ya_no_existe.py"])
+        self.assertEqual(found, ["«exempt» declara el patrón app/ya_no_existe.py y no casa ningún fichero"])
+
+    def test_el_marcador_de_paquete_por_encima_de_los_modulos_no_cuenta(self):
+        files = {"app/__init__.py": "", "app/mods/__init__.py": "", "app/mods/a/__init__.py": "",
+                 "app/mods/a/web/__init__.py": ""}
+        self.assertEqual(self._findings(files, covered_roots=["app"]), [])
+
+    def test_un_init_dentro_de_un_directorio_sin_capa_es_rojo(self):
+        found = self._findings({"app/otro/__init__.py": ""}, covered_roots=["app"])
+        self.assertEqual(found, ["el fichero app/otro/__init__.py no pertenece a ninguna capa ni a «exempt»"])
+
+    def test_forma_invalida_de_las_claves_es_roja(self):
+        found = self._findings(covered_roots="app", exempt="app/main.py")
+        self.assertTrue(any("«covered_roots» debe ser una lista" in f for f in found), found)
+        self.assertTrue(any("«exempt» debe ser una lista" in f for f in found), found)
+
+    def test_un_paquete_cubierto_que_no_existe_es_rojo(self):
+        found = self._findings(covered_roots=["nada"])
+        self.assertEqual(found, ["«covered_roots» declara nada, que no es un directorio"])
+
+
 class TreeAndLayersTests(unittest.TestCase):
     def _findings(self, doc, modules=("routes", "domain"), roots=ROOTS):
         with tempfile.TemporaryDirectory() as d:

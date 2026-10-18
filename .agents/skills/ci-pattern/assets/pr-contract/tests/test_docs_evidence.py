@@ -8,6 +8,7 @@ y el cuerpo del PR enlaza la de su tipo. Sin declaración avisa y sale verde."""
 import contextlib
 import importlib.util
 import io
+import re
 import subprocess
 import tempfile
 import unittest
@@ -101,6 +102,30 @@ class DocsEvidenceTests(unittest.TestCase):
     def test_el_cuerpo_debe_enlazar_la_checklist_de_su_tipo(self):
         found = run({"otro/b.py": "y\n"}, body="sin enlace\n")
         self.assertTrue(any("type:feature" in f and "maintainer-playbook" in f for f in found), found)
+
+    # #772: la plantilla de PR del canon trae los enlaces a las checklists por tipo y
+    # cada uno resuelve a un encabezado de la guia de mantenimiento del canon.
+    ROOT = Path(__file__).resolve().parents[6]
+    TEMPLATE = ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md"
+    PLAYBOOK = Path(__file__).resolve().parents[2] / "templates" / "docs" / "maintainer-playbook.md.tmpl"
+    TYPES = ("feature", "bug", "refactor", "docs", "chore")
+
+    def test_template_links_one_checklist_per_type(self):
+        text = self.TEMPLATE.read_text(encoding="utf-8")
+        for change_type in self.TYPES:
+            self.assertIn(f"{PLAYBOOK}#{change_type}", text, change_type)
+
+    def test_every_linked_anchor_is_a_playbook_heading(self):
+        slugs = {re.sub(r"[^\w\- ]", "", m.group(1)).strip().lower().replace(" ", "-")
+                 for m in re.finditer(r"^#{1,6}\s+(.*?)\s*#*$",
+                                      self.PLAYBOOK.read_text(encoding="utf-8"), re.M)}
+        for change_type in self.TYPES:
+            self.assertIn(change_type, slugs)
+
+    def test_links_are_the_ones_the_policy_example_expects(self):
+        text = self.TEMPLATE.read_text(encoding="utf-8")
+        links = re.findall(r"\(([^)]*maintainer-playbook\.md#[a-z]+)\)", text)
+        self.assertEqual(sorted(links), sorted(f"{PLAYBOOK}#{t}" for t in self.TYPES))
 
 
 if __name__ == "__main__":

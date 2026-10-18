@@ -127,6 +127,21 @@ propio sin perder reglas. Sin ellas la configuración derivada no cambia.
 de las capas han de ser paquetes importables: un directorio sin `__init__.py` hace fallar a
 import-linter con «Module … does not exist».
 
+## Ficheros sin capa (#771, bloque con `modules`)
+
+El árbol y las capas solo ven lo que cuelga de los módulos descritos. Dos claves opcionales del
+bloque cierran el hueco de un fichero fuente que cae fuera de todos ellos:
+
+| Clave | Forma | Qué comprueba |
+|---|---|---|
+| `covered_roots` | `["app"]` | Todo `.py` bajo esos directorios está dentro de un módulo de una capa o coincide con un patrón de `exempt`; uno sin capa es `el fichero X no pertenece a ninguna capa ni a «exempt»`. Un directorio que no existe es rojo. |
+| `exempt` | `["app/src/main.py", "app/migrations/**"]` | Patrones (`*` no cruza `/`, `**` sí) de los ficheros que están fuera de las capas a propósito. Un patrón que no casa ningún fichero es `STALE`. |
+
+Sin `covered_roots` no se mide nada. Un `__init__.py` dentro de un directorio que contiene
+módulos de capas es un marcador de paquete por encima del nivel de módulo y no cuenta; cualquier
+otro `__init__.py` fuera de las capas sí, y se declara en `exempt` si es deliberado. Con capas por
+patrón de ruta (bloque v2) esta comprobación ya existe y `exempt` es el del propio bloque.
+
 ## Tests
 
 ```bash
