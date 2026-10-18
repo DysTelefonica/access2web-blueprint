@@ -123,7 +123,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `.github/required-jobs-policy.json` | Política del gate del canon | `ci.yml::required` | Declara la matriz `required` y los saltos aceptados por evento. |
 | `scripts/check_decision_guards.py` | Gate | `ci.yml::quality` | Decisiones D-<n> con guardia. |
 | `scripts/check_walkthrough_schema.py` | Gate | `ci.yml::pr-gate` | `docs/03-aplicaciones/<app>/walkthrough-G*.json`. |
-| `scripts/check_issue_spec.py` | Gate | `ci.yml::pr-gate` | Cuerpo de issue conforme a `docs/08-decisiones-y-preguntas-abiertas.md`. |
+| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` | Gate del canon | `ci.yml::pr-gate` | Cuerpo de issue conforme a `docs/08-decisiones-y-preguntas-abiertas.md`. |
 | `scripts/check_suites_populated.py` | Gate | `ci.yml::quality` | Suites obligatorias no vacías. |
 | `scripts/check_test_classification.py` | Gate | `ci.yml::quality` | Marca tests según marcador. |
 | `scripts/check_legacy_retirement.py` | Gate | `ci.yml::quality` | Retirada de paths legacy. |
