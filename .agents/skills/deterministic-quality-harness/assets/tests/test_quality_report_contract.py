@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_quality_report_contract.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_quality_report_contract.py
 """Contract tests for the quality-report subprocess boundary."""
 
 from __future__ import annotations

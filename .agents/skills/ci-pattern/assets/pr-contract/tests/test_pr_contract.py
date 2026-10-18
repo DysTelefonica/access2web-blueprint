@@ -75,43 +75,13 @@ def make_policy(tmp, **overrides):
     p.write_text(json.dumps(d), encoding="utf-8")
     return str(p)
 
-def git_text(repo, *args):
-    """Salida de git en el repo de pruebas ('' si falla): hace de workflow del consumer."""
-    done = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=False)
-    return done.stdout if done.returncode == 0 else ""
-
-
-def write_range_data(event_file, repo, dest):
-    """Genera los cuatro ficheros de datos del rango, como haría el workflow."""
-    pr = json.loads(Path(event_file).read_text(encoding="utf-8")).get("pull_request", {})
-    base = pr.get("base", {}).get("sha", "")
-    head = pr.get("head", {}).get("sha", "")
-    rng = f"{base}..{head}" if base and head and base != head else "HEAD..HEAD"
-    files = {
-        "changed.txt": git_text(repo, "diff", "--name-only", rng),
-        "numstat.txt": git_text(repo, "diff", "--numstat", rng),
-        "commits.txt": git_text(repo, "log", "--format=%P%n%B%n---COMMIT-END---", rng),
-        "tracked.txt": git_text(repo, "ls-files"),
-    }
-    for name, text in files.items():
-        (Path(dest) / name).write_text(text, encoding="utf-8")
-    return ["--changed-files", str(Path(dest) / "changed.txt"),
-            "--numstat-file", str(Path(dest) / "numstat.txt"),
-            "--commits-file", str(Path(dest) / "commits.txt"),
-            "--tracked-files", str(Path(dest) / "tracked.txt")]
-
-
-def run_gate(event_file, policy_file, repo=None, data_flags=None):
+def run_gate(event_file, policy_file, repo=None):
     cmd = [sys.executable, str(GATE), "--event-file", event_file, "--policy-file", policy_file]
     if repo:
         cmd += ["--repo", str(repo)]
     env = dict(os.environ)
     env.pop("GITHUB_EVENT_PATH", None)
-    with tempfile.TemporaryDirectory() as dest:
-        if data_flags is None and repo:
-            data_flags = write_range_data(event_file, repo, dest)
-        return subprocess.run(cmd + (data_flags or []), capture_output=True, text=True,
-                              check=False, env=env)
+    return subprocess.run(cmd, capture_output=True, text=True, check=False, env=env)
 
 class PrContractGateTests(unittest.TestCase):
     """#193: gate de contrato de PR y commits. Cada regla: positivo, negativo, degenerado."""
@@ -449,7 +419,7 @@ class ChainContextGateTests(unittest.TestCase):
 
 
 class IssueLinkGateTests(unittest.TestCase):
-    """#333: el enlace de la issue no admite referencias a otro repo (la mezcla Closes/Refs es aviso, #787)."""
+    """#333: el enlace de la issue no admite mezclas ni referencias a otro repo."""
 
     def run_case(self, body, labels=("type:chore",)):
         tmp = tempfile.mkdtemp()
@@ -458,12 +428,10 @@ class IssueLinkGateTests(unittest.TestCase):
                            base_sha=base_sha, head_sha=head_sha)
         return run_gate(event, make_policy(tmp), repo=repo)
 
-    def test_closes_and_refs_for_the_same_issue_is_left_to_issue_spec(self):
-        # #787 S6: la contradiccion es un aviso de issue-spec (gana Closes); el contrato
-        # del PR no la repite como fallo.
-        proc = self.run_case("Closes #333\n\n## " + CLOSURE_HEADING
-                             + "\n\n- `tests/test_gate.py`\n" + chain_ok("main") + "\nRefs #333\n")
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+    def test_closes_and_refs_for_the_same_issue_fails(self):
+        proc = self.run_case("Closes #333\n\n" + chain_ok("main") + "\nRefs #333\n")
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("#333", proc.stdout)
 
     def test_foreign_repository_link_fails(self):
         proc = self.run_case("Closes #333\n\nRefs otro-org/otro-repo#12\n\n" + chain_ok("main"))
@@ -483,122 +451,6 @@ class IssueLinkGateTests(unittest.TestCase):
         proc = self.run_case("Closes #333\n\n## " + CLOSURE_HEADING
                              + "\n\n- `tests/test_gate.py`\n" + chain_ok("main"))
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-
-ALL_CHECKS = ("labels", "closes", "chain_context", "issue_links", "closure_tests",
-              "docs_evidence", "budget", "commits")
-ONLY_DOCS = {name: False for name in ALL_CHECKS if name != "docs_evidence"}
-DOCS_EVIDENCE = {"pages": [{"page": "docs/p.md", "covers": ["f.txt"]}], "checklists": {}}
-
-
-class ChecksSwitchTests(unittest.TestCase):
-    """#735: la clave `checks` de la politica enciende o apaga cada comprobacion."""
-
-    def run_case(self, checks, *, body="sin nada\n", labels=(), docs=DOCS_EVIDENCE, **extra):
-        with tempfile.TemporaryDirectory() as tmp:
-            repo, base_sha, head_sha = make_repo(tmp, commits=["feat: x"])
-            event = make_event(tmp, body=body, labels=list(labels), base_sha=base_sha, head_sha=head_sha)
-            overrides = dict(extra)
-            overrides["checks"] = checks  # None -> `null`: clave ausente a efectos del gate
-            if docs is not None:
-                overrides["docs_evidence"] = docs
-            return run_gate(event, make_policy(tmp, **overrides), repo)
-
-    def test_without_checks_every_check_stays_active(self):
-        proc = self.run_case(None)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-        for rule in ("HR-6", "HR-7", "HR-54", "HR-64"):
-            self.assertIn(rule, proc.stdout)
-
-    def test_only_docs_evidence_ignores_the_rest_of_the_contract(self):
-        proc = self.run_case(ONLY_DOCS, body="## Documentación\n\nNo cambia el contrato de f.txt.\n")
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-
-    def test_only_docs_evidence_still_fails_hr64_and_nothing_else(self):
-        proc = self.run_case(ONLY_DOCS)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-        self.assertIn("HR-64", proc.stdout)
-        for rule in ("HR-6:", "HR-7:", "HR-53", "HR-54"):
-            self.assertNotIn(rule, proc.stdout)
-
-    def test_disabled_checks_are_listed_on_stderr(self):
-        proc = self.run_case(ONLY_DOCS, body="## Documentación\n\nmotivo\n")
-        self.assertIn("apagadas por política", proc.stderr)
-        for name in ONLY_DOCS:
-            self.assertIn(name, proc.stderr)
-
-    def test_docs_evidence_switched_off_is_not_enforced_even_if_declared(self):
-        checks = {name: False for name in ALL_CHECKS}
-        checks["labels"] = True
-        proc = self.run_case(checks, labels=("type:feature",))
-        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-
-    def test_unknown_check_name_exits_2(self):
-        proc = self.run_case({**ONLY_DOCS, "docs_evidnce": True})
-        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
-        self.assertIn("docs_evidnce", proc.stderr)
-
-    def test_non_boolean_value_exits_2(self):
-        proc = self.run_case({**ONLY_DOCS, "docs_evidence": "yes"})
-        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
-        self.assertIn("docs_evidence", proc.stderr)
-
-    def test_checks_not_an_object_exits_2(self):
-        proc = self.run_case(["docs_evidence"])
-        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
-
-    def test_every_check_switched_off_exits_2(self):
-        proc = self.run_case({name: False for name in ALL_CHECKS})
-        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
-        self.assertIn("ninguna", proc.stderr)
-
-class RangeDataFilesTests(unittest.TestCase):
-    """#753: el gate no ejecuta git; el workflow le pasa los datos del rango por fichero."""
-
-    FLAGS = {"closure_tests": "--tracked-files", "docs_evidence": "--changed-files",
-             "budget": "--numstat-file", "commits": "--commits-file"}
-
-    def _only(self, check, tmp, flags):
-        checks = {name: name == check for name in ALL_CHECKS}
-        policy = make_policy(tmp, checks=checks, docs_evidence=DOCS_EVIDENCE)
-        event = make_event(tmp, body="x\n", labels=["type:chore"])
-        return run_gate(event, policy, data_flags=flags)
-
-    def test_the_gate_never_imports_subprocess(self):
-        source = GATE.read_text(encoding="utf-8")
-        self.assertNotIn("subprocess", source)
-
-    def test_each_active_check_without_its_file_exits_2_naming_the_flag(self):
-        for check, flag in self.FLAGS.items():
-            with self.subTest(check=check), tempfile.TemporaryDirectory() as tmp:
-                proc = self._only(check, tmp, [])
-                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
-                self.assertIn(flag, proc.stderr)
-                self.assertIn(check, proc.stderr)
-
-    def test_unreadable_data_file_exits_2(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            proc = self._only("budget", tmp, ["--numstat-file", str(Path(tmp) / "no-existe.txt")])
-            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
-            self.assertIn("--numstat-file", proc.stderr)
-
-    def test_a_check_that_is_off_does_not_need_its_file(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            checks = {name: name == "labels" for name in ALL_CHECKS}
-            event = make_event(tmp, body="x\n", labels=["type:chore"])
-            proc = run_gate(event, make_policy(tmp, checks=checks), data_flags=[])
-            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-
-    def test_budget_reads_the_numstat_file_and_ignores_binaries(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            numstat = Path(tmp) / "numstat.txt"
-            numstat.write_text("300\t150\ta.py\n-\t-\timg.png\n", encoding="utf-8")
-            proc = self._only("budget", tmp, ["--numstat-file", str(numstat)])
-            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-            self.assertIn("450 > 400", proc.stdout)
-            numstat.write_text("300\t100\ta.py\n-\t-\timg.png\n", encoding="utf-8")
-            proc = self._only("budget", tmp, ["--numstat-file", str(numstat)])
-            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_dry.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/check_dry.py
 """DRY gate — type-1 and type-2 duplicate block detection over the AST.
 
 Text-based clone detection reports formatting as duplication and misses everything that was

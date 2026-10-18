@@ -3,7 +3,6 @@
 """Post-push detective suite (black-box): a violating push opens an issue
 with SHA, author and check evidence (exit 1); a broken environment fails
 closed (exit 2). The API is a local HTTP stub with the real shapes; stdlib only."""
-import http.client
 import json
 import subprocess
 import sys
@@ -199,24 +198,6 @@ class DetectiveTests(unittest.TestCase):
                                             "user": {"login": "ardelperal"}, "base": {"ref": "main"}}]]}
         proc = run_gate(self.root, push_event(), contract(), state)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-
-    def test_stub_link_header_ignores_the_request_host_header(self) -> None:
-        # CodeQL py/http-response-splitting: el stub no debe copiar el Host de
-        # la peticion a la cabecera Link; la URL sale de la direccion del servidor.
-        state = base_state()
-        del state["pulls"]
-        state["pulls_pages"] = {SHA: [[], []]}
-        with tempfile.TemporaryDirectory() as tmp, \
-                github_stub(Path(tmp) / "state.json", state) as api:
-            netloc = api.split("//", 1)[1]
-            conn = http.client.HTTPConnection(netloc)
-            conn.putrequest("GET", f"/repos/{REPO}/commits/{SHA}/pulls", skip_host=True)
-            conn.putheader("Host", "evil.example")
-            conn.endheaders()
-            link = conn.getresponse().getheader("Link")
-            conn.close()
-        self.assertIn(f"<http://{netloc}/", link)
-        self.assertNotIn("evil.example", link)
 
     def test_range_of_25_commits_is_audited_fully(self) -> None:
         # El payload de un push trae 20 como maximo; el rango completo se

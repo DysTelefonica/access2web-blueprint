@@ -2,10 +2,8 @@
   "ci": {"workflow": ".github/workflows/tests.yml", "job": "unit"},
   "local": {"entrypoint": "testing/run-unit-suites.sh"},
   "exclusions": [
-    {"command": "python3 -m pip install --quiet ruff==0.15.21 vulture==2.16 import-linter==2.15", "side": "ci",
-     "reason": "provisión de entorno (#663): instala ruff, vulture e import-linter pineados (el último, para las reglas de imports Python de docs-architecture, #714). No es un check; la suite local los ejecuta y falla cerrada si faltan (HR-3)"},
-    {"command": "npm install*", "side": "ci",
-     "reason": "provisión de entorno (#714): instala dependency-cruiser y typescript pineados para las reglas de imports TypeScript de docs-architecture. No es un check; la suite local falla cerrada si faltan (HR-3)"},
+    {"command": "python3 -m pip install --quiet ruff==0.15.21 vulture==2.16", "side": "ci",
+     "reason": "provisión de entorno (#663): instala ruff y vulture pineados igual que APAP_WEB para los guards de assets vendorizables. No es un check; la suite local los ejecuta y falla cerrada si faltan (HR-3)"},
     {"command": "gh issue*", "side": "ci",
      "reason": "paso previo de infraestructura (#235): genera la lista de issues abiertas que el meta-gate consume; el gate en sí es offline y corre dentro de run-unit-suites.sh"},
     {"command": "python3 personal/ardelperal/ci-pattern/assets/workflow-policy/check_workflow_policy.py*", "side": "ci",

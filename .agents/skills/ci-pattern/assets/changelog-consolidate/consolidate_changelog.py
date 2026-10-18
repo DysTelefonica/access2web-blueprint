@@ -9,7 +9,7 @@ PR-only). For the skill directory it:
 2. validates each one: first line ``type: patch`` or ``type: minor``, then an entry;
 3. takes the highest type (``minor`` if any fragment is minor, else ``patch``)
    and computes the next version from ``metadata.version`` in SKILL.md;
-4. writes that version into SKILL.md, adds one bullet (one sub-bullet per fragment) under the first
+4. writes that version into SKILL.md, adds one bullet under the first
    ``### Changed`` of ``## [Unreleased]`` in CHANGELOG.md, and deletes the
    consumed fragments.
 
@@ -83,10 +83,8 @@ def add_changelog_bullet(changelog: Path, skill_name: str, old: str, new: str,
     if changed < 0:
         raise ConsolidateError(f"{changelog}: '### Changed' not found under [Unreleased]")
     insert_at = text.index("\n", changed) + 1
-    # One sub-bullet per fragment under the version header, so a release with
-    # many fragments stays readable instead of one huge paragraph.
-    bullet = (f"- **`{skill_name}`** (v{old} → v{new}):\n"
-              + "".join(f"  - {entry}\n" for entry in entries))
+    bullet = (f"- **`{skill_name}`** (v{old} → v{new}): "
+              + " ".join(entries) + "\n")
     return text[:insert_at] + "\n" + bullet + text[insert_at:]
 
 

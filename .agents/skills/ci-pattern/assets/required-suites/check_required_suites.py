@@ -43,6 +43,10 @@ class GateError(Exception):
     """A condition the gate refuses to interpret; maps to exit 2."""
 
 
+class GateFinding(Exception):
+    """A definite verdict violation; maps to exit 1."""
+
+
 def parse_json(raw: bytes, label: str) -> object:
     """Decode and parse one JSON input; every way it can be unreadable raises."""
     try:

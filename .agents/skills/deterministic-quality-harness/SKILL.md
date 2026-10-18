@@ -4,7 +4,7 @@ description: "Trigger: deterministic code quality, ratchet gate, shrink-only bas
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: 2.2
+  version: 2.0
   last_verified: 2026-10-14
   scope: ['universal', 'docs']
   auto_invoke: ['auditing CI quality gates', 'setting ratchet baselines']
@@ -93,7 +93,7 @@ complete destination map, adoption locks, commands, and scope limits live in
 | Adoption locks | `assets/cosmic-ray.toml`, `assets/security-images.*.json`, `assets/pyproject.fragment.toml` | Pinned mutation, scanner, and dependency inputs. |
 | Contract tests | `assets/tests/test_ci_workflow.py`, `assets/tests/test_gate_smoke.py`, `assets/tests/test_gate_liveness.py`, `assets/tests/test_adoption_preflight.py`, `assets/tests/test_policy_time.py`, `assets/tests/test_quality_policy.py`, `assets/tests/test_quality_report_contract.py`, `assets/tests/fixtures/**` | Wiring, failure, liveness, policy, and evidence proof. |
 
-Keep every `HARNESS-PROVENANCE` marker. The marker names the skill version the asset was published with, so a version bump re-stamps every non-exempt asset to the new version (#790). Re-resolve action SHAs and scanner digests during an
+Keep every `HARNESS-PROVENANCE` marker. Re-resolve action SHAs and scanner digests during an
 explicit upgrade; do not replace them with floating references. The provenance consistency policy
 is enforced by `tests/test_skill_contract.py`; strict JSON payloads and sentinel files are listed
 with reasons in `tests/provenance-exemptions.json`.

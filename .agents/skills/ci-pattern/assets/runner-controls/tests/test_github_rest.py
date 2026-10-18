@@ -104,27 +104,6 @@ class RestTests(unittest.TestCase):
         self.assertIn("HTTP 500", str(ctx.exception))
         self.assertNotIn(SECRET, str(ctx.exception))
 
-    def test_http_error_carries_github_message_status_and_request_headers(self) -> None:
-        headers = {"X-GitHub-Request-Id": "REQ-9", "X-Accepted-GitHub-Permissions": "workflows=write"}
-        self.server.routes["/repos/o/r"] = (403, {"message": "Resource not accessible"}, headers)
-        with self.assertRaises(GitHubApiError) as ctx:
-            github_rest.get_json("repos/o/r")
-        text = str(ctx.exception)
-        self.assertTrue(text.startswith("HTTP 403 on GET repos/o/r"), text)
-        for expected in ("Resource not accessible", "REQ-9", "workflows=write"):
-            self.assertIn(expected, text)
-        self.assertEqual(ctx.exception.status, 403)
-
-    def test_http_error_detail_redacts_the_token_and_survives_a_non_json_body(self) -> None:
-        self.server.routes["/repos/o/r"] = (403, {"message": f"echo {SECRET} back"})
-        with self.assertRaises(GitHubApiError) as ctx:
-            github_rest.get_json("repos/o/r")
-        self.assertNotIn(SECRET, str(ctx.exception))
-        self.server.routes["/repos/o/r"] = (502, "<html>bad gateway</html>")
-        with self.assertRaises(GitHubApiError) as ctx:
-            github_rest.get_json("repos/o/r")
-        self.assertEqual(str(ctx.exception), "HTTP 502 on GET repos/o/r")
-
     def test_unreachable_api_fails_closed(self) -> None:
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 0))

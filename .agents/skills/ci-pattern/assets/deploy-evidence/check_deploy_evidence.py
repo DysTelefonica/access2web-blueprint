@@ -25,8 +25,10 @@ import re
 import sys
 from pathlib import Path
 
+SHA_EXPRESSIONS = ("github.sha", "GITHUB_SHA", "github.event")
 EVIDENCE_MARKERS = ("statuses/", "check-runs", "head_sha")
 DEFAULT_BRANCH_RE = re.compile(r"github\.ref\b|--ref\b")
+GLOBAL_ENV_USE_RE = re.compile(r"\$\{?\{?env\.([A-Za-z_][A-Za-z0-9_]*)|\$([A-Z][A-Z0-9_]{2,})\b")
 
 
 def fail2(msg):

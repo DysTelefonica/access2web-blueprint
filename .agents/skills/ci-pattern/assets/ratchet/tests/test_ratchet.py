@@ -111,7 +111,7 @@ class InvalidInput(GateCase):
         self.assertEqual(out.returncode, 2)
 
 
-class TestNewIdentityIsAFinding(GateCase):
+class NewIdentityIsAFinding(GateCase):
     """HR-15: the ratchet rejects what is new; only the baseline can hold identities."""
     def test_findings(self):
         self.table([
@@ -137,7 +137,7 @@ class TestNewIdentityIsAFinding(GateCase):
         ])
 
 
-class TestStaleIdentityLockIn(GateCase):
+class StaleIdentityLockIn(GateCase):
     """HR-15: eliminated identities must be locked in by shrinking the baseline."""
     def test_findings(self):
         self.table([
@@ -155,7 +155,7 @@ class TestStaleIdentityLockIn(GateCase):
         self.assertIn("eliminated", out)
 
 
-class TestTargetDate(GateCase):
+class TargetDate(GateCase):
     """Every baseline entry carries target and target_date; expired is a finding."""
     def test_findings(self):
         self.table([
@@ -172,7 +172,7 @@ class TestTargetDate(GateCase):
         ])
 
 
-class TestLivenessAndZeroDebt(GateCase):
+class LivenessAndZeroDebt(GateCase):
     """HR-3 liveness: exit 2 without a valid measurement proof; with it, zero
     debt is the achievable target state (empty findings + empty baseline = 0)."""
     def test_zero_debt_is_reachable(self):
@@ -212,7 +212,7 @@ class Contract(GateCase):
         self.assertIn("RATCHET OK", out)
 
 
-class TestBaseComparison(GateCase):
+class BaseComparison(GateCase):
     """HR-15 shrink-only: candidate baseline vs base-branch baseline. Growth
     requires a relaxation field (reason + reference) the base does not carry;
     shrink is always allowed. Without --base-baseline the comparison is

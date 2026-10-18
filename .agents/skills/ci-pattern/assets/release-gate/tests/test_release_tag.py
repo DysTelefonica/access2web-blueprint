@@ -74,7 +74,7 @@ class GateCase(unittest.TestCase):
                     self.assertIn(needle, out)
 
 
-class TestCleanRelease(GateCase):
+class CleanRelease(GateCase):
     def test_annotated_semver_on_main_is_clean(self):
         with tempfile.TemporaryDirectory() as d:
             r = Repo(d)
@@ -101,7 +101,7 @@ class TestCleanRelease(GateCase):
             self.table([("major bump", "v2.0.0", 0, "RELEASE OK")], r)
 
 
-class TestHR19TagShape(GateCase):
+class HR19TagShape(GateCase):
     def test_findings(self):
         with tempfile.TemporaryDirectory() as d:
             r = Repo(d)
@@ -144,7 +144,7 @@ class TestHR19TagShape(GateCase):
             self.table([("zero-padded patch", "v0.0.00", 1, "HR-19")], r)
 
 
-class TestHR20AncestorOfDefaultBranch(GateCase):
+class HR20AncestorOfDefaultBranch(GateCase):
     def test_findings(self):
         with tempfile.TemporaryDirectory() as d:
             r = Repo(d)

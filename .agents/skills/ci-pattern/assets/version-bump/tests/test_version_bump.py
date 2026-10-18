@@ -131,7 +131,7 @@ class Findings(unittest.TestCase):
             self.assertIn("HR-44", out)
 
 
-class TestDiscovery(unittest.TestCase):
+class Discovery(unittest.TestCase):
     def test_without_skill_dir_gates_every_touched_skill(self):
         with tempfile.TemporaryDirectory() as d:
             r = Repo(d)
@@ -151,7 +151,7 @@ class TestDiscovery(unittest.TestCase):
             self.assertNotIn("owner/two", out)
 
 
-class TestMergeBaseDiff(unittest.TestCase):
+class MergeBaseDiff(unittest.TestCase):
     """#T6a (Refs #509): el diff se calcula contra el merge-base, no contra
     la punta de la base del PR. Caso de la auditoría (114818713399,
     115014106789, 115018249635, 115018311601, 115023387817, 115047671163):

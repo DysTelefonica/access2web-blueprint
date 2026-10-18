@@ -26,8 +26,14 @@ SKILL_ROOT = Path(__file__).resolve().parents[3]
 MATRIX = SKILL_ROOT / "references" / "hr-gate-matrix.json"
 
 
+
+
+
+RECIPES = {}
+
 def main(argv):
     return 0
+
 
 
 if __name__ == "__main__":

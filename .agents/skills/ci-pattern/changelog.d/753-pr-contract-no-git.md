@@ -1,3 +1,0 @@
-type: minor
-
-#753: `check_pr_contract.py` ya no ejecuta `git` ni importa `subprocess`: el workflow del consumer genera los datos del rango y se los pasa por fichero (`--changed-files` = `git diff --name-only`, `--numstat-file` = `git diff --numstat`, `--commits-file` = `git log --format='%P%n%B%n---COMMIT-END---'`, `--tracked-files` = `git ls-files`). Cada comprobación activa exige el suyo; si falta o es ilegible, sale 2. Así el activo se copia byte a byte en consumers con ratchet de ruff extendido (S603/S607). Ningún consumer lo cablea todavía. `main` se divide en `_load_inputs`, `_load_range_data`, `_pr_level_checks` y `_range_checks`; mensajes y política no cambian.

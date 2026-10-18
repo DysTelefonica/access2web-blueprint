@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_adoption_preflight.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_adoption_preflight.py
 """Adoption tests for the mutation and security assets.
 
 The reference harness must fail before CI when a required lock/config asset is

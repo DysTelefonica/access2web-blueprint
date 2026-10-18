@@ -16,7 +16,7 @@ cualquier lado es un FAIL — el comentario de la issue lo prohíbe:
 | Fichero | Papel |
 |---|---|
 | `check_docs_codeguide.py` | Gate: extrae las rutas del codeguide, enumera los módulos del code-root y emite el veredicto fail-closed |
-| `tests/test_check_docs_codeguide.py` | Suite ejecutable (solo stdlib): 49 casos con path verde y path de fallo en cada sentido, en el fail-closed, en los bloques cercados, en las varias raíces y en globs, marcadores y llaves |
+| `tests/test_check_docs_codeguide.py` | Suite ejecutable (solo stdlib): 21 casos con path verde y path de fallo en cada sentido y en el fail-closed |
 
 ## Sentidos de la verificación
 
@@ -64,21 +64,8 @@ docs-codeguide:
       run: |
         python3 scripts/docs-codeguide/check_docs_codeguide.py . \\
           --docs-path docs/codebase \\
-          --code-root internal/components --code-glob "*.go"
-```
-
-El job tiene que ser un check **requerido**: declárelo en la lista de la
-política del agregador (`required-jobs`) y en su `needs`. La fase 5 de
-`ci-pattern adoption check` (HR-63, `docs_map.job`) falla si el workflow no
-define el job o si `.github/required-jobs-policy.json` no lo lista.
-
-```json
-{ "required_jobs": ["unit", "docs-codeguide"] }
-```
-
-```yaml
-required:
-  needs: [unit, docs-codeguide]
+          --code-root internal/components \\
+          --code-glob "*.go"
 ```
 
 Salida esperada en path verde (exit 0):
@@ -126,26 +113,6 @@ Markdown `` | `path` | ... | `` se extraen igual que en prosa; una
 misma ruta citada varias veces en una página colapsa a una sola
 entrada.
 
-Los bloques de código cercados (tres o más comillas invertidas o `~~~`) no
-cuentan como citas: se descartan enteros antes de extraer, así que un ejemplo
-con barras no se toma por ruta ni invierte el emparejamiento del código en
-línea posterior (issue #725). Un bloque sin cerrar llega hasta el final de la
-página.
-
-### Globs, marcadores y llaves (issue #737)
-
-Una cita es válida si cumple una de estas reglas:
-
-| Cita | Válida si | Rojo, y lo que nombra |
-|---|---|---|
-| Ruta literal (`app/src/main.py`) | existe como fichero o directorio | la ruta |
-| Glob (`scripts/check_*.py`, `*`, `?`, `[…]`) | casa con al menos un fichero o directorio | `cita (glob sin coincidencias)` |
-| Segmento marcador (`app/src/modules/<app>/`) | existe el prefijo anterior al primer marcador (puede llevar glob) | `cita (prefijo inexistente: <prefijo>)` |
-| Alternancia (`x/{a,b}.py`) | es válida cada expansión | `cita (<expansión>: <motivo>)` |
-
-Lo que sigue a un marcador no se valida: el gate no sabe qué valor toma
-`<app>`. Los comandos con espacios siguen siendo citas a revisar.
-
 Quedan fuera: URLs (`http://`, `https://`, `mailto:`, `ftp://`,
 `file://`), tokens entre comillas sin barra (comandos, flags) y
 enlaces Markdown `[texto](destino.md)` (los enlaces relativos a otras
@@ -157,30 +124,12 @@ páginas del codeguide no son rutas de repo).
 |---|---|---|
 | `repo` (posicional) | obligatorio | Ruta al directorio raíz del repo |
 | `--docs-path` | `docs/codebase` | Ruta al codeguide |
-| `--code-root` | `internal/components` | Ruta a los módulos de primer nivel; repetible |
-| `--code-glob` | `*.go` | Glob que debe casar un módulo para contar; repetible |
+| `--code-root` | `internal/components` | Ruta a los módulos de primer nivel |
+| `--code-glob` | `*.go` | Glob que debe casar un módulo para contar |
 
 `--code-glob` se aplica dos veces: ficheros a primer nivel del
 code-root (módulos planos) y ficheros dentro de cada subdirectorio
 del code-root (módulos carpeta).
-
-### Varias raíces (#727)
-
-Repita `--code-root` y `--code-glob` por pares, en el mismo orden:
-
-```bash
-python3 check_docs_codeguide.py . \
-  --code-root app/modules --code-glob "*.py" \
-  --code-root app/templates --code-glob "*.html"
-```
-
-El sentido adelante (docs → repo) se evalúa una sola vez; el atrás, por raíz.
-Con más de una raíz cada módulo ausente se nombra `módulo (raíz)`; con una
-sola queda el nombre desnudo. Un número distinto de `--code-root` y
-`--code-glob` es exit 2. En código, `check_docs_codeguide_roots(repo, [(raíz,
-glob), ...])`. En el contrato de adopción, `docs_map.code_roots` lista
-`{root, glob}` y las claves escalares `code_root` y `code_glob` siguen valiendo
-para una sola raíz; mezclar las dos formas falla cerrado.
 
 ## Límites de la verificación
 

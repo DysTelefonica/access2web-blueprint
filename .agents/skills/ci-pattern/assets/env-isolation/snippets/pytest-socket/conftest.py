@@ -13,7 +13,6 @@ lado del test runner.
 from __future__ import annotations
 
 import os
-from collections.abc import Iterator
 
 try:  # pytest-socket es opcional.
     import pytest_socket  # type: ignore[import-untyped]
@@ -40,10 +39,8 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 
 
 @pytest.fixture
-def allow_network() -> Iterator[_AllowNetwork]:
-    handle = _AllowNetwork()
-    yield handle
-    handle.restore()
+def allow_network() -> _AllowNetwork:
+    return _AllowNetwork()
 
 
 class _AllowNetwork:

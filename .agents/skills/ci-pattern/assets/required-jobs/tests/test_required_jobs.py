@@ -139,29 +139,6 @@ class VerdictTests(unittest.TestCase):
         self.assertIn("full (skipped)", proc.stdout[cascade:])
 
 
-class CascadeReportTests(unittest.TestCase):
-    """#787 S1: one cause, one line; the cascade is a single line, not one per job."""
-
-    def test_cause_leads_the_verdict_and_the_cascade_is_one_line(self) -> None:
-        needs = all_success({"lint": "failure", "compile": "skipped", "smoke": "skipped",
-                             "unit": "skipped", "full": "skipped"})
-        proc = run_gate(base_policy(), needs, event="push")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-        lines = proc.stdout.splitlines()
-        self.assertEqual(lines[1], "blocked by: lint (failure)")
-        skipped = [line for line in lines if line.endswith("(skipped)")]
-        self.assertEqual(skipped, ["  compile, full, smoke, unit (skipped)"])
-
-    def test_passing_run_has_no_blocked_by_line(self) -> None:
-        proc = run_gate(base_policy(), all_success())
-        self.assertNotIn("blocked by", proc.stdout)
-
-    def test_policy_violation_alone_has_no_blocked_by_line(self) -> None:
-        proc = run_gate(base_policy(), all_success(), event="undeclared-event")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-        self.assertNotIn("blocked by", proc.stdout)
-
-
 class NeedsShapeTests(unittest.TestCase):
     """``toJSON(needs)`` emits ``{job: {result, outputs}}``; the flat
     ``{job: conclusion}`` shape stays accepted. Anything else is a doubt."""

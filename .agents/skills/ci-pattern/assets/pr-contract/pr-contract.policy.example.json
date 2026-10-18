@@ -16,15 +16,5 @@
     "Generated-by:",
     "Generated with"
   ],
-  "chain_partial_label": "chain:partial",
-  "checks": {
-    "labels": true,
-    "closes": true,
-    "chain_context": true,
-    "issue_links": true,
-    "closure_tests": true,
-    "docs_evidence": true,
-    "budget": true,
-    "commits": true
-  }
+  "chain_partial_label": "chain:partial"
 }

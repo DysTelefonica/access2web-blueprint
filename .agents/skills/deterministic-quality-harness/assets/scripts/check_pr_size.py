@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_pr_size.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/check_pr_size.py
 """PR size gate: a review budget, enforced.
 
 Counts the added plus deleted lines of the PR between the merge base and HEAD, as GitHub reports

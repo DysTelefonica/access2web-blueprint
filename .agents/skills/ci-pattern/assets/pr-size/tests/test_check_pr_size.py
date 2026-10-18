@@ -94,7 +94,7 @@ def _rename_and_modify(repo: Path, src: str, dst: str, new_content: str, msg: st
 # ---------------------------------------------------------------------------
 
 
-class TestVendoredRootsRule(unittest.TestCase):
+class VendoredRootsRule(unittest.TestCase):
     """RED: la regla VENDORED_ROOTS debe excluir el subtree vendorizado."""
 
     def test_vendored_path_under_agents_skills_is_recognised(self) -> None:
@@ -119,7 +119,7 @@ class TestVendoredRootsRule(unittest.TestCase):
         self.assertEqual(gate.VENDORED_ROOTS, (".agents/skills/", "skills/"))
 
 
-class TestCountsToBudgetRule(unittest.TestCase):
+class CountsToBudgetRule(unittest.TestCase):
     """RED: el conteo aplica la regla de exclusión + rename-cuenta."""
 
     def test_authored_path_counts(self) -> None:
@@ -174,7 +174,7 @@ class TestCountsToBudgetRule(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-class TestChangedLinesIntegration(unittest.TestCase):
+class ChangedLinesIntegration(unittest.TestCase):
     """RED: la integración con ``git diff --numstat --find-renames``
     implementa la regla end-to-end sobre un repo de fixture."""
 
@@ -310,7 +310,7 @@ class TestChangedLinesIntegration(unittest.TestCase):
         self.assertIn("300 changed line(s)", result.stdout)
 
 
-class TestCliExitCodes(unittest.TestCase):
+class CliExitCodes(unittest.TestCase):
     """RED: contrato de exit codes y de la salida estructurada."""
 
     def setUp(self) -> None:
@@ -386,7 +386,7 @@ if __name__ == "__main__":
 # ---------------------------------------------------------------------------
 
 
-class TestLocalBaseResolution(unittest.TestCase):
+class LocalBaseResolution(unittest.TestCase):
     """RED: sin ``--base-ref`` ni ``BASE_REF`` el gate local pregunta a
     ``gh`` la base del PR de la rama actual y mide contra ella, como hace
     el ``pr-gate`` de CI con ``github.base_ref``. Sin PR cae a

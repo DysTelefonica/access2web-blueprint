@@ -44,6 +44,15 @@ import json
 import sys
 from pathlib import Path
 
+VALID_RULES = frozenset({
+    "dead-code:unused-function",
+    "dead-code:unused-variable",
+    "dead-code:unused-class",
+    "dead-code:unused-attribute",
+    "dead-code:unused-import",
+    "dead-code:unused-property",
+})
+
 
 class AdapterError(Exception):
     """A condition the adapter refuses to interpret; maps to exit 2."""

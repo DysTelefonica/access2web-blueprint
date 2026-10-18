@@ -13,20 +13,15 @@ HR-28: the suite environment MUST be isolated from the developer's local
 
 Exit codes: 0 clean · 1 findings · 2 invalid input (missing root, missing
 or malformed allowlist, empty subject)."""
-import importlib.util
-import inspect
 import json
 import subprocess
 import sys
 import tempfile
-import types
 import unittest
 from pathlib import Path
-from unittest import mock
 
 ASSET = Path(__file__).resolve().parent.parent
 GATE = ASSET / "check_env_isolation.py"
-SNIPPET = ASSET / "snippets" / "pytest-socket" / "conftest.py"
 ALLOWLIST = {"env_vars": ["TMPDIR", "HOME", "PATH", "CI"]}
 
 
@@ -259,7 +254,7 @@ class InvalidInput(unittest.TestCase):
         self.assertEqual(out.returncode, 2)
 
 
-class TestDomainDeclaration(unittest.TestCase):
+class DomainDeclaration(unittest.TestCase):
     """#315 (HR-28): el gate DECLARA su dominio —qué extensiones escanea— y
     falla en voz alta si el árbol de suites tiene ficheros de un lenguaje
     fuera de ese dominio que el contrato no excluye explícitamente. Un sujeto
@@ -314,7 +309,7 @@ class TestDomainDeclaration(unittest.TestCase):
             self.assertEqual(code, 2)
 
 
-class TestDotenvPrecision(unittest.TestCase):
+class DotenvPrecision(unittest.TestCase):
     """#635: DOTENV casaba `templates.env` (acceso a atributo) y `dotenv` como
     palabra suelta. Solo el fichero `.env`, el cargador y las lecturas de
     entorno son hallazgos; los datos declarados por fichero no."""
@@ -347,19 +342,17 @@ class TestDotenvPrecision(unittest.TestCase):
 
     def test_dotenv_file_in_fixture_is_a_finding_without_declaration(self):
         code, out = self.scan({"suites/f.py":
-                               'from pathlib import Path\n'
-                               'def t():\n'
-                               '    Path(".env").write_text("X=1")\n'})
+                               'def t(tmp_path):\n'
+                               '    (tmp_path / ".env").write_text("X=1")\n'})
         self.assertEqual(code, 1, out)
         self.assertIn("HR-28", out)
 
     def test_declared_data_file_may_mention_dotenv(self):
         allow = {**ALLOWLIST, "dotenv_data_files": [
-            {"file": "suites/f.py", "reason": "fixture escribe un .env propio"}]}
+            {"file": "suites/f.py", "reason": "fixture escribe un .env en tmp_path"}]}
         code, out = self.scan({"suites/f.py":
-                               'from pathlib import Path\n'
-                               'def t():\n'
-                               '    Path(".env").write_text("X=1")\n'}, allow)
+                               'def t(tmp_path):\n'
+                               '    (tmp_path / ".env").write_text("X=1")\n'}, allow)
         self.assertEqual(code, 0, out)
 
     def test_declaration_does_not_exempt_a_loader_in_the_same_file(self):
@@ -383,52 +376,6 @@ class TestDotenvPrecision(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("HR-28 STALE", out)
 
-    def test_b_dotenv_built_under_tmp_path_is_not_a_finding(self):
-        code, out = self.scan({"suites/t.py":
-                               'def t(tmp_path):\n'
-                               '    env_file = tmp_path / ".env"\n'
-                               '    (tmp_path / ".env").write_text("X=1")\n'
-                               '    assert Path(tmp_path) / ".env" != env_file.parent\n'})
-        self.assertEqual((code, "HR-28" in out), (0, False), out)
-
-    def test_b_dotenv_outside_tmp_path_is_still_a_finding(self):
-        code, out = self.scan({"suites/t.py":
-                               'def t(tmp_path):\n'
-                               '    (tmp_path / "sub").mkdir()\n'
-                               '    return open(".env").read()\n'})
-        self.assertEqual(code, 1, out)
-        self.assertIn("t.py:3", out)
-
-    def test_c_gitignore_assertions_are_not_findings(self):
-        code, out = self.scan({"suites/test_ignore.py":
-                               'import re, subprocess\n'
-                               'def t():\n'
-                               '    assert _check_ignored(".env")\n'
-                               '    assert ok, ".env must stay ignored by git"\n'
-                               '    pat = re.compile(r"^\\s*(?:\\*\\*[/\\\\]\\.env|x)")\n'
-                               '    subprocess.run(["git", "log", "--", ".env"])\n'
-                               '    subprocess.run(["git", "check-ignore", ".env"])\n'})
-        self.assertEqual((code, "HR-28" in out), (0, False), out)
-
-    def test_c_reading_dotenv_next_to_an_assertion_is_still_a_finding(self):
-        code, out = self.scan({"suites/t.py":
-                               'def t():\n'
-                               '    assert Path(".env").read_text()\n'
-                               '    assert open(".env")\n'})
-        self.assertEqual(code, 1, out)
-        self.assertIn("t.py:2", out)
-        self.assertIn("t.py:3", out)
-
-    def test_c_git_show_of_dotenv_content_is_still_a_finding(self):
-        code, out = self.scan({"suites/t.py":
-                               'import subprocess\n'
-                               'subprocess.run(["git", "show", "HEAD:.env"])\n'})
-        self.assertEqual(code, 1, out)
-
-    def test_shell_source_dotenv_is_still_a_finding(self):
-        code, out = self.scan({"suites/s.sh": "#!/usr/bin/env bash\nsource .env\n"})
-        self.assertEqual(code, 1, out)
-
 
 class Dogfooding(unittest.TestCase):
     """Dogfooding (#195): en team-skills el escaneo real NO puede saltarse —
@@ -450,42 +397,6 @@ class Dogfooding(unittest.TestCase):
                               "--allowlist", str(allowlist)],
                              capture_output=True, text=True)
         self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
-
-
-class TestPytestSocketSnippet(unittest.TestCase):
-    """The ``allow_network`` fixture must close the network again at teardown (#663)."""
-
-    def load(self, calls):
-        """Import the snippet against stub ``pytest`` / ``pytest_socket`` modules."""
-        fake_socket = types.ModuleType("pytest_socket")
-        fake_socket.enable_socket = lambda allowed_hosts=None: calls.append(("enable", allowed_hosts))
-        fake_socket.disable_socket = lambda: calls.append(("disable", None))
-        fake_pytest = types.ModuleType("pytest")
-        fake_pytest.fixture = lambda func: func
-        fake_pytest.skip = lambda reason: calls.append(("skip", reason))
-        with mock.patch.dict(sys.modules, {"pytest": fake_pytest, "pytest_socket": fake_socket}):
-            spec = importlib.util.spec_from_file_location("snippet_conftest", SNIPPET)
-            module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(module)
-        return module
-
-    def test_fixture_yields_the_handle_and_restores_after_the_test(self):
-        calls = []
-        module = self.load(calls)
-        self.assertTrue(inspect.isgeneratorfunction(module.allow_network))
-        fixture = module.allow_network()
-        handle = next(fixture)
-        handle(["api.example.com", "db.example.com"])
-        self.assertEqual(calls, [("enable", "api.example.com,db.example.com")])
-        with self.assertRaises(StopIteration):
-            next(fixture)
-        self.assertEqual(calls[-1], ("disable", None))
-
-    def test_restore_is_not_called_before_the_test_finishes(self):
-        calls = []
-        fixture = self.load(calls).allow_network()
-        next(fixture)
-        self.assertNotIn(("disable", None), calls)
 
 
 if __name__ == "__main__":

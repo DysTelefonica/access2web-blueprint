@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — positive fixture
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — positive fixture
 """Two functions that share a domain but not a shape."""
 
 

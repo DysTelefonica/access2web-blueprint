@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/quality_policy.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/quality_policy.py
 """Load the canonical quality policy and bind evidence to candidate and scope identities."""
 
 from __future__ import annotations
@@ -7,8 +7,8 @@ from __future__ import annotations
 import hashlib
 import json
 import subprocess
-from collections.abc import Iterable
 from pathlib import Path
+from typing import Iterable
 
 DEFAULT_POLICY_PATH = Path(__file__).resolve().parent.parent / "quality-policy.json"
 REQUIRED_GATES = frozenset({"layers", "complexity", "crap", "dry", "mutation_sites", "mutation"})

@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
 """Third copy — the one that used to change the BASELINE key and break the ratchet."""
 
 

@@ -36,7 +36,7 @@ def _gate(repo, threshold=24, check=False):
     return SUBP(cmd, capture_output=True, text=True, check=False)
 
 
-class TestFclDetection(unittest.TestCase):
+class FclDetection(unittest.TestCase):
     """DetecciÃ³n de gates fail-closed."""
 
     def _wf(self, *names):
@@ -91,7 +91,7 @@ class TestFclDetection(unittest.TestCase):
         self.assertIn("health-check", p.stdout)
 
 
-class TestLivenessConfig(unittest.TestCase):
+class LivenessConfig(unittest.TestCase):
     """ConfiguraciÃ³n de liveness."""
 
     def test_no_liveness_is_finding(self):
@@ -125,7 +125,7 @@ class TestLivenessConfig(unittest.TestCase):
         self.assertIn("OK", p.stdout)
 
 
-class TestThresholdConfig(unittest.TestCase):
+class ThresholdConfig(unittest.TestCase):
     """Umbral configurado."""
 
     def test_default_is_24(self):

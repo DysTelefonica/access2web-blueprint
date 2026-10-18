@@ -55,7 +55,7 @@ class Clean(unittest.TestCase):
         self.assertEqual((code, "HR-40" in out), (0, False))
 
 
-class TestHR40ResolutionSource(unittest.TestCase):
+class HR40ResolutionSource(unittest.TestCase):
     def test_missing_resolution_source_fails_naming_the_cause(self):
         policy = json.loads(json.dumps(POLICY))
         del policy["resolution_source"]
@@ -82,7 +82,7 @@ class TestHR40ResolutionSource(unittest.TestCase):
         self.assertEqual((code, "HR-40" in out), (0, False))
 
 
-class TestHR41BootstrapSymmetry(unittest.TestCase):
+class HR41BootstrapSymmetry(unittest.TestCase):
     def test_asymmetric_exemptions_fail(self):
         policy = json.loads(json.dumps(POLICY))
         policy["contexts"]["release/smoke-production"]["bootstrap_exempt"] = False

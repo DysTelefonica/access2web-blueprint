@@ -1,3 +1,0 @@
-type: patch
-
-El Python que los consumers copian byte a byte pasa `ruff` con la configuración de APAP (#784): orden de imports en `check_mutation.py` y `tests/test_skill_contract.py`, `Iterable` desde `collections.abc` en `quality_policy.py`, salto de línea final en `test_hr15_adoption.py` y, en las dos fixtures del detector DRY (`dry_long_region`), `count = 0` / `tally = 0` pasan a `result.setdefault("count", 0)` / `output.setdefault("count", 0)`: sigue siendo una sentencia de la misma forma normalizada, así que la región duplicada mide lo mismo (`test_dry_reports_a_long_clone_region_once` sigue verde) y ya no hay variables locales sin uso.

@@ -1,3 +1,0 @@
-type: minor
-
-Propagador (#768): campo opcional del registro `pr_size_excludes_vendored` (por defecto ausente = `false`). Con `true`, el consumer declara que su `pr-size` aplica la regla del canon (`.agents/skills/` y `skills/` no cuentan) y el tramo vendorizado se agrupa en pocos PRs, limitados por el diff que renderiza GitHub (`-MaxVendoredChunkLines`, por defecto 20000, y `-MaxVendoredChunkFiles`, por defecto 300), en vez de trocearse a `-MaxChunkLines`; solo lo no vendorizado se trocea a ese presupuesto. Esos PRs no llevan «Excepción de tamaño» y declaran `review-budget: 0/400`. Sin el campo, el plan de trozos no cambia. Un valor que no sea booleano aborta el consumer. El plan vive en `scripts/lib/chunk-plan.ps1`.

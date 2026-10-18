@@ -31,9 +31,6 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     if method == "PUT" and path.endswith("/merge"):
         if state.get("merge_rejected"):
             return 405, {"message": "merge_rejected fixture"}, {}
-        if state.get("merge_forbidden"):
-            return 403, {"message": state["merge_forbidden"]}, {
-                "X-GitHub-Request-Id": "REQ-1234", "X-Accepted-GitHub-Permissions": "workflows=write"}
         if state.get("head_changed") and "sha" in body:
             return 409, {"message": "Head branch was modified"}, {}
         state["merges"].append(path)
@@ -44,21 +41,13 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         sha = path.split("/commits/")[1].split("/")[0]
         if state.get("invalid_body"):
             return 200, "{not valid json", {}
-        return _pulls_page(state, sha, query, base)
+        return _pulls_page(state, sha, query, f"{base}/{path}")
     if "/check-runs" in path:
         sha = path.split("/commits/")[1].split("/")[0]
         runs = state["check_runs"].get(sha, [])
-        script = state.get("check_runs_script", {}).get(sha)
-        if script:  # una respuesta por consulta; la ultima se repite
-            polls = state.setdefault("check_runs_polls", {})
-            runs = script[min(polls.get(sha, 0), len(script) - 1)]
-            polls[sha] = polls.get(sha, 0) + 1
         return 200, {"total_count": len(runs), "check_runs": runs}, {}
     if "/compare/" in path:
-        # `compares` fija la respuesta por rango ("base...head"); `compare` es el valor por defecto.
-        spec = path.split("/compare/", 1)[1]
-        default = state.get("compare", {"total_commits": 0, "commits": [], "files": [], "behind_by": 0})
-        return 200, state.get("compares", {}).get(spec, default), {}
+        return 200, state.get("compare", {"total_commits": 0, "commits": []}), {}
     if "/pulls/" in path:
         detail = state["pr_details"].get(path.rsplit("/pulls/", 1)[1])
         return (404, {"message": "Not Found"}, {}) if detail is None else (200, detail, {})
@@ -68,21 +57,15 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     return 404, {"message": "unsupported endpoint"}, {}
 
 
-def _pulls_page(state: dict, sha: str, query: dict, base: str) -> tuple:
-    """Pulls de un commit; `pulls_pages` sirve varias paginas enlazadas con Link.
-
-    La cabecera Link solo lleva datos que el servidor ya tiene: su direccion (`base`), el SHA
-    guardado en `pulls_pages` (la clave que coincide, no el segmento de la peticion) y una
-    plantilla de ruta fija. Nada de lo que envia el cliente llega a una cabecera de respuesta.
-    """
-    stored = next((key for key in state.get("pulls_pages", {}) if key == sha), None)
-    if stored is None:
+def _pulls_page(state: dict, sha: str, query: dict, url: str) -> tuple:
+    """Pulls de un commit; `pulls_pages` sirve varias paginas enlazadas con Link."""
+    pages = state.get("pulls_pages", {}).get(sha)
+    if pages is None:
         return 200, state["pulls"].get(sha, []), {}
-    pages = state["pulls_pages"][stored]
     number = int(query.get("page", ["1"])[0])
     headers = {}
     if number < len(pages):
-        headers["Link"] = f'<{base}/repos/stub/stub/commits/{stored}/pulls?page={number + 1}>; rel="next"'
+        headers["Link"] = f'<{url}?page={number + 1}>; rel="next"'
     return 200, pages[number - 1] if 0 < number <= len(pages) else [], headers
 
 
@@ -93,10 +76,7 @@ class _Handler(BaseHTTPRequestHandler):
         body = json.loads(raw) if raw else {}
         url = urllib.parse.urlsplit(self.path)
         state = self.server.state
-        # La URL base sale de la direccion del servidor, no del Host de la
-        # peticion: un Host ajeno acabaria copiado en la cabecera Link.
-        host, port = self.server.server_address[:2]
-        base = f"http://{host}:{port}"
+        base = f"http://{self.headers.get('Host')}"
         status, payload, headers = _route(self.command, url.path.lstrip("/"),
                                           urllib.parse.parse_qs(url.query), body, state, base)
         Path(self.server.state_path).write_text(json.dumps(state), encoding="utf-8")

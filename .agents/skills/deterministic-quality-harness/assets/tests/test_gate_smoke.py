@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_gate_smoke.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_gate_smoke.py
 """Smoke tests: every gate is observed exiting 1 on a real violation (Execution Step 5).
 
 A gate that has never been seen failing is a false guarantee. Each test here feeds a known
@@ -269,37 +269,8 @@ def _pr_repo(root: Path, path: str, added_lines: int) -> None:
     git("commit", "-q", "-m", "feat")
 
 
-#: What the interpreter itself needs to start. A Python built with a shared libpython (the one
-#: actions/setup-python installs on CI) finds libpython through LD_LIBRARY_PATH; without it the child
-#: dies with exit 127 before the gate runs, so the test fails for a reason that has nothing to do with
-#: the gate. Everything else of the CI environment stays out on purpose (#789).
-INTERPRETER_ENV = ("LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "SYSTEMROOT")
-
-
-def _gate_env(root: Path, **env: str) -> dict[str, str]:
-    inherited = {name: os.environ[name] for name in INTERPRETER_ENV if name in os.environ}
-    return {"PATH": os.environ["PATH"], "HOME": str(root), **inherited, **env}
-
-
-def test_gate_env_keeps_what_the_interpreter_needs_to_start(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("LD_LIBRARY_PATH", "/opt/python/lib")
-    assert _gate_env(tmp_path)["LD_LIBRARY_PATH"] == "/opt/python/lib"
-
-
-def test_gate_env_does_not_leak_the_ci_environment(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("GITHUB_ACTIONS", "true")
-    monkeypatch.setenv("PR_AUTHOR", "somebody-else")
-    gate_env = _gate_env(tmp_path, PR_AUTHOR="alice")
-    assert "GITHUB_ACTIONS" not in gate_env
-    assert gate_env["PR_AUTHOR"] == "alice"
-
-
 def _run_pr_size(root: Path, **env: str) -> subprocess.CompletedProcess[str]:
-    gate_env = _gate_env(root, **env)
+    gate_env = {"PATH": os.environ["PATH"], "HOME": str(root), **env}
     return subprocess.run(
         [sys.executable, str(SCRIPTS / "check_pr_size.py"), "--base-ref", "main"],
         cwd=root,

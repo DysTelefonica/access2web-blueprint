@@ -81,24 +81,6 @@ class InvalidInput(GateCase):
                 self.assertEqual(code, 2)
                 self.assertIn("required_jobs", out)
 
-    def test_multiline_plain_run_names_the_line_and_the_fix(self):
-        # #787 S3: `run: cmd \` en escalar plano. YAML pliega las lineas y el `\` queda literal,
-        # asi que los argumentos nunca llegan (APAP_WEB runner-guard: 35 pushes rojos sin evaluar).
-        text = yml(run=None) + (
-            "        run: python3 check.py \\\n"
-            "               --contract c.json \\\n"
-            "               --event push\n")
-        code, out = self.run_gate(text)
-        self.assertEqual(code, 2, out)
-        self.assertIn("line 9", out)
-        self.assertIn("'run'", out)
-        self.assertIn("block scalar", out)
-        self.assertNotIn("stray content", out)
-
-    def test_block_run_with_continuation_stays_valid(self):
-        text = yml(run="python3 check.py \\\n            --contract c.json")
-        self.assertEqual(self.run_gate(text)[0], 0, self.run_gate(text)[1])
-
     def test_nonexistent_workflow(self):
         self.assertEqual(self.run_gate(yml(), extra=("--workflow", "/no/such.yml"))[0], 2)
 
@@ -107,7 +89,7 @@ class InvalidInput(GateCase):
         self.assertEqual(out.returncode, 2)
 
 
-class TestHR26PinnedToolchain(GateCase):
+class HR26PinnedToolchain(GateCase):
     """HR-26: actions pinned by 40-hex SHA and exact tool versions, every job."""
     def test_findings(self):
         self.table([
@@ -146,7 +128,7 @@ class TestHR26PinnedToolchain(GateCase):
         ])
 
 
-class TestHR3FailLoud(GateCase):
+class HR3FailLoud(GateCase):
     """HR-3: masking patterns in required jobs fail loudly; scope is required jobs only."""
     def test_findings(self):
         self.table([
@@ -173,7 +155,7 @@ class TestHR3FailLoud(GateCase):
         ])
 
 
-class TestHR30PrEventOnly(GateCase):
+class HR30PrEventOnly(GateCase):
     """HR-30: required check names publish only from PR-evaluating events."""
     def test_findings(self):
         self.table([
@@ -185,6 +167,8 @@ class TestHR30PrEventOnly(GateCase):
             ("mixed PR and dispatch job (mutation shape)", yml(name="build",
                 job="  build:\n    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'",
                 on="on:\n  pull_request:\n  workflow_dispatch:\n"), 1, "HR-30"),
+            ("push to non-base branch", yml(name="build",
+                on="on:\n  pull_request:\n  push:\n    branches: [develop]\n"), 1, "HR-30"),
             ("push without branch filter", yml(name="build", on="on:\n  pull_request:\n  push:\n"), 1, "HR-30"),
         ])
 
@@ -204,204 +188,6 @@ class TestHR30PrEventOnly(GateCase):
                 tail="  other:\n    steps:\n      - " + PINNED + "\n        run: echo ok\n"), 0, None),
             ("degenerate on as scalar list", yml(on="on: [pull_request]"), 0, None),
         ])
-
-
-SETUP_PY = ("      - uses: actions/setup-python@" + "a" * 40 +
-            "\n        with:\n          python-version-file: {}\n")
-
-
-class RepoCase(GateCase):
-    """Gate run inside a temp repo layout so files named by a workflow resolve."""
-    def run_repo(self, text, files=None, flag=True, rel="wf.yml", contract=None):
-        with tempfile.TemporaryDirectory() as d:
-            root = Path(d)
-            for name, content in (files or {}).items():
-                target = root / name
-                target.parent.mkdir(parents=True, exist_ok=True)
-                if content is None:
-                    target.mkdir()
-                else:
-                    target.write_text(content, encoding="utf-8")
-            w, p = root / rel, root / "policy.json"
-            w.parent.mkdir(parents=True, exist_ok=True)
-            w.write_text(text, encoding="utf-8")
-            p.write_text(json.dumps(POLICY), encoding="utf-8")
-            extra = ["--repo-root", str(root)] if flag else []
-            if contract is not None:
-                c = root / "host-contract.json"
-                c.write_text(contract if isinstance(contract, str) else json.dumps(contract),
-                             encoding="utf-8")
-                extra += ["--host-contract", str(c)]
-            out = subprocess.run([sys.executable, str(GATE), "--workflow", str(w),
-                                  "--required-jobs", str(p), "--base-branch", "main", *extra],
-                                 capture_output=True, text=True)
-        return out.returncode, out.stdout + out.stderr
-
-
-class TestHR26PythonVersionFile(RepoCase):
-    """HR-26: python-version-file counts as exact when the file holds exactly X.Y.Z."""
-    def wf(self, ref=".python-version", inline=None):
-        extra = f"          python-version: '{inline}'\n" if inline else ""
-        return yml(tail=SETUP_PY.format(ref) + extra)
-
-    def test_exact_file_is_clean(self):
-        for label, content in (("plain", "3.12.14"), ("trailing newline", "3.12.14\n")):
-            with self.subTest(case=label):
-                code, out = self.run_repo(self.wf(), {".python-version": content})
-                self.assertEqual(code, 0, out)
-
-    def test_repo_root_defaults_to_the_workflow_checkout(self):
-        code, out = self.run_repo(self.wf(), {".python-version": "3.12.14"}, flag=False,
-                                  rel=".github/workflows/ci.yml")
-        self.assertEqual(code, 0, out)
-
-    def test_fails_closed(self):
-        cases = (
-            ("file missing", self.wf(), {}),
-            ("minor only", self.wf(), {".python-version": "3.12"}),
-            ("range", self.wf(), {".python-version": ">=3.12.0"}),
-            ("two lines", self.wf(), {".python-version": "3.12.14\n3.11.0\n"}),
-            ("empty file", self.wf(), {".python-version": ""}),
-            ("directory", self.wf(), {".python-version": None}),
-            ("escapes the repo", self.wf("../outside"), {}),
-            ("absolute path", self.wf("/etc/hostname"), {}),
-            ("expression", self.wf("${{ matrix.file }}"), {".python-version": "3.12.14"}),
-            ("inline wins and is not exact", self.wf(inline="3.12"), {".python-version": "3.12.14"}),
-        )
-        for label, text, files in cases:
-            with self.subTest(case=label):
-                code, out = self.run_repo(text, files)
-                self.assertEqual(code, 1, out)
-                self.assertIn("HR-26", out)
-
-
-def push_wf(push, name="build", job="  build:", extra_on=""):
-    return yml(name=name, job=job, on="on:\n  pull_request:\n" + extra_on + push)
-
-
-class TestHR30PushFilters(GateCase):
-    """HR-30: a push that never reaches the base publishes no PR check."""
-    def test_negatives(self):
-        self.table([
-            ("push staging only", push_wf("  push:\n    branches: [staging]\n"), 0, None),
-            ("push tags only", push_wf("  push:\n    tags: ['v*']\n"), 0, None),
-            ("push staging and tags", push_wf("  push:\n    branches: [staging]\n    tags: ['v*']\n"), 0, None),
-            ("push branches-ignore the base", push_wf("  push:\n    branches-ignore: [main]\n"), 0, None),
-            ("tags-ignore only runs on tag pushes", push_wf("  push:\n    tags-ignore: ['v*']\n"), 0, None),
-            ("push base only plus tags stays clean", push_wf(
-                "  push:\n    branches: [main]\n    tags: ['v*']\n"), 0, None),
-        ])
-
-    def test_findings(self):
-        self.table([
-            ("base and another branch", push_wf("  push:\n    branches: [main, staging]\n"), 1, "HR-30"),
-            ("glob reaching the base", push_wf("  push:\n    branches: ['**']\n"), 1, "HR-30"),
-            ("branches-ignore not covering the base", push_wf(
-                "  push:\n    branches-ignore: ['docs/**']\n"), 1, "HR-30"),
-            ("negation is not provable", push_wf("  push:\n    branches: ['!main']\n"), 1, "HR-30"),
-            ("branches and branches-ignore together", push_wf(
-                "  push:\n    branches: [staging]\n    branches-ignore: [main]\n"), 1, "HR-30"),
-            ("still no filter", push_wf("  push:\n"), 1, "HR-30"),
-        ])
-
-
-SD_ON = ("on:\n  pull_request:\n  schedule:\n    - cron: '0 3 * * *'\n  workflow_dispatch:\n")
-
-
-def if_wf(cond, on=SD_ON):
-    return yml(name="build", job="  build:\n    if: " + cond, on=on)
-
-
-class TestHR30JobConditions(GateCase):
-    """HR-30: a job provably skipped on pull_request publishes no PR check name."""
-    def test_negatives(self):
-        folded = ("  build:\n    if: >-\n      !cancelled() &&\n      (\n"
-                  "        github.event_name == 'workflow_dispatch' ||\n"
-                  "        github.event_name == 'schedule'\n      ) &&\n"
-                  "      (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')")
-        self.table([
-            ("not pull_request", if_wf("github.event_name != 'pull_request'"), 0, None),
-            ("negated group", if_wf("\"!(github.event_name == 'pull_request')\""), 0, None),
-            ("not pull_request and an unknown atom", if_wf(
-                "github.event_name != 'pull_request' && needs.pr-gate.result == 'success'"), 0, None),
-            ("security-deep shape, folded and compound", yml(name="build", job=folded, on=SD_ON), 0, None),
-            ("allowlist without pull_request and unknown conjunct", if_wf(
-                "always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')"),
-             0, None),
-        ])
-
-    def test_findings(self):
-        self.table([
-            ("typecheck shape runs on PR when not docs-only", if_wf(
-                "github.event_name != 'pull_request' || needs.pr-gate.outputs.docs_changed != 'true'"),
-             1, "HR-30"),
-            ("unknown disjunct keeps PR reachable", if_wf(
-                "github.event_name == 'schedule' || needs.pr-gate.result == 'success'"), 1, "HR-30"),
-            ("not schedule still runs on PR and dispatch", if_wf("github.event_name != 'schedule'"), 1, "HR-30"),
-            ("unbalanced group stays closed", if_wf("(github.event_name != 'pull_request'"), 1, "HR-30"),
-            ("expression wrapper stays closed", if_wf("${{ github.event_name != 'pull_request' }}"), 1, "HR-30"),
-            ("unknown only", if_wf("always()"), 1, "HR-30"),
-        ])
-
-
-def contract_of(*names):
-    return {"contract_version": 1,
-            "required_checks": [{"name": n, "class": "documented-only"} for n in names]}
-
-
-AGG = ("  required:\n    name: required\n    steps:\n      - " + PINNED + "\n        run: echo ok\n")
-
-
-class TestHR30DeclaredRequiredChecks(RepoCase):
-    """HR-30 schedule/dispatch applies only to the check names the host contract requires."""
-    def wf(self, name="build", job="  build:", tail="", on=SD_ON):
-        return yml(name=name, job=job, on=on, tail=tail)
-
-    def check(self, text, contract, code, needle=None):
-        got, out = self.run_repo(text, contract=contract)
-        self.assertEqual(got, code, out)
-        if needle:
-            self.assertIn(needle, out)
-
-    def test_undeclared_job_publishing_on_schedule_and_dispatch_is_clean(self):
-        qualified_agg = AGG.replace("name: required", "name: required (${{ github.event_name }})")
-        self.check(self.wf(tail=qualified_agg), contract_of("required (pull_request)"), 0)
-
-    def test_declared_job_still_findings(self):
-        self.check(self.wf(), contract_of("build"), 1, "HR-30")
-        self.check(self.wf(tail=AGG), contract_of("required"), 1, "'required'")
-
-    def test_aggregator_outside_the_policy_list_is_checked_when_declared(self):
-        got, out = self.run_repo(self.wf(tail=AGG), contract=contract_of("required"))
-        self.assertEqual(got, 1, out)
-        self.assertIn("job 'required'", out)
-        self.assertNotIn("job 'build'", out)
-
-    def test_declared_names_that_satisfy_the_rule(self):
-        qualified = self.wf(name="build (${{ github.event_name }})")
-        self.check(qualified, contract_of("build (pull_request)"), 0)
-        excluded = self.wf(job="  build:\n    if: github.event_name != 'pull_request'")
-        self.check(excluded, contract_of("build"), 0)
-
-    def test_empty_declaration_exempts_the_policy_jobs(self):
-        self.check(self.wf(), contract_of(), 0)
-        self.check(self.wf(), {"contract_version": 1}, 0)
-
-    def test_declared_name_no_job_publishes_is_a_finding(self):
-        self.check(self.wf(), contract_of("build", "lint"), 1, "requires check 'lint'")
-
-    def test_without_the_option_every_policy_job_is_checked(self):
-        got, out = self.run_repo(self.wf())
-        self.assertEqual(got, 1, out)
-        self.assertIn("HR-30", out)
-
-    def test_invalid_contract_exits_2(self):
-        for label, bad in (("not json", "{"), ("not an object", "[]"),
-                           ("required_checks not a list", {"required_checks": {}}),
-                           ("entry without name", {"required_checks": [{"class": "x"}]}),
-                           ("empty name", {"required_checks": [{"name": ""}]})):
-            with self.subTest(case=label):
-                self.check(self.wf(), bad, 2)
 
 
 SCHED_PINNED = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
@@ -465,7 +251,7 @@ GOOD_STATE_ENTRY = {
 REQUIRED_POLICY = {"required_jobs": ["build"]}
 
 
-class TestHR39StateDependentGates(unittest.TestCase):
+class HR39StateDependentGates(unittest.TestCase):
     """HR-39: un gate dependiente de estado externo va programado y solo
     bloquea PRs que tocan los manifiestos declarados."""
 
@@ -599,7 +385,7 @@ class TestHR39StateDependentGates(unittest.TestCase):
         self.assertIn("state_dependent_gates", err)
 
 
-class TestCross(GateCase):
+class Cross(GateCase):
     def test_required_job_absent(self):
         code, out = self.run_gate("on:\n  pull_request:\n\njobs:\n  other:\n    steps:\n      - " + PINNED + "\n")
         self.assertEqual(code, 1)
@@ -624,7 +410,7 @@ class TestCross(GateCase):
                          "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683")
 
 
-class TestPullRequestTypesListStyle(GateCase):
+class PullRequestTypesListStyle(GateCase):
     """`pull_request.types:` admite dos formas equivalentes de YAML
     (lista en bloque y lista en flujo). El reader estructural del gate
     debe producir el mismo veredicto para ambas. La forma en bloque

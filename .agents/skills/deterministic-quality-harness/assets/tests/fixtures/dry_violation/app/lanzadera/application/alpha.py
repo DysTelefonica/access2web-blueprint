@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
 """First half of a copy-paste pair. See beta.py — same shape, every name changed."""
 
 
