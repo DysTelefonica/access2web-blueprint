@@ -6,8 +6,8 @@ El preflight local ejercita el gate issue-spec en modo `local --body-file` con l
 
 # Evidencia verificable
 
-- `python3 scripts/check_issue_spec.py local --body-file tests/fixtures/issue-spec-preflight-body.md --required-sections scripts/required-sections.json` debe devolver `exit 0`.
-- `python3 scripts/check_issue_spec.py local --body-file <body-sin-una-seccion> --required-sections scripts/required-sections.json` debe devolver `exit 1` con la sección ausente en el hallazgo.
+- `python3 .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file tests/fixtures/issue-spec-preflight-body.md --required-sections scripts/required-sections.json` debe devolver `exit 0`.
+- `python3 .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file <body-sin-una-seccion> --required-sections scripts/required-sections.json` debe devolver `exit 1` con la sección ausente en el hallazgo.
 
 # Alcance y no objetivos
 

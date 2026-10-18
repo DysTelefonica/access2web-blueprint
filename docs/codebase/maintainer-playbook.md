@@ -98,7 +98,7 @@ Esta página no aloja código ni reglas nuevas: solo enruta. Una regla de revisi
 
 ## Lista de comprobación del contribuidor
 
-- [ ] El cambio respeta los 5 gates del workflow (`scripts/check_pr_size.py`, `scripts/check_issue_spec.py`, `scripts/check_walkthrough_schema.py`, ruff, mypy) — ver `docs/gates.md` §2.
+- [ ] El cambio respeta los 5 gates del workflow (`scripts/check_pr_size.py`, el `check_issue_spec.py` del canon, `scripts/check_walkthrough_schema.py`, ruff, mypy) — ver `docs/gates.md` §2.
 - [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/decisions/README.md` antes de empezar.
 - [ ] Si toca `docs/`, leyó `skills/documentation-alan-style/SKILL.md` y aplica tono castellano peninsular formal con usted.
 - [ ] El commit usa Conventional Commits con el scope `(app)` o `(platform)` correspondiente.
