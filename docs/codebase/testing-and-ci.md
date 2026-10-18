@@ -107,7 +107,7 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 | `scripts/check_walkthrough_schema.py` | `pr-gate` | `walkthrough-*.json` válidos. |
 | `scripts/check_workflows.py` | `quality` (`workflow gate`) | `.github/workflows/*.yml` bien formado. |
 | `scripts/check_required_jobs.py` | `quality` (`workflow gate`) + `required` (enforce) | Matriz `required` completa. |
-| `scripts/check_layers.py` | `quality` (paso de quality gates) | DA-1 hexagonalidad. |
+| `.importlinter` | `docs-architecture` (job requerido) | DA-1 hexagonalidad: derivado del bloque `architecture` de `docs/architecture.md`. |
 | `scripts/check_legacy_hashes.py` | `quality` | DA-13 prohibición legacy. |
 | `scripts/check_mutation_sites.py` | `quality` | DA-13 pin AST. |
 | `scripts/check_complexity.py` | `quality` | Complejidad. |

@@ -11,7 +11,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 | Capability | Vista del mantenedor |
 |---|---|
 | Multi-app Lanzadera | ¿La nueva app declara su `[<APP>]` en el título y su `(app)` o `(platform)` en el commit? |
-| Hexagonalidad | ¿El nuevo código respeta `ROOT_PACKAGE = "app.src.modules"` y las capas `domain`, `ports`, `application` que `scripts/check_layers.py` enforces? |
+| Hexagonalidad | ¿El nuevo código respeta las capas y las reglas del bloque `architecture` de `docs/architecture.md`, que impone el job `docs-architecture`? |
 | Auth (Argon2id + JWT) | ¿La ruta nueva pasa por el middleware y los servicios `app/src/modules/lanzadera/domain/services/issue_reset_token.py` / `consume_reset_token.py` si toca reset? |
 | CI por niveles | ¿El cambio sabe en qué nivel corre (PR, nightly, release) y respeta `scripts/check_pr_size.py` (≤400)? |
 | Migración Alembic | ¿La nueva migración sigue Expand & Contract (D82), tiene una de bajada y un test en `tests/lanzadera/migrations/`? |

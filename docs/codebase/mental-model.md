@@ -77,7 +77,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 - **Walkthrough JSONs son data**: los `walkthrough-*.json` viven en commits separados de la `epic.md` correspondiente. Mezclarlos dificulta la revisión y bloquea el ciclo de dysflow walkthrough.
 - **Issues a dysflow son work-in-progress**: los `docs/prompts/prompt-ia-mantenedora-dysflow-round-*.md` NO se mergean en `main` hasta que el issue upstream en DysTelefonica/dysflow se cierre.
 - **Ramas de MVP se conservan en remoto**: cada PR se integra con `--squash` y la rama remota se queda; la limpieza es local (`git worktree remove <ruta>`). Borrar la rama remota rompe la trazabilidad por unidad de trabajo.
-- **Hexagonalidad enforced por gate**: `scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `PURE_LAYERS = {domain, ports, application}`. Mover un adapter a la capa equivocada es un gate failure, no un estilo (DA-1, `docs/architecture.md` §Patrón hexagonal).
+- **Hexagonalidad enforced por gate**: el job `docs-architecture` rechaza imports que violen las reglas del bloque `architecture` de `docs/architecture.md` (capas, independencia entre aplicaciones y pureza de `domain`, `ports` y `application`). Mover un adapter a la capa equivocada es un gate failure, no un estilo (DA-1, `docs/architecture.md` §Capas y dependencias).
 - **Pin test AST rechaza símbolos legacy**: `scripts/check_mutation_sites.py` y `scripts/check_legacy_hashes.py` prohíben `legacy_hash`, `sha256`, `migrate_password` en código de plataforma (DA-13).
 
 ## Si necesitas X, lee/toca Y
@@ -90,7 +90,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 
 ## Regla de colocación
 
-El código nuevo sigue el orden `domain`, `ports`, `application`, `adapters`, `delivery`, `di`; una capa solo importa de las que su regla permite en `scripts/check_layers.py`.
+El código nuevo sigue el orden `domain`, `ports`, `application`, `adapters`, `delivery`, `di`; una capa solo importa de las que su regla permite en el bloque `architecture` de `docs/architecture.md`.
 
 ## Lista de comprobación del contribuidor
 

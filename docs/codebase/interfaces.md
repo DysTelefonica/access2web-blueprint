@@ -112,7 +112,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 
 | Script | Tipo | Quién lo invoca | Notas |
 |---|---|---|---|
-| `scripts/check_layers.py` | Gate | `ci.yml::quality` | DA-1; rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"`. |
+| `.importlinter` | Gate | `ci.yml::docs-architecture` | DA-1; derivado del bloque `architecture`, rechaza imports que violen las capas. |
 | `scripts/check_legacy_hashes.py` | Gate | `ci.yml::quality` | DA-13; prohíbe `legacy_hash`, `sha256`, `migrate_password`. |
 | `scripts/check_mutation_sites.py` | Gate | `ci.yml::quality` | DA-13; pin test AST. |
 | `scripts/check_complexity.py` | Gate | `ci.yml::quality` | Complejidad ciclomática. |
@@ -163,7 +163,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | Añadir o cambiar una ruta HTTP de administración | `app/src/modules/lanzadera/delivery/http/admin_routes.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/` y `docs/codebase/testing-and-ci.md` |
 | Cambiar la autenticación HTTP | `app/src/modules/lanzadera/delivery/http/auth_routes.py` | `app/src/modules/lanzadera/delivery/http/auth_middleware.py` |
 | Añadir un subcomando de CLI | `app/src/modules/lanzadera/delivery/cli/platform_user.py` | `app/src/modules/lanzadera/delivery/cli/` |
-| Añadir un gate de CI | `scripts/check_layers.py` como modelo | `docs/gates.md` y `.github/workflows/ci.yml` |
+| Añadir un gate de CI | `scripts/check_complexity.py` como modelo | `docs/gates.md` y `.github/workflows/ci.yml` |
 
 ## Regla de colocación
 

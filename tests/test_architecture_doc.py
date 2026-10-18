@@ -4,9 +4,10 @@ Two checks, both run as part of the normal suite:
 
 * tree <-> code, both directions: every layer folder described in the "Árbol de módulos" table
   exists under ``app/src/modules/<module>/`` and every layer folder on disk is described there;
-* layers <-> ``scripts/check_layers.py``: the ``architecture`` block in the document equals
-  ``ALLOWED_IMPORTS`` (without the self edge), ``PURE_LAYERS`` with ``FORBIDDEN_IN_PURE_LAYERS`` and
-  ``CROSS_CUTTING_MODULES``, and its ``independent`` group lists every application module on disk.
+* layer rules: the ``architecture`` block keeps the rules that the docs-architecture job turns
+  into ``.importlinter`` (the job itself compares the block with the code and the linter config):
+  its ``independent`` group lists every application module on disk, ``pure`` names layers that
+  exist and ``covered_roots`` is the ``app`` package.
 
 The checks take the document text, so the red fixtures below feed doctored text to the same
 functions that judge the real file.
@@ -14,10 +15,8 @@ functions that judge the real file.
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import re
-import sys
 from pathlib import Path
 
 import pytest
@@ -25,12 +24,6 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 DOC = ROOT / "docs" / "architecture.md"
 MODULES_DIR = ROOT / "app" / "src" / "modules"
-
-_spec = importlib.util.spec_from_file_location("check_layers", ROOT / "scripts" / "check_layers.py")
-assert _spec and _spec.loader
-check_layers = importlib.util.module_from_spec(_spec)
-sys.modules["check_layers"] = check_layers
-_spec.loader.exec_module(check_layers)
 
 _TREE_ROW = re.compile(r"^\| `([^`]+)` \|", re.MULTILINE)
 _BLOCK = re.compile(r"```architecture\n(\{.*?\})\n```", re.DOTALL)
@@ -70,19 +63,7 @@ def layer_findings(text: str) -> list[str]:
     if match is None:
         return ["falta el bloque architecture de capas y reglas"]
     declared = json.loads(match.group(1))
-    expected = {
-        "allowed": {k: sorted(set(v) - {k}) for k, v in check_layers.ALLOWED_IMPORTS.items()},
-        "pure": {
-            "layers": sorted(check_layers.PURE_LAYERS),
-            "forbidden_externals": sorted(check_layers.FORBIDDEN_IN_PURE_LAYERS),
-        },
-        "cross_cutting_modules": sorted(check_layers.CROSS_CUTTING_MODULES),
-    }
-    findings = [
-        f"{key} difiere de scripts/check_layers.py"
-        for key in expected
-        if declared.get(key) != expected[key]
-    ]
+    findings = []
     apps = sorted(
         p.relative_to(ROOT).as_posix()
         for p in MODULES_DIR.iterdir()
@@ -91,6 +72,11 @@ def layer_findings(text: str) -> list[str]:
     groups = [sorted(g.get("modules", [])) for g in declared.get("independent", [])]
     if groups != [apps]:
         findings.append("independent difiere de las aplicaciones de app/src/modules")
+    names = {layer["name"] for layer in declared.get("layers", [])}
+    if not set(declared.get("pure", {}).get("layers", [])) <= names or not declared.get("pure"):
+        findings.append("pure nombra capas que no existen o falta")
+    if declared.get("covered_roots") != ["app"]:
+        findings.append("covered_roots debe ser ['app']")
     return findings
 
 
@@ -103,7 +89,7 @@ def test_tree_matches_code(doc_text: str) -> None:
     assert tree_findings(doc_text, modules_on_disk()) == []
 
 
-def test_layers_match_check_layers(doc_text: str) -> None:
+def test_layer_rules_are_declared(doc_text: str) -> None:
     assert layer_findings(doc_text) == []
 
 
@@ -126,14 +112,19 @@ def test_red_empty_side_fails_closed(doc_text: str) -> None:
     assert tree_findings(doc_text, set())
 
 
-def test_red_rule_changed_in_doc_only(doc_text: str) -> None:
-    doctored = doc_text.replace('"domain": []', '"domain": [\n      "ports"\n    ]', 1)
+def test_red_covered_roots_removed(doc_text: str) -> None:
+    doctored = doc_text.replace('"covered_roots"', '"otra_clave"', 1)
     assert doctored != doc_text
-    assert "allowed difiere de scripts/check_layers.py" in layer_findings(doctored)
+    assert "covered_roots debe ser ['app']" in layer_findings(doctored)
 
 
-def test_red_missing_block() -> None:
-    assert layer_findings("# sin bloque") == ["falta el bloque architecture de capas y reglas"]
+def test_red_pure_names_a_layer_that_does_not_exist(doc_text: str) -> None:
+    match = _BLOCK.search(doc_text)
+    assert match is not None
+    block = json.loads(match.group(1))
+    block["pure"]["layers"] = ["nube"]
+    doctored = doc_text.replace(match.group(1), json.dumps(block))
+    assert "pure nombra capas que no existen o falta" in layer_findings(doctored)
 
 
 def test_red_independent_group_missing_an_application(doc_text: str) -> None:
