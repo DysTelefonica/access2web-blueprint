@@ -292,11 +292,19 @@ Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carp
   ],
   "cross_cutting_modules": [
     "core"
+  ],
+  "covered_roots": [
+    "app"
+  ],
+  "exempt": [
+    "app/src/main.py",
+    "app/src/shared/__init__.py",
+    "app/migrations/**"
   ]
 }
 ```
 
-`independent` fija que `lanzadera` y `expedientes` no se importan entre sí (segmentación vertical); `pure` lista las capas que no importan frameworks (`FORBIDDEN_IN_PURE_LAYERS` en `scripts/check_layers.py`); `tolerated` enumera las importaciones `delivery→di` heredadas, que solo pueden encoger, y `cross_cutting_modules` son los módulos de los que cualquiera puede depender (informativa). De este bloque se deriva `.importlinter`; hasta retirar `scripts/check_layers.py` ambos imponen las mismas reglas. `app/src/main.py` es la única excepción de capa declarada (`UNLAYERED_FILES`). Cuando aparece una capa nueva bajo `app/src/modules/<módulo>/`, se añade a la tabla de arriba y al bloque en el mismo PR: el gate falla nombrándola.
+`covered_roots` y `exempt` cierran el hueco de los ficheros fuera de las capas: todo `.py` bajo `app` está en un módulo de una capa o en `exempt` (el punto de composición, el marcador de paquete de `shared` y las migraciones). `independent` fija que `lanzadera` y `expedientes` no se importan entre sí (segmentación vertical); `pure` lista las capas que no importan frameworks (`FORBIDDEN_IN_PURE_LAYERS` en `scripts/check_layers.py`); `tolerated` enumera las importaciones `delivery→di` heredadas, que solo pueden encoger, y `cross_cutting_modules` son los módulos de los que cualquiera puede depender (informativa). De este bloque se deriva `.importlinter`; hasta retirar `scripts/check_layers.py` ambos imponen las mismas reglas. `app/src/main.py` es la única excepción de capa declarada (`UNLAYERED_FILES`). Cuando aparece una capa nueva bajo `app/src/modules/<módulo>/`, se añade a la tabla de arriba y al bloque en el mismo PR: el gate falla nombrándola.
 
 ## Auth (D88-D91 + DA-2..DA-5)
 
