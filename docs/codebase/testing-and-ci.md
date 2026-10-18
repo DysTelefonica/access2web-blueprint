@@ -24,7 +24,7 @@ Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.r
 
 | Job | Runs-on | Steps principales | Comando / coste |
 |---|---|---|---|
-| `pr-gate` | `ubuntu-24.04` | `pr size`, `issue spec`, `walkthrough schema` | Llama a `scripts/check_pr_size.py`, `scripts/check_issue_spec.py` y `scripts/check_walkthrough_schema.py`. Solo corre si `event == pull_request`. |
+| `pr-gate` | `ubuntu-24.04` | `pr size`, `issue spec`, `walkthrough schema` | Llama a `scripts/check_pr_size.py`, el `check_issue_spec.py` del canon (`.agents/skills/ci-pattern/assets/issue-spec/`) y `scripts/check_walkthrough_schema.py`. Solo corre si `event == pull_request`. |
 | `quality` | `ubuntu-24.04` | `install`, `format scripts`, `format`, `lint`, `typecheck`, `workflow gate`, `suites populated`, `tests`, `quality gates and indicators` | la suite sin el marker `integration` (comando 1 de «Comandos de referencia»); al final, `scripts/quality_report.py`. |
 | `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg` sobre `127.0.0.1` y el puerto asignado) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
 | `security` | — (workflow reutilizado, jobs `gitleaks`, `trivy-config`, `pip-audit`) | Escaneo estático y de dependencias | `gitleaks`, `trivy config`, `pip-audit`. |
@@ -103,7 +103,7 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 | Gate | Job que lo invoca | Protege |
 |---|---|---|
 | `scripts/check_pr_size.py` | `pr-gate` | PR ≤ 400 líneas. |
-| `scripts/check_issue_spec.py` | `pr-gate` | Cuerpo de issue conforme. |
+| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` (canon) | `pr-gate` | Cuerpo de issue conforme. |
 | `scripts/check_walkthrough_schema.py` | `pr-gate` | `walkthrough-*.json` válidos. |
 | `scripts/check_workflows.py` | `quality` (`workflow gate`) | `.github/workflows/*.yml` bien formado. |
 | `scripts/check_required_jobs.py` | `quality` (`workflow gate`) + `required` (enforce) | Matriz `required` completa. |

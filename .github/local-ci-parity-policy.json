@@ -8,12 +8,12 @@
   },
   "exclusions": [
     {
-      "command": "python scripts/check_issue_spec.py*",
+      "command": "python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py*",
       "side": "ci",
       "reason": "issue-spec se invoca con el payload del PR (GITHUB_EVENT_PATH) y el GITHUB_TOKEN del workflow; en local no hay evento de PR, así que la verificación del formulario canónico la sostiene tests/test_governance_templates.py con el cuerpo de la issue #794 capturado por la API."
     },
     {
-      "command": "python scripts/check_issue_spec.py local*",
+      "command": "python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local*",
       "side": "local",
       "reason": "el preflight local valida el cuerpo canónico de fixture (tests/fixtures/issue-spec-preflight-body.md) con --required-sections; CI ejecuta el mismo gate sobre el payload real del PR (exclusión ci de arriba), así que esta invocación local no tiene par en pr-gate por diseño."
     },
