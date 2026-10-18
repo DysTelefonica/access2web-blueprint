@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — positive fixture
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — positive fixture
 """A small module with a small mutation surface."""
 
 from dataclasses import dataclass

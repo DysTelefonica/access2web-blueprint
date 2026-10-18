@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — negative fixture, do not "fix"
 """A file with no complexity at all and an enormous mutation surface.
 
 Every function here is trivial and every one passes the complexity and CRAP ceilings. The file

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/scripts/check_mutation.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_mutation.py
 """Mutation-survivor ratchet with a degenerate-run guard.
 
 Mutation testing is the only mechanical answer to "do these tests assert anything". Coverage

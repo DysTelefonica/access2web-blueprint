@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/tests/test_hr15_adoption.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_hr15_adoption.py
 """HR-15 adoption audit tests for check_adoption.py.
 
 Verifies that the adoption preflight detects consumer baselines declared

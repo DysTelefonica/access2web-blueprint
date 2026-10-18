@@ -7,9 +7,13 @@ validate_remote):
 
 1. El cuerpo lleva `Closes|Fixes|Resolves|Refs #N` fuera de código.
 2. La referencia resuelve a una issue, nunca a una pull request: la PR de la
-   que se depende va en `depends-on` de Chain Context (HR-54).
-3. La issue lleva `status:approved` y exactamente un `type:*`.
-4. El cuerpo no cierra y referencia la MISMA issue a la vez (HR-54).
+   que se depende va en `depends-on` de Chain Context (HR-54). Si el cuerpo
+   enlaza además otra issue válida, es un aviso (#787); sin ella, un fallo.
+3. La issue lleva `status:approved` y exactamente un `type:*`. En un eslabón
+   intermedio (`chain:partial`) basta el `type:*`: la aprobación se exige en
+   la punta de cadena (#787).
+4. El cuerpo no cierra y referencia la MISMA issue a la vez (HR-54). Es un
+   aviso, no un fallo: gana `Closes` (#787).
 5. La referencia apunta al repositorio del PR (HR-54).
 6. Un fallo de la API no es un verde: fail-closed (HR-3).
 7. El cuerpo (o el cuerpo de la issue citada) lleva las secciones declaradas
@@ -35,6 +39,9 @@ Modos:
   `--required-sections`, la regla 7 se aplica al cuerpo de cada issue
   consultada.
 
+Los avisos salen por stderr como `issue-spec: aviso: ...` y no cambian el
+código de salida.
+
 Exit codes: 0 sin hallazgos · 1 hallazgos · 2 entrada inválida.
 """
 
@@ -49,11 +56,12 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 APPROVAL_LABEL = "status:approved"
+CHAIN_PARTIAL_LABEL = "chain:partial"
 TYPE_PREFIX = "type:"
 DEPENDS_ON_HINT = (
     "Refs/Closes solo apuntan a issues del mismo repositorio; la PR de la que "
@@ -253,12 +261,12 @@ def rule_required_sections(
 
 
 def rule_closes_and_refs_same_issue(refs: tuple[Reference, ...]) -> list[str]:
-    """Regla 4: Closes y Refs del mismo número son una contradicción."""
+    """Regla 4: Closes y Refs del mismo número son una contradicción (aviso: gana Closes)."""
     closed = {r.number for r in refs if r.kind == "close"}
     referred = {r.number for r in refs if r.kind == "refs"}
     return [
         f"#{number}: el cuerpo cierra y referencia la MISMA issue a la vez; use "
-        "Closes o Refs, nunca los dos"
+        "Closes o Refs, nunca los dos (se aplica Closes)"
         for number in sorted(closed & referred)
     ]
 
@@ -279,21 +287,21 @@ def validate_body(
     body: str,
     repository: str = "",
     required_sections: tuple[str, ...] = (),
+    warnings: list[str] | None = None,
 ) -> list[str]:
     """Modo local: forma del cuerpo, sin tocar la red.
 
     La regla 7 (secciones obligatorias) es opt-in: solo se aplica si
-    ``required_sections`` no está vacío.
+    ``required_sections`` no está vacío. Los avisos (regla 4) se añaden a
+    ``warnings`` si se pasa; no son hallazgos.
     """
     refs = references(body)
     violation = rule_has_reference(refs)
     if violation:
         return [violation]
-    return (
-        rule_closes_and_refs_same_issue(refs)
-        + rule_same_repository(refs, repository)
-        + rule_required_sections(body, required_sections)
-    )
+    if warnings is not None:
+        warnings.extend(rule_closes_and_refs_same_issue(refs))
+    return rule_same_repository(refs, repository) + rule_required_sections(body, required_sections)
 
 
 # --------------------------------------------------------------------------------------------
@@ -309,14 +317,19 @@ def rule_reference_is_issue(issue: Mapping[str, Any], number: int) -> str | None
             f"muévala a depends-on de Chain Context. {DEPENDS_ON_HINT}")
 
 
-def rule_missing_labels(issue: Mapping[str, Any], number: int) -> list[str]:
-    """Regla 3: la issue lleva `status:approved` y un `type:*`."""
+def rule_missing_labels(
+    issue: Mapping[str, Any], number: int, chain_partial: bool = False,
+) -> list[str]:
+    """Regla 3: la issue lleva `status:approved` y un `type:*`.
+
+    En un eslabón intermedio de cadena la aprobación se exige en la punta, no aquí.
+    """
     names = {
         label["name"] if isinstance(label, Mapping) else str(label)
         for label in issue.get("labels", [])
     }
     violations: list[str] = []
-    if APPROVAL_LABEL not in names:
+    if APPROVAL_LABEL not in names and not chain_partial:
         violations.append(f"#{number}: requiere {APPROVAL_LABEL}")
     if not any(name.startswith(TYPE_PREFIX) for name in names):
         violations.append(f"#{number}: requiere una etiqueta {TYPE_PREFIX}*")
@@ -328,11 +341,31 @@ def rule_api_error(number: int, exc: GitHubApiError) -> str:
     return f"#{number}: cannot read the issue ({exc})"
 
 
+def is_chain_partial(payload: Mapping[str, Any]) -> bool:
+    """El PR del evento lleva la etiqueta `chain:partial` (eslabón intermedio)."""
+    labels = (payload.get("pull_request") or {}).get("labels") or []
+    return any(isinstance(label, Mapping) and label.get("name") == CHAIN_PARTIAL_LABEL
+               for label in labels)
+
+
+@dataclass
+class PrContext:
+    """Contexto del PR que modula el veredicto remoto y recoge sus avisos (#787).
+
+    ``chain_partial``: el PR es un eslabón intermedio (la aprobación se exige en la
+    punta). ``warnings``: lo que no bloquea, para que el llamador lo imprima.
+    """
+
+    chain_partial: bool = False
+    warnings: list[str] = field(default_factory=list)
+
+
 def validate_remote(
     body: str,
     repository: str,
     fetch_issue: Callable[[int], Mapping[str, Any]],
     required_sections: tuple[str, ...] = (),
+    context: PrContext | None = None,
 ) -> list[str]:
     """Modo pr-event: todas las reglas. Solo consulta las issues del propio repositorio.
 
@@ -345,15 +378,19 @@ def validate_remote(
     cuerpo de la issue.
     """
     refs = references(body)
+    show_warnings = context is not None  # sin contexto nadie lee los avisos: se queda en fallo
+    context = context or PrContext()
     # Regla 7 no se aplica al cuerpo del PR: validate_body se llama con la
     # lista vacía para que las reglas 1–5 sí corran y la 7 no.
-    violations = validate_body(body, repository, ())
+    violations = validate_body(body, repository, (), context.warnings)
     if not refs:
         return violations
     numbers = sorted({
         ref.number for ref in refs
         if not ref.repo or ref.repo.lower() == repository.lower()
     })
+    pull_messages: list[str] = []
+    valid_issue = False
     for number in numbers:
         try:
             issue = fetch_issue(number)
@@ -361,11 +398,17 @@ def validate_remote(
             violations.append(rule_api_error(number, exc))
             continue
         if message := rule_reference_is_issue(issue, number):
-            violations.append(message)
+            pull_messages.append(message)
         else:
-            violations.extend(rule_missing_labels(issue, number))
+            valid_issue = True
+            violations.extend(rule_missing_labels(issue, number, context.chain_partial))
             violations.extend(rule_required_sections(
                 issue.get("body", ""), required_sections, prefix=f"#{number}: "))
+    # Una referencia a una PR es un aviso si el cuerpo enlaza además una issue válida (#787).
+    if valid_issue and show_warnings:
+        context.warnings.extend(pull_messages)
+    else:
+        violations.extend(pull_messages)
     return violations
 
 
@@ -468,6 +511,7 @@ def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     args = _build_parser().parse_args(argv)
     required: tuple[str, ...] = ()
+    warnings: list[str] = []
     if args.required_sections:
         try:
             required = load_required_sections(args.required_sections)
@@ -480,7 +524,7 @@ def main(argv: list[str] | None = None) -> int:
         except (OSError, UnicodeDecodeError) as exc:
             print(f"issue-spec: no se puede leer el cuerpo: {exc}", file=sys.stderr)
             return 2
-        violations = validate_body(body, args.repository, required)
+        violations = validate_body(body, args.repository, required, warnings)
         success = ("issue-spec local: forma de las referencias correcta. La aprobación, "
                    "el tipo y si la referencia es una PR los verifica el gate remoto.")
     else:
@@ -494,8 +538,11 @@ def main(argv: list[str] | None = None) -> int:
             print("issue-spec: el evento no identifica repository.full_name", file=sys.stderr)
             return 2
         body = (payload.get("pull_request") or {}).get("body") or ""
-        violations = validate_remote(body, repository, _make_fetcher(repository), required)
+        context = PrContext(chain_partial=is_chain_partial(payload), warnings=warnings)
+        violations = validate_remote(body, repository, _make_fetcher(repository), required, context)
         success = "issue-spec: contrato satisfecho"
+    for warning in warnings:
+        print(f"issue-spec: aviso: {warning}", file=sys.stderr)
     for violation in violations:
         print(f"issue-spec: {violation}", file=sys.stderr)
     if violations:

@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — negative fixture, do not "fix"
 """Deliberately broken domain module. Every import below must be reported by check_layers.py."""
 
 import fastapi  # purity:domain — a pure layer must not touch a framework

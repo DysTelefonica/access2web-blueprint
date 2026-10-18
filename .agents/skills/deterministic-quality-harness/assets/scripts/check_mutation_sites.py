@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/scripts/check_mutation_sites.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_mutation_sites.py
 """Static mutation-site density gate.
 
 Counts AST-level mutation targets per file without running a single mutant. It is the cheap
