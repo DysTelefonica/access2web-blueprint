@@ -179,6 +179,7 @@ Las rutas y plantillas HTTP van en el paquete `delivery` del módulo dueño; la 
 ## Siguiente paso
 
 Continúe con [Testing y CI](testing-and-ci.md) para saber qué corre en PR, nightly y release.
+
 ## Reference data (data/staging/<app>/)
 
 Snapshot self-contained del VBA legacy de las 8 aplicaciones que migra este blueprint. La convención del repo es no commitear los `.accdb`; este directorio solo lleva los modulos `.bas` que el propagador Dysflow usa como referencia de migración. Los binarios se R2-pullean con `scripts/setup-staging.ps1` y los usuarios los rehidratan localmente.
