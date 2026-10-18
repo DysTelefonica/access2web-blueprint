@@ -615,7 +615,9 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     assert step["env"]["NEEDS_JSON"] == "${{ toJSON(needs) }}"
     assert step["env"]["EVENT_NAME"] == "${{ github.event_name }}"
     assert step["env"]["BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
-    assert "--base-policy" in step["run"], "the relaxation check against the base policy must stay wired"
+    assert "--base-policy" in step["run"], (
+        "the relaxation check against the base policy must stay wired"
+    )
 
 
 def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
