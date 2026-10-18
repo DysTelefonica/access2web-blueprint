@@ -9,20 +9,16 @@ any edge the architecture does not allow.
 Regex cannot do this job: it breaks on line continuations, comments, aliased imports, and relative
 imports. Hard Rule 9 requires the AST.
 
-Exit codes:
-    0  no violation outside BASELINE
-    1  a new violation, a BASELINE entry above its recorded count, or a BASELINE entry past its
-       target date while still above target
+RETIRING (#1013): the layer rules are enforced by the docs-architecture job from the
+``architecture`` block of docs/architecture.md and .importlinter. This module no longer has an
+entry point or a baseline; it only keeps the layer constants that tests/test_architecture_doc.py
+reads, and is deleted by the next PR of the chain.
 """
 
 from __future__ import annotations
 
-import argparse
 import ast
-import json
-import sys
 from dataclasses import dataclass
-from datetime import date
 from pathlib import Path
 
 # --------------------------------------------------------------------------------------------
@@ -96,40 +92,6 @@ UNLAYERED_FILES: dict[str, str] = {
     "app/src/main.py": "composition root — the one place allowed to wire every layer together",
 }
 
-
-@dataclass(frozen=True)
-class BaselineEntry:
-    """A tolerated violation count with a mandatory exit plan.
-
-    Hard Rule 12: a ratchet is a ramp toward a ceiling, never the destination. ``target`` is the
-    value this key must reach; ``target_date`` is when the tolerance expires. After that date the
-    gate fails even if the count never grew, which is what stops a ratchet from becoming permanent.
-    """
-
-    count: int
-    target: int
-    target_date: str  # ISO-8601, YYYY-MM-DD
-
-
-# Empty by design — see Hard Rule #12 of deterministic-quality-harness v1.6.
-# Hexagonal layer purity is enforced by ALLOWED_IMPORTS and FORBIDDEN_IN_PURE_LAYERS,
-# not by a ratchet. The first violation blocks the gate immediately.
-# See #112 for the broader BASELINE conversation that includes this gate.
-#
-# W58 (#515): delivery routes accept the LanzaderaContainer (W55, #49)
-# so each admin endpoint goes through the use-case layer (W54, #43).
-# The container lives in `di/` because that is the composition root;
-# the delivery route functions cannot receive it any other way without
-# either re-exporting `di/` (worse layering) or reaching into
-# `app.state.container` from every handler (worse testability). The
-# three violations are tolerated at the documented count, with a far
-# horizon so the ratchet cannot expire unnoticed.
-BASELINE: dict[str, BaselineEntry] = {
-    # W62 (PR-6): +1 for auth_routes.py and +1 for admin.py (TYPE_CHECKING
-    # import of LanzaderaContainer). Both follow the existing pattern in
-    # admin_routes*.py; no runtime import crosses the layer boundary.
-    "direction:delivery->di": BaselineEntry(count=5, target=3, target_date="2030-01-01"),
-}
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -329,133 +291,3 @@ def collect_violations(root: Path) -> list[Violation]:
             if slicing:
                 violations.append(slicing)
     return violations
-
-
-def evaluate(violations: list[Violation], today: date) -> tuple[int, list[str]]:
-    """Compare observed violations against BASELINE. Returns ``(exit_code, report_lines)``."""
-    observed: dict[str, list[Violation]] = {}
-    for violation in violations:
-        observed.setdefault(violation.key, []).append(violation)
-
-    lines: list[str] = []
-    failed = False
-
-    for key in sorted(observed):
-        entries = observed[key]
-        allowance = BASELINE.get(key)
-        if allowance is None:
-            failed = True
-            lines.append(f"FAIL  {key}: {len(entries)} occurrence(s), not in BASELINE")
-        elif len(entries) > allowance.count:
-            failed = True
-            lines.append(
-                f"FAIL  {key}: {len(entries)} occurrence(s), BASELINE allows {allowance.count}"
-            )
-        elif today.isoformat() > allowance.target_date and len(entries) > allowance.target:
-            failed = True
-            lines.append(
-                f"FAIL  {key}: BASELINE expired on {allowance.target_date} with "
-                f"{len(entries)} occurrence(s), target was {allowance.target}"
-            )
-        elif len(entries) < allowance.count:
-            lines.append(
-                f"NOTE  {key}: {len(entries)} occurrence(s), below BASELINE {allowance.count}; "
-                f"lower the BASELINE to lock the gain in"
-            )
-        for entry in entries:
-            lines.append(f"        {entry.file}:{entry.line}  {entry.detail}")
-
-    for key in sorted(BASELINE):
-        if key in observed:
-            continue
-        lines.append(f"NOTE  {key}: no longer occurs; remove it from BASELINE")
-
-    if not failed:
-        lines.append("OK    layer gate clean")
-    return (1 if failed else 0), lines
-
-
-def build_report(violations: list[Violation], status: str, files_seen: int = 0) -> dict:
-    unclassified = sum(1 for violation in violations if violation.key == "unclassified")
-    return {
-        "gate": "layers",
-        "status": status,
-        "indicators": {
-            "violations": len(violations),
-            "violation_classes": len({violation.key for violation in violations}),
-            # Coverage of the gate itself: how much of the package it actually inspected.
-            "files_checked": files_seen - unclassified,
-            "files_unclassified": unclassified,
-        },
-        "ceilings": {"violations": 0, "violation_classes": 0, "files_unclassified": 0},
-        "findings": [
-            {"file": violation.file, "line": violation.line, "detail": violation.detail}
-            for violation in sorted(violations, key=lambda item: (item.file, item.line, item.key))
-        ],
-    }
-
-
-def _pin_output_encoding() -> None:
-    """Pin stdout/stderr to UTF-8.
-
-    Python picks the output encoding from the platform locale, so the same gate emits different
-    bytes on a Windows workstation (cp1252) and a Linux runner (utf-8) — and a non-encodable
-    character crashes the write outright. A harness that claims determinism cannot let its own
-    output depend on where it ran.
-    """
-    for stream in (sys.stdout, sys.stderr):
-        reconfigure = getattr(stream, "reconfigure", None)
-        if reconfigure is not None:
-            reconfigure(encoding="utf-8")
-
-
-def main(argv: list[str] | None = None) -> int:
-    _pin_output_encoding()
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--root",
-        type=Path,
-        default=Path.cwd(),
-        help="repository root containing the package directory (default: cwd)",
-    )
-    parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
-    args = parser.parse_args(argv)
-
-    root = args.root.resolve()
-    if not (root / ROOT_PACKAGE).is_dir():
-        message = f"root package '{ROOT_PACKAGE}' not found under {root}"
-        if args.json:
-            print(json.dumps({"gate": "layers", "status": "error", "detail": message}))
-        else:
-            print(f"FAIL  {message}", file=sys.stderr)
-        return 1
-
-    violations = collect_violations(root)
-    files_seen = len(_iter_source_files(root))
-
-    if not files_seen:
-        # Hard Rule 18: a measurement that could not run must never score as a
-        # perfect one. The subject set is empty, so every ceiling below is
-        # trivially satisfied — the healthiest possible number for the least
-        # healthy possible state. Guard the subject set, not just the path: the
-        # missing-package case was already covered above; this is the one that
-        # looks like success (harness v1.6).
-        message = f"{ROOT_PACKAGE} under {root} yielded no source files to inspect"
-        if args.json:
-            print(json.dumps({"gate": "layers", "status": "error", "detail": message}))
-        else:
-            print(f"FAIL  {message}", file=sys.stderr)
-        return 1
-    exit_code, lines = evaluate(violations, date.today())
-
-    if args.json:
-        status = "pass" if exit_code == 0 else "fail"
-        print(json.dumps(build_report(violations, status, files_seen), indent=2))
-    else:
-        for line in lines:
-            print(line)
-    return exit_code
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
