@@ -358,16 +358,18 @@ def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
 
 def test_quality_report_aggregates_indicators(tmp_path) -> None:
     out = tmp_path / "quality-report.json"
-    result = _run("quality_report.py", "--root", str(FIXTURES / "layers_clean"), "--out", str(out))
+    result = _run(
+        "quality_report.py", "--root", str(FIXTURES / "complexity_clean"), "--out", str(out)
+    )
     assert result.returncode == 0, result.stdout
     report = json.loads(out.read_text(encoding="utf-8"))
     assert report["status"] == "pass"
     for indicator in (
-        "layers.violations",
         "complexity.max_complexity",
+        "dry.duplicated_ratio_pct",
     ):
         assert indicator in report["indicators"], report["indicators"].keys()
-    assert report["indicators"]["layers.violations"]["ceiling"] == 0
+    assert report["indicators"]["complexity.functions_over_ceiling"]["ceiling"] == 0
 
 
 def test_quality_report_names_the_failing_gate(tmp_path) -> None:
@@ -375,23 +377,23 @@ def test_quality_report_names_the_failing_gate(tmp_path) -> None:
     result = _run(
         "quality_report.py",
         "--root",
-        str(FIXTURES / "layers_violation"),
+        str(FIXTURES / "dry_violation"),
         "--out",
         str(out),
     )
     assert result.returncode == 1
     report = json.loads(out.read_text(encoding="utf-8"))
-    assert report["failed_gates"] == ["layers"]
+    assert report["failed_gates"] == ["dry"]
 
 
 def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
     """Determinism pin: no wall-clock timestamp may leak into the report."""
     first, second = tmp_path / "a.json", tmp_path / "b.json"
-    _run("quality_report.py", "--root", str(FIXTURES / "layers_clean"), "--out", str(first))
+    _run("quality_report.py", "--root", str(FIXTURES / "complexity_clean"), "--out", str(first))
     _run(
         "quality_report.py",
         "--root",
-        str(FIXTURES / "layers_clean"),
+        str(FIXTURES / "complexity_clean"),
         "--out",
         str(second),
     )

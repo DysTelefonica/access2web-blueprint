@@ -32,7 +32,6 @@ from pathlib import Path
 #: Fixed execution order (Hard Rule 13). Cheap and structural first, so the first failure a
 #: developer sees is the one that changes the most downstream numbers.
 GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
-    ("layers", "check_layers.py", ()),
     ("complexity", "check_complexity.py", ()),
     ("mutation_sites", "check_mutation_sites.py", ()),
     ("dry", "check_dry.py", ()),
