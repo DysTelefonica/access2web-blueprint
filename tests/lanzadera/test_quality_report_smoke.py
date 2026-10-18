@@ -4,7 +4,7 @@
 
 The aggregator runs every gate in a fixed order and merges the envelopes.
 Phase 0 asserts the aggregator runs, produces `quality-report.json`, and that
-the gate order is the contract (`layers -> complexity -> mutation_sites -> dry
+the gate order is the contract (`complexity -> mutation_sites -> dry
 -> legacy_hashes`).
 """
 
@@ -64,7 +64,6 @@ def test_gate_order_includes_legacy_hashes(script: Path) -> None:
     # retired gate documented as the absence of `crap` between `complexity` and
     # `mutation_sites`, not as the presence of the unwired gate.
     assert names == (
-        "layers",
         "complexity",
         "mutation_sites",
         "dry",
@@ -117,14 +116,14 @@ def test_quality_report_produces_json_envelope(tmp_path: Path, root: Path, scrip
     # contradictory and broke the test on every branch). The test name and
     # module docstring describe wiring, not CRAP-specific behaviour.
     gates = {entry["gate"] for entry in payload["gates"]}
-    # The aggregator declares six gates (DA-1 + DA-11 + DA-13). The
+    # The aggregator declares five gates (DA-11 + DA-13). The layer rules left the
+    # aggregator for the docs-architecture job (HR-68, #1013). The
     # older ``crap`` gate that the test originally pinned has been
     # removed from the aggregator (it would have required a third-party
     # CRAP tool whose runner is not wired; DA-13 dropped it from the
-    # gates list). The remaining six are the only ones the aggregator
+    # gates list). The remaining five are the only ones the aggregator
     # ever emits on a clean run.
     assert {
-        "layers",
         "complexity",
         "mutation_sites",
         "dry",
