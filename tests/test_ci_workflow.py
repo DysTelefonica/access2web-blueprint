@@ -416,10 +416,6 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
     # Issue #857 (PR-B): the branch-name job leaves ci.yml, so the script has no
     # CI step. Issue #859 deletes scripts/check_branch_name.py and removes this entry.
     "check_branch_name.py",
-    # Issue #1013: layer rules are enforced by the docs-architecture job (HR-68) from the
-    # `architecture` block and .importlinter, so scripts/check_layers.py leaves GATES.
-    # The next PR of the chain deletes the script and removes this entry.
-    "check_layers.py",
     # Issue #857, PR-C1b: the mutation jobs leave ci.yml, so the scripts have no
     # CI step in the PR rollup. They stay on disk — the mutation job moved
     # to release.yml (PR-C1d) and reads them from there. The two
