@@ -214,8 +214,17 @@
   "docs_map": {
     "hub": "docs/CODEBASE-GUIDE.md",
     "docs_path": "docs/codebase",
-    "code_roots": [{"root": "app/src/modules", "glob": "*.py"}],
-    "job": "docs-codeguide"
+    "code_roots": [
+      {"root": "app/src/modules", "glob": "*.py"},
+      {"root": "scripts", "glob": "*.py"},
+      {"root": "data", "glob": "**/*.bas"}
+    ],
+    "job": "docs-codeguide",
+    "exclude_dirs": [
+      "e2e",
+      "skills",
+      "tests"
+    ]
   },
   "docs_links": {
     "hub": "docs/CODEBASE-GUIDE.md",
