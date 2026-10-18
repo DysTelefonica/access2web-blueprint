@@ -44,7 +44,7 @@
         {"artifact": "scripts/check_mutation.py", "disposition": "adopted", "target": "scripts/check_mutation.py"},
         {"artifact": "scripts/check_mutation_sites.py", "disposition": "adopted", "target": "scripts/check_mutation_sites.py"},
         {"artifact": "scripts/check_pr_size.py", "disposition": "adopted", "target": "scripts/check_pr_size.py"},
-        {"artifact": "scripts/check_required_jobs.py", "disposition": "adopted", "target": "scripts/check_required_jobs.py"},
+        {"artifact": "scripts/check_required_jobs.py (BP#1040: el job required ejecuta el gate del canon desde .agents/skills/ci-pattern/assets/required-jobs/; la política vive en .github/required-jobs-policy.json)", "disposition": "retired", "path": "scripts/check_required_jobs.py"},
         {"artifact": "scripts/check_walkthrough_schema.py", "disposition": "adopted", "target": "scripts/check_walkthrough_schema.py"},
         {"artifact": "scripts/check_workflows.py", "disposition": "adopted", "target": "scripts/check_workflows.py"},
         {"artifact": "scripts/quality_report.py", "disposition": "adopted", "target": "scripts/quality_report.py"},
