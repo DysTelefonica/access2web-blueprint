@@ -438,8 +438,7 @@ def check_chain_context(pr, base, default_branch, policy, findings):
 def check_issue_links(pr, data, findings):
     """#333: el enlace de la issue no enlaza una issue de otro repositorio; una
     mención informativa del cuerpo no es un enlace. Cerrar y referenciar el
-    mismo número ya no es un fallo aquí: lo avisa issue-spec y gana `Closes`
-    (#787, una sola evaluación)."""
+    mismo número no es un fallo aquí ni en issue-spec (#787 retiró el aviso)."""
     body = pr.get("body") or ""
     current = (data.get("repository") or {}).get("full_name") or ""
     for owner_repo, number in sorted(set(FOREIGN_LINK_RX.findall(body))):

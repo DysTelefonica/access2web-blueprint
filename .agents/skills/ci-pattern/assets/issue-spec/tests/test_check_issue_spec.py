@@ -88,12 +88,11 @@ class ReferenceFormTests(unittest.TestCase):
         self.assertEqual(p.returncode, 1)
         self.assertIn("depends-on", p.stderr)
 
-    def test_closes_and_refs_same_issue_is_a_warning_and_closes_wins(self):
-        # #787 S6: la contradiccion se avisa, no se rechaza; gana Closes.
-        p = run_local("Closes #12\n\nRefs #12\n")
+    def test_closes_and_refs_same_issue_passes_without_warning(self):
+        # Refs redundante junto a Closes de la misma issue: pasa y no avisa.
+        p = run_local("Closes #5\n\nRefs #5\n")
         self.assertEqual(p.returncode, 0, p.stderr)
-        self.assertIn("aviso", p.stderr)
-        self.assertIn("MISMA issue", p.stderr)
+        self.assertNotIn("aviso", p.stderr)
 
     def test_closes_and_refs_different_issues_pass(self):
         p = run_local("Closes #12\nRefs #13\n")

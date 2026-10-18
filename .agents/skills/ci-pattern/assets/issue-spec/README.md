@@ -34,8 +34,7 @@ y un motivo explícito; con la API caída, idem. Modo `local` no se ve afectado.
 1. El cuerpo enlaza una issue con `Closes|Fixes|Resolves|Refs #N` fuera de
    código. Sin ella, el mensaje manda a `depends-on` de Chain Context: una PR de
    la que se depende no se cita aquí.
-2. El cuerpo no cierra y referencia la misma issue a la vez.
-3. Una referencia `owner/repo#N` apunta al repositorio del PR.
+2. Una referencia `owner/repo#N` apunta al repositorio del PR.
 
 Las palabras de cierre valen en prosa, como en GitHub. Dentro de un span de
 código o de un bloque cercado no cuentan. Un bloque con sangría de 4 espacios
