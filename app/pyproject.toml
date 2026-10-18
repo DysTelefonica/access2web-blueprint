@@ -98,12 +98,6 @@ extend-exclude = [
     # would force "fixes" that destroy the only evidence the gates actually fail.
     "tests/fixtures",
     "app/migrations",
-    # Canonical gate from DysTelefonica/team-skills (DysTelefonica/team-skills#633).
-    # Same boundary as `skills/` and `.agents/skills/`: the file arrives whole
-    # from the catalog and is versioned there; reformatting it would couple
-    # this repo to the catalog's formatting and be undone by the next
-    # propagation. PR-1 of #960 keeps the SHA256 byte a byte with the canon.
-    "scripts/check_issue_spec.py",
 ]
 
 [tool.ruff.lint]
