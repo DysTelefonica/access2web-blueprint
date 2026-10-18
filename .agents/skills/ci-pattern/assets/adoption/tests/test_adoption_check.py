@@ -2455,6 +2455,50 @@ class LifecycleRecipeTests(unittest.TestCase):
             self.assertEqual(code, 1)
             self.assertIn("lifecycle", err)
 
+class BranchNameShapeTests(unittest.TestCase):
+    """#842: el apartado de rama del documento operativo describe la forma que
+    declara P01 (`<tipo>/<slug>` o `<tipo>/<número>-<slug>`), no un texto fijo.
+    Sin P01 declarado el documento no cambia."""
+
+    NUMBERED_REGEX = "^(?:(chore|feat|fix|perf|refactor|docs|ci|test)/[0-9]+-[a-z0-9-]+|archive/.+|main)$"
+    SLUG_BRANCH_LINE = ("- Nombre de rama: `<tipo>/<slug>`, con el slug del t\u00edtulo de la issue "
+                        "en min\u00fasculas y guiones y sin n\u00famero de issue:")
+    NUMBERED_BRANCH_LINE = ("- Nombre de rama: `<tipo>/<n\u00famero>-<slug>`, con el n\u00famero de la issue "
+                            "y el slug del t\u00edtulo en min\u00fasculas y guiones:")
+
+    def doc_of(self, tmp, p01=None):
+        repo = make_docs_repo(tmp)
+        if p01 is not None:
+            ci_yaml = repo / "ci-pattern.yaml"
+            ci_yaml.write_text(
+                ci_yaml.read_text(encoding="utf-8")
+                + f'P01_branch_name_pattern: "{p01}"\n', encoding="utf-8")
+        out = Path(tmp) / "doc.md"
+        code, _, err = run_cli(
+            ["adoption", "generate-doc", str(repo), "--out", str(out)])
+        self.assertEqual(code, 0, err)
+        return out.read_text(encoding="utf-8")
+
+    def test_default_p01_keeps_slug_wording(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            text = self.doc_of(tmp)
+        self.assertIn(self.SLUG_BRANCH_LINE, text)
+        self.assertIn("  `git switch -c <tipo>/<slug>`", text)
+        self.assertIn("  `<rama-nueva>` = `<tipo>/<slug>`, con el `<slug>` del t\u00edtulo de la "
+                      "issue en min\u00fasculas y guiones, sin n\u00famero de issue", text)
+
+    def test_numbered_p01_describes_issue_number(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            text = self.doc_of(tmp, p01=self.NUMBERED_REGEX)
+        self.assertIn(self.NUMBERED_BRANCH_LINE, text)
+        self.assertIn("  `git switch -c <tipo>/<n\u00famero>-<slug>`", text)
+        self.assertIn("  `<rama-nueva>` = `<tipo>/<n\u00famero>-<slug>`, con el n\u00famero de la "
+                      "issue", text)
+        self.assertIn(self.NUMBERED_REGEX, text)
+        self.assertNotIn("sin n\u00famero de issue", text)
+        self.assertNotIn("<tipo>/<slug>", text)
+
+
 class ChecksTableTests(unittest.TestCase):
     """#305: la sección 'required-checks' es una tabla generada 1:1 desde
     los jobs requeridos reales; cada fila con qué verifica, el comando
