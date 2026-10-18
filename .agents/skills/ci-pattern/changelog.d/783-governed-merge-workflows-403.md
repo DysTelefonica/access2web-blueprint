@@ -1,0 +1,3 @@
+type: patch
+
+HR-3 (#783): `runner-controls/github_rest.py` incluye en el fallo de una respuesta no 2xx el `message` de GitHub (truncado, sin el token) y las cabeceras `X-Accepted-GitHub-Permissions` y `X-GitHub-Request-Id`, y `GitHubApiError` lleva el `status`; el prefijo `HTTP <código> on <método> <ruta>` no cambia. `check_governed_merge.py` bloquea antes (exit 1, con la acción a tomar) un PR que cambia el mismo fichero de `.github/workflows/` que la base desde la bifurcación, porque su merge crearía contenido de workflow nuevo y `GITHUB_TOKEN` no tiene el permiso `workflows`; añade la pista de ese permiso a un 403 de merge que lo mencione. Un PR que toca workflows sin solape se fusiona igual. Cada PR hace ahora una consulta `compare` más.

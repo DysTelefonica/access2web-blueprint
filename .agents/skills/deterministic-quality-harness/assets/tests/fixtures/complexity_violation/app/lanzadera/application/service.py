@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — negative fixture, do not "fix"
 """One function far over the ceiling, surrounded by trivial ones.
 
 The trivial neighbours are the point: under a ``top-N`` gate they dilute the ranking and the real

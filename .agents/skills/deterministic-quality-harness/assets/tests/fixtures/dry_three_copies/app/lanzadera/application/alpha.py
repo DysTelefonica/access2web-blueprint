@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — negative fixture, do not "fix"
 """Same clone as dry_violation, copied into one more file.
 
 The BASELINE key must be identical to the two-copy case: growing a clone into another file is

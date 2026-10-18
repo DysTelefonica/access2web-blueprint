@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/check_complexity.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/scripts/check_complexity.py
 """Cyclomatic complexity gate with an absolute, global ceiling.
 
 Hard Rule 12: this gate is deliberately NOT a ``top-N`` check. Under ``top-10``, whether a given

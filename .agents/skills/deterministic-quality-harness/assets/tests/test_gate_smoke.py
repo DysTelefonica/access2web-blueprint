@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_gate_smoke.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/tests/test_gate_smoke.py
 """Smoke tests: every gate is observed exiting 1 on a real violation (Execution Step 5).
 
 A gate that has never been seen failing is a false guarantee. Each test here feeds a known
