@@ -26,7 +26,7 @@ REQUIRED_COMMANDS = (
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
     "python scripts/check_pr_size.py",
-    "python scripts/check_issue_spec.py",
+    ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
     "python scripts/check_walkthrough_schema.py --strict",
     ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
 )
@@ -795,7 +795,7 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
     step = steps[0]
     assert step["run"] == (
-        'python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" '
+        'python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" '
         "--required-sections scripts/required-sections.json"
     )
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
