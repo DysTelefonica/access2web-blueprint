@@ -55,7 +55,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 - [ ] Documente el contrato en `docs/gates.md` §2.
 - [ ] Añada el wiring en `tests/test_ci_workflow.py`.
 - [ ] Invoque el gate en `.github/workflows/ci.yml::quality` o en `scripts/quality_report.py`.
-- [ ] Si el gate afecta a la matriz `required`, actualice también `scripts/check_required_jobs.py`.
+- [ ] Si el gate afecta a la matriz `required`, actualice también `.github/required-jobs-policy.json` (jobs requeridos y saltos aceptados por evento).
 
 ### Cambiar CI
 
