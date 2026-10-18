@@ -31,6 +31,9 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     if method == "PUT" and path.endswith("/merge"):
         if state.get("merge_rejected"):
             return 405, {"message": "merge_rejected fixture"}, {}
+        if state.get("merge_forbidden"):
+            return 403, {"message": state["merge_forbidden"]}, {
+                "X-GitHub-Request-Id": "REQ-1234", "X-Accepted-GitHub-Permissions": "workflows=write"}
         if state.get("head_changed") and "sha" in body:
             return 409, {"message": "Head branch was modified"}, {}
         state["merges"].append(path)
@@ -45,9 +48,17 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     if "/check-runs" in path:
         sha = path.split("/commits/")[1].split("/")[0]
         runs = state["check_runs"].get(sha, [])
+        script = state.get("check_runs_script", {}).get(sha)
+        if script:  # una respuesta por consulta; la ultima se repite
+            polls = state.setdefault("check_runs_polls", {})
+            runs = script[min(polls.get(sha, 0), len(script) - 1)]
+            polls[sha] = polls.get(sha, 0) + 1
         return 200, {"total_count": len(runs), "check_runs": runs}, {}
     if "/compare/" in path:
-        return 200, state.get("compare", {"total_commits": 0, "commits": []}), {}
+        # `compares` fija la respuesta por rango ("base...head"); `compare` es el valor por defecto.
+        spec = path.split("/compare/", 1)[1]
+        default = state.get("compare", {"total_commits": 0, "commits": [], "files": [], "behind_by": 0})
+        return 200, state.get("compares", {}).get(spec, default), {}
     if "/pulls/" in path:
         detail = state["pr_details"].get(path.rsplit("/pulls/", 1)[1])
         return (404, {"message": "Not Found"}, {}) if detail is None else (200, detail, {})
