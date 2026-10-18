@@ -42,7 +42,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -77,6 +76,50 @@ def parse_json(raw: bytes, label: str):
         raise GateError(f"{label} is nested too deeply to be read") from exc
 
 
+def validate_events(events: object, jobs: list, label: str) -> None:
+    """Every event is an object with exactly the accepted-skips key, naming known jobs."""
+    if not isinstance(events, dict):
+        raise GateError(f"{label}: events must be an object")
+    known = set(jobs)
+    for event, spec in events.items():
+        # accepted_skips is mandatory: an event that omits it would be read as
+        # "no skips accepted" by one reader and as a crash by another.
+        if not isinstance(spec, dict) or set(spec) != set(EVENT_KEYS):
+            raise GateError(
+                f"{label}: event '{event}' must be an object with exactly {sorted(EVENT_KEYS)}"
+            )
+        skips = spec["accepted_skips"]
+        if not isinstance(skips, list) or not all(isinstance(s, str) and s for s in skips):
+            raise GateError(f"{label}: event '{event}': accepted_skips must be a list of job names")
+        unknown = set(skips) - known
+        if unknown:
+            raise GateError(
+                f"{label}: event '{event}': accepted skips outside required_jobs: {sorted(unknown)}"
+            )
+
+
+def validate_relaxation(field: object, label: str) -> None:
+    """A relaxation field carries reason, reference and a verifiable identity (HR-33)."""
+    actor = field.get("actor") if isinstance(field, dict) else None
+    issue = field.get("issue") if isinstance(field, dict) else None
+    has_identity = (isinstance(actor, str) and bool(actor.strip())) or (
+        isinstance(issue, int) and not isinstance(issue, bool) and issue > 0
+    )
+    if (
+        not isinstance(field, dict)
+        or not set(field) <= set(RELAXATION_KEYS)
+        or not set(RELAXATION_REQUIRED) <= set(field)
+        or not all(isinstance(field[k], str) and field[k].strip()
+                   for k in RELAXATION_REQUIRED)
+        or not has_identity
+    ):
+        raise GateError(
+            f"{label}: relaxation must be an object with non-empty "
+            f"{sorted(RELAXATION_REQUIRED)} plus a verifiable identity — a "
+            'non-empty "actor" or a positive "issue" (HR-33)'
+        )
+
+
 def load_policy(path: str, label: str = "policy file") -> dict:
     """Load and validate a policy file; every structural doubt raises.
 
@@ -100,46 +143,11 @@ def load_policy(path: str, label: str = "policy file") -> dict:
     if len(set(jobs)) != len(jobs):
         raise GateError(f"{label}: required_jobs contains duplicate job names")
     events = data["events"]
-    if not isinstance(events, dict):
-        raise GateError(f"{label}: events must be an object")
-    known = set(jobs)
-    for event, spec in events.items():
-        # accepted_skips is mandatory: an event that omits it would be read as
-        # "no skips accepted" by one reader and as a crash by another.
-        if not isinstance(spec, dict) or set(spec) != set(EVENT_KEYS):
-            raise GateError(
-                f"{label}: event '{event}' must be an object with exactly {sorted(EVENT_KEYS)}"
-            )
-        skips = spec["accepted_skips"]
-        if not isinstance(skips, list) or not all(isinstance(s, str) and s for s in skips):
-            raise GateError(f"{label}: event '{event}': accepted_skips must be a list of job names")
-        unknown = set(skips) - known
-        if unknown:
-            raise GateError(
-                f"{label}: event '{event}': accepted skips outside required_jobs: {sorted(unknown)}"
-            )
+    validate_events(events, jobs, label)
     if "relaxation" in data:
         # Validated whenever present, base copy or not: a malformed field must
         # not sit in the policy waiting to "cover" a later relaxation.
-        field = data["relaxation"]
-        actor = field.get("actor") if isinstance(field, dict) else None
-        issue = field.get("issue") if isinstance(field, dict) else None
-        has_identity = (isinstance(actor, str) and bool(actor.strip())) or (
-            isinstance(issue, int) and not isinstance(issue, bool) and issue > 0
-        )
-        if (
-            not isinstance(field, dict)
-            or not set(field) <= set(RELAXATION_KEYS)
-            or not set(RELAXATION_REQUIRED) <= set(field)
-            or not all(isinstance(field[k], str) and field[k].strip()
-                       for k in RELAXATION_REQUIRED)
-            or not has_identity
-        ):
-            raise GateError(
-                f"{label}: relaxation must be an object with non-empty "
-                f"{sorted(RELAXATION_REQUIRED)} plus a verifiable identity — a "
-                'non-empty "actor" or a positive "issue" (HR-33)'
-            )
+        validate_relaxation(data["relaxation"], label)
     return data
 
 
@@ -179,9 +187,25 @@ def load_needs(path: str | None) -> dict:
 def same_file(first: str, second: str) -> bool:
     """True when both paths name one file; an unanswerable question raises."""
     try:
-        return os.path.samefile(first, second)
+        return Path(first).samefile(second)
     except OSError as exc:
         raise GateError(f"cannot tell the base policy from the candidate: {exc}") from exc
+
+
+def load_base_policy(base_path: str | None, policy_path: str) -> dict | None:
+    """The base-branch policy, or None when no comparison was requested.
+
+    Asked for and unusable is a doubt, never a silent skip of the check.
+    """
+    if base_path is None:
+        return None
+    base = load_policy(base_path, label="base policy file")
+    if same_file(base_path, policy_path):
+        raise GateError(
+            "--base-policy and --policy are the same file; "
+            "a policy compared with itself never shows a relaxation"
+        )
+    return base
 
 
 def relaxation_identity(policy: dict) -> tuple[str, str] | None:
@@ -233,12 +257,8 @@ def compare_with_base(candidate: dict, base: dict) -> dict:
     return {"relaxations": relaxations, "field": field, "refusal": refusal}
 
 
-def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None) -> dict:
-    """Compare the needs object against the policy and return the verdict.
-
-    ``base`` is the base-branch copy of the policy; None means the comparison
-    was not requested, which the report records instead of assuming it clean.
-    """
+def policy_violations(needs: dict, policy: dict, event: str) -> tuple[list[str], set[str]]:
+    """Violations of the policy by the needs keys, and the skips accepted for the event."""
     required = policy["required_jobs"]
     violations: list[str] = []
     if event not in policy["events"]:
@@ -261,22 +281,35 @@ def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None) ->
     for job in required:
         if job not in needs:
             violations.append(f"required job '{job}' is absent from needs")
+    return violations, accepted
 
-    root_causes: list[str] = []
-    undeclared_skips: list[str] = []
-    declared_skips: list[str] = []
+
+def classify_conclusions(needs: dict, accepted: set[str]) -> dict[str, list[str]]:
+    """Split the non-success conclusions into root causes, skips and unknown ones."""
+    sorted_out: dict[str, list[str]] = {"root_causes": [], "undeclared_skips": [],
+                                        "declared_skips": [], "unknown": []}
     for job, conclusion in sorted(needs.items()):
         if conclusion == SUCCESS:
             continue
         if conclusion == SKIPPED:
-            if job in accepted:
-                declared_skips.append(job)
-            else:
-                undeclared_skips.append(job)
+            sorted_out["declared_skips" if job in accepted else "undeclared_skips"].append(job)
         elif conclusion in ROOT_CAUSE_CONCLUSIONS:
-            root_causes.append(f"{job} ({conclusion})")
+            sorted_out["root_causes"].append(f"{job} ({conclusion})")
         else:
-            violations.append(f"job '{job}' has unknown conclusion '{conclusion}'")
+            sorted_out["unknown"].append(f"job '{job}' has unknown conclusion '{conclusion}'")
+    return sorted_out
+
+
+def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None) -> dict:
+    """Compare the needs object against the policy and return the verdict.
+
+    ``base`` is the base-branch copy of the policy; None means the comparison
+    was not requested, which the report records instead of assuming it clean.
+    """
+    required = policy["required_jobs"]
+    violations, accepted = policy_violations(needs, policy, event)
+    conclusions = classify_conclusions(needs, accepted)
+    violations += conclusions["unknown"]
     # HR-15: un run sin ningún success entre los jobs requeridos no es un
     # PASS (todo saltado-aceptado, o ninguna señal verde que proteger).
     if required and not any(needs.get(job) == SUCCESS for job in required):
@@ -285,11 +318,13 @@ def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None) ->
             "required job is not a pass (HR-15)")
     comparison = None if base is None else compare_with_base(policy, base)
     refused = comparison is not None and comparison["refusal"] is not None
+    root_causes = conclusions["root_causes"]
+    undeclared_skips = conclusions["undeclared_skips"]
     return {
         "event": event,
         "root_causes": root_causes,
         "undeclared_skips": undeclared_skips,
-        "declared_skips": declared_skips,
+        "declared_skips": conclusions["declared_skips"],
         "violations": violations,
         "base_comparison": comparison,
         "passed": not (root_causes or undeclared_skips or violations or refused),
@@ -367,15 +402,7 @@ def main(argv: list[str] | None = None) -> int:
         stream.reconfigure(errors="backslashreplace")
     try:
         policy = load_policy(args.policy)
-        base = None
-        if args.base_policy is not None:
-            # Asked for and unusable is a doubt, never a silent skip of the check.
-            base = load_policy(args.base_policy, label="base policy file")
-            if same_file(args.base_policy, args.policy):
-                raise GateError(
-                    "--base-policy and --policy are the same file; "
-                    "a policy compared with itself never shows a relaxation"
-                )
+        base = load_base_policy(args.base_policy, args.policy)
         needs = load_needs(args.needs_file)
         report = evaluate(needs, policy, args.event, base)
     except GateError as exc:

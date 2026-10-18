@@ -212,7 +212,44 @@ def _resolved_block(repo: Path, text: str, tree: list[str], roots: list[tuple[st
     if any(isinstance(layer, dict) and "paths" in layer for layer in data.get("layers", [])):
         data, path_findings = _load_paths().normalize(repo, data, roots)
         return data, path_findings + _layer_findings(data, None)
-    return data, _layer_findings(data, tree)
+    return data, _layer_findings(data, tree) + _unlayered_findings(repo, data)
+
+
+def _unlayered_findings(repo: Path, data: dict) -> list[str]:
+    """Ficheros sin capa bajo los paquetes de ``covered_roots`` (#771); bloque v1.
+
+    Todo ``.py`` bajo un paquete cubierto cae en un módulo de una capa o en ``exempt``
+    (patrones, como en el bloque v2); uno sin capa es rojo y se nombra (HR-3). Un
+    ``__init__.py`` en un directorio que contiene módulos de capas es un marcador de paquete
+    por encima del nivel de módulo y no cuenta. Un patrón de ``exempt`` que no casa ningún
+    fichero es ``STALE``. Sin ``covered_roots`` no se mide nada."""
+    if "covered_roots" not in data:
+        return []
+    roots, exempt = data["covered_roots"], data.get("exempt", [])
+    bad = [f"«{key}» debe ser una lista de cadenas" for key, value in (("covered_roots", roots), ("exempt", exempt))
+           if not isinstance(value, list) or not all(isinstance(v, str) and v for v in value)]
+    if bad:
+        return [b.replace(" de cadenas", "") for b in bad]
+    paths = _load_paths()
+    findings = [f"«covered_roots» declara {root}, que no es un directorio" for root in roots
+                if not (repo / root).is_dir()]
+    modules = [m for layer in data["layers"] if isinstance(layer, dict) for m in layer.get("modules", [])]
+    patterns = [(p, paths.glob_regex(p)) for p in exempt]
+    seen = sorted({f.relative_to(repo).as_posix() for root in roots if (repo / root).is_dir()
+                   for f in (repo / root).rglob("*.py") if f.is_file()
+                   and not {".git", "node_modules", "__pycache__", ".venv"} & set(f.relative_to(repo).parts)})
+    findings += [f"«exempt» declara el patrón {p} y no casa ningún fichero"
+                 for p, rx in patterns if not any(rx.match(f) for f in seen)]
+    for path in seen:
+        if any(path == m or path.startswith(m + "/") for m in modules):
+            continue
+        if any(rx.match(path) for _p, rx in patterns):
+            continue
+        folder = path.rsplit("/", 1)[0] if "/" in path else ""
+        if path.endswith("/__init__.py") and any(m.startswith(folder + "/") for m in modules):
+            continue
+        findings.append(f"el fichero {path} no pertenece a ninguna capa ni a «exempt»")
+    return findings
 
 
 def check_architecture(repo: Path, doc: str, roots: list[tuple[str, str]],
