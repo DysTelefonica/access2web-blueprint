@@ -179,3 +179,27 @@ Las rutas y plantillas HTTP van en el paquete `delivery` del módulo dueño; la 
 ## Siguiente paso
 
 Continúe con [Testing y CI](testing-and-ci.md) para saber qué corre en PR, nightly y release.
+
+## Reference data (data/staging/<app>/)
+
+Snapshot self-contained del VBA legacy de las 8 aplicaciones que migra este blueprint. La convención del repo es no commitear los `.accdb`; este directorio solo lleva los modulos `.bas` que el propagador Dysflow usa como referencia de migración. Los binarios se R2-pullean con `scripts/setup-staging.ps1` y los usuarios los rehidratan localmente.
+
+| App | Modulos `.bas` commiteados | Snapshot |
+| --- | --- | --- |
+| `brass` | 16 | `data/staging/brass/src/` |
+| `condor` | 74 | `data/staging/condor/src/` |
+| `expedientes` | 143 | `data/staging/expedientes/src/` |
+| `gestion-riesgos` | 139 | `data/staging/gestion-riesgos/src/` |
+| `hps` | 31 | `data/staging/hps/src/` |
+| `hps-solicitudes` | 14 | `data/staging/hps-solicitudes/src/` |
+| `lanzaderas` | 17 | `data/staging/lanzaderas/src/` |
+| `no-conformidades` | 105 | `data/staging/no-conformidades/src/` |
+
+`data/fixtures/lanzadera/` lleva los `*.json` que alimentan a `scripts/generate_lanzadera_fixtures.py` (genera fixtures contra staging; los inputs van versionados).
+
+Lo que NO vive aquí y por qué:
+
+- Binarios `.accdb` (>5 MB) no se commitean; ver `docs/codebase/what-is-not-here.md` y `scripts/setup-staging.ps1`.
+- Scripts Access VBA propios de cada app quedan en el original Access.
+- Documentación de cada app vive en `docs/03-aplicaciones/<app>/` y `docs/02-topologia-ecosistema/`.
+
