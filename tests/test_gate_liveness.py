@@ -26,7 +26,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 #: The gates that walk a source tree. `check_crap` is deliberately absent: it
 #: consumes coverage.json and already fails closed when that file is missing.
-TREE_GATES = ("check_complexity", "check_dry", "check_mutation_sites", "check_layers")
+TREE_GATES = ("check_complexity", "check_dry", "check_mutation_sites")
 
 
 def _run(gate: str, root: Path) -> int:

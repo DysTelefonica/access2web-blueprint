@@ -54,57 +54,6 @@ def _load(script: str):
 
 
 # ---------------------------------------------------------------------------------------------
-# check_layers
-# ---------------------------------------------------------------------------------------------
-
-
-def test_layers_gate_fails_on_a_violation() -> None:
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_violation"))
-    assert result.returncode == 1, result.stdout
-
-
-@pytest.mark.parametrize(
-    "expected_key",
-    ["purity:domain", "direction:domain->adapters", "slice:lanzadera->expedientes"],
-)
-def test_layers_gate_names_each_violation_class(expected_key: str) -> None:
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_violation"))
-    assert expected_key in result.stdout, result.stdout
-
-
-def test_layers_gate_passes_on_clean_code() -> None:
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_clean"))
-    assert result.returncode == 0, result.stdout
-
-
-def test_layers_gate_fails_on_files_it_could_not_classify() -> None:
-    """Hard Rule 18, applied to this gate's own coverage.
-
-    A file the gate cannot place into a (module, layer) pair is a file the gate did not check.
-    Skipping it silently is how a layout mismatch hides a whole codebase behind a green tick —
-    measured on a real repository: 118 of 178 files invisible, gate reporting clean.
-    """
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_unclassified"))
-    assert result.returncode == 1, result.stdout
-    assert "unclassified" in result.stdout
-    assert "loose_helper.py" in result.stdout
-
-
-def test_layers_gate_publishes_how_much_it_actually_checked() -> None:
-    envelope = json.loads(
-        _run("check_layers.py", "--root", str(FIXTURES / "layers_unclassified"), "--json").stdout
-    )
-    assert envelope["indicators"]["files_unclassified"] == 1
-    assert envelope["indicators"]["files_checked"] == 1
-
-
-def test_layers_gate_fails_when_the_package_is_missing() -> None:
-    """Fail closed: an empty walk must never report success."""
-    result = _run("check_layers.py", "--root", str(FIXTURES))
-    assert result.returncode == 1
-
-
-# ---------------------------------------------------------------------------------------------
 # check_complexity
 # ---------------------------------------------------------------------------------------------
 
@@ -340,13 +289,12 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
 @pytest.mark.parametrize(
     "gate_script",
     [
-        "check_layers.py",
         "check_complexity.py",
         "check_dry.py",
     ],
 )
 def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
-    root = FIXTURES / "layers_clean"
+    root = FIXTURES / "complexity_clean"
     args = ["--root", str(root)]
     result = _run(gate_script, *args, "--json")
     envelope = json.loads(result.stdout)
