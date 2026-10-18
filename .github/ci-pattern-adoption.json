@@ -206,7 +206,7 @@
     },
     "6": {
       "prs": [
-        {"number": 1050, "sha": "832d66a", "conclusion": "success"}
+        {"number": 1050, "sha": "832d66ac6abe24867390265637894d3cb621972e", "conclusion": "success"}
       ]
     }
   },
