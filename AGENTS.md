@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v6343a39 -->
+<!-- personal-skills:slice:access2web-blueprint @ v4011235 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -299,17 +299,6 @@ Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
 backups, los datos en bruto y el material privado. Nunca ubique documentación
 en una ruta absoluta o externa al repositorio (HR-48): el gate de la fase 5 la
 rechaza. Detalle: la sección «Dónde vive la documentación» del flujo operativo.
-## Dónde trabajar
-
-Antes de actuar, vaya al documento de su situación; no deduzca dónde va el trabajo.
-
-| Si vas a… | Lee… |
-| --- | --- |
-| Cambiar código o buscar dónde va algo nuevo | `docs/CODEBASE-GUIDE.md` y, desde ella, la página de `docs/codebase/` del área que toque |
-| Abrir un pull request | la checklist de su tipo de cambio en `docs/codebase/maintainer-playbook.md` |
-| Proponer o cambiar algo que quizá ya se decidió | `docs/decisions/README.md`: consulte antes si ya se rechazó, sustituyó o aplazó |
-| Crear un módulo o importar entre módulos | `docs/architecture.md`: árbol de módulos, capas y dependencias permitidas, antes de añadir un módulo o un import entre capas |
-| Dudar de si algo existe en el repositorio | las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código |
 <!-- ci-pattern-agents:end -->
 
 # Fragment access2web-blueprint — convenciones operacionales del repo
@@ -343,7 +332,7 @@ Saltarse cualquiera deja a la IA operando contra arquitectura obsoleta.
 
 ## §F.3 Capas enforced por gate
 
-Las capas hexagonales las impone el job `docs-architecture` (HR-68): compara `docs/architecture.md` con el código en los dos sentidos y ejecuta import-linter con `.importlinter`, derivado del bloque `architecture` de ese documento, que es la única fuente de las capas, de las dependencias permitidas, de la independencia entre aplicaciones y de la pureza de `domain`, `ports` y `application` (DA-1). Mover un adapter a la capa equivocada, o añadir un fichero fuera de las capas sin declararlo en `exempt`, es un gate failure, no un estilo. Esquivar el gate con `|| true` está prohibido por `tests/test_ci_workflow.py`.
+`scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `ALLOWED_IMPORTS` y `PURE_LAYERS = {domain, ports, application}` (DA-1). Mover un adapter a la capa equivocada es un gate failure, no un estilo. Esquivar el gate con `|| true` está prohibido por `tests/test_ci_workflow.py`.
 
 ## §F.4 Reglas de decisiones arquitectónicas (D-<n>)
 
