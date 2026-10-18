@@ -28,6 +28,30 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         repo = path[len("repos/"):-len("/issues")]
         return 201, {"number": 42, "html_url": f"https://github.com/{repo}/issues/42",
                      "title": body.get("title", "")}, {}
+    if method == "POST" and path == "graphql":
+        if state.get("graphql_error"):
+            return 502, {"message": "graphql_error fixture"}, {}
+        if state.get("graphql_errors"):
+            return 200, {"errors": [{"message": "graphql_errors fixture"}]}, {}
+        nodes = state.get("closing_refs", [])
+        return 200, {"data": {"repository": {"pullRequest": {"closingIssuesReferences": {"nodes": nodes}}}}}, {}
+    if method == "POST" and "/issues/" in path and path.endswith("/comments"):
+        state.setdefault("comments", []).append({"path": path, "body": body.get("body", "")})
+        return 201, {"id": 1}, {}
+    if method == "PATCH" and "/issues/" in path and not path.endswith("/comments"):
+        # #835: PATCH `/issues/{n}` puede recibir 422 cuando el cierre
+        # automático de GitHub por la palabra `Closes` ya cerró la issue
+        # (carrera con el PATCH explícito del gate). El re-read decide.
+        if state.get("race_after_close"):
+            return 422, {"message": "Validation Failed",
+                         "errors": [{"resource": "Issue", "code": "already_closed"}]}, {}
+        if state.get("close_error"):
+            return 403, {"message": "Resource not accessible by integration"}, {
+                "X-Accepted-GitHub-Permissions": "issues=write"}
+        state.setdefault("closed_issues", []).append(
+            {"number": int(path.rsplit("/", 1)[1]), "state": body.get("state"),
+             "state_reason": body.get("state_reason")})
+        return 200, {"state": "closed"}, {}
     if method == "PUT" and path.endswith("/merge"):
         if state.get("merge_rejected"):
             return 405, {"message": "merge_rejected fixture"}, {}
@@ -40,6 +64,8 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
         return 200, {"sha": MERGED_SHA, "merged": True, "message": "Pull Request successfully merged"}, {}
     if method != "GET":
         return 404, {"message": "unsupported endpoint"}, {}
+    if path.startswith("repos/") and path.count("/") == 2:
+        return 200, {"default_branch": state.get("default_branch", "main")}, {}
     if path.endswith("/pulls") and "/commits/" in path:
         sha = path.split("/commits/")[1].split("/")[0]
         if state.get("invalid_body"):
@@ -65,6 +91,15 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     if path.count("/") == 4 and "/commits/" in path:
         commit = state.get("commits", {}).get(path.split("/commits/")[1], {})
         return (200, commit, {}) if commit else (404, {"message": "Not Found"}, {})
+    if "/issues/" in path and not path.endswith("/comments") and path.count("/") == 4:
+        # #835: re-read de la issue tras un PATCH 422. Default `closed` para
+        # reflejar el final típico de la carrera; los tests pueden sobreescribir
+        # vía `state["issue_states"][N]`.
+        number = int(path.rsplit("/", 1)[1])
+        override = state.get("issue_states", {}).get(number)
+        if override is not None:
+            return 200, override, {}
+        return 200, {"state": "closed", "state_reason": "completed"}, {}
     return 404, {"message": "unsupported endpoint"}, {}
 
 
@@ -112,6 +147,7 @@ class _Handler(BaseHTTPRequestHandler):
     do_GET = _serve
     do_POST = _serve
     do_PUT = _serve
+    do_PATCH = _serve
 
     def log_message(self, *args: object) -> None:
         return

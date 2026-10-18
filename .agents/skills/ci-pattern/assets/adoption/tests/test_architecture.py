@@ -115,6 +115,29 @@ class ArchitectureTests(unittest.TestCase):
             found = CLI._check_architecture(_repo(d), {"architecture": decl})
         self.assertTrue(any("stack" in f and "linter_config" in f for f in found), found)
 
+    def test_stack_none_exige_arbol_y_capas_sin_linter_de_imports(self):
+        decl = {k: v for k, v in DECL.items() if k != "linter_config"} | {"stack": "none"}
+        with tempfile.TemporaryDirectory() as d:
+            repo = _repo(d, config=False, domain_source="\nfrom app.routes import x\n")
+            self.assertEqual(CLI._check_architecture(repo, {"architecture": decl}), [])
+
+    def test_stack_none_sigue_comprobando_el_arbol_contra_el_codigo(self):
+        decl = {k: v for k, v in DECL.items() if k != "linter_config"} | {"stack": "none"}
+        with tempfile.TemporaryDirectory() as d:
+            repo = _repo(d, config=False, modules=("routes", "domain", "billing"))
+            found = CLI._check_architecture(repo, {"architecture": decl})
+        self.assertTrue(any("app/billing" in f for f in found), found)
+
+    def test_stack_none_con_linter_config_es_contradictorio(self):
+        found = self._findings({"stack": "none"})
+        self.assertTrue(any("stack" in f and "none" in f and "linter_config" in f for f in found), found)
+
+    def test_stack_python_sin_linter_config_sigue_fallando_nombrandolo(self):
+        decl = {k: v for k, v in DECL.items() if k != "linter_config"}
+        with tempfile.TemporaryDirectory() as d:
+            found = CLI._check_architecture(_repo(d), {"architecture": decl})
+        self.assertTrue(any("linter_config" in f for f in found), found)
+
     def test_stack_no_soportado_falla_cerrado(self):
         found = self._findings({"stack": "cobol"})
         self.assertTrue(any("stack" in f and "no soportado" in f for f in found), found)

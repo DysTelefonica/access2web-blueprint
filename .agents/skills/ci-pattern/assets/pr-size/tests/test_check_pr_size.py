@@ -377,6 +377,217 @@ class TestCliExitCodes(unittest.TestCase):
         self.assertEqual(env["indicators"]["vendored_lines"], 1000)
 
 
+# ---------------------------------------------------------------------------
+# #806 C3: la excepcion es solo la etiqueta; el modo API cuenta sin historial
+# ---------------------------------------------------------------------------
+
+
+def _over_budget_repo(tmp: Path, path: str = "app/x.py") -> Path:
+    repo = _make_repo(tmp)
+    _commit_file(repo, path, "\n".join(f"# line {i}" for i in range(500)) + "\n", "feat: 500 lines")
+    return repo
+
+
+def _run_cli(repo: Path, *extra: str, env: dict[str, str] | None = None):
+    full = _clean_env()
+    full.update(env or {})
+    return subprocess.run([sys.executable, str(GATE), "--base-ref", "HEAD~1", *extra],
+                          cwd=repo, capture_output=True, text=True, env=full)
+
+
+class TestLabelOverride(unittest.TestCase):
+    """La unica excepcion es la etiqueta ``size:exception`` que aplica el mantenedor."""
+
+    def setUp(self) -> None:
+        import tempfile
+        self._tmp = tempfile.TemporaryDirectory()
+        self.repo = _over_budget_repo(Path(self._tmp.name))
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def test_over_budget_without_label_fails_and_names_the_maintainer(self) -> None:
+        result = _run_cli(self.repo)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("maintainer", result.stdout)
+        self.assertIn("size:exception", result.stdout)
+
+    def test_label_flag_overrides(self) -> None:
+        result = _run_cli(self.repo, "--labels", "type:feature,size:exception")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("overridden by the 'size:exception' label", result.stdout)
+
+    def test_label_env_overrides(self) -> None:
+        result = _run_cli(self.repo, env={"PR_LABELS": "size:exception"})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_another_label_does_not_override(self) -> None:
+        result = _run_cli(self.repo, "--labels", "size:small,type:feature")
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_body_field_is_retired(self) -> None:
+        body = "size:exception\nsize-exception-reason: it is fine"
+        result = _run_cli(self.repo, env={"PR_BODY": body})
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_json_envelope_reports_the_override(self) -> None:
+        import json
+        result = _run_cli(self.repo, "--labels", "size:exception", "--json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        envelope = json.loads(result.stdout)
+        self.assertTrue(envelope["indicators"]["overridden"])
+        self.assertEqual(envelope["status"], "pass")
+
+
+class TestNothingElseIsExcluded(unittest.TestCase):
+    def test_a_lockfile_counts_toward_the_budget(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "uv.lock")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout)
+            self.assertIn("uv.lock", result.stdout)
+
+
+def _file(name: str, added: int, deleted: int = 0, previous: str | None = None) -> dict:
+    item = {"filename": name, "additions": added, "deletions": deleted,
+            "status": "renamed" if previous else "modified"}
+    if previous:
+        item["previous_filename"] = previous
+    return item
+
+
+class _Api:
+    """Servidor HTTP minimo en loopback que sirve ``/pulls/N/files`` paginado."""
+
+    def __init__(self, files: list[dict], status: int = 200) -> None:
+        import http.server
+        import threading
+        api = self
+        self.files, self.status, self.auth = files, status, []
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            def do_GET(self) -> None:  # noqa: N802 - nombre fijado por http.server
+                import json
+                import urllib.parse
+                api.auth.append(self.headers.get("Authorization"))
+                query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+                page, per = int(query["page"][0]), int(query["per_page"][0])
+                body = json.dumps(api.files[(page - 1) * per:page * per]).encode()
+                self.send_response(api.status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, *args: object) -> None:
+                pass
+
+        self.server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
+        self.url = f"http://127.0.0.1:{self.server.server_port}"
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+
+    def close(self) -> None:
+        self.server.shutdown()
+        self.server.server_close()
+
+
+class TestApiMode(unittest.TestCase):
+    """``--event``: cuenta con la API de GitHub, sin historial de git."""
+
+    def setUp(self) -> None:
+        import tempfile
+        self._tmp = tempfile.TemporaryDirectory()
+        self.tmp = Path(self._tmp.name)
+        self.apis: list[_Api] = []
+
+    def tearDown(self) -> None:
+        for api in self.apis:
+            api.close()
+        self._tmp.cleanup()
+
+    def run_api(self, files, labels=(), changed=None, token="tok", status=200, url=None, extra=()):
+        import json
+        api = _Api(files, status)
+        self.apis.append(api)
+        event = self.tmp / "event.json"
+        event.write_text(json.dumps({
+            "repository": {"full_name": "o/r"},
+            "pull_request": {"number": 7, "labels": [{"name": n} for n in labels],
+                             "changed_files": len(files) if changed is None else changed},
+        }), encoding="utf-8")
+        env = _clean_env()
+        env.pop("GITHUB_TOKEN", None)
+        env["GITHUB_API_URL"] = url or api.url
+        if token:
+            env["GITHUB_TOKEN"] = token
+        result = subprocess.run([sys.executable, str(GATE), "--event", str(event), *extra],
+                                cwd=self.tmp, capture_output=True, text=True, env=env)
+        return result, api
+
+    def test_within_budget_passes_and_sends_the_token(self) -> None:
+        result, api = self.run_api([_file("app/a.py", 10, 5)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("15 changed line(s)", result.stdout)
+        self.assertEqual(api.auth, ["Bearer tok"])
+
+    def test_additions_plus_deletions_over_budget_fails(self) -> None:
+        result, _ = self.run_api([_file("app/a.py", 300, 150)])
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("app/a.py", result.stdout)
+
+    def test_vendored_root_is_excluded_and_reported(self) -> None:
+        result, _ = self.run_api([_file(".agents/skills/x/a.py", 1000), _file("app/a.py", 50)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("1000 vendored line(s) excluded", result.stdout)
+
+    def test_rename_from_authored_into_vendored_still_counts(self) -> None:
+        result, _ = self.run_api([_file(".agents/skills/x/a.py", 500, previous="app/a.py")])
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_lockfile_counts(self) -> None:
+        result, _ = self.run_api([_file("uv.lock", 500)])
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_label_in_the_payload_overrides(self) -> None:
+        result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("overridden", result.stdout)
+
+    def test_pagination_counts_every_page(self) -> None:
+        files = [_file(f"app/f{i}.py", 3) for i in range(150)]
+        result, api = self.run_api(files)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("450 changed line(s)", result.stdout)
+        self.assertEqual(len(api.auth), 2)
+
+    def test_breakdown_that_does_not_match_changed_files_fails_closed(self) -> None:
+        result, _ = self.run_api([_file("app/a.py", 1)], changed=3)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("changed_files", result.stderr)
+
+    def test_api_error_fails_closed(self) -> None:
+        result, _ = self.run_api([_file("app/a.py", 1)], status=500)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("failed", result.stderr)
+
+    def test_missing_token_fails_closed(self) -> None:
+        result, _ = self.run_api([_file("app/a.py", 1)], token="")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("GITHUB_TOKEN", result.stderr)
+
+    def test_plain_http_to_a_non_loopback_host_is_refused(self) -> None:
+        result, _ = self.run_api([_file("app/a.py", 1)], url="http://example.invalid")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("https", result.stderr)
+
+    def test_json_error_envelope_in_api_mode(self) -> None:
+        import json
+        result, _ = self.run_api([_file("app/a.py", 1)], token="", extra=("--json",))
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(json.loads(result.stdout)["status"], "error")
+
+
 if __name__ == "__main__":
     unittest.main()
 

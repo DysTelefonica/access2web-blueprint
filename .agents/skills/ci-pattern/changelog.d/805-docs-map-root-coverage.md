@@ -1,0 +1,3 @@
+type: minor
+
+HR-63 (#805): `adoption check --phase 5` falla si un directorio de primer nivel con código (ficheros `.py`, `.php`, `.js`, `.ts`, `.go`, `.sh`, `.ps1`, `.bas`, `.cls`…; no cuentan los ocultos ni `node_modules`, `vendor`, `venv`, `dist`, `build` y `docs`) queda fuera de todas las raíces de `docs_map.code_roots`: el sentido repo → doc a nivel de directorio, que hasta ahora solo se medía por módulo dentro de una raíz. El rojo nombra el directorio. `docs_map.exclude_dirs` (lista de nombres) exime los directorios que no hay que mapear. Efecto sobre los consumers que ya declaran `docs_map`: al re-vendorizar la CLI, cada directorio de código que hoy no cubra ninguna raíz sale en rojo hasta que se añada la raíz o se excluya.

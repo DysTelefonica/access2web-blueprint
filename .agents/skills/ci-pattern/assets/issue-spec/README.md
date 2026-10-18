@@ -15,6 +15,20 @@ Sin payload, sin token y sin red. Exit codes: `0` sin hallazgos · `1` hallazgos
 `2` entrada inválida. `--repository` activa la regla de repositorio; sin él,
 los enlaces `owner/repo#N` no se juzgan.
 
+## Modo CI (`pr-event`)
+
+```bash
+GITHUB_TOKEN="${{ secrets.GITHUB_TOKEN }}" \
+python3 personal/ardelperal/ci-pattern/assets/issue-spec/check_issue_spec.py \
+  pr-event "$GITHUB_EVENT_PATH"
+```
+
+El cuerpo del PR se lee por API con `GET /repos/{owner}/{repo}/pulls/{n}` vía el
+`GitHubClient` del asset; el snapshot del payload queda obsoleto desde la
+primera edición del cuerpo y desde cualquier «Re-run jobs» del UI (#830,
+ardelperal/APAP_WEB#2163, #2164). Sin `GITHUB_TOKEN`, el modo sale con exit 2
+y un motivo explícito; con la API caída, idem. Modo `local` no se ve afectado.
+
 ## Reglas de forma
 
 1. El cuerpo enlaza una issue con `Closes|Fixes|Resolves|Refs #N` fuera de

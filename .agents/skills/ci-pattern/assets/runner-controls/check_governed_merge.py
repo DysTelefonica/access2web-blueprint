@@ -12,7 +12,10 @@ no se repite aqui: lo mide ``pr-size`` (excluye lo vendorizado), y ``required``
 ya lo incluye; ``--max-lines`` se acepta e ignora por compatibilidad. Si algo falta no fusiona y
 devuelve 1 con el hallazgo; el entorno insalvable falla cerrado con 2
 (HR-3). Con todo en verde fusiona por la API con la identidad del bot que
-ejecuta el workflow y devuelve 0. Un PR atrasado respecto de su base se bloquea antes (1): el arbol a fusionar
+ejecuta el workflow, cierra las issues enlazadas por palabras de cierre y devuelve 0.
+El merge con ``GITHUB_TOKEN`` no dispara el cierre implicito de GitHub (0 de 13, #800):
+el cierre es explicito, exige ``issues: write`` y, si falla con el merge ya hecho,
+devuelve 3 («fusionado, issue sin cerrar»), nunca el 2. Un PR atrasado respecto de su base se bloquea antes (1): el arbol a fusionar
 no seria el que reviso el CI (#787) y, si ambos lados cambiaron el mismo fichero
 de ``.github/workflows/``, ``GITHUB_TOKEN`` no tiene el permiso ``workflows`` (#783).
 Runner-enforced (HR-34); lo que no pase
@@ -39,6 +42,7 @@ from github_rest import GitHubApiError, call
 CLOSING = re.compile(r"\b(closes|fixes|resolves)\s+#?\d+", re.IGNORECASE)
 WORKFLOWS_DIR = ".github/workflows/"
 FORBIDDEN = 403
+RACE_CLOSED = 422  # PATCH devolvio 422 = carrera con el cierre auto por `Closes` (#835)
 WAITABLE = (": missing", ": pending")  # el CI aun no publico o no termino; un fallo no se espera
 DEFAULT_WAIT, DEFAULT_POLL = 300.0, 10.0
 WORKFLOWS_HINT = ("the token lacks the 'workflows' permission, which GITHUB_TOKEN cannot "
@@ -64,6 +68,116 @@ def gh_merge(repo: str, number: object, sha: str) -> str:
             or not isinstance(data.get("sha"), str):
         fail(f"the merge response does not report a merged PR: {text.strip()!r}")
     return data["sha"]
+
+
+class MergedNotClosedError(Exception):
+    """The merge happened but a linked issue could not be listed or closed (exit 3).
+
+    Each subclass owns its message template; raise sites pass data only.
+    """
+
+    template = "merged, linked issue not closed"
+
+    def __init__(self, *details: object) -> None:
+        super().__init__(self.template.format(*details))
+
+
+class IssueListFailedError(MergedNotClosedError):
+    template = "could not list the issues linked to PR #{0}: {1}"
+
+
+class IssuesNotClosedError(MergedNotClosedError):
+    template = "linked issue(s) not closed: {0}"
+
+
+CLOSE_QUERY = ("query($owner:String!,$name:String!,$pr:Int!){repository(owner:$owner,name:$name)"
+               "{pullRequest(number:$pr){closingIssuesReferences(first:50){nodes{number state "
+               "repository{nameWithOwner}}}}}}")
+ISSUES_HINT = "the workflow needs 'issues: write' to close issues with GITHUB_TOKEN"
+
+
+def linked_issues(repo: str, number: object) -> list[dict]:
+    """Issues que GitHub enlaza al PR por palabras de cierre (su propia interpretacion)."""
+    owner, name = repo.split("/")
+    variables = {"owner": owner, "name": name, "pr": int(number)}
+    try:
+        text, _ = call("POST", "graphql", {"query": CLOSE_QUERY, "variables": variables})
+        data = json.loads(text)
+        nodes = data["data"]["repository"]["pullRequest"]["closingIssuesReferences"]["nodes"]
+    except (GitHubApiError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise IssueListFailedError(number, exc) from exc
+    return [node for node in nodes if isinstance(node, dict)]
+
+
+def default_branch(repo: str, pull: dict) -> str | None:
+    named = (pull["base"].get("repo") or {}).get("default_branch")
+    if isinstance(named, str):
+        return named
+    data = gh_json(f"repos/{repo}")
+    value = data.get("default_branch") if isinstance(data, dict) else None
+    return value if isinstance(value, str) else None
+
+
+def close_linked_issues(repo: str, pull: dict, number: object, sha: str) -> None:
+    """Cierra (completed) las issues abiertas de este repo que el PR enlaza con palabras de cierre.
+
+    Solo si la base es la rama por defecto, como GitHub. Una issue ya cerrada o de otro
+    repo se deja; el fallo de cada una se acumula y se informa junto al resto (exit 3).
+
+    #835: cuando ``PATCH /repos/{owner}/{repo}/issues/{n}`` devuelve 422, el
+    caso típico no es de permisos (la pista «issues: write» era engañosa) sino
+    una carrera con el cierre automático de GitHub por la palabra Closes del
+    propio PR mergeado. Se relee la issue y, si ya está cerrada, se trata
+    como éxito. Un re-read fallido o que devuelve ``state == "open"`` se
+    mantiene como fallo pendiente (exit 3) para no tragarnos defectos reales.
+    """
+    if pull["base"]["ref"] != default_branch(repo, pull):
+        return
+    pending = []
+    for node in linked_issues(repo, number):
+        issue = node.get("number")
+        same_repo = ((node.get("repository") or {}).get("nameWithOwner") or "").lower() == repo.lower()
+        if not same_repo or node.get("state") != "OPEN" or not isinstance(issue, int):
+            continue
+        raced_already_closed = False
+        try:
+            call("PATCH", f"repos/{repo}/issues/{issue}", {"state": "closed", "state_reason": "completed"})
+        except GitHubApiError as exc:
+            if exc.status == RACE_CLOSED and _issue_now_closed(repo, issue):
+                raced_already_closed = True
+            else:
+                pending.append(f"#{issue} ({exc}; {ISSUES_HINT})")
+                continue
+        if raced_already_closed:
+            print(f"CLOSED: #{issue} (raced; already closed by GitHub's Closes auto-close, #835)")
+        else:
+            print(f"CLOSED: #{issue} (linked by PR #{number})")
+        try:
+            call("POST", f"repos/{repo}/issues/{issue}/comments",
+                 {"body": f"Closed by PR #{number} (merge {sha})."})
+        except GitHubApiError as exc:
+            print(f"WARNING: closed #{issue} but could not comment: {exc}", file=sys.stderr)
+    if pending:
+        raise IssuesNotClosedError(", ".join(pending))
+
+
+def _issue_now_closed(repo: str, issue: int) -> bool:
+    """#835: tras un PATCH 422, re-lee la issue. ``True`` si la API la da cerrada.
+
+    Un error del GET o un cuerpo inválido se interpreta conservadoramente como
+    «sigue abierta»: preferimos un exit 3 falso a tragarnos un PATCH que no
+    diagnosticamos. El caller ya tiene el 422 original en el log si el re-read
+    también falla.
+    """
+    try:
+        text, _ = call("GET", f"repos/{repo}/issues/{issue}", {})
+    except GitHubApiError:
+        return False
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        return False
+    return isinstance(data, dict) and data.get("state") == "closed"
 
 
 def is_pull_shape(pull: object) -> bool:
@@ -177,6 +291,11 @@ def run(args: argparse.Namespace) -> int:
         return 1
     sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
     print(f"MERGED: PR #{args.pr} merged by the governed path as {sha}")
+    try:
+        close_linked_issues(args.repo, pull, args.pr, sha)
+    except (MergedNotClosedError, FailClosedError) as exc:
+        print(f"MERGED but not closed: {exc}", file=sys.stderr)
+        return 3
     return 0
 
 

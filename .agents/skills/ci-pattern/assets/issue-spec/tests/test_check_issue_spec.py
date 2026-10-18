@@ -404,6 +404,105 @@ class PrEventInvalidInputTests(unittest.TestCase):
         self.assertEqual(p.returncode, 2, p.stderr)
 
 
+# --------------------------------------------------------------------------------------------
+# #830: el cuerpo del PR se lee por API; el snapshot del payload queda obsoleto
+# desde la primera edición del cuerpo y desde cualquier "Re-run jobs" del UI
+# (ardelperal/APAP_WEB#2163, #2164). El gate nunca usa el cuerpo del payload
+# en `pr-event`: lo trae de `GET /repos/{owner}/{repo}/pulls/{n}`. Sin token
+# o con la API caída, falla cerrado con motivo explícito (nunca fallback
+# silencioso al payload, HR-3).
+# --------------------------------------------------------------------------------------------
+
+
+def _approved_issue(number: int) -> dict:
+    return {"number": number, "body": "",
+            "labels": [{"name": "status:approved"}, {"name": "type:bug"}]}
+
+
+def _pr_payload(body: str, *, pr_number: int = 7, repo: str = "team/skills",
+                labels: list | None = None) -> dict:
+    return {
+        "repository": {"full_name": repo},
+        "pull_request": {
+            "number": pr_number,
+            "body": body,
+            "labels": [{"name": n} for n in (labels or ["type:bug"])],
+        },
+    }
+
+
+class PrEventBodyFromApiTests(unittest.TestCase):
+    """#830 — el cuerpo leído por API es la fuente; el del payload se ignora."""
+
+    def test_payload_body_invalid_but_api_body_valid_passes(self):
+        # El snapshot del payload es el cuerpo viejo sin enlace (lo dejó el
+        # `opened`); la API devuelve el cuerpo corregido con `Closes #12`.
+        # El gate pasa, demostrando que lee por API y no del payload.
+        payload = _pr_payload("Cuerpo obsoleto sin enlace.")
+        calls: list[tuple[str, int]] = []
+
+        def body_fetcher(repo: str, number: int) -> dict:
+            calls.append((repo, number))
+            return {"number": number, "body": "Closes #12\n"}
+
+        rc = check_issue_spec.pr_event(
+            payload, body_fetcher=body_fetcher, issue_fetcher=_approved_issue)
+        self.assertEqual(rc, 0)
+        self.assertEqual(calls, [("team/skills", 7)])
+
+    def test_api_body_invalid_fails_even_if_payload_carries_valid_body(self):
+        # El `opened` dejó el cuerpo bueno en el payload; un commit posterior
+        # dejó un cuerpo sin enlace y un re-run dispara este gate. La API gana:
+        # el gate falla con el hallazgo del cuerpo actual.
+        payload = _pr_payload("Closes #12\n")
+
+        def body_fetcher(repo: str, number: int) -> dict:
+            return {"number": number, "body": "Editar el cuerpo sin enlace a issue."}
+
+        rc = check_issue_spec.pr_event(
+            payload, body_fetcher=body_fetcher, issue_fetcher=_approved_issue)
+        self.assertEqual(rc, 1)
+
+
+class PrEventFailClosedTests(unittest.TestCase):
+    """#830 — sin token o con la API caída: exit 2, nunca fallback al payload."""
+
+    def _event_with_payload_body(self, tmp: Path, body: str) -> Path:
+        event = tmp / "event.json"
+        event.write_text(
+            json.dumps(_pr_payload(body)), encoding="utf-8")
+        return event
+
+    def _run_pr_event(self, env: dict) -> subprocess.CompletedProcess:
+        with tempfile.TemporaryDirectory() as tmp:
+            event = self._event_with_payload_body(
+                Path(tmp), "Closes #12\n")
+            return subprocess.run(
+                [sys.executable, str(GATE), "pr-event", str(event)],
+                capture_output=True, text=True, check=False, env=env,
+                timeout=60)
+
+    def test_pr_event_without_token_fails_closed_with_explicit_reason(self):
+        # Sin GITHUB_TOKEN, el gate sale con 2 y nombra la causa; el cuerpo
+        # del payload NO aparece en stderr (no hay fallback silencioso).
+        env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
+        p = self._run_pr_event(env)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertIn("obligatorio", p.stderr)
+        self.assertNotIn("Closes #12", p.stderr)
+
+    def test_pr_event_api_outage_fails_closed_with_explicit_reason(self):
+        # Token presente pero API caída (puerto cerrado): exit 2 con motivo
+        # de la API; el cuerpo del payload NO se imprime.
+        env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
+        env["GITHUB_TOKEN"] = "test-token"
+        env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
+        p = self._run_pr_event(env)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertIn("no se pudo leer", p.stderr)
+        self.assertNotIn("Closes #12", p.stderr)
+
+
 class GatePathResolutionTests(unittest.TestCase):
     """El gate se localiza por override de entorno o, sin él, por el layout del asset."""
 

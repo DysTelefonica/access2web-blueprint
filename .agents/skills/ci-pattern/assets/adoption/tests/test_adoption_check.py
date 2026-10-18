@@ -73,7 +73,7 @@ def make_contract_repo(tmp, contract=None, contract_raw=None, complete_upto=0):
         json.dumps({"env_vars": []}), encoding="utf-8")
     (repo / ".github" / "workflows").mkdir()
     (repo / ".github" / "workflows" / "ci.yml").write_text(
-        "on:\n  pull_request:\njobs:\n  unit:\n    steps:\n"
+        "on:\n  pull_request:\njobs:\n  unit:\n    timeout-minutes: 5\n    concurrency: u\n    steps:\n"
         "      - run: bash testing/run-unit-suites.sh\n      - uses: ./local@8f4b7f8d\n",
         encoding="utf-8")
     (repo / ".github" / "required-jobs-policy.json").write_text(json.dumps({
@@ -2344,7 +2344,7 @@ class OperatingDocTests(unittest.TestCase):
             # Datos reales del consumer, no prosa genérica: regex de rama
             # (default del esquema P01), jobs requeridos y mapeo formulario
             # → etiqueta.
-            self.assertIn("(chore|feat|fix|perf", text)
+            self.assertIn("(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)", text)
             self.assertIn("unit", text)
             self.assertIn("lint", text)
             self.assertIn("type:bug", text)
@@ -2415,7 +2415,7 @@ class LifecycleRecipeTests(unittest.TestCase):
         body = self.doc_of(tempfile.mkdtemp())
         # regex de rama (default P01), presupuesto (P06), etiqueta de
         # aprobación (P10) y método de merge del contrato del host.
-        self.assertIn("(chore|feat|fix|perf", body)
+        self.assertIn("(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)", body)
         self.assertIn("400 líneas", body)
         self.assertIn("status:approved", body)
         self.assertIn("merge commit", body)

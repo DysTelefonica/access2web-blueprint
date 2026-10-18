@@ -1,0 +1,3 @@
+type: patch
+
+Merge gobernado (#835): cuando `PATCH /repos/{owner}/{repo}/issues/{n}` devuelve 422 después del merge, se re-lee la issue y, si la API la da ya cerrada, el cierre se trata como éxito en lugar de fallar con exit 3. La pista accionable «issues: write» se reservaba para el 403 del `close_error` y era engañosa en esta carrera: el cierre automático de GitHub por la palabra `Closes` del propio PR mergeado cierra la issue entre el merge y el PATCH explícito (`ardelperal/cadete#483`/`#478`, run `39147887559`). Un re-read fallido o que devuelve `state == "open"` se mantiene como exit 3 con la pista accionable, así que los defectos reales no se tragan.

@@ -9,7 +9,7 @@
       "id": "P01",
       "name": "branch_name_pattern",
       "type": "regex",
-      "default": "^(?:(chore|feat|fix|perf|refactor|docs|ci|test)/[0-9]+-[a-z0-9-]+|archive/.+|main)$",
+      "default": "^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)/[a-z0-9._-]+$",
       "required": false,
       "consumed_by": ["scripts/check_branch_name.py:20"]
     },
