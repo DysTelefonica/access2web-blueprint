@@ -160,6 +160,52 @@ def _pin_output_encoding() -> None:
         sys.stderr.reconfigure(encoding="utf-8")
 
 
+def unbound_findings(areas: dict, wired: set[str], label: str) -> list[str]:
+    """Areas declared runner-enforced and compensating assets without a wired workflow."""
+    findings = []
+    for area in sorted(areas):
+        coverage = AREA_ASSETS[area]
+        if not (coverage & wired):
+            findings.append(f"area '{area}' is declared runner-enforced but no workflow on runner "
+                            f"'{label}' invokes any of {sorted(coverage)}")
+    for asset in ALL_ASSETS:
+        if asset not in wired:
+            findings.append(f"compensating asset '{asset}' is not wired in any workflow "
+                            f"on runner '{label}'")
+    return findings
+
+
+def print_report(areas: dict, wired: set[str], label: str) -> None:
+    print("RUNNER BINDING REPORT")
+    for area in sorted(areas):
+        print(f"  ok  area '{area}' enforced by {sorted(AREA_ASSETS[area] & wired)} on '{label}'")
+    for asset in ALL_ASSETS:
+        print(f"  ok  compensating asset {asset} wired on '{label}'")
+    print(f"BINDING OK: runner-enforced declarations match the workflows on '{label}'")
+
+
+def run(args: argparse.Namespace) -> int:
+    contract = load_json(args.contract, "contract")
+    if not isinstance(contract, dict):
+        raise ContractNotObjectError()
+    areas, label = declared_areas(contract)
+    wdir = Path(args.workflows)
+    if not wdir.is_dir():
+        raise WorkflowsDirMissingError(wdir)
+    if not label:
+        print("SKIP: no runner-enforced rules declared; nothing to bind")
+        return 0
+    wired = wired_assets(wdir, label)
+    findings = unbound_findings(areas, wired, label)
+    if findings:
+        for finding in findings:
+            print(f"  UNBOUND  {finding}")
+        print(f"FAIL: {len(findings)} unbound runner-enforced declaration(s)")
+        return 1
+    print_report(areas, wired, label)
+    return 0
+
+
 def main() -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description="runner-enforced declaration vs workflow wiring")
@@ -167,39 +213,7 @@ def main() -> int:
     parser.add_argument("--workflows", required=True, help="consumer .github/workflows directory")
     args = parser.parse_args()
     try:
-        contract = load_json(args.contract, "contract")
-        if not isinstance(contract, dict):
-            raise ContractNotObjectError()
-        areas, label = declared_areas(contract)
-        wdir = Path(args.workflows)
-        if not wdir.is_dir():
-            raise WorkflowsDirMissingError(wdir)
-        if not label:
-            print("SKIP: no runner-enforced rules declared; nothing to bind")
-            return 0
-        wired = wired_assets(wdir, label)
-        findings = []
-        for area in sorted(areas):
-            coverage = AREA_ASSETS[area]
-            if not (coverage & wired):
-                findings.append(f"area '{area}' is declared runner-enforced but no workflow on runner "
-                                f"'{label}' invokes any of {sorted(coverage)}")
-        for asset in ALL_ASSETS:
-            if asset not in wired:
-                findings.append(f"compensating asset '{asset}' is not wired in any workflow "
-                                f"on runner '{label}'")
-        if findings:
-            for finding in findings:
-                print(f"  UNBOUND  {finding}")
-            print(f"FAIL: {len(findings)} unbound runner-enforced declaration(s)")
-            return 1
-        print("RUNNER BINDING REPORT")
-        for area in sorted(areas):
-            print(f"  ok  area '{area}' enforced by {sorted(AREA_ASSETS[area] & wired)} on '{label}'")
-        for asset in ALL_ASSETS:
-            print(f"  ok  compensating asset {asset} wired on '{label}'")
-        print(f"BINDING OK: runner-enforced declarations match the workflows on '{label}'")
-        return 0
+        return run(args)
     except FailClosedError as exc:
         print(f"fail-closed: {exc}", file=sys.stderr)
         return 2

@@ -18,9 +18,11 @@ import ssl
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import NoReturn
+from typing import NamedTuple, NoReturn
 
 API_TIMEOUT = 30
+DETAIL_MAX = 300  # caracteres del `message` de GitHub que viajan al fallo
+DIAGNOSTIC_HEADERS = ("X-Accepted-GitHub-Permissions", "X-GitHub-Request-Id")
 MAX_PAGES = 50
 OK_MIN, OK_MAX = 200, 300
 LINK_PARTS = 2  # <url>; rel="..."
@@ -34,11 +36,38 @@ HEADERS_BASE = {
 
 
 class GitHubApiError(Exception):
-    """La API no devolvio una respuesta valida; el llamador debe fallar cerrado."""
+    """La API no devolvio una respuesta valida; el llamador debe fallar cerrado.
+
+    `status` lleva el codigo HTTP cuando el fallo es una respuesta no 2xx
+    (0 en cualquier otro caso)."""
+
+    def __init__(self, message: str, status: int = 0) -> None:
+        super().__init__(message)
+        self.status = status
 
 
-def _fail(message: str, cause: BaseException | None = None) -> NoReturn:
-    raise GitHubApiError(message) from cause
+def _fail(message: str, cause: BaseException | None = None, status: int = 0) -> NoReturn:
+    raise GitHubApiError(message, status) from cause
+
+
+def _diagnostic(exc: urllib.error.HTTPError) -> str:
+    """`message` del cuerpo de GitHub y cabeceras de permisos, para el mensaje de fallo.
+
+    Nunca lanza: si el cuerpo no se lee o no es JSON, el fallo conserva solo el
+    codigo HTTP. El token se elimina del texto por si algun proxy lo reflejara."""
+    parts = []
+    try:
+        body = json.loads(exc.read().decode("utf-8", errors="replace"))
+        text = body.get("message") if isinstance(body, dict) else None
+        if isinstance(text, str) and text:
+            parts.append(text.replace("\n", " ")[:DETAIL_MAX])
+    except (ValueError, OSError):
+        pass
+    parts += [f"{name}: {value}" for name in DIAGNOSTIC_HEADERS
+              if (value := exc.headers.get(name))]
+    detail = "; ".join(parts)
+    tok = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN") or ""
+    return detail.replace(tok, "***") if tok else detail
 
 
 def token() -> str:
@@ -61,8 +90,15 @@ def _api_root() -> str:
     _fail("GITHUB_API_URL must be https (loopback http only for tests)")
 
 
-def _open(scheme: str, netloc: str, tail: str, data: bytes | None,
-          headers: dict[str, str], method: str, ctx: ssl.SSLContext):
+class _Payload(NamedTuple):
+    """Cuerpo, cabeceras y metodo de una peticion."""
+
+    data: bytes | None
+    headers: dict[str, str]
+    method: str
+
+
+def _open(scheme: str, netloc: str, tail: str, payload: _Payload, ctx: ssl.SSLContext):
     """Abre la peticion con el esquema que `_api_root` ya validó.
 
     Cada rama lleva su literal `https://` o `http://` dentro de la llamada:
@@ -71,11 +107,11 @@ def _open(scheme: str, netloc: str, tail: str, data: bytes | None,
     """
     if scheme == "https":
         return urllib.request.urlopen(
-            urllib.request.Request(f"https://{netloc}{tail}", data=data, headers=headers, method=method),
+            urllib.request.Request(f"https://{netloc}{tail}", data=payload.data, headers=payload.headers, method=payload.method),
             timeout=API_TIMEOUT, context=ctx)
     if scheme == "http":
         return urllib.request.urlopen(
-            urllib.request.Request(f"http://{netloc}{tail}", data=data, headers=headers, method=method),
+            urllib.request.Request(f"http://{netloc}{tail}", data=payload.data, headers=payload.headers, method=payload.method),
             timeout=API_TIMEOUT, context=ctx)
     _fail(f"unsupported scheme for GitHub API: {scheme!r}")
 
@@ -94,8 +130,9 @@ def call(method: str, path: str, body: dict | None = None) -> tuple[str, str]:
     text = ""
     link = ""
     status = 0
+    detail = ""
     try:
-        with _open(parts.scheme, parts.netloc, tail, data, headers, method, ctx) as response:
+        with _open(parts.scheme, parts.netloc, tail, _Payload(data, headers, method), ctx) as response:
             text = response.read().decode("utf-8")
             link = response.headers.get("Link") or ""
             status = response.status
@@ -106,10 +143,12 @@ def call(method: str, path: str, body: dict | None = None) -> tuple[str, str]:
         # HTTPError es cerrable: libera la respuesta subyacente sin esperar al GC.
         with contextlib.closing(exc):
             status = exc.code
+            detail = _diagnostic(exc)
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         _fail(f"transport error on {method} {path}: {exc}", exc)
     if not OK_MIN <= status < OK_MAX:
-        _fail(f"HTTP {status} on {method} {path}")
+        suffix = f": {detail}" if detail else ""
+        _fail(f"HTTP {status} on {method} {path}{suffix}", status=status)
     return text, link
 
 
