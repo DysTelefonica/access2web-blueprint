@@ -54,6 +54,10 @@ never from code. A required job named by the policy but absent from every
 analyzed workflow is a finding: silence there would be a gate reporting
 OK without having measured.
 
+A plain scalar that continues on a more indented line (``run: cmd \\`` followed by
+its arguments) is rejected with the line and the fix: YAML folds it and the
+``\\`` stays literal (#787).
+
 Exit codes: 0 no findings · 1 findings · 2 invalid input or empty subject.
 """
 
@@ -133,6 +137,16 @@ def parse_flow_seq(text: str, n: int) -> list:
     return [parse_scalar(x.strip()) for x in inner.split(",")] if inner else []
 
 
+FOLDED_SCALAR = (
+    "line {n}: the value of '{key}' continues on line {nxt}: YAML folds a multi-line plain "
+    "scalar into one line and keeps a trailing `\\` literally, so the arguments below never "
+    "reach the command; use a block scalar (`|`)")
+
+
+def folded_scalar_error(n: int, key: object, nxt: int) -> InvalidInput:
+    return InvalidInput(FOLDED_SCALAR.format(n=n, key=key, nxt=nxt))
+
+
 def parse_node(lines: list[Line], i: int, indent: int):
     line = lines[i]
     if line.text == "-" or line.text.startswith("- "):
@@ -194,6 +208,8 @@ def parse_node(lines: list[Line], i: int, indent: int):
             out[key] = parse_flow_seq(rest, n)
         else:
             out[key] = parse_scalar(rest)
+            if i < len(lines) and lines[i].indent > indent:
+                raise folded_scalar_error(n, key, lines[i].number)
     return out, i
 
 

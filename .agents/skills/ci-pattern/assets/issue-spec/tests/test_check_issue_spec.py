@@ -41,6 +41,8 @@ sys.modules["check_issue_spec"] = check_issue_spec
 _spec.loader.exec_module(check_issue_spec)
 validate_body = check_issue_spec.validate_body
 validate_remote = check_issue_spec.validate_remote
+is_chain_partial = check_issue_spec.is_chain_partial
+PrContext = check_issue_spec.PrContext
 references = check_issue_spec.references
 GitHubApiError = check_issue_spec.GitHubApiError
 
@@ -86,9 +88,11 @@ class ReferenceFormTests(unittest.TestCase):
         self.assertEqual(p.returncode, 1)
         self.assertIn("depends-on", p.stderr)
 
-    def test_closes_and_refs_same_issue_fails(self):
+    def test_closes_and_refs_same_issue_is_a_warning_and_closes_wins(self):
+        # #787 S6: la contradiccion se avisa, no se rechaza; gana Closes.
         p = run_local("Closes #12\n\nRefs #12\n")
-        self.assertEqual(p.returncode, 1)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIn("aviso", p.stderr)
         self.assertIn("MISMA issue", p.stderr)
 
     def test_closes_and_refs_different_issues_pass(self):
@@ -171,6 +175,51 @@ class RemoteRuleTests(unittest.TestCase):
         self.assertEqual(len(violations), 1)
         self.assertIn("pull request", violations[0])
         self.assertIn("depends-on", violations[0])
+
+    def test_pull_request_reference_is_a_warning_when_a_valid_issue_is_also_linked(self):
+        # #787 S6: con otra issue valida enlazada, la referencia a una PR no bloquea.
+        def fetch(number):
+            if number == 634:
+                return {"number": number, "pull_request": {"url": "x"}, "labels": []}
+            return approved_issue("status:approved", "type:feature")
+        context = PrContext()
+        violations = validate_remote("Closes #12\nRefs #634\n", "team/skills", fetch,
+                                     context=context)
+        self.assertEqual(violations, [])
+        self.assertEqual(len(context.warnings), 1)
+        self.assertIn("pull request", context.warnings[0])
+
+    def test_pull_request_reference_stays_a_violation_without_a_context(self):
+        # Sin contexto nadie lee los avisos: la referencia a una PR no se oculta.
+        def fetch(number):
+            if number == 634:
+                return {"number": number, "pull_request": {"url": "x"}, "labels": []}
+            return approved_issue("status:approved", "type:feature")
+        violations = validate_remote("Closes #12\nRefs #634\n", "team/skills", fetch)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("pull request", violations[0])
+
+    def test_chain_intermediate_does_not_need_the_issue_approved(self):
+        # #787 S6: status:approved se exige en la punta de cadena, no en los eslabones.
+        def fetch(number):
+            return approved_issue("type:bug")
+        self.assertEqual(
+            validate_remote("Refs #12\n", "team/skills", fetch, context=PrContext(chain_partial=True)), [])
+        self.assertEqual(
+            validate_remote("Closes #12\n", "team/skills", fetch),
+            ["#12: requiere status:approved"])
+
+    def test_chain_intermediate_still_needs_a_type_label(self):
+        violations = validate_remote(
+            "Refs #12\n", "team/skills", lambda n: approved_issue(),
+            context=PrContext(chain_partial=True))
+        self.assertEqual(len(violations), 1)
+        self.assertIn("type:*", violations[0])
+
+    def test_chain_partial_is_read_from_the_pull_request_labels(self):
+        self.assertTrue(is_chain_partial({"pull_request": {"labels": [{"name": "chain:partial"}]}}))
+        self.assertFalse(is_chain_partial({"pull_request": {"labels": [{"name": "type:bug"}]}}))
+        self.assertFalse(is_chain_partial({"pull_request": {}}))
 
     def test_approved_typed_issue_passes(self):
         violations = validate_remote(
