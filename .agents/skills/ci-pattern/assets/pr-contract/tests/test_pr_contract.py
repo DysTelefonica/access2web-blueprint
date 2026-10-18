@@ -458,9 +458,8 @@ class IssueLinkGateTests(unittest.TestCase):
                            base_sha=base_sha, head_sha=head_sha)
         return run_gate(event, make_policy(tmp), repo=repo)
 
-    def test_closes_and_refs_for_the_same_issue_is_left_to_issue_spec(self):
-        # #787 S6: la contradiccion es un aviso de issue-spec (gana Closes); el contrato
-        # del PR no la repite como fallo.
+    def test_closes_and_refs_for_the_same_issue_passes(self):
+        # #787: Closes y Refs de la misma issue no es un fallo, ni aviso en issue-spec.
         proc = self.run_case("Closes #333\n\n## " + CLOSURE_HEADING
                              + "\n\n- `tests/test_gate.py`\n" + chain_ok("main") + "\nRefs #333\n")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
