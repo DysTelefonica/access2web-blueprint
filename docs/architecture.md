@@ -369,7 +369,7 @@ Dieciséis `scripts/check_*.py` + `.github/workflows/`:
 | `docs-architecture` (job) | ci.yml | QC-2, QC-9: capas, independencia y pureza desde el bloque `architecture` |
 | `check_deadcode.py` | scripts/ | Código muerto (vulture) |
 | `check_issue_spec.py` | .agents/skills/ci-pattern/assets/issue-spec/ (canon) | Trazabilidad PR→issue aprobada y tipada |
-| `check_required_jobs.py` | scripts/ | Jobs requeridos del agregador `required` |
+| `required-jobs-policy.json` | .github/ | Jobs requeridos del agregador `required` (gate del canon) |
 | `check_suites_populated.py` | scripts/ | Las suites obligatorias no están vacías |
 | `check_complexity.py` | scripts/ | QC-1, QC-10 |
 | `check_dry.py` | scripts/ | QC-11 |

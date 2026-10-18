@@ -144,7 +144,7 @@ deben estar resueltas y (tras issue #702) un único check en verde: `required`. 
 `security` y `codeql` — los dos últimos invocan `security.yml`/`codeql.yml` como
 jobs `uses:` porque `needs:` no cruza archivos de workflow — y falla cerrado ante
 cualquier job faltante, en `failure`, o en un `skipped` no permitido para ese
-evento (`scripts/check_required_jobs.py`). No permite force-push ni borrar la
+evento (gate `required-jobs` del canon). No permite force-push ni borrar la
 rama.
 
 Todo job alcanzable desde un PR público usa un runner hospedado por GitHub. El
