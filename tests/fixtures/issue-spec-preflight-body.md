@@ -21,7 +21,7 @@ Adopta la regla 7 (`--required-sections`) en el preflight local de BP. No cambia
 
 # Plan de validación
 
-`pytest -c app/pyproject.toml --rootdir=app tests/test_check_issue_spec.py` (35 tests) y `bash scripts/local-preflight.sh` (gate de preflight, exit 0). La CI del PR corre los 35 tests en el job `unit` y el comando de workflow en `pr-gate`.
+`bash scripts/local-preflight.sh` (gate de preflight, exit 0). La CI del PR corre el comando de workflow en `pr-gate`. (Los 35 tests del canon se retiraron de este repositorio con BP#1040: viven y se ejecutan en `DysTelefonica/team-skills`.)
 
 # Dependencias y riesgos
 
