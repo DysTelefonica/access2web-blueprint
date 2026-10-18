@@ -44,7 +44,6 @@ WIRE_ALLOWLIST: frozenset[str] = frozenset(
         "test_decision_guards_wiring.py",
         "test_dry_wiring.py",
         "test_env_secret_manager_adapter.py",
-        "test_layers_wiring.py",
         "test_pr_size_wiring.py",
         "test_quality_report_smoke.py",
         "test_secret_manager_contract.py",
