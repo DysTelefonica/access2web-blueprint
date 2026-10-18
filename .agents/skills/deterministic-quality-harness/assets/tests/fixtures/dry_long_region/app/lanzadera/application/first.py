@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — negative fixture, do not "fix"
 """A long duplicated region, to pin that it is reported ONCE and not once per window offset."""
 
 

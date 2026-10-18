@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/scripts/policy_time.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/policy_time.py
 """Explicit, validated policy time shared by ratchet gates."""
 
 from __future__ import annotations

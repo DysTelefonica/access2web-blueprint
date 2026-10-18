@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/Makefile
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/Makefile
 #
 # The portable local entrypoint. `make verify` proves the repository is adopted
 # correctly and passes every PR gate that needs only the checkout and installed

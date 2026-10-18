@@ -384,8 +384,6 @@ CHAIN_FIELDS = ("chain", "position", "base", "depends-on", "follow-up",
 CHAIN_FIELD_RX = re.compile(r"^\s*-\s*([a-z][a-z0-9-]*)\s*:\s*(.*\S)\s*$", re.MULTILINE)
 PAIR_RX = re.compile(r"^\d+\s*/\s*\d+$")
 CHAIN_MARKER = "📍"
-CLOSES_NUMBER_RX = re.compile(r"\b(?:Closes|Fixes|Resolves)\s+#(\d+)", re.IGNORECASE)
-REFS_NUMBER_RX = re.compile(r"\bRefs\s+#(\d+)", re.IGNORECASE)
 # #333 (auditoría de #352): el ENLACE de la issue es `Closes|Fixes|Resolves|Refs
 # owner/repo#N`. Una mención informativa del cuerpo —citar una issue de Cadete
 # como antecedente, por ejemplo— no es un enlace y no se juzga.
@@ -438,16 +436,11 @@ def check_chain_context(pr, base, default_branch, policy, findings):
 
 
 def check_issue_links(pr, data, findings):
-    """#333: el enlace de la issue no admite mezclas (cierre y referencia del
-    mismo número) ni enlaza una issue de otro repositorio; una mención
-    informativa del cuerpo no es un enlace."""
+    """#333: el enlace de la issue no enlaza una issue de otro repositorio; una
+    mención informativa del cuerpo no es un enlace. Cerrar y referenciar el
+    mismo número ya no es un fallo aquí: lo avisa issue-spec y gana `Closes`
+    (#787, una sola evaluación)."""
     body = pr.get("body") or ""
-    both = sorted(set(CLOSES_NUMBER_RX.findall(body)) & set(REFS_NUMBER_RX.findall(body)))
-    if both:
-        findings.append(
-            "HR-54: el cuerpo cierra y referencia la MISMA issue ("
-            + ", ".join(f"#{n}" for n in both)
-            + "): use 'Closes #N' o 'Refs #N', nunca las dos para el mismo número.")
     current = (data.get("repository") or {}).get("full_name") or ""
     for owner_repo, number in sorted(set(FOREIGN_LINK_RX.findall(body))):
         if owner_repo != current:

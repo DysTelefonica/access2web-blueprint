@@ -81,6 +81,24 @@ class InvalidInput(GateCase):
                 self.assertEqual(code, 2)
                 self.assertIn("required_jobs", out)
 
+    def test_multiline_plain_run_names_the_line_and_the_fix(self):
+        # #787 S3: `run: cmd \` en escalar plano. YAML pliega las lineas y el `\` queda literal,
+        # asi que los argumentos nunca llegan (APAP_WEB runner-guard: 35 pushes rojos sin evaluar).
+        text = yml(run=None) + (
+            "        run: python3 check.py \\\n"
+            "               --contract c.json \\\n"
+            "               --event push\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 2, out)
+        self.assertIn("line 9", out)
+        self.assertIn("'run'", out)
+        self.assertIn("block scalar", out)
+        self.assertNotIn("stray content", out)
+
+    def test_block_run_with_continuation_stays_valid(self):
+        text = yml(run="python3 check.py \\\n            --contract c.json")
+        self.assertEqual(self.run_gate(text)[0], 0, self.run_gate(text)[1])
+
     def test_nonexistent_workflow(self):
         self.assertEqual(self.run_gate(yml(), extra=("--workflow", "/no/such.yml"))[0], 2)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v2.1 — assets/scripts/check_adoption.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_adoption.py
 """Fail-closed adoption preflight and scanner-image lock resolver."""
 
 from __future__ import annotations

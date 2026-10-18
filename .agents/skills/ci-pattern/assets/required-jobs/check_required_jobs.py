@@ -15,7 +15,8 @@ not), an undeclared skip, and any conclusion that is not ``success`` or a
 declared skip.
 
 Output separates root-cause failures (``failure``/``cancelled``) from skips,
-so a downstream cascade skip is never mistaken for the cause.
+so a downstream cascade skip is never mistaken for the cause: the cause leads
+the verdict (``blocked by:``) and the cascade is a single line (#787).
 
 The policy may carry an optional ``relaxation`` field (``reason`` and
 ``reference``, both non-empty strings). It is validated whenever present:
@@ -357,13 +358,15 @@ def render_base_comparison(comparison: dict | None) -> list[str]:
 def render(report: dict) -> str:
     """Human-readable verdict; root causes first, cascade skips after."""
     lines = [f"VERDICT: {'PASS' if report['passed'] else 'FAIL'} (event: {report['event']})"]
+    if report["root_causes"]:
+        lines.append(f"blocked by: {', '.join(report['root_causes'])}")
     lines += render_base_comparison(report["base_comparison"])
     if report["root_causes"]:
         lines.append("root-cause failures (fix these first):")
         lines += [f"  {item}" for item in report["root_causes"]]
     if report["undeclared_skips"]:
         lines.append("skips in cascade, not declared for this event (consequences, not causes):")
-        lines += [f"  {job} (skipped)" for job in report["undeclared_skips"]]
+        lines.append(f"  {', '.join(report['undeclared_skips'])} (skipped)")
     if report["violations"]:
         lines.append("policy violations:")
         lines += [f"  {item}" for item in report["violations"]]
