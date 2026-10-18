@@ -1697,12 +1697,12 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
         f"- **2. Aprobación.** No empiece sin ella; consulte la issue:\n"
         f"  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
         f"  Hecho: la lista contiene `{params['P10_label_approval']}`.",
-        "- **3. Worktree.** Desde la rama base actualizada, y con el nombre de rama "
-        "compuesto aquí, nunca escrito a mano (regex "
-        f"`{params['P01_branch_name_pattern']}`):\n"
+        "- **3. Worktree.** Desde la rama base actualizada, con un nombre de rama que "
+        "cumpla la regex "
+        f"`{params['P01_branch_name_pattern']}`:\n"
         "  `git fetch origin && git switch <rama-base> && git pull --ff-only`\n"
-        "  `<rama-nueva>` = `<tipo>/<número>-<slug>`, con el `<slug>` del título de la "
-        "issue en minúsculas y guiones\n"
+        "  `<rama-nueva>` = `<tipo>/<slug>`, con el `<slug>` del título de la "
+        "issue en minúsculas y guiones, sin número de issue\n"
         "  `git worktree add ../<repo>-<número>-<tema> -b <rama-nueva>`\n"
         "  Hecho: `git worktree list` muestra la ruta nueva.",
         "- **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; "
@@ -1873,14 +1873,12 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
     return {
         "issues": "\n".join(issues_lines),
         "branch": "\n".join([
-            "- Genere el nombre de rama; nunca lo escriba a mano (HR-35): "
-            "`<tipo>/<número>-<slug>`, con el slug del título de la issue en "
-            "minúsculas y guiones:",
-            "  `git switch -c <tipo>/<número>-<slug>`",
+            "- Nombre de rama: `<tipo>/<slug>`, con el slug del título de la issue en "
+            "minúsculas y guiones y sin número de issue:",
+            "  `git switch -c <tipo>/<slug>`",
             f"- Regex obligatoria: `{params['P01_branch_name_pattern']}`",
-            "- El generador que construye y valida el nombre (HR-35) es un activo de la "
-            "skill del patrón: no se instala en el consumer, así que aquí se compone el "
-            "nombre y se valida contra la regex.",
+            "- La regex la aplica el ruleset del host; en un host sin rulesets, el gate "
+            "de nombre de rama del patrón.",
         ]),
         "commits": "\n".join([
             "- Conventional Commits: `tipo[(scope)]: descripción` con tipo en "
@@ -3316,6 +3314,50 @@ def _docs_map_roots(decl):
     return None, []
 
 
+DOCS_MAP_CODE_SUFFIXES = frozenset({
+    ".py", ".php", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".go", ".rb", ".java", ".kt",
+    ".rs", ".cs", ".sh", ".ps1", ".bas", ".cls"})
+DOCS_MAP_SKIPPED_DIRS = frozenset({"node_modules", "vendor", "venv", "dist", "build", "docs", "__pycache__"})
+
+
+def _holds_code(directory):
+    """#805: el directorio contiene algun fichero de codigo, sin entrar en ocultos ni dependencias."""
+    for current, dirs, files in os.walk(directory):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in DOCS_MAP_SKIPPED_DIRS]
+        if any(Path(name).suffix.lower() in DOCS_MAP_CODE_SUFFIXES for name in files):
+            return True
+    return False
+
+
+def _uncovered_root_findings(repo, roots, decl):
+    """#805 (HR-63): cada directorio de codigo de primer nivel cae dentro de alguna raiz.
+
+    El sentido repo -> doc a nivel de directorio: `docs-codeguide` solo mide los modulos
+    dentro de las raices declaradas, asi que un `scripts/` o un `src/` entero fuera de todas
+    ellas pasaba sin que el mapa lo supiera. Una raiz cubre el directorio si es ese
+    directorio o esta dentro de el. `docs_map.exclude_dirs` nombra los directorios que no
+    hay que mapear (generados, vendorizados); ocultos y de dependencias no cuentan."""
+    excluded = decl.get("exclude_dirs", [])
+    if not isinstance(excluded, list) or not all(isinstance(n, str) and n.strip() for n in excluded):
+        return ["HR-63: docs_map.exclude_dirs debe ser una lista de nombres de directorio no vacios"]
+    covered = set()
+    for root, _ in roots:
+        parts = [part for part in PurePosixPath(root.strip().replace("\\", "/")).parts if part != "."]
+        if parts:
+            covered.add(parts[0])
+    findings = []
+    for entry in sorted(repo.iterdir()):
+        name = entry.name
+        if (not entry.is_dir() or entry.is_symlink() or name.startswith(".")
+                or name in DOCS_MAP_SKIPPED_DIRS or name in covered or name in excluded):
+            continue
+        if _holds_code(entry):
+            findings.append(
+                f"HR-63: repo -> docs: el directorio {name}/ contiene codigo y ninguna raiz de "
+                f"docs_map.code_roots lo cubre; declare una raiz o excluyalo en docs_map.exclude_dirs")
+    return findings
+
+
 def _check_docs_map(repo, contract):
     """#709 (HR-63): mapa del codigo hub+spokes en fase 5.
 
@@ -3365,6 +3407,7 @@ def _check_docs_map(repo, contract):
                  for p in verdict["missing_in_repo"]]
     findings += [f"HR-63: repo -> docs: el modulo {m} no esta descrito"
                  for m in verdict["missing_in_codeguide"]]
+    findings += _uncovered_root_findings(repo, roots, decl)
     findings += _workflow_job_findings(repo, decl["job"])
     findings += _required_job_findings(repo, decl["job"])
     return findings
@@ -3372,6 +3415,9 @@ def _check_docs_map(repo, contract):
 
 ARCHITECTURE_KEYS = ("doc", "job", "stack", "linter_config")
 ARCHITECTURE_STACKS = ("python", "typescript")
+# Sin linter de imports (p. ej. PHP): se exige el arbol y las capas del documento,
+# pero las dependencias entre capas no las impone ningun linter (#805).
+ARCHITECTURE_NO_LINTER = "none"
 
 
 def _load_architecture():
@@ -3390,7 +3436,7 @@ def _check_architecture(repo, contract):
     docs_map): sin ella avisa por stderr y sale 0. Con ella exige el documento
     con su arbol de modulos cuadrando con el codigo en los dos sentidos, el bloque
     de capas coherente, las reglas de imports del stack (python o typescript) impuestas por su linter
-    (`stack`, `linter_config`) y el job requerido por PR. Las raices de codigo se
+    (`stack`, `linter_config`; `stack: none` las omite, #805) y el job requerido por PR. Las raices de codigo se
     declaran igual que en docs_map (`code_roots`, o `code_root` y `code_glob`)."""
     decl = contract.get("architecture") if isinstance(contract, dict) else None
     if decl is None:
@@ -3398,8 +3444,10 @@ def _check_architecture(repo, contract):
               "documento de arquitectura todavia no se exige (se activa con "
               "architecture).", file=sys.stderr)
         return []
+    no_linter = isinstance(decl, dict) and decl.get("stack") == ARCHITECTURE_NO_LINTER
     missing = [k for k in ARCHITECTURE_KEYS
-               if not isinstance(decl, dict) or not str(decl.get(k, "")).strip()]
+               if not (no_linter and k == "linter_config")
+               and (not isinstance(decl, dict) or not str(decl.get(k, "")).strip())]
     roots, root_findings = _docs_map_roots(decl) if isinstance(decl, dict) else (None, [])
     if root_findings:
         return [f.replace("HR-63", "HR-68").replace("docs_map", "architecture") for f in root_findings]
@@ -3407,12 +3455,16 @@ def _check_architecture(repo, contract):
         missing.append(DOCS_MAP_ROOTS_HINT)
     if missing:
         return ["HR-68: architecture incompleto, faltan: " + ", ".join(missing)]
-    if decl["stack"] not in ARCHITECTURE_STACKS:
+    if no_linter and str(decl.get("linter_config", "")).strip():
+        return ["HR-68: architecture.stack 'none' no usa linter de imports; quite linter_config "
+                "o declare un stack con linter"]
+    if not no_linter and decl["stack"] not in ARCHITECTURE_STACKS:
         return [f"HR-68: architecture.stack {decl['stack']!r} no soportado; use uno de: "
-                + ", ".join(ARCHITECTURE_STACKS)]
+                + ", ".join(ARCHITECTURE_STACKS + (ARCHITECTURE_NO_LINTER,))]
     try:
         found = _load_architecture().check_architecture(
-            repo, decl["doc"], roots, decl["linter_config"], decl["stack"])
+            repo, decl["doc"], roots, None if no_linter else decl["linter_config"],
+            "python" if no_linter else decl["stack"])
     except FileNotFoundError as exc:
         return [f"HR-68: {exc}"]
     return ([f"HR-68: {f}" for f in found]

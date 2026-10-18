@@ -177,5 +177,66 @@ class DocsMapRootsTests(unittest.TestCase):
         self.assertTrue(any("code_roots" in f and "code_root" in f for f in found), found)
 
 
+class DocsMapRootCoverageTests(unittest.TestCase):
+    """#805: un directorio de código de primer nivel fuera de todas las raíces es un hallazgo."""
+
+    def _findings(self, files=(), decl=None, roots=None, mentions=""):
+        with tempfile.TemporaryDirectory() as d:
+            repo, _ = _repo(d, page="`app/users.py` usuarios\n" + mentions)
+            for name in files:
+                _write(repo / name, "x = 1\n")
+            declared = _roots_decl(roots or [{"root": "app", "glob": "*.py"}])
+            declared.update(decl or {})
+            return CLI._check_docs_map(repo, {"docs_map": declared})
+
+    def test_directorio_de_codigo_sin_raiz_falla_nombrandolo(self):
+        found = self._findings(["scripts/run.py"])
+        self.assertTrue(any("scripts/" in f and "code_roots" in f for f in found), found)
+
+    def test_raiz_igual_al_directorio_lo_cubre(self):
+        roots = [{"root": "app", "glob": "*.py"}, {"root": "lib", "glob": "*.py"}]
+        self.assertEqual(self._findings(["lib/util.py"], roots=roots, mentions="`lib/util.py`\n"), [])
+
+    def test_raiz_anidada_cubre_el_directorio_de_primer_nivel(self):
+        roots = [{"root": "app/modules", "glob": "*.py"}]
+        with tempfile.TemporaryDirectory() as d:
+            repo, _ = _repo(d)
+            _write(repo / "app" / "modules" / "billing" / "api.py", "x = 1\n")
+            found = CLI._check_docs_map(repo, {"docs_map": _roots_decl(roots)})
+        self.assertFalse(any("app/" in f and "code_roots" in f for f in found), found)
+
+    def test_raiz_con_barra_final_o_prefijo_punto_se_normaliza(self):
+        roots = [{"root": "./app/", "glob": "*.py"}, {"root": "lib/", "glob": "*.py"}]
+        self.assertEqual(self._findings(["lib/util.py"], roots=roots, mentions="`lib/util.py`\n"), [])
+
+    def test_directorio_sin_codigo_no_cuenta(self):
+        self.assertEqual(self._findings(["assets/logo.svg", "config/app.json", "notes/readme.md"]), [])
+
+    def test_directorios_ocultos_y_de_dependencias_no_cuentan(self):
+        files = [".agents/skill/tool.py", "node_modules/pkg/index.js", "vendor/lib/x.php", "docs/example.py"]
+        self.assertEqual(self._findings(files), [])
+
+    def test_otros_lenguajes_cuentan_como_codigo(self):
+        for name in ("web/index.ts", "api/Handler.php", "ops/deploy.sh", "src/Module1.bas"):
+            found = self._findings([name])
+            self.assertTrue(any(name.split("/")[0] + "/" in f for f in found), (name, found))
+
+    def test_exclude_dirs_exime_el_directorio_declarado(self):
+        self.assertEqual(self._findings(["scripts/run.py"], decl={"exclude_dirs": ["scripts"]}), [])
+
+    def test_exclude_dirs_solo_exime_los_nombrados(self):
+        found = self._findings(["scripts/run.py", "tools/x.py"], decl={"exclude_dirs": ["scripts"]})
+        self.assertTrue(any("tools/" in f for f in found), found)
+        self.assertFalse(any("scripts/" in f for f in found), found)
+
+    def test_exclude_dirs_mal_formado_falla_nombrando_la_clave(self):
+        for bad in ("scripts", [""], [3], {"a": 1}):
+            found = self._findings(["scripts/run.py"], decl={"exclude_dirs": bad})
+            self.assertTrue(any("exclude_dirs" in f for f in found), (bad, found))
+
+    def test_fichero_de_codigo_en_la_raiz_del_repo_no_es_un_directorio(self):
+        self.assertEqual(self._findings(["manage.py"]), [])
+
+
 if __name__ == "__main__":
     unittest.main()

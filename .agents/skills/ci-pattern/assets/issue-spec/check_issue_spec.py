@@ -422,6 +422,11 @@ class GitHubIssueFailedError(GitHubApiError):
         super().__init__(f"GET /repos/{repository}/issues/{number} failed: {exc}")
 
 
+class GitHubPullRequestFailedError(GitHubApiError):
+    def __init__(self, repository: str, number: int, exc: BaseException) -> None:
+        super().__init__(f"GET /repos/{repository}/pulls/{number} failed: {exc}")
+
+
 class UnsupportedApiUrlError(GitHubApiError):
     def __init__(self, api_url: str) -> None:
         super().__init__(f"api url must be https (loopback http only): {api_url}")
@@ -465,6 +470,24 @@ class GitHubClient:
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
             raise GitHubIssueFailedError(repository, number, exc) from exc
 
+    def pull_request(self, repository: str, number: int) -> Mapping[str, Any]:
+        # El PR del mode `pr-event` se trae por API (#830): el snapshot del
+        # payload queda obsoleto en cuanto el cuerpo se edita, y todo
+        # "Re-run jobs" del UI reusa el mismo payload (el workaround de hoy
+        # es un commit vacío para forzar `synchronize`, ardelperal/APAP_WEB#2163).
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "ci-pattern-issue-spec",
+        }
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}"
+        try:
+            with _open(self._api_url, f"/repos/{repository}/pulls/{number}", headers) as response:
+                return json.load(response)
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as exc:
+            raise GitHubPullRequestFailedError(repository, number, exc) from exc
+
 
 def _make_fetcher(repository: str) -> Callable[[int], Mapping[str, Any]]:
     """Fetcher desde `$GITHUB_TOKEN` y `$GITHUB_API_URL`. Los tests lo sustituyen."""
@@ -475,10 +498,88 @@ def _make_fetcher(repository: str) -> Callable[[int], Mapping[str, Any]]:
     return lambda number: client.issue(repository, number)
 
 
+def _make_body_fetcher() -> Callable[[str, int], Mapping[str, Any]]:
+    """Fetcher del cuerpo del PR desde `$GITHUB_TOKEN` y `$GITHUB_API_URL` (#830)."""
+    client = GitHubClient(
+        token=os.environ.get("GITHUB_TOKEN", ""),
+        api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+    )
+    return lambda repository, number: client.pull_request(repository, number)
+
+
 def _read_body(path: str) -> str:
     if path == "-":
         return sys.stdin.read()
     return Path(path).read_text(encoding="utf-8")
+
+
+def pr_event(
+    payload: Mapping[str, Any],
+    *,
+    body_fetcher: Callable[[str, int], Mapping[str, Any]] | None = None,
+    issue_fetcher: Callable[[int], Mapping[str, Any]] | None = None,
+    required_sections: tuple[str, ...] = (),
+    warnings: list[str] | None = None,
+) -> int:
+    """Modo ``pr-event``: el cuerpo del PR se lee por API, nunca del payload (#830).
+
+    El snapshot ``payload["pull_request"]["body"]`` queda obsoleto desde la primera
+    edición del cuerpo y desde cualquier "Re-run jobs" del UI (porque reusa el
+    mismo ``$GITHUB_EVENT_PATH``); el workaround de hoy es un commit vacío para
+    forzar ``synchronize`` y un payload fresco — ardelperal/APAP_WEB#2163,
+    #2164. La fuente autoritativa del cuerpo es la API: ``GET /repos/{owner}/{repo}/pulls/{n}``
+    vía el ``GitHubClient`` del asset. Sin ``GITHUB_TOKEN`` o con la API caída,
+    el gate falla cerrado con exit 2 y un motivo explícito (nunca fallback
+    silencioso al cuerpo del payload, HR-3).
+
+    ``body_fetcher`` e ``issue_fetcher`` son inyectables: ``main()`` los deja
+    a ``None`` para usar el cliente real desde el entorno, y los tests los
+    sustituyen por dobles.
+    """
+    if warnings is None:
+        warnings = []
+    repository = (payload.get("repository") or {}).get("full_name", "")
+    if "/" not in repository:
+        print("issue-spec: el evento no identifica repository.full_name", file=sys.stderr)
+        return 2
+    pull = payload.get("pull_request") or {}
+    pr_number = pull.get("number")
+    if not isinstance(pr_number, int) or pr_number <= 0:
+        print("issue-spec: pr-event: el payload no identifica pull_request.number "
+              "entero positivo; el cuerpo del PR solo se lee por API", file=sys.stderr)
+        return 2
+
+    if body_fetcher is None:
+        token = os.environ.get("GITHUB_TOKEN", "")
+        if not token:
+            print("issue-spec: pr-event: GITHUB_TOKEN es obligatorio para leer el "
+                  "cuerpo actual del PR; el cuerpo del payload queda obsoleto tras "
+                  "ediciones del cuerpo o re-runs del job", file=sys.stderr)
+            return 2
+        try:
+            pull_data = _make_body_fetcher()(repository, pr_number)
+        except GitHubApiError as exc:
+            print(f"issue-spec: pr-event: no se pudo leer el cuerpo actual del PR "
+                  f"por API ({exc}); el cuerpo del payload queda obsoleto tras "
+                  f"ediciones del cuerpo o re-runs del job", file=sys.stderr)
+            return 2
+        body = pull_data.get("body") or ""
+    else:
+        body = (body_fetcher(repository, pr_number) or {}).get("body") or ""
+
+    fetcher = issue_fetcher if issue_fetcher is not None else _make_fetcher(repository)
+    context = PrContext(chain_partial=is_chain_partial(payload), warnings=warnings)
+    violations = validate_remote(body, repository, fetcher, required_sections, context)
+    success = "issue-spec: contrato satisfecho"
+    for warning in warnings:
+        print(f"issue-spec: aviso: {warning}", file=sys.stderr)
+    for violation in violations:
+        print(f"issue-spec: {violation}", file=sys.stderr)
+    if violations:
+        print(f"issue-spec: fallo con {len(violations)} hallazgo(s)", file=sys.stderr)
+        return 1
+    print(success)
+    return 0
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -527,29 +628,22 @@ def main(argv: list[str] | None = None) -> int:
         violations = validate_body(body, args.repository, required, warnings)
         success = ("issue-spec local: forma de las referencias correcta. La aprobación, "
                    "el tipo y si la referencia es una PR los verifica el gate remoto.")
-    else:
-        try:
-            payload = json.loads(Path(args.event).read_text(encoding="utf-8"))
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
-            print(f"issue-spec: payload ilegible: {exc}", file=sys.stderr)
-            return 2
-        repository = (payload.get("repository") or {}).get("full_name", "")
-        if "/" not in repository:
-            print("issue-spec: el evento no identifica repository.full_name", file=sys.stderr)
-            return 2
-        body = (payload.get("pull_request") or {}).get("body") or ""
-        context = PrContext(chain_partial=is_chain_partial(payload), warnings=warnings)
-        violations = validate_remote(body, repository, _make_fetcher(repository), required, context)
-        success = "issue-spec: contrato satisfecho"
-    for warning in warnings:
-        print(f"issue-spec: aviso: {warning}", file=sys.stderr)
-    for violation in violations:
-        print(f"issue-spec: {violation}", file=sys.stderr)
-    if violations:
-        print(f"issue-spec: fallo con {len(violations)} hallazgo(s)", file=sys.stderr)
-        return 1
-    print(success)
-    return 0
+        for warning in warnings:
+            print(f"issue-spec: aviso: {warning}", file=sys.stderr)
+        for violation in violations:
+            print(f"issue-spec: {violation}", file=sys.stderr)
+        if violations:
+            print(f"issue-spec: fallo con {len(violations)} hallazgo(s)", file=sys.stderr)
+            return 1
+        print(success)
+        return 0
+    try:
+        payload = json.loads(Path(args.event).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        print(f"issue-spec: payload ilegible: {exc}", file=sys.stderr)
+        return 2
+    return pr_event(payload, body_fetcher=None, issue_fetcher=None,
+                     required_sections=required, warnings=warnings)
 
 
 if __name__ == "__main__":
