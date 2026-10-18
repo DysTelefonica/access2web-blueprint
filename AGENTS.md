@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ vd045b45 -->
+<!-- personal-skills:slice:access2web-blueprint @ v6343a39 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -343,7 +343,7 @@ Saltarse cualquiera deja a la IA operando contra arquitectura obsoleta.
 
 ## §F.3 Capas enforced por gate
 
-`scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `ALLOWED_IMPORTS` y `PURE_LAYERS = {domain, ports, application}` (DA-1). Mover un adapter a la capa equivocada es un gate failure, no un estilo. Esquivar el gate con `|| true` está prohibido por `tests/test_ci_workflow.py`.
+Las capas hexagonales las impone el job `docs-architecture` (HR-68): compara `docs/architecture.md` con el código en los dos sentidos y ejecuta import-linter con `.importlinter`, derivado del bloque `architecture` de ese documento, que es la única fuente de las capas, de las dependencias permitidas, de la independencia entre aplicaciones y de la pureza de `domain`, `ports` y `application` (DA-1). Mover un adapter a la capa equivocada, o añadir un fichero fuera de las capas sin declararlo en `exempt`, es un gate failure, no un estilo. Esquivar el gate con `|| true` está prohibido por `tests/test_ci_workflow.py`.
 
 ## §F.4 Reglas de decisiones arquitectónicas (D-<n>)
 
