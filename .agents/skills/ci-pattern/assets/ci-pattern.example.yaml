@@ -6,7 +6,7 @@
 # Formato de clave: P<NN>_<name>, exactamente como en
 # personal/ardelperal/ci-pattern/assets/parameters.schema.json.
 
-P01_branch_name_pattern: "^(?:(chore|feat|fix|perf|refactor|docs|ci|test)/[0-9]+-[a-z0-9-]+|archive/.+|main)$"
+P01_branch_name_pattern: "^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)/[a-z0-9._-]+$"
 P06_review_budget_lines: 400
 P09_labels_type:
   bug_report.yml: type:bug

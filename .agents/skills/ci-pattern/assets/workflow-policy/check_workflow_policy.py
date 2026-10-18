@@ -54,6 +54,14 @@ never from code. A required job named by the policy but absent from every
 analyzed workflow is a finding: silence there would be a gate reporting
 OK without having measured.
 
+Structure, on every job: a duplicate mapping key is refused (exit 2; GitHub rejects the
+file with ``startup_failure`` and the check never reaches the PR rollup, while a reader
+that keeps the last value would report OK), and every job declares ``timeout-minutes``
+(a job that calls a reusable workflow is exempt: its schema has none) (#806). Also on every
+job (#806): a ``concurrency`` group at job or workflow level, no service container pinning a
+host port (``H:C``, ``IP:H:C``), and a ``timeout``-wrapped ``docker info`` before the first
+``docker run`` (in an earlier step or earlier in the same step; a comment is no guard).
+
 A plain scalar that continues on a more indented line (``run: cmd \\`` followed by
 its arguments) is rejected with the line and the fix: YAML folds it and the
 ``\\`` stays literal (#787).
@@ -147,6 +155,15 @@ def folded_scalar_error(n: int, key: object, nxt: int) -> InvalidInput:
     return InvalidInput(FOLDED_SCALAR.format(n=n, key=key, nxt=nxt))
 
 
+DUPLICATE_KEY = (
+    "line {n}: duplicate key {key!r} (first seen on line {first}): GitHub rejects the file "
+    "with `startup_failure` and the check never reaches the PR rollup")
+
+
+def duplicate_key_error(n: int, key: object, first: int) -> InvalidInput:
+    return InvalidInput(DUPLICATE_KEY.format(n=n, key=key, first=first))
+
+
 def parse_node(lines: list[Line], i: int, indent: int):
     line = lines[i]
     if line.text == "-" or line.text.startswith("- "):
@@ -185,6 +202,7 @@ def parse_node(lines: list[Line], i: int, indent: int):
     if not KEY.match(line.text):
         raise InvalidInput(f"line {line.number}: unsupported construct: {line.text!r}")
     out = {}
+    first_seen: dict[object, int] = {}
     while i < len(lines) and lines[i].indent == indent:
         m = KEY.match(lines[i].text)
         if not m:
@@ -192,6 +210,9 @@ def parse_node(lines: list[Line], i: int, indent: int):
         key = parse_scalar(m.group(1))
         if key == "<<":
             raise InvalidInput(f"line {lines[i].number}: merge key")
+        if key in first_seen:
+            raise duplicate_key_error(lines[i].number, key, first_seen[key])
+        first_seen[key] = lines[i].number
         rest = m.group(2)
         n = lines[i].number
         i += 1
@@ -469,6 +490,53 @@ def declared_name(jid: str, job: dict, declared: list[str]) -> str | None:
     return next((d for d in declared if re.fullmatch(rx, d)), None)
 
 
+DOCKER_RUN = re.compile(r"\bdocker\s+run\b")
+DOCKER_INFO = re.compile(r"\bdocker\s+info\b")
+TIMEOUT_CALL = re.compile(r"(?:^|[\s;&|(`])timeout\s")
+
+
+def has_concurrency_group(node: object) -> bool:
+    """A `concurrency:` value that names a group: a non-empty string or a mapping with `group`."""
+    if isinstance(node, str):
+        return bool(node.strip())
+    return isinstance(node, dict) and bool(node.get("group"))
+
+
+def fixed_host_ports(job: dict) -> list[tuple[str, str]]:
+    """(service, port) for every service port that pins a host port (`H:C`, `IP:H:C`)."""
+    services = job.get("services")
+    found = []
+    for name, spec in (services.items() if isinstance(services, dict) else []):
+        ports = spec.get("ports") if isinstance(spec, dict) else None
+        found.extend((name, str(p)) for p in (ports if isinstance(ports, list) else []) if ":" in str(p))
+    return found
+
+
+def docker_preflight_finding(steps: list) -> str | None:
+    """Why the first `docker run` of the job is unguarded, or None.
+
+    The guard is `docker info` under `timeout`, earlier in a previous step or earlier in the same
+    step; only executable lines before the first `docker run` count (a comment is not a guard).
+    """
+    before: list[str] = []
+    for st in steps:
+        run = st.get("run") if isinstance(st, dict) else None
+        lines = [ln for ln in (run.splitlines() if isinstance(run, str) else [])
+                 if ln.strip() and not ln.lstrip().startswith("#")]
+        hit = next((i for i, ln in enumerate(lines) if DOCKER_RUN.search(ln)), None)
+        if hit is None:
+            before.extend(lines)
+            continue
+        guard = "\n".join([*before, *lines[:hit]])
+        if not DOCKER_INFO.search(guard):
+            return "reaches `docker run` with no `docker info` check before it"
+        if not any(DOCKER_INFO.search(ln) and TIMEOUT_CALL.search(ln) for ln in guard.splitlines()):
+            return ("checks `docker info` but not under `timeout`: an unwrapped check hangs "
+                    "exactly when the daemon is wedged")
+        return None
+    return None
+
+
 def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list,
               root: Path = Path("."), declared: list[str] | None = None):
     def finding(msg):
@@ -499,7 +567,23 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
             if ev in events and not qualified and not never_on_pr and (allowed is None or ev in allowed):
                 finding(f"publishes its check name on '{ev}', which does not evaluate the PR (HR-30)")
 
+    # A job that calls a reusable workflow has no `timeout-minutes` in its schema.
+    if "timeout-minutes" not in job and "uses" not in job:
+        finding("no `timeout-minutes`: GitHub's default is 360 minutes, so a wedged runner "
+                "holds the queue for six hours instead of failing (#806)")
+
+    if not has_concurrency_group(job.get("concurrency")) and not has_concurrency_group(doc.get("concurrency")):
+        finding("no `concurrency` group (job or workflow): a second push runs alongside the first "
+                "and both compete for the same runner (#806)")
+    for service, port in fixed_host_ports(job):
+        finding(f"service '{service}' pins host port '{port}': publish the container port alone "
+                "and read the assigned one from `job.services.<id>.ports`, or a second runner "
+                "collides or shares one database (#806)")
+
     steps = job.get("steps") or []
+    docker_why = docker_preflight_finding(steps)
+    if docker_why:
+        finding(f"{docker_why}: a wedged daemon blocks `docker run` instead of failing (#806)")
     for st in steps:
         if not isinstance(st, dict):
             raise InvalidInput(f"{wf}: step of job '{jid}' is not a mapping")

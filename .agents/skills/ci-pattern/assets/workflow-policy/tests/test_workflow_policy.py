@@ -26,7 +26,7 @@ RUN_OK = "set -u\n          exit \"$fail\""
 
 def yml(run=RUN_OK, uses=PINNED, name="build (${{ github.event_name }})",
         on="on:\n  pull_request:\n", job="  build:", head="", tail=""):
-    s = f"{on}\njobs:\n{head}{job}\n    name: {name}\n    steps:\n"
+    s = f"{on}\nconcurrency:\n  group: wf-${{{{ github.ref }}}}\njobs:\n{head}{job}\n    name: {name}\n    timeout-minutes: 5\n    steps:\n"
     if uses:
         s += f"      - {uses}\n"
     if run:
@@ -90,7 +90,7 @@ class InvalidInput(GateCase):
             "               --event push\n")
         code, out = self.run_gate(text)
         self.assertEqual(code, 2, out)
-        self.assertIn("line 9", out)
+        self.assertIn("line 12", out)
         self.assertIn("'run'", out)
         self.assertIn("block scalar", out)
         self.assertNotIn("stray content", out)
@@ -126,7 +126,7 @@ class TestHR26PinnedToolchain(GateCase):
             ("pip -r without hashes", yml(run="pip install -r requirements.txt\n          " + RUN_OK), 1, "HR-26"),
             ("pip -c constraints unverifiable", yml(run="pip install -c constraints.txt\n          " + RUN_OK), 1, "HR-26"),
             ("finding in non-required job", yml(
-                tail="  other:\n    steps:\n      - uses: actions/checkout@v4\n"), 1, "HR-26"),
+                tail="  other:\n    timeout-minutes: 5\n    steps:\n      - uses: actions/checkout@v4\n"), 1, "HR-26"),
         ])
 
     def test_negatives(self):
@@ -142,7 +142,7 @@ class TestHR26PinnedToolchain(GateCase):
             ("docker mutable tag", yml(uses="uses: docker://alpine:3.20"), 1, "HR-26"),
             ("docker digest clean", yml(uses="uses: docker://alpine@sha256:" + "c"*64), 0, None),
             ("degenerate job without steps", yml(run=None, uses=None,
-                tail="  other:\n    steps:\n      - " + PINNED + "\n"), 0, None),
+                tail="  other:\n    timeout-minutes: 5\n    steps:\n      - " + PINNED + "\n"), 0, None),
         ])
 
 
@@ -168,7 +168,7 @@ class TestHR3FailLoud(GateCase):
             ("explicit false stays clean", yml().replace("      - " + PINNED,
              "      - continue-on-error: false\n      - " + PINNED), 0, None),
             ("masking outside required jobs", yml(
-                tail="  other:\n    steps:\n      - " + PINNED + "\n        run: echo ok || true\n"), 0, None),
+                tail="  other:\n    timeout-minutes: 5\n    steps:\n      - " + PINNED + "\n        run: echo ok || true\n"), 0, None),
             ("degenerate required job without steps", yml(run=None, uses=None), 0, None),
         ])
 
@@ -201,7 +201,7 @@ class TestHR30PrEventOnly(GateCase):
             ("push base only", yml(name="build", on="on:\n  pull_request:\n  push:\n    branches: [main]\n"), 0, None),
             ("non-required static job beside required one", yml(
                 on="on:\n  pull_request:\n  schedule:\n    - cron: '0 3 * * *'\n",
-                tail="  other:\n    steps:\n      - " + PINNED + "\n        run: echo ok\n"), 0, None),
+                tail="  other:\n    timeout-minutes: 5\n    steps:\n      - " + PINNED + "\n        run: echo ok\n"), 0, None),
             ("degenerate on as scalar list", yml(on="on: [pull_request]"), 0, None),
         ])
 
@@ -349,7 +349,7 @@ def contract_of(*names):
             "required_checks": [{"name": n, "class": "documented-only"} for n in names]}
 
 
-AGG = ("  required:\n    name: required\n    steps:\n      - " + PINNED + "\n        run: echo ok\n")
+AGG = ("  required:\n    name: required\n    timeout-minutes: 5\n    steps:\n      - " + PINNED + "\n        run: echo ok\n")
 
 
 class TestHR30DeclaredRequiredChecks(RepoCase):
@@ -409,6 +409,8 @@ SCHED_PINNED = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
 
 GOOD_BUILD = """  build:
     name: build (${{ github.event_name }})
+    timeout-minutes: 5
+    concurrency: j
     steps:
       - uses: """ + SCHED_PINNED + """
         run: |
@@ -418,6 +420,8 @@ GOOD_BUILD = """  build:
 
 SECURITY_TAIL = """  security:
     name: security
+    timeout-minutes: 5
+    concurrency: j
     steps:
       - uses: """ + SCHED_PINNED + """
       - run: pip-audit
@@ -425,6 +429,8 @@ SECURITY_TAIL = """  security:
 
 AUDIT_TAIL_GOOD = """  audit:
     name: audit
+    timeout-minutes: 5
+    concurrency: j
     steps:
       - uses: """ + SCHED_PINNED + """
       - run: pip-audit
@@ -433,6 +439,8 @@ AUDIT_TAIL_GOOD = """  audit:
 
 AUDIT_TAIL_NO_ALERT = """  audit:
     name: audit
+    timeout-minutes: 5
+    concurrency: j
     steps:
       - uses: """ + SCHED_PINNED + """
       - run: pip-audit
@@ -599,6 +607,168 @@ class TestHR39StateDependentGates(unittest.TestCase):
         self.assertIn("state_dependent_gates", err)
 
 
+class TestDuplicateKeys(GateCase):
+    """#806 C1: GitHub rejects a duplicate mapping key with `startup_failure`, so the check
+    never appears in the PR rollup. The reader keeps the last value (PyYAML does too), so it
+    has to refuse the file instead of guessing."""
+
+    def test_duplicate_key_in_a_step_is_refused_with_both_lines(self):
+        text = yml(uses=PINNED + "\n        with:\n          fetch-depth: 0\n        with:\n"
+                   "          fetch-depth: 1")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 2, out)
+        self.assertIn("duplicate key 'with'", out)
+        self.assertIn("line 14", out)
+        self.assertIn("line 12", out)
+
+    def test_duplicate_job_id_is_refused(self):
+        text = yml(tail="  build:\n    timeout-minutes: 5\n    steps:\n      - " + PINNED + "\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 2, out)
+        self.assertIn("duplicate key 'build'", out)
+
+    def test_same_key_in_sibling_mappings_is_clean(self):
+        text = yml(uses=PINNED + "\n        with:\n          fetch-depth: 0\n      - "
+                   + PINNED + "\n        with:\n          fetch-depth: 1")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 0, out)
+
+
+class TestJobTimeout(GateCase):
+    """#806 C1: GitHub's default job budget is 360 minutes; a wedged runner then holds the
+    queue for six hours. Every job states its own, required or not."""
+    NO_TIMEOUT = ("on:\n  pull_request:\nconcurrency:\n  group: wf\n\njobs:\n  build:\n    name: build (${{ github.event_name }})\n"
+                  "    steps:\n      - " + PINNED + "\n")
+
+    def test_job_without_timeout_is_a_finding(self):
+        code, out = self.run_gate(self.NO_TIMEOUT)
+        self.assertEqual(code, 1, out)
+        self.assertIn("job 'build'", out)
+        self.assertIn("timeout-minutes", out)
+
+    def test_job_that_is_not_required_is_also_a_finding(self):
+        text = self.NO_TIMEOUT + "  extra:\n    timeout-minutes: 5\n    steps:\n      - " + PINNED + "\n"
+        text = text.replace("  build:\n", "  build:\n    timeout-minutes: 5\n", 1)
+        text += "  other:\n    steps:\n      - " + PINNED + "\n"
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("job 'other'", out)
+        self.assertNotIn("job 'extra'", out)
+
+    def test_job_with_timeout_is_clean(self):
+        self.assertEqual(self.run_gate(yml())[0], 0)
+
+    def test_reusable_workflow_call_is_exempt(self):
+        # The schema of a job that calls a reusable workflow has no `timeout-minutes`.
+        text = yml(tail="  call:\n    uses: ./.github/workflows/other.yml\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 0, out)
+
+
+NO_CONCURRENCY = ("on:\n  pull_request:\n\njobs:\n  build:\n    name: build (${{ github.event_name }})\n"
+                  "    timeout-minutes: 5\n    steps:\n      - " + PINNED + "\n")
+
+
+class TestConcurrency(GateCase):
+    """#806 C2: without a concurrency group a second push runs alongside the first and both
+    compete for the same runner. A workflow-level group covers every job."""
+
+    def test_no_group_anywhere_is_a_finding(self):
+        code, out = self.run_gate(NO_CONCURRENCY)
+        self.assertEqual(code, 1, out)
+        self.assertIn("job 'build'", out)
+        self.assertIn("concurrency", out)
+
+    def test_workflow_level_group_covers_every_job(self):
+        text = "concurrency:\n  group: wf\n" + NO_CONCURRENCY
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_job_level_group_covers_that_job(self):
+        text = NO_CONCURRENCY.replace("    timeout-minutes: 5\n",
+                                      "    timeout-minutes: 5\n    concurrency:\n      group: build\n")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_string_form_counts_as_a_group(self):
+        text = NO_CONCURRENCY.replace("    timeout-minutes: 5\n",
+                                      "    timeout-minutes: 5\n    concurrency: build\n")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_mapping_without_group_is_a_finding(self):
+        text = "concurrency:\n  cancel-in-progress: true\n" + NO_CONCURRENCY
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("concurrency", out)
+
+
+class TestServicePorts(GateCase):
+    """#806 C2: `5432:5432` reserves a host port on the runner; with one runner nothing collides
+    and the defect stays invisible, with two the jobs fail to bind or share a database."""
+
+    def with_ports(self, *ports):
+        listing = "".join(f"          - {p}\n" for p in ports)
+        return yml(tail="    services:\n      db:\n        image: postgres@sha256:" + "a" * 64
+                   + "\n        ports:\n" + listing)
+
+    def test_fixed_host_port_is_a_finding(self):
+        code, out = self.run_gate(self.with_ports("5432:5432"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("service 'db'", out)
+        self.assertIn("5432:5432", out)
+
+    def test_host_ip_binding_is_also_fixed(self):
+        self.assertEqual(self.run_gate(self.with_ports("127.0.0.1:5432:5432"))[0], 1)
+
+    def test_container_port_alone_is_clean(self):
+        code, out = self.run_gate(self.with_ports("5432"))
+        self.assertEqual(code, 0, out)
+
+    def test_quoted_and_flow_forms_are_read(self):
+        self.assertEqual(self.run_gate(self.with_ports('"5432:5432"'))[0], 1)
+        flow = yml(tail="    services:\n      db:\n        image: x\n        ports: [5432:5432]\n")
+        self.assertEqual(self.run_gate(flow)[0], 1)
+
+
+class TestDockerPreflight(GateCase):
+    """#806 C2: `docker run` against a wedged daemon blocks instead of failing. The guard has to
+    be `docker info` under `timeout`, earlier in the job or earlier in the same step."""
+
+    def job_with(self, *runs):
+        body = "".join(f"      - run: |\n          {r}\n" for r in runs)
+        return ("on:\n  pull_request:\nconcurrency:\n  group: wf\n\njobs:\n  build:\n"
+                "    name: build (${{ github.event_name }})\n    timeout-minutes: 5\n    steps:\n"
+                "      - " + PINNED + "\n" + body)
+
+    def test_docker_run_without_guard_is_a_finding(self):
+        code, out = self.run_gate(self.job_with("docker run --rm img"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("docker run", out)
+        self.assertIn("job 'build'", out)
+
+    def test_guard_in_an_earlier_step_is_clean(self):
+        text = self.job_with("timeout 30 docker info > /dev/null", "docker run --rm img")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_guard_earlier_in_the_same_step_is_clean(self):
+        text = self.job_with("timeout 30 docker info > /dev/null\n          docker run --rm img")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_bare_docker_info_hangs_like_no_guard(self):
+        code, out = self.run_gate(self.job_with("docker info", "docker run --rm img"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("timeout", out)
+
+    def test_guard_after_the_run_does_not_count(self):
+        text = self.job_with("docker run --rm img\n          timeout 30 docker info")
+        self.assertEqual(self.run_gate(text)[0], 1)
+
+    def test_guard_only_in_a_comment_does_not_count(self):
+        text = self.job_with("# timeout 30 docker info\n          docker run --rm img")
+        self.assertEqual(self.run_gate(text)[0], 1)
+
+    def test_job_without_docker_run_is_clean(self):
+        self.assertEqual(self.run_gate(self.job_with("echo hi"))[0], 0)
+
+
 class TestCross(GateCase):
     def test_required_job_absent(self):
         code, out = self.run_gate("on:\n  pull_request:\n\njobs:\n  other:\n    steps:\n      - " + PINNED + "\n")
@@ -646,6 +816,8 @@ class TestPullRequestTypesListStyle(GateCase):
         "jobs:\n"
         "  build:\n"
         "    name: build (${{ github.event_name }})\n"
+        "    timeout-minutes: 5\n"
+        "    concurrency: j\n"
         "    steps:\n"
         "      - " + PINNED + "\n"
         "        run: |\n"

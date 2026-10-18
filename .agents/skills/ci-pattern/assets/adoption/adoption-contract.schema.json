@@ -82,11 +82,11 @@
     },
     "architecture": {
       "type": "object",
-      "required": ["doc", "job", "stack", "linter_config"],
+      "required": ["doc", "job", "stack"],
       "properties": {
         "doc": {"type": "string", "description": "Ruta del documento de arquitectura, p. ej. docs/architecture.md."},
-        "stack": {"type": "string", "enum": ["python", "typescript"], "description": "Stack cuyo linter impone las reglas de imports del bloque de capas."},
-        "linter_config": {"type": "string", "description": "Configuracion versionada del linter (p. ej. .importlinter); debe coincidir con la derivada del bloque."},
+        "stack": {"type": "string", "enum": ["python", "typescript", "none"], "description": "Stack cuyo linter impone las reglas de imports del bloque de capas; none (p. ej. PHP) exige arbol y capas sin linter y prohibe linter_config."},
+        "linter_config": {"type": "string", "description": "Configuracion versionada del linter (p. ej. .importlinter); debe coincidir con la derivada del bloque. Obligatoria salvo con stack none."},
         "code_roots": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["root", "glob"],
           "properties": {"root": {"type": "string", "minLength": 1}, "glob": {"type": "string", "minLength": 1}}},
           "description": "Raices de codigo cuyos modulos de primer nivel describe el arbol (como docs_map.code_roots)."},
@@ -118,6 +118,7 @@
         },
         "code_root": {"type": "string", "description": "Forma escalar de una sola raiz; equivale a code_roots con un elemento. No se combina con code_roots."},
         "code_glob": {"type": "string", "description": "Glob de la forma escalar, p. ej. *.py."},
+        "exclude_dirs": {"type": "array", "items": {"type": "string", "minLength": 1}, "description": "Directorios de primer nivel con codigo que NO se mapean (generados, vendorizados). Cualquier otro directorio de codigo debe caer dentro de alguna raiz de code_roots (#805)."},
         "job": {"type": "string", "description": "Nombre del job de CI que ejecuta docs-codeguide."}
       },
       "description": "Declaracion explicita (HR-63, #709): sin ella adoption check avisa por stderr que el mapa del codigo no se exige aun y sale 0; con ella la fase 5 exige hub, spokes enlazados en los dos sentidos, sincronia mapa<->codigo y el job."

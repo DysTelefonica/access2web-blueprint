@@ -253,7 +253,11 @@ host el patrón se adopta con el camino runner (HR-34 con su clase
 3. Instale los tres controles (`assets/runner-controls/`) y cablee un
    workflow por control en el runner declarado: detective post-push (HR-49),
    merge gobernado (HR-50) y guard de force-push (HR-51), cada uno en un job
-   cuyo `runs-on` incluya `runner.label`.
+   cuyo `runs-on` incluya `runner.label`. El job de merge gobernado declara
+   `issues: write`: el merge con `GITHUB_TOKEN` no dispara el cierre
+   implícito de las palabras de cierre del PR y el asset cierra esas issues
+   él mismo (#800); sin el permiso termina en exit 3 («fusionado, issue sin
+   cerrar»).
 4. Añada el gate `runner-binding` a `gates` de la fase 4 del contrato de
    adopción con `--contract @.github/host-contract.json` y
    `--workflows @.github/workflows`; la fase 4 lo exige cuando el host

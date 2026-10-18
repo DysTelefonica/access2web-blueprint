@@ -424,7 +424,7 @@ class VerifyAdoptionTests(unittest.TestCase):
             "  feature_request.yml: type:feature\n", encoding="utf-8")
         (repo / ".github" / "workflows").mkdir(parents=True, exist_ok=True)
         (repo / ".github" / "workflows" / "ci.yml").write_text(
-            "on:\n  pull_request:\njobs:\n  unit:\n    steps:\n"
+            "on:\n  pull_request:\njobs:\n  unit:\n    timeout-minutes: 5\n    concurrency: u\n    steps:\n"
             "      - run: bash testing/run-unit-suites.sh\n      - uses: ./local@8f4b7f8d\n",
             encoding="utf-8")
         (repo / ".github" / "required-jobs-policy.json").write_text(json.dumps({

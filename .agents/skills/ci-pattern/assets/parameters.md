@@ -49,8 +49,9 @@ nombre de la rama al push (#518); ya no hay generador local.
 
 Parámetros secundarios documentados en las fuentes: host de producción, versión
 de Python y lista de checks requeridos (en este repo: `required`,
-`pr-size / pr-size`; el gate `branch-name` está retirado — el ruleset
-del host aplica la regex).
+`pr-size / pr-size`; con ruleset en el host, este aplica la regex y el gate
+`branch-name` no hace falta; en un host sin rulesets —repo privado de plan Free—
+lo cumple `assets/branch-name/check_branch_name.py`, que compensa).
 
 ## Policy file de gates dormibles (HR-18)
 
