@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v6343a39 -->
+<!-- personal-skills:slice:access2web-blueprint @ v9a3c982 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -17,14 +17,14 @@
 - **El workspace del runner de CI no es un clon de desarrollo.** Se trabaja en un worktree o clon propio (ver §Worktree y rama remota).
 - **Una copia global de skill desactualizada tapa la del repo** (ver §Carga de skills): si una skill del repo contradice a la global, gana la del repo, y la global está pidiendo actualización.
 
-### Skill Registry Protocol (MANDATORY)
+### Skill Registry Protocol (obligatorio)
 
 La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el registro generado — `.atl/skill-registry.md`, refrescado por la skill `skill-registry` (`gentle-ai skill-registry refresh`) — es la fuente de verdad de descubrimiento. Una regla que existe y está indexada pero que ninguna sesión carga no gobierna nada: este protocolo convierte el índice en despacho.
 
-1. **READ** — antes de escribir o revisar código, CI o documentación, lea `.atl/skill-registry.md` (o el índice de skills del repo).
-2. **MATCH** — contraste la tarea contra la columna `Trigger / description` de las skills candidatas.
-3. **LOAD** — lea íntegros los `SKILL.md` que matcheen ANTES de actuar.
-4. **DELEGATE** — al delegar a un subagente, pase las rutas exactas de los `SKILL.md` bajo un encabezado `## Skills to load before work` en la tarea. Un nombre en prosa no basta: el subagente no debe tener que adivinar ni redescubrir (eso produce el degradado `fallback-registry`).
+1. **leer** — antes de escribir o revisar código, CI o documentación, lea `.atl/skill-registry.md` (o el índice de skills del repo).
+2. **contrastar** — contraste la tarea contra la columna `Trigger / description` de las skills candidatas.
+3. **cargar** — lea íntegros los `SKILL.md` que matcheen antes de actuar.
+4. **delegar** — al delegar a un subagente, pase las rutas exactas de los `SKILL.md` bajo un encabezado `## Skills to load before work` en la tarea. Un nombre en prosa no basta: el subagente no debe tener que adivinar ni redescubrir (eso produce el degradado `fallback-registry`).
 5. **GAP** — si ninguna skill matchea y la tarea toca CI/PRs, releases, la flota de runners o la adopción de un repositorio nuevo, es un gap de orquestación: dígalo explícitamente en vez de proceder de memoria.
 
 - **Deriva índice/registro.** La tabla del `AGENTS.md` es la puerta del contribuyente; el registro es la verdad operativa. Que una skill no aparezca en la tabla no autoriza concluir «no aplica»: autoriza buscarla en el registro (`skill-registry` / `gentle-ai skill-registry refresh`).
@@ -196,7 +196,7 @@ Cada invariante de este partial se ancla a una skill específica del catálogo o
 - Anti-slop → `ai-slop-discipline` (catálogo, T1 universal).
 - CodeGraph preflight → upstream `engineering-workflow` líneas 64-71; `codegraph-usage` HR-1, HR-2.
 - Conventional commits + castellano peninsular en artefactos + sin atribución IA → `personal-skills/AGENTS.md` raíz de flota.
-- Skill Registry Protocol (READ/MATCH/LOAD/DELEGATE/GAP + deriva índice/registro + frescura) → upstream `gentle-ai` `internal/assets/skills/_shared/odd-orchestrator-sections.md:183-201`, adaptado vía `gentle-ai-governance-dispatch.md` (adopciones 1-3 del informe de gobernanza 2026-10-02).
+- Skill Registry Protocol (`READ`/`MATCH`/`LOAD`/`DELEGATE`/`GAP` + deriva índice/registro + frescura) → upstream `gentle-ai` `internal/assets/skills/_shared/odd-orchestrator-sections.md:183-201`, adaptado vía `gentle-ai-governance-dispatch.md` (adopciones 1-3 del informe de gobernanza 2026-10-02).
 - Arranque sin checkout atrasado (sincronizar la rama base antes de leer, decidir o tocar) → `personal-skills/AGENTS.md` raíz de flota (§Lectura obligatoria). Invariante de flota sin skill fuente.
 
 ### Cómo auditar este partial usted mismo
@@ -226,7 +226,11 @@ Procedimiento de validación periódica (mensual o por release de skill fuente):
 
 Al buscar una skill de este catálogo, resuelva en este orden:
 
-1. Global: `~/.agents/skills/` (y `~/.pi/agent/skills/`).
+1. Por nombre. La ruta física la decide el agente (opencode | claude
+   | codex | cursor | pi) y, en el caso de Pi, la variable
+   `PI_CODING_AGENT_DIR`. La separación entre los cinco destinos
+   compartidos del catálogo y la ruta reservada a skills exclusivas
+   de Pi (HR-12) está documentada en la skill `skill-propagation`.
 2. Repo: `.agents/skills/` del consumer, materializada desde `.team-skills.yaml` por `scripts/refresh-team-skills.ps1` (vía rama `skill-fleet/<name>`).
 3. Catálogo: `skills/<nombre>/SKILL.md` de personal-skills.
 
@@ -266,50 +270,50 @@ el guard de force-push abren el incidente.
 <!-- ci-pattern:hr-block:end -->
 
 <!-- ci-pattern-agents:begin -->
-## Flujo operativo y mandato de no invención
+## Flujo operativo y mandato de no invenci├│n
 
-Bloque gobernado: no lo edite a mano; se regenera desde el patrón.
-Antes de actuar, lea la parte del flujo operativo de la situación. Si un paso,
-comando, etiqueta o dato que necesita no está en este documento, NO lo invente:
-deténgase y pregunte en la issue o al mantenedor.
+Bloque gobernado: no lo edite a mano; se regenera desde el patr├│n.
+Antes de actuar, lea la parte del flujo operativo de la situaci├│n. Si un paso,
+comando, etiqueta o dato que necesita no est├í en este documento, NO lo invente:
+det├®ngase y pregunte en la issue o al mantenedor.
 
-| Situación | Qué leer antes de actuar |
+| Situaci├│n | Qu├® leer antes de actuar |
 | --- | --- |
-| Crear una issue | Sección 1 (formulario, duplicados, aprobación) |
-| Crear una rama | Sección 2 (regex y forma del nombre) |
-| Sincronizar la rama de feature con la base | Sección 10, etapa 5 (integración por merge, nunca rebase) |
-| Escribir commits | Sección 3 (convención y unidades de trabajo) |
-| Abrir un pull request | Sección 4 (cuerpo, etiqueta, presupuesto) |
-| Encadenar PRs | Sección 4 (cadena: `chain:partial`, `Refs #N`, punta) |
-| Consultar checks | Sección 5 (tabla de checks y recetas de recuperación) |
-| Pedir un merge | Sección 6 y la etapa 9 del ciclo de vida |
-| Registrar un incidente de producción | Sección 8 (los cuatro niveles: post-mortem, registro operativo, secretos, datos personales) |
-| Reportar una fricción | Sección 9 |
-| Cualquier paso del ciclo | Sección 10 (ciclo de vida completo) |
+| Crear una issue | Secci├│n 1 (formulario, duplicados, aprobaci├│n) |
+| Crear una rama | Secci├│n 2 (regex y forma del nombre) |
+| Sincronizar la rama de feature con la base | Secci├│n 10, etapa 5 (integraci├│n por merge, nunca rebase) |
+| Escribir commits | Secci├│n 3 (convenci├│n y unidades de trabajo) |
+| Abrir un pull request | Secci├│n 4 (cuerpo, etiqueta, presupuesto) |
+| Encadenar PRs | Secci├│n 4 (cadena: `chain:partial`, `Refs #N`, punta) |
+| Consultar checks | Secci├│n 5 (tabla de checks y recetas de recuperaci├│n) |
+| Pedir un merge | Secci├│n 6 y la etapa 9 del ciclo de vida |
+| Registrar un incidente de producci├│n | Secci├│n 8 (los cuatro niveles: post-mortem, registro operativo, secretos, datos personales) |
+| Reportar una fricci├│n | Secci├│n 9 |
+| Cualquier paso del ciclo | Secci├│n 10 (ciclo de vida completo) |
 
-**Mandato de no invención:** si un paso, comando, etiqueta o dato que necesita
-no está documentado en el flujo operativo, no lo invente: deténgase y
+**Mandato de no invenci├│n:** si un paso, comando, etiqueta o dato que necesita
+no est├í documentado en el flujo operativo, no lo invente: det├®ngase y
 pregunte en la issue o al mantenedor.
 
-## Dónde vive la documentación
+## D├│nde vive la documentaci├│n
 
-Toda la documentación de este proyecto vive en este mismo repositorio, bajo `docs/`
+Toda la documentaci├│n de este proyecto vive en este mismo repositorio, bajo `docs/`
 por materia; los post-mortems en `docs/postmortems/<AAAA-MM-DD>-<slug>.md`.
-Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
-backups, los datos en bruto y el material privado. Nunca ubique documentación
+Fuera del repositorio, y sin copia en ├®l, quedan solo los secretos, los
+backups, los datos en bruto y el material privado. Nunca ubique documentaci├│n
 en una ruta absoluta o externa al repositorio (HR-48): el gate de la fase 5 la
-rechaza. Detalle: la sección «Dónde vive la documentación» del flujo operativo.
-## Dónde trabajar
+rechaza. Detalle: la secci├│n ┬½D├│nde vive la documentaci├│n┬╗ del flujo operativo.
+## D├│nde trabajar
 
-Antes de actuar, vaya al documento de su situación; no deduzca dónde va el trabajo.
+Antes de actuar, vaya al documento de su situaci├│n; no deduzca d├│nde va el trabajo.
 
-| Si vas a… | Lee… |
+| Si vas aÔÇª | LeeÔÇª |
 | --- | --- |
-| Cambiar código o buscar dónde va algo nuevo | `docs/CODEBASE-GUIDE.md` y, desde ella, la página de `docs/codebase/` del área que toque |
+| Cambiar c├│digo o buscar d├│nde va algo nuevo | `docs/CODEBASE-GUIDE.md` y, desde ella, la p├ígina de `docs/codebase/` del ├írea que toque |
 | Abrir un pull request | la checklist de su tipo de cambio en `docs/codebase/maintainer-playbook.md` |
-| Proponer o cambiar algo que quizá ya se decidió | `docs/decisions/README.md`: consulte antes si ya se rechazó, sustituyó o aplazó |
-| Crear un módulo o importar entre módulos | `docs/architecture.md`: árbol de módulos, capas y dependencias permitidas, antes de añadir un módulo o un import entre capas |
-| Dudar de si algo existe en el repositorio | las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código |
+| Proponer o cambiar algo que quiz├í ya se decidi├│ | `docs/decisions/README.md`: consulte antes si ya se rechaz├│, sustituy├│ o aplaz├│ |
+| Crear un m├│dulo o importar entre m├│dulos | `docs/architecture.md`: ├írbol de m├│dulos, capas y dependencias permitidas, antes de a├▒adir un m├│dulo o un import entre capas |
+| Dudar de si algo existe en el repositorio | las p├íginas ┬½No existe en este repo┬╗ de `docs/codebase/`, antes de inventar c├│digo |
 <!-- ci-pattern-agents:end -->
 
 # Fragment access2web-blueprint — convenciones operacionales del repo
