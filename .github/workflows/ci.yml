@@ -121,6 +121,13 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
+          # Action 1 of ~/tmp/report-apap3.md §2.6: cache the pip download
+          # cache keyed by the hash-pinned lockfile. pr-gate itself runs no
+          # `pip install` today, so this is forward-compat for any future
+          # install step; the safety is that the cache key is derived from
+          # the lockfile, not from the runner's resolution.
+          cache: 'pip'
+          cache-dependency-path: app/requirements-dev.lock
 
       - name: pr size
         # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
@@ -199,6 +206,14 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
+          # Action 1 of ~/tmp/report-apap3.md §2.6: cache the pip download
+          # cache keyed by the hash-pinned lockfile so the subsequent
+          # `pip install --require-hashes --requirement app/requirements-dev.lock`
+          # reuses the resolved dependencies across runs (same packages,
+          # same hashes, just faster). This is a cache key, not a
+          # relaxation: the lockfile is the gate.
+          cache: 'pip'
+          cache-dependency-path: app/requirements-dev.lock
 
       - name: install
         # The dev pins live in app/pyproject.toml and are exact (ruff==0.15.21,
@@ -413,11 +428,16 @@ jobs:
         # fixture to fail instead of skip.
         ports:
           - 5432
+        # Action 3 of ~/tmp/report-apap3.md §2.6: tighter readiness poll so
+        # `Resolve the DSN from the assigned host port` stops racing the
+        # container start. The container's digest, env, and ports stay
+        # untouched above this block; only the readiness poll cadence
+        # changes (10 s / 10 retries -> 2 s / 30 retries).
         options: >-
-          --health-cmd "pg_isready -U lanzadera -d lanzadera"
-          --health-interval 10s
+          --health-cmd "pg_isready"
+          --health-interval 2s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -435,6 +455,15 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
+          # Action 1 of ~/tmp/report-apap3.md §2.6: cache the pip download
+          # cache keyed by the hash-pinned lockfile so the subsequent
+          # `pip install --require-hashes --requirement app/requirements-dev.lock`
+          # reuses the resolved dependencies across runs. The integration
+          # suite additionally needs asyncpg + alembic which the lockfile
+          # already pins; the cache key is the lockfile, not the resolved
+          # graph, so the gate keeps enforcing the same hashes.
+          cache: 'pip'
+          cache-dependency-path: app/requirements-dev.lock
 
       - name: install
         # Same #117 defensive guard as the `quality` job: prove the
