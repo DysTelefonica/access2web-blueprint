@@ -121,13 +121,6 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
-          # Action 1 of ~/tmp/report-apap3.md §2.6: cache the pip download
-          # cache keyed by the hash-pinned lockfile. pr-gate itself runs no
-          # `pip install` today, so this is forward-compat for any future
-          # install step; the safety is that the cache key is derived from
-          # the lockfile, not from the runner's resolution.
-          cache: 'pip'
-          cache-dependency-path: app/requirements-dev.lock
 
       - name: pr size
         # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
@@ -206,12 +199,11 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
-          # Action 1 of ~/tmp/report-apap3.md §2.6: cache the pip download
-          # cache keyed by the hash-pinned lockfile so the subsequent
-          # `pip install --require-hashes --requirement app/requirements-dev.lock`
+          # Cache the pip download keyed by the hash-pinned lockfile so the
+          # subsequent `pip install --require-hashes --requirement app/requirements-dev.lock`
           # reuses the resolved dependencies across runs (same packages,
-          # same hashes, just faster). This is a cache key, not a
-          # relaxation: the lockfile is the gate.
+          # same hashes, just faster). This is a cache key, not a relaxation:
+          # the lockfile is the gate. See issue #1067.
           cache: 'pip'
           cache-dependency-path: app/requirements-dev.lock
 
@@ -428,13 +420,14 @@ jobs:
         # fixture to fail instead of skip.
         ports:
           - 5432
-        # Action 3 of ~/tmp/report-apap3.md §2.6: tighter readiness poll so
-        # `Resolve the DSN from the assigned host port` stops racing the
-        # container start. The container's digest, env, and ports stay
-        # untouched above this block; only the readiness poll cadence
-        # changes (10 s / 10 retries -> 2 s / 30 retries).
+        # Tighter readiness poll so `Resolve the DSN from the assigned host port`
+        # stops racing the container start. The container's digest, env, and
+        # ports stay untouched above this block; only the readiness poll cadence
+        # changes (10 s / 10 retries -> 2 s / 30 retries), and the probe still
+        # targets the project's database (`lanzadera`), not just the server.
+        # See issue #1067.
         options: >-
-          --health-cmd "pg_isready"
+          --health-cmd "pg_isready -U lanzadera -d lanzadera"
           --health-interval 2s
           --health-timeout 5s
           --health-retries 30
@@ -455,13 +448,12 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
-          # Action 1 of ~/tmp/report-apap3.md §2.6: cache the pip download
-          # cache keyed by the hash-pinned lockfile so the subsequent
-          # `pip install --require-hashes --requirement app/requirements-dev.lock`
-          # reuses the resolved dependencies across runs. The integration
-          # suite additionally needs asyncpg + alembic which the lockfile
-          # already pins; the cache key is the lockfile, not the resolved
-          # graph, so the gate keeps enforcing the same hashes.
+          # Cache the pip download keyed by the hash-pinned lockfile so the
+          # subsequent `pip install --require-hashes --requirement app/requirements-dev.lock`
+          # reuses the resolved dependencies across runs. The integration suite
+          # additionally needs asyncpg + alembic which the lockfile already
+          # pins; the cache key is the lockfile, not the resolved graph, so
+          # the gate keeps enforcing the same hashes. See issue #1067.
           cache: 'pip'
           cache-dependency-path: app/requirements-dev.lock
 
