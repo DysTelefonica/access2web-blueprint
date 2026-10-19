@@ -104,6 +104,16 @@ PY_READ = re.compile(r"os\.environ(?:\.get)?\[\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['
 # `templates.env` (acceso a atributo) y `TEMPLATES.env` no lo son. El cargador
 # se detecta por su forma (`load_dotenv`, `from dotenv`, `import dotenv`), no
 # por la palabra suelta: `postgresql://dotenv` es un dato, no una lectura.
+# Refs #851: la detección distingue tres casos adicionales por su forma y NO
+# por la palabra `dotenv` suelta: (a) `TEMPLATES.env.get_template(...)` —
+# atributo `env` de un binding local (Jinja2); (b) `"dotenv_schema"` /
+# `"postgresql://dotenv"` — substring `dotenv` dentro de un identificador,
+# schema name o URL, dato, no lectura; (c) `\\.env` con barra de escape —
+# patrón de regex, no ruta. Los casos (a) y (b) NO contienen `.env` (el
+# segundo) o lo tienen con frontera de palabra a la izquierda (el primero, vía
+# `(?<!\w)`); el caso (c) está cubierto por la segunda lookbehind
+# `(?<!(?<!\\)\\)\.env\b`. La suite `TestDotenvPrecision` lock-downea esto
+# desde #851 para que un refactor del regex no pueda regresionar.
 # #626: un `\.env` con barra de escape es un patrón de regex, no una ruta.
 DOTENV_FILE = re.compile(r"(?<!\w)(?<!(?<!\\)\\)\.env\b")
 # #626 B: un `.env` colgado de un directorio temporal del test (`tmp_path / ".env"`)
@@ -119,7 +129,26 @@ PROSE_LITERAL = re.compile(r"(['\"])(?=[^'\"]*\s)[^'\"]*\1")
 
 
 def dotenv_file_ref(line: str, python: bool) -> bool:
-    """True si la línea nombra el `.env` local como fichero (#626)."""
+    r"""True si la línea nombra el ``.env`` local como fichero (#626, #851).
+
+    Es un detector POR FORMA: un ``.env`` con frontera de palabra a la
+    izquierda (``(?<!\w)``) y sin barra de escape precedente. Tres
+    formulaciones que la regex maneja correctamente y que cualquier
+    refactor del regex debe preservar (Refs #851):
+
+    - ``TEMPLATES.env.get_template(template_name)`` -- atributo ``env`` de
+      un binding local (Jinja2, dataclass, etc.). El carácter precedente
+      es una letra, así que la lookbehind ``(?<!\w)`` falla y la línea no
+      se marca.
+    - ``"dotenv_schema"``, ``"postgresql://dotenv"`` -- ``dotenv`` como
+      substring de un identificador o URL. No hay ``.env`` literal, así
+      que DOTENV_FILE no matchea; el cargador se detecta por
+      DOTENV_LOADER, no por la palabra suelta.
+    - ``\.env`` en código — patrón de regex escapado, no ruta. La
+      segunda lookbehind (``(?<!(?<!\)\)``) exige que NO haya una única
+      barra de escape precediendo al ``.env``.
+    """
+
     if GIT_META.search(line):
         return False
     if python:

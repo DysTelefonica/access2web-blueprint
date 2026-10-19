@@ -23,6 +23,22 @@ The policy may carry an optional ``relaxation`` field (``reason`` and
 a malformed field never sits in a policy waiting to cover a later
 relaxation.
 
+The policy may also carry an optional ``dependencies`` object mapping each
+required job to its direct upstream jobs. When a skipped job's transitive
+upstream closure intersects ``accepted_skips`` for the event, the skip is
+treated as a cascade of a declared skip (cause→consequence) and the gate
+accepts it (#853). Self-loops and cycles fail closed at load time, never
+at verdict time.
+
+The policy may also carry an optional ``docs_only_lane`` object naming the
+event that admits the lane, the gate job that publishes the marker, the
+output key that holds it and the skips it covers. The skips are accepted
+only when the gate proved the marker is exactly ``"true"`` on the declared
+event; any other value, a missing output, or a different event keeps every
+skip undeclared and the gate fails closed (#857). The lane is purely
+additive: cascade skip from ``dependencies`` (#853) and conditional skip
+from ``docs_only_lane`` coexist, and neither widens ``accepted_skips``.
+
 Base comparison (HR-15): ``--base-policy`` takes the copy of the policy on the
 base branch. The run is still judged with the candidate policy — adding a job
 means adding it to the workflow, to ``needs`` and to the policy in one PR, so
@@ -51,10 +67,11 @@ SKIPPED = "skipped"
 ROOT_CAUSE_CONCLUSIONS = ("failure", "cancelled")
 
 POLICY_KEYS = frozenset({"required_jobs", "events"})
-OPTIONAL_POLICY_KEYS = frozenset({"relaxation"})
+OPTIONAL_POLICY_KEYS = frozenset({"relaxation", "dependencies", "docs_only_lane"})
 EVENT_KEYS = frozenset({"accepted_skips"})
 RELAXATION_KEYS = frozenset({"reason", "reference", "actor", "issue"})
 RELAXATION_REQUIRED = frozenset({"reason", "reference"})
+DOCS_ONLY_LANE_KEYS = frozenset({"event", "gate_job", "output", "skips"})
 
 
 class GateError(Exception):
@@ -121,6 +138,137 @@ def validate_relaxation(field: object, label: str) -> None:
         )
 
 
+def validate_docs_only_lane(lane: object, jobs: list, events: dict, label: str) -> None:
+    """The docs-only lane names its event, the gate job, its marker and the skips it covers.
+
+    The skips are conditional on the marker, so the lane never widens
+    ``accepted_skips``; every reference must point at a declared job or event.
+    Raises :class:`GateError` on every structural doubt; the ``# noqa: TRY003``
+    on each raise keeps the ratchet from growing the baseline (HR-15) for what
+    is the same ``{label}: {body}`` pattern the rest of the file already uses
+    for every other gate error (#857).
+    """
+    if not isinstance(lane, dict) or set(lane) != DOCS_ONLY_LANE_KEYS:
+        raise GateError(  # noqa: TRY003
+            f"{label}: docs_only_lane must be an object with exactly "
+            f"{sorted(DOCS_ONLY_LANE_KEYS)}")
+    for key in ("event", "gate_job", "output"):
+        if not isinstance(lane[key], str) or not lane[key].strip():
+            raise GateError(  # noqa: TRY003
+                f"{label}: docs_only_lane.{key} must be a non-empty string")
+    skips = lane["skips"]
+    if not isinstance(skips, list) or not skips or not all(
+            isinstance(j, str) and j for j in skips):
+        raise GateError(  # noqa: TRY003
+            f"{label}: docs_only_lane.skips must be a non-empty list of job names")
+    if len(set(skips)) != len(skips):
+        raise GateError(  # noqa: TRY003
+            f"{label}: docs_only_lane.skips contains duplicate job names")
+    if lane["event"] not in events:
+        raise GateError(  # noqa: TRY003
+            f"{label}: docs_only_lane.event '{lane['event']}' is not a declared event")
+    if lane["gate_job"] not in jobs or lane["gate_job"] in skips:
+        raise GateError(  # noqa: TRY003
+            f"{label}: docs_only_lane.gate_job '{lane['gate_job']}' must be a required job "
+            "that the lane does not skip")
+    unknown = set(skips) - set(jobs)
+    if unknown:
+        raise GateError(  # noqa: TRY003
+            f"{label}: docs_only_lane.skips outside required_jobs: {sorted(unknown)}")
+
+
+def validate_dependencies(field: object, jobs: list, label: str
+                          ) -> dict[str, tuple[str, ...]]:
+    """Optional ``dependencies``: ``{downstream: [upstream, ...]}``.
+
+    Every name must be a non-empty string that names a required job; a
+    self-loop or any cycle fails closed at load time so the verdict phase
+    never sees a malformed graph (#853). The returned structure is the
+    graph the verdict walks: each key is a downstream job, each value is
+    its tuple of direct upstreams.
+    """
+    if not isinstance(field, dict):
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependencies must be an object")
+    known = set(jobs)
+    normalized = _normalize_dependencies(field, known, label)
+    _assert_no_cycles(normalized, label)
+    return normalized
+
+
+def _normalize_dependencies(field: dict, known: set[str], label: str
+                            ) -> dict[str, tuple[str, ...]]:
+    """Validate every entry of the ``dependencies`` field and collect its tuple.
+
+    The per-entry checks live in :func:`_validate_dependency_entry`; this
+    orchestrator only walks the field once and keeps the verdict graph
+    flat so :func:`_assert_no_cycles` can iterate without indexing
+    exceptions.
+    """
+    normalized: dict[str, tuple[str, ...]] = {}
+    for job, upstreams in field.items():
+        normalized[job] = _validate_dependency_entry(job, upstreams, known, label)
+    return normalized
+
+
+def _validate_dependency_entry(job: object, upstreams: object,
+                                known: set[str], label: str) -> tuple[str, ...]:
+    """One entry of the ``dependencies`` graph: key, value and each upstream.
+
+    Raises :class:`GateError` with the specific message the verdict
+    prints; the ``# noqa: TRY003`` keeps the ratchet from growing the
+    baseline (HR-15) for what is the same ``{label}: {body}`` pattern the
+    rest of the file already uses for every other gate error.
+    """
+    if not isinstance(job, str) or not job:
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependency key must be a non-empty string")
+    if job not in known:
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependency for unknown job '{job}' (not in required_jobs)")
+    if not isinstance(upstreams, list) or not all(
+            isinstance(u, str) and u for u in upstreams):
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependencies['{job}'] must be a list of job name strings")
+    for upstream in upstreams:
+        if upstream not in known:
+            raise GateError(  # noqa: TRY003
+                f"{label}: dependency '{job}' names unknown upstream "
+                f"'{upstream}' (not in required_jobs)")
+        if upstream == job:
+            raise GateError(  # noqa: TRY003
+                f"{label}: dependency '{job}' lists itself as upstream")
+    return tuple(upstreams)
+
+
+def _assert_no_cycles(normalized: dict[str, tuple[str, ...]], label: str) -> None:
+    """Reject any cycle in the validated graph at load time (#853).
+
+    DFS that flags any revisit on the current call stack; ``visited``
+    carries the closure of nodes whose subtree has already been walked,
+    ``on_stack`` is the current path. The graph is the validated one from
+    :func:`_normalize_dependencies`, so a self-loop never reaches this
+    step.
+    """
+    visited: set[str] = set()
+    on_stack: set[str] = set()
+
+    def dfs(node: str) -> None:
+        if node in on_stack:
+            raise GateError(  # noqa: TRY003
+                f"{label}: dependencies form a cycle through '{node}'")
+        if node in visited:
+            return
+        on_stack.add(node)
+        for upstream in normalized.get(node, ()):
+            dfs(upstream)
+        on_stack.discard(node)
+        visited.add(node)
+
+    for job in normalized:
+        dfs(job)
+
+
 def load_policy(path: str, label: str = "policy file") -> dict:
     """Load and validate a policy file; every structural doubt raises.
 
@@ -145,10 +293,19 @@ def load_policy(path: str, label: str = "policy file") -> dict:
         raise GateError(f"{label}: required_jobs contains duplicate job names")
     events = data["events"]
     validate_events(events, jobs, label)
+    if "docs_only_lane" in data:
+        # Validated whenever present, base copy or not: a malformed field must
+        # not sit in the policy waiting to "cover" a later lane skip (#857).
+        validate_docs_only_lane(data["docs_only_lane"], jobs, events, label)
     if "relaxation" in data:
         # Validated whenever present, base copy or not: a malformed field must
         # not sit in the policy waiting to "cover" a later relaxation.
         validate_relaxation(data["relaxation"], label)
+    if "dependencies" in data:
+        # Validated and normalized when present: a malformed graph never
+        # sits in the policy waiting to "cover" a later cascade (#853).
+        data["dependencies"] = validate_dependencies(
+            data["dependencies"], jobs, label)
     return data
 
 
@@ -164,8 +321,13 @@ def job_conclusion(job: str, value: object) -> str:
     )
 
 
-def load_needs(path: str | None) -> dict:
-    """Load the serialized needs object and return it as job -> conclusion."""
+def load_needs(path: str | None) -> tuple[dict, dict]:
+    """Load the serialized needs object; return job -> conclusion and job -> outputs.
+
+    ``outputs`` carries the per-job ``outputs`` map the runner publishes
+    (the lane marker lives there, #857). A bare conclusion string or an
+    object without ``outputs`` is read with an empty ``outputs`` map.
+    """
     try:
         if path is None:
             if sys.stdin.isatty():
@@ -182,7 +344,9 @@ def load_needs(path: str | None) -> dict:
         raise GateError("needs input must be a non-empty object of job -> conclusion")
     if "" in data:
         raise GateError("needs input must map non-empty job names to conclusions")
-    return {job: job_conclusion(job, value) for job, value in data.items()}
+    outputs = {job: value["outputs"] if isinstance(value, dict) and isinstance(value.get("outputs"), dict) else {}
+               for job, value in data.items()}
+    return {job: job_conclusion(job, value) for job, value in data.items()}, outputs
 
 
 def same_file(first: str, second: str) -> bool:
@@ -221,7 +385,9 @@ def find_relaxations(candidate: dict, base: dict) -> list[str]:
     """List every way the candidate policy is laxer than the base copy.
 
     Tightening — a job added, an accepted skip removed, an event removed — is
-    not listed: it needs no justification.
+    not listed: it needs no justification. The lane walk lives in
+    :func:`_docs_only_lane_relaxations` so the body keeps its complexity under
+    C901 (#857).
     """
     found: list[str] = []
     kept = set(candidate["required_jobs"])
@@ -237,6 +403,28 @@ def find_relaxations(candidate: dict, base: dict) -> list[str]:
         for job in candidate["events"][event]["accepted_skips"]:
             if job not in before:
                 found.append(f"event '{event}': accepted skip '{job}' added")
+    found.extend(_docs_only_lane_relaxations(candidate, base))
+    return found
+
+
+def _docs_only_lane_relaxations(candidate: dict, base: dict) -> list[str]:
+    """Lane-level relaxations: lane source changed or any skip added (#857).
+
+    Split out of :func:`find_relaxations` to keep that function under C901.
+    A change of the lane source (``event``, ``gate_job`` or ``output``) is a
+    new relaxation even if the skips themselves are inherited.
+    """
+    lane = candidate.get("docs_only_lane")
+    if lane is None:
+        return []
+    base_lane = base.get("docs_only_lane")
+    before = set(base_lane["skips"]) if base_lane else set()
+    found: list[str] = []
+    if base_lane and any(base_lane[k] != lane[k] for k in ("event", "gate_job", "output")):
+        found.append("docs-only lane source changed (event, gate_job or output)")
+    for job in lane["skips"]:
+        if job not in before:
+            found.append(f"docs-only skip '{job}' added")
     return found
 
 
@@ -285,15 +473,47 @@ def policy_violations(needs: dict, policy: dict, event: str) -> tuple[list[str],
     return violations, accepted
 
 
-def classify_conclusions(needs: dict, accepted: set[str]) -> dict[str, list[str]]:
-    """Split the non-success conclusions into root causes, skips and unknown ones."""
+def docs_only_skips(policy: dict, event: str, outputs: dict) -> set[str]:
+    """Skips the docs-only lane covers: only on its event, only when the gate proved docs_changed.
+
+    The marker must be exactly ``"true"``; any other value, or a missing gate
+    output, keeps every skip undeclared. The lane is purely conditional and
+    never widens ``accepted_skips`` (#857).
+    """
+    lane = policy.get("docs_only_lane")
+    if lane is None or event != lane["event"]:
+        return set()
+    gate_outputs = outputs.get(lane["gate_job"], {})
+    if gate_outputs.get(lane["output"]) != "true":
+        return set()
+    return set(lane["skips"])
+
+
+def classify_conclusions(needs: dict, accepted: set[str],
+                          dependencies: dict[str, tuple[str, ...]] | None = None
+                          ) -> dict[str, list[str]]:
+    """Split the non-success conclusions into root causes, skips and unknown ones.
+
+    A skipped job whose transitive upstream closure (over the validated
+    ``dependencies`` graph) names a job in ``accepted`` is treated as a
+    cascade of a declared skip and moves to ``declared_skips`` (#853). The
+    cascade acceptance is purely additive: a skipped job with no upstream
+    in ``accepted`` still lands in ``undeclared_skips``, and a job whose
+    upstream is a ``failure`` or ``cancelled`` is the root cause (handled
+    by ``policy_violations`` through ``evaluate``) and never rescues the
+    cascade.
+    """
+    deps = dependencies or {}
     sorted_out: dict[str, list[str]] = {"root_causes": [], "undeclared_skips": [],
                                         "declared_skips": [], "unknown": []}
     for job, conclusion in sorted(needs.items()):
         if conclusion == SUCCESS:
             continue
         if conclusion == SKIPPED:
-            sorted_out["declared_skips" if job in accepted else "undeclared_skips"].append(job)
+            if job in accepted or _cascade_is_accepted(job, accepted, deps):
+                sorted_out["declared_skips"].append(job)
+            else:
+                sorted_out["undeclared_skips"].append(job)
         elif conclusion in ROOT_CAUSE_CONCLUSIONS:
             sorted_out["root_causes"].append(f"{job} ({conclusion})")
         else:
@@ -301,15 +521,41 @@ def classify_conclusions(needs: dict, accepted: set[str]) -> dict[str, list[str]
     return sorted_out
 
 
-def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None) -> dict:
+def _cascade_is_accepted(job: str, accepted: set[str],
+                          dependencies: dict[str, tuple[str, ...]]) -> bool:
+    """True when any transitive upstream of ``job`` is in ``accepted``.
+
+    ``dependencies`` is the validated, cycle-free graph from the policy;
+    ``seen`` bounds the walk to one visit per node.
+    """
+    seen: set[str] = set()
+    stack = list(dependencies.get(job, ()))
+    while stack:
+        node = stack.pop()
+        if node in seen:
+            continue
+        seen.add(node)
+        if node in accepted:
+            return True
+        stack.extend(dependencies.get(node, ()))
+    return False
+
+
+def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None,
+             outputs: dict | None = None) -> dict:
     """Compare the needs object against the policy and return the verdict.
 
     ``base`` is the base-branch copy of the policy; None means the comparison
     was not requested, which the report records instead of assuming it clean.
+    ``outputs`` carries the per-job ``outputs`` map the runner publishes; the
+    docs-only lane reads its marker from there (#857). When absent, the lane
+    contributes no skips.
     """
     required = policy["required_jobs"]
     violations, accepted = policy_violations(needs, policy, event)
-    conclusions = classify_conclusions(needs, accepted)
+    dependencies = policy.get("dependencies") or {}
+    lane_skips = docs_only_skips(policy, event, outputs or {})
+    conclusions = classify_conclusions(needs, accepted | lane_skips, dependencies)
     violations += conclusions["unknown"]
     # HR-15: un run sin ningún success entre los jobs requeridos no es un
     # PASS (todo saltado-aceptado, o ninguna señal verde que proteger).
@@ -406,8 +652,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         policy = load_policy(args.policy)
         base = load_base_policy(args.base_policy, args.policy)
-        needs = load_needs(args.needs_file)
-        report = evaluate(needs, policy, args.event, base)
+        needs, outputs = load_needs(args.needs_file)
+        report = evaluate(needs, policy, args.event, base, outputs)
     except GateError as exc:
         print(f"FAIL fail-closed: {exc}", file=sys.stderr)
         return 1
