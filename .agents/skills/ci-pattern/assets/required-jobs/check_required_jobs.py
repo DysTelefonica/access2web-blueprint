@@ -23,6 +23,13 @@ The policy may carry an optional ``relaxation`` field (``reason`` and
 a malformed field never sits in a policy waiting to cover a later
 relaxation.
 
+The policy may also carry an optional ``dependencies`` object mapping each
+required job to its direct upstream jobs. When a skipped job's transitive
+upstream closure intersects ``accepted_skips`` for the event, the skip is
+treated as a cascade of a declared skip (cause→consequence) and the gate
+accepts it (#853). Self-loops and cycles fail closed at load time, never
+at verdict time.
+
 Base comparison (HR-15): ``--base-policy`` takes the copy of the policy on the
 base branch. The run is still judged with the candidate policy — adding a job
 means adding it to the workflow, to ``needs`` and to the policy in one PR, so
@@ -51,7 +58,7 @@ SKIPPED = "skipped"
 ROOT_CAUSE_CONCLUSIONS = ("failure", "cancelled")
 
 POLICY_KEYS = frozenset({"required_jobs", "events"})
-OPTIONAL_POLICY_KEYS = frozenset({"relaxation"})
+OPTIONAL_POLICY_KEYS = frozenset({"relaxation", "dependencies"})
 EVENT_KEYS = frozenset({"accepted_skips"})
 RELAXATION_KEYS = frozenset({"reason", "reference", "actor", "issue"})
 RELAXATION_REQUIRED = frozenset({"reason", "reference"})
@@ -121,6 +128,98 @@ def validate_relaxation(field: object, label: str) -> None:
         )
 
 
+def validate_dependencies(field: object, jobs: list, label: str
+                          ) -> dict[str, tuple[str, ...]]:
+    """Optional ``dependencies``: ``{downstream: [upstream, ...]}``.
+
+    Every name must be a non-empty string that names a required job; a
+    self-loop or any cycle fails closed at load time so the verdict phase
+    never sees a malformed graph (#853). The returned structure is the
+    graph the verdict walks: each key is a downstream job, each value is
+    its tuple of direct upstreams.
+    """
+    if not isinstance(field, dict):
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependencies must be an object")
+    known = set(jobs)
+    normalized = _normalize_dependencies(field, known, label)
+    _assert_no_cycles(normalized, label)
+    return normalized
+
+
+def _normalize_dependencies(field: dict, known: set[str], label: str
+                            ) -> dict[str, tuple[str, ...]]:
+    """Validate every entry of the ``dependencies`` field and collect its tuple.
+
+    The per-entry checks live in :func:`_validate_dependency_entry`; this
+    orchestrator only walks the field once and keeps the verdict graph
+    flat so :func:`_assert_no_cycles` can iterate without indexing
+    exceptions.
+    """
+    normalized: dict[str, tuple[str, ...]] = {}
+    for job, upstreams in field.items():
+        normalized[job] = _validate_dependency_entry(job, upstreams, known, label)
+    return normalized
+
+
+def _validate_dependency_entry(job: object, upstreams: object,
+                                known: set[str], label: str) -> tuple[str, ...]:
+    """One entry of the ``dependencies`` graph: key, value and each upstream.
+
+    Raises :class:`GateError` with the specific message the verdict
+    prints; the ``# noqa: TRY003`` keeps the ratchet from growing the
+    baseline (HR-15) for what is the same ``{label}: {body}`` pattern the
+    rest of the file already uses for every other gate error.
+    """
+    if not isinstance(job, str) or not job:
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependency key must be a non-empty string")
+    if job not in known:
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependency for unknown job '{job}' (not in required_jobs)")
+    if not isinstance(upstreams, list) or not all(
+            isinstance(u, str) and u for u in upstreams):
+        raise GateError(  # noqa: TRY003
+            f"{label}: dependencies['{job}'] must be a list of job name strings")
+    for upstream in upstreams:
+        if upstream not in known:
+            raise GateError(  # noqa: TRY003
+                f"{label}: dependency '{job}' names unknown upstream "
+                f"'{upstream}' (not in required_jobs)")
+        if upstream == job:
+            raise GateError(  # noqa: TRY003
+                f"{label}: dependency '{job}' lists itself as upstream")
+    return tuple(upstreams)
+
+
+def _assert_no_cycles(normalized: dict[str, tuple[str, ...]], label: str) -> None:
+    """Reject any cycle in the validated graph at load time (#853).
+
+    DFS that flags any revisit on the current call stack; ``visited``
+    carries the closure of nodes whose subtree has already been walked,
+    ``on_stack`` is the current path. The graph is the validated one from
+    :func:`_normalize_dependencies`, so a self-loop never reaches this
+    step.
+    """
+    visited: set[str] = set()
+    on_stack: set[str] = set()
+
+    def dfs(node: str) -> None:
+        if node in on_stack:
+            raise GateError(  # noqa: TRY003
+                f"{label}: dependencies form a cycle through '{node}'")
+        if node in visited:
+            return
+        on_stack.add(node)
+        for upstream in normalized.get(node, ()):
+            dfs(upstream)
+        on_stack.discard(node)
+        visited.add(node)
+
+    for job in normalized:
+        dfs(job)
+
+
 def load_policy(path: str, label: str = "policy file") -> dict:
     """Load and validate a policy file; every structural doubt raises.
 
@@ -149,6 +248,11 @@ def load_policy(path: str, label: str = "policy file") -> dict:
         # Validated whenever present, base copy or not: a malformed field must
         # not sit in the policy waiting to "cover" a later relaxation.
         validate_relaxation(data["relaxation"], label)
+    if "dependencies" in data:
+        # Validated and normalized when present: a malformed graph never
+        # sits in the policy waiting to "cover" a later cascade (#853).
+        data["dependencies"] = validate_dependencies(
+            data["dependencies"], jobs, label)
     return data
 
 
@@ -285,20 +389,56 @@ def policy_violations(needs: dict, policy: dict, event: str) -> tuple[list[str],
     return violations, accepted
 
 
-def classify_conclusions(needs: dict, accepted: set[str]) -> dict[str, list[str]]:
-    """Split the non-success conclusions into root causes, skips and unknown ones."""
+def classify_conclusions(needs: dict, accepted: set[str],
+                          dependencies: dict[str, tuple[str, ...]] | None = None
+                          ) -> dict[str, list[str]]:
+    """Split the non-success conclusions into root causes, skips and unknown ones.
+
+    A skipped job whose transitive upstream closure (over the validated
+    ``dependencies`` graph) names a job in ``accepted`` is treated as a
+    cascade of a declared skip and moves to ``declared_skips`` (#853). The
+    cascade acceptance is purely additive: a skipped job with no upstream
+    in ``accepted`` still lands in ``undeclared_skips``, and a job whose
+    upstream is a ``failure`` or ``cancelled`` is the root cause (handled
+    by ``policy_violations`` through ``evaluate``) and never rescues the
+    cascade.
+    """
+    deps = dependencies or {}
     sorted_out: dict[str, list[str]] = {"root_causes": [], "undeclared_skips": [],
                                         "declared_skips": [], "unknown": []}
     for job, conclusion in sorted(needs.items()):
         if conclusion == SUCCESS:
             continue
         if conclusion == SKIPPED:
-            sorted_out["declared_skips" if job in accepted else "undeclared_skips"].append(job)
+            if job in accepted or _cascade_is_accepted(job, accepted, deps):
+                sorted_out["declared_skips"].append(job)
+            else:
+                sorted_out["undeclared_skips"].append(job)
         elif conclusion in ROOT_CAUSE_CONCLUSIONS:
             sorted_out["root_causes"].append(f"{job} ({conclusion})")
         else:
             sorted_out["unknown"].append(f"job '{job}' has unknown conclusion '{conclusion}'")
     return sorted_out
+
+
+def _cascade_is_accepted(job: str, accepted: set[str],
+                          dependencies: dict[str, tuple[str, ...]]) -> bool:
+    """True when any transitive upstream of ``job`` is in ``accepted``.
+
+    ``dependencies`` is the validated, cycle-free graph from the policy;
+    ``seen`` bounds the walk to one visit per node.
+    """
+    seen: set[str] = set()
+    stack = list(dependencies.get(job, ()))
+    while stack:
+        node = stack.pop()
+        if node in seen:
+            continue
+        seen.add(node)
+        if node in accepted:
+            return True
+        stack.extend(dependencies.get(node, ()))
+    return False
 
 
 def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None) -> dict:
@@ -309,7 +449,8 @@ def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None) ->
     """
     required = policy["required_jobs"]
     violations, accepted = policy_violations(needs, policy, event)
-    conclusions = classify_conclusions(needs, accepted)
+    dependencies = policy.get("dependencies") or {}
+    conclusions = classify_conclusions(needs, accepted, dependencies)
     violations += conclusions["unknown"]
     # HR-15: un run sin ningún success entre los jobs requeridos no es un
     # PASS (todo saltado-aceptado, o ninguna señal verde que proteger).
