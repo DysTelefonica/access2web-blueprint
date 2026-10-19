@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v6343a39 -->
+<!-- personal-skills:slice:access2web-blueprint @ vfeb91c2 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -17,14 +17,14 @@
 - **El workspace del runner de CI no es un clon de desarrollo.** Se trabaja en un worktree o clon propio (ver §Worktree y rama remota).
 - **Una copia global de skill desactualizada tapa la del repo** (ver §Carga de skills): si una skill del repo contradice a la global, gana la del repo, y la global está pidiendo actualización.
 
-### Skill Registry Protocol (MANDATORY)
+### Skill Registry Protocol (obligatorio)
 
 La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el registro generado — `.atl/skill-registry.md`, refrescado por la skill `skill-registry` (`gentle-ai skill-registry refresh`) — es la fuente de verdad de descubrimiento. Una regla que existe y está indexada pero que ninguna sesión carga no gobierna nada: este protocolo convierte el índice en despacho.
 
-1. **READ** — antes de escribir o revisar código, CI o documentación, lea `.atl/skill-registry.md` (o el índice de skills del repo).
-2. **MATCH** — contraste la tarea contra la columna `Trigger / description` de las skills candidatas.
-3. **LOAD** — lea íntegros los `SKILL.md` que matcheen ANTES de actuar.
-4. **DELEGATE** — al delegar a un subagente, pase las rutas exactas de los `SKILL.md` bajo un encabezado `## Skills to load before work` en la tarea. Un nombre en prosa no basta: el subagente no debe tener que adivinar ni redescubrir (eso produce el degradado `fallback-registry`).
+1. **leer** — antes de escribir o revisar código, CI o documentación, lea `.atl/skill-registry.md` (o el índice de skills del repo).
+2. **contrastar** — contraste la tarea contra la columna `Trigger / description` de las skills candidatas.
+3. **cargar** — lea íntegros los `SKILL.md` que matcheen antes de actuar.
+4. **delegar** — al delegar a un subagente, pase las rutas exactas de los `SKILL.md` bajo un encabezado `## Skills to load before work` en la tarea. Un nombre en prosa no basta: el subagente no debe tener que adivinar ni redescubrir (eso produce el degradado `fallback-registry`).
 5. **GAP** — si ninguna skill matchea y la tarea toca CI/PRs, releases, la flota de runners o la adopción de un repositorio nuevo, es un gap de orquestación: dígalo explícitamente en vez de proceder de memoria.
 
 - **Deriva índice/registro.** La tabla del `AGENTS.md` es la puerta del contribuyente; el registro es la verdad operativa. Que una skill no aparezca en la tabla no autoriza concluir «no aplica»: autoriza buscarla en el registro (`skill-registry` / `gentle-ai skill-registry refresh`).
@@ -196,7 +196,7 @@ Cada invariante de este partial se ancla a una skill específica del catálogo o
 - Anti-slop → `ai-slop-discipline` (catálogo, T1 universal).
 - CodeGraph preflight → upstream `engineering-workflow` líneas 64-71; `codegraph-usage` HR-1, HR-2.
 - Conventional commits + castellano peninsular en artefactos + sin atribución IA → `personal-skills/AGENTS.md` raíz de flota.
-- Skill Registry Protocol (READ/MATCH/LOAD/DELEGATE/GAP + deriva índice/registro + frescura) → upstream `gentle-ai` `internal/assets/skills/_shared/odd-orchestrator-sections.md:183-201`, adaptado vía `gentle-ai-governance-dispatch.md` (adopciones 1-3 del informe de gobernanza 2026-10-02).
+- Skill Registry Protocol (`READ`/`MATCH`/`LOAD`/`DELEGATE`/`GAP` + deriva índice/registro + frescura) → upstream `gentle-ai` `internal/assets/skills/_shared/odd-orchestrator-sections.md:183-201`, adaptado vía `gentle-ai-governance-dispatch.md` (adopciones 1-3 del informe de gobernanza 2026-10-02).
 - Arranque sin checkout atrasado (sincronizar la rama base antes de leer, decidir o tocar) → `personal-skills/AGENTS.md` raíz de flota (§Lectura obligatoria). Invariante de flota sin skill fuente.
 
 ### Cómo auditar este partial usted mismo
@@ -226,7 +226,11 @@ Procedimiento de validación periódica (mensual o por release de skill fuente):
 
 Al buscar una skill de este catálogo, resuelva en este orden:
 
-1. Global: `~/.agents/skills/` (y `~/.pi/agent/skills/`).
+1. Por nombre. La ruta física la decide el agente (opencode | claude
+   | codex | cursor | pi) y, en el caso de Pi, la variable
+   `PI_CODING_AGENT_DIR`. La separación entre los cinco destinos
+   compartidos del catálogo y la ruta reservada a skills exclusivas
+   de Pi (HR-12) está documentada en la skill `skill-propagation`.
 2. Repo: `.agents/skills/` del consumer, materializada desde `.team-skills.yaml` por `scripts/refresh-team-skills.ps1` (vía rama `skill-fleet/<name>`).
 3. Catálogo: `skills/<nombre>/SKILL.md` de personal-skills.
 
