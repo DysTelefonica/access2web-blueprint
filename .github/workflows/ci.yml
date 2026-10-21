@@ -65,7 +65,10 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # team-skills#978: on a pull request only a new commit cancels. `edited`, `labeled` and
+  # `reopened` keep the head SHA; cancelling their run leaves a cancelled `required` check
+  # on that SHA, which blocks the merge even if a later run of the SHA is green.
+  cancel-in-progress: ${{ github.event_name != 'pull_request' || github.event.action == 'synchronize' }}
 
 env:
   # Hard Rule 15: the interpreter is part of the gate. A patch bump is a different verdict.
