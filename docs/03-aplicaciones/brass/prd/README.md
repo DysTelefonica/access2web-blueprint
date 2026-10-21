@@ -85,9 +85,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormInformesDesdeLista | src/forms/Form_FormInformesDesdeLista.cls | 272 | 26 | 11 | igual | analizado | [formularios/Form_FormInformesDesdeLista.md](formularios/Form_FormInformesDesdeLista.md) |
 | Form_FormInformesParaRAC | src/forms/Form_FormInformesParaRAC.cls | 330 | 24 | 10 | igual | analizado | [formularios/Form_FormInformesParaRAC.md](formularios/Form_FormInformesParaRAC.md) |
 | Form_FormInformesPorFactura | src/forms/Form_FormInformesPorFactura.cls | 312 | 28 | 11 | igual | analizado | [formularios/Form_FormInformesPorFactura.md](formularios/Form_FormInformesPorFactura.md) |
-| Form_FormMaterialAltaReparacion | src/forms/Form_FormMaterialAltaReparacion.cls | 594 | 69 | 10 | igual | pendiente | — |
-| Form_FormMaterialEleccion | src/forms/Form_FormMaterialEleccion.cls | 163 | 18 | 3 | igual | pendiente | — |
-| Form_FormMaterialIntervencionAlta | src/forms/Form_FormMaterialIntervencionAlta.cls | 258 | 39 | 6 | igual | pendiente | — |
+| Form_FormMaterialAltaReparacion | src/forms/Form_FormMaterialAltaReparacion.cls | 594 | 69 | 10 | igual | analizado | [formularios/Form_FormMaterialAltaReparacion.md](formularios/Form_FormMaterialAltaReparacion.md) |
+| Form_FormMaterialEleccion | src/forms/Form_FormMaterialEleccion.cls | 163 | 18 | 3 | igual | analizado | [formularios/Form_FormMaterialEleccion.md](formularios/Form_FormMaterialEleccion.md) |
+| Form_FormMaterialIntervencionAlta | src/forms/Form_FormMaterialIntervencionAlta.cls | 258 | 39 | 6 | igual | analizado | [formularios/Form_FormMaterialIntervencionAlta.md](formularios/Form_FormMaterialIntervencionAlta.md) |
 | Form_FormMaterialIntervencionEdicion | src/forms/Form_FormMaterialIntervencionEdicion.cls | 735 | 41 | 8 | igual | pendiente | — |
 | Form_FormMaterialReparacionEdicion | src/forms/Form_FormMaterialReparacionEdicion.cls | 667 | 61 | 9 | igual | pendiente | — |
 | Form_FormMaterialRepuestoAlta | src/forms/Form_FormMaterialRepuestoAlta.cls | 247 | 58 | 7 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 85 analizados · 5 no aplicables · 41 pendientes.
+Totales: 88 analizados · 5 no aplicables · 38 pendientes.
 
 ## Discrepancias abiertas
 
