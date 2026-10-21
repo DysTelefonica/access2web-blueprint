@@ -13,7 +13,7 @@
 
 ## Alcance actual
 
-Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). No contiene aún ERD de origen, matriz campo a campo, coexistencia, clasificación de capacidades ni issues propuestas: son las fases 3 a 5. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
+Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). Contiene además la [matriz campo a campo](matriz-campos.md) (fase 3, por tandas). No contiene aún ERD de origen (la extracción con `dysflow` no pudo ejecutarse), coexistencia, clasificación de capacidades ni issues propuestas. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
 
 ## Inventario reconciliado
 
@@ -113,6 +113,7 @@ Pendiente. Las 26 fichas `CAP-*` existentes en [capabilities/](../capabilities/)
 | D-EXP-1 | El roadmap y #1073 citan 142 módulos y clases en RC1 frente a 74 en `main`. | `main` (`13af0f6`, 2026-09-15) solo tiene 2 commits que RC1 no tiene (plantillas de issues de GitHub); RC1 tiene 244 que `main` no tiene; base común `495b965`. | Explicada en lo mecánico: `main` está muy atrasada respecto a RC1. Falta comprobar que ninguno de los 74 objetos de `main` se pierde en RC1. |
 | D-EXP-2 | El snapshot tiene 46 formularios y RC1 45. | Cuatro retirados y tres añadidos (tabla anterior). | Abierta: destino de los cuatro retirados sin verificar. |
 | D-EXP-3 | Los 42 formularios comunes difieren del snapshot (nombres de handlers en distinta capitalización, `Attribute VB_Name` ausente, cambios de contenido). | Comparación textual `.cls`. | Abierta: la diferencia mezcla cambios cosméticos y funcionales; se separa en cada ficha. |
+| D-EXP-4 | El ERD de origen de RC1 no se ha extraído: `dysflow` no está disponible en el entorno de trabajo y el backend `.accdb` no está en el clon de solo lectura (solo el frontend). La matriz usa las columnas del `ERD/schema.sql` del snapshot, que solo contiene columna y tipo. | `matriz-campos.md` (Fuente y límites) | Abierta: extraer metadatos de solo lectura (tablas, claves, índices, relaciones, nulabilidad) desde un entorno con `dysflow`. |
 
 ## Hallazgos del legacy
 
