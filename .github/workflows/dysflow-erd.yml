@@ -1,0 +1,48 @@
+name: dysflow-erd
+
+# Manual, read-only extraction of schema, relationships and form names from an
+# Access backend (#1074). Runs only on the owner's Windows runner; the
+# check_workflows gate admits that runner solely for a workflow_dispatch-only
+# file. The script copies the .accdb to a temp folder and opens the copy
+# read-only, so the original is never written.
+on:
+  workflow_dispatch:
+    inputs:
+      accdb_path:
+        description: "Absolute path of the .accdb on the runner"
+        required: true
+        type: string
+      label:
+        description: "Short name for the artifact (e.g. lanzadera)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dysflow-erd
+  cancel-in-progress: false
+
+jobs:
+  extract:
+    runs-on: [self-hosted, Windows, X64, dysflow-erd]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/dysflow-erd
+      - name: Extract read-only schema
+        shell: powershell
+        env:
+          ACCDB_PATH: ${{ inputs.accdb_path }}
+          ACCDB_PASSWORD: ${{ secrets.ACCDB_PASSWORD }}
+          OUT_LABEL: ${{ inputs.label }}
+        run: ./scripts/dysflow-erd/extract-erd.ps1 -Path $env:ACCDB_PATH -OutDir "$env:RUNNER_TEMP\erd-out"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: erd-${{ inputs.label }}
+          path: ${{ runner.temp }}\erd-out
+          if-no-files-found: error
+          retention-days: 14
