@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 7 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 9 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -54,11 +54,11 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormExpedienteGeneral | formulario | src/forms/Form_FormExpedienteGeneral.cls | 905 | 73 | 19 | distinto | analizado | [formularios/Form_FormExpedienteGeneral.md](formularios/Form_FormExpedienteGeneral.md) |
 | Form_FormExpedienteHitos | formulario | src/forms/Form_FormExpedienteHitos.cls | 296 | 21 | 6 | distinto | analizado | [formularios/Form_FormExpedienteHitos.md](formularios/Form_FormExpedienteHitos.md) |
 | Form_FormExpedienteModificados | formulario | src/forms/Form_FormExpedienteModificados.cls | 344 | 22 | 8 | distinto | analizado | [formularios/Form_FormExpedienteModificados.md](formularios/Form_FormExpedienteModificados.md) |
-| Form_FormExpedienteSuministradores | formulario | src/forms/Form_FormExpedienteSuministradores.cls | 961 | 25 | 38 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedienteSuministradores | formulario | src/forms/Form_FormExpedienteSuministradores.cls | 961 | 25 | 38 | distinto | analizado | [formularios/Form_FormExpedienteSuministradores.md](formularios/Form_FormExpedienteSuministradores.md) |
 | Form_FormExpedientesGestion | formulario | src/forms/Form_FormExpedientesGestion.cls | 3963 | 124 | 99 | distinto | pendiente | sin ficha todavía |
 | Form_FormExpedientesGestionTecnica | formulario | src/forms/Form_FormExpedientesGestionTecnica.cls | 773 | 43 | 24 | distinto | pendiente | sin ficha todavía |
 | Form_FormExpedientesParaCambioTipo | formulario | src/forms/Form_FormExpedientesParaCambioTipo.cls | 321 | 22 | 10 | distinto | pendiente | sin ficha todavía |
-| Form_FormExpedientesResponsables | formulario | src/forms/Form_FormExpedientesResponsables.cls | 187 | 25 | 4 | **añadido** | pendiente | sin ficha todavía |
+| Form_FormExpedientesResponsables | formulario | src/forms/Form_FormExpedientesResponsables.cls | 187 | 25 | 4 | **añadido** | analizado | [formularios/Form_FormExpedientesResponsables.md](formularios/Form_FormExpedientesResponsables.md) |
 | Form_FormGradoClasificacion | formulario | src/forms/Form_FormGradoClasificacion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormGradosClasificacionGestion | formulario | src/forms/Form_FormGradosClasificacionGestion.cls | 425 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormLugarEjecucion | formulario | src/forms/Form_FormLugarEjecucion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 7 analizados · 0 no aplicables · 38 pendientes.
+Totales (formularios): 9 analizados · 0 no aplicables · 36 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -136,6 +136,13 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-14 | En el alta de un expediente, `ColAnexos` usa el nombre del fichero como clave pero `Registrar` y `MotivoNoOK` la usan como ruta: guardar un expediente nuevo con anexos fallaría con «El anexo no es accesible». | `Form_FormExpedienteDocumentacion.cls:41`; `ExpedienteOperaciones.cls:463, 1049` | [Form_FormExpedienteDocumentacion](formularios/Form_FormExpedienteDocumentacion.md) | a verificar |
 | H-EXP-15 | `EliminarAnexo` usa `Execute` sin `dbFailOnError` y borra el fichero del recurso compartido sin vuelta atrás; un nombre de fichero con comilla simple rompe el SQL concatenado. | `ExpedienteOperaciones.cls:1557, 2662-2663` | [Form_FormExpedienteDocumentacion](formularios/Form_FormExpedienteDocumentacion.md) | a verificar |
 | H-EXP-16 | Los IDs de hitos, modificados y anexos se calculan como `Max + 1` en VBA (`DameID`): riesgo de colisión con dos usuarios simultáneos. | `FUNCIONES UTILES.bas:2836-2864` | [Form_FormExpedienteHitos](formularios/Form_FormExpedienteHitos.md) | a verificar |
+| H-EXP-17 | `PersistirArbolDesdeMemoria` está vacío (cuerpo comentado): el árbol de suministradores de un alta no se guardaría, aunque `Registrar` lo llama. | `ExpedienteSuministradorServicio.cls:312-316`; `ExpedienteOperaciones.cls:492` | [Form_FormExpedienteSuministradores](formularios/Form_FormExpedienteSuministradores.md) | a verificar |
+| H-EXP-18 | El servicio llama al repositorio sin `p_Error` y el repositorio se traga sus errores: un `INSERT`/`UPDATE`/`DELETE` fallido acaba en `CommitTrans`. | `ExpedienteSuministradorServicio.cls:70, 126, 260, 308`; `ExpedienteSuministradorRepositorio.bas:74-77` | [Form_FormExpedienteSuministradores](formularios/Form_FormExpedienteSuministradores.md) | a verificar |
+| H-EXP-19 | «Añadir Aquí…» lee `TempVars("SelectedIDSuministrador")`, que ningún fichero de `src` asigna; mover solo impide soltar sobre un hijo directo, así que soltar sobre un nieto crea un ciclo. | `Form_FormExpedienteSuministradores.cls:560-564, 521-523` | [Form_FormExpedienteSuministradores](formularios/Form_FormExpedienteSuministradores.md) | a verificar |
+| H-EXP-20 | Tras quitar una empresa no se recalcula `ContratistaPrincipal` en el DTO y `Registrar` escribe el valor anterior; en edición, las operaciones no actualizan `ColArbolSuministradores`, que el contenedor usa para «Ningún cambio que guardar». | `Form_FormExpedienteSuministradores.cls:874-878`; `ExpedienteOperaciones.cls:387`; `Form_FormExpediente.cls:71-76` | [Form_FormExpedienteSuministradores](formularios/Form_FormExpedienteSuministradores.md) | a verificar |
+| H-EXP-21 | El guardado de responsables desde el modal llama a `ProcesarEdit` con `p_db = Nothing`: en un expediente ya guardado el cambio solo llega a memoria, pero se muestra «Responsable guardado correctamente.». | `Form_FormExpedientesResponsables.cls:133, 142`; `ExpedienteOperaciones.cls:400-402` | [Form_FormExpedientesResponsables](formularios/Form_FormExpedientesResponsables.md) | a verificar |
+| H-EXP-22 | La regla de responsables se valida antes de aplicar el cambio, no sobre el estado posterior; `EsPreventa` se pierde en un alta porque `RegistraResponsable` no lo escribe. | `Form_FormExpedientesResponsables.cls:127, 133`; `ExpedienteOperaciones.cls:1072-1075, 1511-1517`; `modResponsablesEdit.bas:234` | [Form_FormExpedientesResponsables](formularios/Form_FormExpedientesResponsables.md) | a verificar |
+| H-EXP-23 | `g_NecesitaRefrescarResponsables` no lo asigna nadie: el refresco por `Form_Activate` de Entidades nunca corre; el guardado del modal se habilita sin mirar `m_AbiertoParaEditar`. | `Form_FormExpedienteEntidades.cls:1372`; `Form_FormExpedientesResponsables.cls:92` | [Form_FormExpedientesResponsables](formularios/Form_FormExpedientesResponsables.md) | a verificar |
 
 ## Método del recuento
 
