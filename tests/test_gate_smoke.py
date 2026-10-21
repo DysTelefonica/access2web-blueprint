@@ -79,26 +79,6 @@ def test_complexity_ceiling_is_absolute_not_top_n() -> None:
 
 
 # ---------------------------------------------------------------------------------------------
-# check_pr_size
-#
-# The git diff path needs a real repository, so it is covered by
-# `tests/lanzadera/test_pr_size_wiring.py`. The override policy is pure logic
-# and is covered here: with issue #854 the override is the `size:exception`
-# label on the PR, applied by the maintainer; the PR body no longer carries a
-# `size-exception-reason:` field and is not consulted by the gate.
-# ---------------------------------------------------------------------------------------------
-
-
-def test_pr_size_override_is_size_exception_label() -> None:
-    module = _load("check_pr_size.py")
-    assert module.has_size_exception_label([]) is False
-    assert module.has_size_exception_label(["type:refactor"]) is False
-    assert module.has_size_exception_label(["size:exception"]) is True
-    # Other labels alongside the override must not stop it from counting.
-    assert module.has_size_exception_label(["type:refactor", "size:exception"]) is True
-
-
-# ---------------------------------------------------------------------------------------------
 # check_dry
 # ---------------------------------------------------------------------------------------------
 

@@ -22,7 +22,7 @@ Lo que exige cada gate del patrón, y por eso está donde está:
 | Encabezado `Chain Context` con sus ocho campos y un 📍 | `assets/pr-contract/check_pr_contract.py` (HR-54) |
 | Encabezado `Tests que prueban el cierre` | el mismo gate (HR-53) |
 | `Closes #N` / `Refs #N` | el mismo gate (HR-6, HR-7) |
-| Etiqueta `size:exception` (la pone el mantenedor) | `scripts/check_pr_size.py` la lee de la API de la PR; override de los 400 `additions + deletions` cuando partir la PR dejaría `main` roto |
+| Etiqueta `size:exception` (la pone el mantenedor) | `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` la lee de la API de la PR; override de los 400 `additions + deletions` cuando partir la PR dejaría `main` roto |
 | Patrón de nombre de rama `<tipo>/<slug>` (gentle-ai, sin número de issue) | Ruleset `main-maintainers-and-admins-merge` del host; no hay script local en el repo |
 | `status:approved` por un mantenedor | decisión ratificada (2026-10-07); la etiqueta existe en el host |
 
@@ -42,7 +42,7 @@ Ningún agente aplica etiquetas ni borra etiquetas en este repositorio: los coma
 
 Cada entrada de etiqueta retirada lleva además su campo `label` en el contrato: el propagador del catálogo decide las retiradas **solo por datos estructurados** (el `path` `.agents/skills/<x>`, el campo `skill` o el campo `label`) y falla cerrado cuando una entrada `retired` solo tiene prosa en `artifact` (`DysTelefonica/team-skills#373`). Comprobado con el propagador de `team-skills` `main`: con el campo, la corrida en seco termina en 0; sin él, aborta nombrando el identificador estructurado.
 
-Lo que **no** se retira y conviene saber: la etiqueta `size:exception` se conserva (decisión ratificada 4: el gate de tamaño del repositorio la lee de la API de la PR como override, y retirarla obligaría a cambiar el gate `scripts/check_pr_size.py`). Las etiquetas de producto (`app/<slug>`, `cross-cutting`, `epic:*`, `dependencies`, `python:uv`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` y las `status:*`) se conservan.
+Lo que **no** se retira y conviene saber: la etiqueta `size:exception` se conserva (decisión ratificada 4: el gate de tamaño del repositorio la lee de la API de la PR como override, y retirarla obligaría a cambiar el gate `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py`). Las etiquetas de producto (`app/<slug>`, `cross-cutting`, `epic:*`, `dependencies`, `python:uv`, `duplicate`, `good first issue`, `help wanted`, `invalid`, `question`, `wontfix` y las `status:*`) se conservan.
 
 ## Qué instala esta fase
 
