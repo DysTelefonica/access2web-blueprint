@@ -9,7 +9,7 @@ Submenú «PARTE DE AUDITORÍAS»: da acceso al alta y la búsqueda de auditorí
 | Desde | Cómo | Evidencia |
 |---|---|---|
 | [Form_Form0BDOpciones](Form_Form0BDOpciones.md) | Botón «NC de auditoría» | `Form_Form0BDOpciones.cls:72` |
-| [Form_Form0BDOpcionesParteProyectos](Form_Form0BDOpcionesParteProyectos.md) | Botón «Auditorías»; el de proyectos se cierra | `Form_Form0BDOpcionesParteProyectos.cls:198-199` |
+| `Form_Form0BDOpcionesParteProyectos` | Botón «Auditorías»; el de proyectos se cierra | `Form_Form0BDOpcionesParteProyectos.cls:198-199` |
 
 Abre `FormAuditoria` (`:49`), `FormAuditoriasGestion` (`:103`), `FormAuditoriaSeleccion` (`:167`), `FormNCAuditoriaGestion` (`:128`), `FormNCAuditoriaSeguimiento` (`:226`) y `Form0BDOpcionesParteProyectos` cerrándose a sí mismo (`:197-198`). «Salir» solo cierra el formulario (`:186`).
 
