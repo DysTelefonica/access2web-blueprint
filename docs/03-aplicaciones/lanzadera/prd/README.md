@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 9 de 28.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 13 de 28.
 
 | Campo | Valor |
 |---|---|
@@ -35,14 +35,14 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Tipo | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|---|
-| Form_FormAplicacionDatosGenerales | formulario | src/forms/Form_FormAplicacionDatosGenerales.cls | 268 | 48 | 4 | igual | pendiente | sin ficha todavía |
+| Form_FormAplicacionDatosGenerales | formulario | src/forms/Form_FormAplicacionDatosGenerales.cls | 268 | 48 | 4 | igual | analizado | [formularios/Form_FormAplicacionDatosGenerales.md](formularios/Form_FormAplicacionDatosGenerales.md) |
 | Form_FormAplicacionGeneral | formulario | src/forms/Form_FormAplicacionGeneral.cls | 129 | 22 | 12 | igual | analizado | [formularios/Form_FormAplicacionGeneral.md](formularios/Form_FormAplicacionGeneral.md) |
-| Form_FormAplicaciones | formulario | src/forms/Form_FormAplicaciones.cls | 156 | 24 | 15 | igual | pendiente | sin ficha todavía |
+| Form_FormAplicaciones | formulario | src/forms/Form_FormAplicaciones.cls | 156 | 24 | 15 | igual | analizado | [formularios/Form_FormAplicaciones.md](formularios/Form_FormAplicaciones.md) |
 | Form_FormAplicacionesFueraOficina | formulario | src/forms/Form_FormAplicacionesFueraOficina.cls | 493 | 47 | 13 | igual | pendiente | sin ficha todavía |
 | Form_FormAplicacionesGestion | formulario | src/forms/Form_FormAplicacionesGestion.cls | 149 | 21 | 6 | igual | analizado | [formularios/Form_FormAplicacionesGestion.md](formularios/Form_FormAplicacionesGestion.md) |
 | Form_FormAplicacionesOficina | formulario | src/forms/Form_FormAplicacionesOficina.cls | 371 | 29 | 9 | igual | pendiente | sin ficha todavía |
 | Form_FormAplicacionesPrueba | formulario | src/forms/Form_FormAplicacionesPrueba.cls | 293 | 16 | 6 | igual | pendiente | sin ficha todavía |
-| Form_FormEnConstruccion | formulario | src/forms/Form_FormEnConstruccion.cls | 2 | 12 | 0 | igual | pendiente | sin ficha todavía |
+| Form_FormEnConstruccion | formulario | src/forms/Form_FormEnConstruccion.cls | 2 | 12 | 0 | igual | analizado | [formularios/Form_FormEnConstruccion.md](formularios/Form_FormEnConstruccion.md) |
 | Form_FormLogin | formulario | src/forms/Form_FormLogin.cls | 311 | 23 | 7 | igual | analizado | [formularios/Form_FormLogin.md](formularios/Form_FormLogin.md) |
 | Form_FormMenuPrincipalAdmin | formulario | src/forms/Form_FormMenuPrincipalAdmin.cls | 323 | 40 | 33 | igual | analizado | [formularios/Form_FormMenuPrincipalAdmin.md](formularios/Form_FormMenuPrincipalAdmin.md) |
 | Form_FormMenuPrincipalCalidad | formulario | src/forms/Form_FormMenuPrincipalCalidad.cls | 375 | 39 | 27 | igual | analizado | [formularios/Form_FormMenuPrincipalCalidad.md](formularios/Form_FormMenuPrincipalCalidad.md) |
@@ -62,9 +62,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormVideosGestionArbolVideo | formulario | src/forms/Form_FormVideosGestionArbolVideo.cls | 51 | 21 | 6 | igual | pendiente | sin ficha todavía |
 | Form_FormVideosGestionArbolVideoDatos | formulario | src/forms/Form_FormVideosGestionArbolVideoDatos.cls | 408 | 33 | 8 | igual | pendiente | sin ficha todavía |
 | Form_FormVideosUsuarios | formulario | src/forms/Form_FormVideosUsuarios.cls | 171 | 16 | 6 | igual | pendiente | sin ficha todavía |
-| Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 5 | 9 | 1 | igual | pendiente | sin ficha todavía |
+| Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 5 | 9 | 1 | igual | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 
-Totales (formularios): 9 analizados · 0 no aplicables · 19 pendientes.
+Totales (formularios): 13 analizados · 0 no aplicables · 15 pendientes.
 Totales (controles `Begin`): 740 · procedimientos: 247 · líneas de `.cls`: 6,246.
 
 ### Módulos y clases
@@ -100,6 +100,10 @@ Comportamientos sospechosos detectados al analizar el código. Son hallazgos del
 | H-LAN-5 | `ActDesActMenu` con `p_EsActivar = No` usa `i` (siempre 0) en vez de `p_Numero`, de modo que los menús nunca se desactivan; `Form_Load` deshace la pestaña de «última aplicación» y fuerza siempre «fuera de la oficina». | `Menu.cls:83, 89`; `Form_FormMenuPrincipalAdmin.cls:52-70`; `Form_FormMenuPrincipalCalidad.cls:44-64` | [Form_FormMenuPrincipalAdmin](formularios/Form_FormMenuPrincipalAdmin.md) | a verificar |
 | H-LAN-6 | El menú «Perfil» de Calidad no tiene `OnClick`: pulsarlo no hace nada; el cambio de contraseña cierra los menús de administrador y de usuario pero no el de Calidad. | `Form_FormMenuPrincipalCalidad.form.txt:615-650, 1425`; `Form_FormUsuarioCambioPass.cls:44-49` | [Form_FormMenuPrincipalCalidad](formularios/Form_FormMenuPrincipalCalidad.md) | a verificar |
 | H-LAN-7 | `On Error Resume Next` en toda la navegación del menú de usuario oculta los fallos; «Salir» usa `acQuitSaveNone` en el de administrador y `acQuitSaveAll` en los otros dos. | `Form_FormMenuPrincipalUsuario.cls:152, 366`; `Form_FormMenuPrincipalAdmin.cls:117`; `Form_FormMenuPrincipalCalidad.cls:159` | [Form_FormMenuPrincipalUsuario](formularios/Form_FormMenuPrincipalUsuario.md) | a verificar |
+| H-LAN-8 | El alta de una aplicación parece inalcanzable (el botón Registrar queda deshabilitado sin aplicación activa); si se guardara, `Registrar` abre la tabla entera y sobrescribe la primera fila con `.Edit`, y el ID calculado no se asigna al campo. | `Form_FormAplicacionDatosGenerales.cls:90-93`; `Aplicacion.cls:1867-1878, 1936-1937` | [Form_FormAplicacionDatosGenerales](formularios/Form_FormAplicacionDatosGenerales.md) | a verificar |
+| H-LAN-9 | La contraseña de la aplicación se muestra sin máscara y se guarda tal cual; `HaHabidoCambios` compara `NombreIconoLanzadera` dos veces y omite `ConIconoEnLanzadera` y `NombreIconoParaArbol`; un nombre con apóstrofo rompe el SQL del filtro. | `Form_FormAplicacionDatosGenerales.form.txt:1201-1214`; `Aplicacion.cls:1895-1896`; `Form_FormAplicacionDatosGenerales.cls:36, 48, 201, 204`; `Constructor.bas:922` | [Form_FormAplicacionDatosGenerales](formularios/Form_FormAplicacionDatosGenerales.md) | a verificar |
+| H-LAN-10 | `FormEnConstruccion` y `Formulario1` están huérfanos: ningún código de `src` los abre. | `Form_FormEnConstruccion.cls:3`; `Form_Formulario1.cls:4-6` | [Form_FormEnConstruccion](formularios/Form_FormEnConstruccion.md) | a verificar |
+| H-LAN-11 | `Aplicacion.Lanzar` comprueba el icono cuando debería comprobar el BMP; `getVersion` pierde los errores de lectura; al fallar un lanzamiento salen dos mensajes; `LimpiarCache` ignora la colección que recibe. | `Aplicacion.cls:1407`; `Funciones Genreales.bas:274-275, 1838, 2998` | [Form_FormAplicaciones](formularios/Form_FormAplicaciones.md) | a verificar |
 
 ## Método del recuento
 
