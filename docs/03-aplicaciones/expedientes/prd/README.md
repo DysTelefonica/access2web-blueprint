@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 37 de 45.
+> **Estado:** en curso · fases 0 (fijación), 1 (inventario) y 2 (formularios) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) completadas: los 45 formularios de RC1 tienen ficha. Pendientes las fases 3 (ERD de origen y matriz campo a campo), 4 (coexistencia) y 5 (capacidades, delta y issues propuestas).
 
 | Campo | Valor |
 |---|---|
@@ -11,9 +11,9 @@
 | Snapshot comparado | `data/staging/expedientes/src` (2026-08-06) |
 | Issue | #1073 (método y plantilla de #1069) |
 
-## Alcance de esta tanda
+## Alcance actual
 
-Fija el commit, concilia el inventario de objetos y deja todos los formularios como **pendientes**. No contiene fichas, ERD, matriz ni coexistencia: llegan en las tandas siguientes de la cadena. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)) y no sustituyen al análisis.
+Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). No contiene aún ERD de origen, matriz campo a campo, coexistencia, clasificación de capacidades ni issues propuestas: son las fases 3 a 5. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
 
 ## Inventario reconciliado
 
@@ -66,19 +66,19 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormModificado | formulario | src/forms/Form_FormModificado.cls | 211 | 27 | 6 | distinto | analizado | [formularios/Form_FormModificado.md](formularios/Form_FormModificado.md) |
 | Form_FormOficinaPrograma | formulario | src/forms/Form_FormOficinaPrograma.cls | 197 | 23 | 6 | distinto | analizado | [formularios/Form_FormOficinaPrograma.md](formularios/Form_FormOficinaPrograma.md) |
 | Form_FormOficinasProgramaGestion | formulario | src/forms/Form_FormOficinasProgramaGestion.cls | 425 | 23 | 14 | distinto | analizado | [formularios/Form_FormOficinasProgramaGestion.md](formularios/Form_FormOficinasProgramaGestion.md) |
-| Form_FormOrganoContratacion | formulario | src/forms/Form_FormOrganoContratacion.cls | 205 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormOrganoContratacionGestion | formulario | src/forms/Form_FormOrganoContratacionGestion.cls | 427 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormPECAL | formulario | src/forms/Form_FormPECAL.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormPECALESGestion | formulario | src/forms/Form_FormPECALESGestion.cls | 424 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormRAC | formulario | src/forms/Form_FormRAC.cls | 205 | 25 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormRACSGestion | formulario | src/forms/Form_FormRACSGestion.cls | 414 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormSuministrador | formulario | src/forms/Form_FormSuministrador.cls | 236 | 33 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormSuministradoresGestion | formulario | src/forms/Form_FormSuministradoresGestion.cls | 458 | 24 | 15 | distinto | pendiente | sin ficha todavía |
+| Form_FormOrganoContratacion | formulario | src/forms/Form_FormOrganoContratacion.cls | 205 | 23 | 6 | distinto | analizado | [formularios/Form_FormOrganoContratacion.md](formularios/Form_FormOrganoContratacion.md) |
+| Form_FormOrganoContratacionGestion | formulario | src/forms/Form_FormOrganoContratacionGestion.cls | 427 | 23 | 14 | distinto | analizado | [formularios/Form_FormOrganoContratacionGestion.md](formularios/Form_FormOrganoContratacionGestion.md) |
+| Form_FormPECAL | formulario | src/forms/Form_FormPECAL.cls | 197 | 23 | 6 | distinto | analizado | [formularios/Form_FormPECAL.md](formularios/Form_FormPECAL.md) |
+| Form_FormPECALESGestion | formulario | src/forms/Form_FormPECALESGestion.cls | 424 | 23 | 14 | distinto | analizado | [formularios/Form_FormPECALESGestion.md](formularios/Form_FormPECALESGestion.md) |
+| Form_FormRAC | formulario | src/forms/Form_FormRAC.cls | 205 | 25 | 6 | distinto | analizado | [formularios/Form_FormRAC.md](formularios/Form_FormRAC.md) |
+| Form_FormRACSGestion | formulario | src/forms/Form_FormRACSGestion.cls | 414 | 23 | 14 | distinto | analizado | [formularios/Form_FormRACSGestion.md](formularios/Form_FormRACSGestion.md) |
+| Form_FormSuministrador | formulario | src/forms/Form_FormSuministrador.cls | 236 | 33 | 6 | distinto | analizado | [formularios/Form_FormSuministrador.md](formularios/Form_FormSuministrador.md) |
+| Form_FormSuministradoresGestion | formulario | src/forms/Form_FormSuministradoresGestion.cls | 458 | 24 | 15 | distinto | analizado | [formularios/Form_FormSuministradoresGestion.md](formularios/Form_FormSuministradoresGestion.md) |
 | Form_FormTareas | formulario | src/forms/Form_FormTareas.cls | 470 | 24 | 10 | distinto | analizado | [formularios/Form_FormTareas.md](formularios/Form_FormTareas.md) |
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
-Totales (formularios): 37 analizados · 0 no aplicables · 8 pendientes.
+Totales (formularios): 45 analizados · 0 no aplicables · 0 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -190,6 +190,14 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-68 | Grado de clasificación: la comprobación de uso antes de borrar cruza `TbExpedientes.GradoClasificacion` por nombre mientras el expediente guarda `IDGradoClasificacion` (podría no detectar grados en uso); la caché `ColGradosClasificacionesEnExpedientes` no se invalida nunca y, si falla su carga, el borrado sigue adelante. | `constructor.bas:2421-2423`; `ExpedienteOperaciones.cls:191-194`; `GradoClasificacionOperaciones.cls:115`; `Entorno.cls:1652-1657` | [Form_FormGradosClasificacionGestion](formularios/Form_FormGradosClasificacionGestion.md) | a verificar |
 | H-EXP-69 | Lugar de ejecución: tras un borrado correcto la caché solo se vacía en la rama de error (la lista podría seguir mostrando el lugar borrado); al renombrar, el registro se escribe antes de recalcular expedientes y sin transacción común, y al reintentar la comprobación de unicidad encuentra el propio registro. | `LugarEjecucionOperaciones.cls:34-48, 70-93, 140-146`; `Form_FormLugarEjecucionGestion.cls:184` | [Form_FormLugarEjecucionGestion](formularios/Form_FormLugarEjecucionGestion.md) | a verificar |
 | H-EXP-70 | Lugar de ejecución: si falla el cálculo del ID, `Registrar` podría dar de alta un registro con ID vacío; un usuario no administrador puede escribir en los campos del alta (no se toca `AllowEdits`) aunque no pueda guardar; `Form_FormExpedienteAltaParaHPS` declara `WithEvents m_FormLugar` sin asignarla nunca. | `LugarEjecucion.cls:54-65`; `LugarEjecucionOperaciones.cls:52`; `Form_FormLugarEjecucion.cls:175-179`; `Form_FormExpedienteAltaParaHPS.cls:12, 452-454` | [Form_FormLugarEjecucion](formularios/Form_FormLugarEjecucion.md) | a verificar |
+| H-EXP-71 | Órgano de contratación: el borrado no comprueba si está en uso, porque `Entorno` pasa `m_Error` como argumento del ID y `getOrganoContratacioneSEnExpedientes` devuelve `Nothing` con ID vacío; además la consulta de uso tiene un paréntesis sobrante y une por la columna de texto `TbExpedientes.OrganoContratacion` en vez de por el ID. | `Entorno.cls:1202`; `constructor.bas:3661-3667`; `OrganoContratacionOperaciones.cls:114` | [Form_FormOrganoContratacionGestion](formularios/Form_FormOrganoContratacionGestion.md) | a verificar |
+| H-EXP-72 | Órgano de contratación: `Eliminar` no invalida ninguna caché (el órgano borrado seguiría en la lista y en el combo de la ficha de expediente); `lblTitulo` del gestor muestra «GESTIÓN DE LAS OFICINAS DE PROGRAMA»; `AllowEdits = True` queda activo para cualquier usuario en el formulario de alta. | `OrganoContratacionOperaciones.cls:104-134`; `Form_FormOrganoContratacionGestion.cls:185`; `Form_FormOrganoContratacionGestion.form.txt:484`; `Form_FormOrganoContratacion.cls:183-184, 195` | [Form_FormOrganoContratacion](formularios/Form_FormOrganoContratacion.md) | a verificar |
+| H-EXP-73 | RAC: al renombrar, el cambio y la actualización de los expedientes que lo usan no comparten transacción (un segundo «Guardar» daría «Ese nombre de RAC ya está registrado»); si falla el cálculo del identificador el alta se intentaría con `IDRAC` vacío; el correo del RAC no se valida (solo que el nombre no esté vacío). | `RACOperaciones.cls:29-32, 52, 73-101`; `RAC.cls:31-42`; `Form_FormRAC.cls:89-96` | [Form_FormRAC](formularios/Form_FormRAC.md) | a verificar |
+| H-EXP-74 | RAC: `Form_FormRAC` no bloquea la edición de los campos para no administradores; `ComandoEditar` del listado está habilitado para todos; `ComandoLimpiar` lleva el rótulo «Eliminar» con imagen de papelera, igual que el botón de borrado real. | `Form_FormRAC.cls:184-188`; `Form_FormRACSGestion.cls:325`; `Form_FormRACSGestion.form.txt:1058-1062, 1368-1372` | [Form_FormRACSGestion](formularios/Form_FormRACSGestion.md) | a verificar |
+| H-EXP-75 | PECAL: si falla la actualización de los expedientes tras renombrar, el catálogo ya queda renombrado y al reintentar la comprobación de unicidad responde «Ese nombre de PECAL ya está registrado»; la PECAL «N/A» no se puede borrar pero sí renombrar sin restricción; `Registrar` no invalida la caché de PECAL. | `PECALOperaciones.cls:28-49, 60-92, 112-115`; `Form_FormPECALESGestion.cls:388, 411` | [Form_FormPECAL](formularios/Form_FormPECAL.md) | a verificar |
+| H-EXP-76 | PECAL: el filtro del listado busca en cada pérdida de foco (también al pulsar Salir) y vuelve a seleccionar la primera fila; la descripción aparece en la lista pero el filtro solo busca por código; `Form_FormPECAL` no pone `AllowEdits = False`. | `Form_FormPECALESGestion.cls:28, 45-55, 247-255`; `Form_FormPECAL.cls:173-180` | [Form_FormPECALESGestion](formularios/Form_FormPECALESGestion.md) | a verificar |
+| H-EXP-77 | Suministrador: el borrado de una empresa en uso probablemente acaba en error de tipos, porque `Set` asigna el `Dictionary` que devuelve `getSuministradoresEnExpedientes` a una variable `Suministrador`, y se rechazaría con un mensaje técnico en lugar del aviso de uso; la comprobación de uso en `TbUsuarios_HPS` es código muerto (funciones privadas sin llamadas). | `SuministradorOperaciones.cls:184, 199, 254, 319`; `constructor.bas:3056-3059` | [Form_FormSuministradoresGestion](formularios/Form_FormSuministradoresGestion.md) | a verificar |
+| H-EXP-78 | Suministrador: el nombre de la empresa no se valida como único (solo CIF y nemotécnico); `FormSuministrador` no fija `AllowEdits = False`; si el ID no existe, «Ver Detalle» desde el expediente abre la ficha en modo alta; un error de `DameID` no se consulta y `CLng("")` rompería el cálculo. | `SuministradorOperaciones.cls:40-76`; `Form_FormSuministrador.cls:154-155, 215-219`; `Form_FormExpedienteSuministradores.cls:591-592`; `Suministrador.cls:100-105` | [Form_FormSuministrador](formularios/Form_FormSuministrador.md) | a verificar |
 
 ## Método del recuento
 
