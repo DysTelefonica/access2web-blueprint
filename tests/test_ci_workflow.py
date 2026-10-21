@@ -600,6 +600,7 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
         "integration",
         "security",
         "codeql",
+        "e2e-smoke",
         "docs-codeguide",
         "docs-links",
         "docs-decisions",
@@ -1174,3 +1175,34 @@ def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None
     )
     declared = [(e["root"], e["glob"]) for e in contract["docs_map"]["code_roots"]]
     assert pairs == declared
+
+
+def test_e2e_smoke_job_runs_on_pull_request_and_is_required(workflow: dict) -> None:
+    """Issue #876: the app boots and answers on every PR, not only at release time.
+
+    The job builds the PR image, waits up to 60 s for `/health` and runs the
+    Playwright smoke specs. It runs only on `pull_request`; on the other events
+    it is skipped and the policy accepts that skip. `release.yml` keeps its own
+    full E2E, which this job does not replace.
+    """
+    jobs = workflow["jobs"]
+    assert "e2e-smoke" in jobs, "ci.yml must declare the `e2e-smoke` job (#876)"
+    job = jobs["e2e-smoke"]
+
+    assert job["needs"] == "pr-gate"
+    assert "github.event_name == 'pull_request'" in job["if"]
+    assert "always()" not in job["if"]
+    assert job["runs-on"] == "ubuntu-24.04", "hosted runner: fork PRs are untrusted input"
+    assert job["timeout-minutes"] == 5
+    assert "e2e-smoke" in jobs["required"]["needs"]
+
+    steps = "\n".join(str(step.get("run", "")) for step in job["steps"])
+    assert "docker build" in steps
+    assert "seq 1 60" in steps and "/health" in steps, "/health must be awaited for 60 s"
+    assert "playwright test smoke.spec.ts auth.spec.ts" in steps
+    assert "|| true" not in steps and "continue-on-error" not in str(job)
+
+    release = yaml.safe_load(
+        (_find_workflow().parent / "release.yml").read_text(encoding="utf-8")
+    )
+    assert "e2e" in release["jobs"], "the release E2E job stays as it is"
