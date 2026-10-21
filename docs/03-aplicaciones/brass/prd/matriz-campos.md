@@ -48,19 +48,19 @@ Brass abre además el backend de Lanzadera con `getdbLanzadera` (`Variables Glob
 | `TbAnexos` | 10 | 7583 | 6 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbanexos) |
 | `TbAuxActividad` | 14 | 0 | 1 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbauxactividad) |
 | `TbAuxEventos` | 20 | 0 | 1 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbauxeventos) |
-| `TbAuxManteniminetosPreventivosCalendario` | 9 | 93 | 0 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
-| `TbAuxMateriales` | 14 | 0 | 1 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
-| `TbAuxPlanificacion` | 8 | 81 | 1 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
+| `TbAuxManteniminetosPreventivosCalendario` | 9 | 93 | 0 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbauxmanteniminetospreventivoscalendario) |
+| `TbAuxMateriales` | 14 | 0 | 1 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbauxmateriales) |
+| `TbAuxPlanificacion` | 8 | 81 | 1 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbauxplanificacion) |
 | `TbBUI` | 1 | 18 | 4 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbbui) |
 | `TbBuiIDEvento` | 2 | 11 | 1 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbbuiidevento) |
 | `TbCausaFin` | 1 | 4 | 0 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbcausafin) |
 | `TbCodActividad` | 2 | 12 | 7 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbcodactividad) |
 | `TbCriticidad` | 2 | 3 | 0 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbcriticidad) |
-| `TbEquipos` | 7 | 806 | 22 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
-| `TbEquiposCalibrables` | 7 | 27 | 6 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
-| `TbEquiposCalibrablesFechas` | 6 | 94 | 5 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
-| `TbEquiposMedida` | 9 | 14 | 2 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
-| `TbEquiposMedidaCalibraciones` | 6 | 28 | 2 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
+| `TbEquipos` | 7 | 806 | 22 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbequipos) |
+| `TbEquiposCalibrables` | 7 | 27 | 6 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbequiposcalibrables) |
+| `TbEquiposCalibrablesFechas` | 6 | 94 | 5 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbequiposcalibrablesfechas) |
+| `TbEquiposMedida` | 9 | 14 | 2 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbequiposmedida) |
+| `TbEquiposMedidaCalibraciones` | 6 | 28 | 2 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbequiposmedidacalibraciones) |
 | `TbEventos` | 38 | 5773 | 38 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbeventos) |
 | `TbEventosEquipoMedida` | 4 | 302 | 4 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbeventosequipomedida) |
 | `TbEventosEquipoMedida_antes` | 3 | 26 | 0 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbeventosequipomedida_antes) |
@@ -75,18 +75,18 @@ Brass abre además el backend de Lanzadera con `getdbLanzadera` (`Variables Glob
 | `TbGastosImportePorTipo` | 6 | 3 | 2 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
 | `TbGuiaConciliaciones` | 7 | 0 | 0 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
 | `TbHerramientaDocAyuda` | 2 | 4 | 1 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbherramientadocayuda) |
-| `TbMaterial` | 15 | 2351 | 14 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
-| `TbMaterialSeguimiento` | 11 | 2049 | 6 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
+| `TbMaterial` | 15 | 2351 | 14 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbmaterial) |
+| `TbMaterialSeguimiento` | 11 | 2049 | 6 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbmaterialseguimiento) |
 | `TbNodoBUI` | 2 | 19 | 6 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbnodobui) |
 | `TbNodos` | 1 | 6 | 1 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbnodos) |
 | `TbOriginador` | 1 | 7 | 1 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tboriginador) |
-| `TbPartesDetalle` | 14 | 8819 | 3 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
-| `TbPartesPpal` | 8 | 342 | 3 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
-| `TbPlanificacion` | 13 | 624 | 8 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
-| `TbPlanificacionAnexos` | 6 | 5 | 2 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
-| `TbPlanificacionEquipos` | 5 | 82 | 6 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
-| `TbPlanificacionRegistrada` | 5 | 23 | 2 | Planificación y partes | planificacion-partes (en la tanda siguiente) |
-| `TbRepuestosTipo` | 1 | 3 | 0 | Equipos, calibraciones y materiales | equipos-materiales (en la tanda siguiente) |
+| `TbPartesDetalle` | 14 | 8819 | 3 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbpartesdetalle) |
+| `TbPartesPpal` | 8 | 342 | 3 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbpartesppal) |
+| `TbPlanificacion` | 13 | 624 | 8 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbplanificacion) |
+| `TbPlanificacionAnexos` | 6 | 5 | 2 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbplanificacionanexos) |
+| `TbPlanificacionEquipos` | 5 | 82 | 6 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbplanificacionequipos) |
+| `TbPlanificacionRegistrada` | 5 | 23 | 2 | Planificación y partes | [planificacion-partes](matriz-campos/planificacion-partes.md#tbplanificacionregistrada) |
+| `TbRepuestosTipo` | 1 | 3 | 0 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbrepuestostipo) |
 | `TbResultadoVerificacion` | 1 | 3 | 0 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbresultadoverificacion) |
 | `TbSistema` | 1 | 2 | 0 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbsistema) |
 | `TbSubcontrataciones` | 7 | 75 | 4 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
