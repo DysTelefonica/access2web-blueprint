@@ -2,13 +2,13 @@
 
 > **Commit fijado:** `1d7a2f826a1e3c582874e4e29886a6183efb9067` · **Fuente:** `src/forms/Form_Form0BDOpciones.cls` (205 líneas) y `.form.txt` · **PRD:** [README](../README.md)
 
-Menú raíz de No Conformidades para administradores y usuarios de Calidad: muestra título, versión y usuario conectado, y da paso a los dos submenús, el de NC de proyecto ([Form_Form0BDOpcionesParteProyectos](Form_Form0BDOpcionesParteProyectos.md)) y el de NC de auditoría ([Form_Form0BDOpcionesAuditorias](Form_Form0BDOpcionesAuditorias.md)). Es un formulario **no enlazado** (sin `RecordSource` en el `.form.txt`) y no lee ni escribe datos propios. Las citas son `Form_Form0BDOpciones.cls:línea` salvo indicación; `FG.bas` abrevia `modules/Funciones Generales.bas` y `VG.bas`, `modules/Variables Globales.bas`.
+Menú raíz de No Conformidades para administradores y usuarios de Calidad: muestra título, versión y usuario conectado, y da paso a los dos submenús, el de NC de proyecto (`Form_Form0BDOpcionesParteProyectos`) y el de NC de auditoría ([Form_Form0BDOpcionesAuditorias](Form_Form0BDOpcionesAuditorias.md)). Es un formulario **no enlazado** (sin `RecordSource` en el `.form.txt`) y no lee ni escribe datos propios. Las citas son `Form_Form0BDOpciones.cls:línea` salvo indicación; `FG.bas` abrevia `modules/Funciones Generales.bas` y `VG.bas`, `modules/Variables Globales.bas`.
 
 ## Entrada y salida
 
 | Desde | Cómo | Evidencia |
 |---|---|---|
-| [Form_Form0BDTecnicos](Form_Form0BDTecnicos.md) | Tras cargar el entorno con `EVE`, si el usuario **no** es técnico lo abre y se cierra | `Form_Form0BDTecnicos.cls:125-134` |
+| `Form_Form0BDTecnicos` | Tras cargar el entorno con `EVE`, si el usuario **no** es técnico lo abre y se cierra | `Form_Form0BDTecnicos.cls:125-134` |
 
 Abre `Form0BDOpcionesParteProyectos` (`:16`) y `Form0BDOpcionesAuditorias` (`:72`) **sin cerrarse**; queda debajo como menú de vuelta. Cierra Access con `DoCmd.Quit acQuitSaveAll` desde «Salir» (`:185`) y con `acQuitSaveNone` si falla la apertura (`:167`).
 
