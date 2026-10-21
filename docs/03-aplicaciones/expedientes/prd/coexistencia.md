@@ -14,7 +14,7 @@ Qué debe adaptarse, preservarse o decidirse para que la versión de Access de E
 | No hay cadenas `ODBC;` ni `.Connect` en `src`. | búsqueda en `src` (0 apariciones) |
 | La ruta y la clave del backend salen de una tabla local del frontend, `TbConfiguracionBackends`, con tres destinos (producción, sandbox y test) resueltos por `BackendResolver`. | `Variables Globales.bas:521`, `BackendResolver.bas:1-40`, `ModFixtureF45CacheE2E.bas:43` |
 
-**Consecuencia principal.** El modelo de vínculos PostgreSQL del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) (Access sobre tablas vinculadas por ODBC) no es un cambio de configuración: `getdb()` abre un `.accdb` por ruta y las 303 llamadas esperan un `DAO.Database` de ese fichero. Hay dos caminos y la decisión está **abierta**: (a) sustituir `getdb()` para que devuelva `CurrentDb` con las tablas vinculadas, o (b) mantener un backend `.accdb` y sincronizarlo con PostgreSQL, que el roadmap descarta («no exige sincronizar dos copias de datos»). Con (a), cada fragmento de SQL, de `Recordset` y de transacción de las secciones siguientes se ejecutaría contra el controlador ODBC.
+**Consecuencia.** El modelo de vínculos del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) (Access sobre tablas PostgreSQL vinculadas por ODBC) puede realizarse de más de una forma y la elección es la P-EXP-3, **abierta y escalada al propietario**. Este documento no la resuelve ni recomienda: (a) sustituir `getdb()` para que devuelva `CurrentDb` con vínculos en el frontend; (b) mantener un backend `.accdb` sincronizado con PostgreSQL, que el roadmap descarta; (c) la hipótesis del propietario, que mantiene `getdb()` y vincula las tablas por ODBC dentro del backend. La vía (c) se mide en el [apartado 11](#11-p-exp-3-verificación-de-la-hipótesis-del-propietario).
 
 ## 2. Qué se adapta y qué se preserva
 
@@ -109,9 +109,82 @@ A ejecutar después, en un entorno aislado y nunca sobre datos de producción:
 
 El roadmap fija el orden: carga inicial, reconciliación, cambio de vínculos, activación web, deshabilitación de la entrada en la Lanzadera, comprobación de que las demás aplicaciones siguen disponibles y reversión por definir. Lo que `src` de Expedientes aporta: la Lanzadera no aparece como dependencia técnica (solo una preferencia de usuario, `MantenerLanzaderaAbierta`, `Usuario.cls:32`), de modo que la entrada vive fuera de este repositorio y se estudia en Lanzadera. Deshabilitar la entrada no borra binarios ni datos, ni cierra sesiones abiertas o accesos directos.
 
+## 11. P-EXP-3: verificación de la hipótesis del propietario
+
+Estado: **en estudio, sin recomendación**. Esta verificación mide, con lectura estática de los 135 ficheros de producción de `src` (sin los módulos `Test*`), qué usos de RC1 impedirían o encarecerían la hipótesis. No se ha ejecutado nada contra PostgreSQL ni contra un controlador ODBC: «comprobar» significa que solo una prueba real lo resuelve.
+
+### Hipótesis, tal como la formula el propietario
+
+> Tablas idénticas en PostgreSQL, vinculadas por ODBC dentro de cada backend `.accdb`, y el front sin cambios. Como `getdb()` hace `OpenDatabase` sobre el backend, los recordsets sobre tablas vinculadas de ese backend deberían seguir funcionando.
+>
+> Precisión: `getdb()` sigue abriendo el **mismo** `.accdb` del backend actual (misma ruta); dentro, las tablas locales se sustituyen por vínculos ODBC a PostgreSQL con el mismo nombre.
+
+Que el backend ya contenga vínculos no es nuevo: el `schema.sql` registra 24 tablas vinculadas a otros `.accdb`, y 10 de ellas se usan en `src` (`TbCorreosEnviados`, `TbNoConformidades`, `TbProyectos_AGEDYS`, `TbProyectos_Riesgos`, `TbProyectosEdiciones_Riesgos`, `TbUsuariosAplicaciones`, `TbUsuariosAplicacionesPermisos`, `TbUsuarios_HPS`, `TbUsuariosHistoricos_HPS` y `TbExpedientes1`; primera cita de cada una en `Correo.cls:45`, `FUNCIONES UTILES.bas:2544, 2338, 2380, 6108`, `ExpedienteJsonExporter.bas:487`, `constructor.bas:133`, `SuministradorOperaciones.cls:267, 333` e `Instalador.bas:713`). Esos vínculos seguirían siendo de Access a Access.
+
+### Decisiones y reglas del propietario que se registran
+
+1. **Tabla local única.** La única tabla local es la de configuración y se queda en Access: no migra a PostgreSQL.
+2. **El frontend no tiene tablas propias**: todo dato va al backend vía `getdb()`.
+3. **Formularios desconectados**: sin `RecordSource` ligado a tablas; los datos van por código.
+
+### Verificación de la regla «el frontend no tiene más tablas propias»
+
+- **Confirmado: una sola tabla local, `TbConfiguracionBackends`.** El propio código la llama «tabla local del front» (`ModFixtureF45CacheE2E.bas:11, 28`). La lee `LeeConfiguracionLocal` con `CurrentDb` (`Variables Globales.bas:541-542`), invocada en el arranque (`Variables Globales.bas:309`, función `EVE`) y desde `getdb()` cuando no hay ruta activa (`:622`). Columnas leídas en producción: `BackendActivo`, `BackendProduccion`, `BackendSandbox`, `BackendTest`, `IDAplicacion`, `RutaDirectorioAplicacion_PROD` y `RutaDirectorioAplicacion_LOCAL` (`Variables Globales.bas:549-576`); el fixture lee además `BackendSandbox` y la columna de clave (`ModFixtureF45CacheE2E.bas:43`). Los módulos de prueba la escriben (`Test_ModFixtureF45CacheE2E.bas:90, 104`); ningún código de producción la escribe.
+- **Ninguna otra tabla local en producción.** `CurrentDb` aparece en producción solo en `Variables Globales.bas:542` (lectura de la configuración), `:660` (nombre del fichero para la sección del `.ini`), `FUNCIONES UTILES.bas:2849` (respaldo de `DameID`, no recorrido) y `M_E2EMigration.bas:38` (valor por defecto sin `p_Db`). Todo otro acceso a datos usa una base de datos obtenida con `getdb()`. Las tablas que `src` cita y no están en el `schema.sql` son `TbE2ECola` y `TbE2EEnlaces` (se crean en el backend con `getdb()`), `TbExpedientesDatosAGEDYS` (`ExpedienteAGEDYS.cls:59`, también vía `getdb()`; su correspondencia con `TbExpAgedys` del snapshot está sin comprobar) y los alias `TbExpedientes_1` y `TbExpedientesRACs`.
+- **Vínculos del frontend a otros orígenes: no comprobable desde `src`.** El frontend es binario y `export-manifest.json` no lista tablas. Hay indicios de que el frontend no vincula las tablas del backend: «el frontend puede no tener las tablas linkeadas» (`Test_M_E2EMigration_TbE2EColaVerificacion.bas:19-21`; `ModFixtureF45CacheE2E.bas:8-9`).
+- **Excepciones a la regla (hallazgos):**
+  - `RunE2EMigration`, sin el parámetro `p_Db`, trabaja sobre `CurrentDb` (`M_E2EMigration.bas:34-38`), y su cabecera la invoca así desde la ventana inmediata (`:9`): en esa llamada crearía `TbE2EEnlaces` y `TbE2ECola` en el frontend, no en el backend. Ningún módulo de producción la llama con `getdb()`.
+  - `DameID` cae a `CurrentDb()` si no recibe base de datos (`FUNCIONES UTILES.bas:2849`); sus 30 llamadas en producción pasan una base de datos, así que el camino no se recorre.
+  - `ListaCola.RowSource` se resuelve con SQL contra el motor del frontend (ver verificación de formularios).
+  - Estado local por puesto que no es una tabla: `Expedientes.ini` junto al frontend (`Variables Globales.bas:655-666`, `Entorno.cls:1767`), carpeta `%APPDATA%\Aplicaciones DYSN\Expedientes` (`Entorno.cls:2141-2146`), ficheros temporales (`E2EColaHtmlSnapshot.bas:183`, `FUNCIONES UTILES.bas:4226, 4231`) y 33 usos de `TempVars` en memoria.
+- **Tablas del backend de tipo temporal o de configuración por puesto.** En el snapshot son `TbE2EExportSeleccionTemp`, `TbE2EJsonDestinationUserConfig`, `TbAuxNemotecnico`, `TbAusExpPostAGEDO` y `TbAuxEstadosMartina`, y ninguna se cita en producción de RC1. `TbConfMostrarEstado` sí se cita (3 ficheros). Con la regla del propietario, si existen viven en el backend; su disposición (PostgreSQL o local dentro del backend) depende de la P-EXP-12.
+
+### Verificación de la regla «formularios desconectados»
+
+- **Confirmado en el diseño:** 0 `RecordSource` y 0 `ControlSource` en los 45 `.form.txt`. De los 82 listados y combos con nombre, 81 declaran `RowSourceType = "Value List"`.
+- **Excepción 1, `ListaCola` de `Form_FormE2ECola`:** `RowSourceType = "Table/View/StoredProc"` (`Form_FormE2ECola.form.txt:288`) y `RowSource` asignado desde código con SQL sobre `TbE2ECola` (`Form_FormE2ECola.cls:137`, SQL en `modE2EColaPanelHelper.bas:74-86`). Esa SQL la resuelve el motor del frontend, no `getdb()`. Es el único caso, y el formulario ya no se abre desde el menú (opción 12 abre el panel HTML; `Form0BDGestorEntidadesLogic.bas:55-57`).
+- **Subformularios:** `FrmDetalle.SourceObject` se asigna por código a formularios, no a tablas (`Form_FormExpediente.cls:146`).
+- **No ligados pero con SQL:** los demás listados reciben `AddItem` o cadenas de lista de valores construidas desde datos leídos por `getdb()` (por ejemplo `Form_FormExpedienteEntidades.cls:1967`), de modo que los datos viajan por el camino de `getdb()`.
+
+### Qué rompería o encarecería la hipótesis
+
+| Categoría | Evidencia | ¿Rompe? | Coste (sitios) |
+|---|---|---|---|
+| `dbOpenTable`, `.Seek`, `.Index`, `FindFirst`, `FindNext`, `.Bookmark`, `.Filter`, `.Sort`, `.LastModified` | 0 usos en 135 ficheros | No | 0 |
+| `OpenRecordset` por nombre de tabla (`m_SQL = "TbX"` y `OpenRecordset(m_SQL)` sin tipo) | 32 líneas en 15 ficheros; por ejemplo `ExpedienteOperaciones.cls:76, 88`, `CPVOperaciones.cls:50` | Cambia el tipo por defecto (de tabla a dynaset), sin dependencias de `Seek`; la escritura requiere clave única en la tabla vinculada | Comprobar 32 sitios; clave pendiente del ERD |
+| Altas con `Max + 1` (`DameID`) | 30 llamadas en 30 ficheros, 27 pares tabla-campo, una sola función (`FUNCIONES UTILES.bas:2836-2864`); una sobre tabla vinculada a otro backend (`TbCorreosEnviados`/`IDCorreo`) y otra sobre una tabla solo de `src` (`TbExpedientesDatosAGEDYS`) | **Sí**: colisión con las altas de la web | 1 función + 4 `Max` directos independientes (`E2EEnlacesService.bas:110`, `E2EFamilyExportHelper.bas:303`, `FUNCIONES UTILES.bas:1730, 1746`) |
+| Dialecto Jet en SQL (literales) | `DELETE *`: 49 líneas en 15 ficheros (`CPVOperaciones.cls:120`); `TOP n`: 4 líneas (`Expediente.cls:209`, `ExpedienteCompleto.cls:575`, `ManualE2EExport.bas:250`); `#` de fecha: 7 líneas (`ExpedienteOperaciones.cls:1789, 1855`); `Date()`/`Now()`: 5 líneas (`E2EEnlacesService.bas:120, 199, 261`, `constructor.bas:1586`); `DateDiff`: `constructor.bas:1586, 1641`; `Nz` en SQL: 4 líneas (`ExpedienteSuministradorRepositorio.bas:24`); `[campo]`: 6 líneas (`E2EFamilyExportHelper.bas:101, 199, 277`); `LIKE` con `*`: `FUNCIONES UTILES.bas:403, 412, 1228`, `constructor.bas:2680`; `InStr`: `FormE2EGestionEnlacesLogic.bas:480-481` | A comprobar con el controlador (ACE puede evaluar localmente lo que no traduzca, con coste de rendimiento) | Unas 80 líneas de las ≈1 000 con SQL (40 ficheros) |
+| Consultas paso-a-través | 0 (`dbSQLPassThrough`, `.Connect`, `ReturnsRecords`: sin usos) | No aplica | 0 |
+| Consultas guardadas | 1 exportada (`src/queries/Consulta1.sql`, sobre `TbExpedientes`); 5 `CreateQueryDef("")` temporales con `PARAMETERS` (`E2EFamilyExportHelper.bas:89, 99, 197, 274`, `ExpedienteJsonExporter.bas:599`) | Sintaxis Jet de parámetros; a comprobar | 6 |
+| Transacciones | 12 `BeginTrans` en 5 ficheros (tabla siguiente) | A comprobar: una transacción de `Workspaces(0)` sobre vínculos ODBC; mezcla de motores si participa una tabla local o vinculada a otro `.accdb` | 12 sitios |
+| DDL por DAO sobre tablas | `M_E2EMigration.bas` (35 líneas: `CreateTableDef`, `Fields.Append`, `Indexes.Append`, `Required`) | Rompe para tablas ya vinculadas: DAO no modifica la estructura de una tabla vinculada (a confirmar con el controlador) | 1 módulo |
+| `Recordset.RecordCount`/`MoveLast` | `ExpedienteSuministradorServicio.cls:395-396` | No | 1 |
+| Tipo `Sí`/`No` | 0 columnas `BOOLEAN` en el `schema.sql`: se guardan como `TEXT(2)`; 369 líneas comparan el texto | No, mientras se conserve como texto | 0 si se conserva |
+| `MEMO` | 24 columnas en las tablas activas (por ejemplo `Titulo`, `ObjetoContrato`, `Observaciones`) | A comprobar: ACE ordena y agrupa un memo solo por sus primeros 255 caracteres | Revisar `ORDER BY` y `GROUP BY` sobre esas 24 |
+| Fecha y hora | 29 columnas `SHORT_DATE_TIME`; formatos de salida con `Format` en 29 líneas | A comprobar: precisión de fracciones de segundo al comparar con un `timestamp` | 29 columnas |
+| Autonumérico | `IDEnlace` e `IDCola` (`M_E2EMigration.bas:76, 112`); `INSERT` que omite `IDEnlace` (`E2EEnlacesService.bas:117-118`); 0 usos de `@@IDENTITY` o `.LastModified` | A comprobar: valor por defecto de la columna en PostgreSQL; el resto de autonuméricos depende del ERD | 2 tablas conocidas |
+
+Transacciones, por procedimiento (tablas citadas dentro del procedimiento; las operaciones que llama escriben más):
+
+| Procedimiento | Tablas citadas | Observación |
+|---|---|---|
+| `ExpedienteOperaciones.Registrar` (`:47`) | `TbExpedientes`, `TbExpedientesConEntidades` | Llama a las operaciones de anualidades, comerciales, CPV, PECAL, RAC, anexos, responsables, lugares y suministradores, y a `ActualizarNCs` (`FUNCIONES UTILES.bas:6317`); `TbNoConformidades`, vinculada a otro `.accdb`, se lee en `getNCParaExpediente` (`FUNCIONES UTILES.bas:2544`), sin comprobar si participa en la transacción |
+| `ExpedienteOperaciones.Eliminar` (`:2093`) | 13 tablas del expediente | La más amplia |
+| `ExpedienteSuministradorServicio` (`:67, 123, 202, 258`) | por el repositorio | Cuatro operaciones del árbol |
+| `E2EEnlacesService` (`:102, 192, 259`) | `TbE2EEnlaces`, `TbExpedientes` | Combinan el `Max` del ordinal con la escritura en dos tablas |
+| `ExpedienteJsonExporter` (`:327, 382`) | ninguna directa | Exportación |
+| `Instalador.RegistraEnlazadoE2EEnEntidades` (`:653`) | `TbExpedientesConEntidades` | Utilidad de instalación |
+
+### Coste agregado, sin priorizar
+
+- **Concentrado en un punto:** `DameID` (30 llamadas, 1 función).
+- **Por sitios:** 4 `Max` directos, 32 aperturas por nombre de tabla a comprobar, 12 transacciones, 6 consultas con sintaxis Jet de parámetros, 1 módulo de DDL y las construcciones Jet de SQL.
+- **Dependiente del ERD de origen (D-EXP-4):** claves únicas para recordsets actualizables, autonuméricos, columnas `NOT NULL` y la lista final de tablas del backend.
+- **Fuera de `src`:** la prueba real de las filas «a comprobar» exige un backend de RC1 y un controlador ODBC; ver P-EXP-1.
+
 ## Pendientes
 
-- Decidir entre sustituir `getdb()` por `CurrentDb` sobre vínculos o conservar otra vía (sección 1).
+- Resolver la P-EXP-3 (sección 1 y apartado 11); está abierta y escalada al propietario.
 - Extraer claves, índices y relaciones reales de las tablas vinculables (D-EXP-4 en el README).
 - Comprobar el comportamiento de transacciones DAO y de `Recordset` actualizables sobre tablas ODBC.
 - Aprobar la fuente única de identificadores y la política de conflictos.
