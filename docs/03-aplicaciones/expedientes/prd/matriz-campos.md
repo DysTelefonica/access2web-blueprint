@@ -37,18 +37,18 @@ Cada columna de origen de las tablas locales del backend de Expedientes, con la 
 | `Copia de TbExpedientes` | 54 | 0 | 0 | histórica o auxiliar; comparte 53 de 54 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
 | `Copia de TbExpedientesConEntidades` | 21 | 365 | 0 | histórica o auxiliar; comparte 3 de 21 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
 | `ListaPrevia` | 52 | 99 | 0 | histórica o auxiliar; comparte 10 de 52 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
-| `TbAusExpPostAGEDO` | 1 | 203 | 0 | auditoría, configuración o soporte | tanda posterior |
-| `TbAuxEstadosMartina` | 3 | 143 | 0 | auditoría, configuración o soporte | tanda posterior |
-| `TbAuxNemotecnico` | 1 | 0 | 0 | auditoría, configuración o soporte | tanda posterior |
-| `TbCambios` | 10 | 0 | 1 | auditoría, configuración o soporte | tanda posterior |
+| `TbAusExpPostAGEDO` | 1 | 203 | 0 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbausexppostagedo) |
+| `TbAuxEstadosMartina` | 3 | 143 | 0 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbauxestadosmartina) |
+| `TbAuxNemotecnico` | 1 | 0 | 0 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbauxnemotecnico) |
+| `TbCambios` | 10 | 0 | 1 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbcambios) |
 | `TbComerciales` | 3 | 26 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbcomerciales) |
-| `TbConfMostrarEstado` | 3 | 23 | 3 | auditoría, configuración o soporte | tanda posterior |
+| `TbConfMostrarEstado` | 3 | 23 | 3 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbconfmostrarestado) |
 | `TbCPV` | 3 | 73 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbcpv) |
-| `TbDatosEconomicosExpedientes` | 7 | 91 | 1 | auditoría, configuración o soporte | tanda posterior |
-| `TbE2EExportBatch` | 10 | 0 | 0 | auditoría, configuración o soporte | tanda posterior |
-| `TbE2EExportBatchDetalle` | 8 | 0 | 0 | auditoría, configuración o soporte | tanda posterior |
-| `TbE2EExportSeleccionTemp` | 5 | 5 | 0 | auditoría, configuración o soporte | tanda posterior |
-| `TbE2EJsonDestinationUserConfig` | 5 | 4 | 0 | auditoría, configuración o soporte | tanda posterior |
+| `TbDatosEconomicosExpedientes` | 7 | 91 | 1 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbdatoseconomicosexpedientes) |
+| `TbE2EExportBatch` | 10 | 0 | 0 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbe2eexportbatch) |
+| `TbE2EExportBatchDetalle` | 8 | 0 | 0 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbe2eexportbatchdetalle) |
+| `TbE2EExportSeleccionTemp` | 5 | 5 | 0 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbe2eexportselecciontemp) |
+| `TbE2EJsonDestinationUserConfig` | 5 | 4 | 0 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbe2ejsondestinationuserconfig) |
 | `TbEjercitos` | 3 | 5 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbejercitos) |
 | `TbEstados` | 3 | 9 | 1 | catálogo | [catalogos](matriz-campos/catalogos.md#tbestados) |
 | `TbExpAgedys` | 49 | 116 | 1 | histórica o auxiliar; comparte 3 de 49 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
@@ -82,8 +82,10 @@ Cada columna de origen de las tablas locales del backend de Expedientes, con la 
 | `TbRACS` | 4 | 33 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbracs) |
 | `TbResponsablesPorRol` | 3 | 11 | 2 | catálogo | [catalogos](matriz-campos/catalogos.md#tbresponsablesporrol) |
 | `TbSuministradores` | 10 | 72 | 7 | catálogo | [catalogos](matriz-campos/catalogos.md#tbsuministradores) |
-| `TbUltimoCambio` | 4 | 6 | 3 | auditoría, configuración o soporte | tanda posterior |
+| `TbUltimoCambio` | 4 | 6 | 3 | auditoría, configuración o soporte | [transversales](matriz-campos/transversales.md#tbultimocambio) |
+| `TbE2ECola` | 13 | solo `src` | 62 menciones | definida solo en `src` (DDL por DAO) | [definidas en src](matriz-campos/definidas-en-src.md#tbe2ecola) |
+| `TbE2EEnlaces` | 8 | solo `src` | 29 menciones | definida solo en `src` (DDL por DAO) | [definidas en src](matriz-campos/definidas-en-src.md#tbe2eenlaces) |
 
 ## Tandas de la matriz
 
-Esta tanda añade los catálogos (14 tablas). Siguen las tablas transversales, las que solo `src` define (`TbE2ECola`, `TbE2EEnlaces`) y las vinculadas a otros backends. Las tablas históricas no tienen detalle por columna: el [ledger de la matriz de migración](../migration-matrix.md) las conserva hasta que negocio decida su disposición.
+Con esta tanda la matriz cubre todas las tablas locales con detalle (cabecera, relaciones, catálogos y transversales), las dos tablas que solo `src` define y el resumen de las 24 vinculadas. Quedan fuera de detalle las seis tablas históricas o auxiliares, que el [ledger de la matriz de migración](../migration-matrix.md) conserva hasta que negocio decida su disposición, y todo lo que depende del ERD de origen: claves, índices, relaciones y nulabilidad del resto de tablas.
