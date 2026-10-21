@@ -785,18 +785,21 @@ def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> 
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
 
-def test_workflow_policy_gate_runs_the_canon_in_quality(workflow: dict) -> None:
-    """BP#1040 (B3a): the canon workflow-policy gate runs next to the local `workflow gate`.
+def test_workflow_policy_gate_runs_the_canon_over_every_workflow(workflow: dict) -> None:
+    """BP#1040 (B3b): the canon workflow-policy gate covers every workflow file, not only ci.yml.
 
-    It is scoped to `ci.yml` and the required-jobs policy, as the adoption contract declares.
+    The local `workflow gate` keeps only what the canon does not check; the rest (duplicate keys,
+    timeouts, host ports, SHA pins, docker preflight, concurrency groups) is the canon's job, so
+    the canon has to see every file the local gate used to scan.
     """
     steps = [s for s in workflow["jobs"]["quality"]["steps"] if s.get("name") == "workflow policy"]
     assert len(steps) == 1, "quality must have exactly one `workflow policy` step"
-    assert steps[0]["run"] == (
+    run = steps[0]["run"]
+    assert 'for f in .github/workflows/*.yml; do args+=(--workflow "$f"); done' in run
+    assert (
         "python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "
-        "--workflow .github/workflows/ci.yml --base-branch main "
-        "--required-jobs .github/required-jobs-policy.json"
-    )
+        '"${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json'
+    ) in run
 
 
 def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
