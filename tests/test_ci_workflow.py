@@ -25,7 +25,7 @@ REQUIRED_COMMANDS = (
     'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
-    "python scripts/check_pr_size.py",
+    ".agents/skills/ci-pattern/assets/pr-size/check_pr_size.py",
     ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
     "python scripts/check_walkthrough_schema.py --strict",
     ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
@@ -765,7 +765,9 @@ def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
     steps = [s for s in workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
     assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
     step = steps[0]
-    assert step["run"] == 'python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"'
+    assert step["run"] == (
+        'python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"'
+    )
     env = step.get("env") or {}
     assert "BASE_REF" not in env
     assert "PR_BODY" not in env
@@ -781,6 +783,20 @@ def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> 
     assert job["permissions"]["pull-requests"] == "read"
     step = [s for s in job["steps"] if s.get("name") == "pr size"][0]
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
+
+
+def test_workflow_policy_gate_runs_the_canon_in_quality(workflow: dict) -> None:
+    """BP#1040 (B3a): the canon workflow-policy gate runs next to the local `workflow gate`.
+
+    It is scoped to `ci.yml` and the required-jobs policy, as the adoption contract declares.
+    """
+    steps = [s for s in workflow["jobs"]["quality"]["steps"] if s.get("name") == "workflow policy"]
+    assert len(steps) == 1, "quality must have exactly one `workflow policy` step"
+    assert steps[0]["run"] == (
+        "python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "
+        "--workflow .github/workflows/ci.yml --base-branch main "
+        "--required-jobs .github/required-jobs-policy.json"
+    )
 
 
 def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:

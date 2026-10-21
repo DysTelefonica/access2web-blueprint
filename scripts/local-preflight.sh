@@ -10,6 +10,6 @@ set -euo pipefail
 
 ruff format --check --config app/pyproject.toml .
 ruff check --config app/pyproject.toml .
-python scripts/check_pr_size.py
+python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py
 python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file tests/fixtures/issue-spec-preflight-body.md --required-sections scripts/required-sections.json
 python scripts/check_walkthrough_schema.py --strict
