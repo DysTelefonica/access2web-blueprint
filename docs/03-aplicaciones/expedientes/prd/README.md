@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 11 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 13 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -45,7 +45,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormEjercitosGestion | formulario | src/forms/Form_FormEjercitosGestion.cls | 414 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormEleccionTipoConsulta | formulario | src/forms/Form_FormEleccionTipoConsulta.cls | 390 | 16 | 10 | distinto | pendiente | sin ficha todavía |
 | Form_FormExpediente | formulario | src/forms/Form_FormExpediente.cls | 597 | 27 | 13 | distinto | analizado | [formularios/Form_FormExpediente.md](formularios/Form_FormExpediente.md) |
-| Form_FormExpedienteAltaParaHPS | formulario | src/forms/Form_FormExpedienteAltaParaHPS.cls | 453 | 47 | 23 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedienteAltaParaHPS | formulario | src/forms/Form_FormExpedienteAltaParaHPS.cls | 453 | 47 | 23 | distinto | analizado | [formularios/Form_FormExpedienteAltaParaHPS.md](formularios/Form_FormExpedienteAltaParaHPS.md) |
 | Form_FormExpedienteAltaTipo | formulario | src/forms/Form_FormExpedienteAltaTipo.cls | 363 | 14 | 8 | distinto | analizado | [formularios/Form_FormExpedienteAltaTipo.md](formularios/Form_FormExpedienteAltaTipo.md) |
 | Form_FormExpedienteCambioTipo | formulario | src/forms/Form_FormExpedienteCambioTipo.cls | 336 | 21 | 8 | distinto | analizado | [formularios/Form_FormExpedienteCambioTipo.md](formularios/Form_FormExpedienteCambioTipo.md) |
 | Form_FormExpedienteDocumentacion | formulario | src/forms/Form_FormExpedienteDocumentacion.cls | 329 | 14 | 8 | distinto | analizado | [formularios/Form_FormExpedienteDocumentacion.md](formularios/Form_FormExpedienteDocumentacion.md) |
@@ -57,7 +57,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormExpedienteSuministradores | formulario | src/forms/Form_FormExpedienteSuministradores.cls | 961 | 25 | 38 | distinto | analizado | [formularios/Form_FormExpedienteSuministradores.md](formularios/Form_FormExpedienteSuministradores.md) |
 | Form_FormExpedientesGestion | formulario | src/forms/Form_FormExpedientesGestion.cls | 3963 | 124 | 99 | distinto | pendiente | sin ficha todavía |
 | Form_FormExpedientesGestionTecnica | formulario | src/forms/Form_FormExpedientesGestionTecnica.cls | 773 | 43 | 24 | distinto | pendiente | sin ficha todavía |
-| Form_FormExpedientesParaCambioTipo | formulario | src/forms/Form_FormExpedientesParaCambioTipo.cls | 321 | 22 | 10 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedientesParaCambioTipo | formulario | src/forms/Form_FormExpedientesParaCambioTipo.cls | 321 | 22 | 10 | distinto | analizado | [formularios/Form_FormExpedientesParaCambioTipo.md](formularios/Form_FormExpedientesParaCambioTipo.md) |
 | Form_FormExpedientesResponsables | formulario | src/forms/Form_FormExpedientesResponsables.cls | 187 | 25 | 4 | **añadido** | analizado | [formularios/Form_FormExpedientesResponsables.md](formularios/Form_FormExpedientesResponsables.md) |
 | Form_FormGradoClasificacion | formulario | src/forms/Form_FormGradoClasificacion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormGradosClasificacionGestion | formulario | src/forms/Form_FormGradosClasificacionGestion.cls | 425 | 23 | 14 | distinto | pendiente | sin ficha todavía |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 11 analizados · 0 no aplicables · 34 pendientes.
+Totales (formularios): 13 analizados · 0 no aplicables · 32 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -149,6 +149,11 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-27 | «Convertir a Lote» sin padre no cambia indicadores pero guarda y cierra como éxito; «Convertir a Lote de Acuerdo Marco» no comprueba que el padre exista ni que sea AM; nada impide indicar el propio expediente como padre. | `Form_FormExpedienteCambioTipo.cls:93-153` | [Form_FormExpedienteCambioTipo](formularios/Form_FormExpedienteCambioTipo.md) | a verificar |
 | H-EXP-28 | Los cambios de tipo se aplican al expediente activo en memoria antes de guardar (si falla, queda modificado); `TbExpedientes`, la caché y el último cambio no van en una transacción común; si el expediente no existe, `RegistrarCambioTipo` no escribe ni devuelve error. | `Form_FormExpedienteCambioTipo.cls:84-156`; `ExpedienteOperaciones.cls:2014-2041` | [Form_FormExpedienteCambioTipo](formularios/Form_FormExpedienteCambioTipo.md) | a verificar |
 | H-EXP-29 | Gestión no aplica a los basados la comprobación de derivados que sí aplica a Acuerdo Marco y Lote antes de cambiar de tipo. | `Form_FormExpedientesGestion.cls:2656-2667` | [Form_FormExpedienteCambioTipo](formularios/Form_FormExpedienteCambioTipo.md) | a verificar |
+| H-EXP-30 | El alta para HPS probablemente no puede guardarse: `ComandoRegistrar` está deshabilitado en el diseño y el código nunca lo habilita; además el formulario no rellena `APLICAESTADO`, por lo que `MotivoNoOK` rechazaría el alta. | `Form_FormExpedienteAltaParaHPS.form.txt:2312, 2320`; `ExpedienteOperaciones.cls:839-842` | [Form_FormExpedienteAltaParaHPS](formularios/Form_FormExpedienteAltaParaHPS.md) | a verificar |
+| H-EXP-31 | `MotivoNoOKSoloHPS` (exige al menos una empresa y un lugar) no se llama desde ningún sitio, y el tipo «Expediente Sólo para HPS» se sobrescribe al guardar y queda como expediente individual. | `ExpedienteOperaciones.cls:82, 1131`; `FUNCIONES UTILES.bas:5434-5436` | [Form_FormExpedienteAltaParaHPS](formularios/Form_FormExpedienteAltaParaHPS.md) | a verificar |
+| H-EXP-32 | Los mensajes de error están cruzados (al guardar se muestra `m_Error` vacío; al cargar se pierde su texto); la clave temporal usa `Rnd` sin `Randomize`; los botones de lugares de ejecución no tienen gestión de errores. | `Form_FormExpedienteAltaParaHPS.cls:412-414, 36, 43, 283, 304, 340-372` | [Form_FormExpedienteAltaParaHPS](formularios/Form_FormExpedienteAltaParaHPS.md) | a verificar |
+| H-EXP-33 | Tras buscar se marca `Selected(2)`; «Ver Todos» vacía la palabra clave y la búsqueda no se ejecuta (lista vacía); la palabra clave se concatena en el SQL sin escapar. | `Form_FormExpedientesParaCambioTipo.cls:43-45, 66, 110-111`; `FUNCIONES UTILES.bas:1228-1230` | [Form_FormExpedientesParaCambioTipo](formularios/Form_FormExpedientesParaCambioTipo.md) | a verificar |
+| H-EXP-34 | La lista del selector de padre muestra todos los tipos aunque solo se aceptan AM y Lote; un Lote es aceptado aquí como padre pero «Convertir a Lote» lo rechaza después. | `Form_FormExpedientesParaCambioTipo.cls:177-180`; `Form_FormExpedienteCambioTipo.cls:102-105` | [Form_FormExpedientesParaCambioTipo](formularios/Form_FormExpedientesParaCambioTipo.md) | a verificar |
 
 ## Método del recuento
 
