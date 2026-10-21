@@ -47,8 +47,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_frmAltaSolicitud | src/forms/Form_frmAltaSolicitud.cls | 646 | 43 | 19 | distinto | analizado | [formularios/Form_frmAltaSolicitud.md](formularios/Form_frmAltaSolicitud.md) |
 | Form_frmBuscarExpediente | src/forms/Form_frmBuscarExpediente.cls | 242 | 31 | 14 | igual | analizado | [formularios/Form_frmBuscarExpediente.md](formularios/Form_frmBuscarExpediente.md) |
 | Form_frmBuscarSolicitudes | src/forms/Form_frmBuscarSolicitudes.cls | 359 | 32 | 18 | distinto | analizado | [formularios/Form_frmBuscarSolicitudes.md](formularios/Form_frmBuscarSolicitudes.md) |
-| Form_frmDatosCDCA | src/forms/Form_frmDatosCDCA.cls | 735 | 33 | 20 | distinto | pendiente | — |
-| Form_frmDatosCDCASUB | src/forms/Form_frmDatosCDCASUB.cls | 779 | 33 | 21 | distinto | pendiente | — |
+| Form_frmDatosCDCA | src/forms/Form_frmDatosCDCA.cls | 735 | 33 | 20 | distinto | analizado | [formularios/Form_frmDatosCDCA.md](formularios/Form_frmDatosCDCA.md) |
+| Form_frmDatosCDCASUB | src/forms/Form_frmDatosCDCASUB.cls | 779 | 33 | 21 | distinto | analizado | [formularios/Form_frmDatosCDCASUB.md](formularios/Form_frmDatosCDCASUB.md) |
 | Form_frmDatosPC | src/forms/Form_frmDatosPC.cls | 811 | 33 | 20 | distinto | pendiente | — |
 | Form_frmDetalleExpediente | src/forms/Form_frmDetalleExpediente.cls | 88 | 48 | 3 | igual | analizado | [formularios/Form_frmDetalleExpediente.md](formularios/Form_frmDetalleExpediente.md) |
 | Form_frmDetalleLogCambio | src/forms/Form_frmDetalleLogCambio.cls | 59 | 31 | 2 | igual | pendiente | — |
@@ -183,7 +183,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | WebVisorCacheServicio | src/classes/WebVisorCacheServicio.cls | 180 | — | 9 | distinto | pendiente | — |
 | WorkflowServicio | src/classes/WorkflowServicio.cls | 4160 | — | 82 | distinto | pendiente | — |
 
-Totales: 9 analizados · 0 no aplicables · 122 pendientes.
+Totales: 11 analizados · 0 no aplicables · 120 pendientes.
 
 ## Discrepancias abiertas
 
