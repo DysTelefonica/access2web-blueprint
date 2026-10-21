@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 9 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 11 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -47,9 +47,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormExpediente | formulario | src/forms/Form_FormExpediente.cls | 597 | 27 | 13 | distinto | analizado | [formularios/Form_FormExpediente.md](formularios/Form_FormExpediente.md) |
 | Form_FormExpedienteAltaParaHPS | formulario | src/forms/Form_FormExpedienteAltaParaHPS.cls | 453 | 47 | 23 | distinto | pendiente | sin ficha todavía |
 | Form_FormExpedienteAltaTipo | formulario | src/forms/Form_FormExpedienteAltaTipo.cls | 363 | 14 | 8 | distinto | analizado | [formularios/Form_FormExpedienteAltaTipo.md](formularios/Form_FormExpedienteAltaTipo.md) |
-| Form_FormExpedienteCambioTipo | formulario | src/forms/Form_FormExpedienteCambioTipo.cls | 336 | 21 | 8 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedienteCambioTipo | formulario | src/forms/Form_FormExpedienteCambioTipo.cls | 336 | 21 | 8 | distinto | analizado | [formularios/Form_FormExpedienteCambioTipo.md](formularios/Form_FormExpedienteCambioTipo.md) |
 | Form_FormExpedienteDocumentacion | formulario | src/forms/Form_FormExpedienteDocumentacion.cls | 329 | 14 | 8 | distinto | analizado | [formularios/Form_FormExpedienteDocumentacion.md](formularios/Form_FormExpedienteDocumentacion.md) |
-| Form_FormExpedienteEntidades | formulario | src/forms/Form_FormExpedienteEntidades.cls | 1974 | 61 | 49 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedienteEntidades | formulario | src/forms/Form_FormExpedienteEntidades.cls | 1974 | 61 | 49 | distinto | analizado | [formularios/Form_FormExpedienteEntidades.md](formularios/Form_FormExpedienteEntidades.md) |
 | Form_FormExpedienteFechas | formulario | src/forms/Form_FormExpedienteFechas.cls | 327 | 44 | 15 | distinto | analizado | [formularios/Form_FormExpedienteFechas.md](formularios/Form_FormExpedienteFechas.md) |
 | Form_FormExpedienteGeneral | formulario | src/forms/Form_FormExpedienteGeneral.cls | 905 | 73 | 19 | distinto | analizado | [formularios/Form_FormExpedienteGeneral.md](formularios/Form_FormExpedienteGeneral.md) |
 | Form_FormExpedienteHitos | formulario | src/forms/Form_FormExpedienteHitos.cls | 296 | 21 | 6 | distinto | analizado | [formularios/Form_FormExpedienteHitos.md](formularios/Form_FormExpedienteHitos.md) |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 9 analizados · 0 no aplicables · 36 pendientes.
+Totales (formularios): 11 analizados · 0 no aplicables · 34 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -143,6 +143,12 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-21 | El guardado de responsables desde el modal llama a `ProcesarEdit` con `p_db = Nothing`: en un expediente ya guardado el cambio solo llega a memoria, pero se muestra «Responsable guardado correctamente.». | `Form_FormExpedientesResponsables.cls:133, 142`; `ExpedienteOperaciones.cls:400-402` | [Form_FormExpedientesResponsables](formularios/Form_FormExpedientesResponsables.md) | a verificar |
 | H-EXP-22 | La regla de responsables se valida antes de aplicar el cambio, no sobre el estado posterior; `EsPreventa` se pierde en un alta porque `RegistraResponsable` no lo escribe. | `Form_FormExpedientesResponsables.cls:127, 133`; `ExpedienteOperaciones.cls:1072-1075, 1511-1517`; `modResponsablesEdit.bas:234` | [Form_FormExpedientesResponsables](formularios/Form_FormExpedientesResponsables.md) | a verificar |
 | H-EXP-23 | `g_NecesitaRefrescarResponsables` no lo asigna nadie: el refresco por `Form_Activate` de Entidades nunca corre; el guardado del modal se habilita sin mirar `m_AbiertoParaEditar`. | `Form_FormExpedienteEntidades.cls:1372`; `Form_FormExpedientesResponsables.cls:92` | [Form_FormExpedientesResponsables](formularios/Form_FormExpedientesResponsables.md) | a verificar |
+| H-EXP-24 | En el alta, `ColAnualidades` guarda el texto `Presupuesto` y `Registrar` hace `Set` sobre él: guardar un alta con anualidades fallaría y revertiría la transacción. Una anualidad con año repetido se ignora en alta pero sustituye la fila en un expediente existente. | `Form_FormExpedienteEntidades.cls:61-62`; `ExpedienteOperaciones.cls:408, 1258-1261` | [Form_FormExpedienteEntidades](formularios/Form_FormExpedienteEntidades.md) | a verificar |
+| H-EXP-25 | `RegistrarAnualidad` no tiene manejador de error ni llama a `RegistrarUltimoCambio`; quitar un responsable no comprueba la regla de al menos un JP y un aviso; las altas y bajas de CPV no actualizan derivados ni caché. | `ExpedienteOperaciones.cls:1238-1282, 2562-2592, 1351-1382, 2461-2482` | [Form_FormExpedienteEntidades](formularios/Form_FormExpedienteEntidades.md) | a verificar |
+| H-EXP-26 | Ninguna baja de entidades pide confirmación y los botones «Nuevo …» no llevan la etiqueta `EJECUTIVO`, así que siguen activos en solo lectura. | `Form_FormExpedienteEntidades.cls:667-679`; `Form_FormExpedienteEntidades.form.txt:2235-2612` | [Form_FormExpedienteEntidades](formularios/Form_FormExpedienteEntidades.md) | a verificar |
+| H-EXP-27 | «Convertir a Lote» sin padre no cambia indicadores pero guarda y cierra como éxito; «Convertir a Lote de Acuerdo Marco» no comprueba que el padre exista ni que sea AM; nada impide indicar el propio expediente como padre. | `Form_FormExpedienteCambioTipo.cls:93-153` | [Form_FormExpedienteCambioTipo](formularios/Form_FormExpedienteCambioTipo.md) | a verificar |
+| H-EXP-28 | Los cambios de tipo se aplican al expediente activo en memoria antes de guardar (si falla, queda modificado); `TbExpedientes`, la caché y el último cambio no van en una transacción común; si el expediente no existe, `RegistrarCambioTipo` no escribe ni devuelve error. | `Form_FormExpedienteCambioTipo.cls:84-156`; `ExpedienteOperaciones.cls:2014-2041` | [Form_FormExpedienteCambioTipo](formularios/Form_FormExpedienteCambioTipo.md) | a verificar |
+| H-EXP-29 | Gestión no aplica a los basados la comprobación de derivados que sí aplica a Acuerdo Marco y Lote antes de cambiar de tipo. | `Form_FormExpedientesGestion.cls:2656-2667` | [Form_FormExpedienteCambioTipo](formularios/Form_FormExpedienteCambioTipo.md) | a verificar |
 
 ## Método del recuento
 
