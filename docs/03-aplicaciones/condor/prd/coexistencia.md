@@ -101,4 +101,4 @@ Dos direcciones, y ninguna automatizada hoy:
 | P-CON-6 | Conservación del hash de versión | Los ciclos de validación de revisión compare hashes; el algoritmo debe sobrevivir al cambio |
 | P-CON-7 | Modo local de datos | La copia local por aplicación y su routine de borrado no tienen equivalente y son datos fuera del control del repositorio |
 
-Los siete se proponen como propuestas de issue en issues-propuestas (tanda siguiente) cuando esa hoja llegue.
+Los siete se proponen como propuestas de issue en [issues-propuestas](issues-propuestas.md) cuando esa hoja llegue.
