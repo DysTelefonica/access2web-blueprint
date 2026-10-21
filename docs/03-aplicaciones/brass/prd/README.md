@@ -47,12 +47,12 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | analizado | [formularios/Form_FormActividadEdicion.md](formularios/Form_FormActividadEdicion.md) |
 | Form_FormActividadGestion | src/forms/Form_FormActividadGestion.cls | 1065 | 39 | 26 | igual | analizado | [formularios/Form_FormActividadGestion.md](formularios/Form_FormActividadGestion.md) |
 | Form_FormActividadTipoAlta | src/forms/Form_FormActividadTipoAlta.cls | 148 | 23 | 4 | igual | analizado | [formularios/Form_FormActividadTipoAlta.md](formularios/Form_FormActividadTipoAlta.md) |
-| Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | pendiente | — |
-| Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | pendiente | — |
-| Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | pendiente | — |
-| Form_FormAnexosNoAlcanzables | src/forms/Form_FormAnexosNoAlcanzables.cls | 219 | 28 | 6 | igual | pendiente | — |
-| Form_FormBUIGestion | src/forms/Form_FormBUIGestion.cls | 229 | 18 | 7 | igual | pendiente | — |
-| Form_FormCalibracionAlta | src/forms/Form_FormCalibracionAlta.cls | 228 | 35 | 4 | igual | pendiente | — |
+| Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | analizado | [formularios/Form_FormActividadTipoEdicion.md](formularios/Form_FormActividadTipoEdicion.md) |
+| Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | analizado | [formularios/Form_FormActividadTipoGestion.md](formularios/Form_FormActividadTipoGestion.md) |
+| Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | analizado | [formularios/Form_FormAnexos.md](formularios/Form_FormAnexos.md) |
+| Form_FormAnexosNoAlcanzables | src/forms/Form_FormAnexosNoAlcanzables.cls | 219 | 28 | 6 | igual | analizado | [formularios/Form_FormAnexosNoAlcanzables.md](formularios/Form_FormAnexosNoAlcanzables.md) |
+| Form_FormBUIGestion | src/forms/Form_FormBUIGestion.cls | 229 | 18 | 7 | igual | analizado | [formularios/Form_FormBUIGestion.md](formularios/Form_FormBUIGestion.md) |
+| Form_FormCalibracionAlta | src/forms/Form_FormCalibracionAlta.cls | 228 | 35 | 4 | igual | analizado | [formularios/Form_FormCalibracionAlta.md](formularios/Form_FormCalibracionAlta.md) |
 | Form_FormCalibracionEdicion | src/forms/Form_FormCalibracionEdicion.cls | 346 | 38 | 7 | igual | pendiente | — |
 | Form_FormCalibracionEquipoAlta | src/forms/Form_FormCalibracionEquipoAlta.cls | 188 | 31 | 4 | igual | pendiente | — |
 | Form_FormCalibracionEquipoEdicion | src/forms/Form_FormCalibracionEquipoEdicion.cls | 407 | 34 | 8 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
 
-Totales: 8 analizados · 0 no aplicables · 123 pendientes.
+Totales: 14 analizados · 0 no aplicables · 117 pendientes.
 
 ## Discrepancias abiertas
 
