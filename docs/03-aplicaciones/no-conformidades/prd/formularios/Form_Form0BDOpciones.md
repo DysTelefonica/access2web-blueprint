@@ -51,7 +51,7 @@ Patrón común: error 1000 ⇒ aviso con `m_Error`; otro error ⇒ mensaje con n
 
 ## Reglas, validaciones y cálculos
 
-- **Rol:** el formulario no comprueba el rol; el filtro lo hace `Form_Form0BDTecnicos` antes de abrirlo (`Form_Form0BDTecnicos.cls:125-133`). `EVE` asigna administrador, Calidad o, en cualquier otro caso, técnico (`VG.bas:390-404`).
+- **Rol:** el formulario no comprueba el rol; el filtro lo hace [Form_Form0BDTecnicos](Form_Form0BDTecnicos.md) antes de abrirlo (`Form_Form0BDTecnicos.cls:125-133`). `EVE` asigna administrador, Calidad o, en cualquier otro caso, técnico (`VG.bas:390-404`).
 - **Modo pruebas:** controla título, tamaño de letra y visibilidad de la cinta (`:113-126`).
 
 ## Lecturas y escrituras
@@ -74,7 +74,7 @@ Pendiente de `../coexistencia.md`. Este formulario no consulta datos; lo único 
 
 **Posibles defectos (sin corregir, a verificar):**
 
-- Abierto directamente (sin pasar por `Form_Form0BDTecnicos`), `m_ObjEntorno` no existe y `:129` fallaría; el manejador cerraría Access (`:167`).
+- Abierto directamente (sin pasar por [Form_Form0BDTecnicos](Form_Form0BDTecnicos.md)), `m_ObjEntorno` no existe y `:129` fallaría; el manejador cerraría Access (`:167`).
 - `lblMenuAuditoria` parece un enlace (hipervínculo `#`) pero no tiene `OnClick`, a diferencia de `lblNoConformidadesDeProyecto` (`.form.txt:3054-3057` frente a `.form.txt:1419-1423`).
 - Los submenús se abren sin cerrar este formulario y sin comprobar si ya están abiertos (`:16, 72`).
 - «Salir» usa `acQuitSaveAll` (`:185`), que guarda cambios de diseño pendientes.
