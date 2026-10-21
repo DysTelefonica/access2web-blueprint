@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 16 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 18 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -40,7 +40,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormComercial | formulario | src/forms/Form_FormComercial.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormComercialesGestion | formulario | src/forms/Form_FormComercialesGestion.cls | 415 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormE2ECola | formulario | src/forms/Form_FormE2ECola.cls | 336 | 45 | 13 | **añadido** | analizado | [formularios/Form_FormE2ECola.md](formularios/Form_FormE2ECola.md) |
-| Form_FormE2EGestionEnlaces | formulario | src/forms/Form_FormE2EGestionEnlaces.cls | 261 | 26 | 11 | **añadido** | pendiente | sin ficha todavía |
+| Form_FormE2EGestionEnlaces | formulario | src/forms/Form_FormE2EGestionEnlaces.cls | 261 | 26 | 11 | **añadido** | analizado | [formularios/Form_FormE2EGestionEnlaces.md](formularios/Form_FormE2EGestionEnlaces.md) |
 | Form_FormEjercito | formulario | src/forms/Form_FormEjercito.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormEjercitosGestion | formulario | src/forms/Form_FormEjercitosGestion.cls | 414 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormEleccionTipoConsulta | formulario | src/forms/Form_FormEleccionTipoConsulta.cls | 390 | 16 | 10 | distinto | analizado | [formularios/Form_FormEleccionTipoConsulta.md](formularios/Form_FormEleccionTipoConsulta.md) |
@@ -55,7 +55,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormExpedienteHitos | formulario | src/forms/Form_FormExpedienteHitos.cls | 296 | 21 | 6 | distinto | analizado | [formularios/Form_FormExpedienteHitos.md](formularios/Form_FormExpedienteHitos.md) |
 | Form_FormExpedienteModificados | formulario | src/forms/Form_FormExpedienteModificados.cls | 344 | 22 | 8 | distinto | analizado | [formularios/Form_FormExpedienteModificados.md](formularios/Form_FormExpedienteModificados.md) |
 | Form_FormExpedienteSuministradores | formulario | src/forms/Form_FormExpedienteSuministradores.cls | 961 | 25 | 38 | distinto | analizado | [formularios/Form_FormExpedienteSuministradores.md](formularios/Form_FormExpedienteSuministradores.md) |
-| Form_FormExpedientesGestion | formulario | src/forms/Form_FormExpedientesGestion.cls | 3963 | 124 | 99 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedientesGestion | formulario | src/forms/Form_FormExpedientesGestion.cls | 3963 | 124 | 99 | distinto | analizado | [formularios/Form_FormExpedientesGestion.md](formularios/Form_FormExpedientesGestion.md) |
 | Form_FormExpedientesGestionTecnica | formulario | src/forms/Form_FormExpedientesGestionTecnica.cls | 773 | 43 | 24 | distinto | analizado | [formularios/Form_FormExpedientesGestionTecnica.md](formularios/Form_FormExpedientesGestionTecnica.md) |
 | Form_FormExpedientesParaCambioTipo | formulario | src/forms/Form_FormExpedientesParaCambioTipo.cls | 321 | 22 | 10 | distinto | analizado | [formularios/Form_FormExpedientesParaCambioTipo.md](formularios/Form_FormExpedientesParaCambioTipo.md) |
 | Form_FormExpedientesResponsables | formulario | src/forms/Form_FormExpedientesResponsables.cls | 187 | 25 | 4 | **añadido** | analizado | [formularios/Form_FormExpedientesResponsables.md](formularios/Form_FormExpedientesResponsables.md) |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 16 analizados · 0 no aplicables · 29 pendientes.
+Totales (formularios): 18 analizados · 0 no aplicables · 27 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -162,6 +162,13 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-40 | `ImporteLicitacion` no recibe la normalización de coma a punto que sí tiene `ImporteContratacion`; `AbrirAyuda` abre siempre el mismo PDF genérico (la ruta por formulario se sobrescribe en la línea siguiente). | `modInformeExpedientesHelper.bas:23`; `FUNCIONES UTILES.bas:3094-3095` | [Form_FormEleccionTipoConsulta](formularios/Form_FormEleccionTipoConsulta.md) | a verificar |
 | H-EXP-41 | El formulario `FormE2ECola` ya no se abre desde el menú: la opción 12 se desvía a un panel HTML (`TipoAccion("12") = "html"`); `EsGestor` se declara pero no se asigna fuera de los módulos `Test_`, de modo que solo entrarían los administradores. | `Form0BDGestorEntidadesLogic.bas:55-57`; `Form_Form0BDGestorEntidades.cls:67-69`; `Variables Globales.bas:247`; `E2EEnlacesService.bas:376` | [Form_FormE2ECola](formularios/Form_FormE2ECola.md) | a verificar |
 | H-EXP-42 | El filtro «Fecha hasta» de la cola E2E deja fuera las filas de ese mismo día porque `FechaDeteccion` lleva hora; al filtrar o paginar el detalle no se vacía y puede no corresponder a la lista; el combo de estado ofrece «Error», que ningún módulo VBA escribe. | `modE2EColaPanelHelper.bas:143-144`; `Form_FormE2ECola.cls:291-307`; `Form_FormE2ECola.form.txt:203`; `M_E2EMigration.bas:20-21` | [Form_FormE2ECola](formularios/Form_FormE2ECola.md) | a verificar |
+| H-EXP-43 | Tras eliminar un lote o un basado se asigna un `Expediente` a una variable `ExpedienteCompleto` (posible error de tipos tras el borrado ya confirmado); `ExpedienteOperaciones.Eliminar` no borra las filas de `TbE2EEnlaces`, que pueden quedar huérfanas. | `Form_FormExpedientesGestion.cls:2788, 2799`; `constructor.bas:1139`; `ExpedienteOperaciones.cls:2104-2148` | [Form_FormExpedientesGestion](formularios/Form_FormExpedientesGestion.md) | a verificar |
+| H-EXP-44 | `ListaLotes_Click` compara el padre del lote con `Column(1)` (tipo) en vez de `Column(0)` (ID), por lo que siempre reemplaza la lista de AM; con `DatosEnMemoria` distinto de «Sí», `Rellenar*PorTabla` espera `Expediente` y recibe `ExpedienteCompleto`. | `Form_FormExpedientesGestion.cls:309, 3054`; `FUNCIONES UTILES.bas:457, 722` | [Form_FormExpedientesGestion](formularios/Form_FormExpedientesGestion.md) | a verificar |
+| H-EXP-45 | `m_ObjExpBusquedaActiva` nunca se asigna: la restauración de búsqueda no se alcanza y su rama usa un control inexistente (`MarcoLugar`); los filtros de comercial, jefe de proyecto, contratista y RAC buscan por subcadena (`InStr`) y dan falsos positivos; el filtro E2E lanza una consulta por expediente en cada búsqueda. | `Variables Globales.bas:269`; `FUNCIONES UTILES.bas:919, 965, 971, 995, 1046-1047, 1533, 1539` | [Form_FormExpedientesGestion](formularios/Form_FormExpedientesGestion.md) | a verificar |
+| H-EXP-46 | El código embebido del `.form.txt` es más antiguo que el `.cls` (sin la columna «Cambio» ni `EnlazadoE2E_AfterUpdate`): hay que confirmar cuál lleva el binario; `ComandoEnlaceE2E_Basado_Click` no refiltra tras enlazar a diferencia de AM y Lote; código muerto (`TimerInterval` sin `Form_Timer`, evento `ExpSeleccionado` nunca lanzado). | `Form_FormExpedientesGestion.form.txt:5796`; `Form_FormExpedientesGestion.cls:13, 2299, 2777, 3884, 3937-3963` | [Form_FormExpedientesGestion](formularios/Form_FormExpedientesGestion.md) | a verificar |
+| H-EXP-47 | `ComandoExportarTodosPendientes` está deshabilitado en el diseño y ningún código lo habilita; el código embebido del `.form.txt` no contiene su handler. La columna «Motivo» sale siempre vacía: `BuildValueListRow` compone 6 columnas para un listbox de 7. | `Form_FormE2EGestionEnlaces.form.txt:933, 1076-1300`; `Form_FormE2EGestionEnlaces.cls:146-184`; `FormE2EGestionEnlacesLogic.bas:13, 333-338` | [Form_FormE2EGestionEnlaces](formularios/Form_FormE2EGestionEnlaces.md) | a verificar |
+| H-EXP-48 | Un `;` en `Titulo` o `Nemotecnico` desplaza las columnas del `Value List`; los errores de `getdb` o del SQL en la búsqueda se tragan; «Familia: N hijos» cuenta solo hijos directos pero desvincular recorre toda la familia. | `FormE2EGestionEnlacesLogic.bas:35-36, 66-69, 333-338, 657-659` | [Form_FormE2EGestionEnlaces](formularios/Form_FormE2EGestionEnlaces.md) | a verificar |
+| H-EXP-49 | «Exportar todos» lista también descendientes y cada uno encola su raíz (una familia podría encolarse varias veces); el aviso de acceso nombra a «Gestores» pero solo se comprueba `EsAdministrador`. | `ManualE2EExport.bas:113-117, 238-246`; `Form_FormE2EGestionEnlaces.cls:243` | [Form_FormE2EGestionEnlaces](formularios/Form_FormE2EGestionEnlaces.md) | a verificar |
 
 ## Método del recuento
 
