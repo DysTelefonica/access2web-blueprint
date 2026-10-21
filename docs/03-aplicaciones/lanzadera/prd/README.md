@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 6 de 28.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 9 de 28.
 
 | Campo | Valor |
 |---|---|
@@ -36,17 +36,17 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Objeto | Tipo | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|---|
 | Form_FormAplicacionDatosGenerales | formulario | src/forms/Form_FormAplicacionDatosGenerales.cls | 268 | 48 | 4 | igual | pendiente | sin ficha todavía |
-| Form_FormAplicacionGeneral | formulario | src/forms/Form_FormAplicacionGeneral.cls | 129 | 22 | 12 | igual | pendiente | sin ficha todavía |
+| Form_FormAplicacionGeneral | formulario | src/forms/Form_FormAplicacionGeneral.cls | 129 | 22 | 12 | igual | analizado | [formularios/Form_FormAplicacionGeneral.md](formularios/Form_FormAplicacionGeneral.md) |
 | Form_FormAplicaciones | formulario | src/forms/Form_FormAplicaciones.cls | 156 | 24 | 15 | igual | pendiente | sin ficha todavía |
 | Form_FormAplicacionesFueraOficina | formulario | src/forms/Form_FormAplicacionesFueraOficina.cls | 493 | 47 | 13 | igual | pendiente | sin ficha todavía |
-| Form_FormAplicacionesGestion | formulario | src/forms/Form_FormAplicacionesGestion.cls | 149 | 21 | 6 | igual | pendiente | sin ficha todavía |
+| Form_FormAplicacionesGestion | formulario | src/forms/Form_FormAplicacionesGestion.cls | 149 | 21 | 6 | igual | analizado | [formularios/Form_FormAplicacionesGestion.md](formularios/Form_FormAplicacionesGestion.md) |
 | Form_FormAplicacionesOficina | formulario | src/forms/Form_FormAplicacionesOficina.cls | 371 | 29 | 9 | igual | pendiente | sin ficha todavía |
 | Form_FormAplicacionesPrueba | formulario | src/forms/Form_FormAplicacionesPrueba.cls | 293 | 16 | 6 | igual | pendiente | sin ficha todavía |
 | Form_FormEnConstruccion | formulario | src/forms/Form_FormEnConstruccion.cls | 2 | 12 | 0 | igual | pendiente | sin ficha todavía |
 | Form_FormLogin | formulario | src/forms/Form_FormLogin.cls | 311 | 23 | 7 | igual | analizado | [formularios/Form_FormLogin.md](formularios/Form_FormLogin.md) |
 | Form_FormMenuPrincipalAdmin | formulario | src/forms/Form_FormMenuPrincipalAdmin.cls | 323 | 40 | 33 | igual | analizado | [formularios/Form_FormMenuPrincipalAdmin.md](formularios/Form_FormMenuPrincipalAdmin.md) |
 | Form_FormMenuPrincipalCalidad | formulario | src/forms/Form_FormMenuPrincipalCalidad.cls | 375 | 39 | 27 | igual | analizado | [formularios/Form_FormMenuPrincipalCalidad.md](formularios/Form_FormMenuPrincipalCalidad.md) |
-| Form_FormMenuPrincipalUsuario | formulario | src/forms/Form_FormMenuPrincipalUsuario.cls | 373 | 33 | 23 | igual | pendiente | sin ficha todavía |
+| Form_FormMenuPrincipalUsuario | formulario | src/forms/Form_FormMenuPrincipalUsuario.cls | 373 | 33 | 23 | igual | analizado | [formularios/Form_FormMenuPrincipalUsuario.md](formularios/Form_FormMenuPrincipalUsuario.md) |
 | Form_FormObtenerContraseña | formulario | src/forms/Form_FormObtenerContraseña.cls | 98 | 20 | 3 | igual | analizado | [formularios/Form_FormObtenerContraseña.md](formularios/Form_FormObtenerContraseña.md) |
 | Form_FormPerfil | formulario | src/forms/Form_FormPerfil.cls | 220 | 39 | 4 | igual | analizado | [formularios/Form_FormPerfil.md](formularios/Form_FormPerfil.md) |
 | Form_FormUsuarioCambioPass | formulario | src/forms/Form_FormUsuarioCambioPass.cls | 111 | 26 | 4 | igual | analizado | [formularios/Form_FormUsuarioCambioPass.md](formularios/Form_FormUsuarioCambioPass.md) |
@@ -64,7 +64,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormVideosUsuarios | formulario | src/forms/Form_FormVideosUsuarios.cls | 171 | 16 | 6 | igual | pendiente | sin ficha todavía |
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 5 | 9 | 1 | igual | pendiente | sin ficha todavía |
 
-Totales (formularios): 6 analizados · 0 no aplicables · 22 pendientes.
+Totales (formularios): 9 analizados · 0 no aplicables · 19 pendientes.
 Totales (controles `Begin`): 740 · procedimientos: 247 · líneas de `.cls`: 6,246.
 
 ### Módulos y clases
@@ -99,6 +99,7 @@ Comportamientos sospechosos detectados al analizar el código. Son hallazgos del
 | H-LAN-4 | El cambio de contraseña no pide la actual; el mensaje habla de «las últimas 10 veces» pero `PassRepetida` busca en todo el histórico; el manejador de `LoginCorrecto` compara `Err.Number <> ""` (tipos incompatibles). | `Form_FormUsuarioCambioPass.cls:17-28`; `Usuario.cls:911, 971-974`; `Variables Globales.bas:739` | [Form_FormUsuarioCambioPass](formularios/Form_FormUsuarioCambioPass.md) | a verificar |
 | H-LAN-5 | `ActDesActMenu` con `p_EsActivar = No` usa `i` (siempre 0) en vez de `p_Numero`, de modo que los menús nunca se desactivan; `Form_Load` deshace la pestaña de «última aplicación» y fuerza siempre «fuera de la oficina». | `Menu.cls:83, 89`; `Form_FormMenuPrincipalAdmin.cls:52-70`; `Form_FormMenuPrincipalCalidad.cls:44-64` | [Form_FormMenuPrincipalAdmin](formularios/Form_FormMenuPrincipalAdmin.md) | a verificar |
 | H-LAN-6 | El menú «Perfil» de Calidad no tiene `OnClick`: pulsarlo no hace nada; el cambio de contraseña cierra los menús de administrador y de usuario pero no el de Calidad. | `Form_FormMenuPrincipalCalidad.form.txt:615-650, 1425`; `Form_FormUsuarioCambioPass.cls:44-49` | [Form_FormMenuPrincipalCalidad](formularios/Form_FormMenuPrincipalCalidad.md) | a verificar |
+| H-LAN-7 | `On Error Resume Next` en toda la navegación del menú de usuario oculta los fallos; «Salir» usa `acQuitSaveNone` en el de administrador y `acQuitSaveAll` en los otros dos. | `Form_FormMenuPrincipalUsuario.cls:152, 366`; `Form_FormMenuPrincipalAdmin.cls:117`; `Form_FormMenuPrincipalCalidad.cls:159` | [Form_FormMenuPrincipalUsuario](formularios/Form_FormMenuPrincipalUsuario.md) | a verificar |
 
 ## Método del recuento
 
