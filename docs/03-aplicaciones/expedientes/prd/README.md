@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 33 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 37 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -59,10 +59,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormExpedientesGestionTecnica | formulario | src/forms/Form_FormExpedientesGestionTecnica.cls | 773 | 43 | 24 | distinto | analizado | [formularios/Form_FormExpedientesGestionTecnica.md](formularios/Form_FormExpedientesGestionTecnica.md) |
 | Form_FormExpedientesParaCambioTipo | formulario | src/forms/Form_FormExpedientesParaCambioTipo.cls | 321 | 22 | 10 | distinto | analizado | [formularios/Form_FormExpedientesParaCambioTipo.md](formularios/Form_FormExpedientesParaCambioTipo.md) |
 | Form_FormExpedientesResponsables | formulario | src/forms/Form_FormExpedientesResponsables.cls | 187 | 25 | 4 | **añadido** | analizado | [formularios/Form_FormExpedientesResponsables.md](formularios/Form_FormExpedientesResponsables.md) |
-| Form_FormGradoClasificacion | formulario | src/forms/Form_FormGradoClasificacion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormGradosClasificacionGestion | formulario | src/forms/Form_FormGradosClasificacionGestion.cls | 425 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormLugarEjecucion | formulario | src/forms/Form_FormLugarEjecucion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormLugarEjecucionGestion | formulario | src/forms/Form_FormLugarEjecucionGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
+| Form_FormGradoClasificacion | formulario | src/forms/Form_FormGradoClasificacion.cls | 197 | 23 | 6 | distinto | analizado | [formularios/Form_FormGradoClasificacion.md](formularios/Form_FormGradoClasificacion.md) |
+| Form_FormGradosClasificacionGestion | formulario | src/forms/Form_FormGradosClasificacionGestion.cls | 425 | 23 | 14 | distinto | analizado | [formularios/Form_FormGradosClasificacionGestion.md](formularios/Form_FormGradosClasificacionGestion.md) |
+| Form_FormLugarEjecucion | formulario | src/forms/Form_FormLugarEjecucion.cls | 197 | 23 | 6 | distinto | analizado | [formularios/Form_FormLugarEjecucion.md](formularios/Form_FormLugarEjecucion.md) |
+| Form_FormLugarEjecucionGestion | formulario | src/forms/Form_FormLugarEjecucionGestion.cls | 416 | 23 | 14 | distinto | analizado | [formularios/Form_FormLugarEjecucionGestion.md](formularios/Form_FormLugarEjecucionGestion.md) |
 | Form_FormModificado | formulario | src/forms/Form_FormModificado.cls | 211 | 27 | 6 | distinto | analizado | [formularios/Form_FormModificado.md](formularios/Form_FormModificado.md) |
 | Form_FormOficinaPrograma | formulario | src/forms/Form_FormOficinaPrograma.cls | 197 | 23 | 6 | distinto | analizado | [formularios/Form_FormOficinaPrograma.md](formularios/Form_FormOficinaPrograma.md) |
 | Form_FormOficinasProgramaGestion | formulario | src/forms/Form_FormOficinasProgramaGestion.cls | 425 | 23 | 14 | distinto | analizado | [formularios/Form_FormOficinasProgramaGestion.md](formularios/Form_FormOficinasProgramaGestion.md) |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
-Totales (formularios): 33 analizados · 0 no aplicables · 12 pendientes.
+Totales (formularios): 37 analizados · 0 no aplicables · 8 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -186,6 +186,10 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-64 | Ejército: el mensaje de borrado rechazado dice «Ese RAC forma parte…» (copiado de RAC); en edición el formulario modifica el objeto seleccionado en el gestor antes de validar, de modo que un guardado rechazado lo deja alterado; el título de edición se sobrescribe con «EDICIÓN DE Ejercito». | `EjercitoOperaciones.cls:130`; `Form_FormEjercito.cls:65-68, 135, 145`; `Form_FormEjercitosGestion.cls:222` | [Form_FormEjercitosGestion](formularios/Form_FormEjercitosGestion.md) | a verificar |
 | H-EXP-65 | Oficina de programa: el borrado no comprueba si la oficina está en uso, porque `Entorno` llama a `getOficinaProgramaSEnExpedientes` pasando `m_Error` (vacío) como primer argumento (`p_IDOficinaPrograma`) y la función sale sin datos; aunque recibiera el ID, une `TbExpedientes` con el catálogo por nombre mientras `TbExpedientes` guarda `IDOficinaPrograma`. | `Entorno.cls:1231`; `constructor.bas:3544-3561`; `OficinaProgramaOperaciones.cls:112`; `ExpedienteOperaciones.cls:203-206` | [Form_FormOficinasProgramaGestion](formularios/Form_FormOficinasProgramaGestion.md) | a verificar |
 | H-EXP-66 | Oficina de programa: la caché `ColOficinaProgramaSEnExpedientes` nunca se invalida tras un alta o un borrado; la lista se carga sin `ORDER BY`; el formulario de alta no fija `AllowEdits = False`; si falla el cálculo del ID el alta seguiría con ID vacío. | `Form_FormOficinasProgramaGestion.cls:388, 411`; `constructor.bas:3280-3281`; `Form_FormOficinaPrograma.cls:176-180`; `OficinaPrograma.cls:30-41` | [Form_FormOficinaPrograma](formularios/Form_FormOficinaPrograma.md) | a verificar |
+| H-EXP-67 | Grado de clasificación: el botón de guardar se llama `ComandoEditar` (con `OnClick`) pero el handler del `.cls` es `ComandoRegistrar_Click` y no existe ningún control con ese nombre: pulsar «Editar» no guardaría (los formularios hermanos usan `ComandoRegistrar`). | `Form_FormGradoClasificacion.form.txt:1153-1155`; `Form_FormGradoClasificacion.cls:42`; `Form_FormEjercito.form.txt:842` | [Form_FormGradoClasificacion](formularios/Form_FormGradoClasificacion.md) | a verificar |
+| H-EXP-68 | Grado de clasificación: la comprobación de uso antes de borrar cruza `TbExpedientes.GradoClasificacion` por nombre mientras el expediente guarda `IDGradoClasificacion` (podría no detectar grados en uso); la caché `ColGradosClasificacionesEnExpedientes` no se invalida nunca y, si falla su carga, el borrado sigue adelante. | `constructor.bas:2421-2423`; `ExpedienteOperaciones.cls:191-194`; `GradoClasificacionOperaciones.cls:115`; `Entorno.cls:1652-1657` | [Form_FormGradosClasificacionGestion](formularios/Form_FormGradosClasificacionGestion.md) | a verificar |
+| H-EXP-69 | Lugar de ejecución: tras un borrado correcto la caché solo se vacía en la rama de error (la lista podría seguir mostrando el lugar borrado); al renombrar, el registro se escribe antes de recalcular expedientes y sin transacción común, y al reintentar la comprobación de unicidad encuentra el propio registro. | `LugarEjecucionOperaciones.cls:34-48, 70-93, 140-146`; `Form_FormLugarEjecucionGestion.cls:184` | [Form_FormLugarEjecucionGestion](formularios/Form_FormLugarEjecucionGestion.md) | a verificar |
+| H-EXP-70 | Lugar de ejecución: si falla el cálculo del ID, `Registrar` podría dar de alta un registro con ID vacío; un usuario no administrador puede escribir en los campos del alta (no se toca `AllowEdits`) aunque no pueda guardar; `Form_FormExpedienteAltaParaHPS` declara `WithEvents m_FormLugar` sin asignarla nunca. | `LugarEjecucion.cls:54-65`; `LugarEjecucionOperaciones.cls:52`; `Form_FormLugarEjecucion.cls:175-179`; `Form_FormExpedienteAltaParaHPS.cls:12, 452-454` | [Form_FormLugarEjecucion](formularios/Form_FormLugarEjecucion.md) | a verificar |
 
 ## Método del recuento
 
