@@ -1155,4 +1155,3 @@ def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) ->
     value = workflow["concurrency"]["cancel-in-progress"]
     assert value is not True, "cancel-in-progress: true cancels runs of the same head SHA"
     assert isinstance(value, str) and "synchronize" in value
-
