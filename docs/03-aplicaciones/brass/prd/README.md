@@ -110,9 +110,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormPlanificacionReprogramacion | src/forms/Form_FormPlanificacionReprogramacion.cls | 278 | 47 | 11 | igual | analizado | [formularios/Form_FormPlanificacionReprogramacion.md](formularios/Form_FormPlanificacionReprogramacion.md) |
 | Form_FormPlanificacionesBusqueda | src/forms/Form_FormPlanificacionesBusqueda.cls | 1058 | 52 | 32 | igual | analizado | [formularios/Form_FormPlanificacionesBusqueda.md](formularios/Form_FormPlanificacionesBusqueda.md) |
 | Form_FormSubContratacionAlta | src/forms/Form_FormSubContratacionAlta.cls | 161 | 30 | 4 | igual | analizado | [formularios/Form_FormSubContratacionAlta.md](formularios/Form_FormSubContratacionAlta.md) |
-| Form_FormSubContratacionEdicion | src/forms/Form_FormSubContratacionEdicion.cls | 495 | 32 | 9 | igual | pendiente | — |
-| Form_FormSubContratacionGestion | src/forms/Form_FormSubContratacionGestion.cls | 762 | 35 | 24 | igual | pendiente | — |
-| Form_FormSubSistemaAlta | src/forms/Form_FormSubSistemaAlta.cls | 146 | 23 | 4 | igual | pendiente | — |
+| Form_FormSubContratacionEdicion | src/forms/Form_FormSubContratacionEdicion.cls | 495 | 32 | 9 | igual | analizado | [formularios/Form_FormSubContratacionEdicion.md](formularios/Form_FormSubContratacionEdicion.md) |
+| Form_FormSubContratacionGestion | src/forms/Form_FormSubContratacionGestion.cls | 762 | 35 | 24 | igual | analizado | [formularios/Form_FormSubContratacionGestion.md](formularios/Form_FormSubContratacionGestion.md) |
+| Form_FormSubSistemaAlta | src/forms/Form_FormSubSistemaAlta.cls | 146 | 23 | 4 | igual | analizado | [formularios/Form_FormSubSistemaAlta.md](formularios/Form_FormSubSistemaAlta.md) |
 | Form_FormSubSistemaEdicion | src/forms/Form_FormSubSistemaEdicion.cls | 288 | 23 | 6 | igual | pendiente | — |
 | Form_FormSubSistemaGestion | src/forms/Form_FormSubSistemaGestion.cls | 384 | 26 | 12 | igual | pendiente | — |
 | Form_FormTecnico | src/forms/Form_FormTecnico.cls | 270 | 34 | 7 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 110 analizados · 5 no aplicables · 16 pendientes.
+Totales: 113 analizados · 5 no aplicables · 13 pendientes.
 
 ## Discrepancias abiertas
 
