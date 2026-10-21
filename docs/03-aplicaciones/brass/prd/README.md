@@ -119,9 +119,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormTecnicoAusencias | src/forms/Form_FormTecnicoAusencias.cls | 216 | 29 | 6 | igual | analizado | [formularios/Form_FormTecnicoAusencias.md](formularios/Form_FormTecnicoAusencias.md) |
 | Form_FormTecnicoAusenciasGestion | src/forms/Form_FormTecnicoAusenciasGestion.cls | 491 | 26 | 16 | igual | analizado | [formularios/Form_FormTecnicoAusenciasGestion.md](formularios/Form_FormTecnicoAusenciasGestion.md) |
 | Form_FormTecnicoConsultaHoras | src/forms/Form_FormTecnicoConsultaHoras.cls | 450 | 25 | 5 | igual | analizado | [formularios/Form_FormTecnicoConsultaHoras.md](formularios/Form_FormTecnicoConsultaHoras.md) |
-| Form_FormTecnicoFiestas | src/forms/Form_FormTecnicoFiestas.cls | 79 | 19 | 3 | igual | pendiente | — |
-| Form_FormTecnicoFiestasGestion | src/forms/Form_FormTecnicoFiestasGestion.cls | 316 | 22 | 11 | igual | pendiente | — |
-| Form_FormTecnicoGestion | src/forms/Form_FormTecnicoGestion.cls | 645 | 34 | 21 | igual | pendiente | — |
+| Form_FormTecnicoFiestas | src/forms/Form_FormTecnicoFiestas.cls | 79 | 19 | 3 | igual | analizado | [formularios/Form_FormTecnicoFiestas.md](formularios/Form_FormTecnicoFiestas.md) |
+| Form_FormTecnicoFiestasGestion | src/forms/Form_FormTecnicoFiestasGestion.cls | 316 | 22 | 11 | igual | analizado | [formularios/Form_FormTecnicoFiestasGestion.md](formularios/Form_FormTecnicoFiestasGestion.md) |
+| Form_FormTecnicoGestion | src/forms/Form_FormTecnicoGestion.cls | 645 | 34 | 21 | igual | analizado | [formularios/Form_FormTecnicoGestion.md](formularios/Form_FormTecnicoGestion.md) |
 | Form_FormTecnicoTipo | src/forms/Form_FormTecnicoTipo.cls | 112 | 25 | 3 | igual | pendiente | — |
 | Form_FormTipoTecnicoPrecio | src/forms/Form_FormTipoTecnicoPrecio.cls | 170 | 26 | 5 | igual | pendiente | — |
 | Form_FormTipoTecnicoPreciosGestion | src/forms/Form_FormTipoTecnicoPreciosGestion.cls | 448 | 24 | 14 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 119 analizados · 5 no aplicables · 7 pendientes.
+Totales: 122 analizados · 5 no aplicables · 4 pendientes.
 
 ## Discrepancias abiertas
 
