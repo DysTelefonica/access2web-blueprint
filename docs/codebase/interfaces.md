@@ -118,7 +118,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/check_complexity.py` | Gate | `ci.yml::quality` | Complejidad ciclomática. |
 | `scripts/check_dry.py` | Gate | `ci.yml::quality` | DRY. |
 | `scripts/check_deadcode.py` | Gate | `ci.yml::quality` | Código muerto. |
-| `scripts/check_pr_size.py` | Gate | `ci.yml::pr-gate` | ≤400 líneas. |
+| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | Gate | `ci.yml::pr-gate` | ≤400 líneas. |
 | `scripts/check_workflows.py` | Gate | `ci.yml::quality` | Valida `.github/workflows/*.yml`. |
 | `.github/required-jobs-policy.json` | Política del gate del canon | `ci.yml::required` | Declara la matriz `required` y los saltos aceptados por evento. |
 | `scripts/check_decision_guards.py` | Gate | `ci.yml::quality` | Decisiones D-<n> con guardia. |

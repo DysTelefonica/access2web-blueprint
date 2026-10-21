@@ -76,7 +76,7 @@ Lea [`../CONTRIBUTING.md`](../CONTRIBUTING.md) **antes** de crear un issue, una 
 | Gate | Comprueba | Si se ignora |
 |---|---|---|
 | Ruleset del host | Patrón `<tipo>/<slug>` (gentle-ai, sin número de issue) sobre la rama | Hay que renombrar la rama antes de pedir review |
-| `scripts/check_pr_size.py` | 400 líneas (`additions + deletions`) | Hay que partir el PR |
+| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | 400 líneas (`additions + deletions`) | Hay que partir el PR |
 | `scripts/check_workflows.py` | Actions fijadas por SHA de 40 hex; un `concurrency.group` por job | El workflow se rechaza |
 
 Consecuencias operativas:

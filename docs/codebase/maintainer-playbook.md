@@ -13,7 +13,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 | Multi-app Lanzadera | ¿La nueva app declara su `[<APP>]` en el título y su `(app)` o `(platform)` en el commit? |
 | Hexagonalidad | ¿El nuevo código respeta las capas y las reglas del bloque `architecture` de `docs/architecture.md`, que impone el job `docs-architecture`? |
 | Auth (Argon2id + JWT) | ¿La ruta nueva pasa por el middleware y los servicios `app/src/modules/lanzadera/domain/services/issue_reset_token.py` / `consume_reset_token.py` si toca reset? |
-| CI por niveles | ¿El cambio sabe en qué nivel corre (PR, nightly, release) y respeta `scripts/check_pr_size.py` (≤400)? |
+| CI por niveles | ¿El cambio sabe en qué nivel corre (PR, nightly, release) y respeta `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` (≤400)? |
 | Migración Alembic | ¿La nueva migración sigue Expand & Contract (D82), tiene una de bajada y un test en `tests/lanzadera/migrations/`? |
 | E2E | ¿El test nuevo usa `e2e/<spec>.spec.ts` y se reserva al release, no al PR? |
 | Quality gates | ¿Si añadió un gate, lo cableó en `.github/workflows/ci.yml`, en `docs/gates.md` y en `tests/test_ci_workflow.py`? |
@@ -98,7 +98,7 @@ Esta página no aloja código ni reglas nuevas: solo enruta. Una regla de revisi
 
 ## Lista de comprobación del contribuidor
 
-- [ ] El cambio respeta los 5 gates del workflow (`scripts/check_pr_size.py`, el `check_issue_spec.py` del canon, `scripts/check_walkthrough_schema.py`, ruff, mypy) — ver `docs/gates.md` §2.
+- [ ] El cambio respeta los 5 gates del workflow (`.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py`, el `check_issue_spec.py` del canon, `scripts/check_walkthrough_schema.py`, ruff, mypy) — ver `docs/gates.md` §2.
 - [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/decisions/README.md` antes de empezar.
 - [ ] Si toca `docs/`, leyó `skills/documentation-alan-style/SKILL.md` y aplica tono castellano peninsular formal con usted.
 - [ ] El commit usa Conventional Commits con el scope `(app)` o `(platform)` correspondiente.

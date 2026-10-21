@@ -171,7 +171,7 @@ Performance:
 4. [x] **PR-1a (#529)** — `docs/528-testing-strategy-md` → main. Cerrado.
 5. **PR-1b (este)** — `docs/530-testing-strategy-epic` → main. Cuerpo: epic + referencia a T-1 y PR-1a cerrados.
 6. [ ] **PR-2 (futuro, T-3)** — `feat/<T-3>-testing-strategy-skill` → main. Skill + entrada en AGENTS.md + verificación contra `skill-style-guide` §7 Self-compliance.
-7. [x] **Auto-verificación local** antes de push: `python scripts/check_branch_name.py`, `python scripts/check_pr_size.py`, `python scripts/check_workflows.py`.
+7. [x] **Auto-verificación local** antes de push: `python scripts/check_branch_name.py`, `python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py`, `python scripts/check_workflows.py`.
 
 ### Después (al cerrar la epic)
 

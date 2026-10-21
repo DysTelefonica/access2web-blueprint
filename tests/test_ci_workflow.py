@@ -1155,3 +1155,22 @@ def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) ->
     value = workflow["concurrency"]["cancel-in-progress"]
     assert value is not True, "cancel-in-progress: true cancels runs of the same head SHA"
     assert isinstance(value, str) and "synchronize" in value
+
+
+def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None:
+    """HR-63 (team-skills#805): the CI gate checks exactly the roots the contract declares."""
+    import json
+
+    root = Path(__file__).resolve().parents[1]
+    doc = yaml.safe_load((root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    run = next(
+        step["run"]
+        for step in doc["jobs"]["docs-codeguide"]["steps"]
+        if "check_docs_codeguide.py" in step.get("run", "")
+    )
+    pairs = re.findall(r'--code-root (\S+)[\s\\]+--code-glob "([^"]+)"', run)
+    contract = json.loads(
+        (root / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8")
+    )
+    declared = [(e["root"], e["glob"]) for e in contract["docs_map"]["code_roots"]]
+    assert pairs == declared
