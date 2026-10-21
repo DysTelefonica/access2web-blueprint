@@ -13,14 +13,32 @@ Consulte esta guía antes de abrir un issue o un PR. Mantenga cada cambio centra
 5. Abra un PR pequeño con una descripción verificable.
 6. Responda a la revisión y mantenga actualizada la branch.
 
+## Issue primero
+
+Todo cambio parte de una issue aprobada. La issue describe el problema, el alcance y el resultado esperado, lleva exactamente una etiqueta `type:*` y se implementa solo cuando tiene `status:approved`. Esa etiqueta la aplica un mantenedor (o un agente por su orden explícita y registrada); quien implementa no se la aplica a sí mismo. Sin issue aprobada, el job `pr-gate` pone la PR en rojo.
+
+## Asistencia de IA
+
+Si una IA ha participado en el cambio, el cuerpo de la PR lo declara en una sección «Asistencia de IA»: qué hizo la IA y qué comprobó la persona que firma. Quien abre la PR responde de cada línea del cambio: revisa lo que la IA escribió, retira lo que no pudo verificar y ejecuta las pruebas aplicables. Los commits no llevan `Co-Authored-By` ni atribución de IA.
+
 ## Antes de abrir una PR
+
+### Comprobaciones previas
+
+Antes de empujar:
+
+1. Sincronice la rama con la base: `git fetch origin && git merge origin/main`. Se integra con merge, nunca con rebase ni force-push sobre una rama publicada.
+2. Ejecute `make verify` sobre el resultado integrado (format, lint, typecheck, tests, quality report y check-workflows, en el orden del CI). Es la única forma de declarar verde una PR sin haber pasado por el runner.
+3. Compruebe el cuerpo de la PR en local con `python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file <body>`.
+
+### Comprobaciones automáticas
 
 La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué verifica cada uno, cómo aprobarlo localmente y el comando que lo replica. La tabla cubre los gates `pr-gate` (revisión barata, primer corte), `quality` (tests, typecheck, cobertura, ratchets de calidad), `security` (gitleaks, pip-audit, trivy-config) y `codeql` (análisis estático). El agregador `required` exige los cuatro jobs verdes sobre la base actual (`ci.yml:497-529`).
 
 | Check | Qué comprueba | Cómo pasarlo | Comando local |
 |---|---|---|---|
 | Nombre de rama (pr-gate) | La rama sigue el patrón gentle-ai `^(feat\|fix\|chore\|docs\|style\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` (sin número de issue); lo enforza el ruleset del host | Nombrarla `<tipo>/<slug>` con kebab-case; las cadenas encadenadas añaden sufijo | — (lo enforza el ruleset, no un script local) |
-| Issue-spec (pr-gate) | El cuerpo lleva `Closes`/`Fixes`/`Resolves`/`Refs #N` apuntando a una issue con `status:approved` y un `type:*` (Refs #855) | Poner `Closes #N` en la primera línea del cuerpo con la issue aprobada | `python scripts/check_issue_spec.py local --body-file <body>` |
+| Issue-spec (pr-gate) | El cuerpo lleva `Closes`/`Fixes`/`Resolves`/`Refs #N` apuntando a una issue con `status:approved` y un `type:*` (Refs #855) | Poner `Closes #N` en la primera línea del cuerpo con la issue aprobada | `python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file <body>` |
 | Tamaño de la PR (pr-gate) | `additions + deletions` de la API de la PR ≤ 400; la etiqueta `size:exception` la pone el mantenedor como override solo cuando partir la PR dejaría `main` roto y tras responder las 4 preguntas de `AGENTS.md` §F.7 (Refs #854) | Partir por unidad de trabajo o encadenar PRs (orden de escape); `size:exception` es la última opción | `python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --base-ref origin/main` |
 | Esquema de walkthroughs (pr-gate) | Los JSON `docs/03-aplicaciones/*/walkthrough-*.json` cumplen el contrato v2.1 (`check_walkthrough_schema.py --strict`) | Regenerar con dysflow + codegraph-vba; nunca editar a mano | `python scripts/check_walkthrough_schema.py --strict` |
 | Lint (pr-gate) | `ruff check` sin findings | `ruff check .` antes de commit | `ruff check --config app/pyproject.toml .` |
@@ -36,6 +54,14 @@ La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué veri
 
 `make verify` ejecuta los gates locales en el mismo orden que el CI (Hard Rule 13): format, lint, typecheck, tests, quality report, check-workflows. Es la única forma de declarar verde una PR sin haber pasado antes por el runner.
 
+## Presupuesto de revisión
+
+Una PR suma como máximo 400 líneas (`additions + deletions` de la API de la PR). Si el trabajo no cabe, se parte por unidad de trabajo y se encadena: los eslabones intermedios llevan la etiqueta `chain:partial` y `Refs #N`; solo la punta lleva `Closes #N`. La etiqueta `size:exception` la concede un mantenedor únicamente cuando partir dejaría `main` roto y tras responder las cuatro preguntas de `AGENTS.md` §F.7.
+
+## Enlace a la issue
+
+La primera línea del cuerpo de la PR enlaza la issue aprobada: `Closes #N` en la punta o en una PR suelta, `Refs #N` en un eslabón `chain:partial`. El enlace apunta a una issue de este repositorio, nunca a otra PR ni a otro repositorio. Si el cuerpo cierra una issue, nombra además el test que demuestra el cierre (sección «Tests que prueban el cierre» de la plantilla).
+
 ## Propagaciones de flota
 
 El catálogo de skills de la flota llega a este repositorio por una vía propia, y es la única entrega que no nace de una issue de trabajo: la ampara la issue paraguas #846, la misma que `fleet/registry.json` de `team-skills` declara como `propagation_issue` de este consumer.
@@ -46,7 +72,10 @@ El catálogo de skills de la flota llega a este repositorio por una vía propia,
 - **Tamaño.** El tramo vendorizado puede superar las 400 líneas. La etiqueta `size:exception` la pone el mantenedor en el PR; el propagador no se la aplica.
 - **Lo que queda local.** Las skills de `skills/` que no figuran en `include_skills` de `.team-skills.yaml` son de este repositorio y el propagador no las toca.
 
-## Conventional Commits
+## Commits por unidad
+
+Cada commit es una unidad entregable: el comportamiento con sus tests y su documentación, de modo que pueda convertirse en una PR de la cadena. Los mensajes siguen Conventional Commits:
+
 
 | Tipo | Ejemplo | Uso |
 |---|---|---|
@@ -56,7 +85,10 @@ El catálogo de skills de la flota llega a este repositorio por una vía propia,
 | `chore` | `chore(repo): actualizar configuración de herramientas` | Mantenimiento sin cambio funcional |
 | `refactor` | `refactor(app): reorganizar la especificación` | Reorganización sin cambio de alcance |
 
-## Label system
+## Etiquetas
+
+Cada issue lleva exactamente una etiqueta `type:*` (`type:feature`, `type:bug`, `type:docs`, `type:chore`, `type:refactor`, `type:ci`) además de `status:approved` cuando está aprobada; `chain:partial` marca un eslabón intermedio de cadena y `size:exception` la excepción de tamaño. Las etiquetas históricas de la tabla siguiente siguen vigentes para el resto de clasificaciones.
+
 
 | Label | Color | Use for |
 |---|---|---|
