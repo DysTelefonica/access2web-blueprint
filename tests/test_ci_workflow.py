@@ -806,12 +806,19 @@ def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
     `./` prefix), so it audited a homonym on PyPI and never the project. The lock is audited
     directly and strictly, with hashes required and pip disabled, and an empty lock cannot pass.
     """
-    security = yaml.safe_load((_find_workflow().parent / "security.yml").read_text(encoding="utf-8"))
-    steps = [s for s in security["jobs"]["pip-audit"]["steps"] if s.get("name") == "dependency scan"]
+    security = yaml.safe_load(
+        (_find_workflow().parent / "security.yml").read_text(encoding="utf-8")
+    )
+    steps = [
+        s for s in security["jobs"]["pip-audit"]["steps"] if s.get("name") == "dependency scan"
+    ]
     assert len(steps) == 1, "pip-audit must have exactly one `dependency scan` step"
     run = steps[0]["run"]
     assert "app[dev]" not in run
-    assert ".venv-audit/bin/pip-audit --strict --require-hashes --disable-pip -r app/requirements-dev.lock" in run
+    assert (
+        ".venv-audit/bin/pip-audit --strict --require-hashes --disable-pip -r app/requirements-dev.lock"
+        in run
+    )
     assert "pip-audit==2.9.0" in run
     assert "-lt 15" in run, "an empty or truncated lock must fail before the verdict is trusted"
 
