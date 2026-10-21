@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "host-contract.json",
+  "description": "Top-level keys allowed in host-contract.json. The host-readback gate (assets/host-readback/check_host_drift.py) derives its `known` set from this file's `properties` so the schema is the single source of truth (DysTelefonica/team-skills#946). Adding a key to the canon means editing this file; no code change needed in the gate.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version"],
+  "properties": {
+    "contract_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version; current is 1."
+    },
+    "protected_branches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string"},
+      "description": "Branches protected by repository rules (HR-29)."
+    },
+    "host_capabilities": {
+      "type": "object",
+      "description": "Capability declarations per area (HR-303). Keys: branch_protection, rulesets, required_checks."
+    },
+    "labels": {
+      "type": "array",
+      "description": "Label definitions with host-enforced / documented-only / runner-enforced classification (HR-15)."
+    },
+    "required_checks": {
+      "type": "array",
+      "description": "Required check names with classification."
+    },
+    "merge_methods": {
+      "type": "object",
+      "description": "Merge method declarations (allow_merge_commit, allow_squash_merge, allow_rebase_merge, allow_update_branch, allow_auto_merge)."
+    },
+    "protection": {
+      "type": "object",
+      "description": "Repository protection declarations."
+    },
+    "rulesets": {
+      "type": "array",
+      "description": "Ruleset declarations with enforcement and classification."
+    },
+    "runner": {
+      "type": "object",
+      "description": "Runner label declaration used by the runner-enforced checks."
+    },
+    "post_merge_dispatch": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true,
+      "description": "Optional. Basenames of workflows to redispatch via workflow_dispatch after a governed merge (DysTelefonica/team-skills#817, HR-817). Each basename must exist as a workflow with `on: workflow_dispatch:` in the repo; if not, the merge fails closed before PUT /merge."
+    },
+    "governed_path": {
+      "type": "object",
+      "description": "Optional. Exige que lo que llega a una rama protegida por contrato haya entrado por el camino gobernado (DysTelefonica/team-skills#909). Un PR mergeado en una rama protegida cumple si su `merged_by.login` esta en `actors` (ruta fuerte: la plataforma la firma) o si su commit de merge casa con `merge_marker` (ruta debil, corroboracion). Sin la clave, o con `enabled: false`, el veredicto del detective no cambia. Un contrato inservible falla cerrado con exit 2 (HR-3).",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Optional, por defecto false. Activa la verificacion del camino de merge."
+        },
+        "actors": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "minItems": 1,
+          "description": "Obligatoria con `enabled: true`. Logins de los fusionadores legitimos; un array vacio o con entradas no textuales hace fallar cerrado el contrato."
+        },
+        "merge_marker": {
+          "type": "string",
+          "description": "Opcional. Regex que debe casar con la primera linea del mensaje del commit de merge. Por defecto `^Merge PR #\\d+ \\(governed merge\\)$`, la firma que emite el merge gobernado. Una regex que no compila hace fallar cerrado el contrato."
+        }
+      },
+      "additionalProperties": false
+    },
+    "tracker_branch": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional (DysTelefonica/team-skills#333, regla 7). Con la clave declarada, lo que llega a una rama protegida tiene que venir por el PR del tracker (modelo «rama de feature con PR tracker en borrador»). Sin declaracion el control no cambia: una cadena apilada hacia main no necesita tracker y exigirlo sin declararlo inventaria una regla que el contrato no pide. Una cadena vacia o no textual hace fallar cerrado el contrato (HR-3)."
+    }
+  }
+}

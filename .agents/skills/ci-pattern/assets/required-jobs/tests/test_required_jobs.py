@@ -162,6 +162,109 @@ class CascadeReportTests(unittest.TestCase):
         self.assertNotIn("blocked by", proc.stdout)
 
 
+class CascadeFromDeclaredUpstreamTests(unittest.TestCase):
+    """#853: cascade skip whose upstream is in ``accepted_skips`` is
+    accepted (cause→consequence), in any lane."""
+
+    @staticmethod
+    def _policy() -> dict:
+        return {
+            "required_jobs": ["lint", "build", "e2e"],
+            "events": {
+                "pull_request": {"accepted_skips": ["build"]},
+                "push": {"accepted_skips": []},
+            },
+            "dependencies": {"e2e": ["build"]},
+        }
+
+    @staticmethod
+    def _needs() -> dict:
+        return {"lint": "success", "build": "skipped", "e2e": "skipped"}
+
+    def test_cascade_skip_from_declared_upstream_exits_zero(self) -> None:
+        """S1: build in accepted_skips.pull_request; e2e depends on build and
+        is skipped because of it. Gate accepts the cascade (RED until the
+        dependency-aware ``classify_conclusions`` lands in the vendor)."""
+        proc = run_gate(self._policy(), self._needs(), event="pull_request")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("VERDICT: PASS", proc.stdout)
+        self.assertNotIn("not declared for this event", proc.stdout)
+
+    def test_transitive_cascade_skip_from_declared_upstream_exits_zero(self) -> None:
+        """Transitive case: lint declared, build depends on lint, e2e depends
+        on build. compile is the green required job that satisfies HR-15;
+        the cascade skips for build and e2e are accepted."""
+        policy = {
+            "required_jobs": ["compile", "lint", "build", "e2e"],
+            "events": {
+                "pull_request": {"accepted_skips": ["lint"]},
+                "push": {"accepted_skips": []},
+            },
+            "dependencies": {"build": ["lint"], "e2e": ["build"]},
+        }
+        needs = {
+            "compile": "success",
+            "lint": "skipped",
+            "build": "skipped",
+            "e2e": "skipped",
+        }
+        proc = run_gate(policy, needs, event="pull_request")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("VERDICT: PASS", proc.stdout)
+
+    def test_cascade_skip_from_undeclared_upstream_is_rejected(self) -> None:
+        """S2: same dependency, but on ``push`` build is NOT in
+        accepted_skips. The cascade of e2e is rejected (cause is not a
+        declared skip)."""
+        proc = run_gate(self._policy(), self._needs(), event="push")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("not declared for this event", proc.stdout)
+
+    def test_cascade_skip_with_root_cause_failure_is_rejected(self) -> None:
+        """S3: lint fails (root cause), build and e2e are skipped. The gate
+        fails on the root cause; the cascade skips do not rescue it even
+        though build is in accepted_skips for pull_request."""
+        needs = {"lint": "failure", "build": "skipped", "e2e": "skipped"}
+        proc = run_gate(self._policy(), needs, event="pull_request")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("lint (failure)", proc.stdout)
+
+    def test_policy_without_dependencies_keeps_today_behaviour(self) -> None:
+        """S4: a policy that omits ``dependencies`` is evaluated exactly as
+        today — a skipped job whose upstream is not in needs and not in
+        accepted_skips remains an undeclared_skip and the gate fails."""
+        policy = {
+            "required_jobs": ["lint", "build", "e2e"],
+            "events": {
+                "pull_request": {"accepted_skips": []},
+                "push": {"accepted_skips": []},
+            },
+        }
+        proc = run_gate(policy, self._needs(), event="pull_request")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("not declared for this event", proc.stdout)
+
+    def test_malformed_dependencies_fail_closed(self) -> None:
+        """Validation: an unknown job, an unknown upstream, a self-loop and a
+        cycle all fail closed at policy load, never at verdict time."""
+        needs = self._needs()
+
+        cases = [
+            ({"unknown": ["build"]}, "dependency for unknown job"),
+            ({"e2e": ["unknown"]}, "unknown upstream"),
+            ({"e2e": ["e2e"]}, "lists itself as upstream"),
+            ({"build": ["e2e"], "e2e": ["build"]}, "dependencies form a cycle"),
+            ("build", "must be an object"),
+            ({"e2e": [42]}, "must be a list of job name strings"),
+        ]
+        for dependencies, fragment in cases:
+            with self.subTest(dependencies=dependencies):
+                bad = {**self._policy(), "dependencies": dependencies}
+                proc = run_gate(bad, needs, event="pull_request")
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertIn(fragment, proc.stderr)
+
+
 class NeedsShapeTests(unittest.TestCase):
     """``toJSON(needs)`` emits ``{job: {result, outputs}}``; the flat
     ``{job: conclusion}`` shape stays accepted. Anything else is a doubt."""

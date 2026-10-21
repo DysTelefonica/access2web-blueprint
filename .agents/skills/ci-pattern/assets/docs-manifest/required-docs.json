@@ -99,6 +99,26 @@
         "when": "Dudar de si algo existe en el repositorio",
         "read": "las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código"
       }
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "purpose": "Cómo contribuir al repo: issue primero, IA, presupuesto, checks",
+      "sections": [
+        "Issue primero",
+        "Asistencia de IA",
+        "Etiquetas",
+        "Presupuesto de revisión",
+        "Commits por unidad",
+        "Comprobaciones previas",
+        "Comprobaciones automáticas",
+        "Enlace a la issue"
+      ],
+      "required_by": "HR-71",
+      "activated_by": "project_type:web",
+      "route": {
+        "when": "Abrir un pull request",
+        "read": "`CONTRIBUTING.md` antes de abrir la PR (issue primero, asistencia de IA, presupuesto, checks)"
+      }
     }
   ]
 }

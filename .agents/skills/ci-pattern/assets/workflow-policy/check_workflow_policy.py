@@ -127,8 +127,19 @@ def read_lines(text: str) -> list[Line]:
 
 
 def parse_scalar(v: str) -> object:
-    if v[0] in "&!{" or (v[0] == "*" and ALIAS.fullmatch(v)):
+    if v[0] == "&" or v[0] == "!" or (v[0] == "*" and ALIAS.fullmatch(v)):
         raise InvalidInput(f"unsupported YAML construct: {v!r}")
+    if v[0] == "{":
+        if v == "{}":
+            # Mapa de flujo vacío: GitHub Actions lo admite en
+            # `on.workflow_call.inputs: {}` y `secrets: {}` (un reusable
+            # workflow sin inputs/secrets formales). Lo aceptamos como
+            # `dict` vacío. Refs: DysTelefonica/team-skills#903,
+            # DysTelefonica/team-skills#806 (cadete #533).
+            return {}
+        # Mapa inline con contenido (p. ej. `{a: b}`): no se parsea;
+        # las formas soportadas son el bloque indentado o el `{}` vacío.
+        raise InvalidInput(f"unsupported inline map {v!r}: use block indentation or empty map")  # noqa: TRY003 — diagnóstico inline
     if len(v) >= 2 and v[0] == v[-1] and v[0] in "'\"":
         if v[0] in v[1:-1]:
             raise InvalidInput(f"unterminated quoted scalar: {v!r}")

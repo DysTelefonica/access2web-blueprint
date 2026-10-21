@@ -1,0 +1,3 @@
+type: minor
+
+El registro operativo de incidentes (HR-21, nivel 2) admite dos formas declaradas en el contrato: `versioned`, por defecto, en la ruta de `P49_incident_log_dir` y escaneada por el gate de fase 5, y `local-unversioned` (`P55_incident_log_versioning`), un registro local fuera de git que el gate no escanea y el documento operativo describe como local y no versionado. Cuando la ruta del registro coincide con la del post-mortem (`docs/postmortems`), el gate de fase 5 avisa nombrando el parámetro a cambiar, sin fallar: el endurecimiento a fallo llega cuando los consumers lo corrijan (#915).

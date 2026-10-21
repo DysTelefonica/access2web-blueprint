@@ -1,0 +1,3 @@
+type: patch
+
+Documenta la semantica de `chain:partial` que el propagador del catalogo fija en #936: «el PR no cierra la issue». Hasta ahora la doc lo describia como «intermedio de cadena» y eso chocaba con HR-7 en propagaciones sin tramo 1 (cadete#547). Reescribe los bullets de la seccion 4 del documento operativo para que la regla diga siempre lo mismo que el gate: `chain:partial` + `Refs #<issue>` sin `Closes|Fixes|Resolves` para todo PR que no cierre; `Closes #<issue>` solo y sin la etiqueta para el PR que la cierra. Sincroniza la fuente del generador (`assets/bin/ci-pattern`) y el doc generado (`docs/ci-pattern-flow.md`) para que el binario y la doc sigan deterministas byte a byte. Sin bump de `metadata.version`: lo sube el PR de release (#665).

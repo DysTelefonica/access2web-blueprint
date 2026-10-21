@@ -104,16 +104,81 @@ def _effective(manifest, extend):
     return docs.values()
 
 
-def routing_rows(manifest, contract):
+def routing_rows(manifest, contract, repo=None):
     """``(cuándo, lee, ruta)`` de los documentos activados que declaran ``route``.
 
     Mismas reglas de activación que ``check``; las filas salen del manifiesto y
     del contrato, nunca de texto libre, de modo que lista, contenido y enrutado
-    no pueden divergir."""
+    no pueden divergir. ``repo`` opcional: cuando un doc se activa por
+    ``project_type:<x>`` se necesita leer ``.team-skills.yaml``; sin repo, ese
+    tipo de activación se omite (silenciosamente) y la fila no se enruta."""
     extend = (contract.get("docs_manifest") or {}).get("extend", [])
     return [(d["route"]["when"], d["route"]["read"], d["path"])
             for d in _effective(manifest, extend)
-            if d.get("route") and (not d.get("activated_by") or d["activated_by"] in contract)]
+            if d.get("route") and _routing_active(d, contract, repo)]
+
+
+_PROJECT_TYPE_RE = re.compile(r"^\s*project_type:\s*(\S+)\s*$", re.M)
+
+
+def _resolve_project_type(repo):
+    """Lee ``project_type`` de ``.team-skills.yaml``. Devuelve ``(value, error)``.
+    Si no se puede resolver, ``value=None`` y ``error`` describe el motivo
+    (``missing``, ``unreadable``, ``no_project_type``). Activación por
+    ``project_type:<x>`` falla cerrado en cualquiera de los tres casos (HR-71)."""
+    yaml_path = Path(repo) / ".team-skills.yaml"
+    if not yaml_path.is_file():
+        return None, "missing"
+    try:
+        text = yaml_path.read_text(encoding="utf-8")
+    except OSError:
+        return None, "unreadable"
+    m = _PROJECT_TYPE_RE.search(text)
+    if m is None:
+        return None, "no_project_type"
+    return m.group(1), None
+
+
+def _active(doc, contract, repo, findings):
+    """``True`` si el doc debe medirse. Soporta activación por
+    ``project_type:<x>`` leyendo ``.team-skills.yaml``; cuando no se puede
+    resolver, emite un hallazgo HR-71 y activa el doc (fail-closed)."""
+    gate = doc.get("activated_by")
+    if not gate:
+        return True
+    if gate in contract:
+        return True
+    if gate.startswith("project_type:"):
+        value = gate.split(":", 1)[1].strip()
+        pt, err = _resolve_project_type(repo)
+        if pt is None:
+            findings.append(
+                f"HR-71: no se puede resolver '{gate}': .team-skills.yaml "
+                f"{err}; fail-closed")
+            return True
+        return pt == value
+    return False
+
+
+def _routing_active(doc, contract, repo):
+    """Variante silenciosa de ``_active`` para ``routing_rows``: cuando no se
+    puede resolver la activación, devuelve None (la fila no se enruta). El
+    hallazgo de fail-closed lo emite ``check``; aquí la omisión es coherente
+    con no saber a qué consumer aplicar el enrutado."""
+    gate = doc.get("activated_by")
+    if not gate:
+        return True
+    if gate in contract:
+        return True
+    if gate.startswith("project_type:"):
+        if repo is None:
+            return False
+        value = gate.split(":", 1)[1].strip()
+        pt, _err = _resolve_project_type(repo)
+        if pt is None:
+            return False
+        return pt == value
+    return False
 
 
 def check(repo, manifest, contract):
@@ -122,8 +187,7 @@ def check(repo, manifest, contract):
                 for k in declared if k not in CONTRACT_KEYS]
     extend = declared.get("extend", [])
     for doc in _effective(manifest, extend):
-        gate = doc.get("activated_by")
-        if gate and gate not in contract:
+        if not _active(doc, contract, repo, findings):
             continue
         paths = sorted(repo.glob(doc["path"])) if "*" in doc["path"] else [repo / doc["path"]]
         paths = [p for p in paths if p.is_file()]

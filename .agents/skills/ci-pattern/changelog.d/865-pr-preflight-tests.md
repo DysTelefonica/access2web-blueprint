@@ -1,0 +1,3 @@
+type: patch
+
+Suite de paridad de `ci-pattern pr preflight` (#865): 19 tests en `personal/ardelperal/ci-pattern/assets/bin/tests/test_pr_preflight.py` que reproducen las fixtures de cada gate reusado (`check_branch_name`, `check_issue_spec` con `ReferenceFormTests` y `RemoteRuleTests`, `check_pr_contract.check_docs_evidence`) y afirman que el preflight emite el mismo veredicto y texto. `testing/run-unit-suites.sh` lista el nuevo test en el glob `unit-suites` para que el guard `test_every_test_runs` no se queje de un test no ejecutado. Sin cambio de diseño: el test importa los gates en proceso vía `importlib` (mismo patrón que el preflight), reusa las clases (`GitHubApiError`) y conserva los códigos de salida.

@@ -64,10 +64,16 @@ class AgentsRoutingTests(unittest.TestCase):
 
     def test_todo_documento_activado_con_ruta_tiene_su_fila(self):
         manifest = GATE.load_manifest(ASSET / "docs-manifest" / "required-docs.json")
-        routed = {path for _w, _r, path in GATE.routing_rows(manifest, ALL)}
         expected = {d["path"] for d in manifest["documents"] if d.get("route")}
-        self.assertEqual(routed, expected)
         self.assertTrue(expected)
+        # HR-71 (#878): 'project_type:web' se activa leyendo .team-skills.yaml;
+        # un consumer web activa también CONTRIBUTING.md en el enrutado.
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / ".team-skills.yaml").write_text(
+                "project_type: web\n", encoding="utf-8")
+            routed = {path for _w, _r, path in
+                      GATE.routing_rows(manifest, ALL, Path(d))}
+        self.assertEqual(routed, expected)
 
     def test_una_ruta_enrutada_que_no_existe_es_roja_y_nombra_la_ruta(self):
         with tempfile.TemporaryDirectory() as d:

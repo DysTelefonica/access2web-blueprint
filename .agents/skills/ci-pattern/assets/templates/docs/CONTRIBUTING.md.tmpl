@@ -1,0 +1,120 @@
+# Contributing — <Proyecto>
+
+Cómo se contribuye a este repositorio. Reglas mínimas del propio repo;
+los detalles de gobierno (issue-first, CI, etiquetas, presupuestos)
+viven en `docs/ci-pattern-flow.md`, `AGENTS.md` y el flujo del catálogo.
+Esta página no los duplica: los aplica al repo y los concreta.
+
+> Plantilla copiada del catálogo (`assets/templates/docs/CONTRIBUTING.md.tmpl`).
+> El gate exige las secciones que aquí se enuncian (HR-71); renombrar
+> títulos rompe el check.
+
+## Issue primero
+
+No abra una PR sin una issue abierta que la motive. La PR sin issue
+queda bloqueada en revisión: el revisor pregunta por la trazabilidad
+y, si no existe, la cierra.
+
+- Use la plantilla de issue del repo (`.github/ISSUE_TEMPLATE/`).
+- La rama sale del nombre de la issue: `<tipo>/<nº issue>-<kebab-slug>`
+  (validado por `scripts/check_branch_name.py` o equivalente).
+- Una PR que resuelva varias issues las enlaza todas en el cuerpo.
+
+## Asistencia de IA
+
+Declare en el cuerpo de la PR la asistencia de IA, si la hubo. La
+sección «Asistencia de IA» del PR es el único sitio donde esta
+declaración es vinculante: el catálogo no la rellena por usted.
+
+- Sin asistencia: `ninguna` o sección vacía con el motivo.
+- Con asistencia: qué herramienta usó, qué partes del código generó
+  y qué partes revisó usted. Una sección con un solo `Co-Authored-By`
+  no exonera.
+- El commit no lleva atribución de IA (`Co-Authored-By: ... <noreply>`):
+  la trazabilidad va en el cuerpo de la PR, no en la firma del commit.
+
+## Etiquetas
+
+Las etiquetas del repo viven en `.github/host-contract.json` (HR-34).
+Las que importan al abrir una PR:
+
+- `type:*` — al menos una (`type:feature`, `type:bug`, `type:docs`,
+  `type:refactor`, `type:chore`). Una PR con dos `type:*` falla
+  cerrado.
+- `status:approved` — la aplica solo un mantenedor. El agente crea la
+  issue y para; nunca se auto-aprueba, ni aunque la orden del mantenedor
+  incluya la aprobación (en ese caso lo declara en el cuerpo del PR).
+  Sin ella no hay rama ni PR.
+- `chain:partial` — cuando la PR es un eslabón de una cadena; lleva
+  `Refs #<issue-padre>` y nunca `Closes` (HR-35).
+- `size:exception` — solo el mantenedor, último recurso; vea el
+  presupuesto de revisión más abajo.
+
+## Presupuesto de revisión
+
+Toda PR se mantiene bajo **400 líneas** (`additions + deletions`),
+comprobado por `scripts/check_pr_size.py` o equivalente. Es techo
+de revisión, no techo de tamaño: a partir de esa cifra la revisión
+pasa de atenta a vistazo.
+
+Cuando la diff supera el presupuesto, el orden de escape es:
+
+1. Partir por unidad de trabajo (commit por unidad).
+2. Encadenar PRs vía `chained-pr`.
+3. `size:exception` (la pone el mantenedor) como último recurso.
+
+Borrar siempre es divisible: tests, código muerto o configuración se
+retiran en trozos de ≤400 líneas, dejando `main` en verde entre
+trozos. Lo que comparten los trozos (helpers, fixtures) se borra en
+el último.
+
+## Commits por unidad
+
+Una PR son varias unidades de trabajo, y cada una es un commit. El
+título del commit sigue Conventional Commits y la diff de cada
+commit cabe en una revisión atenta.
+
+- Una unidad = un cambio coherente que por sí solo deja el repo en
+  verde (tests + lint + typecheck + docs).
+- Commits que solo reformatean no cuentan como unidad: van al final.
+- `git commit --fixup` y `git rebase --autosquash` solo en su propia
+  rama, antes del push, sin reescribir historia remota.
+
+## Comprobaciones previas
+
+Antes de pedir revisión, el autor corre en su worktree:
+
+- `bash scripts/local-ci.sh` (o el comando equivalente del repo)
+  hasta verde.
+- Los tests específicos del área tocada.
+- El linter: `php-cs-fixer`, `eslint`, `ruff` u otro declarado en
+  `AGENTS.md`.
+- El presupuesto de revisión (ver arriba).
+
+Una PR con checks en rojo no se mergea aunque la apruebe el
+mantenedor: el gate `pr-gate` falla cerrado.
+
+## Comprobaciones automáticas
+
+El CI del repo corre los checks declarados en
+`.github/required-jobs-policy.json` (HR-34). Los que se exigen a
+toda PR son, al menos:
+
+- `pr-gate` (gate del catálogo).
+- `pr-size` (presupuesto de revisión).
+- Linter del stack declarado.
+- Suite de tests del repo (unit + e2e cuando aplique).
+- `docs-gates` (enlaces locales, secciones obligatorias).
+
+El catálogo declara qué `required-jobs` se exigen; un repo que no
+los tenga configurados los declara en su política o falla el gate.
+
+## Enlace a la issue
+
+El cuerpo de la PR cierra la issue que la motiva. Use la forma canónica:
+
+- Una PR simple: `Closes #<nº>` en su propia línea.
+- Una PR encadenada (eslabón): `Refs #<nº-issue-padre>`; solo la punta
+  lleva `Closes`.
+
+Una PR sin enlace a la issue no es trazable: el revisor la devuelve.

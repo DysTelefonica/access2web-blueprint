@@ -1,0 +1,7 @@
+type: patch
+
+El gate `assets/host-readback/check_host_drift.py` compara las etiquetas del host en las dos direcciones, contra la instantánea de la fase 0 y contra el contrato declarado (#955). Con `--labels-names <ruta>` acepta la instantánea de etiquetas de la fase 0 (lista JSON de nombres) y señala, en ambos sentidos, toda diferencia con el readback del host, más toda etiqueta que el host tiene y el contrato no declara de ninguna clase. Era el único área del readback que solo se juzgaba en un sentido: una etiqueta del host que el contrato no declaraba nunca era hallazgo.
+
+La regla sale en modo `advisory` por defecto, con los hallazgos por stderr y el veredicto intacto, porque una lectura con `GET` de solo lectura de los tres consumers con `governance: ci-pattern` (CADETE, BP y APAP; tabla en el comentario de la issue) dice que los tres fallarían: 13, 30 y 2 hallazgos respectivamente. El paso a `strict` es un cambio posterior, cuando estén alineados. La duda sigue fallando cerrada en los dos modos: `advisory` ablanda hallazgos, nunca el `exit 2`.
+
+Un nombre de etiqueta puede llevar espacios (`good first issue`, `help wanted`) y los nombres se comparan enteros: partirlos por espacios inventa etiquetas que el host no tiene y produce hallazgos en las dos direcciones a la vez. El readback debe capturarse con paginación completa, porque uno truncado convierte cada etiqueta de más en un hallazgo falso. Para las etiquetas que crea el propio host, declararlas `documented-only` en `host-contract.json` basta para que no sean hallazgo.

@@ -36,7 +36,7 @@ los datos personales no entra en el repositorio.
 | Nivel | Dónde vive | Qué lleva |
 |---|---|---|
 | Post-mortem | parámetro 9 (`docs/postmortems/<AAAA-MM-DD>-<slug>.md`) | Qué pasó, causas de sistema y action items; ID de incidente, tickets, SHA y nombres de sistemas |
-| Registro operativo | parámetro 24 (por defecto `docs/incidents/<AAAA-MM-DD>-<slug>.md`, en este repositorio) | Detalle técnico para seguir los tickets abiertos: IPs, hostnames, comandos, logs, cronología fina y el siguiente paso de cada ticket |
+| Registro operativo | parámetro 49 (`P49_incident_log_dir`, por defecto `docs/incidents/<AAAA-MM-DD>-<slug>.md`, en este repositorio). Con `P55_incident_log_versioning: local-unversioned` es local y no versionado: no tiene ruta en el repo, no se escanea. Si la ruta de P49 coincide con la del post-mortem, el gate de fase 5 falla con exit 1 nombrando `P49_incident_log_dir` (#927). Hasta #915 era un aviso: cadete ya migró su P49 a `docs/incidents` (#562), por lo que endurecer a fallo ya no le rompe la próxima propagación. | Detalle técnico para seguir los tickets abiertos: IPs, hostnames, comandos, logs, cronología fina y el siguiente paso de cada ticket |
 | Secretos | parámetro 25 (gestor de secretos declarado) | Credenciales y tokens; se citan por su identificador en el gestor. Nunca en git |
 | Datos personales y conversaciones con terceros | Sistema de tickets | Se referencian por número de ticket; nunca se copian al repositorio |
 

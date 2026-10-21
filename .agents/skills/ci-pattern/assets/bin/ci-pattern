@@ -54,6 +54,12 @@ Comandos:
                              Verifica el cumplimiento dirigido por el manifiesto.
   status <repo> [--json]     Resumen de una línea por clase del repo destino.
   manifest show <repo>       Imprime el manifiesto leído.
+  pr preflight --pr-body <file> [--issue N] [--branch <ref>] [--repository owner/name]
+  pr contract --body <file> [--base main] [--label L]... [--print-payload]
+                             [--token <token>] [--actor <user>] [--with-adoption]
+                             [--policy <path> --changed-files <file>] [--json]
+                             Mismos veredictos que la CI sobre un PR abierto,
+                             reusando los gates en proceso; corre antes de push.
   adoption check (--phase N | --all) <repo>
                              Gate por fase del contrato de adopción: fases del
                              porting-guide verificadas sobre el árbol real.
@@ -907,6 +913,19 @@ def cmd_verify(args):
     return EXIT_OK if clean else EXIT_FINDINGS
 
 
+def cmd_checkout_sync(args):
+    """Control local del checkout atrasado (#914): delega en checkout-sync.sh.
+
+    Sin red y sin escribir nada. Exit: 0 sincronizado · 1 atrasado o rama
+    equivocada · 2 no puede medir (sin origin, sin sincronizar, fetch viejo).
+    Acepta las mismas opciones que el script: --repo, --base, --max-age-hours.
+    """
+    script = Path(__file__).resolve().parent.parent / "checkout-sync" / "checkout-sync.sh"
+    if not script.is_file():
+        raise MissingResourceError(f"falta {script}")
+    return subprocess.call(["sh", str(script), *args])
+
+
 def cmd_status(args):
     as_json = "--json" in args
     positional = [a for a in args if a != "--json"]
@@ -1490,7 +1509,7 @@ OPERATING_DOC_PARAMS = (
     "P10_label_approval", "P11_label_chain_partial", "P12_issue_form_dir",
     "P14_status_context_e2e", "P15_status_context_smoke",
     "P16_release_runbook_path", "P28_required_status_contexts",
-    "P49_incident_log_dir", "P50_secrets_manager",
+    "P49_incident_log_dir", "P50_secrets_manager", "P55_incident_log_versioning",
 )
 
 # Recetas canónicas de recuperación por check (#305): qué verifica y qué
@@ -1591,6 +1610,34 @@ def _operating_doc_inputs(repo):
     return host, [j for j in jobs if isinstance(j, str)], entrypoint.strip()
 
 
+# #875 (HR-44 condicional, oleada 2 de #873) y #883: la regla de fragmento
+# sólo es verificable si algún workflow del consumer cablea el gate. Lectura
+# pura de .github/workflows/*.{yml,yaml} (ambas extensiones que GitHub acepta);
+# no hay campo nuevo en el host-contract.
+CHANGELOG_FRAGMENT_GATE = "check_changelog_fragment.py"
+
+
+def _changelog_fragment_gate_wired(repo):
+    workflows = repo / ".github" / "workflows"
+    if not workflows.is_dir():
+        return False
+    for path in sorted(list(workflows.glob("*.yml")) + list(workflows.glob("*.yaml"))):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if CHANGELOG_FRAGMENT_GATE in text:
+            return True
+    return False
+
+
+def _changelog_fragment_lines(repo):
+    if not _changelog_fragment_gate_wired(repo):
+        return []
+    return ["- Toda edición material de una skill añade un fragmento válido en `changelog.d/` "
+            "(HR-44, #665)."]
+
+
 OPERATING_DOC_AGENTS_BLOCK = """<!-- ci-pattern-agents:begin -->
 ## Flujo operativo y mandato de no invención
 
@@ -1632,8 +1679,32 @@ def _operating_doc_incident_lines(params):
     """#322 (HR-21 ampliada): los cuatro niveles de un incidente y la regla
     de identificadores. La ruta del registro operativo y el gestor de
     secretos salen de los parámetros del consumer."""
-    log_dir = str(params["P49_incident_log_dir"]).rstrip("/")
     secrets = str(params["P50_secrets_manager"]).strip()
+    if _incident_log_is_local(params):
+        # #915: el registro local no tiene ruta en el repo; el documento lo dice
+        # con la frase y no nombra ninguna ruta de registro.
+        level_two = (
+            "- **2. Registro operativo**: local y no versionado. Vive fuera de git, en el "
+            "equipo que lo mantiene, con todo el detalle necesario para seguir atendiendo "
+            "los tickets abiertos; este repositorio no lo guarda ni lo escanea. El "
+            "post-mortem lo enlaza por identificador.")
+        gate_line = (
+            "- El gate de esta fase rechaza secretos y datos personales en el post-mortem, "
+            "y la evidencia declarada sin hash ni ubicación. El registro operativo local "
+            "no se escanea desde aquí. Las IPs, los hostnames y los comandos internos "
+            "están permitidos.")
+    else:
+        log_dir = str(params["P49_incident_log_dir"]).rstrip("/")
+        level_two = (
+            f"- **2. Registro operativo**: `{log_dir}/<AAAA-MM-DD>-<slug>.md` —todo el detalle "
+            "necesario para seguir atendiendo los tickets abiertos (IPs, hostnames, comandos, "
+            "logs, cronología fina y el estado con el siguiente paso de cada ticket)—. Con el "
+            "parámetro por defecto vive en este mismo repositorio; el post-mortem lo enlaza "
+            "por ruta o por identificador.")
+        gate_line = (
+            "- El gate de esta fase rechaza secretos y datos personales en el post-mortem y "
+            "en el registro operativo, y la evidencia declarada sin hash ni ubicación. Las "
+            "IPs, los hostnames y los comandos internos están permitidos.")
     return "\n".join([
         "Un incidente de producción deja cuatro niveles, enlazados por identificadores "
         "(ID de incidente, número de ticket, SHA, ejecución de CI, issues y PRs); el "
@@ -1641,11 +1712,7 @@ def _operating_doc_incident_lines(params):
         f"- **1. Post-mortem** (parámetro 9): `docs/postmortems/<AAAA-MM-DD>-<slug>.md`, "
         "blameless, con causas de sistema y cada action item como issue con owner. Aquí "
         "sí van identificadores y nombres de sistemas: qué pasó, por qué y qué lo evita.",
-        f"- **2. Registro operativo**: `{log_dir}/<AAAA-MM-DD>-<slug>.md` —todo el detalle "
-        "necesario para seguir atendiendo los tickets abiertos (IPs, hostnames, comandos, "
-        "logs, cronología fina y el estado con el siguiente paso de cada ticket)—. Con el "
-        "parámetro por defecto vive en este mismo repositorio; el post-mortem lo enlaza "
-        "por ruta o por identificador.",
+        level_two,
         f"- **3. Secretos**: credenciales y tokens viven en {secrets}, nunca en git, ni "
         "siquiera en un repositorio privado. El post-mortem y el registro los citan por "
         "su identificador en el gestor.",
@@ -1654,9 +1721,7 @@ def _operating_doc_incident_lines(params):
         "- La evidencia se cita con su `sha256` y su ubicación de acceso controlado. Lo "
         "que se redacta se marca de forma explícita (`[IP interna redactada]`): nunca se "
         "borra en silencio.",
-        "- El gate de esta fase rechaza secretos y datos personales en el post-mortem y "
-        "en el registro operativo, y la evidencia declarada sin hash ni ubicación. Las "
-        "IPs, los hostnames y los comandos internos están permitidos.",
+        gate_line,
     ])
 
 
@@ -1694,30 +1759,62 @@ def _branch_form(params):
             "con el `<slug>` del título de la issue en minúsculas y guiones, sin número de issue")
 
 
-def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
+def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
     """Ciclo de vida completo (#305), de la issue al CI verde sin pasos
-    implícitos: cada etapa con su comando exacto y su condición de «hecho»."""
+    implícitos: cada etapa con su comando exacto y su condición de «hecho».
+
+    Cambios (#873, auditoría cadete):
+    - Etapa 1 y etapa 6 emiten `--label type:<tipo>` como MARCADOR LITERAL
+      (S1, S2) cuando el host-contract declara al menos una etiqueta `type:*`.
+      El `<tipo>` no se sustituye por una etiqueta concreta del contrato
+      (un agente que copiara la receta no etiqueta el PR como la primera
+      `type:*` declarada, e.g. «type:bug» para todo). El agente elige
+      entre los valores declarados en la sección 4 del propio doc.
+      Sin declaración de `type:*`, el comando se queda sin la bandera.
+    - Etapa 3 y etapa 10 citan la ruta `../<repo>-worktrees/<número>-<tema>`
+      (S3): el mismo layout sibling-container que `worktree-reorg-per-project`
+      v2.0 y el hook pre-commit de `agent-guards`.
+    """
     merge_names = {"allow_merge_commit": "merge commit", "allow_squash_merge": "squash",
                    "allow_rebase_merge": "rebase", "allow_auto_merge": "auto-merge"}
     allowed_merges = sorted(merge_names[k] for k, v in (host.get("merge_methods") or {}).items()
                             if isinstance(v, dict) and v.get("declared") is True and k in merge_names)
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
+    # #873 (S1, S2): el comando lleva el MARCADOR literal `type:<tipo>` cuando
+    # el host-contract declara al menos una `type:*`. La receta NO concreta
+    # la etiqueta (un agente que la copiara no etiquetaría todo como la
+    # primera declarada). Sin declaraciones el comando se mantiene sin la
+    # bandera (no se inventa).
+    if _host_has_any_type_label(host):
+        type_label_flag = " --label type:<tipo>"
+    else:
+        type_label_flag = ""
+    # Backticks pares: el flag va dentro del span de código y la nota fuera.
+    issue_type_note = (" Elija exactamente un `type:*` de la sección 4."
+                       if type_label_flag else "")
+    pr_type_note = (" Elija exactamente un `type:*` de la sección 4; "
+                    "el merge gobernado rechaza el PR sin él."
+                    if type_label_flag else "")
     return [f"Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. "
             f"Jobs requeridos que debe ver en verde antes del merge: {_or_none(sorted(jobs))}.",
         "- **1. Issue.** Con el formulario del consumer (sección 1), busque duplicados "
         "y cree la issue:\n"
         "  `gh issue list --search \"<términos>\" --json number,title,state --state all --limit 20`\n"
-        "  `gh issue create --title \"<título>\" --body-file <cuerpo-de-la-issue.md>`\n"
+        f"  `gh issue create --title \"<título>\" --body-file <cuerpo-de-la-issue.md>{type_label_flag}`{issue_type_note}\n"
         "  Hecho: la issue existe y lleva su etiqueta de tipo.",
-        f"- **2. Aprobación.** No empiece sin ella; consulte la issue:\n"
+        f"- **2. Aprobación.** El agente crea la issue y para; la aprueba un mantenedor. "
+        "Nunca se auto-aprueba, ni aunque la orden del mantenedor incluya la "
+        "aprobación: en ese caso lo declara en el cuerpo del PR (quién aprobó "
+        "y con qué instrucción). Consulte la etiqueta:\n"
         f"  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
-        f"  Hecho: la lista contiene `{params['P10_label_approval']}`.",
+        f"  Hecho: la lista contiene `{params['P10_label_approval']}`. "
+        "Si no está, pare y pregunte; no cree rama ni PR.",
         "- **3. Worktree.** Desde la rama base actualizada, con un nombre de rama que "
         "cumpla la regex "
         f"`{params['P01_branch_name_pattern']}`:\n"
         "  `git fetch origin && git switch <rama-base> && git pull --ff-only`\n"
         f"  `<rama-nueva>` = `{_branch_form(params)[0]}`, {_branch_form(params)[1]}\n"
-        "  `git worktree add ../<repo>-<número>-<tema> -b <rama-nueva>`\n"
+        "  `git worktree add ../<repo>-worktrees/<número>-<tema> -b <rama-nueva>`\n"
         "  Hecho: `git worktree list` muestra la ruta nueva.",
         "- **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; "
         "Conventional Commits (sección 3); sin atribución de IA.\n"
@@ -1741,7 +1838,7 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
         "`starts-at`, `ends-with` y `review-budget`, con `base` igual a la base "
         "del PR y un único marcador del PR actual en el diagrama de la plantilla de PR.\n"
         "  `gh pr create --base <rama-base> --head <rama-nueva> "
-        "--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>`\n"
+        f"--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>{type_label_flag}`{pr_type_note}\n"
         "  Hecho: `gh pr view <número> --json number,url` devuelve número y URL.",
         "- **7. Checks.** Consulte la tabla de checks requeridos (sección 5) y el "
         "estado del PR:\n"
@@ -1761,10 +1858,35 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
         "pendientes, retire el worktree local; la rama remota se conserva "
         "siempre (nunca `git push origin --delete`, `--delete-branch` ni borrado "
         "de ramas):\n"
-        "  `git worktree remove ../<repo>-<número>-<tema>`\n"
+        "  `git worktree remove ../<repo>-worktrees/<número>-<tema>`\n"
         "  Hecho: `git worktree list` ya no muestra la ruta y la rama sigue en "
         "`origin`.",
     ]
+
+
+def _host_has_any_type_label(host):
+    """#873 (S1, S2): el contrato del consumer declara al menos una
+    etiqueta `type:*`. La receta del doc operativo lleva el MARCADOR
+    literal `--label type:<tipo>` cuando este predicado es verdadero; sin
+    declaración, el comando se queda sin la bandera (no se inventa).
+    Determinista byte a byte."""
+    if not isinstance(host, dict):
+        return False
+    for label in host.get("labels") or []:
+        if not isinstance(label, dict):
+            continue
+        name = label.get("name")
+        if isinstance(name, str) and name.startswith("type:"):
+            return True
+    return False
+
+
+# #873 (S5): la condicionalidad de la línea HR-44 sobre el cableado del gate
+# `changelog-fragment` queda POSPUESTA a la oleada 2; en esta oleada la prosa
+# del doc operativo siempre enuncia la regla. La detección preferida para la
+# oleada 2 lee los workflows del destino en busca de la cadena
+# `check_changelog_fragment.py` (datos que ya existen), no añade un campo al
+# esquema del host-contract (decisión owner).
 
 
 def _local_entrypoint(repo, policy):
@@ -1906,17 +2028,19 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
         "pull-request": "\n".join([
             f"- Presupuesto: {params['P06_review_budget_lines']} líneas (añadidas + borradas, "
             "tests y docs incluidos). Si no cabe, cadena de PRs.",
-            f"- Slice intermedio de cadena: etiqueta `{params['P11_label_chain_partial']}` y "
-            "`Refs #N` en el cuerpo; sin palabras de cierre.",
+            f"- PR que no cierra la issue: etiqueta `{params['P11_label_chain_partial']}` y "
+            "`Refs #<issue>` en el cuerpo; sin `Closes|Fixes|Resolves`. HR-7 deduce "
+            f"que `{params['P11_label_chain_partial']}` significa «este PR no cierra la "
+            "issue»; los propagadores y los eslabones intermedios de una cadena la llevan.",
             "- Con `chain:partial` o en la punta de cadena, el cuerpo lleva la "
             "sección Chain Context (HR-54): posición N/M, base igual a la del PR, "
             "dependencias, presupuesto y un único marcador del PR actual en el diagrama.",
-            "- Solo el PR punta de cadena lleva `Closes #N`.",
-            "- Antes de un `Closes #N`, compruebe la matriz HR→gate de la skill "
-            "adoptada: `rg '\"issue\": <número>' <skill>/references/hr-gate-matrix.json`; "
-            "una entrada `manual` apuntando a la issue exige reclasificarla en el mismo PR.",
+            "- El PR que cierra la issue lleva `Closes #<issue>` sin la etiqueta de cadena.",
             f"- Exactamente una etiqueta `type:*` por PR: {_or_none(type_labels)}.",
-            "- Toda edición material de una skill añade un fragmento válido en `changelog.d/` (HR-44, #665).",
+            "- El cuerpo lleva la sección `## Asistencia de IA` no vacía (HR-14): «ninguna» o la "
+            "herramienta de IA y la parte que ayudó. La declaración vive en el PR; los commits no "
+            "llevan atribución de IA.",
+            *_changelog_fragment_lines(repo),
         ]),
         "required-checks": "\n".join(
             [f"- Jobs requeridos del agregador: {_or_none(sorted(jobs))}. "
@@ -2678,6 +2802,32 @@ INCIDENT_LOCATION_RE = re.compile(
     r"|\b(?:INC|CHG|REQ|TKT)[0-9]{5,}\b")
 
 
+def _incident_log_is_local(params):
+    """#915 (HR-21): el registro operativo es local y no versionado cuando el
+    consumer lo declara así en `P55_incident_log_versioning`."""
+    return str(params.get("P55_incident_log_versioning") or "versioned") == "local-unversioned"
+
+
+def _incident_contract_findings(params):
+    """#927 (HR-21): el post-mortem (parámetro 9) y el registro operativo son
+    niveles distintos y no deben compartir directorio. Es un hallazgo de
+    fase 5 (exit 1) en `cmd_adoption`. Hasta #915 se avisaba con exit 0;
+    cadete ya migró su P49 a `docs/incidents` (#562), por lo que endurecer
+    a fallo ya no le rompe la próxima propagación. Ver `references/incidents.md`."""
+    if _incident_log_is_local(params):
+        return []
+    declared = PurePosixPath(str(params.get("P49_incident_log_dir") or "").strip() or ".").as_posix()
+    if declared != INCIDENT_POSTMORTEM_DIR:
+        return []
+    return [
+        f"fase 5: el post-mortem (parámetro 9: '{INCIDENT_POSTMORTEM_DIR}') y el registro "
+        f"operativo (P49_incident_log_dir: '{declared}') comparten ruta; son niveles "
+        "distintos de HR-21. Cambie P49_incident_log_dir a otra ruta del repo, o declare "
+        "el registro como 'local-unversioned' en P55_incident_log_versioning si no se "
+        "versiona."
+    ]
+
+
 def _incident_record_dirs(repo, params):
     """Directorios de registro de incidentes a escanear: la ruta canónica de
     post-mortems (parámetro 9) y la del registro operativo declarada por el
@@ -2686,6 +2836,9 @@ def _incident_record_dirs(repo, params):
     respeta pero no se escanea desde aquí."""
     dirs = []
     declared = str(params.get("P49_incident_log_dir") or "").strip()
+    if _incident_log_is_local(params):
+        # #915: el registro local no vive en el repo: no se escanea desde aquí.
+        declared = ""
     for rel in (INCIDENT_POSTMORTEM_DIR, declared):
         rel = rel.rstrip("/")
         if not rel or rel in dirs:
@@ -2987,7 +3140,7 @@ def _agents_block_for(repo):
     if not isinstance(contract, dict) or "docs_manifest" not in contract:
         return OPERATING_DOC_AGENTS_BLOCK
     gate, manifest_path = _load_docs_manifest()
-    rows = gate.routing_rows(gate.load_manifest(manifest_path), contract)
+    rows = gate.routing_rows(gate.load_manifest(manifest_path), contract, repo)
     if not rows:
         return OPERATING_DOC_AGENTS_BLOCK
     table = "\n".join(f"| {when} | {read} |" for when, read, _path in rows)
@@ -3007,7 +3160,7 @@ def _routed_path_findings(repo):
         return []
     gate, manifest_path = _load_docs_manifest()
     findings = []
-    for _when, _read, path in gate.routing_rows(gate.load_manifest(manifest_path), contract):
+    for _when, _read, path in gate.routing_rows(gate.load_manifest(manifest_path), contract, repo):
         if not (Path(repo) / path.split("*")[0].rstrip("/")).exists():
             findings.append(f"fase 5: el enrutado de AGENTS.md apunta a {path} y no existe en el repositorio")
     return findings
@@ -3625,7 +3778,8 @@ def _phase_findings(repo, n, decl, contract):
                 + _check_docs_manifest(repo, contract)
                 + _check_docs_links(repo, contract)
                 + _check_docs_commands(repo, contract)
-                + _check_docs_decisions(repo, contract))
+                + _check_docs_decisions(repo, contract)
+                + _incident_contract_findings(_operating_doc_params(repo)))
     if n == 6:
         return _check_acceptance_phase(repo, decl)
     return [f"fase {n}: fase fuera del rango 0..{ADOPTION_PHASES - 1}"]
@@ -3738,8 +3892,62 @@ COMMANDS = {
         )
     ),
     "adoption": cmd_adoption,
+    "checkout-sync": cmd_checkout_sync,
     "report-friction": cmd_report_friction,
+    "pr": lambda args: _pr_dispatch(args),
 }
+
+
+def _pr_dispatch(args):
+    """Despacha ``ci-pattern pr <subcomando>``: ``contract`` (#912) o ``preflight`` (#865)."""
+    if args and args[0] == "contract":
+        return _pr_contract_dispatch(args[1:])
+    return _pr_preflight_dispatch(args)
+
+
+def _pr_contract_dispatch(args):
+    """Despacha ``ci-pattern pr contract`` al módulo ``pr_contract_local.py`` (#912).
+
+    Mismo patrón que el preflight: el módulo hermano se importa en proceso (HR-46)
+    y su parser recibe sólo los flags."""
+    import importlib.util
+    script = Path(__file__).resolve().parent / "pr_contract_local.py"
+    if not script.is_file():
+        raise MissingResourceError(
+            f"pr contract: módulo hermano ausente ({script}). Cópielo o reinstale la skill.")
+    spec = importlib.util.spec_from_file_location("ci_pattern_pr_contract_local", script)
+    if spec is None or spec.loader is None:
+        raise MissingResourceError(f"pr contract: módulo no cargable ({script})")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.main(args)
+
+
+def _pr_preflight_dispatch(args):
+    """Despacha ``ci-pattern pr preflight`` al módulo ``pr_preflight.py`` (#865).
+
+    El módulo hermano vive en este mismo directorio y contiene la implementación
+    y el parser argparse; se importa en proceso (HR-46). El token ``preflight``
+    se descarta porque ya lo consumió este CLI al enrutar; el parser del módulo
+    hermano espera sólo los flags (``--pr-body``, etc.). Si ``pr_preflight.py``
+    no está disponible (consumer vendorizado que no lo copia), se informa como
+    recurso ausente en lugar de fallar con traceback.
+    """
+    import importlib.util
+    if args and args[0] == "preflight":
+        args = args[1:]
+    script = Path(__file__).resolve().parent / "pr_preflight.py"
+    if not script.is_file():
+        raise MissingResourceError(
+            f"pr preflight: módulo hermano ausente ({script}). El subcomando "
+            "vive en este directorio junto al CLI; cópielo o reinstale la skill."
+        )
+    spec = importlib.util.spec_from_file_location("ci_pattern_pr_preflight", script)
+    if spec is None or spec.loader is None:
+        raise MissingResourceError(f"pr preflight: módulo no cargable ({script})")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.main(args)
 
 
 def main(argv=None):

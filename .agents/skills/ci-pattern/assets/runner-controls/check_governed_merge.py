@@ -23,12 +23,14 @@ por aqui lo detecta el detective post-push (HR-49). Solo stdlib; cada
 llamada a ``gh api`` lleva timeout.
 """
 import argparse
+import base64
 import json
 import re
 import sys
 import time
 
 from check_push_compliance import (
+    SHA_RE,
     FailClosedError,
     check_verdict,
     fail,
@@ -37,7 +39,7 @@ from check_push_compliance import (
     protected_branches,
     required_checks,
 )
-from github_rest import GitHubApiError, call
+from github_rest import GitHubApiError, call, get_json
 
 CLOSING = re.compile(r"\b(closes|fixes|resolves)\s+#?\d+", re.IGNORECASE)
 WORKFLOWS_DIR = ".github/workflows/"
@@ -45,6 +47,7 @@ FORBIDDEN = 403
 RACE_CLOSED = 422  # PATCH devolvio 422 = carrera con el cierre auto por `Closes` (#835)
 WAITABLE = (": missing", ": pending")  # el CI aun no publico o no termino; un fallo no se espera
 DEFAULT_WAIT, DEFAULT_POLL = 300.0, 10.0
+POST_DISPATCH_FAILED = 4  # merged, post-dispatch failed (no rollback, #817)
 WORKFLOWS_HINT = ("the token lacks the 'workflows' permission, which GITHUB_TOKEN cannot "
                   "have: GitHub refuses a merge that creates new workflow-file content; "
                   "update the PR branch onto its base or merge it as the maintainer")
@@ -88,6 +91,21 @@ class IssueListFailedError(MergedNotClosedError):
 
 class IssuesNotClosedError(MergedNotClosedError):
     template = "linked issue(s) not closed: {0}"
+
+
+class PostDispatchFailedError(Exception):
+    """Al menos un workflow de ``post_merge_dispatch`` respondio 4xx/5xx (exit 4).
+
+    El merge ya esta hecho; no se deshace. El caller termina el job en rojo y
+    nombra el workflow que fallo. La superficie de errores coincide con
+    ``MergedNotClosedError`` (post-merge, sin rollback) pero con causa distinta:
+    este deja el merge intacto y la issue intacta; solo el disparo falla.
+    """
+
+    template = "post-merge dispatch failed for {0}: {1}"
+
+    def __init__(self, label: str, reason: str) -> None:
+        super().__init__(self.template.format(label, reason))
 
 
 CLOSE_QUERY = ("query($owner:String!,$name:String!,$pr:Int!){repository(owner:$owner,name:$name)"
@@ -178,6 +196,227 @@ def _issue_now_closed(repo: str, issue: int) -> bool:
     except json.JSONDecodeError:
         return False
     return isinstance(data, dict) and data.get("state") == "closed"
+
+
+# #817: post-merge dispatch (workflow_dispatch rebinds the post-merge run
+# set when `GITHUB_TOKEN` suppresses push). The contract may declare
+# ``post_merge_dispatch`` as a list of workflow file basenames. Each name
+# must exist in the repo and the workflow YAML must declare
+# ``workflow_dispatch``; otherwise the dispatch 404s and the run loses
+# coverage. Validation runs pre-merge (block); firing runs post-merge
+# (any 4xx/5xx is exit 4 with the name, the merge is NOT rolled back).
+
+
+def _workflow_basename(path: str) -> str:
+    """Returns the workflow file name without extension (``deploy.yml`` -> ``deploy``).
+
+    El endpoint de dispatch acepta el nombre con y sin extension; usamos
+    la forma corta para mantener la convencion del catalogo (``deploy``,
+    ``push-compliance``, ``runner-merge``) sin arrastrar ``.yml``.
+    """
+    base = path.rsplit("/", 1)[-1]
+    for suffix in (".yml", ".yaml"):
+        if base.endswith(suffix):
+            return base[: -len(suffix)]
+    return base
+
+
+def declares_workflow_dispatch(yaml_text: str) -> bool:
+    """Detecta ``workflow_dispatch`` como trigger en un workflow YAML de Actions.
+
+    Suficiente para un gate de validacion previo al merge: escanea el YAML
+    linea por linea buscando el bloque ``on:`` a nivel superior (columna 0)
+    y confirma que ``workflow_dispatch`` aparece como subclave. No es un
+    parser YAML completo — la forma que el catalogo asume (clave ``on:`` a
+    columna 0 con sub-claves a dos espacios, con o sin ``push`` /
+    ``pull_request`` u otras) es determinista. Si algun workflow del
+    consumer adopta flow style (``on: {workflow_dispatch:}``), se reemplaza
+    por un parser real sin cambiar el contrato.
+    """
+    in_on = False
+    for line in yaml_text.splitlines():
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith((" ", "\t")):
+            if in_on and line.strip().startswith("workflow_dispatch"):
+                return True
+            continue
+        if line.startswith(("on:", "on :")):
+            in_on = True
+            continue
+        in_on = False
+    return False
+
+
+# #933: sangrias de la forma del catalogo: ``on:`` a columna 0, ``workflow_dispatch:`` a
+# dos espacios, ``inputs:`` a cuatro.
+_DISPATCH_INDENT = 2
+_INPUTS_INDENT = 4
+
+
+def dispatch_input_keys(yaml_text: str) -> set[str]:
+    """#933: claves declaradas bajo ``on: workflow_dispatch: inputs:``.
+
+    Mismo escaneo determinista que ``declares_workflow_dispatch``: ``on:`` a columna 0,
+    ``workflow_dispatch:`` a dos espacios, ``inputs:`` a cuatro y las claves a la
+    indentacion de la primera. Sin ``inputs:`` devuelve un conjunto vacio.
+    """
+    keys: set[str] = set()
+    in_on = in_dispatch = in_inputs = False
+    key_indent = None
+    for line in yaml_text.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip())
+        stripped = line.strip()
+        if indent == 0:
+            in_on = line.startswith(("on:", "on :"))
+            in_dispatch = in_inputs = False
+            continue
+        if not in_on:
+            continue
+        if indent == _DISPATCH_INDENT:
+            in_dispatch, in_inputs = stripped.startswith("workflow_dispatch"), False
+            continue
+        if not in_dispatch:
+            continue
+        if indent == _INPUTS_INDENT:
+            in_inputs, key_indent = stripped.startswith("inputs:"), None
+            continue
+        if in_inputs and stripped.endswith(":"):
+            key_indent = indent if key_indent is None else key_indent
+            if indent == key_indent:
+                keys.add(stripped[:-1])
+    return keys
+
+
+def _range_inputs(name: str, yaml_text: str) -> tuple[str | None, bool]:
+    """#933: ``before`` y ``after`` van juntos o no van; uno solo deja el rango a medias."""
+    range_inputs = dispatch_input_keys(yaml_text) & {"before", "after"}
+    if len(range_inputs) == 1:
+        only = next(iter(range_inputs))
+        return (f"workflow '{name}' declares only the input '{only}' under workflow_dispatch: "
+                "the dispatch range needs both 'before' and 'after' (#933)"), False
+    return None, range_inputs == {"before", "after"}
+
+
+def _validate_one_workflow(repo: str, name: str,
+                           by_basename: dict[str, str]) -> tuple[str | None, bool]:
+    """Valida un nombre declarado en ``post_merge_dispatch``.
+
+    Devuelve ``(hallazgo, con_rango)``. El hallazgo es ``None`` cuando el workflow
+    declara ``on: workflow_dispatch:``; en otro caso es el texto que el caller añade
+    a la lista de hallazgos. ``con_rango`` indica que el workflow declara ``before`` y
+    ``after`` como entradas (#933) y recibe el rango en el dispatch. Las verificaciones
+    viven aquí para que el motor de ``validate_post_merge_dispatch`` quede por debajo
+    del umbral de C901/PLR0912 del ratchet shrink-only de ruff extendido (#817).
+    """
+    path = by_basename.get(name)
+    if not isinstance(path, str):
+        return (f"post_merge_dispatch entry '{name}' is not a workflow in this repo "
+                f"(available: {sorted(by_basename)})"), False
+    try:
+        contents = get_json(f"repos/{repo}/contents/{path}")
+    except GitHubApiError as exc:
+        return (f"could not read the workflow '{name}' to validate workflow_dispatch: "
+                f"{exc}"), False
+    if (not isinstance(contents, dict) or contents.get("encoding") != "base64"
+            or not isinstance(contents.get("content"), str)):
+        return (f"workflow '{name}' returned an unexpected contents shape; the file may "
+                "have been removed between the listing and the read"), False
+    try:
+        yaml_text = base64.b64decode(contents["content"]).decode("utf-8")
+    except (ValueError, UnicodeDecodeError) as exc:
+        return f"workflow '{name}' body is not valid base64/utf-8: {exc}", False
+    if not declares_workflow_dispatch(yaml_text):
+        return (f"workflow '{name}' does not declare 'workflow_dispatch': the dispatch "
+                "step would 404; add 'on: workflow_dispatch:' to its YAML before listing "
+                "it in post_merge_dispatch (#817)"), False
+    return _range_inputs(name, yaml_text)
+
+
+def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str, bool], list[str]]:
+    """Each name in ``names`` must exist as a workflow in this repo and declare
+    ``workflow_dispatch``. Returns ``(resolved, findings)``; non-empty
+    ``findings`` blocks the merge (exit 1, no API call is fired).
+
+    ``resolved`` maps each file basename ready for the dispatch endpoint to whether it
+    takes the ``before``/``after`` range inputs (#933). Order matches
+    ``sorted(set(names))`` so the listing is stable across rounds even when the user
+    reorders the contract.
+    """
+    findings: list[str] = []
+    if len(names) != len(set(names)):
+        findings.append(
+            f"post_merge_dispatch has duplicates ({sorted(set(names))}); each entry must "
+            "appear once in the contract")
+    seen = sorted(set(names))
+    try:
+        workflows = get_json(f"repos/{repo}/actions/workflows")
+    except GitHubApiError as exc:
+        return {}, [f"could not list the workflows to validate post_merge_dispatch: {exc}"]
+    if not isinstance(workflows, list):
+        return {}, [f"workflows listing is not the API shape: {type(workflows).__name__}"]
+    by_basename: dict[str, str] = {}
+    for item in workflows:
+        if not isinstance(item, dict):
+            continue
+        path = item.get("path")
+        if isinstance(path, str):
+            by_basename[_workflow_basename(path)] = path
+    resolved: dict[str, bool] = {}
+    for name in seen:
+        finding, with_range = _validate_one_workflow(repo, name, by_basename)
+        if finding is not None:
+            findings.append(finding)
+            continue
+        resolved[name] = with_range
+    return resolved, findings
+
+
+def base_tip(repo: str, branch: str) -> str:
+    """#933: punta de la rama base ANTES del merge; es el ``before`` del rango auditado.
+
+    Se lee antes de fusionar: si no se puede leer o no es un SHA, el merge no sale (HR-34).
+    """
+    try:
+        ref = get_json(f"repos/{repo}/git/ref/heads/{branch}")
+    except GitHubApiError as exc:
+        fail(f"could not read the tip of '{branch}' for the dispatch range (fail closed): {exc}", exc)
+    obj = ref.get("object") if isinstance(ref, dict) else None
+    sha = obj.get("sha") if isinstance(obj, dict) else None
+    if not isinstance(sha, str) or not SHA_RE.match(sha):
+        fail(f"the tip of '{branch}' is not a 40-char commit id: the dispatch range is not computable")
+    return sha
+
+
+def run_post_merge_dispatch(repo: str, items: dict[str, bool], branch: str,
+                            after: str, before: str | None) -> None:
+    """Fire ``gh workflow run`` for each validated workflow on the base branch.
+
+    Cada llamada es ``POST /repos/{repo}/actions/workflows/{name}/dispatches``
+    con cuerpo ``{"ref": branch}``: esa API solo acepta una rama o una etiqueta
+    en ``ref`` y responde 422 a un SHA (#933), asi que el commit fusionado viaja
+    solo en ``inputs.after`` para los workflows que declaran el rango. Un 2xx es
+    exito (la API responde 204 sin
+    cuerpo); los 4xx/5xx se acumulan y se reportan juntos al final para que
+    el usuario vea el veredicto de cada entrada en una sola vuelta, no una
+    a una. El merge NO se deshace en ninguno de esos fallos.
+    """
+    failures: list[str] = []
+    for name, with_range in items.items():
+        body: dict = {"ref": branch}
+        if with_range:
+            # #933: el detective audita `before...after`; el dispatch lo declara en `inputs`.
+            body["inputs"] = {"before": before, "after": after}
+        try:
+            call("POST", f"repos/{repo}/actions/workflows/{name}/dispatches", body)
+        except GitHubApiError as exc:
+            failures.append(f"{name} ({exc})")
+            continue
+        print(f"DISPATCHED: {name} on {branch} (after {after})")
+    if failures:
+        raise PostDispatchFailedError("workflows", "; ".join(failures))
 
 
 def is_pull_shape(pull: object) -> bool:
@@ -271,24 +510,78 @@ def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
     return findings
 
 
-def run(args: argparse.Namespace) -> int:
-    if args.repo.count("/") != 1 or not args.pr.isdigit() or int(args.pr) < 1:
+def _validate_cli_args(args: argparse.Namespace) -> None:
+    """Rechaza argumentos CLI mal formados antes de cualquier llamada a red (fail closed, HR-3).
+
+    Cada guard sale con ``fail`` (exit 2) y nunca vuelve: el caller no
+    distingue entre ramas y el caller no decide si abortar; el caller
+    solo llama a este helper, que aborta por sí mismo. La separación
+    mantiene la API del generador de C901/PLR0912 dentro del umbral del
+    ratchet shrink-only (#817).
+    """
+    if args.repo.count("/") != 1:
         fail("--repo must be OWNER/REPO and --pr a positive number")
-    if args.wait_seconds < 0 or args.poll_seconds <= 0:
+    if not args.pr.isdigit() or int(args.pr) < 1:
+        fail("--repo must be OWNER/REPO and --pr a positive number")
+    if args.wait_seconds < 0:
         fail("--wait-seconds must be zero or more and --poll-seconds positive")
-    contract = load_json(args.contract, "contract")
-    if not isinstance(contract, dict):
-        fail("contract must be a JSON object")
-    required = required_checks(contract)
-    pull = gh_json(f"repos/{args.repo}/pulls/{args.pr}")
-    if not is_pull_shape(pull):
-        fail(f"PR #{args.pr} is not the API pull shape")
+    if args.poll_seconds <= 0:
+        fail("--wait-seconds must be zero or more and --poll-seconds positive")
+
+
+def _resolve_post_merge_dispatch_names(contract: dict) -> list[str]:
+    """Resuelve ``contract["post_merge_dispatch"]`` en una lista de basenames.
+
+    Ausente o lista vacía: warning a stderr y return ``[]``. Lista mal
+    tipada: fail closed. Lista no vacía: valida que cada item sea una
+    cadena no vacía y devuelve los nombres. La lista validada vive en
+    ``.github/host-contract.json::post_merge_dispatch`` del consumer
+    y cada nombre debe existir en el repo y declarar ``on:
+    workflow_dispatch:`` (esa verificación vive en
+    ``validate_post_merge_dispatch``).
+    """
+    raw = contract.get("post_merge_dispatch")
+    if isinstance(raw, list):
+        if not raw:
+            print("WARNING: post_merge_dispatch is an empty list; post-merge dispatch "
+                  "skipped (#817).", file=sys.stderr)
+            return []
+        if not all(isinstance(item, str) and item for item in raw):
+            fail("post_merge_dispatch must be a list of non-empty strings")
+        return [item for item in raw if isinstance(item, str)]
+    if "post_merge_dispatch" in contract:
+        fail("post_merge_dispatch must be a list of non-empty strings when declared")
+    print("WARNING: post_merge_dispatch is not declared; post-merge dispatch "
+          "skipped (#817, "
+          "https://github.com/DysTelefonica/team-skills/issues/817).",
+          file=sys.stderr)
+    return []
+
+
+
+
+
+def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: dict,
+                              required: list[str], dispatch_names: list[str]) -> int:
+    """Gate -> merge -> close linked issues -> post-merge dispatch (#817).
+
+    Devuelve el código de salida: 1 (gate bloquea), 2 (fail closed), 3
+    (close failed), 4 (dispatch failed) o 0 (success). El merge ya
+    hecho no se deshace en ninguno de los caminos 3 y 4 (idempotencia
+    hacia atrás, HR-34).
+    """
     findings = gate_findings(args, pull, contract, required)
+    resolved: dict[str, bool] = {}
+    if dispatch_names:
+        resolved, dispatch_findings = validate_post_merge_dispatch(args.repo, dispatch_names)
+        findings.extend(dispatch_findings)
     if findings:
         for finding in findings:
             print(f"  BLOCKED  {finding}")
         print(f"VERDICT: PR #{args.pr} not merged: contract not satisfied")
         return 1
+    # #933: el `before` del rango es la punta de la base antes del merge.
+    before = base_tip(args.repo, pull["base"]["ref"]) if any(resolved.values()) else None
     sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
     print(f"MERGED: PR #{args.pr} merged by the governed path as {sha}")
     try:
@@ -296,7 +589,35 @@ def run(args: argparse.Namespace) -> int:
     except (MergedNotClosedError, FailClosedError) as exc:
         print(f"MERGED but not closed: {exc}", file=sys.stderr)
         return 3
+    # #817: post-merge dispatch via workflow_dispatch (que ``GITHUB_TOKEN``
+    # sí dispara). Cada workflow validado se lanza sobre la rama base; el SHA
+    # fusionado viaja en ``inputs.after`` para los que declaran el rango (#933).
+    if resolved:
+        try:
+            run_post_merge_dispatch(args.repo, resolved, pull["base"]["ref"], sha, before)
+        except PostDispatchFailedError as exc:
+            print(f"MERGED but not dispatched: {exc}", file=sys.stderr)
+            return POST_DISPATCH_FAILED
     return 0
+
+
+def run(args: argparse.Namespace) -> int:
+    """Punta de la cadena (#817): orquesta validación + merge + close + dispatch.
+
+    La orquestación se delega a ``_merge_close_and_dispatch``; ``run()`` se
+    queda en 2 ramas (load contract + is_pull_shape) para mantenerse por
+    debajo del umbral del ratchet shrink-only de ruff extendido (C901/PLR0912).
+    """
+    _validate_cli_args(args)
+    contract = load_json(args.contract, "contract")
+    if not isinstance(contract, dict):
+        fail("contract must be a JSON object")
+    required = required_checks(contract)
+    dispatch_names = _resolve_post_merge_dispatch_names(contract)
+    pull = gh_json(f"repos/{args.repo}/pulls/{args.pr}")
+    if not is_pull_shape(pull):
+        fail(f"PR #{args.pr} is not the API pull shape")
+    return _merge_close_and_dispatch(args, pull, contract, required, dispatch_names)
 
 
 def _pin_output_encoding() -> None:

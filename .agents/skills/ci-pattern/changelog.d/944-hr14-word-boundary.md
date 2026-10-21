@@ -1,0 +1,7 @@
+type: patch
+
+HR-14 ya no marca atribución de IA cuando una palabra **contiene** uno de los tres marcadores. `check_commits` aplicaba cada patrón con `re.search(pat, msg, re.IGNORECASE)`, sin límite de palabra ni ancla, así que el patrón de «generado con» casa dentro de `regenerated with` —la redacción natural de un commit que describe una regeneración—, y el guion hace lo mismo con el marcador de co-autoría tras un `No-` o un `hand-`. El coste ya se midió: un PR entero supersedido, porque corregir el mensaje de un commit exige force-push, que este repo prohíbe.
+
+Cada patrón se compila ahora con un límite izquierdo `(?<![\w-])`: la marca no puede ir pegada ni a un carácter de palabra ni a un guion. El resto —inicio de línea, espacio, puntuación, emoji previo— sigue dando hallazgo, que es lo que cazan los trailers reales. Solo límite izquierdo, porque los tres patrones por defecto acaban en `:` o en letra y un `\b` final dejaría de casarlos.
+
+El límite va en el **patrón**, compilado una vez, y no en cada cadena: la lista `ai_attribution_patterns` que declara cada consumer queda cubierta sin editar su política, así que en la propagación siguiente no hay nada que cambiar en `.github/pr-contract.policy.json`. La detección real no se relaja —los tres marcadores se conservan, la comparación sigue siendo insensible a mayúsculas y el trailer real, solo o tras un emoji, sigue dando hallazgo (#944).

@@ -43,18 +43,24 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+# Fuente única del presupuesto (#931): la regla la comparte con pr-contract.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
+from vendored_budget import (  # noqa: E402
+    VENDORED_ROOTS as VENDORED_ROOTS,  # reexport: sigue siendo nombre público del gate
+)
+from vendored_budget import (  # noqa: E402
+    _strip_diff_prefix,
+    counts_to_budget,
+    is_under_vendored,
+    original_path,
+    parse_numstat,
+)
+
 # --------------------------------------------------------------------------------------------
 # CONFIGURATION
 # --------------------------------------------------------------------------------------------
 
 MAX_CHANGED_LINES = 400
-
-#: Vendored roots are excluded from the review budget. They hold propagated
-#: skill content (``.agents/skills/`` for the consumer-side install of the
-#: catalog, ``skills/`` for legacy mirrors); a reviewer does not read them
-#: line by line. A rename from an authored path into a vendored root still
-#: counts (see :func:`counts_to_budget`).
-VENDORED_ROOTS = (".agents/skills/", "skills/")
 
 #: The only override: applied by the maintainer, never read from the PR body.
 OVERRIDE_LABEL = "size:exception"
@@ -63,76 +69,6 @@ FILES_PER_PAGE = 100
 #: GitHub lists at most 3000 files of a PR.
 MAX_FILE_PAGES = 30
 DEFAULT_API_URL = "https://api.github.com"
-
-#: Git numstat rename format: ``{old => new}/rest`` or ``{old => new}``.
-#: Captures the unchanged prefix (``a/`` / ``b/``) when present, the
-#: arrow, the unchanged suffix, and the new path.
-_RENAME_RE = re.compile(
-    r"^(?:\{(?P<a>[^}]*?) => (?P<b>[^}]*?)\}(?P<rest>.*))|(?P<plain>.+)$"
-)
-
-# --------------------------------------------------------------------------------------------
-# PURE HELPERS (no subprocess, easy to unit-test)
-# --------------------------------------------------------------------------------------------
-
-
-def is_under_vendored(path: str) -> bool:
-    """Return True when ``path`` is fully under one of :data:`VENDORED_ROOTS`."""
-    return any(path.startswith(root) for root in VENDORED_ROOTS)
-
-
-def counts_to_budget(old_path: str, new_path: str) -> bool:
-    """Decide whether a file's changes count toward the review budget.
-
-    Rules (issue #623, regla de BP portada a ci-pattern):
-
-    1. A path whose new location is NOT under a vendored root → counts.
-    2. A path whose new location IS under a vendored root AND that was
-       not authored outside vendored (i.e. it is new, or was renamed
-       from inside the vendored subtree) → does NOT count.
-    3. A rename FROM an authored path INTO a vendored root → counts,
-       because the work was authored outside the vendored subtree.
-    """
-    if not is_under_vendored(new_path):
-        return True
-    if old_path != new_path and not is_under_vendored(old_path):
-        return True
-    return False
-
-
-def parse_numstat(path_field: str) -> tuple[str, str] | None:
-    """Parse a numstat path field into ``(old_path, new_path)``.
-
-    Plain paths collapse to ``(path, path)``. Git emits a rename in one
-    of two forms:
-
-    * ``{old => new}`` — pure rename with no shared suffix.
-    * ``{old => new}/rest`` — rename with a shared suffix that is
-      identical on both sides (e.g. ``{app => .agents/skills/foo}/auth.py``
-      means ``app/auth.py`` → ``.agents/skills/foo/auth.py``).
-
-    Both forms resolve to ``(old_path, new_path)``. Returns ``None`` for
-    inputs the parser cannot classify.
-    """
-    if not path_field or path_field == "-":
-        return None
-    if path_field.startswith("{") and " => " in path_field and path_field.endswith("}"):
-        arrow = path_field.index(" => ")
-        old_path = path_field[1:arrow]
-        new_path = path_field[arrow + len(" => "):-1]
-        return old_path, new_path
-    if path_field.startswith("{") and " => " in path_field and "}" in path_field:
-        # Rename with a shared suffix: ``{old => new}/rest``. The ``}``
-        # marks where the rename notation ends; everything after it is
-        # a common suffix that belongs to BOTH old and new paths.
-        close_brace = path_field.index("}")
-        arrow = path_field.index(" => ")
-        common_suffix = path_field[close_brace + 1:]
-        old_path = path_field[1:arrow] + common_suffix
-        new_path = path_field[arrow + len(" => "):close_brace] + common_suffix
-        return old_path, new_path
-    return path_field, path_field
-
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
@@ -146,50 +82,6 @@ def _git(*args: str) -> str:
     if result.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
     return result.stdout
-
-
-def _strip_diff_prefix(path: str) -> str:
-    """Strip the ``a/`` / ``b/`` prefix git uses in diff output."""
-    if path.startswith("a/") or path.startswith("b/"):
-        return path[2:]
-    return path
-
-
-def original_path(new_path: str, base_ref: str) -> str | None:
-    """Return the path where the file at HEAD's ``new_path`` was first
-    added in the range, or ``None`` if the history is unknown.
-
-    Cumulative ``git diff main...HEAD`` collapses cross-commit renames
-    into a single addition at the final path, so it cannot tell that an
-    authored file became vendored. ``git log --follow`` follows the
-    rename chain back to the original commit; we read that output in
-    reverse and keep the first A or the first pre-rename path we see.
-
-    A vendored file that has no pre-rename path in the range was added
-    inside the vendored subtree and is not authored work.
-    """
-    try:
-        raw = _git("log", "--follow", "--name-status", "--pretty=format:",
-                   f"{base_ref}..HEAD", "--", new_path)
-    except RuntimeError:
-        return None
-    entries = [line for line in raw.splitlines() if line.strip()]
-    if not entries:
-        return None
-    # Output is newest-first. The earliest entry is the file's origin.
-    for entry in reversed(entries):
-        parts = entry.split("\t")
-        if not parts:
-            continue
-        status = parts[0]
-        if status == "A" and len(parts) == 2:
-            return _strip_diff_prefix(parts[1])
-        if status.startswith("R") and len(parts) == 3:
-            return _strip_diff_prefix(parts[1])
-        if status.startswith("C") and len(parts) == 3:
-            return _strip_diff_prefix(parts[1])
-        # M (modify) and D (delete) do not move the origin.
-    return None
 
 
 def changed_lines(base_ref: str) -> tuple[int, int, list[tuple[str, int]]]:
@@ -224,7 +116,7 @@ def changed_lines(base_ref: str) -> tuple[int, int, list[tuple[str, int]]]:
         # git's rename history directly: if the file was first added
         # at a non-vendored path, the work is authored and counts.
         if is_under_vendored(new_path):
-            origin = original_path(new_path, base_ref)
+            origin = original_path(new_path, base_ref, _git)
             if origin is not None and not is_under_vendored(origin):
                 # Use the cumulative numstat lines (additions + deletions)
                 # as the figure that counts: the file was carried over a
