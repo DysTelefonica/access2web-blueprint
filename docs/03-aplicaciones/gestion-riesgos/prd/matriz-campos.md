@@ -41,7 +41,7 @@ Antes de usar el recuento por evidencia, tres cosas:
 
 ## Tablas de otros backends
 
-Quince tablas están **vinculadas**: no las aporta esta aplicación. El detalle por tabla está en [vinculadas-a-otros-backends](matriz-campos/vinculadas-a-otros-backends.md); el análisis, en `coexistencia.md` (tanda posterior de esta cadena).
+Quince tablas están **vinculadas**: no las aporta esta aplicación. El detalle por tabla está en [vinculadas-a-otros-backends](matriz-campos/vinculadas-a-otros-backends.md); el análisis, en [coexistencia](coexistencia.md).
 
 Por origen: `Lanzadera_Datos.accdb` (3 — identidad y permisos, también usadas por otras aplicaciones), `Expedientes_datos.accdb` (4), `AGEDYS_DATOS.accdb` (4), `AGEDO20_Datos.accdb` (2), `NoConformidades_Datos.accdb` (1) y `Gestion_Riesgos_Datos.accdb` (1, `TbProyectos1`, que es D-GR-5: un vínculo a sí mismo no puede ser).
 
