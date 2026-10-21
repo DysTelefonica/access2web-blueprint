@@ -1144,7 +1144,8 @@ def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None
         if "check_docs_codeguide.py" in step.get("run", "")
     )
     pairs = re.findall(r'--code-root (\S+)[\s\\]+--code-glob "([^"]+)"', run)
-    contract = json.loads((root / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+    contract = json.loads(
+        (root / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8")
+    )
     declared = [(e["root"], e["glob"]) for e in contract["docs_map"]["code_roots"]]
     assert pairs == declared
-
