@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 18 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 20 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -33,7 +33,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Objeto | Tipo | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|---|
 | Form_Form0BDGestorEntidades | formulario | src/forms/Form_Form0BDGestorEntidades.cls | 187 | 14 | 7 | distinto | pendiente | sin ficha todavía |
-| Form_Form0BDOpciones | formulario | src/forms/Form_Form0BDOpciones.cls | 356 | 26 | 14 | distinto | pendiente | sin ficha todavía |
+| Form_Form0BDOpciones | formulario | src/forms/Form_Form0BDOpciones.cls | 356 | 26 | 14 | distinto | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
 | Form_Form0BDOpcionesTecnicos | formulario | src/forms/Form_Form0BDOpcionesTecnicos.cls | 166 | 20 | 7 | distinto | pendiente | sin ficha todavía |
 | Form_FormCPV | formulario | src/forms/Form_FormCPV.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormCPVsGestion | formulario | src/forms/Form_FormCPVsGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
@@ -74,11 +74,11 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormRACSGestion | formulario | src/forms/Form_FormRACSGestion.cls | 414 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormSuministrador | formulario | src/forms/Form_FormSuministrador.cls | 236 | 33 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormSuministradoresGestion | formulario | src/forms/Form_FormSuministradoresGestion.cls | 458 | 24 | 15 | distinto | pendiente | sin ficha todavía |
-| Form_FormTareas | formulario | src/forms/Form_FormTareas.cls | 470 | 24 | 10 | distinto | pendiente | sin ficha todavía |
+| Form_FormTareas | formulario | src/forms/Form_FormTareas.cls | 470 | 24 | 10 | distinto | analizado | [formularios/Form_FormTareas.md](formularios/Form_FormTareas.md) |
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 18 analizados · 0 no aplicables · 27 pendientes.
+Totales (formularios): 20 analizados · 0 no aplicables · 25 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -169,6 +169,10 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-47 | `ComandoExportarTodosPendientes` está deshabilitado en el diseño y ningún código lo habilita; el código embebido del `.form.txt` no contiene su handler. La columna «Motivo» sale siempre vacía: `BuildValueListRow` compone 6 columnas para un listbox de 7. | `Form_FormE2EGestionEnlaces.form.txt:933, 1076-1300`; `Form_FormE2EGestionEnlaces.cls:146-184`; `FormE2EGestionEnlacesLogic.bas:13, 333-338` | [Form_FormE2EGestionEnlaces](formularios/Form_FormE2EGestionEnlaces.md) | a verificar |
 | H-EXP-48 | Un `;` en `Titulo` o `Nemotecnico` desplaza las columnas del `Value List`; los errores de `getdb` o del SQL en la búsqueda se tragan; «Familia: N hijos» cuenta solo hijos directos pero desvincular recorre toda la familia. | `FormE2EGestionEnlacesLogic.bas:35-36, 66-69, 333-338, 657-659` | [Form_FormE2EGestionEnlaces](formularios/Form_FormE2EGestionEnlaces.md) | a verificar |
 | H-EXP-49 | «Exportar todos» lista también descendientes y cada uno encola su raíz (una familia podría encolarse varias veces); el aviso de acceso nombra a «Gestores» pero solo se comprueba `EsAdministrador`. | `ManualE2EExport.bas:113-117, 238-246`; `Form_FormE2EGestionEnlaces.cls:243` | [Form_FormE2EGestionEnlaces](formularios/Form_FormE2EGestionEnlaces.md) | a verificar |
+| H-EXP-50 | Un usuario de calidad podría abrir el gestor de entidades: `ComandoGestorEntidades` solo se habilita para administradores y nunca se deshabilita para el resto, y `Form0BDGestorEntidades` no comprueba el rol al abrirse; `ComandoGestionE2EEnlaces` no existe en el `.form.txt`, de modo que su handler y su control de rol quedan muertos. | `Form_Form0BDOpciones.cls:151-176, 256, 262`; `Form_Form0BDOpciones.form.txt:2711-2726`; `Form_Form0BDGestorEntidades.cls:115-133` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) | a verificar |
+| H-EXP-51 | Un error en `Form_Open` o en `CmdSalir_Click` cierra Access entero fuera de desarrollo; tras un fallo de `EVE` el menú se abre igualmente y, si `m_ObjEntorno` ya existía, no se reintenta `EVE` (el rol podría quedar sin asignar). | `Form_Form0BDOpciones.cls:35, 232, 280-282`; `Form_frmSplash.cls:61` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) | a verificar |
+| H-EXP-52 | `AbrirAyuda` calcula el PDF de cada formulario y la línea siguiente lo sobrescribe con el PDF general: la ayuda no depende del formulario; cada apertura del menú recalcula las seis colecciones de tareas. | `FUNCIONES UTILES.bas:3094-3095, 4000-4006`; `Form_Form0BDOpciones.cls:238` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) | a verificar |
+| H-EXP-53 | Tareas: la apertura preselecciona la fila 3 sin considerar nunca los tipos 4 y 6; `ListaTipoTareas_Click` usa `On Error Resume Next` (errores de `Filtrar` silenciados) y la bandeja solo se refresca si `Registrar` detecta un cambio de estado o de `NecesitaCodS4H`. | `Form_FormTareas.cls:280, 314, 371-372`; `ExpedienteOperaciones.cls:542-551` | [Form_FormTareas](formularios/Form_FormTareas.md) | a verificar |
 
 ## Método del recuento
 
