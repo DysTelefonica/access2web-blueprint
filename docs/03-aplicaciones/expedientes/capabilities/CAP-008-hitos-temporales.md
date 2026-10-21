@@ -44,4 +44,4 @@ Esta capacidad vive en `app/src/modules/expedientes/` siguiendo la forma hexagon
 
 ## Navigation
 
-Previous: [CAP-007-ordinal-funcional](CAP-007-ordinal-funcional.md) | Next: [CAP-009-modificados-historial](CAP-009-modificados-historial.md)
+Previous: [capabilities-index](index.md) | Next: [CAP-009-modificados-historial](CAP-009-modificados-historial.md)
