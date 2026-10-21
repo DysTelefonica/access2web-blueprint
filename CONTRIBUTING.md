@@ -29,7 +29,7 @@ Antes de empujar:
 
 1. Sincronice la rama con la base: `git fetch origin && git merge origin/main`. Se integra con merge, nunca con rebase ni force-push sobre una rama publicada.
 2. Ejecute `make verify` sobre el resultado integrado (format, lint, typecheck, tests, quality report y check-workflows, en el orden del CI). Es la única forma de declarar verde una PR sin haber pasado por el runner.
-3. Compruebe el cuerpo de la PR en local con `python scripts/check_issue_spec.py local --body-file <body>`.
+3. Compruebe el cuerpo de la PR en local con `python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file <body>`.
 
 ### Comprobaciones automáticas
 
@@ -38,7 +38,7 @@ La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué veri
 | Check | Qué comprueba | Cómo pasarlo | Comando local |
 |---|---|---|---|
 | Nombre de rama (pr-gate) | La rama sigue el patrón gentle-ai `^(feat\|fix\|chore\|docs\|style\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` (sin número de issue); lo enforza el ruleset del host | Nombrarla `<tipo>/<slug>` con kebab-case; las cadenas encadenadas añaden sufijo | — (lo enforza el ruleset, no un script local) |
-| Issue-spec (pr-gate) | El cuerpo lleva `Closes`/`Fixes`/`Resolves`/`Refs #N` apuntando a una issue con `status:approved` y un `type:*` (Refs #855) | Poner `Closes #N` en la primera línea del cuerpo con la issue aprobada | `python scripts/check_issue_spec.py local --body-file <body>` |
+| Issue-spec (pr-gate) | El cuerpo lleva `Closes`/`Fixes`/`Resolves`/`Refs #N` apuntando a una issue con `status:approved` y un `type:*` (Refs #855) | Poner `Closes #N` en la primera línea del cuerpo con la issue aprobada | `python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file <body>` |
 | Tamaño de la PR (pr-gate) | `additions + deletions` de la API de la PR ≤ 400; la etiqueta `size:exception` la pone el mantenedor como override solo cuando partir la PR dejaría `main` roto y tras responder las 4 preguntas de `AGENTS.md` §F.7 (Refs #854) | Partir por unidad de trabajo o encadenar PRs (orden de escape); `size:exception` es la última opción | `python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --base-ref origin/main` |
 | Esquema de walkthroughs (pr-gate) | Los JSON `docs/03-aplicaciones/*/walkthrough-*.json` cumplen el contrato v2.1 (`check_walkthrough_schema.py --strict`) | Regenerar con dysflow + codegraph-vba; nunca editar a mano | `python scripts/check_walkthrough_schema.py --strict` |
 | Lint (pr-gate) | `ruff check` sin findings | `ruff check .` antes de commit | `ruff check --config app/pyproject.toml .` |
