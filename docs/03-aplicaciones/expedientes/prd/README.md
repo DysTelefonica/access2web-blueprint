@@ -104,12 +104,15 @@ Fichas de clase (`clases/`), una por objeto, con el mismo rigor que las de formu
 - [ExpedienteDatosAGEDY](clases/ExpedienteDatosAGEDY.md): sin uso en RC1.
 - [ExpedienteAntiguo](clases/ExpedienteAntiguo.md).
 
+- [ExpedienteCPV](clases/ExpedienteCPV.md), [ExpedienteConsulta](clases/ExpedienteConsulta.md) (sin uso en `src`) y [UltimoCambio](clases/UltimoCambio.md) (auditoría de creación y última modificación).
 - [ExpedientePECAL](clases/ExpedientePECAL.md), [ExpedienteRAC](clases/ExpedienteRAC.md), [ExpedienteCodigoCompra](clases/ExpedienteCodigoCompra.md), [ExpedienteBusquedaTecnica](clases/ExpedienteBusquedaTecnica.md) y [WebSocket](clases/WebSocket.md) (sin uso en RC1).
 
 Fichas de módulo (`modulos/`):
 
 - [Copiar y extender entidades](modulos/funciones-utiles-copiar-entidades.md) (`FUNCIONES UTILES.bas`): no estaba en el PRD; incluye un posible defecto grave en `CopiarSuministradores`.
 - [E2EFamilyExportHelper](modulos/E2EFamilyExportHelper.md), [modRealineacionCache](modulos/modRealineacionCache.md) y [modResponsableFiltroHelper](modulos/modResponsableFiltroHelper.md).
+
+**Fuera de alcance explícito:** los 53 módulos `Test_*` y `TEST` del snapshot son pruebas del legacy, no comportamiento a migrar; se usan como evidencia cuando una ficha los cita.
 
 ### Cobertura de procedimientos de formulario
 
