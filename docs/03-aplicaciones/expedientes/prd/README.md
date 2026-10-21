@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 25 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 29 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -35,10 +35,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Form0BDGestorEntidades | formulario | src/forms/Form_Form0BDGestorEntidades.cls | 187 | 14 | 7 | distinto | analizado | [formularios/Form_Form0BDGestorEntidades.md](formularios/Form_Form0BDGestorEntidades.md) |
 | Form_Form0BDOpciones | formulario | src/forms/Form_Form0BDOpciones.cls | 356 | 26 | 14 | distinto | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
 | Form_Form0BDOpcionesTecnicos | formulario | src/forms/Form_Form0BDOpcionesTecnicos.cls | 166 | 20 | 7 | distinto | analizado | [formularios/Form_Form0BDOpcionesTecnicos.md](formularios/Form_Form0BDOpcionesTecnicos.md) |
-| Form_FormCPV | formulario | src/forms/Form_FormCPV.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormCPVsGestion | formulario | src/forms/Form_FormCPVsGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormComercial | formulario | src/forms/Form_FormComercial.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormComercialesGestion | formulario | src/forms/Form_FormComercialesGestion.cls | 415 | 23 | 14 | distinto | pendiente | sin ficha todavía |
+| Form_FormCPV | formulario | src/forms/Form_FormCPV.cls | 199 | 23 | 6 | distinto | analizado | [formularios/Form_FormCPV.md](formularios/Form_FormCPV.md) |
+| Form_FormCPVsGestion | formulario | src/forms/Form_FormCPVsGestion.cls | 416 | 23 | 14 | distinto | analizado | [formularios/Form_FormCPVsGestion.md](formularios/Form_FormCPVsGestion.md) |
+| Form_FormComercial | formulario | src/forms/Form_FormComercial.cls | 199 | 23 | 6 | distinto | analizado | [formularios/Form_FormComercial.md](formularios/Form_FormComercial.md) |
+| Form_FormComercialesGestion | formulario | src/forms/Form_FormComercialesGestion.cls | 415 | 23 | 14 | distinto | analizado | [formularios/Form_FormComercialesGestion.md](formularios/Form_FormComercialesGestion.md) |
 | Form_FormE2ECola | formulario | src/forms/Form_FormE2ECola.cls | 336 | 45 | 13 | **añadido** | analizado | [formularios/Form_FormE2ECola.md](formularios/Form_FormE2ECola.md) |
 | Form_FormE2EGestionEnlaces | formulario | src/forms/Form_FormE2EGestionEnlaces.cls | 261 | 26 | 11 | **añadido** | analizado | [formularios/Form_FormE2EGestionEnlaces.md](formularios/Form_FormE2EGestionEnlaces.md) |
 | Form_FormEjercito | formulario | src/forms/Form_FormEjercito.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
-Totales (formularios): 25 analizados · 0 no aplicables · 20 pendientes.
+Totales (formularios): 29 analizados · 0 no aplicables · 16 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -178,6 +178,10 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-56 | `Form_Formulario1` contiene credenciales y configuración de un proyecto Firebase en claro (tratar como expuestas), inyección de JavaScript por texto sin escapar, y está huérfano: nada en `src` lo abre. | `Form_Formulario1.cls:23-33, 30, 46-52, 85` | [Form_Formulario1](formularios/Form_Formulario1.md) | a verificar |
 | H-EXP-57 | `Form_FormModificado` solo edita modificados existentes (el alta está en la pestaña): la comprobación de fecha de firma repetida no cubre informar la firma por primera vez, no hay transacción (si falla `RegistrarUltimoCambio` el modificado ya quedó guardado) y `Registrar` no comprueba `EOF` antes de `Edit`. | `ExpedienteModificadoOperaciones.cls:48-49, 64-66, 83-87`; `Form_FormExpedienteModificados.cls:61-110` | [Form_FormModificado](formularios/Form_FormModificado.md) | a verificar |
 | H-EXP-58 | `frmSplash` abre `Form0BDOpciones` aunque `EVE` falle; el argumento `/dev` se usa también como identificador de usuario en `EVE`, por lo que arrancar con `/dev` podría fallar; nada en `src` abre `frmSplash` (probable formulario de inicio o macro). | `Form_frmSplash.cls:13, 44-50, 61`; `Variables Globales.bas:348-358, 372-375` | [Form_frmSplash](formularios/Form_frmSplash.md) | a verificar |
+| H-EXP-59 | Catálogos (CPV, y el mismo patrón en los demás): el identificador nuevo se calcula como máximo más uno sin transacción; la comprobación de código duplicado concatena el texto en el SQL (un apóstrofo lo rompe); se comprueba «en uso» y después se borra sin transacción entre ambos pasos. | `CPVOperaciones.cls:49-64, 102-123`; `FUNCIONES UTILES.bas:2851-2864`; `constructor.bas:398` | [Form_FormCPV](formularios/Form_FormCPV.md) | a verificar |
+| H-EXP-60 | En los diez formularios `*Gestion` de catálogo, cuando el filtro no encuentra nada, `lst.Selected(1) = True` actúa sobre una lista vacía (a verificar); si falla la carga de la caché el listado sale vacío sin avisar; el evento `Eliminar` se lanza sin oyentes y la caché se invalida dos veces. | `Form_FormCPVsGestion.cls:8, 35-38, 54, 182, 380, 403`; `Form_FormEjercitosGestion.cls:35, 54`; `Entorno.cls:883-886` | [Form_FormCPVsGestion](formularios/Form_FormCPVsGestion.md) | a verificar |
+| H-EXP-61 | Comercial: la protección del registro «N/A» depende solo del nombre literal; el aviso de «en uso» solo consulta `TbExpedientesComerciales`; si `ResyncCatalogo` falla el nombre nuevo ya está guardado pero se muestra error y la lista no se refresca. | `ComercialOperaciones.cls:77, 88-92, 115`; `constructor.bas:2477` | [Form_FormComercial](formularios/Form_FormComercial.md) | a verificar |
+| H-EXP-62 | Comercial: `AddItem` sustituye `;` pero no `,` (un nombre con coma podría partirse en columnas); los errores de Alta se etiquetan como «ComandoEditar_Click»; el evento `Eliminar` se lanza sin oyentes. | `Form_FormComercialesGestion.cls:8, 49, 87, 181` | [Form_FormComercialesGestion](formularios/Form_FormComercialesGestion.md) | a verificar |
 
 ## Método del recuento
 
