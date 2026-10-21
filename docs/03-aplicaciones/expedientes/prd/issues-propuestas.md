@@ -24,6 +24,7 @@ El [backlog de migración](../issue-backlog.md) ya cubre la implementación web 
 | P-EXP-10 | Plan y pruebas de aceptación bidireccionales Access–web | pruebas | no | P-EXP-3 | #282, #283 |
 | P-EXP-11 | Incorporar al ledger las candidatas sin entrada propia | documentación | no | — | #807, #814 |
 | P-EXP-12 | Decidir la disposición de las tablas históricas y de las E2E del snapshot | decisión de negocio | no | P-EXP-1 | — |
+| P-EXP-13 | Decidir si «extender entidades a la descendencia» sigue vigente y corregir su defecto | decisión de negocio | no | — | — |
 
 ## Detalle
 
@@ -74,6 +75,12 @@ El [backlog de migración](../issue-backlog.md) ya cubre la implementación web 
 
 - **Evidencia:** seis tablas copia, auxiliares o históricas sin cita en `src` y cuatro tablas E2E del snapshot sin uso en RC1 ([resumen de la matriz](matriz-campos.md#resumen-por-tabla)).
 - **Criterios de aceptación:** disposición aprobada por negocio para cada una (archivar, migrar o descartar), sin borrar datos.
+
+### P-EXP-13 · Extender entidades a la descendencia
+
+- **Evidencia:** [`ExtenderEntidades`](modulos/funciones-utiles-copiar-entidades.md) copia siete tipos de entidad de un expediente a sus hijos y nietos y no tiene llamadores en `src`; `CopiarSuministradores` abre como recordset un `DELETE` (`FUNCIONES UTILES.bas:3386-3389`).
+- **Criterios de aceptación:** negocio confirma si la función está vigente y desde qué opción; si lo está, se especifica como operación única y transaccional con la semántica de sustituir y se decide el destino de anualidades y códigos de compra; si no, se descarta.
+- **Riesgo:** el defecto no se ha ejecutado contra el binario; no se debe portar sin confirmarlo.
 
 ## Escalación fuera del backlog
 
