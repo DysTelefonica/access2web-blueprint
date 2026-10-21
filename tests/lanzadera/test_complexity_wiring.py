@@ -19,6 +19,9 @@ from pathlib import Path
 
 import pytest
 
+#: DQH 2.2: the gate evaluates its BASELINE at an explicit date, never the wall clock.
+POLICY_DATE = "2026-10-21"
+
 
 def _find_script() -> Path:
     here = Path(__file__).resolve()
@@ -54,18 +57,17 @@ def test_max_complexity_ceiling_is_absolute(script: Path) -> None:
     DG-11 (issue #266) lowers the ceiling from 15 to 10 with a review date of
     2027-02-13. The module source MUST declare both the ceiling and the date.
     """
+    # The 2.2 gate imports its sibling helpers (policy_time, quality_policy).
+    if str(script.parent) not in sys.path:
+        sys.path.insert(0, str(script.parent))
     spec = importlib.util.spec_from_file_location("check_complexity", script)
     module = importlib.util.module_from_spec(spec)
     sys.modules["check_complexity"] = module
     spec.loader.exec_module(module)
     assert module.MAX_COMPLEXITY == 10
-    # W60 (#522): LanzaderaContainer.__init__ is above the complexity ceiling
-    # (CC=11 vs ceiling=10) because the W-TEST constructor added 7 optional
-    # port kwargs and W60 added presence_repo. Each kwarg adds two branches
-    # (default + None check) inside __init__, pushing it to CC=11.
-    # The container.py split plan (mutation_sites BASELINE, horizon 2027-02-13)
-    # also resolves this complexity overage; no separate W is needed.
-    assert len(module.BASELINE) == 1, f"Expected 1 BASELINE entry, got {len(module.BASELINE)}"
+    # W62 (#539) pulled LanzaderaContainer.__init__ under the ceiling, so its
+    # W60 entry was stale; #1126 removed it and the BASELINE is empty again.
+    assert module.BASELINE == {}
 
 
 def test_max_complexity_source_declares_review_date(script: Path) -> None:
@@ -108,7 +110,7 @@ def test_max_complexity_source_declares_review_date(script: Path) -> None:
 def test_complexity_gate_runs_clean_on_empty_package(root: Path, script: Path) -> None:
     """Phase 0 wiring: no source files yet means no offenders and no functions measured."""
     result = subprocess.run(
-        [sys.executable, str(script), "--root", str(root)],
+        [sys.executable, str(script), "--root", str(root), "--policy-date", POLICY_DATE],
         capture_output=True,
         text=True,
         check=False,
@@ -123,7 +125,7 @@ def test_complexity_gate_runs_clean_on_empty_package(root: Path, script: Path) -
 
 def test_complexity_gate_emits_valid_envelope(root: Path, script: Path) -> None:
     result = subprocess.run(
-        [sys.executable, str(script), "--root", str(root), "--json"],
+        [sys.executable, str(script), "--root", str(root), "--json", "--policy-date", POLICY_DATE],
         capture_output=True,
         text=True,
         check=False,
