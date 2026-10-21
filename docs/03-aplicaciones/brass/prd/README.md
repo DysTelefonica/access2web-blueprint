@@ -1,0 +1,194 @@
+# PRD — Brass
+
+> **Estado:** fase 1 (fijación e inventario). Los formularios, módulos y clases quedan **pendientes**; las fichas, la matriz, la coexistencia, las capacidades y las issues propuestas llegan en las PR siguientes de la cadena.
+
+| Campo | Valor |
+|---|---|
+| Repositorio | DysTelefonica/BRASS |
+| Commit fijado | `3f77d586814096c04f24bd2b6c229831cfbfcd34` (`main`, 2026-10-14, «sync: BRASS main src and binary from production baseline (#4)») |
+| Índice CodeGraph-VBA | 218 ficheros indexados, 12 626 nodos, versión 2.1.1, sobre clon de solo lectura de ese commit |
+| Estudio previo | [epic.md](../epic.md), [forms.md](../forms.md), [capabilities.md](../capabilities.md), [data-model.md](../data-model.md), [security-rules.md](../security-rules.md), [integrations-automation.md](../integrations-automation.md), [migration-matrix.md](../migration-matrix.md) (DRAFT), walkthroughs `walkthrough-*.json`, [ERD/schema.sql](../ERD/schema.sql) |
+| Snapshot comparado | `data/staging/brass/src` (2026-08-06) |
+| Issue | #1078 (método y plantilla de #1069) |
+
+## Alcance actual
+
+Fija el commit y concilia el inventario. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)) y no sustituyen al análisis.
+
+## Inventario reconciliado
+
+### Recuentos por tipo
+
+| Tipo | `3f77d58` | Snapshot | Diferencia |
+|---|---|---|---|
+| Formularios (`src/forms/Form_*.cls`, con su `.form.txt`) | 87 | 87 | +0 |
+| Módulos estándar (`src/modules/*.bas`) | 16 | 16 | +0 |
+| Clases (`src/classes/*.cls`) | 28 | 28 | +0 |
+
+La comparación normaliza las líneas `Attribute VB_`, los comentarios, las líneas en blanco y las diferencias de espacios y mayúsculas. Diferencia textual cero no demuestra que el estudio previo sea correcto: solo que el código no ha cambiado desde el snapshot.
+
+### Delta de código frente al snapshot
+
+- **Distintos del snapshot:** 1 módulo (`Variables Globales`), sin cambios en formularios ni clases.
+- **Nuevos en el commit (sin equivalente en el snapshot):** 0 formularios, 0 módulos y 0 clases.
+- **Del snapshot ausentes en el commit:** 0 formularios, 0 módulos y 0 clases.
+
+### Formularios
+
+Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Procedimientos: `Sub`, `Function` y `Property` del `.cls`. «Frente al snapshot»: **igual** si el `.cls` coincide tras la normalización.
+
+| Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
+|---|---|---|---|---|---|---|---|
+| Form_Form0BDInformes | src/forms/Form_Form0BDInformes.cls | 107 | 21 | 16 | igual | pendiente | — |
+| Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 175 | 38 | 25 | igual | pendiente | — |
+| Form_Form0BDOpcionesOtras | src/forms/Form_Form0BDOpcionesOtras.cls | 144 | 40 | 29 | igual | pendiente | — |
+| Form_FormActividadAlta | src/forms/Form_FormActividadAlta.cls | 251 | 38 | 7 | igual | pendiente | — |
+| Form_FormActividadDeEventoPorLotes | src/forms/Form_FormActividadDeEventoPorLotes.cls | 383 | 31 | 10 | igual | pendiente | — |
+| Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | pendiente | — |
+| Form_FormActividadGestion | src/forms/Form_FormActividadGestion.cls | 1065 | 39 | 26 | igual | pendiente | — |
+| Form_FormActividadTipoAlta | src/forms/Form_FormActividadTipoAlta.cls | 148 | 23 | 4 | igual | pendiente | — |
+| Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | pendiente | — |
+| Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | pendiente | — |
+| Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | pendiente | — |
+| Form_FormAnexosNoAlcanzables | src/forms/Form_FormAnexosNoAlcanzables.cls | 219 | 28 | 6 | igual | pendiente | — |
+| Form_FormBUIGestion | src/forms/Form_FormBUIGestion.cls | 229 | 18 | 7 | igual | pendiente | — |
+| Form_FormCalibracionAlta | src/forms/Form_FormCalibracionAlta.cls | 228 | 35 | 4 | igual | pendiente | — |
+| Form_FormCalibracionEdicion | src/forms/Form_FormCalibracionEdicion.cls | 346 | 38 | 7 | igual | pendiente | — |
+| Form_FormCalibracionEquipoAlta | src/forms/Form_FormCalibracionEquipoAlta.cls | 188 | 31 | 4 | igual | pendiente | — |
+| Form_FormCalibracionEquipoEdicion | src/forms/Form_FormCalibracionEquipoEdicion.cls | 407 | 34 | 8 | igual | pendiente | — |
+| Form_FormCalibracionEquipoGestion | src/forms/Form_FormCalibracionEquipoGestion.cls | 800 | 38 | 26 | igual | pendiente | — |
+| Form_FormCalibracionGestion | src/forms/Form_FormCalibracionGestion.cls | 625 | 36 | 12 | igual | pendiente | — |
+| Form_FormEquipoAlta | src/forms/Form_FormEquipoAlta.cls | 329 | 31 | 6 | igual | pendiente | — |
+| Form_FormEquipoEdicion | src/forms/Form_FormEquipoEdicion.cls | 602 | 33 | 11 | igual | pendiente | — |
+| Form_FormEquipoGestion | src/forms/Form_FormEquipoGestion.cls | 838 | 38 | 27 | igual | pendiente | — |
+| Form_FormEquipoMedida | src/forms/Form_FormEquipoMedida.cls | 206 | 37 | 6 | igual | pendiente | — |
+| Form_FormEquipoMedidaCalibracion | src/forms/Form_FormEquipoMedidaCalibracion.cls | 203 | 36 | 6 | igual | pendiente | — |
+| Form_FormEquipoMedidaCalibracionesGestion | src/forms/Form_FormEquipoMedidaCalibracionesGestion.cls | 331 | 24 | 10 | igual | pendiente | — |
+| Form_FormEquiposMedidaGestion | src/forms/Form_FormEquiposMedidaGestion.cls | 471 | 29 | 14 | igual | pendiente | — |
+| Form_FormEventoAlta | src/forms/Form_FormEventoAlta.cls | 880 | 65 | 19 | igual | pendiente | — |
+| Form_FormEventoCopia | src/forms/Form_FormEventoCopia.cls | 455 | 20 | 7 | igual | pendiente | — |
+| Form_FormEventoEdicion | src/forms/Form_FormEventoEdicion.cls | 1308 | 72 | 25 | igual | pendiente | — |
+| Form_FormEventoEqMedida | src/forms/Form_FormEventoEqMedida.cls | 283 | 23 | 7 | igual | pendiente | — |
+| Form_FormEventoEqMedidaEdicion | src/forms/Form_FormEventoEqMedidaEdicion.cls | 307 | 23 | 7 | igual | pendiente | — |
+| Form_FormEventoFranqueo | src/forms/Form_FormEventoFranqueo.cls | 103 | 19 | 3 | igual | pendiente | — |
+| Form_FormEventoGestion | src/forms/Form_FormEventoGestion.cls | 2892 | 74 | 63 | igual | pendiente | — |
+| Form_FormEventoSLA | src/forms/Form_FormEventoSLA.cls | 450 | 49 | 6 | igual | pendiente | — |
+| Form_FormEventoTipoGestion | src/forms/Form_FormEventoTipoGestion.cls | 222 | 18 | 7 | igual | pendiente | — |
+| Form_FormEventosAltaMasivaPorNS | src/forms/Form_FormEventosAltaMasivaPorNS.cls | 629 | 55 | 17 | igual | pendiente | — |
+| Form_FormFacturaAlta | src/forms/Form_FormFacturaAlta.cls | 248 | 37 | 6 | igual | pendiente | — |
+| Form_FormFacturaResultado | src/forms/Form_FormFacturaResultado.cls | 337 | 48 | 6 | igual | pendiente | — |
+| Form_FormFacturacionGestion | src/forms/Form_FormFacturacionGestion.cls | 666 | 32 | 18 | igual | pendiente | — |
+| Form_FormGastoAlta | src/forms/Form_FormGastoAlta.cls | 250 | 34 | 8 | igual | pendiente | — |
+| Form_FormGastoEdicion | src/forms/Form_FormGastoEdicion.cls | 558 | 36 | 13 | igual | pendiente | — |
+| Form_FormGastoGestion | src/forms/Form_FormGastoGestion.cls | 683 | 36 | 23 | igual | pendiente | — |
+| Form_FormInformeSLA | src/forms/Form_FormInformeSLA.cls | 753 | 27 | 13 | igual | pendiente | — |
+| Form_FormInformesDesdeLista | src/forms/Form_FormInformesDesdeLista.cls | 272 | 26 | 11 | igual | pendiente | — |
+| Form_FormInformesParaRAC | src/forms/Form_FormInformesParaRAC.cls | 330 | 24 | 10 | igual | pendiente | — |
+| Form_FormInformesPorFactura | src/forms/Form_FormInformesPorFactura.cls | 312 | 28 | 11 | igual | pendiente | — |
+| Form_FormMaterialAltaReparacion | src/forms/Form_FormMaterialAltaReparacion.cls | 594 | 69 | 10 | igual | pendiente | — |
+| Form_FormMaterialEleccion | src/forms/Form_FormMaterialEleccion.cls | 163 | 18 | 3 | igual | pendiente | — |
+| Form_FormMaterialIntervencionAlta | src/forms/Form_FormMaterialIntervencionAlta.cls | 258 | 39 | 6 | igual | pendiente | — |
+| Form_FormMaterialIntervencionEdicion | src/forms/Form_FormMaterialIntervencionEdicion.cls | 735 | 41 | 8 | igual | pendiente | — |
+| Form_FormMaterialReparacionEdicion | src/forms/Form_FormMaterialReparacionEdicion.cls | 667 | 61 | 9 | igual | pendiente | — |
+| Form_FormMaterialRepuestoAlta | src/forms/Form_FormMaterialRepuestoAlta.cls | 247 | 58 | 7 | igual | pendiente | — |
+| Form_FormMaterialRepuestoEdicion | src/forms/Form_FormMaterialRepuestoEdicion.cls | 631 | 63 | 10 | igual | pendiente | — |
+| Form_FormMaterialSeguimiento | src/forms/Form_FormMaterialSeguimiento.cls | 803 | 54 | 12 | igual | pendiente | — |
+| Form_FormMaterialesGestion | src/forms/Form_FormMaterialesGestion.cls | 1393 | 51 | 44 | igual | pendiente | — |
+| Form_FormNodoBUIGestion | src/forms/Form_FormNodoBUIGestion.cls | 321 | 26 | 13 | igual | pendiente | — |
+| Form_FormNodoGestion | src/forms/Form_FormNodoGestion.cls | 235 | 18 | 7 | igual | pendiente | — |
+| Form_FormOriginadorGestion | src/forms/Form_FormOriginadorGestion.cls | 218 | 18 | 7 | igual | pendiente | — |
+| Form_FormParteGestion | src/forms/Form_FormParteGestion.cls | 657 | 30 | 15 | igual | pendiente | — |
+| Form_FormPlanificacionAlta | src/forms/Form_FormPlanificacionAlta.cls | 208 | 35 | 7 | igual | pendiente | — |
+| Form_FormPlanificacionAltaEquipo | src/forms/Form_FormPlanificacionAltaEquipo.cls | 86 | 21 | 3 | igual | pendiente | — |
+| Form_FormPlanificacionAnexos | src/forms/Form_FormPlanificacionAnexos.cls | 351 | 25 | 7 | igual | pendiente | — |
+| Form_FormPlanificacionCalendarios | src/forms/Form_FormPlanificacionCalendarios.cls | 200 | 18 | 4 | igual | pendiente | — |
+| Form_FormPlanificacionCambioIDEvento | src/forms/Form_FormPlanificacionCambioIDEvento.cls | 282 | 31 | 6 | igual | pendiente | — |
+| Form_FormPlanificacionCierre | src/forms/Form_FormPlanificacionCierre.cls | 242 | 44 | 8 | igual | pendiente | — |
+| Form_FormPlanificacionEdicionEquipo | src/forms/Form_FormPlanificacionEdicionEquipo.cls | 287 | 22 | 7 | igual | pendiente | — |
+| Form_FormPlanificacionEquipos | src/forms/Form_FormPlanificacionEquipos.cls | 862 | 38 | 25 | igual | pendiente | — |
+| Form_FormPlanificacionGestion | src/forms/Form_FormPlanificacionGestion.cls | 955 | 46 | 19 | igual | pendiente | — |
+| Form_FormPlanificacionReprogramacion | src/forms/Form_FormPlanificacionReprogramacion.cls | 278 | 47 | 11 | igual | pendiente | — |
+| Form_FormPlanificacionesBusqueda | src/forms/Form_FormPlanificacionesBusqueda.cls | 1058 | 52 | 32 | igual | pendiente | — |
+| Form_FormSubContratacionAlta | src/forms/Form_FormSubContratacionAlta.cls | 161 | 30 | 4 | igual | pendiente | — |
+| Form_FormSubContratacionEdicion | src/forms/Form_FormSubContratacionEdicion.cls | 495 | 32 | 9 | igual | pendiente | — |
+| Form_FormSubContratacionGestion | src/forms/Form_FormSubContratacionGestion.cls | 762 | 35 | 24 | igual | pendiente | — |
+| Form_FormSubSistemaAlta | src/forms/Form_FormSubSistemaAlta.cls | 146 | 23 | 4 | igual | pendiente | — |
+| Form_FormSubSistemaEdicion | src/forms/Form_FormSubSistemaEdicion.cls | 288 | 23 | 6 | igual | pendiente | — |
+| Form_FormSubSistemaGestion | src/forms/Form_FormSubSistemaGestion.cls | 384 | 26 | 12 | igual | pendiente | — |
+| Form_FormTecnico | src/forms/Form_FormTecnico.cls | 270 | 34 | 7 | igual | pendiente | — |
+| Form_FormTecnicoAusencias | src/forms/Form_FormTecnicoAusencias.cls | 216 | 29 | 6 | igual | pendiente | — |
+| Form_FormTecnicoAusenciasGestion | src/forms/Form_FormTecnicoAusenciasGestion.cls | 491 | 26 | 16 | igual | pendiente | — |
+| Form_FormTecnicoConsultaHoras | src/forms/Form_FormTecnicoConsultaHoras.cls | 450 | 25 | 5 | igual | pendiente | — |
+| Form_FormTecnicoFiestas | src/forms/Form_FormTecnicoFiestas.cls | 79 | 19 | 3 | igual | pendiente | — |
+| Form_FormTecnicoFiestasGestion | src/forms/Form_FormTecnicoFiestasGestion.cls | 316 | 22 | 11 | igual | pendiente | — |
+| Form_FormTecnicoGestion | src/forms/Form_FormTecnicoGestion.cls | 645 | 34 | 21 | igual | pendiente | — |
+| Form_FormTecnicoTipo | src/forms/Form_FormTecnicoTipo.cls | 112 | 25 | 3 | igual | pendiente | — |
+| Form_FormTipoTecnicoPrecio | src/forms/Form_FormTipoTecnicoPrecio.cls | 170 | 26 | 5 | igual | pendiente | — |
+| Form_FormTipoTecnicoPreciosGestion | src/forms/Form_FormTipoTecnicoPreciosGestion.cls | 448 | 24 | 14 | igual | pendiente | — |
+| Form_FormUbicacionGestion | src/forms/Form_FormUbicacionGestion.cls | 220 | 19 | 7 | igual | pendiente | — |
+
+### Módulos estándar
+
+| Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
+|---|---|---|---|---|---|---|---|
+| Constructor | src/modules/Constructor.bas | 5698 | — | 96 | igual | pendiente | — |
+| Funciones Generales | src/modules/Funciones Generales.bas | 7942 | — | 106 | igual | pendiente | — |
+| HTML | src/modules/HTML.bas | 258 | — | 4 | igual | pendiente | — |
+| JsonConverter | src/modules/JsonConverter.bas | 1399 | — | 31 | igual | pendiente | — |
+| Módulo1 | src/modules/Módulo1.bas | 181 | — | 4 | igual | pendiente | — |
+| Módulo2 | src/modules/Módulo2.bas | 448 | — | 6 | igual | pendiente | — |
+| Pruebas | src/modules/Pruebas.bas | 41 | — | 1 | igual | pendiente | — |
+| PruebasSLA | src/modules/PruebasSLA.bas | 1697 | — | 55 | igual | pendiente | — |
+| SLAHTMLService | src/modules/SLAHTMLService.bas | 1163 | — | 11 | igual | pendiente | — |
+| SLAReportService | src/modules/SLAReportService.bas | 629 | — | 6 | igual | pendiente | — |
+| SLAValidator | src/modules/SLAValidator.bas | 166 | — | 2 | igual | pendiente | — |
+| Test_SLAReportService | src/modules/Test_SLAReportService.bas | 411 | — | 13 | igual | pendiente | — |
+| Test_SLAValidator | src/modules/Test_SLAValidator.bas | 515 | — | 13 | igual | pendiente | — |
+| Variables Globales | src/modules/Variables Globales.bas | 583 | — | 5 | distinto | pendiente | — |
+| modMigracionesSLA | src/modules/modMigracionesSLA.bas | 199 | — | 5 | igual | pendiente | — |
+| modTestingSLA | src/modules/modTestingSLA.bas | 382 | — | 6 | igual | pendiente | — |
+
+### Clases
+
+| Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
+|---|---|---|---|---|---|---|---|
+| Actividad | src/classes/Actividad.cls | 623 | — | 15 | igual | pendiente | — |
+| Anexo | src/classes/Anexo.cls | 1083 | — | 31 | igual | pendiente | — |
+| Entorno | src/classes/Entorno.cls | 1207 | — | 37 | igual | pendiente | — |
+| Equipo | src/classes/Equipo.cls | 189 | — | 5 | igual | pendiente | — |
+| EquipoMedida | src/classes/EquipoMedida.cls | 671 | — | 16 | igual | pendiente | — |
+| EquipoMedidaCalibracion | src/classes/EquipoMedidaCalibracion.cls | 299 | — | 7 | igual | pendiente | — |
+| Evento | src/classes/Evento.cls | 3015 | — | 60 | igual | pendiente | — |
+| EventoBusqueda | src/classes/EventoBusqueda.cls | 21 | — | 0 | igual | pendiente | — |
+| EventoEquipoMedida | src/classes/EventoEquipoMedida.cls | 200 | — | 8 | igual | pendiente | — |
+| EventoEquipoMedidaAntes | src/classes/EventoEquipoMedidaAntes.cls | 185 | — | 7 | igual | pendiente | — |
+| Factura | src/classes/Factura.cls | 6827 | — | 98 | igual | pendiente | — |
+| FacturaPerfiles | src/classes/FacturaPerfiles.cls | 324 | — | 9 | igual | pendiente | — |
+| Fiesta | src/classes/Fiesta.cls | 202 | — | 6 | igual | pendiente | — |
+| Gasto | src/classes/Gasto.cls | 433 | — | 12 | igual | pendiente | — |
+| GestorInforme | src/classes/GestorInforme.cls | 281 | — | 8 | igual | pendiente | — |
+| Informe | src/classes/Informe.cls | 987 | — | 11 | igual | pendiente | — |
+| LIbranza | src/classes/LIbranza.cls | 398 | — | 9 | igual | pendiente | — |
+| Material | src/classes/Material.cls | 714 | — | 17 | igual | pendiente | — |
+| MaterialSeguimiento | src/classes/MaterialSeguimiento.cls | 378 | — | 9 | igual | pendiente | — |
+| Parte | src/classes/Parte.cls | 645 | — | 16 | igual | pendiente | — |
+| Subcontratacion | src/classes/Subcontratacion.cls | 374 | — | 10 | igual | pendiente | — |
+| Tecnico | src/classes/Tecnico.cls | 703 | — | 13 | igual | pendiente | — |
+| TecnicoHoras | src/classes/TecnicoHoras.cls | 528 | — | 15 | igual | pendiente | — |
+| TipoDia | src/classes/TipoDia.cls | 186 | — | 5 | igual | pendiente | — |
+| TipoTecnico | src/classes/TipoTecnico.cls | 526 | — | 17 | igual | pendiente | — |
+| TipoTecnicoPrecio | src/classes/TipoTecnicoPrecio.cls | 892 | — | 24 | igual | pendiente | — |
+| Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
+| UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
+
+Totales: 0 analizados · 0 no aplicables · 131 pendientes.
+
+## Discrepancias abiertas
+
+| ID | Discrepancia | Evidencia | Estado |
+|---|---|---|---|
+| D-BRA-1 | ERD de origen: falta la extracción de solo lectura del `.accdb` (workflow `dysflow-erd`, #1144) | `ERD/` del legacy | pendiente del propietario |
+
+## Método del recuento
+
+Clon de solo lectura bajo `.atl/sources/brass/` (ruta ignorada) con HEAD desacoplado en el commit fijado e índice CodeGraph-VBA (`codegraph init -i`). Los recuentos salen de un script que cuenta líneas, bloques `Begin` y declaraciones de procedimiento; la comparación con el snapshot usa la normalización descrita arriba.
