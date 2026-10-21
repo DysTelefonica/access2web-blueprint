@@ -799,6 +799,30 @@ def test_workflow_policy_gate_runs_the_canon_in_quality(workflow: dict) -> None:
     )
 
 
+def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
+    """The dependency scan audits `app/requirements-dev.lock`, the set that is installed and shipped.
+
+    `pip install "app[dev]"` is a registry requirement named `app` to pip (the path form needs a
+    `./` prefix), so it audited a homonym on PyPI and never the project. The lock is audited
+    directly and strictly, with hashes required and pip disabled, and an empty lock cannot pass.
+    """
+    security = yaml.safe_load(
+        (_find_workflow().parent / "security.yml").read_text(encoding="utf-8")
+    )
+    steps = [
+        s for s in security["jobs"]["pip-audit"]["steps"] if s.get("name") == "dependency scan"
+    ]
+    assert len(steps) == 1, "pip-audit must have exactly one `dependency scan` step"
+    run = steps[0]["run"]
+    assert "app[dev]" not in run
+    assert (
+        ".venv-audit/bin/pip-audit --strict --require-hashes --disable-pip -r app/requirements-dev.lock"
+        in run
+    )
+    assert "pip-audit==2.9.0" in run
+    assert "-lt 15" in run, "an empty or truncated lock must fail before the verdict is trusted"
+
+
 def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
