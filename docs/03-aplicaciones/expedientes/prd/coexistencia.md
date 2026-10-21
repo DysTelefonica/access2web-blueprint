@@ -182,9 +182,60 @@ Transacciones, por procedimiento (tablas citadas dentro del procedimiento; las o
 - **Dependiente del ERD de origen (D-EXP-4):** claves únicas para recordsets actualizables, autonuméricos, columnas `NOT NULL` y la lista final de tablas del backend.
 - **Fuera de `src`:** la prueba real de las filas «a comprobar» exige un backend de RC1 y un controlador ODBC; ver P-EXP-1.
 
+## 12. P-EXP-3: opciones de arquitectura de datos
+
+Estado: **en estudio**. La opción C es la **dirección preferida del propietario**, documentada como tal y **no como decisión cerrada**; no se recomienda ninguna. Los costes son análisis técnico a partir de la medición del apartado 11; ninguno se ha probado contra PostgreSQL ni contra el controlador ODBC.
+
+### Dirección del propietario (opción C)
+
+Un solo PostgreSQL con dos familias de esquemas: (1) esquemas modernos diseñados para la web y (2) un esquema legacy con la estructura exacta que Access necesita. Access vincula por ODBC el esquema legacy desde el backend `.accdb` (`getdb()` sin cambios; la tabla de configuración se queda local en Access). Triggers bidireccionales entre legacy y moderno, en la misma transacción, idempotentes (`INSERT … ON CONFLICT` por clave) y con corte de bucles (`pg_trigger_depth()` o variable de sesión).
+
+### Las tres opciones
+
+| | A. Tablas compartidas | B. Vistas con `INSTEAD OF` | C. Dos familias de esquemas con triggers |
+|---|---|---|---|
+| Idea | Una sola estructura, con forma legacy, que usan Access (vínculos ODBC) y la web | Tablas modernas para la web; el esquema legacy son vistas que Access vincula, con triggers `INSTEAD OF` para insertar, actualizar y borrar | Tablas modernas y tablas legacy separadas, sincronizadas por triggers en ambos sentidos |
+| Almacenamiento | Uno | Uno (el moderno) | Dos copias de cada dato compartido |
+| Quién adapta | La web adopta la estructura y las convenciones legacy | La capa de vistas y triggers traduce moderno a legacy | Los triggers traducen en ambos sentidos; ni Access ni la web ven el otro modelo |
+| Estructura web | Condicionada por Access: nombres, tipos, `Sí`/`No` como texto, nulos por vacíos | Libre, con la restricción de poder reconstruir la forma legacy en una vista | Libre |
+| Estado de la web hoy | La migración [`0002`](../../../../app/migrations/versions/0002_expedientes_schema.py) ya usa nombres legacy en 12 catálogos, pero identificadores `BigInteger` | — | — |
+
+**Costes propios de cada opción:**
+
+- **A.** Todos los requisitos del esquema legacy (siguiente apartado) recaen sobre el único esquema que usa la web. Cualquier decisión moderna que difiera del legacy (booleanos, identificadores, zonas horarias) queda descartada o duplicada en la aplicación. Sin duplicación de datos ni lógica de sincronización.
+- **B.** Una vista y tres triggers `INSTEAD OF` por tabla compartida (43 tablas activas en el snapshot). Access exige elegir un índice único al vincular una vista para poder editarla; tras insertar, la recarga de la fila depende de cómo devuelva la clave el trigger. Las tablas denormalizadas (`TbExpedientesConEntidades`) serían vistas con uniones. Sin bucles ni deriva entre copias.
+- **C.** Triggers en dos direcciones por tabla (hasta 86 para las 43 activas), con transformación de tipos y de identificadores en cada uno; carga inicial y reconciliación entre copias; propagación de borrados; evolución de dos esquemas a la vez; amplificación de escrituras; y la política de conflictos cuando ambos lados cambian la misma fila. La clave de correspondencia legacy-moderno ha de ser estable para que el `ON CONFLICT` sea idempotente. La misma transacción da atomicidad, pero cualquier error de un trigger rompe también la escritura de Access o de la web que lo originó.
+
+**Común a las tres:** la tabla de configuración local (`TbConfiguracionBackends`) no cambia; los vínculos del backend a otros `.accdb` (10 en uso) tampoco.
+
+### Requisitos del esquema legacy (aplican a A y a la familia legacy de B y C)
+
+| Requisito | Evidencia en RC1 |
+|---|---|
+| Clave primaria en todas las tablas que Access escribe | Recordsets actualizables: `AddNew` 32, `Edit` 24, `Update` 53 y `Execute` 113 líneas (apartado 2); el `schema.sql` no declara claves; solo las E2E las declaran (`M_E2EMigration.bas:87, 125`) |
+| Secuencias en lugar de `Max + 1` | `DameID` (30 llamadas, 27 pares tabla-campo, `FUNCIONES UTILES.bas:2836-2864`) y 4 `Max` directos (`E2EEnlacesService.bas:110`, `E2EFamilyExportHelper.bas:303`, `FUNCIONES UTILES.bas:1730, 1746`); el alta escribe el identificador antes de insertar (`ExpedienteOperaciones.cls:92`) y lo usa en las filas hijas |
+| Intercalación insensible a mayúsculas | `Option Compare Database` en 133 de los 135 ficheros; unicidad por igualdad de texto en consultas (`constructor.bas:349`, `ComercialOperaciones.cls:28-49`); PostgreSQL distingue mayúsculas por defecto. Vías: extensión `citext` o intercalación ICU no determinista, esta última con limitaciones en `LIKE` según la versión del servidor (a comprobar). Hay que igualar también el orden de los listados |
+| Tipos compatibles con Access | 43 tablas activas, 272 columnas: 112 `TEXT`, 91 `LONG`, 29 fecha, 24 `MEMO`, 15 `DOUBLE`, 1 `INT`, 0 `BOOLEAN`. `LONG` como `INTEGER` de 32 bits (un `BIGINT` exige comprobar cómo lo presenta el controlador); `TEXT(n)` como `VARCHAR(n)`; `MEMO` como `TEXT`; `Sí`/`No` como `VARCHAR(2)` (369 líneas comparan el texto); fechas con la precisión que Access conserve |
+| Nombres que Access resuelve | Mismos nombres de tabla y columna (Access es insensible a mayúsculas; PostgreSQL plegaría a minúsculas lo no entrecomillado). Una columna con `ñ` (`TbExpedientesAnualidades.Año`); ninguna con espacios ni palabra reservada de PostgreSQL |
+| Nulos como el legacy | Las cadenas vacías se guardan como `Null` en casi todas las columnas de texto (`ExpedienteOperaciones.cls:99-381`); las columnas deben admitirlos, salvo las `NOT NULL` conocidas de las tablas E2E |
+| Valores por defecto en servidor | DAO no los declara: `OrdinalE2E` y `EstadoImportacion` se rellenan con `UPDATE` (`M_E2EMigration.bas:204-206, 430-432`); los autonuméricos conocidos son `IDEnlace` e `IDCola` |
+| Conflictos de escritura | Access compara la fila completa al actualizar; columnas `DOUBLE`, fechas o modificadas por un trigger pueden provocar «conflicto de escritura» (a comprobar) |
+
+### Cambios de VBA que salen de la medición
+
+| Cambio | Alcance | Afecta a |
+|---|---|---|
+| Dejar de calcular identificadores con `Max + 1`, o pedirlos a PostgreSQL antes de insertar | `DameID` (1 función, 30 llamadas) y 4 `Max` directos; el alta necesita el identificador antes de escribir las filas hijas (`ExpedienteOperaciones.cls:92`) y hoy no hay lectura de clave tras insertar (0 usos de `@@IDENTITY` o `.LastModified`) | A, B y C |
+| Sustituir el DDL por DAO de `M_E2EMigration.bas` | 1 módulo (35 líneas): DAO no modifica la estructura de una tabla vinculada; el DDL pasa a la migración de PostgreSQL | A, B y C |
+| `Seek`, `dbOpenTable`, `.Index`, `FindFirst`, `.Bookmark` | 0 usos: **sin cambios** | A, B y C |
+| Apertura por nombre de tabla sin tipo | 32 sitios: cambia el tipo por defecto, sin cambio de código previsto; requiere la clave del esquema legacy | A, B y C |
+| SQL con dialecto Jet que el controlador no traduzca | Hasta unas 80 líneas (`DELETE *` 49, `TOP` 4, `#` 7, `Date()`/`Now()` 5, `DateDiff` 2, `Nz` 4, `[campo]` 6, `LIKE` con `*` 4): solo si la prueba lo exige | A, B y C |
+| Transacciones | 12 `BeginTrans`: sin cambio previsto, a probar sobre vínculos ODBC; los triggers de C se ejecutan dentro de la transacción de PostgreSQL | A, B y C |
+| Listado con SQL en el frontend | `Form_FormE2ECola.cls:137` (formulario ya sin uso) | A, B y C |
+
 ## Pendientes
 
-- Resolver la P-EXP-3 (sección 1 y apartado 11); está abierta y escalada al propietario.
+- Resolver la P-EXP-3 (sección 1 y apartados 11 y 12); está abierta y escalada al propietario. La opción C es su dirección preferida, no una decisión cerrada.
 - Extraer claves, índices y relaciones reales de las tablas vinculables (D-EXP-4 en el README).
 - Comprobar el comportamiento de transacciones DAO y de `Recordset` actualizables sobre tablas ODBC.
 - Aprobar la fuente única de identificadores y la política de conflictos.
