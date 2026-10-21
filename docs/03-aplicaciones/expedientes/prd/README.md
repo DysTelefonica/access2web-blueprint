@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación), 1 (inventario) y 2 (formularios) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) completadas: los 45 formularios de RC1 tienen ficha. Pendientes las fases 3 (ERD de origen y matriz campo a campo), 4 (coexistencia) y 5 (capacidades, delta y issues propuestas).
+> **Estado:** estudio completo salvo el ERD de origen. Fases 0 (fijación), 1 (inventario), 2 (formularios: 45 de 45), 4 (coexistencia) y 5 (capacidades e issues propuestas) hechas; fase 3 (datos) hecha en lo que `src` permite: [matriz campo a campo](matriz-campos.md) entregada y ERD de origen pendiente de extraer con `dysflow` (D-EXP-4).
 
 | Campo | Valor |
 |---|---|
@@ -13,7 +13,7 @@
 
 ## Alcance actual
 
-Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). Contiene además la [matriz campo a campo](matriz-campos.md) (fase 3, por tandas). Contiene también [coexistencia](coexistencia.md) (fase 4) y la [clasificación de capacidades](capacidades.md) (fase 5). No contiene aún ERD de origen (la extracción con `dysflow` no pudo ejecutarse) ni issues propuestas. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
+Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). Contiene además la [matriz campo a campo](matriz-campos.md) (fase 3, por tandas). Contiene también [coexistencia](coexistencia.md) (fase 4) y la [clasificación de capacidades](capacidades.md) (fase 5). Incluye las [issues propuestas](issues-propuestas.md). No contiene aún ERD de origen: la extracción con `dysflow` no pudo ejecutarse. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
 
 ## Inventario reconciliado
 
