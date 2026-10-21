@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** fases 0 (fijación), 1 (inventario) y 2 (formularios: 28 de 28) completadas; pendientes las fases 3 a 5.
+> **Estado:** fases 0 (fijación), 1 (inventario) y 2 (formularios: 28 de 28) completadas; fase 3 (datos) con la [matriz campo a campo](matriz-campos.md) y el ERD de origen pendiente del propietario (D-LAN-3); fase 4 con la [coexistencia](coexistencia.md); pendiente la fase 5 (capacidades e issues propuestas).
 
 | Campo | Valor |
 |---|---|
