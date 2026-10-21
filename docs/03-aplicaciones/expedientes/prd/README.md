@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 13 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 16 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -39,11 +39,11 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormCPVsGestion | formulario | src/forms/Form_FormCPVsGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormComercial | formulario | src/forms/Form_FormComercial.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormComercialesGestion | formulario | src/forms/Form_FormComercialesGestion.cls | 415 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormE2ECola | formulario | src/forms/Form_FormE2ECola.cls | 336 | 45 | 13 | **añadido** | pendiente | sin ficha todavía |
+| Form_FormE2ECola | formulario | src/forms/Form_FormE2ECola.cls | 336 | 45 | 13 | **añadido** | analizado | [formularios/Form_FormE2ECola.md](formularios/Form_FormE2ECola.md) |
 | Form_FormE2EGestionEnlaces | formulario | src/forms/Form_FormE2EGestionEnlaces.cls | 261 | 26 | 11 | **añadido** | pendiente | sin ficha todavía |
 | Form_FormEjercito | formulario | src/forms/Form_FormEjercito.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormEjercitosGestion | formulario | src/forms/Form_FormEjercitosGestion.cls | 414 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormEleccionTipoConsulta | formulario | src/forms/Form_FormEleccionTipoConsulta.cls | 390 | 16 | 10 | distinto | pendiente | sin ficha todavía |
+| Form_FormEleccionTipoConsulta | formulario | src/forms/Form_FormEleccionTipoConsulta.cls | 390 | 16 | 10 | distinto | analizado | [formularios/Form_FormEleccionTipoConsulta.md](formularios/Form_FormEleccionTipoConsulta.md) |
 | Form_FormExpediente | formulario | src/forms/Form_FormExpediente.cls | 597 | 27 | 13 | distinto | analizado | [formularios/Form_FormExpediente.md](formularios/Form_FormExpediente.md) |
 | Form_FormExpedienteAltaParaHPS | formulario | src/forms/Form_FormExpedienteAltaParaHPS.cls | 453 | 47 | 23 | distinto | analizado | [formularios/Form_FormExpedienteAltaParaHPS.md](formularios/Form_FormExpedienteAltaParaHPS.md) |
 | Form_FormExpedienteAltaTipo | formulario | src/forms/Form_FormExpedienteAltaTipo.cls | 363 | 14 | 8 | distinto | analizado | [formularios/Form_FormExpedienteAltaTipo.md](formularios/Form_FormExpedienteAltaTipo.md) |
@@ -56,7 +56,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormExpedienteModificados | formulario | src/forms/Form_FormExpedienteModificados.cls | 344 | 22 | 8 | distinto | analizado | [formularios/Form_FormExpedienteModificados.md](formularios/Form_FormExpedienteModificados.md) |
 | Form_FormExpedienteSuministradores | formulario | src/forms/Form_FormExpedienteSuministradores.cls | 961 | 25 | 38 | distinto | analizado | [formularios/Form_FormExpedienteSuministradores.md](formularios/Form_FormExpedienteSuministradores.md) |
 | Form_FormExpedientesGestion | formulario | src/forms/Form_FormExpedientesGestion.cls | 3963 | 124 | 99 | distinto | pendiente | sin ficha todavía |
-| Form_FormExpedientesGestionTecnica | formulario | src/forms/Form_FormExpedientesGestionTecnica.cls | 773 | 43 | 24 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedientesGestionTecnica | formulario | src/forms/Form_FormExpedientesGestionTecnica.cls | 773 | 43 | 24 | distinto | analizado | [formularios/Form_FormExpedientesGestionTecnica.md](formularios/Form_FormExpedientesGestionTecnica.md) |
 | Form_FormExpedientesParaCambioTipo | formulario | src/forms/Form_FormExpedientesParaCambioTipo.cls | 321 | 22 | 10 | distinto | analizado | [formularios/Form_FormExpedientesParaCambioTipo.md](formularios/Form_FormExpedientesParaCambioTipo.md) |
 | Form_FormExpedientesResponsables | formulario | src/forms/Form_FormExpedientesResponsables.cls | 187 | 25 | 4 | **añadido** | analizado | [formularios/Form_FormExpedientesResponsables.md](formularios/Form_FormExpedientesResponsables.md) |
 | Form_FormGradoClasificacion | formulario | src/forms/Form_FormGradoClasificacion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 13 analizados · 0 no aplicables · 32 pendientes.
+Totales (formularios): 16 analizados · 0 no aplicables · 29 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -154,6 +154,14 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-32 | Los mensajes de error están cruzados (al guardar se muestra `m_Error` vacío; al cargar se pierde su texto); la clave temporal usa `Rnd` sin `Randomize`; los botones de lugares de ejecución no tienen gestión de errores. | `Form_FormExpedienteAltaParaHPS.cls:412-414, 36, 43, 283, 304, 340-372` | [Form_FormExpedienteAltaParaHPS](formularios/Form_FormExpedienteAltaParaHPS.md) | a verificar |
 | H-EXP-33 | Tras buscar se marca `Selected(2)`; «Ver Todos» vacía la palabra clave y la búsqueda no se ejecuta (lista vacía); la palabra clave se concatena en el SQL sin escapar. | `Form_FormExpedientesParaCambioTipo.cls:43-45, 66, 110-111`; `FUNCIONES UTILES.bas:1228-1230` | [Form_FormExpedientesParaCambioTipo](formularios/Form_FormExpedientesParaCambioTipo.md) | a verificar |
 | H-EXP-34 | La lista del selector de padre muestra todos los tipos aunque solo se aceptan AM y Lote; un Lote es aceptado aquí como padre pero «Convertir a Lote» lo rechaza después. | `Form_FormExpedientesParaCambioTipo.cls:177-180`; `Form_FormExpedienteCambioTipo.cls:102-105` | [Form_FormExpedientesParaCambioTipo](formularios/Form_FormExpedientesParaCambioTipo.md) | a verificar |
+| H-EXP-35 | La variable global `m_ObjExpBusquedaTecnicaActiva` nunca se asigna (solo se declara y se reinicia a `Nothing`): los filtros de la búsqueda técnica nunca se restauran. `IniciarCampo` asigna «Todos» a un combo ligado al ID. | `Form_FormExpedientesGestionTecnica.cls:207, 699`; `Variables Globales.bas:270` | [Form_FormExpedientesGestionTecnica](formularios/Form_FormExpedientesGestionTecnica.md) | a verificar |
+| H-EXP-36 | `Filtrar` marca `Selected(2)` sobre una lista con cabecera (con un solo resultado el índice no existe); con cero resultados sale sin actualizar contador ni última búsqueda; si `getExpTecnicoBusqueda` falla pierde el detalle original (`Err.Raise 100`). | `Form_FormExpedientesGestionTecnica.cls:97, 117-120, 136, 144-146` | [Form_FormExpedientesGestionTecnica](formularios/Form_FormExpedientesGestionTecnica.md) | a verificar |
+| H-EXP-37 | «Detalle» abre `FormExpediente` en modo edición sin escuchar `ExpedienteEditado`: la lista no se refresca tras guardar; el filtro «Empresa» ofrece cadenas completas de contratistas y por subcadena da falsos positivos; `getExpedienteCompleto` concatena `IDExpediente` en el SQL. | `Form_FormExpedientesGestionTecnica.cls:465`; `constructor.bas:1218, 3117`; `FUNCIONES UTILES.bas:1096, 1106` | [Form_FormExpedientesGestionTecnica](formularios/Form_FormExpedientesGestionTecnica.md) | a verificar |
+| H-EXP-38 | `ComandoActualizarCompleto` escribe `Err.Numbr` (posible fallo de compilación del módulo); la decisión de incluir derivados lee la global `m_NombreListaParaInforme` y no la lista recibida, de modo que desde Gestión Técnica depende del último botón pulsado en Gestión. | `Form_FormEleccionTipoConsulta.cls:50, 314`; `Form_FormExpedientesGestionTecnica.cls:239-242` | [Form_FormEleccionTipoConsulta](formularios/Form_FormEleccionTipoConsulta.md) | a verificar |
+| H-EXP-39 | «Actualizar» escribe `TbExpedientesConEntidades` por cada expediente sin confirmación ni transacción, y un expediente que no se puede releer desaparece del informe sin aviso; el Excel temporal no se borra nunca. | `Form_FormEleccionTipoConsulta.cls:363, 371`; `FUNCIONES UTILES.bas:1803-1815` | [Form_FormEleccionTipoConsulta](formularios/Form_FormEleccionTipoConsulta.md) | a verificar |
+| H-EXP-40 | `ImporteLicitacion` no recibe la normalización de coma a punto que sí tiene `ImporteContratacion`; `AbrirAyuda` abre siempre el mismo PDF genérico (la ruta por formulario se sobrescribe en la línea siguiente). | `modInformeExpedientesHelper.bas:23`; `FUNCIONES UTILES.bas:3094-3095` | [Form_FormEleccionTipoConsulta](formularios/Form_FormEleccionTipoConsulta.md) | a verificar |
+| H-EXP-41 | El formulario `FormE2ECola` ya no se abre desde el menú: la opción 12 se desvía a un panel HTML (`TipoAccion("12") = "html"`); `EsGestor` se declara pero no se asigna fuera de los módulos `Test_`, de modo que solo entrarían los administradores. | `Form0BDGestorEntidadesLogic.bas:55-57`; `Form_Form0BDGestorEntidades.cls:67-69`; `Variables Globales.bas:247`; `E2EEnlacesService.bas:376` | [Form_FormE2ECola](formularios/Form_FormE2ECola.md) | a verificar |
+| H-EXP-42 | El filtro «Fecha hasta» de la cola E2E deja fuera las filas de ese mismo día porque `FechaDeteccion` lleva hora; al filtrar o paginar el detalle no se vacía y puede no corresponder a la lista; el combo de estado ofrece «Error», que ningún módulo VBA escribe. | `modE2EColaPanelHelper.bas:143-144`; `Form_FormE2ECola.cls:291-307`; `Form_FormE2ECola.form.txt:203`; `M_E2EMigration.bas:20-21` | [Form_FormE2ECola](formularios/Form_FormE2ECola.md) | a verificar |
 
 ## Método del recuento
 
