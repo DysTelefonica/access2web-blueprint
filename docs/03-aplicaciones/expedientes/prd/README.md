@@ -13,7 +13,7 @@
 
 ## Alcance actual
 
-Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). Contiene además la [matriz campo a campo](matriz-campos.md) (fase 3, por tandas). No contiene aún ERD de origen (la extracción con `dysflow` no pudo ejecutarse), coexistencia, clasificación de capacidades ni issues propuestas. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
+Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). Contiene además la [matriz campo a campo](matriz-campos.md) (fase 3, por tandas). Contiene también [coexistencia](coexistencia.md) (fase 4) y la [clasificación de capacidades](capacidades.md) (fase 5). No contiene aún ERD de origen (la extracción con `dysflow` no pudo ejecutarse) ni issues propuestas. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
 
 ## Inventario reconciliado
 
@@ -100,11 +100,11 @@ La mayoría de las diferencias son módulos `Test_*` y ayudantes `mod*Helper` de
 
 ## Delta frente al estudio previo
 
-Todo **pendiente**. Solo se afirma lo mecánico: 3 formularios añadidos (`Form_FormE2ECola`, `Form_FormE2EGestionEnlaces`, `Form_FormExpedientesResponsables`), 4 retirados (tabla anterior) y 42 comunes cuyo `.cls` difiere del snapshot. La clasificación de capacidades (añadida, modificada, retirada, sin cambios) no se ha hecho.
+Resumido en [capacidades.md](capacidades.md): de las 63 entradas del ledger, 6 no cambian en su lógica, 32 se modifican (cambia el texto de las clases que las implementan), 2 se añaden (enlaces E2E y cola E2E con panel), 2 se retiran (autosave de pestañas) 13 no tienen equivalente comprobado en Access (conceptos de la web), 1 solo tiene formulario y 7 son mecanismos legacy a retirar. «Modificada» es diferencia de texto, no de comportamiento. Formularios: 3 añadidos, 4 retirados y 42 comunes que difieren del snapshot.
 
 ## Capacidades
 
-Pendiente. Las 26 fichas `CAP-*` existentes en [capabilities/](../capabilities/) son contexto, no evidencia; #807 cubre las 37 fichas que faltan.
+La clasificación completa, con los objetos de lógica y las fichas de cada capacidad, está en [capacidades.md](capacidades.md). Las fichas `CAP-*` previas (26 de [capabilities/](../capabilities/)) siguen siendo contexto, no evidencia; #807 cubre las 37 que faltan.
 
 ## Discrepancias abiertas
 
