@@ -46,7 +46,7 @@ Qué debe adaptarse, preservarse o decidirse para que la versión de Access de E
 
 ## 4. Fechas, decimales y nulos
 
-- Las fechas son `SHORT_DATE_TIME` (tipo de fecha y hora de Access); `Date`/`Now` se usan en 27 líneas de 11 ficheros (`CorreoOperaciones.cls:43`). Pendiente de decisión: `DATE` o `TIMESTAMP` y zona horaria; Access no guarda zona.
+- Las fechas son `SHORT_DATE_TIME` (tipo de fecha y hora de Access); `Date`/`Now` se usan en 27 líneas de 11 ficheros (`CorreoOperaciones.cls:43`). Pendiente decidir si se guarda solo la fecha o fecha y hora (`TIMESTAMP`) y la zona horaria; Access no guarda zona.
 - Los importes son `DOUBLE`. La comparación de `HaHabidoCambios` y el redondeo dependen de ello. `NUMERIC` frente a `DOUBLE PRECISION` está sin decidir.
 - Casi todas las columnas de texto se guardan como `Null` cuando el valor está vacío (por ejemplo, `ExpedienteOperaciones.cls:99-381`), y la lectura usa `Nz` 587 veces. PostgreSQL distingue cadena vacía de `NULL`: la web debe normalizar igual o las dos interfaces divergirán.
 
