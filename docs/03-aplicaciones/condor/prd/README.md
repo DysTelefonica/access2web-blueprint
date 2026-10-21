@@ -49,13 +49,13 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_frmBuscarSolicitudes | src/forms/Form_frmBuscarSolicitudes.cls | 359 | 32 | 18 | distinto | analizado | [formularios/Form_frmBuscarSolicitudes.md](formularios/Form_frmBuscarSolicitudes.md) |
 | Form_frmDatosCDCA | src/forms/Form_frmDatosCDCA.cls | 735 | 33 | 20 | distinto | analizado | [formularios/Form_frmDatosCDCA.md](formularios/Form_frmDatosCDCA.md) |
 | Form_frmDatosCDCASUB | src/forms/Form_frmDatosCDCASUB.cls | 779 | 33 | 21 | distinto | analizado | [formularios/Form_frmDatosCDCASUB.md](formularios/Form_frmDatosCDCASUB.md) |
-| Form_frmDatosPC | src/forms/Form_frmDatosPC.cls | 811 | 33 | 20 | distinto | pendiente | — |
+| Form_frmDatosPC | src/forms/Form_frmDatosPC.cls | 811 | 33 | 20 | distinto | analizado | [formularios/Form_frmDatosPC.md](formularios/Form_frmDatosPC.md) |
 | Form_frmDetalleExpediente | src/forms/Form_frmDetalleExpediente.cls | 88 | 48 | 3 | igual | analizado | [formularios/Form_frmDetalleExpediente.md](formularios/Form_frmDetalleExpediente.md) |
 | Form_frmDetalleLogCambio | src/forms/Form_frmDetalleLogCambio.cls | 59 | 31 | 2 | igual | pendiente | — |
 | Form_frmDetalleLogError | src/forms/Form_frmDetalleLogError.cls | 59 | 29 | 2 | igual | pendiente | — |
-| Form_frmElegirEtapaAdjunto | src/forms/Form_frmElegirEtapaAdjunto.cls | 67 | 22 | 6 | igual | pendiente | — |
+| Form_frmElegirEtapaAdjunto | src/forms/Form_frmElegirEtapaAdjunto.cls | 67 | 22 | 6 | igual | analizado | [formularios/Form_frmElegirEtapaAdjunto.md](formularios/Form_frmElegirEtapaAdjunto.md) |
 | Form_frmFiltrosAvanzadosSolicitudes | src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls | 134 | 33 | 11 | igual | analizado | [formularios/Form_frmFiltrosAvanzadosSolicitudes.md](formularios/Form_frmFiltrosAvanzadosSolicitudes.md) |
-| Form_frmGestionAdjuntos | src/forms/Form_frmGestionAdjuntos.cls | 380 | 23 | 10 | distinto | pendiente | — |
+| Form_frmGestionAdjuntos | src/forms/Form_frmGestionAdjuntos.cls | 380 | 23 | 10 | distinto | analizado | [formularios/Form_frmGestionAdjuntos.md](formularios/Form_frmGestionAdjuntos.md) |
 | Form_frmGestionSolicitud | src/forms/Form_frmGestionSolicitud.cls | 2416 | 32 | 53 | distinto | pendiente | — |
 | Form_frmSplash | src/forms/Form_frmSplash.cls | 78 | 15 | 2 | igual | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 | Form_frmVerLogCambios | src/forms/Form_frmVerLogCambios.cls | 187 | 26 | 10 | igual | pendiente | — |
@@ -183,7 +183,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | WebVisorCacheServicio | src/classes/WebVisorCacheServicio.cls | 180 | — | 9 | distinto | pendiente | — |
 | WorkflowServicio | src/classes/WorkflowServicio.cls | 4160 | — | 82 | distinto | pendiente | — |
 
-Totales: 11 analizados · 0 no aplicables · 120 pendientes.
+Totales: 14 analizados · 0 no aplicables · 117 pendientes.
 
 ## Discrepancias abiertas
 
