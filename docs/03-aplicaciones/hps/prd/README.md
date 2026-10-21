@@ -1,6 +1,6 @@
 # PRD — HPS
 
-> **Estado:** fase 1 (fijación e inventario). Los formularios, módulos y clases quedan **pendientes**; las fichas, la matriz, la coexistencia, las capacidades y las issues propuestas llegan en las PR siguientes de la cadena.
+> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 3 de 38.
 
 | Campo | Valor |
 |---|---|
@@ -47,10 +47,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormInicial03ConsultasContratistas | src/forms/Form_FormInicial03ConsultasContratistas.cls | 97 | 15 | 6 | igual | pendiente | — |
 | Form_FormInicial03ConsultasDatos | src/forms/Form_FormInicial03ConsultasDatos.cls | 35 | 317 | 2 | igual | pendiente | — |
 | Form_FormInicial03ConsultasEmpresaUsuario | src/forms/Form_FormInicial03ConsultasEmpresaUsuario.cls | 189 | 16 | 7 | igual | pendiente | — |
-| Form_FormInicial03ConsultasEstado | src/forms/Form_FormInicial03ConsultasEstado.cls | 56 | 13 | 3 | igual | pendiente | — |
+| Form_FormInicial03ConsultasEstado | src/forms/Form_FormInicial03ConsultasEstado.cls | 56 | 13 | 3 | igual | analizada | [Form_FormInicial03ConsultasEstado.md](formularios/Form_FormInicial03ConsultasEstado.md) |
 | Form_FormInicial03ConsultasGrado | src/forms/Form_FormInicial03ConsultasGrado.cls | 256 | 30 | 15 | igual | pendiente | — |
-| Form_FormInicial03ConsultasJuridicaTramitacion | src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls | 102 | 16 | 6 | igual | pendiente | — |
-| Form_FormInicial03ConsultasMotivoHPS | src/forms/Form_FormInicial03ConsultasMotivoHPS.cls | 93 | 16 | 6 | igual | pendiente | — |
+| Form_FormInicial03ConsultasJuridicaTramitacion | src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls | 102 | 16 | 6 | igual | analizada | [Form_FormInicial03ConsultasJuridicaTramitacion.md](formularios/Form_FormInicial03ConsultasJuridicaTramitacion.md) |
+| Form_FormInicial03ConsultasMotivoHPS | src/forms/Form_FormInicial03ConsultasMotivoHPS.cls | 93 | 16 | 6 | igual | analizada | [Form_FormInicial03ConsultasMotivoHPS.md](formularios/Form_FormInicial03ConsultasMotivoHPS.md) |
 | Form_FormInicial03ConsultasNombre | src/forms/Form_FormInicial03ConsultasNombre.cls | 124 | 19 | 8 | igual | pendiente | — |
 | Form_FormInicial03ConsultasProyectoAsignado | src/forms/Form_FormInicial03ConsultasProyectoAsignado.cls | 193 | 15 | 7 | igual | pendiente | — |
 | Form_FormInicial05Configuracion | src/forms/Form_FormInicial05Configuracion.cls | 79 | 22 | 2 | igual | pendiente | — |
