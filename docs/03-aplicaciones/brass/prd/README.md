@@ -60,9 +60,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormCalibracionGestion | src/forms/Form_FormCalibracionGestion.cls | 625 | 36 | 12 | igual | analizado | [formularios/Form_FormCalibracionGestion.md](formularios/Form_FormCalibracionGestion.md) |
 | Form_FormEquipoAlta | src/forms/Form_FormEquipoAlta.cls | 329 | 31 | 6 | igual | analizado | [formularios/Form_FormEquipoAlta.md](formularios/Form_FormEquipoAlta.md) |
 | Form_FormEquipoEdicion | src/forms/Form_FormEquipoEdicion.cls | 602 | 33 | 11 | igual | analizado | [formularios/Form_FormEquipoEdicion.md](formularios/Form_FormEquipoEdicion.md) |
-| Form_FormEquipoGestion | src/forms/Form_FormEquipoGestion.cls | 838 | 38 | 27 | igual | pendiente | — |
-| Form_FormEquipoMedida | src/forms/Form_FormEquipoMedida.cls | 206 | 37 | 6 | igual | pendiente | — |
-| Form_FormEquipoMedidaCalibracion | src/forms/Form_FormEquipoMedidaCalibracion.cls | 203 | 36 | 6 | igual | pendiente | — |
+| Form_FormEquipoGestion | src/forms/Form_FormEquipoGestion.cls | 838 | 38 | 27 | igual | analizado | [formularios/Form_FormEquipoGestion.md](formularios/Form_FormEquipoGestion.md) |
+| Form_FormEquipoMedida | src/forms/Form_FormEquipoMedida.cls | 206 | 37 | 6 | igual | analizado | [formularios/Form_FormEquipoMedida.md](formularios/Form_FormEquipoMedida.md) |
+| Form_FormEquipoMedidaCalibracion | src/forms/Form_FormEquipoMedidaCalibracion.cls | 203 | 36 | 6 | igual | analizado | [formularios/Form_FormEquipoMedidaCalibracion.md](formularios/Form_FormEquipoMedidaCalibracion.md) |
 | Form_FormEquipoMedidaCalibracionesGestion | src/forms/Form_FormEquipoMedidaCalibracionesGestion.cls | 331 | 24 | 10 | igual | pendiente | — |
 | Form_FormEquiposMedidaGestion | src/forms/Form_FormEquiposMedidaGestion.cls | 471 | 29 | 14 | igual | pendiente | — |
 | Form_FormEventoAlta | src/forms/Form_FormEventoAlta.cls | 880 | 65 | 19 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 60 analizados · 5 no aplicables · 66 pendientes.
+Totales: 63 analizados · 5 no aplicables · 63 pendientes.
 
 ## Discrepancias abiertas
 
