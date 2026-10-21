@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 45 de 45.
+> **Estado:** en curso · fases 0 (fijación), 1 (inventario) y 2 (formularios) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) completadas: los 45 formularios de RC1 tienen ficha. Pendientes las fases 3 (ERD de origen y matriz campo a campo), 4 (coexistencia) y 5 (capacidades, delta y issues propuestas).
 
 | Campo | Valor |
 |---|---|
@@ -11,9 +11,9 @@
 | Snapshot comparado | `data/staging/expedientes/src` (2026-08-06) |
 | Issue | #1073 (método y plantilla de #1069) |
 
-## Alcance de esta tanda
+## Alcance actual
 
-Fija el commit, concilia el inventario de objetos y deja todos los formularios como **pendientes**. No contiene fichas, ERD, matriz ni coexistencia: llegan en las tandas siguientes de la cadena. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)) y no sustituyen al análisis.
+Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 45 formularios de RC1 (en [formularios/](formularios/)) y la sección [Hallazgos del legacy](#hallazgos-del-legacy). No contiene aún ERD de origen, matriz campo a campo, coexistencia, clasificación de capacidades ni issues propuestas: son las fases 3 a 5. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
 
 ## Inventario reconciliado
 
