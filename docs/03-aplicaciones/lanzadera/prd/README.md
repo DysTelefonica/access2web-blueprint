@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md). Ningún formulario está analizado todavía.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 3 de 28.
 
 | Campo | Valor |
 |---|---|
@@ -43,13 +43,13 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormAplicacionesOficina | formulario | src/forms/Form_FormAplicacionesOficina.cls | 371 | 29 | 9 | igual | pendiente | sin ficha todavía |
 | Form_FormAplicacionesPrueba | formulario | src/forms/Form_FormAplicacionesPrueba.cls | 293 | 16 | 6 | igual | pendiente | sin ficha todavía |
 | Form_FormEnConstruccion | formulario | src/forms/Form_FormEnConstruccion.cls | 2 | 12 | 0 | igual | pendiente | sin ficha todavía |
-| Form_FormLogin | formulario | src/forms/Form_FormLogin.cls | 311 | 23 | 7 | igual | pendiente | sin ficha todavía |
+| Form_FormLogin | formulario | src/forms/Form_FormLogin.cls | 311 | 23 | 7 | igual | analizado | [formularios/Form_FormLogin.md](formularios/Form_FormLogin.md) |
 | Form_FormMenuPrincipalAdmin | formulario | src/forms/Form_FormMenuPrincipalAdmin.cls | 323 | 40 | 33 | igual | pendiente | sin ficha todavía |
 | Form_FormMenuPrincipalCalidad | formulario | src/forms/Form_FormMenuPrincipalCalidad.cls | 375 | 39 | 27 | igual | pendiente | sin ficha todavía |
 | Form_FormMenuPrincipalUsuario | formulario | src/forms/Form_FormMenuPrincipalUsuario.cls | 373 | 33 | 23 | igual | pendiente | sin ficha todavía |
-| Form_FormObtenerContraseña | formulario | src/forms/Form_FormObtenerContraseña.cls | 98 | 20 | 3 | igual | pendiente | sin ficha todavía |
+| Form_FormObtenerContraseña | formulario | src/forms/Form_FormObtenerContraseña.cls | 98 | 20 | 3 | igual | analizado | [formularios/Form_FormObtenerContraseña.md](formularios/Form_FormObtenerContraseña.md) |
 | Form_FormPerfil | formulario | src/forms/Form_FormPerfil.cls | 220 | 39 | 4 | igual | pendiente | sin ficha todavía |
-| Form_FormUsuarioCambioPass | formulario | src/forms/Form_FormUsuarioCambioPass.cls | 111 | 26 | 4 | igual | pendiente | sin ficha todavía |
+| Form_FormUsuarioCambioPass | formulario | src/forms/Form_FormUsuarioCambioPass.cls | 111 | 26 | 4 | igual | analizado | [formularios/Form_FormUsuarioCambioPass.md](formularios/Form_FormUsuarioCambioPass.md) |
 | Form_FormUsuarioDatosGenerales | formulario | src/forms/Form_FormUsuarioDatosGenerales.cls | 393 | 47 | 6 | igual | pendiente | sin ficha todavía |
 | Form_FormUsuarioGeneral | formulario | src/forms/Form_FormUsuarioGeneral.cls | 181 | 25 | 16 | igual | pendiente | sin ficha todavía |
 | Form_FormUsuarioPerfilAplicaciones | formulario | src/forms/Form_FormUsuarioPerfilAplicaciones.cls | 385 | 31 | 6 | igual | pendiente | sin ficha todavía |
@@ -64,7 +64,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormVideosUsuarios | formulario | src/forms/Form_FormVideosUsuarios.cls | 171 | 16 | 6 | igual | pendiente | sin ficha todavía |
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 5 | 9 | 1 | igual | pendiente | sin ficha todavía |
 
-Totales (formularios): 0 analizados · 0 no aplicables · 28 pendientes.
+Totales (formularios): 3 analizados · 0 no aplicables · 25 pendientes.
 Totales (controles `Begin`): 740 · procedimientos: 247 · líneas de `.cls`: 6,246.
 
 ### Módulos y clases
@@ -86,6 +86,17 @@ Pendiente. Las capacidades del [estudio previo](../capabilities.md) son contexto
 | D-LAN-1 | #1074 cita como fecha del commit de partida 2026-10-21; el commit `1474e8e` es del 2026-07-18 (el 2026-10-21 es el día del recuento). | `git log -1 1474e8e` | Resuelta: se cita la fecha real. |
 | D-LAN-2 | El baseline del estudio previo es `63ba5e0` (rama `staging`) y el commit de partida es `main`. | `git rev-list --count origin/staging..HEAD` = 4, solo documentación de agentes | Resuelta en lo mecánico: sin cambio de código entre ambos. |
 | D-LAN-3 | El ERD de origen no se ha extraído: `dysflow` no está disponible en el entorno de trabajo y el backend `Lanzadera_Datos.accdb`, presente en el clon, no es legible con herramientas de solo lectura (`mdb-tables` lo rechaza como base de Access; probable cifrado por contraseña). | `Lanzadera_Datos.accdb` en la raíz del clon | Abierta, **pendiente del propietario**: extraer en su máquina Windows, con `dysflow` y en solo lectura, los metadatos (tablas, claves, índices, relaciones, nulabilidad). |
+
+## Hallazgos del legacy
+
+Comportamientos sospechosos detectados al analizar el código. Son hallazgos del estudio: no se corrigen, no generan issues en el repositorio de Lanzadera y cada uno queda **a verificar** en ejecución. Los que afectan a autenticación se marcan para el propietario por su sensibilidad.
+
+| Id | Hallazgo | Evidencia | Ficha | Estado |
+|---|---|---|---|---|
+| H-LAN-1 | Si el usuario de Windows es administrador, cualquier correo registrado entra sin contraseña; la rama de contraseña caducada es inalcanzable porque `Login` devuelve antes de evaluar la caducidad. | `Form_FormLogin.cls:117-118`; `Funciones Genreales.bas:1409-1437` | [Form_FormLogin](formularios/Form_FormLogin.md) | a verificar |
+| H-LAN-2 | El bloqueo usa `DateDiff("m", Now(), FechaBloqueo) < 20` (meses, orden invertido): no caduca nunca; `NumeroVecesIntentado` nunca se incrementa y el control de 5 intentos no actúa. | `Funciones Genreales.bas:1385`; `Form_FormLogin.cls:6, 71` | [Form_FormLogin](formularios/Form_FormLogin.md) | a verificar |
+| H-LAN-3 | La contraseña de un solo uso se guarda y compara en claro; cualquiera puede resetear la contraseña de otro usuario conociendo solo su correo; `ObtenerContraseña` descarta el resultado de `FormatoCorreoCorrecto`. | `Usuario.cls:763`; `Funciones Genreales.bas:1418`; `Form_FormLogin.cls:22-31`; `Form_FormObtenerContraseña.cls:20, 25-34` | [Form_FormObtenerContraseña](formularios/Form_FormObtenerContraseña.md) | a verificar |
+| H-LAN-4 | El cambio de contraseña no pide la actual; el mensaje habla de «las últimas 10 veces» pero `PassRepetida` busca en todo el histórico; el manejador de `LoginCorrecto` compara `Err.Number <> ""` (tipos incompatibles). | `Form_FormUsuarioCambioPass.cls:17-28`; `Usuario.cls:911, 971-974`; `Variables Globales.bas:739` | [Form_FormUsuarioCambioPass](formularios/Form_FormUsuarioCambioPass.md) | a verificar |
 
 ## Método del recuento
 
