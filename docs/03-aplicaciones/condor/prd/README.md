@@ -44,8 +44,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_frm0OtrosAdmin | src/forms/Form_frm0OtrosAdmin.cls | 65 | 30 | 5 | igual | analizado | [formularios/Form_frm0OtrosAdmin.md](formularios/Form_frm0OtrosAdmin.md) |
 | Form_frm0Ppal | src/forms/Form_frm0Ppal.cls | 322 | 39 | 17 | igual | analizado | [formularios/Form_frm0Ppal.md](formularios/Form_frm0Ppal.md) |
 | Form_frm0PpalTecnico | src/forms/Form_frm0PpalTecnico.cls | 196 | 31 | 10 | igual | analizado | [formularios/Form_frm0PpalTecnico.md](formularios/Form_frm0PpalTecnico.md) |
-| Form_frmAltaSolicitud | src/forms/Form_frmAltaSolicitud.cls | 646 | 43 | 19 | distinto | pendiente | — |
-| Form_frmBuscarExpediente | src/forms/Form_frmBuscarExpediente.cls | 242 | 31 | 14 | igual | pendiente | — |
+| Form_frmAltaSolicitud | src/forms/Form_frmAltaSolicitud.cls | 646 | 43 | 19 | distinto | analizado | [formularios/Form_frmAltaSolicitud.md](formularios/Form_frmAltaSolicitud.md) |
+| Form_frmBuscarExpediente | src/forms/Form_frmBuscarExpediente.cls | 242 | 31 | 14 | igual | analizado | [formularios/Form_frmBuscarExpediente.md](formularios/Form_frmBuscarExpediente.md) |
 | Form_frmBuscarSolicitudes | src/forms/Form_frmBuscarSolicitudes.cls | 359 | 32 | 18 | distinto | pendiente | — |
 | Form_frmDatosCDCA | src/forms/Form_frmDatosCDCA.cls | 735 | 33 | 20 | distinto | pendiente | — |
 | Form_frmDatosCDCASUB | src/forms/Form_frmDatosCDCASUB.cls | 779 | 33 | 21 | distinto | pendiente | — |
@@ -183,7 +183,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | WebVisorCacheServicio | src/classes/WebVisorCacheServicio.cls | 180 | — | 9 | distinto | pendiente | — |
 | WorkflowServicio | src/classes/WorkflowServicio.cls | 4160 | — | 82 | distinto | pendiente | — |
 
-Totales: 4 analizados · 0 no aplicables · 127 pendientes.
+Totales: 6 analizados · 0 no aplicables · 125 pendientes.
 
 ## Discrepancias abiertas
 
