@@ -106,6 +106,10 @@ Fichas de clase (`clases/`), una por objeto, con el mismo rigor que las de formu
 
 El resto de clases y de módulos sin mención se cubre en los siguientes tramos de la cadena de #1073.
 
+### Cobertura de procedimientos de formulario
+
+Medida mecánica sobre `src/forms/*.cls` en el commit fijado: un procedimiento cuenta como cubierto si su nombre aparece en la ficha de su formulario o si un rango de línea citado de su `.cls` lo solapa. **579 de 621 (93,2 %)**; los 42 restantes están detallados en la sección «Procedimientos auxiliares» de `Form_FormExpedientesGestion`, `Form_FormExpedienteSuministradores` y `Form_FormExpedienteEntidades`, o son manejadores sin lógica propia que no se detallan: `m_Form*_Editado` de los seis formularios de gestión de catálogos (anulan la caché del catálogo en `m_ObjEntorno` y relanzan `ComandoBuscar_Click`, 22-24 líneas) y el de `FormSuministradoresGestion` (relanza la búsqueda y propaga el evento `Editado`), `CmdSalir_Click`, `ListaFiltrados_DblClick`, `ComandoIniciarJP_Click`, `ImagenTareasON_Click` y los `m_For*_Alta` de `FormExpedienteAltaParaHPS`.
+
 ## Delta frente al estudio previo
 
 Resumido en [capacidades.md](capacidades.md): de las 63 entradas del ledger, 6 no cambian en su lógica, 32 se modifican (cambia el texto de las clases que las implementan), 2 se añaden (enlaces E2E y cola E2E con panel), 2 se retiran (autosave de pestañas) 13 no tienen equivalente comprobado en Access (conceptos de la web), 1 solo tiene formulario y 7 son mecanismos legacy a retirar. «Modificada» es diferencia de texto, no de comportamiento. Formularios: 3 añadidos, 4 retirados y 42 comunes que difieren del snapshot.
