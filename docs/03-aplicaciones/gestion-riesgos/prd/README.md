@@ -1,6 +1,8 @@
 # PRD — Gestión de Riesgos
 
-> **Estado:** fases 0 (fijación) y 1 (inventario) hechas. Los 63 formularios quedan **pendientes** de ficha: llegan en las tandas siguientes de la cadena. El ERD de origen queda pendiente del propietario (D-GR-4).
+> **Estado:** fases 0, 1, 3, 4, 5 y 6 hechas. **4 de 63 formularios** tienen ficha; los **59 restantes quedan pendientes** y llegan en las tandas siguientes de la cadena. El ERD de origen queda pendiente del propietario (D-GR-4).
+>
+> **Qué hay en este PRD ahora mismo:** [matriz campo a campo](matriz-campos.md) de las 85 tablas · [coexistencia](coexistencia.md) · [capacidades](capacidades.md) · [issues propuestas](issues-propuestas.md) · 4 fichas en [formularios/](formularios/).
 
 | Campo | Valor |
 |---|---|
@@ -59,7 +61,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt` anter
 | Form_FormGestionRiesgosSuministradores | formulario | src/forms/Form_FormGestionRiesgosSuministradores.cls | 552 | 22 | 13 | distinto | pendiente | Form_FormGestionRiesgosSuministradores (ficha por llegar) |
 | Form_FormIndicador | formulario | src/forms/Form_FormIndicador.cls | 316 | 50 | 17 | igual | pendiente | Form_FormIndicador (ficha por llegar) |
 | Form_formIndicadorProyectos | formulario | src/forms/Form_formIndicadorProyectos.cls | 277 | 25 | 11 | distinto | pendiente | Form_formIndicadorProyectos (ficha por llegar) |
-| Form_FormInformeTipoSalida | formulario | src/forms/Form_FormInformeTipoSalida.cls | 102 | 19 | 3 | anadido | pendiente | Form_FormInformeTipoSalida (ficha por llegar) |
+| Form_FormInformeTipoSalida | formulario | src/forms/Form_FormInformeTipoSalida.cls | 102 | 19 | 3 | anadido | analizado | [formularios/Form_FormInformeTipoSalida.md](formularios/Form_FormInformeTipoSalida.md) |
 | Form_FormPlanAcciones | formulario | src/forms/Form_FormPlanAcciones.cls | 378 | 36 | 18 | distinto | pendiente | Form_FormPlanAcciones (ficha por llegar) |
 | Form_FormPlanPrincipal | formulario | src/forms/Form_FormPlanPrincipal.cls | 196 | 27 | 6 | distinto | pendiente | Form_FormPlanPrincipal (ficha por llegar) |
 | Form_FormProyectosGestion | formulario | src/forms/Form_FormProyectosGestion.cls | 955 | 43 | 29 | distinto | pendiente | Form_FormProyectosGestion (ficha por llegar) |
@@ -98,9 +100,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt` anter
 | Form_FormTecnicoTareaRiesgosAceptadosRetirados | formulario | src/forms/Form_FormTecnicoTareaRiesgosAceptadosRetirados.cls | 194 | 44 | 3 | distinto | pendiente | Form_FormTecnicoTareaRiesgosAceptadosRetirados (ficha por llegar) |
 | Form_FormTecnicoTareas | formulario | src/forms/Form_FormTecnicoTareas.cls | 387 | 19 | 12 | distinto | pendiente | Form_FormTecnicoTareas (ficha por llegar) |
 | Form_FormTecnicoTareasDetalleEdicion | formulario | src/forms/Form_FormTecnicoTareasDetalleEdicion.cls | 223 | 43 | 5 | distinto | pendiente | Form_FormTecnicoTareasDetalleEdicion (ficha por llegar) |
-| Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 15 | 11 | 1 | anadido | pendiente | Form_Formulario1 (ficha por llegar) |
-| Form_FormWeb | formulario | src/forms/Form_FormWeb.cls | 68 | 17 | 2 | distinto | pendiente | Form_FormWeb (ficha por llegar) |
-| Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 102 | 16 | 3 | distinto | pendiente | Form_frmSplash (ficha por llegar) |
+| Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 15 | 11 | 1 | anadido | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
+| Form_FormWeb | formulario | src/forms/Form_FormWeb.cls | 68 | 17 | 2 | distinto | analizado | [formularios/Form_FormWeb.md](formularios/Form_FormWeb.md) |
+| Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 102 | 16 | 3 | distinto | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
 El relevo es una hipótesis por nombre, no un hecho: no se confirma sin leer el código de las fases siguientes.
 
@@ -112,7 +114,7 @@ Clases: 47, entre ellas el agregado de dominio (`Proyecto`, `Edicion`, `Riesgo`,
 
 ## Delta frente al estudio previo
 
-En el código de `main` no hay ningún formulario retirado de lo que describe el estudio previo: los 63 formularios cubren las mismas áreas que [forms.md](../forms.md). Lo que cambia es la precisión de los recuentos que el estudio previo da como contexto, no el conjunto de objetos: ver [Discrepancias abiertas](#discrepancias-abiertas). La clasificación por capacidades llega en su propia tanda (`prd/capacidades.md`).
+En el código de `main` no hay ningún formulario retirado de lo que describe el estudio previo: los 63 formularios cubren las mismas áreas que [forms.md](../forms.md). Lo que cambia es la precisión de los recuentos que el estudio previo da como contexto, no el conjunto de objetos: ver [Discrepancias abiertas](#discrepancias-abiertas). La clasificación completa está en [capacidades.md](capacidades.md): 14 sin cambios, 9 modificadas, 1 añadida y **0 retiradas**.
 
 ## Capacidades
 
@@ -130,7 +132,16 @@ El [estudio previo](../capabilities.md) enumera las capacidades observadas. La c
 
 ## Hallazgos del legacy
 
-Se documentarán aquí los comportamientos sospechosos que aparezcan al analizar las fichas, con su evidencia `fichero:línea`. Todos quedarán marcados «a verificar» en ejecución: este estudio no los corrige ni genera issues en el repositorio de Gestión de Riesgos.
+18 Hallazgos del legacy (H-GR-1 a H-GR-18), todos «a verificar». Ninguno se corrige aquí.
+
+| Rango | Ficha | Qué agrupa |
+|---|---|---|
+| H-GR-1 a H-GR-8 | [Form_frmSplash](formularios/Form_frmSplash.md) | El arranque: error que cierra sin abrir menú, `Err.Raise` sin descripción, salto `/dev` en producción |
+| H-GR-9 a H-GR-14 | [Form_FormWeb](formularios/Form_FormWeb.md) | El visor: cierre en silencio si el fichero no existe, apertura en segundo plano, ruta de una máquina concreta en un comentario |
+| — | [Form_FormInformeTipoSalida](formularios/Form_FormInformeTipoSalida.md) | Opción deshabilitada que sigue activa, dos defaults distintos, `ShellExecuteA` sobre una URL generada |
+| — | [Form_Formulario1](formularios/Form_Formulario1.md) | Huérfano de otra aplicación, con botones que no hacen nada |
+
+El listado completo, con la evidencia `fichero:línea` de cada uno, está en las fichas. Los que condicionan el diseño de la migración —concurrencia sin transacciones, `Max + 1`, comportamiento de error silenciado— se tratan en [coexistencia](coexistencia.md) y en [issues-propuestas](issues-propuestas.md), no aquí.
 
 ## Anexo: cambios no liberados
 
