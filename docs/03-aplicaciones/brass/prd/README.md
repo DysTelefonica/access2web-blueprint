@@ -91,8 +91,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormMaterialIntervencionEdicion | src/forms/Form_FormMaterialIntervencionEdicion.cls | 735 | 41 | 8 | igual | analizado | [formularios/Form_FormMaterialIntervencionEdicion.md](formularios/Form_FormMaterialIntervencionEdicion.md) |
 | Form_FormMaterialReparacionEdicion | src/forms/Form_FormMaterialReparacionEdicion.cls | 667 | 61 | 9 | igual | analizado | [formularios/Form_FormMaterialReparacionEdicion.md](formularios/Form_FormMaterialReparacionEdicion.md) |
 | Form_FormMaterialRepuestoAlta | src/forms/Form_FormMaterialRepuestoAlta.cls | 247 | 58 | 7 | igual | analizado | [formularios/Form_FormMaterialRepuestoAlta.md](formularios/Form_FormMaterialRepuestoAlta.md) |
-| Form_FormMaterialRepuestoEdicion | src/forms/Form_FormMaterialRepuestoEdicion.cls | 631 | 63 | 10 | igual | pendiente | — |
-| Form_FormMaterialSeguimiento | src/forms/Form_FormMaterialSeguimiento.cls | 803 | 54 | 12 | igual | pendiente | — |
+| Form_FormMaterialRepuestoEdicion | src/forms/Form_FormMaterialRepuestoEdicion.cls | 631 | 63 | 10 | igual | analizado | [formularios/Form_FormMaterialRepuestoEdicion.md](formularios/Form_FormMaterialRepuestoEdicion.md) |
+| Form_FormMaterialSeguimiento | src/forms/Form_FormMaterialSeguimiento.cls | 803 | 54 | 12 | igual | analizado | [formularios/Form_FormMaterialSeguimiento.md](formularios/Form_FormMaterialSeguimiento.md) |
 | Form_FormMaterialesGestion | src/forms/Form_FormMaterialesGestion.cls | 1393 | 51 | 44 | igual | pendiente | — |
 | Form_FormNodoBUIGestion | src/forms/Form_FormNodoBUIGestion.cls | 321 | 26 | 13 | igual | pendiente | — |
 | Form_FormNodoGestion | src/forms/Form_FormNodoGestion.cls | 235 | 18 | 7 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 91 analizados · 5 no aplicables · 35 pendientes.
+Totales: 93 analizados · 5 no aplicables · 33 pendientes.
 
 ## Discrepancias abiertas
 
