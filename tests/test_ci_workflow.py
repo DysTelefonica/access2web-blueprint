@@ -1148,6 +1148,15 @@ def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
     )
 
 
+def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) -> None:
+    """team-skills#978: a run cancelled after its jobs exist leaves a cancelled `required` check
+    on the head SHA, and that check blocks the merge even when a later run of the same SHA is
+    green. Events that keep the SHA (`edited`, `labeled`, `reopened`) must queue, not cancel."""
+    value = workflow["concurrency"]["cancel-in-progress"]
+    assert value is not True, "cancel-in-progress: true cancels runs of the same head SHA"
+    assert isinstance(value, str) and "synchronize" in value
+
+
 def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None:
     """HR-63 (team-skills#805): the CI gate checks exactly the roots the contract declares."""
     import json
