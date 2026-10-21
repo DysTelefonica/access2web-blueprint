@@ -1,6 +1,6 @@
 # Proyecto, edición y riesgo — matrices campo a campo
 
-> **Commit fijado:** `36fcf60161fa5ec84c3956b1308537ddf2579256` · **Issue:** #1079 · Fase 3 · **Matriz:** `matriz-campos.md` (índice, tanda posterior)
+> **Commit fijado:** `36fcf60161fa5ec84c3956b1308537ddf2579256` · **Issue:** #1079 · Fase 3 · **Matriz:** [matriz-campos.md](../matriz-campos.md)
 
 18 tablas. Cada fila está en estado **propuesta**: la topología PostgreSQL global y el ERD de origen siguen abiertos (D-GR-4 del [README](../README.md)).
 
@@ -79,7 +79,7 @@
 ### TbProyectos
 
 - Columnas: **25**. Filas (snapshot): **81**.
-- Evidencia en `src`: **12** fichero(s) de producción — `Edicion.cls`, `Proyecto.cls`, `TareasCalidad.cls`, `TareasTecnico.cls`, `Form_formIndicadorProyectos.cls`, `Form_formIndicadorProyectos.form.txt`…
+- Evidencia en `src`: **13** fichero(s) de producción — `Edicion.cls`, `Proyecto.cls`, `TareasCalidad.cls`, `TareasTecnico.cls`, `Form_formIndicadorProyectos.cls`, `Form_formIndicadorProyectos.form.txt`…
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -112,7 +112,7 @@
 ### TbProyectosEdiciones
 
 - Columnas: **22**. Filas (snapshot): **325**.
-- Evidencia en `src`: **9** fichero(s) de producción — `Edicion.cls`, `Proyecto.cls`, `TareasCalidad.cls`, `TareasTecnico.cls`, `Constructor.bas`, `IndicadorRiesgosRepositorio.bas`…
+- Evidencia en `src`: **10** fichero(s) de producción — `Edicion.cls`, `Proyecto.cls`, `TareasCalidad.cls`, `TareasTecnico.cls`, `Constructor.bas`, `Funciones Generales.bas`…
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -163,7 +163,7 @@
 ### TbRiesgos
 
 - Columnas: **47**. Filas (snapshot): **2924**.
-- Evidencia en `src`: **11** fichero(s) de producción — `Edicion.cls`, `Riesgo.cls`, `RiesgoBiblioteca.cls`, `RiesgoMaterializacion.cls`, `TareasCalidad.cls`, `TareasTecnico.cls`…
+- Evidencia en `src`: **12** fichero(s) de producción — `Edicion.cls`, `Riesgo.cls`, `RiesgoBiblioteca.cls`, `RiesgoMaterializacion.cls`, `TareasCalidad.cls`, `TareasTecnico.cls`…
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -258,7 +258,7 @@
 ### TbRiesgosMaterializaciones
 
 - Columnas: **11**. Filas (snapshot): **32**.
-- Evidencia en `src`: **6** fichero(s) de producción — `RiesgoMaterializacion.cls`, `TareasCalidad.cls`, `Constructor.bas`, `IndicadorRiesgosRepositorio.bas`, `Módulo1.bas`, `modMigracionAux.bas`
+- Evidencia en `src`: **7** fichero(s) de producción — `RiesgoMaterializacion.cls`, `TareasCalidad.cls`, `Constructor.bas`, `Funciones Generales.bas`, `IndicadorRiesgosRepositorio.bas`, `Módulo1.bas`…
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
