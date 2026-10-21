@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 13 de 28.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 16 de 28.
 
 | Campo | Valor |
 |---|---|
@@ -38,10 +38,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormAplicacionDatosGenerales | formulario | src/forms/Form_FormAplicacionDatosGenerales.cls | 268 | 48 | 4 | igual | analizado | [formularios/Form_FormAplicacionDatosGenerales.md](formularios/Form_FormAplicacionDatosGenerales.md) |
 | Form_FormAplicacionGeneral | formulario | src/forms/Form_FormAplicacionGeneral.cls | 129 | 22 | 12 | igual | analizado | [formularios/Form_FormAplicacionGeneral.md](formularios/Form_FormAplicacionGeneral.md) |
 | Form_FormAplicaciones | formulario | src/forms/Form_FormAplicaciones.cls | 156 | 24 | 15 | igual | analizado | [formularios/Form_FormAplicaciones.md](formularios/Form_FormAplicaciones.md) |
-| Form_FormAplicacionesFueraOficina | formulario | src/forms/Form_FormAplicacionesFueraOficina.cls | 493 | 47 | 13 | igual | pendiente | sin ficha todavía |
+| Form_FormAplicacionesFueraOficina | formulario | src/forms/Form_FormAplicacionesFueraOficina.cls | 493 | 47 | 13 | igual | analizado | [formularios/Form_FormAplicacionesFueraOficina.md](formularios/Form_FormAplicacionesFueraOficina.md) |
 | Form_FormAplicacionesGestion | formulario | src/forms/Form_FormAplicacionesGestion.cls | 149 | 21 | 6 | igual | analizado | [formularios/Form_FormAplicacionesGestion.md](formularios/Form_FormAplicacionesGestion.md) |
-| Form_FormAplicacionesOficina | formulario | src/forms/Form_FormAplicacionesOficina.cls | 371 | 29 | 9 | igual | pendiente | sin ficha todavía |
-| Form_FormAplicacionesPrueba | formulario | src/forms/Form_FormAplicacionesPrueba.cls | 293 | 16 | 6 | igual | pendiente | sin ficha todavía |
+| Form_FormAplicacionesOficina | formulario | src/forms/Form_FormAplicacionesOficina.cls | 371 | 29 | 9 | igual | analizado | [formularios/Form_FormAplicacionesOficina.md](formularios/Form_FormAplicacionesOficina.md) |
+| Form_FormAplicacionesPrueba | formulario | src/forms/Form_FormAplicacionesPrueba.cls | 293 | 16 | 6 | igual | analizado | [formularios/Form_FormAplicacionesPrueba.md](formularios/Form_FormAplicacionesPrueba.md) |
 | Form_FormEnConstruccion | formulario | src/forms/Form_FormEnConstruccion.cls | 2 | 12 | 0 | igual | analizado | [formularios/Form_FormEnConstruccion.md](formularios/Form_FormEnConstruccion.md) |
 | Form_FormLogin | formulario | src/forms/Form_FormLogin.cls | 311 | 23 | 7 | igual | analizado | [formularios/Form_FormLogin.md](formularios/Form_FormLogin.md) |
 | Form_FormMenuPrincipalAdmin | formulario | src/forms/Form_FormMenuPrincipalAdmin.cls | 323 | 40 | 33 | igual | analizado | [formularios/Form_FormMenuPrincipalAdmin.md](formularios/Form_FormMenuPrincipalAdmin.md) |
@@ -64,7 +64,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormVideosUsuarios | formulario | src/forms/Form_FormVideosUsuarios.cls | 171 | 16 | 6 | igual | pendiente | sin ficha todavía |
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 5 | 9 | 1 | igual | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 
-Totales (formularios): 13 analizados · 0 no aplicables · 15 pendientes.
+Totales (formularios): 16 analizados · 0 no aplicables · 12 pendientes.
 Totales (controles `Begin`): 740 · procedimientos: 247 · líneas de `.cls`: 6,246.
 
 ### Módulos y clases
@@ -104,6 +104,8 @@ Comportamientos sospechosos detectados al analizar el código. Son hallazgos del
 | H-LAN-9 | La contraseña de la aplicación se muestra sin máscara y se guarda tal cual; `HaHabidoCambios` compara `NombreIconoLanzadera` dos veces y omite `ConIconoEnLanzadera` y `NombreIconoParaArbol`; un nombre con apóstrofo rompe el SQL del filtro. | `Form_FormAplicacionDatosGenerales.form.txt:1201-1214`; `Aplicacion.cls:1895-1896`; `Form_FormAplicacionDatosGenerales.cls:36, 48, 201, 204`; `Constructor.bas:922` | [Form_FormAplicacionDatosGenerales](formularios/Form_FormAplicacionDatosGenerales.md) | a verificar |
 | H-LAN-10 | `FormEnConstruccion` y `Formulario1` están huérfanos: ningún código de `src` los abre. | `Form_FormEnConstruccion.cls:3`; `Form_Formulario1.cls:4-6` | [Form_FormEnConstruccion](formularios/Form_FormEnConstruccion.md) | a verificar |
 | H-LAN-11 | `Aplicacion.Lanzar` comprueba el icono cuando debería comprobar el BMP; `getVersion` pierde los errores de lectura; al fallar un lanzamiento salen dos mensajes; `LimpiarCache` ignora la colección que recibe. | `Aplicacion.cls:1407`; `Funciones Genreales.bas:274-275, 1838, 2998` | [Form_FormAplicaciones](formularios/Form_FormAplicaciones.md) | a verificar |
+| H-LAN-12 | `Lanzar` no comprueba permisos (solo que el botón esté habilitado); el botón de EXPEDIENTES se habilita para cualquier usuario; `ColAplicacionesActivas` no filtra nada. | `Funciones Genreales.bas:1803-1823`; `Form_FormAplicacionesFueraOficina.cls:98-101`; `Constructor.bas:386-387` | [Form_FormAplicacionesFueraOficina](formularios/Form_FormAplicacionesFueraOficina.md) | a verificar |
+| H-LAN-13 | Las etiquetas de versión de SICA y AGEDO llevan `Tag` 18 (el de contratos) y mostrarían la versión de otra aplicación; `ComandoCondorPrueba` usa el mismo ID que el Condor de producción y está siempre deshabilitado. | `Form_FormAplicacionesOficina.form.txt:2318, 2892`; `Form_FormAplicacionesPrueba.form.txt:577`; `Form_FormAplicacionesPrueba.cls:86` | [Form_FormAplicacionesOficina](formularios/Form_FormAplicacionesOficina.md) | a verificar |
 
 ## Método del recuento
 
