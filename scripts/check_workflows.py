@@ -1,39 +1,24 @@
 #!/usr/bin/env python3
-"""CI gate on .github/workflows/*.yml — issues #135, #141, #152, #552.
+"""CI gate on .github/workflows/*.yml — issues #135, #141, #152, #552, BP#1040.
 
-Eleven checks, applied by hand across PRs #126 / #129 / #142 and now pinned
-by the gate in `tests/test_check_workflows.py`:
+BP#1040 moved the structural checks to the canon `workflow-policy` gate
+(`.agents/skills/ci-pattern/assets/workflow-policy/`, run by the `workflow policy` step of
+ci.yml over every workflow): duplicate YAML keys, `timeout-minutes`, fixed host ports, SHA pins,
+the `docker info` preflight and the existence of a `concurrency` group. What stays here is what
+the canon does not check, pinned by `tests/test_check_workflows.py`:
 
- 1. No duplicate YAML keys (GitHub rejects them with startup_failure that
-    silently disappears from the rollup).
- 2. Every job declares timeout-minutes (GitHub default is 360 minutes — the
-    exact failure mode that hit security-deep until PR #131 fixed it). A job
-    that calls a reusable workflow (`uses: ./...`, issue #702) is exempt —
-    GitHub's schema for that job shape has no `timeout-minutes` at all.
- 3. No service container fixes a host port (ports: - 5432:5432 silently
-    shares a DB between runners; vacuous today, future-proofs the next
-    person who adds a service).
- 4. Every uses: pinned by a 40-hex SHA (blinds against future tag drift).
- 5. Every job invoking `docker run` checks the daemon first, wrapped in
-    `timeout` (a bare `docker info` hangs in the very scenario it exists to
-    detect). ci.yml::security had already slipped through without it.
- 6. Every job declares a `concurrency` group. Missing group -> ERROR; a
-    non-cancel-safe `cancel-in-progress: true` -> WARN; cancel-in-progress:
-    false (or absent) is the silent default this repo chose.
- 7. Workflow-level `permissions.contents` is `read` (or a list that contains
+ 1. A `cancel-in-progress: true` job outside `_CANCEL_SAFE_JOBS` -> WARN.
+ 2. Workflow-level `permissions.contents` is `read` (or a list that contains
     `read`). Missing `permissions:` block -> WARN — the GITHUB_TOKEN inherits
     a restrictive default, but this is not pinned to `contents: read`.
- 8. Every workflow that declares `env.PYTHON_VERSION` agrees on the value.
+ 3. Every workflow that declares `env.PYTHON_VERSION` agrees on the value.
     The interpreter is part of the gate (Hard Rule #15 of the
     `oracle-vps-github-runners` skill); two declarations with two values
     means one half of CI ships on a Python the test half never saw.
- 9. No two jobs in the same workflow share a `concurrency.group` literal.
+ 4. No two jobs in the same workflow share a `concurrency.group` literal.
     `gate-quality` on two jobs means the second job queues behind the
     first — FIFO at a granularity nobody asked for.
-10. (carried from #135) Duplicate-key, timeout-minutes, host-port-fix,
-    uses-not-pinned, docker-preflight, concurrency. The four added in #152
-    are #6 (WARN branch), #7, #8, #9.
-11. A workflow triggered by `pull_request` (or callable via `workflow_call`,
+ 5. A workflow triggered by `pull_request` (or callable via `workflow_call`,
     issue #702 — a reusable workflow's file cannot see whether its caller is
     PR-reachable, so it is treated the same way) may route PR-reachable jobs
     only to literal GitHub-hosted runner labels. Self-hosted and dynamic
@@ -64,27 +49,6 @@ import yaml
 # --------------------------------------------------------------------------------------------
 WORKFLOWS_DIR = Path(__file__).resolve().parent.parent / ".github" / "workflows"
 
-#: Recommended timeout per gate criticality. Fail on missing altogether.
-_TIMEOUT_RECOMMENDED = {
-    "pr-gate": 5,  # PR-size + walkthrough schema, both <1s
-    "security": 15,  # docker pull + scan; observed 17-min zombie in #117
-    "quality": 30,  # ruff + mypy + pytest + 4 quality gates
-    "mutation": 60,  # cosmic-ray is slow by design
-}
-
-#: GitHub Actions SHA — 40 lowercase hex characters.
-_SHA_PIN = re.compile(r"^[0-9a-f]{40}$")
-
-#: An actual `timeout` INVOCATION, not the word. The preflight messages in this
-#: repo say "15-minute silent timeout", so a substring test for `timeout` passes
-#: on the prose and reports an unwrapped guard as wrapped — the same class of
-#: false negative these checks exist to prevent.
-_TIMEOUT_CALL = re.compile(r"(?:^|[|&;(`$]|\s)timeout\s+\d")
-
-#: `ports:` value that fixes the host side, e.g. `5432:5432`. A bare
-#: number or `number:` (empty host) does not.
-_HOST_PORT_FIX = re.compile(r"^(?:\d{1,3}(?:\.\d{1,3}){3}|\d+):\d+$")
-
 #: Repo-approved allowlist of jobs that may safely use `cancel-in-progress: true`.
 #:
 #: Empty by design (audit 2026-08-12, umbrella #117). Every gate that consumed
@@ -103,150 +67,13 @@ _CANCEL_SAFE_JOBS: set[str] = set()
 Finding = tuple[str, str, str]
 
 
-def _check_timeout_minutes(doc: dict[str, Any]) -> Iterator[Finding]:
-    """Yield a violation for every job missing `timeout-minutes`.
-
-    Issue #702: a job that calls a reusable workflow (`uses: ./...`) is
-    schema-exempt from `timeout-minutes` — GitHub's reusable-workflow-call
-    job shape does not accept it at all (it has no `runs-on`, `steps`,
-    `env` or `timeout-minutes`; only `name`, `needs`, `permissions`, `if`,
-    `uses`, `with`, `secrets`, `strategy` and `concurrency`). The reusable
-    workflow's own jobs declare their own timeouts and are checked when
-    that file is scanned.
-    """
-    jobs = doc.get("jobs") or {}
-    if not isinstance(jobs, dict):
-        return
-    for job_name, job_def in jobs.items():
-        if not isinstance(job_def, dict):
-            continue
-        if "uses" in job_def:
-            continue
-        if "timeout-minutes" in job_def:
-            continue
-        recommended = _TIMEOUT_RECOMMENDED.get(job_name)
-        hint = (
-            f" (recommend {recommended} for `{job_name}` criticality)"
-            if recommended is not None
-            else ""
-        )
-        yield (
-            "error",
-            f"jobs.{job_name}",
-            f"job `{job_name}` does not declare `timeout-minutes`{hint}",
-        )
-
-
-def _check_service_ports(doc: dict[str, Any]) -> Iterator[Finding]:
-    """Yield a violation for every fixed host port in `services:`."""
-    jobs = doc.get("jobs") or {}
-    if not isinstance(jobs, dict):
-        return
-    for job_name, job_def in jobs.items():
-        if not isinstance(job_def, dict):
-            continue
-        services = job_def.get("services")
-        if not isinstance(services, dict):
-            continue
-        for service_name, service_def in services.items():
-            if not isinstance(service_def, dict):
-                continue
-            ports = service_def.get("ports")
-            if not isinstance(ports, list):
-                continue
-            for entry in ports:
-                if isinstance(entry, str) and _HOST_PORT_FIX.match(entry):
-                    yield (
-                        "error",
-                        f"jobs.{job_name}.services.{service_name}.ports",
-                        f"service `{service_name}` in job `{job_name}` fixes host port `{entry}`",
-                    )
-
-
-def _executable(script: str) -> list[str]:
-    """`script` split into lines, comment-only lines dropped.
-
-    These workflows document the commands they stopped using, so a scan that
-    reads comments reports the explanation as the offence — which teaches people
-    to delete explanations.
-    """
-    return [line for line in script.splitlines() if not line.strip().startswith("#")]
-
-
-def _check_docker_preflight(doc: dict[str, Any]) -> Iterator[Finding]:
-    """Yield a violation for every job reaching `docker run` unguarded.
-
-    A wedged daemon makes `docker run` block rather than fail, so the job goes
-    silent until its timeout. The guard must be wrapped in `timeout`: a bare
-    `docker info` hangs in exactly the scenario it exists to detect, which makes
-    it indistinguishable from no guard at all.
-
-    The guard may sit in an earlier step OR earlier in the same step — this repo
-    uses the latter — so both are accepted, and only text before the first
-    `docker run` counts.
-    """
-    jobs = doc.get("jobs") or {}
-    if not isinstance(jobs, dict):
-        return
-    for job_name, job_def in jobs.items():
-        if not isinstance(job_def, dict):
-            continue
-        steps = job_def.get("steps")
-        if not isinstance(steps, list):
-            continue
-        before: list[str] = []
-        for step in steps:
-            lines = (
-                _executable(str((step or {}).get("run") or "")) if isinstance(step, dict) else []
-            )
-            index = next((i for i, line in enumerate(lines) if "docker run" in line), None)
-            if index is None:
-                before.extend(lines)
-                continue
-            guard = "\n".join([*before, *lines[:index]])
-            if "docker info" not in guard:
-                yield (
-                    "error",
-                    f"jobs.{job_name}",
-                    f"job `{job_name}` reaches `docker run` with no `docker info` check",
-                )
-            elif not _TIMEOUT_CALL.search(guard):
-                yield (
-                    "error",
-                    f"jobs.{job_name}",
-                    f"job `{job_name}` checks `docker info` but not under `timeout`; "
-                    f"an unwrapped check hangs exactly when the daemon is wedged",
-                )
-            break
-
-
 def _check_concurrency(doc: dict[str, Any]) -> Iterator[Finding]:
-    """Yield a violation for jobs without a FIFO concurrency group.
+    """Yield a warning for jobs that cancel in-flight runs without a repo decision.
 
-    Audit 2026-08-12 (umbrella #117) re-classified the cancel-in-progress
-    policy. The literal "must be false" reading of the audit would have
-    broken main, because today every job uses `false` — but the intent
-    of the runner-skill rule is to surface any design where cancelling
-    is allowed without an explicit repo decision. The re-classified rule:
-
-      - missing `concurrency:` block     -> ERROR   (the runner pool is shared
-                                                    and no group means no FIFO;
-                                                    this is the case Hard Rule
-                                                    #1 is asking to block)
-      - `cancel-in-progress: true` AND
-        job NOT in `_CANCEL_SAFE_JOBS`   -> WARN    (deliberate design choice,
-                                                    but cancelling still
-                                                    discards work that already
-                                                    paid for a runner slot;
-                                                    add the job name to the
-                                                    allowlist to silence)
-      - `cancel-in-progress: true` AND
-        job in `_CANCEL_SAFE_JOBS`       -> silent  (the repo declares the
-                                                    in-flight work cheap to
-                                                    discard)
-      - `cancel-in-progress: false` or
-        absent                           -> silent  (the per-gate FIFO shape
-                                                    this repo chose)
+    Audit 2026-08-12 (umbrella #117): `cancel-in-progress: true` on a job that is not in
+    `_CANCEL_SAFE_JOBS` is a WARN (cancelling discards work that already paid for a runner slot);
+    `false` or absent is silent, and so is an allowlisted job. A job with no concurrency group at
+    all is the canon workflow-policy gate's finding (BP#1040), not this one's.
 
     Tests exercise the allowlist via `monkeypatch.setattr(check_workflows,
     "_CANCEL_SAFE_JOBS", {job_name})`; the production constant is empty.
@@ -259,12 +86,9 @@ def _check_concurrency(doc: dict[str, Any]) -> Iterator[Finding]:
         if not isinstance(job_def, dict):
             continue
         concurrency = job_def.get("concurrency") or top_level
+        # A missing group is the canon workflow-policy gate's finding (BP#1040); only the
+        # cancel-in-progress warning is local.
         if not isinstance(concurrency, dict) or not concurrency.get("group"):
-            yield (
-                "error",
-                f"jobs.{job_name}",
-                f"job `{job_name}` declares no concurrency group",
-            )
             continue
         if concurrency.get("cancel-in-progress") is True and job_name not in _CANCEL_SAFE_JOBS:
             yield (
@@ -371,41 +195,6 @@ def _check_concurrency_group_uniqueness(doc: dict[str, Any]) -> Iterator[Finding
                 f"each job needs a distinct group so they do not queue "
                 f"behind each other on the same workflow run",
             )
-
-
-def _check_uses_pinned(doc: dict[str, Any]) -> Iterator[Finding]:
-    """Yield a violation for every `uses:` not pinned by 40-hex SHA."""
-    jobs = doc.get("jobs") or {}
-    if not isinstance(jobs, dict):
-        return
-    for job_name, job_def in jobs.items():
-        if not isinstance(job_def, dict):
-            continue
-        steps = job_def.get("steps")
-        if not isinstance(steps, list):
-            continue
-        for step in steps:
-            if not isinstance(step, dict):
-                continue
-            uses = step.get("uses")
-            if not isinstance(uses, str):
-                continue
-            if "@" not in uses:
-                yield (
-                    "error",
-                    f"jobs.{job_name}.steps",
-                    f"step `{step.get('name', '?')}` in job `{job_name}` "
-                    f"uses `{uses}` without `@<ref>`",
-                )
-                continue
-            ref = uses.rsplit("@", 1)[1]
-            if not _SHA_PIN.match(ref):
-                yield (
-                    "error",
-                    f"jobs.{job_name}.steps",
-                    f"step `{step.get('name', '?')}` in job `{job_name}` "
-                    f"uses `{uses}` — pin to a 40-hex SHA, not a tag",
-                )
 
 
 # --------------------------------------------------------------------------------------------
@@ -590,26 +379,6 @@ def _check_one(path: Path, doc: dict[str, Any]) -> Iterator[tuple[str, str]]:
     (which short-circuit before any per-workflow check can run on a broken
     file — see `_check_one_with_parse`).
     """
-    for severity, location, message in _check_timeout_minutes(doc):
-        yield (
-            severity,
-            _format_finding(path, severity, "timeout-minutes", location, message),
-        )
-    for severity, location, message in _check_service_ports(doc):
-        yield (
-            severity,
-            _format_finding(path, severity, "host-port-fix", location, message),
-        )
-    for severity, location, message in _check_uses_pinned(doc):
-        yield (
-            severity,
-            _format_finding(path, severity, "uses-not-pinned", location, message),
-        )
-    for severity, location, message in _check_docker_preflight(doc):
-        yield (
-            severity,
-            _format_finding(path, severity, "docker-preflight", location, message),
-        )
     for severity, location, message in _check_concurrency(doc):
         yield (
             severity,
