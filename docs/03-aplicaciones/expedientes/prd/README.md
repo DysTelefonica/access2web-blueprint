@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 17 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 18 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 17 analizados · 0 no aplicables · 28 pendientes.
+Totales (formularios): 18 analizados · 0 no aplicables · 27 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
