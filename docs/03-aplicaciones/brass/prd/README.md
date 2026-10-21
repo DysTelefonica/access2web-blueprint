@@ -113,9 +113,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormSubContratacionEdicion | src/forms/Form_FormSubContratacionEdicion.cls | 495 | 32 | 9 | igual | analizado | [formularios/Form_FormSubContratacionEdicion.md](formularios/Form_FormSubContratacionEdicion.md) |
 | Form_FormSubContratacionGestion | src/forms/Form_FormSubContratacionGestion.cls | 762 | 35 | 24 | igual | analizado | [formularios/Form_FormSubContratacionGestion.md](formularios/Form_FormSubContratacionGestion.md) |
 | Form_FormSubSistemaAlta | src/forms/Form_FormSubSistemaAlta.cls | 146 | 23 | 4 | igual | analizado | [formularios/Form_FormSubSistemaAlta.md](formularios/Form_FormSubSistemaAlta.md) |
-| Form_FormSubSistemaEdicion | src/forms/Form_FormSubSistemaEdicion.cls | 288 | 23 | 6 | igual | pendiente | — |
-| Form_FormSubSistemaGestion | src/forms/Form_FormSubSistemaGestion.cls | 384 | 26 | 12 | igual | pendiente | — |
-| Form_FormTecnico | src/forms/Form_FormTecnico.cls | 270 | 34 | 7 | igual | pendiente | — |
+| Form_FormSubSistemaEdicion | src/forms/Form_FormSubSistemaEdicion.cls | 288 | 23 | 6 | igual | analizado | [formularios/Form_FormSubSistemaEdicion.md](formularios/Form_FormSubSistemaEdicion.md) |
+| Form_FormSubSistemaGestion | src/forms/Form_FormSubSistemaGestion.cls | 384 | 26 | 12 | igual | analizado | [formularios/Form_FormSubSistemaGestion.md](formularios/Form_FormSubSistemaGestion.md) |
+| Form_FormTecnico | src/forms/Form_FormTecnico.cls | 270 | 34 | 7 | igual | analizado | [formularios/Form_FormTecnico.md](formularios/Form_FormTecnico.md) |
 | Form_FormTecnicoAusencias | src/forms/Form_FormTecnicoAusencias.cls | 216 | 29 | 6 | igual | pendiente | — |
 | Form_FormTecnicoAusenciasGestion | src/forms/Form_FormTecnicoAusenciasGestion.cls | 491 | 26 | 16 | igual | pendiente | — |
 | Form_FormTecnicoConsultaHoras | src/forms/Form_FormTecnicoConsultaHoras.cls | 450 | 25 | 5 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 113 analizados · 5 no aplicables · 13 pendientes.
+Totales: 116 analizados · 5 no aplicables · 10 pendientes.
 
 ## Discrepancias abiertas
 
