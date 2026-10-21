@@ -166,22 +166,22 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | FacturaPerfiles | src/classes/FacturaPerfiles.cls | 324 | — | 9 | igual | analizado | [clases-1.md](clases-1.md) |
 | Fiesta | src/classes/Fiesta.cls | 202 | — | 6 | igual | analizado | [clases-1.md](clases-1.md) |
 | Gasto | src/classes/Gasto.cls | 433 | — | 12 | igual | analizado | [clases-1.md](clases-1.md) |
-| GestorInforme | src/classes/GestorInforme.cls | 281 | — | 8 | igual | pendiente | — |
-| Informe | src/classes/Informe.cls | 987 | — | 11 | igual | pendiente | — |
-| LIbranza | src/classes/LIbranza.cls | 398 | — | 9 | igual | pendiente | — |
-| Material | src/classes/Material.cls | 714 | — | 17 | igual | pendiente | — |
-| MaterialSeguimiento | src/classes/MaterialSeguimiento.cls | 378 | — | 9 | igual | pendiente | — |
-| Parte | src/classes/Parte.cls | 645 | — | 16 | igual | pendiente | — |
-| Subcontratacion | src/classes/Subcontratacion.cls | 374 | — | 10 | igual | pendiente | — |
-| Tecnico | src/classes/Tecnico.cls | 703 | — | 13 | igual | pendiente | — |
-| TecnicoHoras | src/classes/TecnicoHoras.cls | 528 | — | 15 | igual | pendiente | — |
-| TipoDia | src/classes/TipoDia.cls | 186 | — | 5 | igual | pendiente | — |
-| TipoTecnico | src/classes/TipoTecnico.cls | 526 | — | 17 | igual | pendiente | — |
-| TipoTecnicoPrecio | src/classes/TipoTecnicoPrecio.cls | 892 | — | 24 | igual | pendiente | — |
-| Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
-| UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
+| GestorInforme | src/classes/GestorInforme.cls | 281 | — | 8 | igual | analizado | [clases-2.md](clases-2.md) |
+| Informe | src/classes/Informe.cls | 987 | — | 11 | igual | analizado | [clases-2.md](clases-2.md) |
+| LIbranza | src/classes/LIbranza.cls | 398 | — | 9 | igual | analizado | [clases-2.md](clases-2.md) |
+| Material | src/classes/Material.cls | 714 | — | 17 | igual | analizado | [clases-2.md](clases-2.md) |
+| MaterialSeguimiento | src/classes/MaterialSeguimiento.cls | 378 | — | 9 | igual | analizado | [clases-2.md](clases-2.md) |
+| Parte | src/classes/Parte.cls | 645 | — | 16 | igual | analizado | [clases-2.md](clases-2.md) |
+| Subcontratacion | src/classes/Subcontratacion.cls | 374 | — | 10 | igual | analizado | [clases-2.md](clases-2.md) |
+| Tecnico | src/classes/Tecnico.cls | 703 | — | 13 | igual | analizado | [clases-2.md](clases-2.md) |
+| TecnicoHoras | src/classes/TecnicoHoras.cls | 528 | — | 15 | igual | analizado | [clases-2.md](clases-2.md) |
+| TipoDia | src/classes/TipoDia.cls | 186 | — | 5 | igual | analizado | [clases-2.md](clases-2.md) |
+| TipoTecnico | src/classes/TipoTecnico.cls | 526 | — | 17 | igual | analizado | [clases-2.md](clases-2.md) |
+| TipoTecnicoPrecio | src/classes/TipoTecnicoPrecio.cls | 892 | — | 24 | igual | analizado | [clases-2.md](clases-2.md) |
+| Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
+| UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 44 analizados · 5 no aplicables · 82 pendientes.
+Totales: 58 analizados · 5 no aplicables · 68 pendientes.
 
 ## Discrepancias abiertas
 
