@@ -19,10 +19,10 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin branch -->
 ## 2. Ramas
 
-- Genere el nombre de rama; nunca lo escriba a mano (HR-35): `<tipo>/<número>-<slug>`, con el slug del título de la issue en minúsculas y guiones:
-  `git switch -c <tipo>/<número>-<slug>`
+- Nombre de rama: `<tipo>/<slug>`, con el slug del título de la issue en minúsculas y guiones y sin número de issue:
+  `git switch -c <tipo>/<slug>`
 - Regex obligatoria: `^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$`
-- El generador que construye y valida el nombre (HR-35) es un activo de la skill del patrón: no se instala en el consumer, así que aquí se compone el nombre y se valida contra la regex.
+- La regex la aplica el ruleset del host; en un host sin rulesets, el gate de nombre de rama del patrón.
 
 <!-- ci-pattern-doc:end branch -->
 
@@ -38,12 +38,11 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 ## 4. Pull requests
 
 - Presupuesto: 400 líneas (añadidas + borradas, tests y docs incluidos). Si no cabe, cadena de PRs.
-- Slice intermedio de cadena: etiqueta `chain:partial` y `Refs #N` en el cuerpo; sin palabras de cierre.
+- PR que no cierra la issue: etiqueta `chain:partial` y `Refs #<issue>` en el cuerpo; sin `Closes|Fixes|Resolves`. HR-7 deduce que `chain:partial` significa «este PR no cierra la issue»; los propagadores y los eslabones intermedios de una cadena la llevan.
 - Con `chain:partial` o en la punta de cadena, el cuerpo lleva la sección Chain Context (HR-54): posición N/M, base igual a la del PR, dependencias, presupuesto y un único marcador del PR actual en el diagrama.
-- Solo el PR punta de cadena lleva `Closes #N`.
-- Antes de un `Closes #N`, compruebe la matriz HR→gate de la skill adoptada: `rg '"issue": <número>' <skill>/references/hr-gate-matrix.json`; una entrada `manual` apuntando a la issue exige reclasificarla en el mismo PR.
+- El PR que cierra la issue lleva `Closes #<issue>` sin la etiqueta de cadena.
 - Exactamente una etiqueta `type:*` por PR: type:bug, type:chore, type:docs, type:feature, type:refactor.
-- Toda edición material de una skill añade un fragmento válido en `changelog.d/` (HR-44, #665).
+- El cuerpo lleva la sección `## Asistencia de IA` no vacía (HR-14): «ninguna» o la herramienta de IA y la parte que ayudó. La declaración vive en el PR; los commits no llevan atribución de IA.
 
 <!-- ci-pattern-doc:end pull-request -->
 
@@ -69,7 +68,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin merge -->
 ## 6. Merge
 
-- El merge es decisión humana con CI en verde; ningún agente mergea.
+- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por orden explícita y registrada de un mantenedor con cuenta de mantenedor, nunca con `--admin`.
 - Métodos de merge permitidos (host-contract): merge commit, rebase, squash.
 
 <!-- ci-pattern-doc:end merge -->
@@ -110,15 +109,15 @@ Un incidente de producción deja cuatro niveles, enlazados por identificadores (
 Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs requeridos que debe ver en verde antes del merge: codeql, docs-architecture, docs-codeguide, docs-decisions, docs-links, integration, pr-gate, quality, security.
 - **1. Issue.** Con el formulario del consumer (sección 1), busque duplicados y cree la issue:
   `gh issue list --search "<términos>" --json number,title,state --state all --limit 20`
-  `gh issue create --title "<título>" --body-file <cuerpo-de-la-issue.md>`
+  `gh issue create --title "<título>" --body-file <cuerpo-de-la-issue.md> --label type:<tipo>` Elija exactamente un `type:*` de la sección 4.
   Hecho: la issue existe y lleva su etiqueta de tipo.
-- **2. Aprobación.** No empiece sin ella; consulte la issue:
+- **2. Aprobación.** El agente crea la issue y para; la aprueba un mantenedor. Nunca se auto-aprueba, ni aunque la orden del mantenedor incluya la aprobación: en ese caso lo declara en el cuerpo del PR (quién aprobó y con qué instrucción). Consulte la etiqueta:
   `gh issue view <número> --json labels --jq '.labels[].name'`
-  Hecho: la lista contiene `status:approved`.
-- **3. Worktree.** Desde la rama base actualizada, y con el nombre de rama compuesto aquí, nunca escrito a mano (regex `^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$`):
+  Hecho: la lista contiene `status:approved`. Si no está, pare y pregunte; no cree rama ni PR.
+- **3. Worktree.** Desde la rama base actualizada, con un nombre de rama que cumpla la regex `^(feat|fix|refactor|docs|ci|test|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$`:
   `git fetch origin && git switch <rama-base> && git pull --ff-only`
-  `<rama-nueva>` = `<tipo>/<número>-<slug>`, con el `<slug>` del título de la issue en minúsculas y guiones
-  `git worktree add ../<repo>-<número>-<tema> -b <rama-nueva>`
+  `<rama-nueva>` = `<tipo>/<slug>`, con el `<slug>` del título de la issue en minúsculas y guiones, sin número de issue
+  `git worktree add ../<repo>-worktrees/<número>-<tema> -b <rama-nueva>`
   Hecho: `git worktree list` muestra la ruta nueva.
 - **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; Conventional Commits (sección 3); sin atribución de IA.
   Hecho: `git log --oneline <rama-base>..HEAD` muestra una entrada por unidad.
@@ -128,17 +127,17 @@ Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs
   Hecho: exit 0 sobre el árbol integrado.
 - **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con `Refs #N` (o `Closes #N` solo en la punta de cadena), exactamente una etiqueta `type:*` (sección 4) y presupuesto de 400 líneas; si no cabe, cadena:
   Con `chain:partial` o en la punta de cadena (base = rama por defecto) el cuerpo lleva ADEMÁS la sección **Chain Context** (HR-54) como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget`, con `base` igual a la base del PR y un único marcador del PR actual en el diagrama de la plantilla de PR.
-  `gh pr create --base <rama-base> --head <rama-nueva> --title "<tipo>(<ámbito>): <resumen>" --body-file <cuerpo-del-pr.md>`
+  `gh pr create --base <rama-base> --head <rama-nueva> --title "<tipo>(<ámbito>): <resumen>" --body-file <cuerpo-del-pr.md> --label type:<tipo>` Elija exactamente un `type:*` de la sección 4; el merge gobernado rechaza el PR sin él.
   Hecho: `gh pr view <número> --json number,url` devuelve número y URL.
 - **7. Checks.** Consulte la tabla de checks requeridos (sección 5) y el estado del PR:
   `gh pr checks <número>`
   Hecho: ningún check en fail.
 - **8. CI en verde.** Si un check falla, aplique su receta de recuperación (sección 5), reejecute el preflight de la etapa 5 y empuje de nuevo. Si la base avanzó durante la revisión, repita la integración de la etapa 5 (merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza anterior a la integración no es evidencia del resultado nuevo.
   Hecho: todos los checks en pass sobre la cabeza y la base actuales.
-- **9. Merge gobernado.** El merge lo decide un humano con CI en verde; ningún agente mergea. Métodos permitidos (host-contract): merge commit, rebase, squash.
+- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. Un agente lo lanza solo por orden explícita y registrada de un mantenedor con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. Métodos permitidos (host-contract): merge commit, rebase, squash.
   Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.
 - **10. Limpieza.** Solo después del merge verificado y sin cambios pendientes, retire el worktree local; la rama remota se conserva siempre (nunca `git push origin --delete`, `--delete-branch` ni borrado de ramas):
-  `git worktree remove ../<repo>-<número>-<tema>`
+  `git worktree remove ../<repo>-worktrees/<número>-<tema>`
   Hecho: `git worktree list` ya no muestra la ruta y la rama sigue en `origin`.
 
 <!-- ci-pattern-doc:end lifecycle -->
@@ -202,6 +201,7 @@ Antes de actuar, vaya al documento de su situación; no deduzca dónde va el tra
 | Proponer o cambiar algo que quizá ya se decidió | `docs/decisions/README.md`: consulte antes si ya se rechazó, sustituyó o aplazó |
 | Crear un módulo o importar entre módulos | `docs/architecture.md`: árbol de módulos, capas y dependencias permitidas, antes de añadir un módulo o un import entre capas |
 | Dudar de si algo existe en el repositorio | las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código |
+| Abrir un pull request | `CONTRIBUTING.md` antes de abrir la PR (issue primero, asistencia de IA, presupuesto, checks) |
 <!-- ci-pattern-agents:end -->
 
 <!-- ci-pattern-doc:end agents-block -->
