@@ -41,9 +41,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Form_frm0OtrosAdmin | src/forms/Form_frm0OtrosAdmin.cls | 65 | 30 | 5 | igual | pendiente | — |
-| Form_frm0Ppal | src/forms/Form_frm0Ppal.cls | 322 | 39 | 17 | igual | pendiente | — |
-| Form_frm0PpalTecnico | src/forms/Form_frm0PpalTecnico.cls | 196 | 31 | 10 | igual | pendiente | — |
+| Form_frm0OtrosAdmin | src/forms/Form_frm0OtrosAdmin.cls | 65 | 30 | 5 | igual | analizado | [formularios/Form_frm0OtrosAdmin.md](formularios/Form_frm0OtrosAdmin.md) |
+| Form_frm0Ppal | src/forms/Form_frm0Ppal.cls | 322 | 39 | 17 | igual | analizado | [formularios/Form_frm0Ppal.md](formularios/Form_frm0Ppal.md) |
+| Form_frm0PpalTecnico | src/forms/Form_frm0PpalTecnico.cls | 196 | 31 | 10 | igual | analizado | [formularios/Form_frm0PpalTecnico.md](formularios/Form_frm0PpalTecnico.md) |
 | Form_frmAltaSolicitud | src/forms/Form_frmAltaSolicitud.cls | 646 | 43 | 19 | distinto | pendiente | — |
 | Form_frmBuscarExpediente | src/forms/Form_frmBuscarExpediente.cls | 242 | 31 | 14 | igual | pendiente | — |
 | Form_frmBuscarSolicitudes | src/forms/Form_frmBuscarSolicitudes.cls | 359 | 32 | 18 | distinto | pendiente | — |
@@ -57,7 +57,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_frmFiltrosAvanzadosSolicitudes | src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls | 134 | 33 | 11 | igual | pendiente | — |
 | Form_frmGestionAdjuntos | src/forms/Form_frmGestionAdjuntos.cls | 380 | 23 | 10 | distinto | pendiente | — |
 | Form_frmGestionSolicitud | src/forms/Form_frmGestionSolicitud.cls | 2416 | 32 | 53 | distinto | pendiente | — |
-| Form_frmSplash | src/forms/Form_frmSplash.cls | 78 | 15 | 2 | igual | pendiente | — |
+| Form_frmSplash | src/forms/Form_frmSplash.cls | 78 | 15 | 2 | igual | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 | Form_frmVerLogCambios | src/forms/Form_frmVerLogCambios.cls | 187 | 26 | 10 | igual | pendiente | — |
 | Form_frmVerLogErrores | src/forms/Form_frmVerLogErrores.cls | 183 | 25 | 10 | igual | pendiente | — |
 | Form_frmWebVisor | src/forms/Form_frmWebVisor.cls | 426 | 21 | 15 | igual | pendiente | — |
@@ -183,7 +183,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | WebVisorCacheServicio | src/classes/WebVisorCacheServicio.cls | 180 | — | 9 | distinto | pendiente | — |
 | WorkflowServicio | src/classes/WorkflowServicio.cls | 4160 | — | 82 | distinto | pendiente | — |
 
-Totales: 0 analizados · 0 no aplicables · 131 pendientes.
+Totales: 4 analizados · 0 no aplicables · 127 pendientes.
 
 ## Discrepancias abiertas
 
