@@ -1229,7 +1229,5 @@ def test_e2e_smoke_job_runs_on_pull_request_and_is_required(workflow: dict) -> N
     assert "playwright test smoke.spec.ts auth.spec.ts" in steps
     assert "|| true" not in steps and "continue-on-error" not in str(job)
 
-    release = yaml.safe_load(
-        (_find_workflow().parent / "release.yml").read_text(encoding="utf-8")
-    )
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
     assert "e2e" in release["jobs"], "the release E2E job stays as it is"
