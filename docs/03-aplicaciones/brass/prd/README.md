@@ -47,9 +47,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | analizado | [formularios/Form_FormActividadEdicion.md](formularios/Form_FormActividadEdicion.md) |
 | Form_FormActividadGestion | src/forms/Form_FormActividadGestion.cls | 1065 | 39 | 26 | igual | analizado | [formularios/Form_FormActividadGestion.md](formularios/Form_FormActividadGestion.md) |
 | Form_FormActividadTipoAlta | src/forms/Form_FormActividadTipoAlta.cls | 148 | 23 | 4 | igual | analizado | [formularios/Form_FormActividadTipoAlta.md](formularios/Form_FormActividadTipoAlta.md) |
-| Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | pendiente | — |
-| Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | pendiente | — |
-| Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | pendiente | — |
+| Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | analizado | [formularios/Form_FormActividadTipoEdicion.md](formularios/Form_FormActividadTipoEdicion.md) |
+| Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | analizado | [formularios/Form_FormActividadTipoGestion.md](formularios/Form_FormActividadTipoGestion.md) |
+| Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | analizado | [formularios/Form_FormAnexos.md](formularios/Form_FormAnexos.md) |
 | Form_FormAnexosNoAlcanzables | src/forms/Form_FormAnexosNoAlcanzables.cls | 219 | 28 | 6 | igual | pendiente | — |
 | Form_FormBUIGestion | src/forms/Form_FormBUIGestion.cls | 229 | 18 | 7 | igual | pendiente | — |
 | Form_FormCalibracionAlta | src/forms/Form_FormCalibracionAlta.cls | 228 | 35 | 4 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
 
-Totales: 8 analizados · 0 no aplicables · 123 pendientes.
+Totales: 11 analizados · 0 no aplicables · 120 pendientes.
 
 ## Discrepancias abiertas
 
