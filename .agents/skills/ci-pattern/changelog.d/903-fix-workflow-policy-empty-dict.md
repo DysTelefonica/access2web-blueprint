@@ -1,0 +1,3 @@
+type: patch
+
+workflow-policy (#903): el reader acepta `inputs: {}` y `secrets: {}` como mapeos vacíos en `on.workflow_call` (antes lanzaba `unsupported YAML construct: '{}'` con rc=2); un mapa inline con contenido (`{a: b}`) falla cerrado con rc=2 y un mensaje que nombra el mapa rechazado y la alternativa soportada (bloque indentado o `{}`). Sale del workaround que tenía cadete (#533) en fase 4 de adopción — `pr-contract.yml` vuelve a entrar en los args del gate.

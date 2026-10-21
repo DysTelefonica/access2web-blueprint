@@ -200,5 +200,106 @@ class DocsManifestTests(unittest.TestCase):
                          set(GATE.CONTRACT_KEYS))
 
 
+# ---------------------------------------------------------------------------------------------
+# HR-71 (#878): CONTRIBUTING.md obligatorio para consumers primary_type:web
+# ---------------------------------------------------------------------------------------------
+
+CONTRIBUTING_SECTIONS = [
+    "Issue primero", "Asistencia de IA", "Etiquetas",
+    "Presupuesto de revisión", "Commits por unidad",
+    "Comprobaciones previas", "Comprobaciones automáticas",
+    "Enlace a la issue",
+]
+CONTRIBUTING_MANIFEST = {"documents": [
+    {"path": "CONTRIBUTING.md",
+     "purpose": "Cómo contribuir al repo: issue primero, IA, presupuesto, checks",
+     "sections": CONTRIBUTING_SECTIONS,
+     "required_by": "HR-71",
+     "activated_by": "project_type:web"},
+]}
+_CONTRIBUTING_BODY = "\n".join(
+    ["# Contributing\n"] +
+    [f"## {s}\n\ntexto\n" for s in CONTRIBUTING_SECTIONS]
+) + "\n"
+_CONTRIBUTING_EMPTY_IA = _CONTRIBUTING_BODY.replace(
+    "## Asistencia de IA\n\ntexto\n", "## Asistencia de IA\n\n<!-- vacía -->\n"
+)
+
+
+def _write_yaml(repo_path, project_type):
+    (Path(repo_path) / ".team-skills.yaml").write_text(
+        f"project_type: {project_type}\n", encoding="utf-8")
+
+
+def _findings_web(files, project_type=None, manifest=CONTRIBUTING_MANIFEST):
+    """Replica _findings pero escribe .team-skills.yaml opcionalmente."""
+    with tempfile.TemporaryDirectory() as d:
+        if project_type is not None:
+            _write_yaml(d, project_type)
+        for rel, text in files.items():
+            _write(d, rel, text)
+        return GATE.check(Path(d), manifest, {"docs_manifest": {}})
+
+
+class DocsManifestContributingTests(unittest.TestCase):
+    """HR-71 (#878): CONTRIBUTING.md obligatorio para consumers primary_type:web."""
+
+    def test_web_sin_contributing_md_es_mayor_velocidad(self):
+        # RED: hoy el gate se ve omitido porque 'project_type:web' no se
+        # entiende como activación; tras HR-71 falla con el hallazgo canónico.
+        found = _findings_web({}, project_type="web")
+        self.assertTrue(
+            any("CONTRIBUTING.md" in f and "falta el documento" in f for f in found),
+            found)
+
+    def test_web_con_seccion_vacia_es_mayor_velocidad(self):
+        # RED: la sección vacía solo se detecta si el doc se activa.
+        found = _findings_web({"CONTRIBUTING.md": _CONTRIBUTING_EMPTY_IA},
+                              project_type="web")
+        self.assertTrue(
+            any("Asistencia de IA" in f and "vacía" in f for f in found),
+            found)
+
+    def test_sin_team_skills_yaml_es_falla_cerrado(self):
+        # RED: cuando el catálogo no puede resolver project_type y el doc
+        # exige 'project_type:web', HR-71 falla cerrado: activa el doc y
+        # exige el fichero.
+        found = _findings_web({})
+        self.assertTrue(
+            any("CONTRIBUTING.md" in f and "falta el documento" in f for f in found),
+            found)
+
+    def test_runtime_sin_contributing_md_no_se_mide(self):
+        # GREEN hoy y tras HR-71: project_type runtime no activa el doc.
+        self.assertEqual(_findings_web({}, project_type="runtime"), [])
+
+    def test_web_con_todas_las_secciones_es_conforme(self):
+        # GREEN hoy (skip) y tras HR-71 (activación + secciones presentes).
+        self.assertEqual(
+            _findings_web({"CONTRIBUTING.md": _CONTRIBUTING_BODY}, project_type="web"),
+            [])
+
+    def test_routing_rows_incluye_contributing_para_web(self):
+        # RED: routing_rows hoy filtra por 'in contract'; tras HR-71 activa
+        # por .team-skills.yaml cuando activated_by es project_type:<x>.
+        with tempfile.TemporaryDirectory() as d:
+            _write_yaml(d, "web")
+            manifest = {"documents": [
+                {**CONTRIBUTING_MANIFEST["documents"][0],
+                 "route": {"when": "abrir PR", "read": "CONTRIBUTING.md"}}]}
+            rows = GATE.routing_rows(manifest, {"docs_manifest": {}}, Path(d))
+            self.assertTrue(any(r[2] == "CONTRIBUTING.md" for r in rows), rows)
+
+    def test_la_plantilla_canonica_lleva_las_secciones_del_manifiesto(self):
+        # Patron paralelo a `la_plantilla_del_hub_lleva_las_secciones`: el
+        # template de CONTRIBUTING.md cubre todas las secciones exigidas por
+        # HR-71 (mismos títulos normalizados).
+        manifest = GATE.load_manifest(ASSET / "required-docs.json")
+        page = next(d for d in manifest["documents"] if d["path"] == "CONTRIBUTING.md")
+        template = ASSET.parent / "templates" / "docs" / "CONTRIBUTING.md.tmpl"
+        found = GATE._sections(template.read_text(encoding="utf-8"))
+        self.assertEqual([s for s in page["sections"] if s.casefold() not in found], [])
+
+
 if __name__ == "__main__":
     unittest.main()

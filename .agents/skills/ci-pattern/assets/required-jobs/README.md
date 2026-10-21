@@ -72,6 +72,8 @@ Marque `required` como check requerido en la protección de rama.
 | `required_jobs` | Sí | Lista no vacía de nombres de job, sin duplicados |
 | `events` | Sí | Un objeto por evento que el workflow atiende |
 | `events.<evento>.accepted_skips` | Sí | Jobs de `required_jobs` que ese evento puede saltar; `[]` si ninguno |
+| `dependencies` | No | Grafo `{downstream: [upstream, ...]}` para aceptar skips en cascada cuando algún upstream está en `accepted_skips` (#853) |
+| `docs_only_lane` | No | Lane condicional: `event`, `gate_job`, `output` y `skips`. El job `gate_job` debe publicar `output` = `"true"` en `event`; si no, esos skips no se aceptan (#857) |
 | `relaxation` | Solo al relajar | Objeto con `reason` y `reference`, ambos cadenas no vacías |
 
 `accepted_skips` es obligatoria en cada evento declarado. Un evento que la
@@ -89,6 +91,7 @@ El gate compara la política del PR contra esa copia.
 | Job retirado de `required_jobs` | Relajación | Sí |
 | Entrada añadida a `accepted_skips` de un evento | Relajación | Sí |
 | Evento añadido | Relajación | Sí |
+| Skip añadido a `docs_only_lane.skips`, o cambio de `event`, `gate_job` u `output` del lane | Relajación | Sí |
 | Job añadido, skip retirado o evento retirado | Endurecimiento | No |
 
 Una relajación solo pasa si la política del PR lleva el campo `relaxation`:
@@ -192,6 +195,7 @@ descendente nunca se lee como la causa.
 |---|---|
 | `tests/test_required_jobs.py` | Veredictos del gate, formas de `needs` y validación de la política |
 | `tests/test_base_comparison.py` | `--base-policy`: relajaciones, endurecimientos y campo `relaxation` |
+| `tests/test_docs_only_lane.py` | Lane docs-only: skips aceptados solo con el marcador `"true"` en el evento declarado, combinado con `dependencies` y su relajación contra la base (#857) |
 | `tests/test_readme_wiring.py` | Los pasos de este README, ejecutados con `bash` y `git` tal como están escritos |
 | `tests/test_parity.py` | `check_parity.py`: paridad, cada diferencia y cada construcción no soportada |
 

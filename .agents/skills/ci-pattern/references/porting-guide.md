@@ -109,6 +109,18 @@ por cada artefacto encontrado — una omisión es hallazgo que la nombra.
 
 Cierre: `ci-pattern adoption check --phase 0 <repo>` = 0.
 
+> **Artefactos de gobierno en `phases[0].inventory` — recordatorio (oleada 8).**
+> El catálogo declara como artefactos de gobierno todos los caminos gobernados
+> del repo: workflows, plantillas de issue/PR, `AGENTS.md`, `ci-pattern-flow.md`,
+> `CODEBASE-GUIDE.md`, etc. `CONTRIBUTING.md` también: cualquier consumer que
+> lo lleve debe declararlo en `phases[0].inventory` con
+> `{artifact: "CONTRIBUTING.md", disposition: "adopted", target: "CONTRIBUTING.md"}`
+> para silenciar el hallazgo `fase 0: artefacto de gobierno sin entrada de
+> inventario: CONTRIBUTING.md`. **HR-71 (fase 5) no basta sola**: la fase 0 lee
+> solo del inventario del contrato, no del manifiesto de docs. Lo mismo aplica
+> a cualquier artefacto nuevo que el consumer incorpore y que el catálogo
+> reconozca como gobernado (consulte `assets/adoption/pattern-catalog.json`).
+
 ## Fase 1 — Verificación de realidad de la propagación
 
 - **G1.1 — El mecanismo de propagación de skills funciona, verificado en
@@ -147,11 +159,39 @@ Cierre: `ci-pattern adoption check --phase 1 <repo>` = 0.
   contra la revisión desplegada y produjo 18 falsos fallos; el worktree en la
   revisión correcta tuvo que prepararlo la IA de otra sesión.
 
+### Camino Windows/WSL — worktree y `git`
+
+Un worktree creado desde Windows guarda en su `.git` (un fichero, no un
+directorio) la ruta absoluta del repositorio, con la forma `gitdir: C:/...`.
+Esa ruta no existe dentro de WSL, donde el mismo sitio aparece como `/mnt/c/...`,
+y `git` en WSL falla al leer ese worktree.
+
+1. Elija un lado y no lo mezcle: o el worktree y el preflight son de Windows
+   (Git for Windows y Python de Windows), o son de WSL (un worktree creado
+   dentro del sistema de ficheros de WSL, p. ej. bajo `/home/<usuario>/`).
+2. Cree el worktree desde ese lado con su propio comando de Git. Nunca copie
+   el `.git` de un lado a otro.
+3. Ejecute el preflight desde la raíz de ese worktree con el intérprete del
+   mismo lado.
+
+**Limitación conocida:** el comportamiento de `git` en WSL con un worktree
+creado en Windows no está verificado por este patrón. Si el preflight falla en
+WSL por la ruta de `.git`, la salida práctica es el punto 1, no un parche manual
+de ese fichero.
+
 Gate de salida de fase: cada actor con su worktree, la suite verde sin el
 `.env` local y la toolchain de medición pineada y documentada, con la evidencia
 declarada en el contrato (fase 2).
 
 Cierre: `ci-pattern adoption check --phase 2 <repo>` = 0.
+
+### Control local del checkout atrasado (#914)
+
+El control no es un job de CI ni un hook de push: el CI siempre hace checkout fresco, y un bloqueo en `pre-push` pararía cada push de rama de PR cada vez que `main` avanza. Vive en el arranque del partial `web`, justo después de `git pull --ff-only`:
+
+1. **Ejecutar.** `ci-pattern checkout-sync --repo <checkout>`. Códigos: 0 sincronizado; 1 atrasado o rama equivocada (seguir la instrucción que imprime); 2 no puede medir (`git fetch origin` y repetir).
+2. **Linux y macOS.** El script es POSIX `sh`. La fecha de la última sincronización se lee con `stat -c` (GNU) o `stat -f` (BSD); el script prueba ambos.
+3. **Windows.** Ejecutar desde Git Bash o desde WSL sobre el mismo checkout. `FETCH_HEAD` es por worktree: un worktree que nunca ha hecho `git fetch origin` sale con 2 aunque sus refs estén al día.
 
 ## Fase 3 — Reemplazo de gobernanza
 
@@ -161,6 +201,17 @@ Cierre: `ci-pattern adoption check --phase 2 <repo>` = 0.
 - **G3.2 — Plantillas canónicas.** La plantilla de PR del patrón (`.github/PULL_REQUEST_TEMPLATE.md` de `DysTelefonica/team-skills`) incluye la sección **Chain Context** (HR-54) además de «Tests que prueban el cierre» (HR-53): cópiela tal cual, porque el gate de contrato de PR (`assets/pr-contract/check_pr_contract.py`) la lee como dato; el formulario de issue sale de `.github/ISSUE_TEMPLATE/`.  Issue y PR con las secciones exactas que los
   gates leen y con el contrato de revisión visible (presupuesto, excepción como
   campo de datos, cadena de PRs).
+  La sección HR-53 tiene dos formas y el gate acepta las dos: con test, el
+  fichero o el caso que demuestra el cierre; sin test, el encabezado estable
+  «No aplica» y, debajo, la ruta versionada en git de la evidencia que cubre el
+  cierre (un ADR, un registro de decisión, la página de documentación). La
+  evidencia no tiene que ser un fichero de test. «No aplica» solo vale si todos
+  los ficheros cambiados son no ejecutables (por defecto documentación:
+  `**/*.md`, `docs/**`, `.github/ISSUE_TEMPLATE/**`,
+  `.github/PULL_REQUEST_TEMPLATE.md`); un workflow, un script o cualquier
+  código exige test, y el hallazgo nombra el fichero. Un consumer que quiera
+  otros patrones los declara en `closure_not_applicable_paths` de su política.
+  Ninguna etiqueta exonera la sección: `type:docs` no exonera nada (#911, #918).
 - **G3.3 — Aprobador nombrado.** El operador que aprueba issues y revisa PRs
   queda nombrado en la gobernanza instalada; un pipeline sin aprobador named
   detiene cada issue en la puerta.
@@ -208,7 +259,20 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   `size-exception-reason:` del cuerpo está retirado. Encadenar PRs es el camino
   normal cuando el trabajo no cabe.
 - **G4.3 — Preflight ejecutable** en local con un solo comando, paridad con el
-  job de lint (HR-4).
+  job de lint (HR-4). La política de paridad declara lo que cada comprobación
+  necesita del entorno: `requires` en cada exclusión y `local.capabilities` con
+  lo que tiene la máquina local. Vocabulario cerrado: `docker`, `runner`,
+  `network` y `credentials`. El gate falla si el entrypoint local ejecuta un
+  comando que exige una capacidad que el entorno local no declara. Declarar
+  `requires` no saca la comprobación de la comparación: sigue siendo una
+  diferencia declarada, con `side` y `reason`. Limitación conocida: la capacidad
+  se declara sobre las exclusiones; un comando comparado que necesita Docker
+  todavía no tiene declaración propia.
+  Para correr una sola comprobación sin Docker, ejecute el comando que figura
+  para ella en el entrypoint local, desde la raíz del repo. Los gates de
+  documentación de la fase 5 no necesitan Docker: `ci-pattern adoption check
+  --phase 5 <repo>`. El contrato de PR en local (#912) tampoco lo necesita; esta
+  guía no lo documenta hasta que esa implementación esté en main.
 - **G4.4 — CI en la rama base**, net-new si el destino no tenía.
 - **G4.5 — Binding evidencia↔deploy solo si existe deploy.** El estado de
   commit por SHA (HR-10) se instala únicamente cuando la fase 0 inventarió un
@@ -307,6 +371,20 @@ bloqueada nombrando `runner.label`.
 Previene la fricción de la sesión de gobierno del 2026-10-05: los agentes
 dedujeron sobre la marcha las reglas de cadenas (`Closes #N` en prosa cerró
 #194), etiquetas (se creó una etiqueta inexistente) y el impacto de la matriz.
+
+- **G5.6 — `CONTRIBUTING.md` del consumer (HR-71).** Para consumers
+  `primary_type: web` que activen `docs_manifest`, la fase 5 exige
+  `CONTRIBUTING.md` con las secciones mínimas del manifiesto. La activación
+  se resuelve leyendo `project_type` del `.team-skills.yaml` del repo
+  (`_active`, `_resolve_project_type` en
+  `assets/docs-manifest/check_docs_manifest.py`); si el YAML falta, no se
+  puede leer o no declara `project_type`, HR-71 falla cerrado (HR-3): emite
+  el hallazgo y activa el doc para que la ausencia del fichero también se
+  mida. El catálogo **nunca** sobrescribe ni sella `CONTRIBUTING.md` en
+  `.governance-manifest.json`; el contenido es del consumer y el gate solo
+  mide existencia y secciones. La plantilla canónica está en
+  `assets/templates/docs/CONTRIBUTING.md.tmpl`; copiada byte a byte en
+  títulos, el repo la reescribe a su gusto en contenido.
 
 Gate de salida de fase: el doc operativo generado, enlazado y en verde en el
 gate de deriva sobre el árbol real del consumer.

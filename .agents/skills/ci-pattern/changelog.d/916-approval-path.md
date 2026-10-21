@@ -1,0 +1,3 @@
+type: patch
+
+El texto generado del ciclo de vida (etapa 2, «Aprobación») del documento operativo dice qué hace el agente con `status:approved`: crea la issue y para; la aprueba un mantenedor; nunca se auto-aprueba, ni aunque la orden del mantenedor incluya la aprobación, caso en el que lo declara en el cuerpo del PR. La plantilla `CONTRIBUTING.md.tmpl` y la skill dicen lo mismo. Ningún gate cambia: `status:approved` sigue siendo la señal de autorización humana. Los consumers que adopten el cambio deben regenerar su documento operativo (`ci-pattern adoption generate-doc`) para que la fase 5 quede en verde.

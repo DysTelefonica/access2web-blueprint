@@ -1,0 +1,3 @@
+type: patch
+
+`personal/ardelperal/ci-pattern/assets/bin/pr_preflight.py` (#865) ahora llama a `_pin_output_encoding()` desde la primera línea de `main()` (mismo patrón que `check_branch_name.py` y `check_issue_spec.py`) y cierra el archivo con newline: antes el pin vivía en el bloque `__main__`, así que el guard `test_every_printing_gate_pins_its_output_encoding` marcaba el gate como unpinned, y la falta de newline final disparaba `W292` en el lint de assets vendorizables. Sin cambio de diseño: la API pública y los códigos de salida (0/1/2) no cambian.

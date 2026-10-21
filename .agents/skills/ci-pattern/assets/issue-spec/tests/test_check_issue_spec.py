@@ -288,6 +288,80 @@ def _write_sections_config(tmp, payload):
     return path
 
 
+class InformativeRefsTests(unittest.TestCase):
+    """#913: las Refs son informativas; el PR debe enlazar al menos una issue aprobada."""
+
+    @staticmethod
+    def _issues(**by_number):
+        # by_number: {"12": [labels...]}; el nombre de la clave es el número de issue.
+        def fetch(number):
+            return {"number": number,
+                    "labels": [{"name": n} for n in by_number[str(number)]]}
+        return fetch
+
+    def test_closes_approved_with_non_approved_refs_passes(self):
+        # (a) el cierre aprobado basta; la Refs no aprobada es informativa.
+        fetch = self._issues(**{"12": ["status:approved", "type:bug"], "13": ["type:bug"]})
+        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch)
+        self.assertEqual(violations, [])
+
+    def test_only_refs_to_non_approved_issue_fails(self):
+        # (b) sin ninguna issue aprobada el PR sigue en rojo.
+        fetch = self._issues(**{"12": ["type:bug"]})
+        violations = validate_remote("Refs #12\n", "team/skills", fetch)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("aprobada", violations[0])
+
+    def test_only_refs_to_approved_issue_still_passes(self):
+        # no regresión: hoy pasa y debe seguir pasando (la Refs aprobada es la aprobación).
+        fetch = self._issues(**{"12": ["status:approved", "type:bug"]})
+        violations = validate_remote("Refs #12\n", "team/skills", fetch)
+        self.assertEqual(violations, [])
+
+    def test_closes_non_approved_with_approved_refs_fails(self):
+        # (c) el issue que el PR cierra debe ser el aprobado: no basta una Refs aprobada.
+        fetch = self._issues(**{"12": ["type:bug"], "13": ["status:approved", "type:bug"]})
+        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch)
+        self.assertEqual(violations, ["#12: requiere status:approved"])
+
+    def test_chain_partial_with_refs_to_canonical_approved_passes(self):
+        # (d) eslabón intermedio: la aprobación vive en la punta, como hoy.
+        fetch = self._issues(**{"12": ["status:approved", "type:bug"]})
+        context = PrContext(chain_partial=True)
+        violations = validate_remote("Refs #12\n", "team/skills", fetch, context=context)
+        self.assertEqual(violations, [])
+
+    def test_chain_partial_with_refs_to_non_approved_still_passes(self):
+        # no regresión de #787 S6: en un eslabón intermedio no se exige aprobación.
+        fetch = self._issues(**{"12": ["type:bug"]})
+        context = PrContext(chain_partial=True)
+        violations = validate_remote("Refs #12\n", "team/skills", fetch, context=context)
+        self.assertEqual(violations, [])
+
+    def test_informative_refs_keep_the_required_sections_rule(self):
+        # no regresión (regla 7): las secciones obligatorias siguen aplicando a toda
+        # issue enlazada, también a las Refs; solo cambia la exigencia de aprobación.
+        def fetch(number):
+            labels = [{"name": "status:approved"}, {"name": "type:bug"}] if number == 12 \
+                else [{"name": "type:bug"}]
+            return {"number": number, "labels": labels, "body": "sin secciones"}
+        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch,
+                                     required_sections=("### Problema y contexto",))
+        self.assertEqual(len(violations), 2)
+        self.assertIn("#12:", violations[0])
+        self.assertIn("#13:", violations[1])
+
+    def test_api_error_on_informative_ref_fails_closed(self):
+        # no regresión (regla 6): un error al leer una Refs sigue siendo hallazgo.
+        def fetch(number):
+            if number == 13:
+                raise _ApiDownError()
+            return approved_issue("status:approved", "type:bug")
+        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("cannot read", violations[0])
+
+
 class RequiredSectionsLocalTests(unittest.TestCase):
 
     def test_disabled_unchanged_without_flag(self):

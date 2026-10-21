@@ -6,12 +6,35 @@ Las rutas y los flags de fallo (api_error, merge_rejected, head_changed...) son
 los del shim anterior; el estado se persiste en state.json como antes, de modo
 que los tests que lo leen siguen valiendo."""
 import contextlib
+import copy
 import json
 import os
+import tempfile
 import threading
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+
+def _atomic_write_json(path: Path, payload: dict) -> None:
+    """Escribe ``payload`` en ``path`` de forma atomica con tempfile + os.replace.
+
+    ``Path.write_text`` abre con O_TRUNC antes de escribir: si el lector del
+    test (que corre en otro thread / proceso) abre el fichero durante la
+    ventana entre truncate y write, ve un fichero vacio y rompe con
+    JSONDecodeError. Bajo carga CPU con UNIT_PARALLEL>1 (#941, #511) esa
+    ventana crecia a milisegundos y la rotura era intermitente.
+    ``tempfile + os.replace`` es una operacion atomica en el mismo filesystem
+    (rename(2) es atomica en POSIX), asi que el lector siempre ve la version
+    anterior o la nueva completa, nunca un estado intermedio vacio."""
+    data = json.dumps(payload).encode("utf-8")
+    tmp_dir = path.parent
+    with tempfile.NamedTemporaryFile(
+        prefix=path.name + ".", suffix=".tmp", dir=str(tmp_dir), delete=False
+    ) as tmp:
+        tmp.write(data)
+        tmp_path = Path(tmp.name)
+    os.replace(tmp_path, path)
 
 MERGED_SHA = "2c7d9b1a4e"
 
@@ -62,6 +85,22 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
             return 409, {"message": "Head branch was modified"}, {}
         state["merges"].append(path)
         return 200, {"sha": MERGED_SHA, "merged": True, "message": "Pull Request successfully merged"}, {}
+    if method == "POST" and "/actions/workflows/" in path and path.endswith("/dispatches"):
+        # #817/#933: post-merge dispatch (`gh workflow run` directo). El cuerpo trae
+        # `ref` = la rama base (la API rechaza un SHA con 422) y `inputs` con el
+        # rango `before`/`after` cuando el workflow lo declara. 4xx/5xx caen al
+        # fallo cerrado del caller.
+        name = path.rsplit("/actions/workflows/", 1)[1].rsplit("/dispatches", 1)[0]
+        if state.get("dispatch_error"):
+            return 422, {"message": "dispatch_error fixture"}, {}
+        if state.get("dispatch_forbidden"):
+            return 403, {"message": "dispatch_forbidden fixture"}, \
+                {"X-Accepted-GitHub-Permissions": "actions=write"}
+        if state.get("dispatch_not_found"):
+            return 404, {"message": "dispatch_not_found fixture"}, {}
+        state.setdefault("dispatches", []).append(
+            {"name": name, "ref": body.get("ref"), "inputs": body.get("inputs")})
+        return 204, "", {}
     if method != "GET":
         return 404, {"message": "unsupported endpoint"}, {}
     if path.startswith("repos/") and path.count("/") == 2:
@@ -80,6 +119,22 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
             runs = script[min(polls.get(sha, 0), len(script) - 1)]
             polls[sha] = polls.get(sha, 0) + 1
         return 200, {"total_count": len(runs), "check_runs": runs}, {}
+    if method == "GET" and path.endswith("/actions/workflows") \
+            and "/runs" not in path and "/dispatches" not in path:
+        # #817: lista de workflows para validar que cada nombre declarado en
+        # `post_merge_dispatch` existe y declara `workflow_dispatch`. Sin
+        # `state["workflows"]`, devuelve el conjunto vacío.
+        return 200, state.get("workflows", []), {}
+    if method == "GET" and "/contents/" in path:
+        # #817: contenidos de un fichero del repo. La clave del fixture es la
+        # ruta sin query (la API acepta `?ref=` y se ignora aquí).
+        raw_path = path.split("?")[0]
+        tail = raw_path.split("/contents/", 1)[1]
+        file_path = state.get("workflow_files_paths", {}).get(tail, tail)
+        entry = state.get("workflow_files", {}).get(file_path)
+        if entry is None:
+            return 404, {"message": "Not Found"}, {}
+        return 200, entry, {}
     if "/compare/" in path:
         # `compares` fija la respuesta por rango ("base...head"); `compare` es el valor por defecto.
         spec = path.split("/compare/", 1)[1]
@@ -88,6 +143,13 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
     if "/pulls/" in path:
         detail = state["pr_details"].get(path.rsplit("/pulls/", 1)[1])
         return (404, {"message": "Not Found"}, {}) if detail is None else (200, detail, {})
+    if "/git/ref/heads/" in path:
+        # #933: punta de la rama base antes del merge (`base_tips`); sin ella, 404.
+        branch = path.rsplit("/git/ref/heads/", 1)[1]
+        tip = state.get("base_tips", {}).get(branch)
+        if tip is None:
+            return 404, {"message": "Not Found"}, {}
+        return 200, {"ref": f"refs/heads/{branch}", "object": {"sha": tip, "type": "commit"}}, {}
     if path.count("/") == 4 and "/commits/" in path:
         commit = state.get("commits", {}).get(path.split("/commits/")[1], {})
         return (200, commit, {}) if commit else (404, {"message": "Not Found"}, {})
@@ -127,14 +189,21 @@ class _Handler(BaseHTTPRequestHandler):
         raw = self.rfile.read(length) if length else b""
         body = json.loads(raw) if raw else {}
         url = urllib.parse.urlsplit(self.path)
-        state = self.server.state
+        # Un sondeo ajeno (p. ej. un agente local que barre puertos de loopback con
+        # `GET /` sin Authorization, #941) se responde sobre una copia y no deja rastro
+        # en `calls` ni en state.json. El cliente nunca pide la raiz, asi que cualquier
+        # otra peticion, tenga o no token, se registra.
+        client = not (urllib.parse.urlsplit(self.path).path == "/"
+                      and self.headers.get("Authorization") is None)
+        state = self.server.state if client else copy.deepcopy(self.server.state)
         # La URL base sale de la direccion del servidor, no del Host de la
         # peticion: un Host ajeno acabaria copiado en la cabecera Link.
         host, port = self.server.server_address[:2]
         base = f"http://{host}:{port}"
         status, payload, headers = _route(self.command, url.path.lstrip("/"),
                                           urllib.parse.parse_qs(url.query), body, state, base)
-        Path(self.server.state_path).write_text(json.dumps(state), encoding="utf-8")
+        if client:
+            _atomic_write_json(Path(self.server.state_path), state)
         text = payload if isinstance(payload, str) else json.dumps(payload)
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
@@ -161,7 +230,7 @@ def stub_env(base: str) -> dict:
 @contextlib.contextmanager
 def github_stub(state_path: Path, state: dict):
     """Arranca el servidor con el estado dado y devuelve la URL base para GITHUB_API_URL."""
-    state_path.write_text(json.dumps(state), encoding="utf-8")
+    _atomic_write_json(Path(state_path), state)
     server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
     server.state, server.state_path = state, str(state_path)
     thread = threading.Thread(target=server.serve_forever, daemon=True)

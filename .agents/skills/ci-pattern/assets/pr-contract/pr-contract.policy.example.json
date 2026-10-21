@@ -25,6 +25,7 @@
     "closure_tests": true,
     "docs_evidence": true,
     "budget": true,
-    "commits": true
+    "commits": true,
+    "ai_disclosure": true
   }
 }

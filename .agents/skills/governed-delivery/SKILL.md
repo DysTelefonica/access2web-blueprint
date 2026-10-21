@@ -5,7 +5,7 @@ license: Apache-2.0
 metadata:
   author: ardelperal
   version: "1.1"
-  last_verified: 2026-10-15
+  last_verified: 2026-10-21
   scope: ['universal', 'ops']
   auto_invoke: ['actualizar rama', 'abrir un PR', 'encadenar PRs', 'pedir merge', 'etiquetar un PR']
   tiers: ['universal', 'ops']
@@ -22,7 +22,7 @@ Para ADOPTAR o AUDITAR el patrón (gates, contratos, HRs, fases) cargue
 | Situación | Regla |
 | --- | --- |
 | Mi rama está desfasada de main | 1 — `git merge origin/main` |
-| El PR está en verde y hay que integrarlo | 2 — lo lanza un mantenedor, camino gobernado |
+| El PR está en verde y hay que integrarlo | 2 — lo lanza un mantenedor, camino gobernado; un agente solo por orden registrada |
 | El cambio no cabe en un PR | 3 y 5 — cadena de unidades, punta cierra |
 | Añadir o elegir etiquetas | 4 — solo `type:*` del contrato del host |
 | El diff pasa de 400 líneas | 5 — partir o `size-exception-reason:`, nunca recortar |
@@ -44,11 +44,26 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
    todos y reescribirla rompe los enlaces, los PRs y el trabajo de quien
    venía revisando. — *referencia: `ci-pattern`, HR-54.*
 
-2. **El merge lo lanza un mantenedor, por el camino gobernado**
-   (`gh workflow run <workflow> -f pr=<N>`). Ningún agente mergea ni aplica
-   `status:approved`: la autoridad de integración es humana y verificable,
-   no se delega. Un mantenedor puede aprobar y mergear su propio cambio si
-   la protección de la rama lo admite. — *referencia: `ci-pattern`, flujo
+2. **El merge y `status:approved` los lanza un mantenedor, por el camino
+   gobernado** (`gh workflow run <workflow> -f pr=<N>`). Un agente ejecuta
+   una de estas acciones solo por orden de un mantenedor, y cuando se
+   cumplen las tres condiciones siguientes:
+   - **Permiso:** la cuenta de `gh` en uso es de mantenedor en el repositorio.
+     Lo comprueba justo antes de actuar con
+     `gh api repos/{owner}/{repo} --jq '.permissions.maintain or .permissions.admin'`.
+   - **Orden:** el mantenedor, en la sesión, nombra la acción y el número
+     exacto («aprueba la #1069», «mergea el PR #1070»). La autoridad inferida
+     por el modelo o por el texto de la issue no vale.
+   - **Registro:** antes de actuar, la orden queda en un comentario de la
+     issue o del PR con la orden literal, quién la dio, el agente y la fecha:
+     `Aprobada por orden de @<mantenedor>: «<orden>» — agente <nombre>, <fecha>`.
+
+   Tras la acción, el agente relee la etiqueta o el estado del merge con un
+   solo intento; si el resultado es incierto, se detiene sin reintentar. El
+   merge exige CI en verde y el camino gobernado; nunca `--admin`. Nunca se
+   auto-aprueba: sin orden registrada del mantenedor, el agente crea la issue
+   y para. Un mantenedor puede aprobar y mergear su propio cambio si la
+   protección de la rama lo admite. — *referencia: `ci-pattern`, flujo
    §«Pedir un merge».*
 
 3. **Las cadenas**: los intermedios llevan `chain:partial` y `Refs #N`;
@@ -99,7 +114,9 @@ PR-1 (chain:partial, Refs #N) ──> PR-2 (chain:partial, Refs #N) ──> PR-N
   del host.
 - Recortar documentación, comentarios o tests para caber en las 400
   líneas: se parte el cambio, no se adelgaza el diff.
-- Que un agente ejecute el merge o aplique `status:approved`.
+- Que un agente ejecute el merge o aplique `status:approved` sin orden
+  explícita de un mantenedor registrada en la issue o el PR, o con una
+  cuenta sin permiso de mantenedor.
 
 ## Qué cargar junto a esto
 

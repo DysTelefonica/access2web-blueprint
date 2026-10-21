@@ -458,38 +458,79 @@ def _file(name: str, added: int, deleted: int = 0, previous: str | None = None) 
 
 
 class _Api:
-    """Servidor HTTP minimo en loopback que sirve ``/pulls/N/files`` paginado."""
+    """Servidor HTTP minimo en loopback que sirve ``/pulls/N/files`` paginado.
+
+    Aislamiento por instancia: cada ``_Api`` levanta su propio ``ThreadingHTTPServer``
+    en puerto efímero (``bind 0``) y captura su estado (``files``, ``status``, ``auth``)
+    en el cierre del Handler que devuelve ``_make_handler``. Asi, dos ``_Api`` viven
+    en procesos o clases distintas sin compartir estado de clase ni de modulo (#941,
+    #511, #585). El Handler enruta por path: si la URL no es el endpoint paginado,
+    responde 404 explicito sin lanzar ``KeyError`` ante una query distinta a la esperada.
+    """
 
     def __init__(self, files: list[dict], status: int = 200) -> None:
-        import http.server
         import threading
-        api = self
+        from http.server import HTTPServer
         self.files, self.status, self.auth = files, status, []
-
-        class Handler(http.server.BaseHTTPRequestHandler):
-            def do_GET(self) -> None:  # noqa: N802 - nombre fijado por http.server
-                import json
-                import urllib.parse
-                api.auth.append(self.headers.get("Authorization"))
-                query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
-                page, per = int(query["page"][0]), int(query["per_page"][0])
-                body = json.dumps(api.files[(page - 1) * per:page * per]).encode()
-                self.send_response(api.status)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(body)))
-                self.end_headers()
-                self.wfile.write(body)
-
-            def log_message(self, *args: object) -> None:
-                pass
-
-        self.server = http.server.HTTPServer(("127.0.0.1", 0), Handler)
-        self.url = f"http://127.0.0.1:{self.server.server_port}"
+        # ``HTTPServer`` (single-thread) y no ``ThreadingHTTPServer`` (multi-thread):
+        # mantener el comportamiento serie que el stub tenia antes del fix garantiza
+        # que el gate (cliente secuencial con ``urllib``) recibe cada respuesta antes
+        # de enviar el siguiente request, igual que el stub original (#941). El
+        # paralelismo intra-suite no es objeto de esta fix.
+        self.server = HTTPServer(
+            ("127.0.0.1", 0), _make_handler(self.files, self.status, self.auth))
+        self.url = f"http://127.0.0.1:{self.server.server_address[1]}"
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
 
     def close(self) -> None:
         self.server.shutdown()
         self.server.server_close()
+
+
+def _make_handler(files: list[dict], status: int, auth: list):
+    """Fabrica una clase Handler con estado capturado en cierre.
+
+    Una clase nueva por llamada garantiza que dos ``_Api`` no compartan Handler
+    (y por tanto no compartan listas de auth). El Handler enruta por path: solo
+    ``/pulls/<N>/files?page=...&per_page=...`` pagina; cualquier otra URL
+    devuelve 404 explicito para no depender de que el gate use exactamente esa
+    forma (#941, smoke en ``run-unit-suites.sh UNIT_PARALLEL>1``)."""
+    import json as _json
+    import urllib.parse as _urlparse
+    from http.server import BaseHTTPRequestHandler
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            # Un sondeo ajeno (`GET /` sin Authorization, #941) recibe el 404 de abajo
+            # sin entrar en `auth`; el resto de peticiones, tengan o no token, cuentan.
+            probe = _urlparse.urlsplit(self.path).path == "/" and self.headers.get("Authorization") is None
+            if not probe:
+                auth.append(self.headers.get("Authorization"))
+            url = _urlparse.urlsplit(self.path)
+            query = _urlparse.parse_qs(url.query)
+            page = query.get("page")
+            per = query.get("per_page")
+            if not url.path.endswith("/files") or not page or not per:
+                payload = _json.dumps({"message": "Not Found"}).encode("utf-8")
+                self.send_response(404)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+                return
+            page_i = int(page[0])
+            per_i = int(per[0])
+            body = _json.dumps(files[(page_i - 1) * per_i:page_i * per_i]).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args: object) -> None:
+            return
+
+    return Handler
 
 
 class TestApiMode(unittest.TestCase):
@@ -553,6 +594,25 @@ class TestApiMode(unittest.TestCase):
         result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("overridden", result.stdout)
+
+    def test_a_foreign_probe_is_not_counted(self) -> None:
+        """RED (#941): un `GET /` ajeno al gate (sin Authorization) no entra en ``auth``."""
+        import urllib.error
+        import urllib.request
+        api = _Api([_file("app/a.py", 1)])
+        self.apis.append(api)
+        with self.assertRaises(urllib.error.HTTPError):
+            urllib.request.urlopen(f"{api.url}/", timeout=5)
+        self.assertEqual(api.auth, [])
+
+    def test_an_unauthenticated_api_request_is_counted(self) -> None:
+        """Una peticion sin token a una ruta de API SI cuenta en ``auth`` (#941)."""
+        import urllib.request
+        api = _Api([_file("app/a.py", 1)])
+        self.apis.append(api)
+        with urllib.request.urlopen(f"{api.url}/repos/o/r/pulls/7/files?page=1&per_page=100", timeout=5) as resp:
+            resp.read()
+        self.assertEqual(api.auth, [None])
 
     def test_pagination_counts_every_page(self) -> None:
         files = [_file(f"app/f{i}.py", 3) for i in range(150)]

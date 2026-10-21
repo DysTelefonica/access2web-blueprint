@@ -35,6 +35,25 @@ def raw_get(port: int, target: str, header_lines: list[str]) -> tuple[str, bytes
     return head.decode("latin-1"), body
 
 
+class TestForeignProbesAreNotCounted(unittest.TestCase):
+    """Un sondeo ajeno al cliente (p. ej. `GET /` de un agente local que barre
+    puertos de loopback) no puede aparecer en ``calls`` ni alterar el estado."""
+
+    def test_a_bare_get_without_authorization_leaves_calls_unchanged(self) -> None:
+        state = paged_state()
+        with tempfile.TemporaryDirectory() as tmp, github_stub(Path(tmp, "state.json"), state) as url:
+            raw_get(int(url.rsplit(":", 1)[1]), "/", ["Host: 127.0.0.1"])
+        self.assertEqual(state["calls"], [])
+
+
+    def test_an_unauthenticated_api_request_is_still_recorded(self) -> None:
+        """Una peticion sin token a una ruta de API es del cliente y SI cuenta (#941)."""
+        state = paged_state()
+        with tempfile.TemporaryDirectory() as tmp, github_stub(Path(tmp, "state.json"), state) as url:
+            raw_get(int(url.rsplit(":", 1)[1]), PATH, ["Host: 127.0.0.1"])
+        self.assertEqual(state["calls"], [f"GET repos/o/r/commits/{SHA}/pulls"])
+
+
 class TestLinkCarriesOnlyServerSideData(unittest.TestCase):
     def serve(self, target: str, header_lines: list[str]) -> tuple[str, bytes, str]:
         with tempfile.TemporaryDirectory() as tmp, github_stub(Path(tmp, "state.json"), paged_state()) as url:

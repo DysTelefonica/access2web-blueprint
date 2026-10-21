@@ -13,6 +13,11 @@
           "target": ".github/workflows/ci.yml"
         },
         {
+          "artifact": "CONTRIBUTING.md",
+          "disposition": "adopted",
+          "target": "CONTRIBUTING.md"
+        },
+        {
           "artifact": "docs/branch-protection.md",
           "disposition": "adopted",
           "target": ".github/host-contract.json"

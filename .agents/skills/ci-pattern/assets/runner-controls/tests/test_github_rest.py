@@ -28,9 +28,12 @@ class _Handler(BaseHTTPRequestHandler):
     def _serve(self) -> None:
         length = int(self.headers.get("Content-Length") or 0)
         body = self.rfile.read(length) if length else b""
-        self.server.seen.append({"method": self.command, "path": self.path,
-                                 "auth": self.headers.get("Authorization"),
-                                 "ctype": self.headers.get("Content-Type"), "body": body})
+        # Un sondeo ajeno (`GET /` sin Authorization, #941) no entra en `seen`; el
+        # cliente nunca pide la raiz, asi que el resto de peticiones si cuentan.
+        if not (self.path.split("?")[0] == "/" and self.headers.get("Authorization") is None):
+            self.server.seen.append({"method": self.command, "path": self.path,
+                                     "auth": self.headers.get("Authorization"),
+                                     "ctype": self.headers.get("Content-Type"), "body": body})
         route = self.server.routes.get(self.path.split("?")[0], (404, {"message": "Not Found"}))
         if callable(route):
             route = route(self.path)
@@ -88,6 +91,25 @@ class RestTests(unittest.TestCase):
             self.server.routes["/repos/o/r"] = (200, {})
             github_rest.get_json("repos/o/r")
         self.assertEqual(self.server.seen[0]["auth"], "Bearer fallback-tok")
+
+    def test_a_foreign_probe_is_not_recorded(self) -> None:
+        """RED (#941): un `GET /` sin Authorization no cuenta como llamada del cliente."""
+        import http.client
+        conn = http.client.HTTPConnection("127.0.0.1", self.server.server_address[1], timeout=5)
+        conn.request("GET", "/")
+        conn.getresponse().read()
+        conn.close()
+        self.assertEqual(self.server.seen, [])
+
+    def test_an_unauthenticated_api_request_is_recorded(self) -> None:
+        """Una peticion sin token a una ruta de API SI se registra: el filtro de sondeos no la oculta (#941)."""
+        import http.client
+        self.server.routes["/repos/o/r"] = (200, {})
+        conn = http.client.HTTPConnection("127.0.0.1", self.server.server_address[1], timeout=5)
+        conn.request("GET", "/repos/o/r")
+        conn.getresponse().read()
+        conn.close()
+        self.assertEqual([(s["path"], s["auth"]) for s in self.server.seen], [("/repos/o/r", None)])
 
     def test_missing_token_fails_closed_without_sending_a_request(self) -> None:
         with mock.patch.dict(os.environ, {}, clear=False):

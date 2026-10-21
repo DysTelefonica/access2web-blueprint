@@ -1,0 +1,3 @@
+type: patch
+
+La descripción de la etiqueta `size:exception` en `.github/host-contract.json` pasa de "Excepcion al presupuesto de 400 lineas del PR (#900, #623, HR-8); solo la aplica el mantenedor, nunca el autor" (110 caracteres) al texto que el mantenedor ya había creado en el repo (81 caracteres, ajuste detectado por `sync-governance-labels.sh` cuando GitHub rechazó la petición con `description is too long (maximum is 100 characters)`). El test `test_label_descriptions_fit_github_limit` en `assets/host-readback/tests/test_repo_labels.py` exige ahora que TODAS las descripciones del contrato quepan en 100; sin tocar la regla de la etiqueta, sin relajar el gate (#900 follow-up).

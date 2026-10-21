@@ -19,7 +19,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[6]
 SCRIPT = REPO_ROOT / "scripts" / "sync-governance-labels.sh"
 
-CHAIN_DESC = "Slice intermedio de una cadena apilada contra main: lleva Refs #N, nunca Closes"
+CHAIN_DESC = "PR que no cierra la issue; la cierra el PR punta o un humano (HR-7)"
 
 CONTRACT = {
     "contract_version": 1,

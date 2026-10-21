@@ -19,6 +19,33 @@ def fail2(msg):
     return 2
 
 
+# Vocabulario cerrado de capacidades (#917): lo que una comprobación necesita
+# del entorno para correr. Fuera de la lista es entrada inválida (HR-3).
+CAPABILITIES = ("docker", "runner", "network", "credentials")
+
+
+def _capabilities(value, where):
+    """Lista de capacidades del vocabulario cerrado; cualquier otra cosa es error."""
+    if not isinstance(value, list) or not all(isinstance(c, str) for c in value):
+        msg = f"{where} debe ser una lista de capacidades"
+        raise ValueError(msg)
+    unknown = sorted(set(value) - set(CAPABILITIES))
+    if unknown:
+        msg = (f"{where}: capacidad desconocida {unknown}; "
+               f"vocabulario: {list(CAPABILITIES)}")
+        raise ValueError(msg)
+    return set(value)
+
+
+def _required_capabilities(sig, exclusions):
+    """Capacidades que exige cualquier exclusión que cubra `sig`, en cualquier lado."""
+    need = set()
+    for exc in exclusions:
+        if fnmatch.fnmatch(sig, exc["command"]) or exc["command"] == sig:
+            need |= _capabilities(exc.get("requires", []), "requires")
+    return need
+
+
 def _logical_lines(text):
     joined, buf = [], ""
     for raw in text.splitlines():
@@ -254,7 +281,10 @@ def main(argv=None):
         exclusions = policy.get("exclusions", [])
         if not isinstance(exclusions, list):
             raise KeyError("exclusions debe ser una lista")
-    except (OSError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        local_caps = _capabilities(local_cfg.get("capabilities", []), "local.capabilities")
+        for exc in exclusions:
+            _capabilities(exc.get("requires", []), f"exclusión {exc.get('command')!r}.requires")
+    except (OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
         return fail2(f"política ilegible o incompleta ({args.policy}): {exc}")
     for name in (workflow, entrypoint):
         if not (root / name).is_file():
@@ -307,6 +337,15 @@ def main(argv=None):
         if id(exc) not in used:
             findings.append(f"exclusión declarada que no coincide con ningún comando: "
                             f"{exc.get('command')!r}")
+
+    # Una capacidad no es una exención: lo que el entrypoint local ejecuta y
+    # exige una capacidad que el entorno no declara es hallazgo, aunque el
+    # comando esté excluido de la comparación.
+    for sig in sorted(set(local_sigs)):
+        missing = _required_capabilities(sig, exclusions) - local_caps
+        if missing:
+            findings.append(f"el entrypoint local ejecuta {sig!r}, que requiere {sorted(missing)} "
+                            "y el entorno local no declara (local.capabilities)")
 
     for sig in sorted(set(local_f) & set(ci_f)):
         print(f"  ok  {sig}")

@@ -74,8 +74,14 @@ auditado y congele las salidas (JSON) como evidencia:
    allow_force_pushes, allow_deletions, required_conversation_resolution.
 2. Rulesets: `gh api repos/<owner>/<repo>/rulesets` — nombre y enforcement
    de cada uno; detalle por id.
-3. Etiquetas: `gh api repos/<owner>/<repo>/labels?per_page=100` — nombre,
-   color y descripción; contraste con las etiquetas declaradas.
+3. Etiquetas: `gh api --paginate repos/<owner>/<repo>/labels?per_page=100` —
+   nombre, color y descripción; contraste con las etiquetas declaradas. Use
+   `--paginate`: un readback truncado por `per_page` convierte cada etiqueta
+   que falta en un hallazgo falso (#955). El readback alimenta la instantánea
+   de la fase 4 (`docs/adoption/labels.json`) y, con `--labels-names`, se
+   contrasta también con la instantánea de la fase 0 y con el contrato, en las
+   dos direcciones. Un nombre de etiqueta puede llevar espacios
+   (`good first issue`): se compara entero, nunca partido por espacios.
 4. Métodos de merge:
    `gh api repos/<owner>/<repo>` — allow_merge_commit, allow_squash_merge,
    allow_rebase_merge, allow_update_branch, allow_auto_merge,

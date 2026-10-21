@@ -843,5 +843,83 @@ class TestPullRequestTypesListStyle(GateCase):
         )
 
 
+class TestWorkflowCallEmptyInputsDict(GateCase):
+    """RED test para el bug del parser: `on.workflow_call.inputs: {}`
+    (mapa de flujo vacío) lanza 'unsupported YAML construct: {}' (rc=2)
+    porque `parse_scalar` rechaza cualquier escalar que empiece por `&`,
+    `!` o `{`. GitHub Actions admite `inputs: {}` y `secrets: {}` como
+    mapeos vacíos en un reusable workflow; el canon debe aceptarlos
+    como conformantes. Hoy cadete (#533, #806 K6) lo sufre y esquiva el
+    problema quitando el workflow de los args del gate; este test
+    reproduce el error de raíz."""
+
+    WORKFLOW = (
+        "on:\n"
+        "  workflow_call:\n"
+        "    inputs: {}\n"
+        "\n"
+        "concurrency:\n"
+        "  group: empty-${{ github.ref }}\n"
+        "\n"
+        "jobs:\n"
+        "  call:\n"
+        "    name: call (${{ github.event_name }})\n"
+        "    runs-on: ubuntu-latest\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - run: |\n"
+        "          echo ok\n"
+    )
+
+    def test_workflow_call_empty_inputs_dict_parses_clean(self):
+        # Hoy el gate sale 2 con 'unsupported YAML construct: '{}''.
+        # Tras el fix, debe parsear como una pieza conforme: rc distinto
+        # de 2 y sin el literal 'unsupported YAML construct: {}'. La
+        # verificación del veredicto concreto (rc=0 con un hallazgo o
+        # rc=1 con un HR concreto) pertenece a tests de reglas; aquí
+        # verificamos solo que el parser NO rechaza `inputs: {}`.
+        code, out = self.run_gate(self.WORKFLOW)
+        self.assertNotEqual(
+            code, 2,
+            f"el parser rechazó `on.workflow_call.inputs: {{}}` con rc=2:\n{out}",
+        )
+    def test_inline_map_with_content_fails_closed(self):
+        # Complemento del test anterior: un mapa inline CON contenido
+        # (p. ej. `inputs: {a: b}`) NO se soporta — el reader solo
+        # acepta `{}`. La forma correcta es bloque indentado
+        # (`inputs:\n  a: b`) o `inputs: {}` si está vacío. El reader
+        # debe fallar cerrado con rc=2 y un mensaje que nombre el
+        # mapa rechazado y la alternativa soportada.
+        wf = (
+            "on:\n"
+            "  workflow_call:\n"
+            "    inputs: {a: b}\n"
+            "\n"
+            "concurrency:\n"
+            "  group: x-${{ github.ref }}\n"
+            "\n"
+            "jobs:\n"
+            "  call:\n"
+            "    name: call (${{ github.event_name }})\n"
+            "    runs-on: ubuntu-latest\n"
+            "    timeout-minutes: 5\n"
+            "    steps:\n"
+            "      - run: |\n"
+            "          echo ok\n"
+        )
+        code, out = self.run_gate(wf)
+        self.assertEqual(
+            code, 2,
+            f"el parser NO falló cerrado ante `{{a: b}}`:\n{out}",
+        )
+        self.assertIn(
+            "inline map", out,
+            f"el mensaje de error no nombra el constructo rechazado:\n{out}",
+        )
+        self.assertIn(
+            "{a: b}", out,
+            f"el mensaje no reproduce el mapa rechazado para diagnóstico:\n{out}",
+        )
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

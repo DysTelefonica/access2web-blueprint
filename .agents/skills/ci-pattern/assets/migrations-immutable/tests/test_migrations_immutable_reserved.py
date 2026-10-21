@@ -30,47 +30,47 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import check_migrations_immutable as gate
 
 
-class _MockHandler(BaseHTTPRequestHandler):
-    """Handler HTTP para el mock de la API REST de GitHub.
+def _make_mock_handler(state):
+    """Fabrica un Handler con estado mutable en ``state`` (dict) (#941).
 
-    Las respuestas se configuran por clase (``pulls_response`` y
-    ``files_response``); el handler las sirve segun la URL. Sin auth:
-    el script puede pasar cualquier GITHUB_TOKEN.
+    ``state`` expone ``pulls_response``, ``files_response`` y ``next_status``.
+    Cada test instancia su propio ``state`` (dict) en ``setUp`` y su propia
+    clase Handler aqui, asi dos ``ReservedPrefixTest`` (o cualquier otro
+    consumidor) no comparten respuestas aunque vivan en el mismo proceso.
     """
 
-    pulls_response: list = []
-    files_response: dict = {}
-    next_status: int = 200  # 200 = OK; 403/500 simulan error de la API
-
-    def do_GET(self) -> None:  # noqa: N802 (BaseHTTPRequestHandler API)
-        if self.next_status != 200:
-            self.send_error(self.next_status, "simulated API failure")
-            return
-        # ``self.path`` incluye el query string (``?per_page=100``); lo
-        # separamos para enrutar correctamente.
-        path = self.path.split("?", 1)[0]
-        if path.endswith("/pulls"):
-            self._send_json(self.pulls_response)
-        elif "/pulls/" in path and path.endswith("/files"):
-            try:
-                pr_number = int(path.split("/pulls/")[1].split("/")[0])
-            except (IndexError, ValueError):
-                self.send_error(404)
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802 (BaseHTTPRequestHandler API)
+            if state["next_status"] != 200:
+                self.send_error(state["next_status"], "simulated API failure")
                 return
-            self._send_json(self.files_response.get(pr_number, []))
-        else:
-            self.send_error(404)
+            # ``self.path`` incluye el query string (``?per_page=100``); lo
+            # separamos para enrutar correctamente.
+            path = self.path.split("?", 1)[0]
+            if path.endswith("/pulls"):
+                self._send_json(state["pulls_response"])
+            elif "/pulls/" in path and path.endswith("/files"):
+                try:
+                    pr_number = int(path.split("/pulls/")[1].split("/")[0])
+                except (IndexError, ValueError):
+                    self.send_error(404)
+                    return
+                self._send_json(state["files_response"].get(pr_number, []))
+            else:
+                self.send_error(404)
 
-    def _send_json(self, data: object) -> None:
-        body = json.dumps(data).encode("utf-8")
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        def _send_json(self, data: object) -> None:
+            body = json.dumps(data).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002
-        pass  # silencia el log del servidor en los tests.
+        def log_message(self, format: str, *args: object) -> None:  # noqa: A002
+            pass  # silencia el log del servidor en los tests.
+
+    return Handler
 
 
 class ReservedPrefixTest(BaseMigrationTest):
@@ -84,8 +84,12 @@ class ReservedPrefixTest(BaseMigrationTest):
             "migrations/010_first.sql": "CREATE TABLE a;",
         })
         git(self.repo, "remote", "add", "origin", "https://github.com/owner/repo.git")
-        # Arranca el mock server en un puerto libre.
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), _MockHandler)
+        # Estado por-instancia (dict). Sustituye a los antiguos atributos de clase
+        # compartidos por todos los casos de la clase de test (#941).
+        self.mock_state: dict = {"pulls_response": [], "files_response": {}, "next_status": 200}
+        # Arranca el mock server en un puerto libre, con Handler propio.
+        self.server = ThreadingHTTPServer(
+            ("127.0.0.1", 0), _make_mock_handler(self.mock_state))
         self.server_thread = threading.Thread(
             target=self.server.serve_forever, daemon=True
         )
@@ -108,11 +112,11 @@ class ReservedPrefixTest(BaseMigrationTest):
 
     def test_duplicate_prefix_in_open_pr_is_red(self) -> None:
         """S1+S2: PR con 011_a abierta + nueva migracion 011_b -> rojo."""
-        _MockHandler.pulls_response = [{"number": 100}]
-        _MockHandler.files_response = {
+        self.mock_state["pulls_response"] = [{"number": 100}]
+        self.mock_state["files_response"] = {
             100: [{"filename": "migrations/011_a.sql", "status": "added"}],
         }
-        _MockHandler.next_status = 200
+        self.mock_state["next_status"] = 200
 
         add_files(self.repo, {
             "migrations/011_b.sql": "CREATE TABLE b;",
@@ -128,11 +132,11 @@ class ReservedPrefixTest(BaseMigrationTest):
 
     def test_distinct_prefix_in_open_pr_is_green(self) -> None:
         """PR con 011_a abierta + nueva migracion 012_a -> verde."""
-        _MockHandler.pulls_response = [{"number": 100}]
-        _MockHandler.files_response = {
+        self.mock_state["pulls_response"] = [{"number": 100}]
+        self.mock_state["files_response"] = {
             100: [{"filename": "migrations/011_a.sql", "status": "added"}],
         }
-        _MockHandler.next_status = 200
+        self.mock_state["next_status"] = 200
 
         add_files(self.repo, {
             "migrations/012_a.sql": "CREATE TABLE b;",
@@ -145,7 +149,7 @@ class ReservedPrefixTest(BaseMigrationTest):
 
     def test_api_failure_is_fail_closed(self) -> None:
         """S8: la API devuelve 403 (rate limit) -> rojo, no degrada a OK."""
-        _MockHandler.next_status = 403
+        self.mock_state["next_status"] = 403
 
         add_files(self.repo, {
             "migrations/012_a.sql": "CREATE TABLE b;",
@@ -172,11 +176,11 @@ class ReservedPrefixTest(BaseMigrationTest):
     def test_opt_out_skips_the_check(self) -> None:
         """Con --no-check-reserved-prefixes, el check no se ejecuta
         aunque haya API y token. Util para migracion gradual."""
-        _MockHandler.pulls_response = [{"number": 100}]
-        _MockHandler.files_response = {
+        self.mock_state["pulls_response"] = [{"number": 100}]
+        self.mock_state["files_response"] = {
             100: [{"filename": "migrations/011_a.sql", "status": "added"}],
         }
-        _MockHandler.next_status = 200
+        self.mock_state["next_status"] = 200
 
         add_files(self.repo, {
             "migrations/011_b.sql": "CREATE TABLE b;",
@@ -202,11 +206,11 @@ class ReservedPrefixTest(BaseMigrationTest):
         })
         git(repo, "remote", "add", "origin", "https://github.com/owner/repo.git")
 
-        _MockHandler.pulls_response = [{"number": 200}]
-        _MockHandler.files_response = {
+        self.mock_state["pulls_response"] = [{"number": 200}]
+        self.mock_state["files_response"] = {
             200: [{"filename": "migrations/005_c.sql", "status": "added"}],
         }
-        _MockHandler.next_status = 200
+        self.mock_state["next_status"] = 200
 
         add_files(repo, {
             "migrations/005_d.sql": "CREATE TABLE d;",
@@ -224,9 +228,9 @@ class ReservedPrefixTest(BaseMigrationTest):
         """El check de reservados NO exonera el resto de gates:
         una migracion editada sigue roja por la regla de inmutabilidad,
         aunque no haya PRs abiertas que la reserven."""
-        _MockHandler.pulls_response = []
-        _MockHandler.files_response = {}
-        _MockHandler.next_status = 200
+        self.mock_state["pulls_response"] = []
+        self.mock_state["files_response"] = {}
+        self.mock_state["next_status"] = 200
 
         # Modificar la migracion existente cambia su SHA.
         (self.repo / "migrations/010_first.sql").write_text(

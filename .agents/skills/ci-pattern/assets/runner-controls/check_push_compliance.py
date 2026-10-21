@@ -4,7 +4,10 @@
 
 El contrato declara `protected_branches` y `required_checks`; para cada
 commit del evento `push` la API debe mostrar un PR mergeado y los checks
-requeridos en verde sobre la cabeza de ese PR. Una violación abre una issue
+requeridos en verde sobre la cabeza de ese PR. Con la clave opt-in
+`governed_path` el detective exige además que el merge haya llegado por
+el camino gobernado (#909): el fusionador en la lista de actores o la
+firma del commit de merge. Una violación abre una issue
 de incidente con la evidencia (SHA, autor, checks) y sale con 1; un push
 conforme sale con 0. Entorno insalvable falla cerrado con 2 (HR-3): nunca
 verde sin medición. Runner-enforced (HR-34): sin protección de rama este
@@ -74,16 +77,32 @@ def audit_identity(event: dict) -> tuple[str, str]:
     return repo["full_name"], event["ref"][len("refs/heads/"):]
 
 
-def audit_event(event: dict) -> tuple[str, list[dict]]:
-    repo_name, _ = audit_identity(event)
-    before, after = event.get("before"), event.get("after")
+def push_range(event: dict) -> tuple[str, str]:
+    """#933: rango `before...after` de un push o de un `workflow_dispatch` (en `inputs`).
+
+    Un dispatch no trae `before`/`after` de nivel superior: el lanzador los declara en
+    `inputs`. Sin ellos el rango no es auditable y el detective falla cerrado (HR-3).
+    """
+    source = event.get("inputs", event)
+    if not isinstance(source, dict):
+        fail("workflow_dispatch 'inputs' must be an object carrying 'before' and 'after'")
+    before, after = source.get("before"), source.get("after")
     if not isinstance(before, str) or not SHA_RE.match(before) \
             or not isinstance(after, str) or not SHA_RE.match(after):
         fail("event 'before'/'after' are not 40-char commit ids")
+    return before, after
+
+
+def audit_event(event: dict) -> tuple[str, list[dict]]:
+    repo_name, _ = audit_identity(event)
+    before, after = push_range(event)
     if before == "0" * 40:
         fail("before of zeros (new branch): the pushed range is not auditable")
     if event.get("deleted") is True:
         return repo_name, []  # el borrado lo trata el control de force-push
+    if "inputs" in event:
+        # #933: un dispatch no trae la lista de commits; audit() la completa con compare_commits.
+        return repo_name, [{"id": after}]
     commits = event.get("commits")
     if not isinstance(commits, list):
         fail("event has no 'commits' list to audit")
@@ -141,30 +160,132 @@ def tracker_branch(contract: dict) -> str | None:
     return value.strip()
 
 
-def check_tree_integrity(repo: str, head_sha: str, commit_sha: str) -> list[str]:
-    """Verificar que el arbol de lo que fue revieweado coincide con el arbol
-    que llego al push (si el merge fue seguro)."""
-    # Obtener el arbol del head de la PR (lo que fue revieweado).
-    pr_commit = gh_json(f"repos/{repo}/commits/{head_sha}")
-    if not isinstance(pr_commit, dict):
-        return []  # Si la API no devuelve el commit, no bloqueamos (fall-open).
-    pr_tree = pr_commit.get("tree", {}).get("sha")
-    if not isinstance(pr_tree, str) or not SHA_RE.match(pr_tree):
+def governed_path_config(contract: dict) -> dict | None:
+    """Clave opt-in `governed_path` del contrato del host (#909).
+
+    Sin declaración (o con `enabled: false`) el detective no cambia: un
+    repo que no declara el camino gobernado no paga un control que no
+    pidió. Con `enabled: true`, un PR mergeado en una rama protegida
+    cumple si su FUSIONADOR está en `actors` o si el commit de merge
+    habla la firma gobernada; si no, es una violación. Un contrato
+    inservible falla cerrado (HR-3): duda, nunca verde.
+
+    Las dos rutas no valen lo mismo: la del actor es la FUERTE (la
+    plataforma firma `merged_by` y nadie lo edita desde la interfaz) y la
+    del mensaje es la DEBIL (quien mergea por la web puede escribir el
+    título del commit de merge y hacer pasar su merge por gobernado). Este
+    control detecta un bypass ACCIDENTAL, no uno deliberado: quien quiera
+    engañarlo tiene la ruta débil a mano. Para que el camino gobernado sea
+    el único con valor, declara en `actors` los fusionadores legítimos y
+    lee `merge_marker` como corroboración, no como prueba."""
+    cfg = contract.get("governed_path")
+    if cfg is None:
+        return None
+    if not isinstance(cfg, dict):
+        fail("contract 'governed_path' must be an object")
+    enabled = cfg.get("enabled", False)
+    if not isinstance(enabled, bool):
+        fail("contract 'governed_path.enabled' must be a boolean")
+    if not enabled:
+        return None
+    actors = cfg.get("actors")
+    if not isinstance(actors, list) or not actors or any(
+            not isinstance(actor, str) or not actor.strip() for actor in actors):
+        fail("contract 'governed_path.actors' must be a non-empty list of non-empty strings")
+    marker_source = cfg.get("merge_marker", r"^Merge PR #\d+ \(governed merge\)$")
+    if not isinstance(marker_source, str):
+        fail("contract 'governed_path.merge_marker' must be a string")
+    try:
+        marker = re.compile(marker_source)
+    except re.error as exc:
+        fail(f"contract 'governed_path.merge_marker' is not a valid regex: {exc}", exc)
+    return {"actors": list(actors), "marker": marker}
+
+
+def check_governed_path(cfg: dict, pull: dict, repo: str) -> list[str]:
+    """Verificar que el merge llegó por el camino gobernado.
+
+    El fusionador se lee del DETALLE del PR (`GET /repos/{repo}/pulls/{n}`
+    -> `merged_by`): la lista de PRs de un commit trae `user.login`, que
+    es el AUTOR del PR, no quien lo fusionó. La ruta del actor se resuelve
+    antes que la del mensaje: cuando el fusionador está en la lista, no
+    se hace la llamada extra al commit de merge."""
+    number = pull.get("number")
+    merged_by = pull.get("merged_by")
+    login = merged_by.get("login") if isinstance(merged_by, dict) else None
+    actors = cfg["actors"]
+    if isinstance(login, str) and login in actors:
+        return []  # ruta 1: el fusionador está en la lista de actores
+    sha = pull.get("merge_commit_sha")
+    if not isinstance(sha, str) or not SHA_RE.match(sha):
+        return [f"PR #{number} merged by '{login or 'unknown'}' is outside the governed path "
+                f"(actors: {', '.join(actors)}) and carries no merge commit to read the marker"]
+    commit = gh_json(f"repos/{repo}/commits/{sha}")
+    message = ""
+    if isinstance(commit, dict) and isinstance(commit.get("commit"), dict):
+        raw = commit["commit"].get("message")
+        message = raw if isinstance(raw, str) else ""
+    first_line = message.split("\n", 1)[0]
+    if cfg["marker"].match(first_line):
+        return []  # ruta 2: el commit de merge habla el idioma gobernado
+    return [f"PR #{number} merged by '{login or 'unknown'}' is outside the governed path "
+            f"(actors: {', '.join(actors)}; merge commit first line: "
+            f"'{first_line or '<empty>'}')"]
+
+
+def check_tree_integrity(repo: str, detail: dict, commit_sha: str) -> list[str]:
+    """Invariante de integridad de arbol (#426 safe-merge, #928).
+
+    Se comprueba solo si `commit_sha` es el `merge_commit_sha` del PR y la base
+    en el momento del merge (primer padre de ese commit) es ancestro del head,
+    es decir, `compare base...head` sale `ahead` o `identical`. En ese caso el
+    arbol del commit de merge debe ser el arbol del head revieweado.
+
+    No se comprueba en estos casos (no son violaciones):
+    - commits intermedios de la PR: su arbol nunca es el del head;
+    - main avanzo desde la ultima actualizacion de la rama: el compare sale
+      `diverged` o `behind` y el arbol del merge difiere legitimamente del head;
+    - rebase-merge (LIMITACION CONOCIDA): `merge_commit_sha` es el ultimo commit
+      rebasado y su primer padre es el rebasado anterior, no la base. El compare
+      sale `diverged` y el chequeo no aplica, aunque haya drift. Queda fijado por
+      `test_limitation_rebase_merge_drift_is_not_detected`.
+
+    Datos ausentes o de forma inesperada no bloquean (fall-open), como antes.
+    """
+    head_sha = detail["head"]["sha"]
+    if commit_sha != detail.get("merge_commit_sha"):
         return []
-    # Obtener el arbol del commit que llego al push.
-    pushed_commit = gh_json(f"repos/{repo}/commits/{commit_sha}")
-    if not isinstance(pushed_commit, dict):
+    merge = gh_json(f"repos/{repo}/commits/{commit_sha}")
+    base = _first_parent(merge)
+    if base is None:
         return []
-    pushed_tree = pushed_commit.get("tree", {}).get("sha")
-    if not isinstance(pushed_tree, str):
+    comparison = gh_json(f"repos/{repo}/compare/{base}...{head_sha}")
+    if not isinstance(comparison, dict) or comparison.get("status") not in ("ahead", "identical"):
         return []
-    if pr_tree != pushed_tree:
-        return [
-            f"arbol de PR #{pr_tree[:12]} vs commit {commit_sha[:7]}: difieren en el arbol; "
-            "esto indica que el arbol mergeado no es identico al arbol revieweado. "
-            "Verifique que se uso safe-merge (#426)."
-        ]
-    return []
+    merge_tree = _commit_tree(merge)
+    head_tree = _commit_tree(gh_json(f"repos/{repo}/commits/{head_sha}"))
+    if merge_tree is None or head_tree is None or merge_tree == head_tree:
+        return []
+    return [
+        f"arbol de PR #{head_tree[:12]} vs merge {commit_sha[:7]}: difieren en el arbol; "
+        "esto indica que el arbol mergeado no es identico al arbol revieweado. "
+        "Verifique que se uso safe-merge (#426)."
+    ]
+
+
+def _first_parent(commit: object) -> str | None:
+    """Primer padre de un commit de la API (la base en un merge commit)."""
+    parents = commit.get("parents") if isinstance(commit, dict) else None
+    if not isinstance(parents, list) or not parents or not isinstance(parents[0], dict):
+        return None
+    sha = parents[0].get("sha")
+    return sha if isinstance(sha, str) and SHA_RE.match(sha) else None
+
+
+def _commit_tree(commit: object) -> str | None:
+    """Arbol de un commit de la API: la forma real es commit.tree.sha (#928)."""
+    tree = ((commit.get("commit") or {}).get("tree") or {}).get("sha") if isinstance(commit, dict) else None
+    return tree if isinstance(tree, str) and SHA_RE.match(tree) else None
 
 
 def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[str]) -> list[str]:
@@ -196,9 +317,10 @@ def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[st
 
 def compare_commits(event: dict, repo: str) -> list[dict]:
     """Rango completo del push según el compare (la API devuelve hasta 250; #326)."""
-    compare = gh_json(f"repos/{repo}/compare/{event['before']}...{event['after']}")
+    before, after = push_range(event)
+    compare = gh_json(f"repos/{repo}/compare/{before}...{after}")
     if not isinstance(compare, dict) or not isinstance(compare.get("total_commits"), int):
-        fail(f"compare for {event['before']}...{event['after']} is not the API compare shape")
+        fail(f"compare for {before}...{after} is not the API compare shape")
     range_commits = compare.get("commits")
     if not isinstance(range_commits, list):
         fail("the compare response has no 'commits' list to audit")
@@ -233,12 +355,14 @@ class PushAudit:
     event: dict
     tracker: str | None
     required: list[str]
+    governed: dict | None
     seen_prs: set
 
 
 def commit_findings(push: PushAudit, commit: dict) -> list[str]:
-    repo, branch, event, tracker, required, seen_prs = (
-        push.repo, push.branch, push.event, push.tracker, push.required, push.seen_prs)
+    repo, branch, event, tracker, required, governed, seen_prs = (
+        push.repo, push.branch, push.event, push.tracker, push.required,
+        push.governed, push.seen_prs)
     author = commit.get("author") if isinstance(commit.get("author"), dict) else {}
     author_name = author.get("name") or event.get("pusher", {}).get("name") or "unknown author"
     prs = gh_json(f"repos/{repo}/commits/{commit['id']}/pulls")
@@ -266,32 +390,42 @@ def commit_findings(push: PushAudit, commit: dict) -> list[str]:
     findings: list[str] = []
     for pull in into_branch:
         number = pull.get("number")
-        if number in seen_prs:
+        # #928: el commit de merge puede llegar despues de que un commit intermedio
+        # haya consumido el PR; entonces solo se audita el arbol del merge.
+        is_merge = pull.get("merge_commit_sha") == commit["id"]
+        if number in seen_prs and not is_merge:
             continue
+        first = number not in seen_prs
         seen_prs.add(number)
         detail = gh_json(f"repos/{repo}/pulls/{number}")
         if not isinstance(detail, dict) or not isinstance(detail.get("head"), dict) \
                 or not isinstance(detail["head"].get("sha"), str):
             fail(f"PR #{number} detail is not the API pull shape")
-        login = (pull.get("user") or {}).get("login") or "unknown"
-        verdicts = check_verdict(repo, number, detail["head"]["sha"], required)
-        # Verificacion del arbol: lo que llego a main debe ser identico
-        # a lo que fue revieweado (siempre que el commit del push
-        # sea exactamente el head de la PR mergeada).
-        verdicts += check_tree_integrity(repo, detail["head"]["sha"], commit["id"])
+        # El fusionador sale del DETALLE del PR: `pull["user"]["login"]` (la
+        # lista de PRs de un commit) es el AUTOR del PR, no quien lo fusionó.
+        merged_by = detail.get("merged_by")
+        login = merged_by.get("login") if isinstance(merged_by, dict) else None
+        author_login = (pull.get("user") or {}).get("login") or "unknown"
+        verdicts = check_verdict(repo, number, detail["head"]["sha"], required) if first else []
+        # Verificacion del arbol: solo para el commit de merge (ver check_tree_integrity).
+        verdicts += check_tree_integrity(repo, detail, commit["id"])
+        if governed is not None and first:
+            verdicts += check_governed_path(governed, detail, repo)
         if verdicts:
             evidence = "\n".join(f"  {line}" for line in verdicts)
             findings.append(f"commit {commit['id']} — author: {author_name} — PR #{number} "
-                            f"merged by {login} (head {detail['head']['sha']})\n{evidence}")
+                            f"merged by {login or 'unknown'} (PR author: {author_login}; "
+                            f"head {detail['head']['sha']})\n{evidence}")
     return findings
 
 
 def incident_report(event: dict, branch: str, commits: list[dict],
                     findings: list[str]) -> tuple[str, str]:
+    before, after = push_range(event)  # #933: un dispatch no trae before/after de primer nivel
     title = f"incident: push compliance violation on '{branch}' ({commits[0]['id'][:7]})"
     body = ("Post-push detective (`check_push_compliance`), rama protegida por contrato: "
             f"{branch}\n\npusher: {event.get('pusher', {}).get('name', 'unknown')}\n"
-            f"rango: {event['before']}..{event['after']}\n\n"
+            f"rango: {before}..{after}\n\n"
             + "\n\n".join(findings)
             + "\n\nTodo cambio entra en main mediante PR con checks verdes; verifique el origen "
               "y cierre este incidente con su post-mortem (HR-21).")
@@ -316,8 +450,9 @@ def audit(args: argparse.Namespace) -> int:
         commits = compare_commits(event, repo)
     required = required_checks(contract)
     tracker = tracker_branch(contract)
+    governed = governed_path_config(contract)
     findings: list[str] = []
-    push = PushAudit(repo, branch, event, tracker, required, set())
+    push = PushAudit(repo, branch, event, tracker, required, governed, set())
     for commit in commits:
         findings += commit_findings(push, commit)
     if not findings:

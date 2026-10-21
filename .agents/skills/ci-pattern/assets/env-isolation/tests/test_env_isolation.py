@@ -429,6 +429,57 @@ class TestDotenvPrecision(unittest.TestCase):
         code, out = self.scan({"suites/s.sh": "#!/usr/bin/env bash\nsource .env\n"})
         self.assertEqual(code, 1, out)
 
+    def test_jinja_env_get_template_attribute_is_not_a_finding(self):
+        """Refs #851: `TEMPLATES.env.get_template(template_name).render(...)`
+        es acceso al binding local `TEMPLATES` (entorno Jinja2), NO una
+        referencia al `.env` del desarrollador. Caso verbatim de
+        `ardelperal/APAP_WEB:tests/test_xss_audit.py:101`."""
+        code, out = self.scan({"suites/t.py":
+                               'def render(templates, template_name, context):\n'
+                               '    TEMPLATES = templates\n'
+                               '    merged = {"base_template": "base.html", **context}\n'
+                               '    return TEMPLATES.env.get_template(template_name).render(**merged)\n'})
+        self.assertEqual((code, "HR-28" in out), (0, False), out)
+
+    def test_dotenv_substring_in_schema_name_is_not_a_finding(self):
+        r"""Refs #851: ``dotenv`` como substring de un identificador o nombre
+        de schema (``"dotenv_schema"``, ``"postgresql://dotenv"``) es un dato,
+        no un cargador. El detector matchea ``\.env\b``, no la palabra
+        ``dotenv``. Caso verbatim de
+        ``ardelperal/APAP_WEB:tests/test_verify_fallback_ready_cli.py:295``."""
+        code, out = self.scan({"suites/t.py":
+                               'def test_falls_back_cleanly():\n'
+                               '    assert events == [\n'
+                               '        ("provision", "postgresql://dotenv"),\n'
+                               '        ("drop", ("postgresql://dotenv", "dotenv_schema")),\n'
+                               '    ]\n'})
+        self.assertEqual((code, "HR-28" in out), (0, False), out)
+
+    def test_dotenv_values_with_dotenv_filename_is_a_finding(self):
+        """Refs #851: `dotenv_values('.env')` lee el `.env` del
+        desarrollador. La coincidencia viene del literal `.env`
+        (DOTENV_FILE), no del cargador (DOTENV_LOADER solo conoce
+        `load_dotenv`). Cierra el contrato positivo para el cuarto caso
+        explícito que la suite ya tenia cubierto parcialmente con
+        `open('.env')` y `Path('.env')`."""
+        code, out = self.scan({"suites/t.py":
+                               'from dotenv import dotenv_values\n'
+                               'def t():\n'
+                               '    return dotenv_values(".env")\n'})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-28", out)
+
+    def test_load_dotenv_call_is_a_finding(self):
+        """Refs #851: una llamada `load_dotenv()` sola (sin `from dotenv
+        import`) sigue siendo hallazgo via la primera alternativa de
+        DOTENV_LOADER (`\bload_dotenv\b`). Cierra el contrato positivo
+        cuando solo aparece la llamada."""
+        code, out = self.scan({"suites/t.py":
+                               'def t():\n'
+                               '    load_dotenv()\n'})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-28", out)
+
 
 class Dogfooding(unittest.TestCase):
     """Dogfooding (#195): en team-skills el escaneo real NO puede saltarse —

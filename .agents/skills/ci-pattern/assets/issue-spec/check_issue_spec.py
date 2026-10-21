@@ -303,23 +303,37 @@ def rule_reference_is_issue(issue: Mapping[str, Any], number: int) -> str | None
             f"muévala a depends-on de Chain Context. {DEPENDS_ON_HINT}")
 
 
-def rule_missing_labels(
-    issue: Mapping[str, Any], number: int, chain_partial: bool = False,
-) -> list[str]:
-    """Regla 3: la issue lleva `status:approved` y un `type:*`.
-
-    En un eslabón intermedio de cadena la aprobación se exige en la punta, no aquí.
-    """
-    names = {
+def _label_names(issue: Mapping[str, Any]) -> set[str]:
+    """Conjunto de nombres de etiquetas de la issue. Helper privado."""
+    return {
         label["name"] if isinstance(label, Mapping) else str(label)
         for label in issue.get("labels", [])
     }
+
+
+def rule_missing_labels(
+    issue: Mapping[str, Any], number: int, chain_partial: bool = False,
+) -> list[str]:
+    """Regla 3 (cierre): la issue lleva `status:approved` y un `type:*`.
+
+    En un eslabón intermedio de cadena la aprobación se exige en la punta, no aquí.
+    Se aplica solo a las referencias que cierran la issue (`Closes`/`Fixes`/
+    `Resolves`); las `Refs` son informativas y las juzga ``validate_remote``
+    sin aprobación ni tipo (DysTelefonica/team-skills#913).
+    """
+    names = _label_names(issue)
     violations: list[str] = []
     if APPROVAL_LABEL not in names and not chain_partial:
         violations.append(f"#{number}: requiere {APPROVAL_LABEL}")
     if not any(name.startswith(TYPE_PREFIX) for name in names):
         violations.append(f"#{number}: requiere una etiqueta {TYPE_PREFIX}*")
     return violations
+
+
+NO_APPROVED_LINKED_MESSAGE = (
+    "ninguna issue enlazada del propio repositorio está aprobada (status:approved "
+    "y type:*): el PR debe enlazar al menos una. Las demás referencias son "
+    "informativas y no se juzgan (DysTelefonica/team-skills#913)")
 
 
 def rule_api_error(number: int, exc: GitHubApiError) -> str:
@@ -346,6 +360,65 @@ class PrContext:
     warnings: list[str] = field(default_factory=list)
 
 
+def _judge_closing(
+    numbers: list[int],
+    get: Callable[[int], Mapping[str, Any]],
+    chain_partial: bool,
+    required_sections: tuple[str, ...],
+) -> tuple[list[str], list[str], bool]:
+    """Reglas 3 y 7 sobre las referencias que cierran.
+
+    Devuelve (violaciones, avisos de PR, hay alguna issue de cierre válida).
+    """
+    violations: list[str] = []
+    pull_messages: list[str] = []
+    valid = False
+    for number in numbers:
+        try:
+            issue = get(number)
+        except GitHubApiError as exc:
+            violations.append(rule_api_error(number, exc))
+            continue
+        if message := rule_reference_is_issue(issue, number):
+            pull_messages.append(message)
+            continue
+        valid = True
+        violations.extend(rule_missing_labels(issue, number, chain_partial))
+        violations.extend(rule_required_sections(
+            issue.get("body", ""), required_sections, prefix=f"#{number}: "))
+    return violations, pull_messages, valid
+
+
+def _judge_informative(
+    numbers: list[int],
+    get: Callable[[int], Mapping[str, Any]],
+    required_sections: tuple[str, ...],
+) -> tuple[list[str], list[str], bool]:
+    """Referencias informativas (#913): tipo y secciones, sin exigir aprobación.
+
+    Devuelve (violaciones, avisos de PR, alguna enlazada aprobada y tipada).
+    Mantiene la comprobación de tipo y de secciones de siempre para no relajar
+    ningún gate existente; la aprobación solo aporta al PR la issue que exige.
+    """
+    violations: list[str] = []
+    pull_messages: list[str] = []
+    approved = False
+    for number in numbers:
+        try:
+            issue = get(number)
+        except GitHubApiError as exc:
+            violations.append(rule_api_error(number, exc))
+            continue
+        if message := rule_reference_is_issue(issue, number):
+            pull_messages.append(message)
+            continue
+        violations.extend(rule_missing_labels(issue, number, chain_partial=True))
+        violations.extend(rule_required_sections(
+            issue.get("body", ""), required_sections, prefix=f"#{number}: "))
+        approved = approved or not rule_missing_labels(issue, number, chain_partial=False)
+    return violations, pull_messages, approved
+
+
 def validate_remote(
     body: str,
     repository: str,
@@ -355,13 +428,20 @@ def validate_remote(
 ) -> list[str]:
     """Modo pr-event: todas las reglas. Solo consulta las issues del propio repositorio.
 
-    La regla 7 se aplica al cuerpo de cada issue consultada: si una referencia
-    está dentro de un span de código o de un bloque cercado, la issue no se
-    consulta y la regla tampoco se le aplica. Las issues de otro repositorio
-    no se consultan (mismo criterio que la regla 5). El cuerpo del PR
-    (parámetro ``body``) no se evalúa contra la regla 7: el PR solo lleva
-    la referencia ``Closes #N``; las secciones obligatorias viven en el
-    cuerpo de la issue.
+    Regla por PR (#913): el cuerpo debe cerrar al menos una issue del propio
+    repositorio (la que lleva `status:approved` y un `type:*`), o ser un
+    eslabón intermedio (`chain:partial`, #787 S6). Las `Refs` son
+    **informativas**: solo se comprueba que resuelvan a una issue y no a una
+    PR; no exigen aprobación, ni tipo, ni las seis secciones canónicas. La
+    regla 7 (secciones obligatorias) se aplica solo a las referencias de
+    cierre; las informativas no la llevan.
+
+    Advertencias y violaciones:
+    - Una referencia a una PR es un aviso si el cuerpo cierra además una
+      issue válida (#787); si no hay cierre válido, es bloqueo.
+
+    Fail-closed (HR-3): un error de la API al consultar una issue de cierre
+    o informativa es hallazgo, no verde silencioso.
     """
     refs = references(body)
     show_warnings = context is not None  # sin contexto nadie lee los avisos: se queda en fallo
@@ -371,27 +451,44 @@ def validate_remote(
     violations = validate_body(body, repository, ())
     if not refs:
         return violations
-    numbers = sorted({
-        ref.number for ref in refs
+
+    same_repo_refs = tuple(
+        ref for ref in refs
         if not ref.repo or ref.repo.lower() == repository.lower()
-    })
-    pull_messages: list[str] = []
-    valid_issue = False
-    for number in numbers:
-        try:
-            issue = fetch_issue(number)
-        except GitHubApiError as exc:
-            violations.append(rule_api_error(number, exc))
-            continue
-        if message := rule_reference_is_issue(issue, number):
-            pull_messages.append(message)
-        else:
-            valid_issue = True
-            violations.extend(rule_missing_labels(issue, number, context.chain_partial))
-            violations.extend(rule_required_sections(
-                issue.get("body", ""), required_sections, prefix=f"#{number}: "))
-    # Una referencia a una PR es un aviso si el cuerpo enlaza además una issue válida (#787).
-    if valid_issue and show_warnings:
+    )
+    closing_refs = tuple(ref for ref in same_repo_refs if ref.kind == "close")
+    informative_refs = tuple(ref for ref in same_repo_refs if ref.kind == "refs")
+
+    # Una issue referenciada como `Closes` y como `Refs` se trae una sola vez;
+    # la verificación de cierre tiene precedencia (es la que exige aprobación).
+    fetched: dict[int, Mapping[str, Any]] = {}
+
+    def _get(number: int) -> Mapping[str, Any]:
+        if number in fetched:
+            return fetched[number]
+        issue = fetch_issue(number)
+        fetched[number] = issue
+        return issue
+
+    # Regla 3 (aprobación + tipo) y 7 (secciones) a las que cierran (#913: las
+    # Refs no exigen aprobación, ver _judge_informative).
+    closing_violations, closing_pulls, valid_closing_issue = _judge_closing(
+        sorted({ref.number for ref in closing_refs}), _get,
+        context.chain_partial, required_sections)
+    informative_violations, informative_pulls, approved_linked = _judge_informative(
+        sorted({ref.number for ref in informative_refs}), _get, required_sections)
+    violations.extend(closing_violations)
+    violations.extend(informative_violations)
+    pull_messages = closing_pulls + informative_pulls
+
+    # Sin ningún `Closes` que la regla 3 ya juzgue, el PR debe enlazar una issue
+    # aprobada entre sus Refs. Un eslabón intermedio (`chain:partial`) no lo exige (#787 S6).
+    if same_repo_refs and not closing_refs and not context.chain_partial and not approved_linked:
+        violations.append(NO_APPROVED_LINKED_MESSAGE)
+
+    # Una referencia a una PR es un aviso si el cuerpo cierra además una
+    # issue válida (#787); si no hay cierre válido, es bloqueo.
+    if valid_closing_issue and show_warnings:
         context.warnings.extend(pull_messages)
     else:
         violations.extend(pull_messages)

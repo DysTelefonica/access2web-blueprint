@@ -18,6 +18,13 @@ REPO = "DysTelefonica/team-skills"
 SHA = "1f4e9a2c7b8d3e6f5a0c9b8d7e6f5a4c3b2d1e0f"
 BASE = "0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d"
 CHECK = "unit suite (≤3min)"
+# #909: commit de merge y mensajes reales de cadete (#536 gobernado, #373 web).
+MERGE_SHA = "5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f"
+GOVERNED_MESSAGE = ("Merge PR #536 (governed merge)\n\n"
+                    "ci(host-contract): docs-gates y required en required_checks y P28")
+WEB_MESSAGE = ("Merge pull request #373 from DysTelefonica/chore/366-adopt-issue-spec-canon-config\n\n"
+               "ci(issue-spec): require canonical sections and document chain context "
+               "(Closes #366, chain 4/4)")
 
 def write_fixture(root: Path, event: dict, contract: dict) -> None:
     (root / "event.json").write_text(json.dumps(event), encoding="utf-8")
@@ -38,17 +45,46 @@ def contract() -> dict:
             "required_checks": [{"name": CHECK, "class": "documented-only"}]}
 
 
+# #928: forma REAL de GET repos/{r}/commits/{sha}: el arbol vive en
+# commit.tree.sha (top-level sin campo `tree`). Shas de arbol de 40 hex.
+TREE_PR = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
+TREE_PUSH = "0f1e2d3c4b5a69788796a5b4c3d2e1f0a9b8c7d6"
+
+
+def commit_obj(sha: str, tree: str) -> dict:
+    return {"sha": sha, "commit": {"tree": {"sha": tree}}}
+
+
 def base_state() -> dict:
     return {"pulls": {SHA: [{"number": 7, "merged": True, "merged_at": "2026-10-06T10:00:00Z",
                              "user": {"login": "ardelperal"}, "base": {"ref": "main"}}]},
             "pr_details": {"7": {"number": 7, "merged": True, "user": {"login": "ardelperal"},
                                  "head": {"sha": SHA}, "merge_commit_sha": SHA}},
             "check_runs": {SHA: [{"id": 1, "name": CHECK, "conclusion": "success", "status": "completed"}]},
-            "commits": {SHA: {"sha": SHA, "tree": {"sha": "a1b2c3d4e5f6"}}},
+            "commits": {SHA: commit_obj(SHA, TREE_PR)},
             "created_issues": [], "calls": [], "merges": [],
             "compare": {"total_commits": 1,
                         "commits": [{"sha": SHA,
                                          "commit": {"author": {"name": "Dev A"}}}]}}
+
+
+def governed_contract(actors: list | None = None) -> dict:
+    """Contrato con la clave opt-in `governed_path` activada (#909)."""
+    return {**contract(), "governed_path": {
+        "enabled": True,
+        "actors": actors if actors is not None else ["github-actions[bot]"]}}
+
+
+def merge_state(*, author: str, merged_by: str, message: str) -> dict:
+    """Estado de un push cuyo PR se fusiono con el commit de merge `MERGE_SHA`."""
+    state = base_state()
+    state["pulls"][SHA] = [{"number": 7, "merged": True, "merged_at": "2026-10-19T22:21:58Z",
+                            "user": {"login": author}, "base": {"ref": "main"}}]
+    state["pr_details"]["7"] = {"number": 7, "merged": True, "user": {"login": author},
+                                 "merged_by": {"login": merged_by},
+                                 "head": {"sha": SHA}, "merge_commit_sha": MERGE_SHA}
+    state["commits"][MERGE_SHA] = {"sha": MERGE_SHA, "commit": {"message": message}}
+    return state
 
 
 def run_gate(root: Path, event: dict, contract_data: dict, state: dict) -> subprocess.CompletedProcess:
@@ -231,6 +267,9 @@ class DetectiveTests(unittest.TestCase):
         pr = {"number": 7, "merged": True, "merged_at": "2026-10-06T10:00:00Z",
               "user": {"login": "ardelperal"}, "base": {"ref": "main"}}
         state["pulls"] = {s: [pr] for s in shas}
+        # #928: el chequeo de arbol ya mide: cada commit del rango necesita su
+        # arbol (aqui el de la PR, rango limpio).
+        state["commits"].update({s: commit_obj(s, TREE_PR) for s in shas})
         state["compare"] = {"total_commits": 25,
                             "commits": [{"sha": s, "commit": {"author": {"name": "Dev A"}}}
                                         for s in shas]}
@@ -278,33 +317,284 @@ class DetectiveTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("fail", (proc.stdout + proc.stderr).lower())
 
-    def test_tree_integrity_ok_when_pushed_matches_pr(self) -> None:
-        # Arbol conforme: el commit del push tiene el mismo arbol que la PR.
-        state = base_state()
-        # El arbol del push es el mismo que el de la PR (SHA -> a1b2c3d4e5f6).
-        state["commits"][SHA] = {"sha": SHA, "tree": {"sha": "a1b2c3d4e5f6"}}
+
+# #928 Fase 2: invariante de integridad de arbol. Solo el commit de merge
+# (merge_commit_sha) con base ancestro del head (compare base...head ahead o
+# identical) debe tener el arbol del head. Fixtures con la forma documentada.
+C1 = "1111111111111111111111111111111111111111"
+C2 = "2222222222222222222222222222222222222222"
+BASE_ADVANCED = "3333333333333333333333333333333333333333"
+REBASED_PREV = "4444444444444444444444444444444444444444"
+TREE_INTERMEDIATE = "5555555555555555555555555555555555555555"
+TREE_MAIN = "6666666666666666666666666666666666666666"
+
+
+def tree_state(*, range_shas: list, merge_parents: list, merge_tree: str, compare_status: str) -> dict:
+    """Estado de un push de una PR (#7, head SHA) fusionada con MERGE_SHA.
+    `merge_parents[0]` es la base en el momento del merge."""
+    state = base_state()
+    entry = {"number": 7, "merged": True, "merged_at": "2026-10-19T22:21:58Z",
+             "user": {"login": "ardelperal"}, "base": {"ref": "main"},
+             "merge_commit_sha": MERGE_SHA}
+    state["pulls"] = {s: [entry] for s in range_shas}
+    state["pr_details"]["7"] = {"number": 7, "merged": True, "user": {"login": "ardelperal"},
+                                "merged_by": {"login": "ardelperal"},
+                                "head": {"sha": SHA}, "merge_commit_sha": MERGE_SHA}
+    state["commits"][SHA] = commit_obj(SHA, TREE_PR)
+    state["commits"][MERGE_SHA] = {"sha": MERGE_SHA, "parents": [{"sha": p} for p in merge_parents],
+                                   "commit": {"tree": {"sha": merge_tree}, "message": "Merge pull request #7"}}
+    for s in range_shas:
+        if s != MERGE_SHA:
+            state["commits"][s] = commit_obj(s, TREE_INTERMEDIATE)
+    state["compares"] = {f"{merge_parents[0]}...{SHA}": {"status": compare_status, "behind_by": 0}}
+    state["compare"] = {"total_commits": len(range_shas), "behind_by": 0,
+                        "commits": [{"sha": s, "commit": {"author": {"name": "Dev A"}}} for s in range_shas]}
+    return state
+
+
+def tree_push(range_shas: list) -> dict:
+    event = push_event(commits=[{"id": s, "message": "feat: change", "author": {"name": "Dev A"},
+                                 "distinct": True} for s in range_shas])
+    event["after"] = range_shas[-1]
+    event["head_commit"] = event["commits"][-1]
+    return event
+
+
+class TreeIntegrityTests(unittest.TestCase):
+    """#928: el chequeo de arbol solo mide el commit de merge con base ancestro
+    del head. Intermedios, main avanzado y rebase-merge no se miden (ver docstring
+    de check_tree_integrity; el rebase-merge es limitacion conocida)."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def issues(self) -> list:
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8"))["created_issues"]
+
+    def test_conforming_merge_of_up_to_date_branch_exits_zero(self) -> None:
+        state = tree_state(range_shas=[MERGE_SHA], merge_parents=[BASE, SHA],
+                           merge_tree=TREE_PR, compare_status="ahead")
+        proc = run_gate(self.root, tree_push([MERGE_SHA]), contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(self.issues(), [])
+
+    def test_a_intermediate_commits_of_a_multi_commit_pr_do_not_open_incident(self) -> None:
+        # (a) C1 y C2 tienen arbol intermedio legitimo; solo el merge se mide.
+        state = tree_state(range_shas=[C1, C2, MERGE_SHA], merge_parents=[BASE, SHA],
+                           merge_tree=TREE_PR, compare_status="ahead")
+        proc = run_gate(self.root, tree_push([C1, C2, MERGE_SHA]), contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(self.issues(), [])
+
+    def test_b_merge_after_main_advanced_does_not_open_incident(self) -> None:
+        # (b) main avanzo: la base del merge no es ancestro del head (diverged).
+        # El arbol del merge difiere legitimamente del head.
+        state = tree_state(range_shas=[MERGE_SHA], merge_parents=[BASE_ADVANCED, SHA],
+                           merge_tree=TREE_MAIN, compare_status="diverged")
+        proc = run_gate(self.root, tree_push([MERGE_SHA]), contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(self.issues(), [])
+
+    def test_real_drift_on_up_to_date_merge_opens_incident(self) -> None:
+        # Positivo: base ancestro del head y el merge trae contenido distinto
+        # del revieweado. Debe abrir incidente.
+        state = tree_state(range_shas=[MERGE_SHA], merge_parents=[BASE, SHA],
+                           merge_tree=TREE_PUSH, compare_status="ahead")
+        proc = run_gate(self.root, tree_push([MERGE_SHA]), contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(len(self.issues()), 1, proc.stdout + proc.stderr)
+        self.assertIn("difieren en el arbol", self.issues()[0]["body"])
+
+    def test_drift_after_an_intermediate_commit_still_opens_incident(self) -> None:
+        # El commit intermedio consume el PR (seen_prs); el merge con drift
+        # debe seguir abriendo incidente. Protege el cambio de seen_prs.
+        state = tree_state(range_shas=[C1, MERGE_SHA], merge_parents=[BASE, SHA],
+                           merge_tree=TREE_PUSH, compare_status="ahead")
+        proc = run_gate(self.root, tree_push([C1, MERGE_SHA]), contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(len(self.issues()), 1, proc.stdout + proc.stderr)
+        self.assertIn("difieren en el arbol", self.issues()[0]["body"])
+
+    def test_limitation_rebase_merge_drift_is_not_detected(self) -> None:
+        # LIMITACION CONOCIDA (#928): en rebase-merge merge_commit_sha es el
+        # ultimo commit rebasado; su primer padre es el rebasado anterior, no
+        # la base. compare sale diverged y el chequeo no aplica, aunque haya
+        # drift. Este test fija ese punto ciego: no abre incidente.
+        state = tree_state(range_shas=[MERGE_SHA], merge_parents=[REBASED_PREV],
+                           merge_tree=TREE_PUSH, compare_status="diverged")
+        proc = run_gate(self.root, tree_push([MERGE_SHA]), contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(self.issues(), [])
+
+
+class GovernedPathTests(unittest.TestCase):
+    """#909: con la clave opt-in `governed_path`, el detective exige que el merge
+    haya llegado por el camino gobernado (actor en la lista o firma en el
+    mensaje del commit de merge). Los fixtures son los casos reales de cadete."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def created_issue(self) -> dict:
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(state["created_issues"]), 1, state)
+        return state["created_issues"][0]
+
+    def test_governed_merge_by_the_bot_passes(self) -> None:
+        """Caso real de cadete #536: `github-actions[bot]` fusiona y el commit de
+        merge dice «Merge PR #536 (governed merge)»: el camino gobernado se cumple
+        y el detective sale limpio."""
+        state = merge_state(author="ardelperal", merged_by="github-actions[bot]",
+                            message=GOVERNED_MESSAGE)
+        proc = run_gate(self.root, push_event(), governed_contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+
+    def test_web_merge_is_a_violation(self) -> None:
+        """Caso real de cadete #373: mergeado por la interfaz web con «Merge pull
+        request #373 from …» es una violation que abre incidente."""
+        state = merge_state(author="ardelperal", merged_by="ardelperal", message=WEB_MESSAGE)
+        proc = run_gate(self.root, push_event(), governed_contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        issue = self.created_issue()
+        self.assertIn("outside the governed path", issue["body"])
+        self.assertIn("ardelperal", issue["body"])
+        self.assertIn("Merge pull request #373", issue["body"])
+
+    def test_the_merger_is_not_the_pr_author(self) -> None:
+        """El veredicto lee `merged_by` del detalle del PR, no `user.login` de la
+        lista de PRs de un commit (allí va el AUTOR): un PR cuyo autor esta en la
+        lista de actores y cuyo fusionador no, es violation."""
+        state = merge_state(author="ardelperal", merged_by="otro-actor", message=WEB_MESSAGE)
+        proc = run_gate(self.root, push_event(), governed_contract(["ardelperal"]), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        issue = self.created_issue()
+        self.assertIn("outside the governed path", issue["body"])
+        self.assertIn("otro-actor", issue["body"])
+
+    def test_the_merge_marker_is_an_alternative_route(self) -> None:
+        """Un fusionador que no esta en `actors` cumple si el commit de merge
+        habla el idioma gobernado (la firma que emite `check_governed_merge.py`)."""
+        state = merge_state(author="ardelperal", merged_by="ardelperal",
+                            message=GOVERNED_MESSAGE)
+        proc = run_gate(self.root, push_event(), governed_contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+
+    def test_the_merge_marker_route_is_forgeable_and_that_is_a_known_limit(self) -> None:
+        """LIMITE CONOCIDO (#909): la ruta del mensaje es la DEBIL. Quien mergea
+        por la web puede editar el titulo del commit de merge y escribir la firma
+        gobernada, y el detective lo acepta: este test fija ese limite para que
+        no se lea como un fallo. El control detecta un bypass ACCIDENTAL, no uno
+        deliberado; la ruta fuerte es la del actor (`actors`), que la plataforma
+        firma y nadie puede falsificar desde la interfaz."""
+        state = merge_state(author="ardelperal", merged_by="ardelperal",
+                            message="Merge PR #7 (governed merge)\n\n"
+                                    "ci: el titulo lo escribio el humano en la web")
+        proc = run_gate(self.root, push_event(), governed_contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+
+    def test_without_the_key_the_verdict_does_not_change(self) -> None:
+        """Sin la clave el detective se comporta como antes: el merge por la web de
+        #373 no es violation (retrocompatibilidad)."""
+        state = merge_state(author="ardelperal", merged_by="ardelperal", message=WEB_MESSAGE)
         proc = run_gate(self.root, push_event(), contract(), state)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-        self.assertIn("OK", proc.stdout)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
 
-    def test_tree_integrity_mismatch_opens_incident(self) -> None:
-        # Arbol inconsistente: el push llego con un arbol distinto al de la PR.
-        # El compare del push devuelve PUSHED_SHA; la PR lo referencia (squash/rebase).
-        PUSHED_SHA = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    def test_a_disabled_key_does_not_change_the_verdict(self) -> None:
+        """`enabled: false` es la clave presente pero apagada: el veredicto no cambia."""
+        state = merge_state(author="ardelperal", merged_by="ardelperal", message=WEB_MESSAGE)
+        contract_data = {**contract(), "governed_path": {"enabled": False, "actors": []}}
+        proc = run_gate(self.root, push_event(), contract_data, state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+
+    def test_an_unusable_governed_path_fails_closed(self) -> None:
+        """HR-3: un contrato inservible es duda, no un verde (exit 2)."""
+        for bad in ({"enabled": "yes", "actors": ["github-actions[bot]"]},
+                    {"enabled": True, "actors": []},
+                    {"enabled": True, "actors": ["github-actions[bot]"],
+                     "merge_marker": "["}):
+            with self.subTest(governed_path=bad):
+                proc = run_gate(self.root, push_event(),
+                                {**contract(), "governed_path": bad}, base_state())
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertIn("governed_path", proc.stdout + proc.stderr)
+
+
+def dispatch_event(before: object = BASE, after: object = SHA, **extra: object) -> dict:
+    """#933: payload de `workflow_dispatch` con el rango en `inputs` (sin `commits` ni `before`)."""
+    inputs = {"before": before, "after": after}
+    return {"ref": "refs/heads/main", "inputs": inputs, "workflow": "push-compliance",
+            "repository": {"full_name": REPO, "default_branch": "main"}, **extra}
+
+
+class DispatchRangeTests(unittest.TestCase):
+    """#933: el detective audita el rango `before...after` de un dispatch y falla cerrado sin él."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def stored(self) -> dict:
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+
+    def test_a_conforming_dispatch_audits_the_explicit_range_via_compare(self) -> None:
+        proc = run_gate(self.root, dispatch_event(), contract(), base_state())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn(f"GET repos/{REPO}/compare/{BASE}...{SHA}", self.stored()["calls"])
+        self.assertIn("OK:", proc.stdout)
+
+    def test_a_violating_commit_in_the_dispatched_range_opens_an_incident(self) -> None:
         state = base_state()
-        # El head de la PR tiene arbol PR_TREE_SHA.
-        state["commits"][SHA] = {"sha": SHA, "tree": {"sha": "PR_TREE_SHA"}}
-        # El commit del push tiene PUSHED_TREE_SHA (diferente a PR_TREE_SHA).
-        state["commits"][PUSHED_SHA] = {"sha": PUSHED_SHA, "tree": {"sha": "PUSHED_TREE_SHA"}}
-        # El compare del push devuelve PUSHED_SHA (squash/rebase creó otro commit).
-        state["compare"] = {"total_commits": 1,
-                            "commits": [{"sha": PUSHED_SHA,
-                                         "commit": {"author": {"name": "Dev A"}}}]}
-        # La PR se mapea por PUSHED_SHA (el commit resultante del squash/rebase).
-        state["pulls"][PUSHED_SHA] = [{"number": 7, "merged": True,
-                                        "merged_at": "2026-10-06T10:00:00Z",
-                                        "user": {"login": "ardelperal"},
-                                        "base": {"ref": "main"}}]
+        state["pulls"] = {}  # ningún PR mergeado para el commit del rango
+        proc = run_gate(self.root, dispatch_event(), contract(), state)
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(len(self.stored()["created_issues"]), 1)
+
+    def test_a_dispatch_without_before_fails_closed_before_any_api_call(self) -> None:
+        event = dispatch_event()
+        del event["inputs"]["before"]
+        proc = run_gate(self.root, event, contract(), base_state())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("before", proc.stderr)
+        self.assertFalse(any(c.startswith("GET repos") and "compare" in c for c in self.stored()["calls"]))
+        self.assertEqual(self.stored()["created_issues"], [])
+
+    def test_a_dispatch_without_after_fails_closed(self) -> None:
+        event = dispatch_event()
+        del event["inputs"]["after"]
+        proc = run_gate(self.root, event, contract(), base_state())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("after", proc.stderr)
+
+    def test_a_dispatch_with_a_malformed_sha_fails_closed(self) -> None:
+        proc = run_gate(self.root, dispatch_event(before="not-a-sha"), contract(), base_state())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertEqual(self.stored()["created_issues"], [])
+
+    def test_a_dispatch_with_a_zero_before_fails_closed(self) -> None:
+        proc = run_gate(self.root, dispatch_event(before="0" * 40), contract(), base_state())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    def test_a_dispatch_whose_inputs_are_not_an_object_fails_closed(self) -> None:
+        event = dispatch_event()
+        event["inputs"] = "before...after"
+        proc = run_gate(self.root, event, contract(), base_state())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()
