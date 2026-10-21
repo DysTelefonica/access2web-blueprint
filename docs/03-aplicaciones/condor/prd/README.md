@@ -56,7 +56,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_frmElegirEtapaAdjunto | src/forms/Form_frmElegirEtapaAdjunto.cls | 67 | 22 | 6 | igual | analizado | [formularios/Form_frmElegirEtapaAdjunto.md](formularios/Form_frmElegirEtapaAdjunto.md) |
 | Form_frmFiltrosAvanzadosSolicitudes | src/forms/Form_frmFiltrosAvanzadosSolicitudes.cls | 134 | 33 | 11 | igual | analizado | [formularios/Form_frmFiltrosAvanzadosSolicitudes.md](formularios/Form_frmFiltrosAvanzadosSolicitudes.md) |
 | Form_frmGestionAdjuntos | src/forms/Form_frmGestionAdjuntos.cls | 380 | 23 | 10 | distinto | analizado | [formularios/Form_frmGestionAdjuntos.md](formularios/Form_frmGestionAdjuntos.md) |
-| Form_frmGestionSolicitud | src/forms/Form_frmGestionSolicitud.cls | 2416 | 32 | 53 | distinto | pendiente | — |
+| Form_frmGestionSolicitud | src/forms/Form_frmGestionSolicitud.cls | 2416 | 32 | 53 | distinto | analizado | [formularios/Form_frmGestionSolicitud.md](formularios/Form_frmGestionSolicitud.md) |
 | Form_frmSplash | src/forms/Form_frmSplash.cls | 78 | 15 | 2 | igual | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 | Form_frmVerLogCambios | src/forms/Form_frmVerLogCambios.cls | 187 | 26 | 10 | igual | pendiente | — |
 | Form_frmVerLogErrores | src/forms/Form_frmVerLogErrores.cls | 183 | 25 | 10 | igual | pendiente | — |
@@ -73,12 +73,12 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_subfrmDatosCDCA_Generales | src/forms/Form_subfrmDatosCDCA_Generales.cls | 209 | 35 | 6 | igual | pendiente | — |
 | Form_subfrmDatosCDCA_Impacto | src/forms/Form_subfrmDatosCDCA_Impacto.cls | 129 | 67 | 3 | igual | pendiente | — |
 | Form_subfrmDatosCDCA_Propuesta | src/forms/Form_subfrmDatosCDCA_Propuesta.cls | 56 | 31 | 3 | igual | pendiente | — |
-| Form_subfrmDatosPC_AprobacionSuministrador | src/forms/Form_subfrmDatosPC_AprobacionSuministrador.cls | 150 | 25 | 7 | distinto | pendiente | — |
-| Form_subfrmDatosPC_DecisionFinal | src/forms/Form_subfrmDatosPC_DecisionFinal.cls | 122 | 32 | 3 | distinto | pendiente | — |
-| Form_subfrmDatosPC_DictamenRAC | src/forms/Form_subfrmDatosPC_DictamenRAC.cls | 122 | 25 | 5 | igual | pendiente | — |
-| Form_subfrmDatosPC_Generales | src/forms/Form_subfrmDatosPC_Generales.cls | 206 | 30 | 6 | igual | pendiente | — |
-| Form_subfrmDatosPC_Impacto | src/forms/Form_subfrmDatosPC_Impacto.cls | 130 | 84 | 3 | distinto | pendiente | — |
-| Form_subfrmDatosPC_Propuesta | src/forms/Form_subfrmDatosPC_Propuesta.cls | 34 | 24 | 3 | igual | pendiente | — |
+| Form_subfrmDatosPC_AprobacionSuministrador | src/forms/Form_subfrmDatosPC_AprobacionSuministrador.cls | 150 | 25 | 7 | distinto | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
+| Form_subfrmDatosPC_DecisionFinal | src/forms/Form_subfrmDatosPC_DecisionFinal.cls | 122 | 32 | 3 | distinto | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
+| Form_subfrmDatosPC_DictamenRAC | src/forms/Form_subfrmDatosPC_DictamenRAC.cls | 122 | 25 | 5 | igual | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
+| Form_subfrmDatosPC_Generales | src/forms/Form_subfrmDatosPC_Generales.cls | 206 | 30 | 6 | igual | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
+| Form_subfrmDatosPC_Impacto | src/forms/Form_subfrmDatosPC_Impacto.cls | 130 | 84 | 3 | distinto | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
+| Form_subfrmDatosPC_Propuesta | src/forms/Form_subfrmDatosPC_Propuesta.cls | 34 | 24 | 3 | igual | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
 
 ### Módulos estándar
 
@@ -183,7 +183,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | WebVisorCacheServicio | src/classes/WebVisorCacheServicio.cls | 180 | — | 9 | distinto | pendiente | — |
 | WorkflowServicio | src/classes/WorkflowServicio.cls | 4160 | — | 82 | distinto | pendiente | — |
 
-Totales: 14 analizados · 0 no aplicables · 117 pendientes.
+Totales: 21 analizados · 0 no aplicables · 110 pendientes.
 
 ## Discrepancias abiertas
 
