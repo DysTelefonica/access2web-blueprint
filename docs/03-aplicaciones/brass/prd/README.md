@@ -1,6 +1,6 @@
 # PRD — Brass
 
-> **Estado:** fase 1 (fijación e inventario). Los formularios, módulos y clases quedan **pendientes**; las fichas, la matriz, la coexistencia, las capacidades y las issues propuestas llegan en las PR siguientes de la cadena.
+> **Estado:** estudio completo salvo el ERD de origen. Fases 0 (fijación), 1 (inventario), 2 (87 de 87 formularios, 11 módulos y 28 clases analizados; 5 módulos de pruebas no aplicables), 3 (matriz de 57 tablas y 419 columnas, con destinos pendientes), 4 (coexistencia) y 5 (capacidades e issues propuestas) hechas. El ERD de origen está pendiente de la extracción con `dysflow-erd` (D-BRA-1).
 
 | Campo | Valor |
 |---|---|
@@ -13,7 +13,7 @@
 
 ## Alcance actual
 
-Fija el commit y concilia el inventario. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)) y no sustituyen al análisis.
+Contiene el commit fijado, el inventario reconciliado, una ficha por cada uno de los 87 formularios (en [formularios/](formularios/)), el inventario de [módulos](modulos.md) y de clases ([1](clases-1.md), [2](clases-2.md)), la [matriz campo a campo](matriz-campos.md), la [coexistencia](coexistencia.md), la [clasificación de capacidades](capacidades.md) y las [issues propuestas](issues-propuestas.md). No contiene aún `erd-origen.md`. Los recuentos de líneas, controles y procedimientos son mecánicos (ver [Método del recuento](#método-del-recuento)). Las fichas son lectura estática de `src`: nada se ha ejecutado en Access y todo hallazgo queda «a verificar».
 
 ## Inventario reconciliado
 
@@ -183,11 +183,35 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 Totales: 126 analizados · 5 no aplicables · 0 pendientes.
 
+## Delta frente al estudio previo
+
+Resumido en [capacidades.md](capacidades.md): de las 12 capacidades provisionales, 11 no cambian en el código y 1 se modifica (CAP-1: `EVE` comprueba al arrancar que el usuario sea administrador o técnico, `Variables Globales.bas:335-347`, bloque ausente en el snapshot). Es la única diferencia de código frente al snapshot: formularios y clases coinciden tras normalizar.
+
+## Capacidades
+
+| ID | Capacidad | Formularios | Criterios | Issue propuesta |
+|---|---|---|---|---|
+| CAP-1 | Arranque, identidad y permisos | — | ver fichas | P-BRA-4, P-BRA-5 |
+| CAP-2 | Opciones y configuración de la BD | 3 | ver fichas | P-BRA-5 |
+| CAP-3 | Eventos | 8 | ver fichas | P-BRA-6, P-BRA-7 |
+| CAP-4 | Actividades | 7 | ver fichas | P-BRA-3 |
+| CAP-5 | Equipos y calibraciones | 15 | ver fichas | P-BRA-8 |
+| CAP-6 | Planificación y partes | 12 | ver fichas | P-BRA-9 |
+| CAP-7 | Materiales | 9 | ver fichas | P-BRA-11 |
+| CAP-8 | Facturación, gastos y subcontratación | 9 | ver fichas | P-BRA-10 |
+| CAP-9 | Técnicos | 10 | ver fichas | P-BRA-12 |
+| CAP-10 | Informes | 4 | ver fichas | P-BRA-13 |
+| CAP-11 | Anexos | 2 | ver fichas | P-BRA-14 |
+| CAP-12 | Estructura y catálogos | 8 | ver fichas | P-BRA-14 |
+
 ## Discrepancias abiertas
 
 | ID | Discrepancia | Evidencia | Estado |
 |---|---|---|---|
 | D-BRA-1 | ERD de origen: falta la extracción de solo lectura del `.accdb` (workflow `dysflow-erd`, #1144) | `ERD/` del legacy | pendiente del propietario |
+| D-BRA-2 | El estudio previo cita `Planificacion.cls` («presumido»); `src/classes` no la contiene | `capacidades.md` | a verificar con el propietario |
+| D-BRA-3 | Contraseña literal de acceso a las bases en el código (tres apariciones); no se transcribe | `coexistencia.md`, apartado 1 | detalle al propietario |
+| D-BRA-4 | Las rutas del backend y la tabla de vínculos reales requieren abrir el binario | `coexistencia.md`, pendientes | pendiente del propietario |
 
 ## Método del recuento
 
