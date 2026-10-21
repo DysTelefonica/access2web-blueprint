@@ -58,7 +58,7 @@ Estado compartido (variables globales de `Variables Globales.bas`): `m_ObjExpedi
 ## Reglas, validaciones y cálculos
 
 - Permiso de edición: `m_AbiertoParaEditar` y `EsAdministrador = Sí` (`:132-136`). Las pestañas hijas consultan `Form_FormExpediente.m_AbiertoParaEditar` (p. ej. `Form_FormExpedienteFechas.cls:138`, `Form_FormExpedienteHitos.cls:175`). `EsAdministrador` procede de `Usuario.EsAdministradorCalculado` (`classes/Usuario.cls:59`); su asignación no se ha trazado.
-- `RellenarDTO` solo vuelca dos pestañas: **General** (25 campos copiados con `Nz`, algunos combos leídos con `.Column(0)` y `POSTAGEDO` leído del control `EnListas`; además el combo `AGEDYSAplica` se traduce al par `AGEDYSAplica` + `AGEDYSGenerico` según `EnumAPLICAAGEDYS`) y **Fechas** (12 campos) (`:502-563`). Entidades, Empresas, Anexos, Hitos y Modificados no se vuelcan aquí: cada pestaña mantiene su propio estado.
+- `RellenarDTO` solo vuelca dos pestañas: **General** (25 campos copiados con `Nz`, algunos combos leídos con `.Column(0)` y `POSTAGEDO` leído del control `EnListas`; además el combo `AGEDYSAplica` se traduce al par `AGEDYSAplica` + `AGEDYSGenerico` según `EnumAPLICAAGEDYS`) y **Fechas** (12 campos) (`:502-563`). Entidades, Empresas, Anexos, Hitos y Modificados no se vuelcan aquí: cada pestaña mantiene su propio estado. General y Fechas, además, se vuelcan solas al descargarse (`Form_Unload`, ver Posibles defectos).
 - Reglas que aplica `ExpedienteOperaciones.Registrar` antes de escribir (`classes/ExpedienteOperaciones.cls`):
   - `POSTAGEDO` distinto de «Sí»/«No» pasa a «Sí» (`:57-59`).
   - `MotivoNoOK` valida y devuelve el motivo de rechazo (`:61-64`); su contenido no se analiza en esta ficha.
@@ -100,7 +100,7 @@ Pendiente de `coexistencia.md` (tanda posterior). Puntos que ya se ven: `BeginTr
 - `HaHabidoCambios` no compara `ContratistaPrincipal`, `EsAM`, `EsLote`, `EsBasado` ni `EsExpediente`, que `Registrar` sí persiste (`:216-379`; `Registrar` `:161-181, 387`), y compara `ObjetoContrato` dos veces (`:259, 315`).
 - `HaHabidoCambios` no detecta cambios en hijos (entidades, hitos, etc.) y el aviso «Ningún cambio que guardar» solo mira el árbol de suministradores (`:71-76`).
 - `ComandoRegistrar` y `ComandoActualizarCompleto` comparten rótulo «Editar» y `ComandoAyuda` rotula «Salir» en el `.form.txt`; no se ha comprobado si el código los cambia en ejecución.
-- `NavHitos`, `Modificados` y «[Agregar nuevo]» no vuelcan el DTO al entrar: un cambio hecho en General o Fechas sigue sin volcarse hasta que se vuelva a una pestaña con handler o se guarde (el guardado sí llama a `RellenarDTO`, `:65`).
+- Las pestañas General y Fechas duplican el volcado: cada una tiene su propio `RellenarDTO` (`Form_FormExpedienteGeneral.cls:846`, `Form_FormExpedienteFechas.cls:298`) y lo ejecuta en `Form_Unload` (`Form_FormExpedienteGeneral.cls:580-587`, `Form_FormExpedienteFechas.cls:238-245`), además del `RellenarDTO` del contenedor. El resultado depende de que Access dispare `Unload` al cambiar de pestaña, lo que está sin verificar. Hitos, Modificados y Anexos no vuelcan campos del expediente, así que `NavHitos` y `Modificados` sin handler no pierden datos de cabecera por sí mismos.
 - El correo al administrador sale en cada error de navegación entre pestañas (p. ej. `:408-409`).
 
 **Propuestas web pendientes de decisión:** ninguna aprobada. Candidatas: guardado explícito por pestaña frente a guardado único; sustituir las globales de sesión por el expediente como parámetro de la ruta.
