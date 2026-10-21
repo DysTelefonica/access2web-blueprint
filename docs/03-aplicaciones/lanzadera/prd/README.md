@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** fases 0 (fijación), 1 (inventario) y 2 (formularios: 28 de 28) completadas; fase 3 (datos) con la [matriz campo a campo](matriz-campos.md) y el ERD de origen pendiente del propietario (D-LAN-3); fase 4 con la [coexistencia](coexistencia.md); pendiente la fase 5 (capacidades e issues propuestas).
+> **Estado:** estudio completo salvo el ERD de origen. Fases 0 (fijación), 1 (inventario), 2 (formularios: 28 de 28), 4 ([coexistencia](coexistencia.md)) y 5 ([capacidades](capacidades.md) e [issues propuestas](issues-propuestas.md)) hechas; fase 3 con la [matriz campo a campo](matriz-campos.md) y el ERD de origen pendiente del propietario (D-LAN-3).
 
 | Campo | Valor |
 |---|---|
@@ -73,11 +73,11 @@ Pendiente de análisis. Módulos: `Config_BackendHelper.bas`, `Constructor.bas`,
 
 ## Delta frente al estudio previo
 
-En el código, **cero**: los formularios, módulos y clases coinciden con el snapshot. El único avance de `main` respecto a la rama `staging` (`63ba5e0`, baseline del estudio previo) son 4 commits de documentación de agentes (`9d1f6f4`, `e00269f`, `9bb143c`, `1474e8e`; 2026-06-08 a 2026-07-18). La clasificación por capacidades queda para `capacidades.md`.
+En el código, **cero**: los formularios, módulos y clases coinciden con el snapshot. El único avance de `main` respecto a la rama `staging` (`63ba5e0`, baseline del estudio previo) son 4 commits de documentación de agentes (`9d1f6f4`, `e00269f`, `9bb143c`, `1474e8e`; 2026-06-08 a 2026-07-18). La clasificación por capacidades está en [capacidades.md](capacidades.md).
 
 ## Capacidades
 
-Pendiente. Las capacidades del [estudio previo](../capabilities.md) son contexto, no evidencia.
+La clasificación de las 15 capacidades del [estudio previo](../capabilities.md) está en [capacidades.md](capacidades.md). Sus métricas de uso no se han revalidado.
 
 ## Discrepancias abiertas
 
