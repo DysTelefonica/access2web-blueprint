@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 29 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 33 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -41,8 +41,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormComercialesGestion | formulario | src/forms/Form_FormComercialesGestion.cls | 415 | 23 | 14 | distinto | analizado | [formularios/Form_FormComercialesGestion.md](formularios/Form_FormComercialesGestion.md) |
 | Form_FormE2ECola | formulario | src/forms/Form_FormE2ECola.cls | 336 | 45 | 13 | **añadido** | analizado | [formularios/Form_FormE2ECola.md](formularios/Form_FormE2ECola.md) |
 | Form_FormE2EGestionEnlaces | formulario | src/forms/Form_FormE2EGestionEnlaces.cls | 261 | 26 | 11 | **añadido** | analizado | [formularios/Form_FormE2EGestionEnlaces.md](formularios/Form_FormE2EGestionEnlaces.md) |
-| Form_FormEjercito | formulario | src/forms/Form_FormEjercito.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormEjercitosGestion | formulario | src/forms/Form_FormEjercitosGestion.cls | 414 | 23 | 14 | distinto | pendiente | sin ficha todavía |
+| Form_FormEjercito | formulario | src/forms/Form_FormEjercito.cls | 199 | 23 | 6 | distinto | analizado | [formularios/Form_FormEjercito.md](formularios/Form_FormEjercito.md) |
+| Form_FormEjercitosGestion | formulario | src/forms/Form_FormEjercitosGestion.cls | 414 | 23 | 14 | distinto | analizado | [formularios/Form_FormEjercitosGestion.md](formularios/Form_FormEjercitosGestion.md) |
 | Form_FormEleccionTipoConsulta | formulario | src/forms/Form_FormEleccionTipoConsulta.cls | 390 | 16 | 10 | distinto | analizado | [formularios/Form_FormEleccionTipoConsulta.md](formularios/Form_FormEleccionTipoConsulta.md) |
 | Form_FormExpediente | formulario | src/forms/Form_FormExpediente.cls | 597 | 27 | 13 | distinto | analizado | [formularios/Form_FormExpediente.md](formularios/Form_FormExpediente.md) |
 | Form_FormExpedienteAltaParaHPS | formulario | src/forms/Form_FormExpedienteAltaParaHPS.cls | 453 | 47 | 23 | distinto | analizado | [formularios/Form_FormExpedienteAltaParaHPS.md](formularios/Form_FormExpedienteAltaParaHPS.md) |
@@ -64,8 +64,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormLugarEjecucion | formulario | src/forms/Form_FormLugarEjecucion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormLugarEjecucionGestion | formulario | src/forms/Form_FormLugarEjecucionGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormModificado | formulario | src/forms/Form_FormModificado.cls | 211 | 27 | 6 | distinto | analizado | [formularios/Form_FormModificado.md](formularios/Form_FormModificado.md) |
-| Form_FormOficinaPrograma | formulario | src/forms/Form_FormOficinaPrograma.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
-| Form_FormOficinasProgramaGestion | formulario | src/forms/Form_FormOficinasProgramaGestion.cls | 425 | 23 | 14 | distinto | pendiente | sin ficha todavía |
+| Form_FormOficinaPrograma | formulario | src/forms/Form_FormOficinaPrograma.cls | 197 | 23 | 6 | distinto | analizado | [formularios/Form_FormOficinaPrograma.md](formularios/Form_FormOficinaPrograma.md) |
+| Form_FormOficinasProgramaGestion | formulario | src/forms/Form_FormOficinasProgramaGestion.cls | 425 | 23 | 14 | distinto | analizado | [formularios/Form_FormOficinasProgramaGestion.md](formularios/Form_FormOficinasProgramaGestion.md) |
 | Form_FormOrganoContratacion | formulario | src/forms/Form_FormOrganoContratacion.cls | 205 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormOrganoContratacionGestion | formulario | src/forms/Form_FormOrganoContratacionGestion.cls | 427 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormPECAL | formulario | src/forms/Form_FormPECAL.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
-Totales (formularios): 29 analizados · 0 no aplicables · 16 pendientes.
+Totales (formularios): 33 analizados · 0 no aplicables · 12 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -182,6 +182,10 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-60 | En los diez formularios `*Gestion` de catálogo, cuando el filtro no encuentra nada, `lst.Selected(1) = True` actúa sobre una lista vacía (a verificar); si falla la carga de la caché el listado sale vacío sin avisar; el evento `Eliminar` se lanza sin oyentes y la caché se invalida dos veces. | `Form_FormCPVsGestion.cls:8, 35-38, 54, 182, 380, 403`; `Form_FormEjercitosGestion.cls:35, 54`; `Entorno.cls:883-886` | [Form_FormCPVsGestion](formularios/Form_FormCPVsGestion.md) | a verificar |
 | H-EXP-61 | Comercial: la protección del registro «N/A» depende solo del nombre literal; el aviso de «en uso» solo consulta `TbExpedientesComerciales`; si `ResyncCatalogo` falla el nombre nuevo ya está guardado pero se muestra error y la lista no se refresca. | `ComercialOperaciones.cls:77, 88-92, 115`; `constructor.bas:2477` | [Form_FormComercial](formularios/Form_FormComercial.md) | a verificar |
 | H-EXP-62 | Comercial: `AddItem` sustituye `;` pero no `,` (un nombre con coma podría partirse en columnas); los errores de Alta se etiquetan como «ComandoEditar_Click»; el evento `Eliminar` se lanza sin oyentes. | `Form_FormComercialesGestion.cls:8, 49, 87, 181` | [Form_FormComercialesGestion](formularios/Form_FormComercialesGestion.md) | a verificar |
+| H-EXP-63 | Ejército: si `DameID` falla el error queda en `Ejercito.Error`, que nadie consulta, y el alta seguiría con ID vacío; el renombrado y `ResyncCatalogo` no comparten transacción; antes de borrar solo se comprueba `TbExpedientes.IDEjercito`. | `Ejercito.cls:30-41`; `EjercitoOperaciones.cls:52, 70-93`; `constructor.bas:3395-3397` | [Form_FormEjercito](formularios/Form_FormEjercito.md) | a verificar |
+| H-EXP-64 | Ejército: el mensaje de borrado rechazado dice «Ese RAC forma parte…» (copiado de RAC); en edición el formulario modifica el objeto seleccionado en el gestor antes de validar, de modo que un guardado rechazado lo deja alterado; el título de edición se sobrescribe con «EDICIÓN DE Ejercito». | `EjercitoOperaciones.cls:130`; `Form_FormEjercito.cls:65-68, 135, 145`; `Form_FormEjercitosGestion.cls:222` | [Form_FormEjercitosGestion](formularios/Form_FormEjercitosGestion.md) | a verificar |
+| H-EXP-65 | Oficina de programa: el borrado no comprueba si la oficina está en uso, porque `Entorno` llama a `getOficinaProgramaSEnExpedientes` pasando `m_Error` (vacío) como primer argumento (`p_IDOficinaPrograma`) y la función sale sin datos; aunque recibiera el ID, une `TbExpedientes` con el catálogo por nombre mientras `TbExpedientes` guarda `IDOficinaPrograma`. | `Entorno.cls:1231`; `constructor.bas:3544-3561`; `OficinaProgramaOperaciones.cls:112`; `ExpedienteOperaciones.cls:203-206` | [Form_FormOficinasProgramaGestion](formularios/Form_FormOficinasProgramaGestion.md) | a verificar |
+| H-EXP-66 | Oficina de programa: la caché `ColOficinaProgramaSEnExpedientes` nunca se invalida tras un alta o un borrado; la lista se carga sin `ORDER BY`; el formulario de alta no fija `AllowEdits = False`; si falla el cálculo del ID el alta seguiría con ID vacío. | `Form_FormOficinasProgramaGestion.cls:388, 411`; `constructor.bas:3280-3281`; `Form_FormOficinaPrograma.cls:176-180`; `OficinaPrograma.cls:30-41` | [Form_FormOficinaPrograma](formularios/Form_FormOficinaPrograma.md) | a verificar |
 
 ## Método del recuento
 

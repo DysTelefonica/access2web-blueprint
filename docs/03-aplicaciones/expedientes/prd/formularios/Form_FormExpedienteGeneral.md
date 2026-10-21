@@ -85,7 +85,7 @@ Pendiente de `../coexistencia.md`. Ya se ve: SQL concatenado con `Ordinal` entre
 - `HPSAplica` no se copia al DTO en ningún `RellenarDTO` (ni `:846-904` ni `Form_FormExpediente.cls:502-546`): un cambio manual no se guardaría, salvo la regla HPS de `Registrar`.
 - El `RellenarDTO` propio (usado en `Form_Unload`, `:587`) omite `POSTAGEDO` (`EnListas`) y `AplicaTareaS4H`, que sí copia el del contenedor (`Form_FormExpediente.cls:545-546`).
 - Cada carga de la pestaña con `IDExpediente` relee el expediente de la base y reemplaza el DTO (`:241-246`): los cambios sin guardar de General o Fechas podrían perderse al volver a General.
-- `m_FormOC_Alta` invalida `m_ObjEntorno.OrganosContratacion` (`:671`) pero el combo lee `ColOrganosContrataciones` (`:449`): el órgano recién creado no aparecería en la lista.
+- `m_FormOC_Alta` invalida `m_ObjEntorno.OrganosContratacion` (`Form_FormExpedienteGeneral.cls:671`) mientras el combo lee `ColOrganosContrataciones` (`:449`), pero `OrganoContratacionOperaciones.Registrar` ya vacía `ColOrganosContrataciones` al guardar (`OrganoContratacionOperaciones.cls:82`), así que el órgano nuevo sí aparecería: la invalidación de `OrganosContratacion` es redundante, no un defecto. Corregido tras leer la ficha de `Form_FormOrganoContratacion`.
 - `EstablecerCombos` añade 01-20 a `Ordinal` sin vaciar su `RowSource` (`:565-568`); cada recarga tras un alta duplica opciones (el diseño ya guarda duplicados, `.form.txt:2294`).
 - Literal «Lote sin Acuero Marco» (`:741`): si el texto real es «Acuerdo», ese tipo no fija `EsAM`/`EsLote`/`EsExpediente`.
 - Los botones de alta de maestros y `ComandoRellenarNemotecnico` no se deshabilitan en solo lectura (`AllowEdits` no afecta a `OnClick`, `:202-209`).
