@@ -36,6 +36,16 @@ La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué veri
 
 `make verify` ejecuta los gates locales en el mismo orden que el CI (Hard Rule 13): format, lint, typecheck, tests, quality report, check-workflows. Es la única forma de declarar verde una PR sin haber pasado antes por el runner.
 
+## Propagaciones de flota
+
+El catálogo de skills de la flota llega a este repositorio por una vía propia, y es la única entrega que no nace de una issue de trabajo: la ampara la issue paraguas #846, la misma que `fleet/registry.json` de `team-skills` declara como `propagation_issue` de este consumer.
+
+- **Quién la dispara.** Un mantenedor (u orquestador) ejecuta, desde el clon del catálogo (`team-skills`), `scripts/propagate-team-skills.ps1 -ConsumerId DysTelefonica/access2web-blueprint`, primero en ensayo (sin `-Apply`) y luego con `-Apply`. El ensayo no modifica el consumer (`HEAD`, `status` y `reflog` quedan idénticos).
+- **Qué emite.** Dos PR con Chain Context completo: el tramo 1 (`skill-fleet/access2web-blueprint`, `AGENTS.md`, `.team-skills.yaml` y sello de gobierno) y el tramo 2 (`skill-fleet/access2web-blueprint-vendored`, el árbol `.agents/skills/`). Cada PR lleva `Refs #846` y nunca `Closes`.
+- **Qué no se hace.** No se edita a mano el bloque del slice de `AGENTS.md` ni se parte a mano el trabajo del propagador; no se abre un PR de propagación escrito a mano. La skill que sale del catálogo, o que pasa a vivir en `.agents/skills/`, la retira el propagador, que también retira la copia legacy de `skills/<nombre>/`.
+- **Tamaño.** El tramo vendorizado puede superar las 400 líneas. La etiqueta `size:exception` la pone el mantenedor en el PR; el propagador no se la aplica.
+- **Lo que queda local.** Las skills de `skills/` que no figuran en `include_skills` de `.team-skills.yaml` son de este repositorio y el propagador no las toca.
+
 ## Conventional Commits
 
 | Tipo | Ejemplo | Uso |
