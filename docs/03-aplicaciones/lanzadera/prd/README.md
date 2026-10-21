@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 16 de 28.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 20 de 28.
 
 | Campo | Valor |
 |---|---|
@@ -50,11 +50,11 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormObtenerContraseña | formulario | src/forms/Form_FormObtenerContraseña.cls | 98 | 20 | 3 | igual | analizado | [formularios/Form_FormObtenerContraseña.md](formularios/Form_FormObtenerContraseña.md) |
 | Form_FormPerfil | formulario | src/forms/Form_FormPerfil.cls | 220 | 39 | 4 | igual | analizado | [formularios/Form_FormPerfil.md](formularios/Form_FormPerfil.md) |
 | Form_FormUsuarioCambioPass | formulario | src/forms/Form_FormUsuarioCambioPass.cls | 111 | 26 | 4 | igual | analizado | [formularios/Form_FormUsuarioCambioPass.md](formularios/Form_FormUsuarioCambioPass.md) |
-| Form_FormUsuarioDatosGenerales | formulario | src/forms/Form_FormUsuarioDatosGenerales.cls | 393 | 47 | 6 | igual | pendiente | sin ficha todavía |
-| Form_FormUsuarioGeneral | formulario | src/forms/Form_FormUsuarioGeneral.cls | 181 | 25 | 16 | igual | pendiente | sin ficha todavía |
+| Form_FormUsuarioDatosGenerales | formulario | src/forms/Form_FormUsuarioDatosGenerales.cls | 393 | 47 | 6 | igual | analizado | [formularios/Form_FormUsuarioDatosGenerales.md](formularios/Form_FormUsuarioDatosGenerales.md) |
+| Form_FormUsuarioGeneral | formulario | src/forms/Form_FormUsuarioGeneral.cls | 181 | 25 | 16 | igual | analizado | [formularios/Form_FormUsuarioGeneral.md](formularios/Form_FormUsuarioGeneral.md) |
 | Form_FormUsuarioPerfilAplicaciones | formulario | src/forms/Form_FormUsuarioPerfilAplicaciones.cls | 385 | 31 | 6 | igual | pendiente | sin ficha todavía |
-| Form_FormUsuariosConectados | formulario | src/forms/Form_FormUsuariosConectados.cls | 27 | 11 | 1 | igual | pendiente | sin ficha todavía |
-| Form_FormUsuariosGestion | formulario | src/forms/Form_FormUsuariosGestion.cls | 194 | 20 | 7 | igual | pendiente | sin ficha todavía |
+| Form_FormUsuariosConectados | formulario | src/forms/Form_FormUsuariosConectados.cls | 27 | 11 | 1 | igual | analizado | [formularios/Form_FormUsuariosConectados.md](formularios/Form_FormUsuariosConectados.md) |
+| Form_FormUsuariosGestion | formulario | src/forms/Form_FormUsuariosGestion.cls | 194 | 20 | 7 | igual | analizado | [formularios/Form_FormUsuariosGestion.md](formularios/Form_FormUsuariosGestion.md) |
 | Form_FormVideoDetalle | formulario | src/forms/Form_FormVideoDetalle.cls | 81 | 18 | 3 | igual | pendiente | sin ficha todavía |
 | Form_FormVideosArbolVideo | formulario | src/forms/Form_FormVideosArbolVideo.cls | 58 | 21 | 6 | igual | pendiente | sin ficha todavía |
 | Form_FormVideosGestion | formulario | src/forms/Form_FormVideosGestion.cls | 203 | 16 | 7 | igual | pendiente | sin ficha todavía |
@@ -64,7 +64,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormVideosUsuarios | formulario | src/forms/Form_FormVideosUsuarios.cls | 171 | 16 | 6 | igual | pendiente | sin ficha todavía |
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 5 | 9 | 1 | igual | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 
-Totales (formularios): 16 analizados · 0 no aplicables · 12 pendientes.
+Totales (formularios): 20 analizados · 0 no aplicables · 8 pendientes.
 Totales (controles `Begin`): 740 · procedimientos: 247 · líneas de `.cls`: 6,246.
 
 ### Módulos y clases
@@ -106,6 +106,9 @@ Comportamientos sospechosos detectados al analizar el código. Son hallazgos del
 | H-LAN-11 | `Aplicacion.Lanzar` comprueba el icono cuando debería comprobar el BMP; `getVersion` pierde los errores de lectura; al fallar un lanzamiento salen dos mensajes; `LimpiarCache` ignora la colección que recibe. | `Aplicacion.cls:1407`; `Funciones Genreales.bas:274-275, 1838, 2998` | [Form_FormAplicaciones](formularios/Form_FormAplicaciones.md) | a verificar |
 | H-LAN-12 | `Lanzar` no comprueba permisos (solo que el botón esté habilitado); el botón de EXPEDIENTES se habilita para cualquier usuario; `ColAplicacionesActivas` no filtra nada. | `Funciones Genreales.bas:1803-1823`; `Form_FormAplicacionesFueraOficina.cls:98-101`; `Constructor.bas:386-387` | [Form_FormAplicacionesFueraOficina](formularios/Form_FormAplicacionesFueraOficina.md) | a verificar |
 | H-LAN-13 | Las etiquetas de versión de SICA y AGEDO llevan `Tag` 18 (el de contratos) y mostrarían la versión de otra aplicación; `ComandoCondorPrueba` usa el mismo ID que el Condor de producción y está siempre deshabilitado. | `Form_FormAplicacionesOficina.form.txt:2318, 2892`; `Form_FormAplicacionesPrueba.form.txt:577`; `Form_FormAplicacionesPrueba.cls:86` | [Form_FormAplicacionesOficina](formularios/Form_FormAplicacionesOficina.md) | a verificar |
+| H-LAN-14 | Al dar de alta un usuario nunca se le envía la clave inicial: `EsEdicion` solo toma el valor `No`, así que el bloque del histórico de contraseña y de `CorreoAlta` no se ejecuta; el responsable, el permiso de pruebas y la fecha de baja se ven en el formulario pero `Registrar` no los guarda. | `classes/Usuario.cls:1677-1775` | [Form_FormUsuarioDatosGenerales](formularios/Form_FormUsuarioDatosGenerales.md) | a verificar |
+| H-LAN-15 | El usuario se localiza por correo, de modo que cambiar el correo de uno existente crea otra fila; cada edición sobrescribe `FechaAlta` con la fecha actual; `ParaAlta` nunca vale `No`, así que el aviso «Ningún cambio que registrar» no actúa. | `classes/Usuario.cls:1671-1677, 1738`; `Form_FormUsuarioDatosGenerales.cls:103, 177, 248` | [Form_FormUsuarioDatosGenerales](formularios/Form_FormUsuarioDatosGenerales.md) | a verificar |
+| H-LAN-16 | Al restablecer la contraseña, la clave de un solo uso se guarda en claro en `PassIncialPlana` y viaja en claro por correo; la búsqueda indexa los usuarios por `UsuarioRed`, así que los de ese campo repetido o vacío no salen en la lista. | `classes/Usuario.cls:763, 810`; `modules/Constructor.bas:867` | [Form_FormUsuariosGestion](formularios/Form_FormUsuariosGestion.md) | a verificar |
 
 ## Método del recuento
 
