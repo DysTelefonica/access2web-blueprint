@@ -41,41 +41,41 @@ El módulo [`app/src/modules/lanzadera`](../../../../app/src/modules/lanzadera) 
 
 | Tabla | Columnas | Filas (snapshot) | Ficheros de `src` | Familia | Detalle |
 |---|---|---|---|---|---|
-| `Tb0HerramientaDocAyuda` | 2 | 4 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicaciones` | 22 | 20 | 3 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicacionesAperturas` | 15 | 1697 | 2 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicacionesEdiciones` | 5 | 1262 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicacionesEdicionesCambios` | 5 | 1364 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicacionesEstados` | 2 | 6 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicacionesParametros` | 3 | 60 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicacionesPerfiles` | 2 | 34 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbAplicacionesVideos` | 9 | 0 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbCategorias` | 2 | 2 | 2 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbConexiones` | 6 | 24 | 0 | conexiones, correo y formación | tanda posterior |
-| `TbConexionesRegistro` | 9 | 10360 | 4 | conexiones, correo y formación | tanda posterior |
-| `TbConexionUltimaAppAbierta` | 2 | 1469 | 1 | conexiones, correo y formación | tanda posterior |
-| `TbConfiguracion` | 5 | 1 | 1 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbCuestionarioPreguntas` | 3 | 0 | 0 | conexiones, correo y formación | tanda posterior |
-| `TbCuestionarios` | 6 | 0 | 0 | conexiones, correo y formación | tanda posterior |
-| `TbCuestionaroRespuestas` | 4 | 0 | 0 | conexiones, correo y formación | tanda posterior |
-| `TbDetalleVersiones` | 4 | 28 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbParametros` | 2 | 53 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
+| `Tb0HerramientaDocAyuda` | 2 | 4 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tb0herramientadocayuda) |
+| `TbAplicaciones` | 22 | 20 | 3 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicaciones) |
+| `TbAplicacionesAperturas` | 15 | 1697 | 2 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicacionesaperturas) |
+| `TbAplicacionesEdiciones` | 5 | 1262 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicacionesediciones) |
+| `TbAplicacionesEdicionesCambios` | 5 | 1364 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicacionesedicionescambios) |
+| `TbAplicacionesEstados` | 2 | 6 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicacionesestados) |
+| `TbAplicacionesParametros` | 3 | 60 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicacionesparametros) |
+| `TbAplicacionesPerfiles` | 2 | 34 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicacionesperfiles) |
+| `TbAplicacionesVideos` | 9 | 0 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbaplicacionesvideos) |
+| `TbCategorias` | 2 | 2 | 2 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbcategorias) |
+| `TbConexiones` | 6 | 24 | 0 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbconexiones) |
+| `TbConexionesRegistro` | 9 | 10360 | 4 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbconexionesregistro) |
+| `TbConexionUltimaAppAbierta` | 2 | 1469 | 1 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbconexionultimaappabierta) |
+| `TbConfiguracion` | 5 | 1 | 1 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbconfiguracion) |
+| `TbCuestionarioPreguntas` | 3 | 0 | 0 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbcuestionariopreguntas) |
+| `TbCuestionarios` | 6 | 0 | 0 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbcuestionarios) |
+| `TbCuestionaroRespuestas` | 4 | 0 | 0 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbcuestionarorespuestas) |
+| `TbDetalleVersiones` | 4 | 28 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbdetalleversiones) |
+| `TbParametros` | 2 | 53 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbparametros) |
 | `TbPermisos` | 9 | 205 | 0 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbpermisos) |
-| `TbTablasAVincular` | 4 | 411 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
-| `TbUbicaciones` | 3 | 8 | 0 | catálogo de aplicaciones y configuración | tanda posterior |
+| `TbTablasAVincular` | 4 | 411 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbtablasavincular) |
+| `TbUbicaciones` | 3 | 8 | 0 | catálogo de aplicaciones y configuración | [catalogo](matriz-campos/catalogo.md#tbubicaciones) |
 | `TbUsuarioAplicacionesSolicitud` | 7 | 0 | 0 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuarioaplicacionessolicitud) |
 | `TbUsuarioConfiguracion` | 2 | 14 | 0 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuarioconfiguracion) |
 | `tbUsuarios` | 18 | 156 | 0 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuarios) |
 | `TbUsuariosAplicaciones` | 26 | 186 | 3 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuariosaplicaciones) |
 | `TbUsuariosAplicacionesPermisos` | 9 | 622 | 3 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuariosaplicacionespermisos) |
 | `TbUsuariosAplicacionesTareas` | 5 | 7 | 0 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuariosaplicacionestareas) |
-| `TbUsuariosCorreosEnvio` | 9 | 1042 | 3 | conexiones, correo y formación | tanda posterior |
+| `TbUsuariosCorreosEnvio` | 9 | 1042 | 3 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbusuarioscorreosenvio) |
 | `TbUsuariosHistoricoContrasenias` | 3 | 455 | 3 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuarioshistoricocontrasenias) |
 | `TbUsuariosTareasDiarias` | 1 | 8 | 0 | identidad, permisos y credenciales | [identidad](matriz-campos/identidad.md#tbusuariostareasdiarias) |
-| `TbVideos` | 11 | 16 | 2 | conexiones, correo y formación | tanda posterior |
-| `TbVideosCategorias` | 3 | 15 | 2 | conexiones, correo y formación | tanda posterior |
-| `TbVideosCuestionario` | 6 | 0 | 0 | conexiones, correo y formación | tanda posterior |
-| `TbVideosVisionados` | 6 | 138 | 1 | conexiones, correo y formación | tanda posterior |
+| `TbVideos` | 11 | 16 | 2 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbvideos) |
+| `TbVideosCategorias` | 3 | 15 | 2 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbvideoscategorias) |
+| `TbVideosCuestionario` | 6 | 0 | 0 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbvideoscuestionario) |
+| `TbVideosVisionados` | 6 | 138 | 1 | conexiones, correo y formación | [conexiones](matriz-campos/conexiones.md#tbvideosvisionados) |
 
 ## Tablas de Lanzadera que consumen otras aplicaciones
 
@@ -83,4 +83,4 @@ El `ERD/schema.sql` de otras cuatro aplicaciones registra vínculos a `Lanzadera
 
 ## Tandas de la matriz
 
-Esta tanda contiene la familia de identidad, permisos y credenciales (9 tablas). Siguen el catálogo de aplicaciones y configuración, y las conexiones, el correo y la formación. El ERD de origen queda pendiente del propietario (D-LAN-3).
+Con esta tanda la matriz cubre las 35 tablas del backend: identidad, catálogo de aplicaciones y configuración, y conexiones, correo y formación. Lo que depende del ERD de origen (claves, índices, relaciones y nulabilidad) y la correspondencia columna a columna con el esquema web quedan pendientes; el ERD lo extrae el propietario con `dysflow` en su máquina (D-LAN-3).
