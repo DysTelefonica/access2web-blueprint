@@ -12,9 +12,9 @@ Contenedor del catálogo de aplicaciones: tres pestañas dibujadas con rectángu
 | `Form_FormMenuPrincipalCalidad` | igual | `Form_FormMenuPrincipalCalidad.cls:167-168` |
 | `Form_FormMenuPrincipalUsuario` | igual | `Form_FormMenuPrincipalUsuario.cls:154-155` |
 
-El menú principal que se abre depende del rol del usuario tras el login (`Variables Globales.bas:724-736`). Al cargarse, los tres menús llaman a su `MENU1_Click` y después fuerzan en el subformulario el listado `FormAplicacionesFueraOficina` con la pestaña 1 resaltada (`Form_FormMenuPrincipalAdmin.cls:52-70`, `Form_FormMenuPrincipalCalidad.cls:44-64`, `Form_FormMenuPrincipalUsuario.cls:43-59`).
+El menú principal que se abre depende del rol del usuario tras el login (`Variables Globales.bas:724-736`). Al cargarse, los tres menús llaman a su `MENU1_Click` y después fuerzan en el subformulario el listado [FormAplicacionesFueraOficina](Form_FormAplicacionesFueraOficina.md) con la pestaña 1 resaltada (`Form_FormMenuPrincipalAdmin.cls:52-70`, `Form_FormMenuPrincipalCalidad.cls:44-64`, `Form_FormMenuPrincipalUsuario.cls:43-59`).
 
-Abre, dentro de `FormDetalle`: `FormAplicacionesFueraOficina`, `FormAplicacionesOficina` y `FormAplicacionesPrueba`.
+Abre, dentro de `FormDetalle`: `FormAplicacionesFueraOficina`, [FormAplicacionesOficina](Form_FormAplicacionesOficina.md) y [FormAplicacionesPrueba](Form_FormAplicacionesPrueba.md).
 
 ## Controles y eventos
 
