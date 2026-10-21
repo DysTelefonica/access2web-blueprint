@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v9a3c982 -->
+<!-- personal-skills:slice:access2web-blueprint @ vf8c9a61 -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -11,7 +11,7 @@
 
 ### Arranque (invariante)
 
-- **Ningún trabajo empieza sin sincronizar la rama base.** Antes de leer, decidir o tocar un fichero: `git fetch origin && git switch <active_branch> && git pull --ff-only`. Un checkout atrasado muestra gobernanza, CI y skills que **ya no rigen**.
+- **Ningún trabajo empieza sin sincronizar la rama base.** Antes de leer, decidir o tocar un fichero: `git fetch origin && git switch <active_branch> && git pull --ff-only` y, justo después, `ci-pattern checkout-sync`. Un checkout atrasado muestra gobernanza, CI y skills que **ya no rigen**. Si sale 1, seguir la instrucción que imprime (en la base, `git pull --ff-only`; en una rama de trabajo, `git merge origin/<base>`). Si sale 2, no puede medir: no empezar hasta sincronizar (#914). Es un control local y sin red: no es un gate de CI ni bloquea pushes.
 - **Señal de alarma, no conclusión.** Si un documento o fichero citado por la gobernanza del consumer **parece no existir**, o **contradice** el modelo vigente, la lectura correcta es "estoy en un checkout atrasado": sincronizar y volver a mirar. Nunca "el repo tiene un hueco" ni "la regla cambió sin avisar".
 - **Gobernanza viva, no copiada.** Las issues se leen del tracker (`gh issue view <n>`), nunca de una copia pegada; el `AGENTS.md` y el documento de flujo del consumer se leen **en el SHA sincronizado**.
 - **El workspace del runner de CI no es un clon de desarrollo.** Se trabaja en un worktree o clon propio (ver §Worktree y rama remota).
@@ -41,15 +41,27 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
   5. `### Plan de validación`
   6. `### Dependencias y riesgos`
 
-  El contrato se aplica en el momento de crear la issue: el helper `scripts/new-issue.sh [type] "Title"` (#432) compone la plantilla con un placeholder por sección y rechaza la creación si falta alguna. Quien prefiera el formulario de GitHub debe rellenar los seis campos a mano (el form del repo declarante ya los lleva en `.github/ISSUE_TEMPLATE/*.yml`); la rama de aprobación por CLI queda cubierta por el helper versionado. El validador server-side que existía en `.github/workflows/issue-spec-open.yml` se retiró en #508 porque había fallado 6/6 por facturación de runners hospedados (#380); el control sigue siendo fail-loud: una issue sin las 6 secciones no se crea vía CLI, y un agente que la escriba a mano verá la PR que la cite abrirse con el cuerpo incompleto y deberá cerrarla o completarla antes del merge.
-- Toda issue aprobada tiene una **rama propia** con el nombre `<tipo>/<nº issue>-<kebab-slug>`, validado por `scripts/check_branch_name.py` del consumer o equivalente.
-- Toda rama se desarrolla en un **worktree dedicado** bajo el layout canónico de `worktree-reorg-per-project` v2.0 (sibling-container `<project>-worktrees/<wt-name>/`).
-- Toda PR apunta a la `active_branch` declarada en `fleet/registry.json` para el ciclo activo. Pre-MVP single-branch implica `main` por defecto; el flip a `staging` post-MVP sigue la llave de vocabulario documentada en `intake-roadmap-loop` HR-4/HR-8.
+  El contrato se aplica en el momento de crear la issue: la receta canónica es
+  `gh issue create --title "<título>" --body-file <cuerpo-de-la-issue.md> --label type:<tipo>`
+  (donde `type:<tipo>` sale del host-contract del consumer), o el formulario
+  de GitHub `.github/ISSUE_TEMPLATE/<feature>.yml` que ya lleva los seis
+  campos como controles. El doc operativo generado por `ci-pattern adoption
+  generate-doc` enuncia el comando exacto para el consumer; la rama de
+  aprobación por CLI queda cubierta por esa receta. El validador server-side
+  que existía en `.github/workflows/issue-spec-open.yml` se retiró en #508
+  porque había fallado 6/6 por facturación de runners hospedados (#380); el
+  control sigue siendo fail-loud: una issue sin las 6 secciones no se crea
+  vía CLI, y un agente que la escriba a mano verá la PR que la cite abrirse
+  con el cuerpo incompleto y deberá cerrarla o completarla antes del merge.
+- Toda issue aprobada tiene una **rama propia** con el nombre `<tipo>/<nº issue>-<kebab-slug>`, validado por el **ruleset del host** que aplica la regex de `P01_branch_name_pattern`, o por el gate `assets/branch-name/check_branch_name.py` del patrón cuando el host no declara rulesets (mecánica del HR-29 y HR-31).
+- Toda rama se desarrolla en un **worktree dedicado** bajo el layout canónico de `worktree-reorg-per-project` v2.0 (sibling-container `<project>-worktrees/<nº issue>-<tema>/`); el comando literal es `git worktree add ../<repo>-worktrees/<nº>-<tema> -b <rama-nueva>` y la limpieza usa la misma ruta.
+- Toda PR apunta a `main`. Los repos web no tienen rama de integración: `staging`, `develop` o `release/*` no reciben PR ni se mergean a `main`; lo reutilizable se recupera con `git cherry-pick` en una rama nueva desde `main`. Preproducción y UAT son entornos que despliegan desde `main`, no ramas.
 
 ### Presupuesto de revisión
 
-- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por `scripts/check_pr_size.py` o equivalente.
+- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por el gate `assets/pr-size/check_pr_size.py` del patrón (HR-33, `SIZE_EXCEPTION_APPROVER`).
 - 400 líneas es **techo de revisión, no techo de tamaño**: a partir de esa cifra la revisión pasa de atenta a vistazo. La justificación completa vive en el `CONTRIBUTING.md` de cada consumer; este partial la enuncia sin duplicar.
+- **Lectura obligatoria antes de abrir una PR:** el `CONTRIBUTING.md` del consumer (HR-71). Recoge cómo se aplica aquí el flujo del catálogo: issue primero, asistencia de IA declarada en el cuerpo, etiquetas, presupuesto, commits por unidad, comprobaciones previas y automáticas, enlace a la issue. Sin `CONTRIBUTING.md` el gate `docs_manifest` falla cerrado en fase 5.
 - La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**; la identidad del aprobador llega al gate en la variable de entorno `SIZE_EXCEPTION_APPROVER` y `check_pr_size.py` (`override_has_separate_approver`, HR-33) falla cerrado si el aprobador coincide con el autor.
 - La etiqueta `size:exception` la aplica **solo el mantenedor**, nunca el agente, y solo cuando partir el PR rompería `main` (no por tests, refactor o cambio menor). Antes de aplicarla, el agente responde las cuatro preguntas de `## Excepción de tamaño` en el cuerpo de la PR; sin las cuatro respuestas la etiqueta no se pide. El merge sigue siendo una decisión humana.
 - **Borrar siempre es divisible.** Retirar tests, código muerto o configuración nunca justifica `size:exception`: se borra por trozos de ≤400 líneas, aunque sea dentro del mismo fichero, dejando `main` en verde entre trozos; lo que comparten los trozos (helpers, fixtures) se borra en el último.
@@ -92,8 +104,9 @@ a mano:
    PR existente). Si la base avanza durante la revisión, repita la sincronización
    y las comprobaciones: un verde anterior a la integración no es evidencia del
    resultado nuevo.
-4. **Merge y limpieza.** El merge lo lanza un mantenedor autorizado, nunca el
-   agente. Solo después del merge verificado y sin cambios pendientes, retirar el
+4. **Merge y limpieza.** El merge lo lanza un mantenedor autorizado. Un agente
+   lo lanza solo por orden registrada de un mantenedor, con cuenta de mantenedor
+   (`governed-delivery` regla 2), y nunca con `--admin`. Solo después del merge verificado y sin cambios pendientes, retirar el
    **worktree local** y la **rama local** con `safe_cleanup` (ver `ci-pattern`
    `assets/runner-controls/safe_cleanup.py`, invocado desde `worktree-reorg-per-project`
    Phase 3). `safe_cleanup` falla cerrado si la punta no esta preservada (no
@@ -148,6 +161,7 @@ Un agente solo para o borra los contenedores, volúmenes y redes que haya creado
 
 - El CI corre **una vez, en la PR**: no hay `strict` ni cola de merge, y la rama base puede avanzar durante la vida del PR sin invalidar los checks. La red de seguridad después del merge es el workflow de `push` a `main` más un nightly diario.
 - **Rojo en CI pisa todo el merge.** Regla humana: el revisor no debe pulsar merge con ningún check rojo, ni siquiera si el rojo parece trivial. Complemento técnico: `repository-delivery-governance` HR-7 + `deterministic-quality-harness` HR-1 fail-loud atajan el escenario cuando hay branch protection automatizada.
+- **El agente no usa `--admin` ni fuerza el merge.** La decisión de fusionar es humana (HR-50) y la regla anterior es inseparable del bypass: el agente que detecte un merge bloqueado por checks rojos, por la protección del ruleset o por un SHA desactualizado **lo escala al mantenedor** (issue, comentario en el PR o canal acordado), nunca aplica `--admin`, `--force` ni equivalente en CLI; y, por la API, nunca envía `merge_method: admin` ni `sha` distinto al verificado por CI. El job de merge gobernado del consumer (HR-50, `assets/runner-controls/check_governed_merge.py`) aplica `merge` o `squash` con la identidad del bot sobre el SHA verificado, sin bandera admin; si una PR exige admin para entrar, el flujo está roto y se arregla el flujo, no se salta.
 - El job `merge-ready` signal-only que consulta `mergeable` y `reviewDecision` está retirado (no cazaba defectos): sin `strict` ni cola de merge, la barrera la aplica el ruleset del host y la red de seguridad post-merge (`push` a `main` + nightly diario), y replicarla en CI duplicaba la señal sin añadir garantía.
 - Cuando el CI rojo es por **infra** (runner colgado, red, secret rotado), abrir issue bloqueante de CI y enlazarla desde el PR; no embutir la fix infra en el PR del feature salvo que sea ≤30 LOC y se cierre en el día.
 
@@ -173,7 +187,7 @@ Estas decisiones quedan a la flota / consumer; el partial las registra para que 
 
 - **Merge strategy.** `--squash` o `--no-ff`, ambos válidos. Invariante compartida: la rama remota se preserva en cualquier caso.
 - **Etiqueta `size:exception`.** Solo el mantenedor la aplica cuando partir el PR rompería `main`; el campo `size-exception-reason:` está retirado y el agente nunca se pone esa etiqueta.
-- **Pre-MVP vs post-MVP base branch.** Mientras no haya flip explícito del usuario con la llave de vocabulario documentada en `intake-roadmap-loop` HR-4/HR-8, todo aterriza en `main`.
+- **Rama base única.** Todo aterriza en `main`, antes y después del MVP.
 - **Convención multi-app.** Si el consumer migra varias apps, el prefijo de issue/commit es decisión propia; el commit debe identificar el scope de cualquier manera.
 
 ### Procedencia (skills que alimentan este partial)
@@ -184,7 +198,7 @@ Cada invariante de este partial se ancla a una skill específica del catálogo o
 - Rama `<tipo>/<nº>-<slug>` → `repository-delivery-governance` HR-4 (documentado/CI-enforced).
 - Un worktree por issue → `worktree-reorg-per-project` v2.0 (layout + Phase 3 cleanup).
 - Rama remota preservada + limpieza segura post-merge → `safe_cleanup` (DysTelefonica/team-skills#436) invocada desde `worktree-reorg-per-project` Phase 3.
-- Base pre-MVP = main → upstream `engineering-workflow` líneas 46-51; flip post-MVP vía `intake-roadmap-loop` HR-4/HR-8.
+- Base = `main` para todo el ciclo de vida del consumer web; sin flip post-MVP → upstream `engineering-workflow` líneas 46-51.
 - 400 líneas + `size:exception` → `deterministic-quality-harness` Decision Gate línea 56; upstream `chained-pr` HR-1 línea 16.
 - Rojo en CI pisa todo → `repository-delivery-governance` HR-7; upstream `engineering-workflow` línea 79.
 - Ciclo de entrega (worktree y rama desde la base activa actualizada → merge de la base en la feature → preflight/pruebas → push → PR → CI sobre cabeza y base actuales → merge del mantenedor → retirada solo del worktree local) → `governed-delivery` regla 1 y el documento operativo generado por `ci-pattern` (#390).
@@ -261,7 +275,9 @@ las skills. Cargue la que corresponda antes de actuar.
 
 Invariantes, sin excepción: nada directo a la rama protegida; sin
 rebase, `--amend` ni force-push sobre ramas publicadas (HR-54); el merge
-lo lanza un mantenedor por el camino gobernado y nunca un agente; sin
+lo lanza un mantenedor por el camino gobernado; un agente lo lanza solo
+por orden registrada de un mantenedor, con cuenta de mantenedor, y nunca
+con `--admin`; sin
 nombres propios — solo roles y rutas instaladas. El detective post-push y
 el guard de force-push abren el incidente.
 
@@ -270,50 +286,51 @@ el guard de force-push abren el incidente.
 <!-- ci-pattern:hr-block:end -->
 
 <!-- ci-pattern-agents:begin -->
-## Flujo operativo y mandato de no invenci├│n
+## Flujo operativo y mandato de no invención
 
-Bloque gobernado: no lo edite a mano; se regenera desde el patr├│n.
-Antes de actuar, lea la parte del flujo operativo de la situaci├│n. Si un paso,
-comando, etiqueta o dato que necesita no est├í en este documento, NO lo invente:
-det├®ngase y pregunte en la issue o al mantenedor.
+Bloque gobernado: no lo edite a mano; se regenera desde el patrón.
+Antes de actuar, lea la parte del flujo operativo de la situación. Si un paso,
+comando, etiqueta o dato que necesita no está en este documento, NO lo invente:
+deténgase y pregunte en la issue o al mantenedor.
 
-| Situaci├│n | Qu├® leer antes de actuar |
+| Situación | Qué leer antes de actuar |
 | --- | --- |
-| Crear una issue | Secci├│n 1 (formulario, duplicados, aprobaci├│n) |
-| Crear una rama | Secci├│n 2 (regex y forma del nombre) |
-| Sincronizar la rama de feature con la base | Secci├│n 10, etapa 5 (integraci├│n por merge, nunca rebase) |
-| Escribir commits | Secci├│n 3 (convenci├│n y unidades de trabajo) |
-| Abrir un pull request | Secci├│n 4 (cuerpo, etiqueta, presupuesto) |
-| Encadenar PRs | Secci├│n 4 (cadena: `chain:partial`, `Refs #N`, punta) |
-| Consultar checks | Secci├│n 5 (tabla de checks y recetas de recuperaci├│n) |
-| Pedir un merge | Secci├│n 6 y la etapa 9 del ciclo de vida |
-| Registrar un incidente de producci├│n | Secci├│n 8 (los cuatro niveles: post-mortem, registro operativo, secretos, datos personales) |
-| Reportar una fricci├│n | Secci├│n 9 |
-| Cualquier paso del ciclo | Secci├│n 10 (ciclo de vida completo) |
+| Crear una issue | Sección 1 (formulario, duplicados, aprobación) |
+| Crear una rama | Sección 2 (regex y forma del nombre) |
+| Sincronizar la rama de feature con la base | Sección 10, etapa 5 (integración por merge, nunca rebase) |
+| Escribir commits | Sección 3 (convención y unidades de trabajo) |
+| Abrir un pull request | Sección 4 (cuerpo, etiqueta, presupuesto) |
+| Encadenar PRs | Sección 4 (cadena: `chain:partial`, `Refs #N`, punta) |
+| Consultar checks | Sección 5 (tabla de checks y recetas de recuperación) |
+| Pedir un merge | Sección 6 y la etapa 9 del ciclo de vida |
+| Registrar un incidente de producción | Sección 8 (los cuatro niveles: post-mortem, registro operativo, secretos, datos personales) |
+| Reportar una fricción | Sección 9 |
+| Cualquier paso del ciclo | Sección 10 (ciclo de vida completo) |
 
-**Mandato de no invenci├│n:** si un paso, comando, etiqueta o dato que necesita
-no est├í documentado en el flujo operativo, no lo invente: det├®ngase y
+**Mandato de no invención:** si un paso, comando, etiqueta o dato que necesita
+no está documentado en el flujo operativo, no lo invente: deténgase y
 pregunte en la issue o al mantenedor.
 
-## D├│nde vive la documentaci├│n
+## Dónde vive la documentación
 
-Toda la documentaci├│n de este proyecto vive en este mismo repositorio, bajo `docs/`
+Toda la documentación de este proyecto vive en este mismo repositorio, bajo `docs/`
 por materia; los post-mortems en `docs/postmortems/<AAAA-MM-DD>-<slug>.md`.
-Fuera del repositorio, y sin copia en ├®l, quedan solo los secretos, los
-backups, los datos en bruto y el material privado. Nunca ubique documentaci├│n
+Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
+backups, los datos en bruto y el material privado. Nunca ubique documentación
 en una ruta absoluta o externa al repositorio (HR-48): el gate de la fase 5 la
-rechaza. Detalle: la secci├│n ┬½D├│nde vive la documentaci├│n┬╗ del flujo operativo.
-## D├│nde trabajar
+rechaza. Detalle: la sección «Dónde vive la documentación» del flujo operativo.
+## Dónde trabajar
 
-Antes de actuar, vaya al documento de su situaci├│n; no deduzca d├│nde va el trabajo.
+Antes de actuar, vaya al documento de su situación; no deduzca dónde va el trabajo.
 
-| Si vas aÔÇª | LeeÔÇª |
+| Si vas a… | Lee… |
 | --- | --- |
-| Cambiar c├│digo o buscar d├│nde va algo nuevo | `docs/CODEBASE-GUIDE.md` y, desde ella, la p├ígina de `docs/codebase/` del ├írea que toque |
+| Cambiar código o buscar dónde va algo nuevo | `docs/CODEBASE-GUIDE.md` y, desde ella, la página de `docs/codebase/` del área que toque |
 | Abrir un pull request | la checklist de su tipo de cambio en `docs/codebase/maintainer-playbook.md` |
-| Proponer o cambiar algo que quiz├í ya se decidi├│ | `docs/decisions/README.md`: consulte antes si ya se rechaz├│, sustituy├│ o aplaz├│ |
-| Crear un m├│dulo o importar entre m├│dulos | `docs/architecture.md`: ├írbol de m├│dulos, capas y dependencias permitidas, antes de a├▒adir un m├│dulo o un import entre capas |
-| Dudar de si algo existe en el repositorio | las p├íginas ┬½No existe en este repo┬╗ de `docs/codebase/`, antes de inventar c├│digo |
+| Proponer o cambiar algo que quizá ya se decidió | `docs/decisions/README.md`: consulte antes si ya se rechazó, sustituyó o aplazó |
+| Crear un módulo o importar entre módulos | `docs/architecture.md`: árbol de módulos, capas y dependencias permitidas, antes de añadir un módulo o un import entre capas |
+| Dudar de si algo existe en el repositorio | las páginas «No existe en este repo» de `docs/codebase/`, antes de inventar código |
+| Abrir un pull request | `CONTRIBUTING.md` antes de abrir la PR (issue primero, asistencia de IA, presupuesto, checks) |
 <!-- ci-pattern-agents:end -->
 
 # Fragment access2web-blueprint — convenciones operacionales del repo
