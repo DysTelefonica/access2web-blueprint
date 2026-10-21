@@ -342,13 +342,14 @@ jobs:
         run: python scripts/check_workflows.py
 
       - name: workflow policy
-        # Gate del canon (DysTelefonica/team-skills#806, BP#1040): pines, enmascarado (HR-3, HR-26),
-        # nombres requeridos desde eventos de PR (HR-30), claves duplicadas, timeouts, concurrency,
-        # puertos fijos y preflight de docker. Complementa al `workflow gate` local de arriba.
-        run: >-
-          python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py
-          --workflow .github/workflows/ci.yml --base-branch main
-          --required-jobs .github/required-jobs-policy.json
+        # Gate del canon (DysTelefonica/team-skills#806, BP#1040) sobre TODOS los workflows: claves
+        # duplicadas, `timeout-minutes`, puertos fijos, pines por SHA, preflight de docker y grupo de
+        # `concurrency` (HR-3, HR-26, HR-30). El `workflow gate` local conserva solo lo que el canon no
+        # comprueba: permisos, PYTHON_VERSION, unicidad del grupo y runners alcanzables por PR.
+        run: |
+          args=()
+          for f in .github/workflows/*.yml; do args+=(--workflow "$f"); done
+          python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json
 
       - name: suites populated
         # Issue #882 (PR-1): a green CI with zero tests in a suite is a false
