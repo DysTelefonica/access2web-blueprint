@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fase 0 (fijación) y fase 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md). Ningún formulario está analizado todavía.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 2 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -44,9 +44,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormEjercito | formulario | src/forms/Form_FormEjercito.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormEjercitosGestion | formulario | src/forms/Form_FormEjercitosGestion.cls | 414 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormEleccionTipoConsulta | formulario | src/forms/Form_FormEleccionTipoConsulta.cls | 390 | 16 | 10 | distinto | pendiente | sin ficha todavía |
-| Form_FormExpediente | formulario | src/forms/Form_FormExpediente.cls | 597 | 27 | 13 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpediente | formulario | src/forms/Form_FormExpediente.cls | 597 | 27 | 13 | distinto | analizado | [formularios/Form_FormExpediente.md](formularios/Form_FormExpediente.md) |
 | Form_FormExpedienteAltaParaHPS | formulario | src/forms/Form_FormExpedienteAltaParaHPS.cls | 453 | 47 | 23 | distinto | pendiente | sin ficha todavía |
-| Form_FormExpedienteAltaTipo | formulario | src/forms/Form_FormExpedienteAltaTipo.cls | 363 | 14 | 8 | distinto | pendiente | sin ficha todavía |
+| Form_FormExpedienteAltaTipo | formulario | src/forms/Form_FormExpedienteAltaTipo.cls | 363 | 14 | 8 | distinto | analizado | [formularios/Form_FormExpedienteAltaTipo.md](formularios/Form_FormExpedienteAltaTipo.md) |
 | Form_FormExpedienteCambioTipo | formulario | src/forms/Form_FormExpedienteCambioTipo.cls | 336 | 21 | 8 | distinto | pendiente | sin ficha todavía |
 | Form_FormExpedienteDocumentacion | formulario | src/forms/Form_FormExpedienteDocumentacion.cls | 329 | 14 | 8 | distinto | pendiente | sin ficha todavía |
 | Form_FormExpedienteEntidades | formulario | src/forms/Form_FormExpedienteEntidades.cls | 1974 | 61 | 49 | distinto | pendiente | sin ficha todavía |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
 
-Totales (formularios): 0 analizados · 0 no aplicables · 45 pendientes.
+Totales (formularios): 2 analizados · 0 no aplicables · 43 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
