@@ -96,7 +96,15 @@ Los relevos son hipótesis por nombre, no hechos: no se confirman sin leer el c�
 
 ### Módulos y clases
 
-La mayoría de las diferencias son módulos `Test_*` y ayudantes `mod*Helper` del snapshot que RC1 no tiene. El estudio los clasifica en la fase 2 al analizar el formulario que los usa. Hasta entonces, el inventario de módulos y clases queda **pendiente** y no se enumera objeto a objeto en esta tanda.
+La mayoría de las diferencias son módulos `Test_*` y ayudantes `mod*Helper` del snapshot que RC1 no tiene. El estudio los clasifica en la fase 2 al analizar el formulario que los usa.
+
+Fichas de clase (`clases/`), una por objeto, con el mismo rigor que las de formulario:
+
+- [ExpedienteAGEDYS](clases/ExpedienteAGEDYS.md): sin llamadas en `src`; tabla `TbExpedientesDatosAGEDYS` ausente del volcado ERD.
+- [ExpedienteDatosAGEDY](clases/ExpedienteDatosAGEDY.md): sin uso en RC1.
+- [ExpedienteAntiguo](clases/ExpedienteAntiguo.md).
+
+El resto de clases y de módulos sin mención se cubre en los siguientes tramos de la cadena de #1073.
 
 ## Delta frente al estudio previo
 
