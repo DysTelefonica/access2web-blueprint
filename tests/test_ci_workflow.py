@@ -1146,3 +1146,22 @@ def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
         "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
         "when the body or labels change after opening (issue #857, PR-B)."
     )
+
+
+def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None:
+    """HR-63 (team-skills#805): the CI gate checks exactly the roots the contract declares."""
+    import json
+
+    root = Path(__file__).resolve().parents[1]
+    doc = yaml.safe_load((root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    run = next(
+        step["run"]
+        for step in doc["jobs"]["docs-codeguide"]["steps"]
+        if "check_docs_codeguide.py" in step.get("run", "")
+    )
+    pairs = re.findall(r'--code-root (\S+)[\s\\]+--code-glob "([^"]+)"', run)
+    contract = json.loads(
+        (root / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8")
+    )
+    declared = [(e["root"], e["glob"]) for e in contract["docs_map"]["code_roots"]]
+    assert pairs == declared

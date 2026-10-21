@@ -216,7 +216,10 @@
     "code_roots": [
       {"root": "app/src/modules", "glob": "*.py"},
       {"root": "scripts", "glob": "*.py"},
-      {"root": "data", "glob": "**/*.bas"}
+      {"root": "data", "glob": "**/*.bas"},
+      {"root": "app/src", "glob": "*.py"},
+      {"root": "app/src/shared", "glob": "*.py"},
+      {"root": "app/migrations", "glob": "*.py"}
     ],
     "job": "docs-codeguide",
     "exclude_dirs": [
