@@ -44,9 +44,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Form0BDOpcionesOtras | src/forms/Form_Form0BDOpcionesOtras.cls | 144 | 40 | 29 | igual | analizado | [formularios/Form_Form0BDOpcionesOtras.md](formularios/Form_Form0BDOpcionesOtras.md) |
 | Form_FormActividadAlta | src/forms/Form_FormActividadAlta.cls | 251 | 38 | 7 | igual | analizado | [formularios/Form_FormActividadAlta.md](formularios/Form_FormActividadAlta.md) |
 | Form_FormActividadDeEventoPorLotes | src/forms/Form_FormActividadDeEventoPorLotes.cls | 383 | 31 | 10 | igual | analizado | [formularios/Form_FormActividadDeEventoPorLotes.md](formularios/Form_FormActividadDeEventoPorLotes.md) |
-| Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | pendiente | — |
-| Form_FormActividadGestion | src/forms/Form_FormActividadGestion.cls | 1065 | 39 | 26 | igual | pendiente | — |
-| Form_FormActividadTipoAlta | src/forms/Form_FormActividadTipoAlta.cls | 148 | 23 | 4 | igual | pendiente | — |
+| Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | analizado | [formularios/Form_FormActividadEdicion.md](formularios/Form_FormActividadEdicion.md) |
+| Form_FormActividadGestion | src/forms/Form_FormActividadGestion.cls | 1065 | 39 | 26 | igual | analizado | [formularios/Form_FormActividadGestion.md](formularios/Form_FormActividadGestion.md) |
+| Form_FormActividadTipoAlta | src/forms/Form_FormActividadTipoAlta.cls | 148 | 23 | 4 | igual | analizado | [formularios/Form_FormActividadTipoAlta.md](formularios/Form_FormActividadTipoAlta.md) |
 | Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | pendiente | — |
 | Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | pendiente | — |
 | Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
 
-Totales: 5 analizados · 0 no aplicables · 126 pendientes.
+Totales: 8 analizados · 0 no aplicables · 123 pendientes.
 
 ## Discrepancias abiertas
 
