@@ -2,7 +2,8 @@
 """Bloque v2: cada capa declara ``paths`` (patrones de ruta) en lugar de ``modules``.
 
 ``exempt`` gana a las capas. El primer patrón que casa con un fichero fuente decide su
-capa, en el orden en que se declaran las capas; ``*`` no cruza ``/`` y ``**`` cruza directorios. ``exempt`` lista los
+capa, en el orden en que se declaran las capas; ``*`` no cruza ``/`` y ``**`` cruza directorios. ``overrides``
+(``[{"path", "layer"}]``, #805) manda una ruta exacta a su capa antes que los patrones; ``exempt`` lista los
 patrones que no pertenecen a ninguna capa. Todo fichero fuente de los code-roots cae en
 una capa o en ``exempt`` (uno sin capa es rojo, HR-3) y todo patrón casa al menos un
 fichero (uno que no casa nada es rojo). Para los linters, ``normalize`` expande los
@@ -64,6 +65,26 @@ def _first_layer(path: str, layers: list[tuple[str, list[re.Pattern]]]):
     return None
 
 
+def _check_overrides(data: dict, universe: list[str]):
+    """``({ruta: capa}, hallazgos)`` de ``overrides``: cada entrada nombra un fichero y una capa declarada."""
+    raw = data.get("overrides", [])
+    if not isinstance(raw, list):
+        return {}, ["«overrides» debe ser una lista de {path, layer}"]
+    declared = {layer["name"] for layer in data["layers"]}
+    mapping, findings = {}, []
+    for item in raw:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str) or not item["path"] \
+                or not isinstance(item.get("layer"), str) or not item["layer"]:
+            findings.append(f"override mal formado: {item!r} (necesita path y layer)")
+        elif item["path"] not in universe:
+            findings.append(f"«overrides» declara la ruta {item['path']} y no casa ningún fichero")
+        elif item["layer"] not in declared:
+            findings.append(f"«overrides» manda {item['path']} a la capa {item['layer']}, que no está declarada")
+        else:
+            mapping[item["path"]] = item["layer"]
+    return mapping, findings
+
+
 def _pack(node: str, files: dict[str, str | None], children: dict[str, list[str]], out: dict) -> None:
     """Asigna a ``out[capa]`` las rutas mínimas bajo ``node``; los exentos no cuentan."""
     if node in files:
@@ -96,9 +117,11 @@ def normalize(repo: Path, data: dict, roots: list[tuple[str, str]]):
                      for p in layer["paths"] if not any(glob_regex(p).match(f) for f in universe)]
     findings += [f"«exempt» declara el patrón {p} y no casa ningún fichero"
                  for p in data.get("exempt", []) if not any(glob_regex(p).match(f) for f in universe)]
+    overrides, override_findings = _check_overrides(data, universe)
+    findings += override_findings
     files: dict[str, str | None] = {}
     for path in source_files(repo, roots):
-        layer = None if any(p.match(path) for p in exempt) else _first_layer(path, layers)
+        layer = None if any(p.match(path) for p in exempt) else overrides.get(path) or _first_layer(path, layers)
         if layer is None and not any(p.match(path) for p in exempt):
             findings.append(f"el fichero {path} no pertenece a ninguna capa ni a «exempt»")
         files[path] = layer

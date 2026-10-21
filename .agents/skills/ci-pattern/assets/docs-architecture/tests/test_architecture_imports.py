@@ -66,6 +66,14 @@ class RenderTests(unittest.TestCase):
         self.assertIn("root_packages =\n    app\n    lib", text)
         self.assertIn("    app.main\n", text)
 
+    def test_un_init_py_se_nombra_como_su_paquete(self):
+        block = {"layers": [{"name": "a", "modules": ["app/core/__init__.py", "app/core/x.py"]},
+                            {"name": "b", "modules": ["lib/y"]}], "allowed": {"a": [], "b": []}}
+        self.assertEqual(imports.dotted("app/core/__init__.py"), "app.core")
+        text = imports.render_importlinter(block)
+        self.assertIn("    app.core\n", text)
+        self.assertNotIn("__init__", text)
+
     def test_la_salida_es_determinista(self):
         self.assertEqual(imports.render_importlinter(BLOCK), imports.render_importlinter(BLOCK))
 

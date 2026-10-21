@@ -30,9 +30,13 @@ MAX_CONTINUATION = 3
 
 
 def dotted(module_path: str) -> str:
-    """``app/routes`` -> ``app.routes``; ``app/main.py`` -> ``app.main``."""
+    """``app/routes`` -> ``app.routes``; ``app/main.py`` -> ``app.main``;
+    ``app/core/__init__.py`` -> ``app.core`` (el paquete, no un módulo ``__init__``)."""
     path = Path(module_path)
-    return ".".join(path.with_suffix("").parts if path.suffix else path.parts)
+    parts = path.with_suffix("").parts if path.suffix else path.parts
+    if len(parts) > 1 and parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
 
 
 def forbidden_pairs(data: dict) -> list[tuple[str, str]]:

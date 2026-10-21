@@ -49,6 +49,7 @@ viven dentro del mismo módulo), cada capa declara `paths` en lugar de `modules`
 |---|---|
 | Patrones | `*` no cruza `/`, `**` cruza directorios, `?` es un carácter; rutas relativas al repo |
 | Primera coincidencia | decide la capa el primer patrón que casa, en el orden de las capas; `exempt` gana a las capas |
+| Overrides | `"overrides": [{"path": "app/core/auth.py", "layer": "di"}]` manda un fichero concreto a su capa antes que los patrones (#805); `exempt` sigue ganando. Una ruta que no existe, una capa no declarada o una entrada sin `path` o `layer` es rojo |
 | Cobertura | todo fichero fuente de los code-roots cae en una capa o en `exempt`; uno sin capa es rojo y se nombra |
 | Patrón vacío | un patrón (o de `exempt`) que no casa ningún fichero es rojo |
 | `allowed` | dentro de cada capa o como mapa de primer nivel; lo que no se permite está prohibido |

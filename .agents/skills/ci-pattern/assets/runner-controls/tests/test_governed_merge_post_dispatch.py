@@ -7,9 +7,15 @@ merge se rechaza con exit 1 si falta alguna de las dos. Ausente o vacía es
 no-op con un warning a ``stderr``. El disparo post-merge vía ``gh workflow
 run`` (slice 3/2 de la cadena, ``Refs #817``; ``Closes #817`` vive en la
 punta de la cadena) tiene su propio test file.
+
+#966: la validacion pre-merge se hace contra la forma real que devuelve la
+API —un objeto ``{"total_count": N, "workflows": [...]}``, no una lista— y
+recorre todas sus paginas (``per_page=100``); sin la clave ``workflows``, o
+con un valor que no sea lista, sigue bloqueando nombrando la forma esperada.
 """
 import base64
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -266,6 +272,75 @@ class GovernedMergePostDispatchTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         self.assertFalse(self.stored().get("merges", []))
         self.assert_no_dispatch()
+
+
+class GovernedMergeWorkflowsListingTests(unittest.TestCase):
+    """#966: el listado de workflows es un objeto y se lee entero, pagina a pagina."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def stored(self) -> dict:
+        return json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+
+    def assert_listing_blocked(self, proc: subprocess.CompletedProcess) -> None:
+        output = proc.stdout + proc.stderr
+        self.assertEqual(proc.returncode, 1, output)
+        self.assertFalse(self.stored().get("merges", []), output)
+        self.assertIn("workflows listing is not the API shape", output)
+        for shape in ('"total_count"', '"workflows"'):
+            self.assertIn(shape, output)  # el mensaje nombra la forma esperada
+
+    def test_the_real_api_listing_shape_lets_the_governed_merge_through(self) -> None:
+        # #966: `GET /repos/<repo>/actions/workflows` responde un objeto
+        # `{"total_count": N, "workflows": [...]}`; exigir una lista bloqueaba
+        # todo consumer con `post_merge_dispatch` declarado en su contrato.
+        proc = run_gate(self.root, contract_with(["deploy"]),
+                        with_workflow("deploy", declares=True))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertTrue(self.stored()["merges"])
+
+    def test_a_bare_list_listing_blocks_and_names_the_expected_shape(self) -> None:
+        # La forma anterior (lista desnuda) no es lo que devuelve la API: sigue
+        # bloqueando, y el mensaje dice que se esperaba el objeto (#966).
+        state = with_workflow("deploy", declares=True)
+        state["workflows_body"] = state["workflows"]
+        self.assert_listing_blocked(run_gate(self.root, contract_with(["deploy"]), state))
+
+    def test_a_listing_without_the_workflows_key_blocks(self) -> None:
+        state = with_workflow("deploy", declares=True)
+        state["workflows_body"] = {"total_count": 1}
+        self.assert_listing_blocked(run_gate(self.root, contract_with(["deploy"]), state))
+
+    def test_a_workflows_value_that_is_not_a_list_blocks(self) -> None:
+        state = with_workflow("deploy", declares=True)
+        state["workflows_body"] = {"total_count": 1,
+                                   "workflows": {"path": ".github/workflows/deploy.yml"}}
+        self.assert_listing_blocked(run_gate(self.root, contract_with(["deploy"]), state))
+
+    def test_a_workflow_on_the_second_page_is_found(self) -> None:
+        # #966: con mas de 100 workflows el listado llega repartido en paginas;
+        # el declarado en el contrato esta en la segunda y el merge sale igual.
+        # El defecto de la API (30 por pagina) hacia que un repo con 31
+        # workflows diera un falso «no existe».
+        state = base_state()
+        state["workflows"] = [{"id": number, "name": f"wf-{number}",
+                               "path": f".github/workflows/wf-{number}.yml", "state": "active"}
+                              for number in range(1, 101)]
+        state["workflows"].append({"id": 101, "name": "deploy",
+                                   "path": ".github/workflows/deploy.yml", "state": "active"})
+        path = ".github/workflows/deploy.yml"
+        state["workflow_files"] = {path: {"content": base64.b64encode(yaml_workflow(True).encode()).decode("ascii"),
+                                           "encoding": "base64", "path": path,
+                                           "name": "deploy.yml", "type": "file"}}
+        proc = run_gate(self.root, contract_with(["deploy"]), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(self.stored()["dispatches"][0]["name"], "deploy")
+        self.assertEqual(self.stored()["workflows_queries"],
+                         [{"per_page": ["100"], "page": ["1"]},
+                          {"per_page": ["100"], "page": ["2"]}])
 
 
 if __name__ == "__main__":

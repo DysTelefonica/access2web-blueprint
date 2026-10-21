@@ -1850,8 +1850,10 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "(merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza "
         "anterior a la integración no es evidencia del resultado nuevo.\n"
         "  Hecho: todos los checks en pass sobre la cabeza y la base actuales.",
-        "- **9. Merge gobernado.** El merge lo decide un humano con CI en verde; "
-        "ningún agente mergea. Métodos permitidos (host-contract): "
+        "- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. "
+        "Un agente lo lanza solo por orden explícita y registrada de un mantenedor "
+        "con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. "
+        "Métodos permitidos (host-contract): "
         f"{_or_none(allowed_merges)}.\n"
         "  Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.",
         "- **10. Limpieza.** Solo después del merge verificado y sin cambios "
@@ -1952,7 +1954,9 @@ def _operating_doc_merge_lines(repo, allowed_merges):
     """#351: seccion Merge; el camino gobernado solo con declaracion."""
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
     lines = [
-        "- El merge es decisión humana con CI en verde; ningún agente mergea.",
+        "- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por "
+        "orden explícita y registrada de un mantenedor con cuenta de mantenedor, "
+        "nunca con `--admin`.",
         f"- Métodos de merge permitidos (host-contract): {_or_none(allowed_merges)}.",
     ]
     gm = _governed_merge_workflow(repo)

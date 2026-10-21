@@ -105,6 +105,51 @@ class ExpansionTests(unittest.TestCase):
         self.assertTrue(any("capa mal formada" in f for f in findings), findings)
 
 
+class OverridesTests(unittest.TestCase):
+    """``overrides``: una ruta exacta decide su capa antes que los patrones (#805)."""
+
+    OVERRIDDEN = {**BLOCK, "overrides": [{"path": "app/core/config.py", "layer": "delivery"}]}
+
+    def test_un_override_manda_el_fichero_a_su_capa_aunque_un_patron_lo_reclame(self):
+        with tempfile.TemporaryDirectory() as d:
+            data, findings = _normalized(_repo(d), self.OVERRIDDEN)
+        modules = {layer["name"]: layer["modules"] for layer in data["layers"]}
+        self.assertEqual(findings, [])
+        self.assertIn("app/core", modules["delivery"])
+        self.assertEqual(modules["infrastructure"], [])
+
+    def test_sin_overrides_el_resultado_no_cambia(self):
+        with tempfile.TemporaryDirectory() as d:
+            data, _ = _normalized(_repo(d))
+        modules = {layer["name"]: layer["modules"] for layer in data["layers"]}
+        self.assertEqual(modules["infrastructure"], ["app/core"])
+
+    def test_exempt_sigue_ganando_a_un_override(self):
+        block = {**BLOCK, "overrides": [{"path": "app/core/__init__.py", "layer": "delivery"}]}
+        with tempfile.TemporaryDirectory() as d:
+            data, findings = _normalized(_repo(d), block)
+        self.assertEqual(findings, [])
+        self.assertNotIn("app/core/__init__.py", [m for layer in data["layers"] for m in layer["modules"]])
+
+    def test_un_override_a_un_fichero_inexistente_es_rojo(self):
+        block = {**BLOCK, "overrides": [{"path": "app/core/ghost.py", "layer": "delivery"}]}
+        with tempfile.TemporaryDirectory() as d:
+            _, findings = _normalized(_repo(d), block)
+        self.assertEqual(findings, ["«overrides» declara la ruta app/core/ghost.py y no casa ningún fichero"])
+
+    def test_un_override_a_una_capa_no_declarada_es_rojo(self):
+        block = {**BLOCK, "overrides": [{"path": "app/core/config.py", "layer": "nada"}]}
+        with tempfile.TemporaryDirectory() as d:
+            _, findings = _normalized(_repo(d), block)
+        self.assertEqual(findings, ["«overrides» manda app/core/config.py a la capa nada, que no está declarada"])
+
+    def test_un_override_mal_formado_es_rojo(self):
+        block = {**BLOCK, "overrides": [{"path": "app/core/config.py"}]}
+        with tempfile.TemporaryDirectory() as d:
+            _, findings = _normalized(_repo(d), block)
+        self.assertTrue(any("override mal formado" in f for f in findings), findings)
+
+
 class DocumentTests(unittest.TestCase):
     def _findings(self, repo, doc, linter_config=None):
         (repo / "docs").mkdir(exist_ok=True)
