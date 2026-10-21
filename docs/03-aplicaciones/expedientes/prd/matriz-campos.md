@@ -41,16 +41,16 @@ Cada columna de origen de las tablas locales del backend de Expedientes, con la 
 | `TbAuxEstadosMartina` | 3 | 143 | 0 | auditoría, configuración o soporte | tanda posterior |
 | `TbAuxNemotecnico` | 1 | 0 | 0 | auditoría, configuración o soporte | tanda posterior |
 | `TbCambios` | 10 | 0 | 1 | auditoría, configuración o soporte | tanda posterior |
-| `TbComerciales` | 3 | 26 | 4 | catálogo | tanda posterior |
+| `TbComerciales` | 3 | 26 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbcomerciales) |
 | `TbConfMostrarEstado` | 3 | 23 | 3 | auditoría, configuración o soporte | tanda posterior |
-| `TbCPV` | 3 | 73 | 4 | catálogo | tanda posterior |
+| `TbCPV` | 3 | 73 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbcpv) |
 | `TbDatosEconomicosExpedientes` | 7 | 91 | 1 | auditoría, configuración o soporte | tanda posterior |
 | `TbE2EExportBatch` | 10 | 0 | 0 | auditoría, configuración o soporte | tanda posterior |
 | `TbE2EExportBatchDetalle` | 8 | 0 | 0 | auditoría, configuración o soporte | tanda posterior |
 | `TbE2EExportSeleccionTemp` | 5 | 5 | 0 | auditoría, configuración o soporte | tanda posterior |
 | `TbE2EJsonDestinationUserConfig` | 5 | 4 | 0 | auditoría, configuración o soporte | tanda posterior |
-| `TbEjercitos` | 3 | 5 | 4 | catálogo | tanda posterior |
-| `TbEstados` | 3 | 9 | 1 | catálogo | tanda posterior |
+| `TbEjercitos` | 3 | 5 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbejercitos) |
+| `TbEstados` | 3 | 9 | 1 | catálogo | [catalogos](matriz-campos/catalogos.md#tbestados) |
 | `TbExpAgedys` | 49 | 116 | 1 | histórica o auxiliar; comparte 3 de 49 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
 | `TbExpAGEDYS1` | 49 | 116 | 0 | histórica o auxiliar; comparte 3 de 49 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
 | `TbExpedientes` | 61 | 453 | 20 | cabecera y read-model | [cabecera](matriz-campos/cabecera.md#tbexpedientes) |
@@ -72,18 +72,18 @@ Cada columna de origen de las tablas locales del backend de Expedientes, con la 
 | `TbExpedientesRACS` | 3 | 193 | 4 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesracs) |
 | `TbExpedientesResponsables` | 6 | 730 | 8 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesresponsables) |
 | `TbExpedientesSuministradores` | 7 | 713 | 9 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientessuministradores) |
-| `TbGradosClasificacion` | 3 | 5 | 5 | catálogo | tanda posterior |
-| `TbJefaturas` | 3 | 3 | 0 | catálogo | tanda posterior |
-| `TbJuridicas` | 4 | 17 | 2 | catálogo | tanda posterior |
-| `TbLugaresEjecucion` | 3 | 34 | 4 | catálogo | tanda posterior |
-| `TbOficinasPrograma` | 3 | 37 | 5 | catálogo | tanda posterior |
-| `TbOrganosContratacion` | 3 | 46 | 4 | catálogo | tanda posterior |
-| `TbPECAL` | 3 | 6 | 5 | catálogo | tanda posterior |
-| `TbRACS` | 4 | 33 | 4 | catálogo | tanda posterior |
-| `TbResponsablesPorRol` | 3 | 11 | 2 | catálogo | tanda posterior |
-| `TbSuministradores` | 10 | 72 | 7 | catálogo | tanda posterior |
+| `TbGradosClasificacion` | 3 | 5 | 5 | catálogo | [catalogos](matriz-campos/catalogos.md#tbgradosclasificacion) |
+| `TbJefaturas` | 3 | 3 | 0 | catálogo | [catalogos](matriz-campos/catalogos.md#tbjefaturas) |
+| `TbJuridicas` | 4 | 17 | 2 | catálogo | [catalogos](matriz-campos/catalogos.md#tbjuridicas) |
+| `TbLugaresEjecucion` | 3 | 34 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tblugaresejecucion) |
+| `TbOficinasPrograma` | 3 | 37 | 5 | catálogo | [catalogos](matriz-campos/catalogos.md#tboficinasprograma) |
+| `TbOrganosContratacion` | 3 | 46 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tborganoscontratacion) |
+| `TbPECAL` | 3 | 6 | 5 | catálogo | [catalogos](matriz-campos/catalogos.md#tbpecal) |
+| `TbRACS` | 4 | 33 | 4 | catálogo | [catalogos](matriz-campos/catalogos.md#tbracs) |
+| `TbResponsablesPorRol` | 3 | 11 | 2 | catálogo | [catalogos](matriz-campos/catalogos.md#tbresponsablesporrol) |
+| `TbSuministradores` | 10 | 72 | 7 | catálogo | [catalogos](matriz-campos/catalogos.md#tbsuministradores) |
 | `TbUltimoCambio` | 4 | 6 | 3 | auditoría, configuración o soporte | tanda posterior |
 
 ## Tandas de la matriz
 
-Esta tanda añade las relaciones del expediente (16 tablas `TbExpedientes*` hijas). Siguen los catálogos, las tablas transversales, las que solo `src` define (`TbE2ECola`, `TbE2EEnlaces`) y las vinculadas a otros backends. Las tablas históricas no tienen detalle por columna: el [ledger de la matriz de migración](../migration-matrix.md) las conserva hasta que negocio decida su disposición.
+Esta tanda añade los catálogos (14 tablas). Siguen las tablas transversales, las que solo `src` define (`TbE2ECola`, `TbE2EEnlaces`) y las vinculadas a otros backends. Las tablas históricas no tienen detalle por columna: el [ledger de la matriz de migración](../migration-matrix.md) las conserva hasta que negocio decida su disposición.
