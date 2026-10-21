@@ -14,7 +14,7 @@ Contenedor del catálogo de aplicaciones: tres pestañas dibujadas con rectángu
 
 El menú principal que se abre depende del rol del usuario tras el login (`Variables Globales.bas:724-736`). Al cargarse, los tres menús llaman a su `MENU1_Click` y después fuerzan en el subformulario el listado `FormAplicacionesFueraOficina` con la pestaña 1 resaltada (`Form_FormMenuPrincipalAdmin.cls:52-70`, `Form_FormMenuPrincipalCalidad.cls:44-64`, `Form_FormMenuPrincipalUsuario.cls:43-59`).
 
-Abre, dentro de `FormDetalle`: [FormAplicacionesFueraOficina](Form_FormAplicacionesFueraOficina.md), [FormAplicacionesOficina](Form_FormAplicacionesOficina.md) y [FormAplicacionesPrueba](Form_FormAplicacionesPrueba.md).
+Abre, dentro de `FormDetalle`: `FormAplicacionesFueraOficina`, `FormAplicacionesOficina` y `FormAplicacionesPrueba`.
 
 ## Controles y eventos
 
