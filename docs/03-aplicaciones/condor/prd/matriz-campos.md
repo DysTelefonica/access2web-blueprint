@@ -39,21 +39,21 @@ No hay módulo web de Condor en `app/src/modules` (solo `expedientes` y `lanzade
 
 | Tabla | Columnas | Con evidencia | Ficheros de `src` que citan la tabla | Familia | Detalle |
 |---|---|---|---|---|---|
-| `tbAdjuntos` | 8 | 8 | 2 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
+| `tbAdjuntos` | 8 | 8 | 2 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
 | `tbDatosCDCA` | 40 | 40 | 4 | solicitud y bloques de datos | [solicitud-y-bloques](matriz-campos/solicitud-y-bloques.md) |
 | `tbDatosCDCASUB` | 44 | 44 | 5 | solicitud y bloques de datos | [solicitud-y-bloques](matriz-campos/solicitud-y-bloques.md) |
 | `tbDatosPC` | 41 | 41 | 4 | solicitud y bloques de datos | [solicitud-y-bloques](matriz-campos/solicitud-y-bloques.md) |
 | `tbDatosPCSUB` | 43 | 0 | 0 | retirada en el commit fijado | [solicitud-y-bloques](matriz-campos/solicitud-y-bloques.md) |
-| `tbEstados` | 6 | 6 | 2 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
+| `tbEstados` | 6 | 6 | 2 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
 | `tbHistorialRechazos` | 8 | 0 | 0 | retirada en el commit fijado | [solicitud-y-bloques](matriz-campos/solicitud-y-bloques.md) |
-| `tbLogCambios` | 10 | 10 | 5 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
-| `tbLogErrores` | 9 | 9 | 6 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
-| `tbLogEstados` | 6 | 6 | 3 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
-| `tbMapeoCampos` | 6 | 6 | 3 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
-| `tbRechazos` | 10 | 9 | 2 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
+| `tbLogCambios` | 10 | 10 | 5 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
+| `tbLogErrores` | 9 | 9 | 6 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
+| `tbLogEstados` | 6 | 6 | 3 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
+| `tbMapeoCampos` | 6 | 6 | 3 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
+| `tbRechazos` | 10 | 9 | 2 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
 | `tbSolicitudes` | 12 | 12 | 12 | solicitud y bloques de datos | [solicitud-y-bloques](matriz-campos/solicitud-y-bloques.md) |
-| `tbTransiciones` | 4 | 3 | 2 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
-| `tbValidacionRevision` | 10 | 10 | 2 | catálogos y trazabilidad | [catalogos-y-trazabilidad](matriz-campos/catalogos-y-trazabilidad.md) |
+| `tbTransiciones` | 4 | 3 | 2 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
+| `tbValidacionRevision` | 10 | 10 | 2 | catálogos y trazabilidad | catalogos-y-trazabilidad (tanda siguiente) |
 
 ## Totales y reconciliación
 
