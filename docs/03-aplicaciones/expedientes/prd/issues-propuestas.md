@@ -40,7 +40,7 @@ El [backlog de migración](../issue-backlog.md) ya cubre la implementación web 
 
 ### P-EXP-3 · Acceso a datos durante la coexistencia
 
-- **Evidencia:** `getdb()` abre el `.accdb` por ruta y suma 303 llamadas en 62 ficheros ([coexistencia](coexistencia.md#1-cómo-accede-hoy-expedientes-a-los-datos)).
+- **Evidencia:** `getdb()` abre el `.accdb` por ruta y suma 303 llamadas en 62 ficheros ([coexistencia](coexistencia.md#1-cómo-accede-hoy-expedientes-a-los-datos)). Hay tres vías, sin recomendación: sustituir `getdb()` por `CurrentDb` con vínculos; backend sincronizado (descartada por el roadmap); y la hipótesis del propietario, que mantiene `getdb()` y vincula por ODBC las tablas dentro del mismo `.accdb`, medida en el [apartado 11](coexistencia.md#11-p-exp-3-verificación-de-la-hipótesis-del-propietario). **Abierta y escalada al propietario.**
 - **Criterios de aceptación:** decisión escrita entre sustituir `getdb()` por `CurrentDb` sobre tablas vinculadas u otra vía, con coste, riesgo de transacciones y plan de reversión; coordinada con las demás aplicaciones que comparten el patrón.
 
 ### P-EXP-4 y P-EXP-5 · Identificadores y tipos
