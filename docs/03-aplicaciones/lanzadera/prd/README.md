@@ -1,6 +1,6 @@
 # PRD — Lanzadera
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 27 de 28.
+> **Estado:** fases 0 (fijación), 1 (inventario) y 2 (formularios: 28 de 28) completadas; pendientes las fases 3 a 5.
 
 | Campo | Valor |
 |---|---|
@@ -61,10 +61,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormVideosGestionArbolAplicacion | formulario | src/forms/Form_FormVideosGestionArbolAplicacion.cls | 417 | 33 | 8 | igual | analizado | [formularios/Form_FormVideosGestionArbolAplicacion.md](formularios/Form_FormVideosGestionArbolAplicacion.md) |
 | Form_FormVideosGestionArbolVideo | formulario | src/forms/Form_FormVideosGestionArbolVideo.cls | 51 | 21 | 6 | igual | analizado | [formularios/Form_FormVideosGestionArbolVideo.md](formularios/Form_FormVideosGestionArbolVideo.md) |
 | Form_FormVideosGestionArbolVideoDatos | formulario | src/forms/Form_FormVideosGestionArbolVideoDatos.cls | 408 | 33 | 8 | igual | analizado | [formularios/Form_FormVideosGestionArbolVideoDatos.md](formularios/Form_FormVideosGestionArbolVideoDatos.md) |
-| Form_FormVideosUsuarios | formulario | src/forms/Form_FormVideosUsuarios.cls | 171 | 16 | 6 | igual | pendiente | sin ficha todavía |
+| Form_FormVideosUsuarios | formulario | src/forms/Form_FormVideosUsuarios.cls | 171 | 16 | 6 | igual | analizado | [formularios/Form_FormVideosUsuarios.md](formularios/Form_FormVideosUsuarios.md) |
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 5 | 9 | 1 | igual | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 
-Totales (formularios): 27 analizados · 0 no aplicables · 1 pendientes.
+Totales (formularios): 28 analizados · 0 no aplicables · 0 pendientes.
 Totales (controles `Begin`): 740 · procedimientos: 247 · líneas de `.cls`: 6,246.
 
 ### Módulos y clases
@@ -114,6 +114,7 @@ Comportamientos sospechosos detectados al analizar el código. Son hallazgos del
 | H-LAN-19 | `ParaTodosCalculado` se llama a sí mismo en su primera condición (recursión sin fin) y se ejecuta en cada guardado de un vídeo; compara `ParaCalidadCalculado` dos veces y no mira `ParaAdministradorCalculado`. | `Video.cls:352, 357, 492` | [Form_FormVideosGestionArbolVideoDatos](formularios/Form_FormVideosGestionArbolVideoDatos.md) | a verificar |
 | H-LAN-20 | Un vídeo con técnicos «Sí» y Calidad «No» se carga como «Para Todos» y cualquier guardado lo convierte en «para todos»; los IDs se calculan con `Max + 1` y un título con apóstrofo rompe la consulta de duplicados. | `Form_FormVideosGestionArbolVideoDatos.cls:88-89`; `Funciones Genreales.bas:473-486`; `Video.cls:391, 396` | [Form_FormVideosGestionArbolVideoDatos](formularios/Form_FormVideosGestionArbolVideoDatos.md) | a verificar |
 | H-LAN-21 | `Form_Load` de `FormVideoDetalle` no llama a `EstablecerDatos` (se ven los textos de diseño); `fso.FileExists` solo acepta rutas de fichero, así que un vídeo en una URL web se daría por inaccesible; `IND1_Mousemove` de `FormVideosArbolVideo` no está conectado en el `.form.txt`. | `Form_FormVideoDetalle.cls:18, 38-43`; `Form_FormVideosArbolVideo.cls:54-57`; `Form_FormVideosArbolVideo.form.txt:334-355` | [Form_FormVideoDetalle](formularios/Form_FormVideoDetalle.md) | a verificar |
+| H-LAN-22 | `FormVideosUsuarios` no se abre desde ninguna parte: la carga está comentada en los tres menús y «Videos-Guías» muestra «En construcción»; `CInt(dato(1))` desborda si un `IDVideo` supera 32 767. | `Form_FormMenuPrincipalUsuario.cls:221-226`; `Form_FormVideosUsuarios.cls:32` | [Form_FormVideosUsuarios](formularios/Form_FormVideosUsuarios.md) | a verificar |
 
 ## Método del recuento
 
