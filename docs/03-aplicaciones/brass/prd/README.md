@@ -152,20 +152,20 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Actividad | src/classes/Actividad.cls | 623 | — | 15 | igual | pendiente | — |
-| Anexo | src/classes/Anexo.cls | 1083 | — | 31 | igual | pendiente | — |
-| Entorno | src/classes/Entorno.cls | 1207 | — | 37 | igual | pendiente | — |
-| Equipo | src/classes/Equipo.cls | 189 | — | 5 | igual | pendiente | — |
-| EquipoMedida | src/classes/EquipoMedida.cls | 671 | — | 16 | igual | pendiente | — |
-| EquipoMedidaCalibracion | src/classes/EquipoMedidaCalibracion.cls | 299 | — | 7 | igual | pendiente | — |
-| Evento | src/classes/Evento.cls | 3015 | — | 60 | igual | pendiente | — |
-| EventoBusqueda | src/classes/EventoBusqueda.cls | 21 | — | 0 | igual | pendiente | — |
-| EventoEquipoMedida | src/classes/EventoEquipoMedida.cls | 200 | — | 8 | igual | pendiente | — |
-| EventoEquipoMedidaAntes | src/classes/EventoEquipoMedidaAntes.cls | 185 | — | 7 | igual | pendiente | — |
-| Factura | src/classes/Factura.cls | 6827 | — | 98 | igual | pendiente | — |
-| FacturaPerfiles | src/classes/FacturaPerfiles.cls | 324 | — | 9 | igual | pendiente | — |
-| Fiesta | src/classes/Fiesta.cls | 202 | — | 6 | igual | pendiente | — |
-| Gasto | src/classes/Gasto.cls | 433 | — | 12 | igual | pendiente | — |
+| Actividad | src/classes/Actividad.cls | 623 | — | 15 | igual | analizado | [clases-1.md](clases-1.md) |
+| Anexo | src/classes/Anexo.cls | 1083 | — | 31 | igual | analizado | [clases-1.md](clases-1.md) |
+| Entorno | src/classes/Entorno.cls | 1207 | — | 37 | igual | analizado | [clases-1.md](clases-1.md) |
+| Equipo | src/classes/Equipo.cls | 189 | — | 5 | igual | analizado | [clases-1.md](clases-1.md) |
+| EquipoMedida | src/classes/EquipoMedida.cls | 671 | — | 16 | igual | analizado | [clases-1.md](clases-1.md) |
+| EquipoMedidaCalibracion | src/classes/EquipoMedidaCalibracion.cls | 299 | — | 7 | igual | analizado | [clases-1.md](clases-1.md) |
+| Evento | src/classes/Evento.cls | 3015 | — | 60 | igual | analizado | [clases-1.md](clases-1.md) |
+| EventoBusqueda | src/classes/EventoBusqueda.cls | 21 | — | 0 | igual | analizado | [clases-1.md](clases-1.md) |
+| EventoEquipoMedida | src/classes/EventoEquipoMedida.cls | 200 | — | 8 | igual | analizado | [clases-1.md](clases-1.md) |
+| EventoEquipoMedidaAntes | src/classes/EventoEquipoMedidaAntes.cls | 185 | — | 7 | igual | analizado | [clases-1.md](clases-1.md) |
+| Factura | src/classes/Factura.cls | 6827 | — | 98 | igual | analizado | [clases-1.md](clases-1.md) |
+| FacturaPerfiles | src/classes/FacturaPerfiles.cls | 324 | — | 9 | igual | analizado | [clases-1.md](clases-1.md) |
+| Fiesta | src/classes/Fiesta.cls | 202 | — | 6 | igual | analizado | [clases-1.md](clases-1.md) |
+| Gasto | src/classes/Gasto.cls | 433 | — | 12 | igual | analizado | [clases-1.md](clases-1.md) |
 | GestorInforme | src/classes/GestorInforme.cls | 281 | — | 8 | igual | pendiente | — |
 | Informe | src/classes/Informe.cls | 987 | — | 11 | igual | pendiente | — |
 | LIbranza | src/classes/LIbranza.cls | 398 | — | 9 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
 
-Totales: 30 analizados · 5 no aplicables · 96 pendientes.
+Totales: 44 analizados · 5 no aplicables · 82 pendientes.
 
 ## Discrepancias abiertas
 
