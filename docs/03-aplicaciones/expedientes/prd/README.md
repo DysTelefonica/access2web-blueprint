@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 20 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 25 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -32,9 +32,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Tipo | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|---|
-| Form_Form0BDGestorEntidades | formulario | src/forms/Form_Form0BDGestorEntidades.cls | 187 | 14 | 7 | distinto | pendiente | sin ficha todavía |
+| Form_Form0BDGestorEntidades | formulario | src/forms/Form_Form0BDGestorEntidades.cls | 187 | 14 | 7 | distinto | analizado | [formularios/Form_Form0BDGestorEntidades.md](formularios/Form_Form0BDGestorEntidades.md) |
 | Form_Form0BDOpciones | formulario | src/forms/Form_Form0BDOpciones.cls | 356 | 26 | 14 | distinto | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
-| Form_Form0BDOpcionesTecnicos | formulario | src/forms/Form_Form0BDOpcionesTecnicos.cls | 166 | 20 | 7 | distinto | pendiente | sin ficha todavía |
+| Form_Form0BDOpcionesTecnicos | formulario | src/forms/Form_Form0BDOpcionesTecnicos.cls | 166 | 20 | 7 | distinto | analizado | [formularios/Form_Form0BDOpcionesTecnicos.md](formularios/Form_Form0BDOpcionesTecnicos.md) |
 | Form_FormCPV | formulario | src/forms/Form_FormCPV.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormCPVsGestion | formulario | src/forms/Form_FormCPVsGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormComercial | formulario | src/forms/Form_FormComercial.cls | 199 | 23 | 6 | distinto | pendiente | sin ficha todavía |
@@ -63,7 +63,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormGradosClasificacionGestion | formulario | src/forms/Form_FormGradosClasificacionGestion.cls | 425 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormLugarEjecucion | formulario | src/forms/Form_FormLugarEjecucion.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormLugarEjecucionGestion | formulario | src/forms/Form_FormLugarEjecucionGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
-| Form_FormModificado | formulario | src/forms/Form_FormModificado.cls | 211 | 27 | 6 | distinto | pendiente | sin ficha todavía |
+| Form_FormModificado | formulario | src/forms/Form_FormModificado.cls | 211 | 27 | 6 | distinto | analizado | [formularios/Form_FormModificado.md](formularios/Form_FormModificado.md) |
 | Form_FormOficinaPrograma | formulario | src/forms/Form_FormOficinaPrograma.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormOficinasProgramaGestion | formulario | src/forms/Form_FormOficinasProgramaGestion.cls | 425 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormOrganoContratacion | formulario | src/forms/Form_FormOrganoContratacion.cls | 205 | 23 | 6 | distinto | pendiente | sin ficha todavía |
@@ -75,10 +75,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormSuministrador | formulario | src/forms/Form_FormSuministrador.cls | 236 | 33 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormSuministradoresGestion | formulario | src/forms/Form_FormSuministradoresGestion.cls | 458 | 24 | 15 | distinto | pendiente | sin ficha todavía |
 | Form_FormTareas | formulario | src/forms/Form_FormTareas.cls | 470 | 24 | 10 | distinto | analizado | [formularios/Form_FormTareas.md](formularios/Form_FormTareas.md) |
-| Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | pendiente | sin ficha todavía |
-| Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | pendiente | sin ficha todavía |
+| Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
+| Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
-Totales (formularios): 20 analizados · 0 no aplicables · 25 pendientes.
+Totales (formularios): 25 analizados · 0 no aplicables · 20 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
@@ -173,6 +173,11 @@ Comportamientos sospechosos detectados al analizar el código de RC1. Son hallaz
 | H-EXP-51 | Un error en `Form_Open` o en `CmdSalir_Click` cierra Access entero fuera de desarrollo; tras un fallo de `EVE` el menú se abre igualmente y, si `m_ObjEntorno` ya existía, no se reintenta `EVE` (el rol podría quedar sin asignar). | `Form_Form0BDOpciones.cls:35, 232, 280-282`; `Form_frmSplash.cls:61` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) | a verificar |
 | H-EXP-52 | `AbrirAyuda` calcula el PDF de cada formulario y la línea siguiente lo sobrescribe con el PDF general: la ayuda no depende del formulario; cada apertura del menú recalcula las seis colecciones de tareas. | `FUNCIONES UTILES.bas:3094-3095, 4000-4006`; `Form_Form0BDOpciones.cls:238` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) | a verificar |
 | H-EXP-53 | Tareas: la apertura preselecciona la fila 3 sin considerar nunca los tipos 4 y 6; `ListaTipoTareas_Click` usa `On Error Resume Next` (errores de `Filtrar` silenciados) y la bandeja solo se refresca si `Registrar` detecta un cambio de estado o de `NecesitaCodS4H`. | `Form_FormTareas.cls:280, 314, 371-372`; `ExpedienteOperaciones.cls:542-551` | [Form_FormTareas](formularios/Form_FormTareas.md) | a verificar |
+| H-EXP-54 | `Form_Open` de las opciones de técnicos no asigna `Cancel` si falla (el menú queda abierto sin entorno); `OpenArgs "SoloLectura"` se compara con «Sololectura» y solo funciona porque `Option Compare Database` no distingue mayúsculas. | `Form_Form0BDOpcionesTecnicos.cls:69, 146-155`; `Form_FormExpedientesGestion.cls:2910` | [Form_Form0BDOpcionesTecnicos](formularios/Form_Form0BDOpcionesTecnicos.md) | a verificar |
+| H-EXP-55 | La relación opción-formulario del gestor de entidades está escrita dos veces (`ResolverFormDestino` y `Entorno.OtrasOpcionesFormularios`, esta última solo usada en pruebas); `p_OpenArgs` siempre queda vacío; el gestor se cierra aunque el panel HTML falle o niegue el acceso por rol. | `Form0BDGestorEntidadesLogic.bas:10, 12-37`; `Entorno.cls:715`; `Form_Form0BDGestorEntidades.cls:72-76`; `E2EColaHtmlSnapshot.bas:75-79` | [Form_Form0BDGestorEntidades](formularios/Form_Form0BDGestorEntidades.md) | a verificar |
+| H-EXP-56 | `Form_Formulario1` contiene credenciales y configuración de un proyecto Firebase en claro (tratar como expuestas), inyección de JavaScript por texto sin escapar, y está huérfano: nada en `src` lo abre. | `Form_Formulario1.cls:23-33, 30, 46-52, 85` | [Form_Formulario1](formularios/Form_Formulario1.md) | a verificar |
+| H-EXP-57 | `Form_FormModificado` solo edita modificados existentes (el alta está en la pestaña): la comprobación de fecha de firma repetida no cubre informar la firma por primera vez, no hay transacción (si falla `RegistrarUltimoCambio` el modificado ya quedó guardado) y `Registrar` no comprueba `EOF` antes de `Edit`. | `ExpedienteModificadoOperaciones.cls:48-49, 64-66, 83-87`; `Form_FormExpedienteModificados.cls:61-110` | [Form_FormModificado](formularios/Form_FormModificado.md) | a verificar |
+| H-EXP-58 | `frmSplash` abre `Form0BDOpciones` aunque `EVE` falle; el argumento `/dev` se usa también como identificador de usuario en `EVE`, por lo que arrancar con `/dev` podría fallar; nada en `src` abre `frmSplash` (probable formulario de inicio o macro). | `Form_frmSplash.cls:13, 44-50, 61`; `Variables Globales.bas:348-358, 372-375` | [Form_frmSplash](formularios/Form_frmSplash.md) | a verificar |
 
 ## Método del recuento
 
