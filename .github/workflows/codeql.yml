@@ -13,7 +13,9 @@ permissions:
   contents: read
 
 jobs:
-  codeql:
+  # The id is not `codeql`: that name is the required job of ci.yml (the caller), and the canon
+  # workflow-policy gate matches required names by job id. The check name stays `codeql`.
+  analyze:
     name: codeql
     runs-on: ubuntu-24.04
     timeout-minutes: 20
