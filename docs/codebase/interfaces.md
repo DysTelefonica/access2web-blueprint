@@ -132,6 +132,8 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/release-preflight.sh` | Tool | `release.yml::preflight` | Verifica identidad del tag. |
 | `scripts/require-ci-success.sh` | Tool | `release.yml::preflight` | Exige CI verde en el SHA. |
 | `scripts/quality_report.py` | Tool | `ci.yml::quality` (step final) | Renderiza el quality report a markdown. |
+| `scripts/quality_policy.py` | Tool | los gates de calidad (aún ninguno; llegan por tramos de #1126) | Carga y valida `quality-policy.json` (DQH 2.2): sujetos y techos por puerta, solo las puertas que BP usa. |
+| `scripts/policy_time.py` | Tool | los gates de calidad (aún ninguno) | Analiza `--policy-date`: la fecha es una entrada explícita, nunca estado oculto del gate. |
 | `scripts/mutation_shards.py` | Tool | `release.yml::mutation` | Reparte mutantes en 10 tramos deterministas. |
 | `scripts/setup-staging.ps1` | Tool | Local (desarrollador) | Pull de `data/staging/<app>/` desde R2. |
 | `scripts/sync-to-r2.ps1` | Tool | Local (desarrollador) | Sube binarios a R2. |
