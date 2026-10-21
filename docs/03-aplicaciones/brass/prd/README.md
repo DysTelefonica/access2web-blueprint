@@ -39,9 +39,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Form_Form0BDInformes | src/forms/Form_Form0BDInformes.cls | 107 | 21 | 16 | igual | pendiente | — |
-| Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 175 | 38 | 25 | igual | pendiente | — |
-| Form_Form0BDOpcionesOtras | src/forms/Form_Form0BDOpcionesOtras.cls | 144 | 40 | 29 | igual | pendiente | — |
+| Form_Form0BDInformes | src/forms/Form_Form0BDInformes.cls | 107 | 21 | 16 | igual | analizado | [formularios/Form_Form0BDInformes.md](formularios/Form_Form0BDInformes.md) |
+| Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 175 | 38 | 25 | igual | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
+| Form_Form0BDOpcionesOtras | src/forms/Form_Form0BDOpcionesOtras.cls | 144 | 40 | 29 | igual | analizado | [formularios/Form_Form0BDOpcionesOtras.md](formularios/Form_Form0BDOpcionesOtras.md) |
 | Form_FormActividadAlta | src/forms/Form_FormActividadAlta.cls | 251 | 38 | 7 | igual | pendiente | — |
 | Form_FormActividadDeEventoPorLotes | src/forms/Form_FormActividadDeEventoPorLotes.cls | 383 | 31 | 10 | igual | pendiente | — |
 | Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
 
-Totales: 0 analizados · 0 no aplicables · 131 pendientes.
+Totales: 3 analizados · 0 no aplicables · 128 pendientes.
 
 ## Discrepancias abiertas
 
