@@ -785,6 +785,20 @@ def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> 
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
 
+def test_workflow_policy_gate_runs_the_canon_in_quality(workflow: dict) -> None:
+    """BP#1040 (B3a): the canon workflow-policy gate runs next to the local `workflow gate`.
+
+    It is scoped to `ci.yml` and the required-jobs policy, as the adoption contract declares.
+    """
+    steps = [s for s in workflow["jobs"]["quality"]["steps"] if s.get("name") == "workflow policy"]
+    assert len(steps) == 1, "quality must have exactly one `workflow policy` step"
+    assert steps[0]["run"] == (
+        "python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "
+        "--workflow .github/workflows/ci.yml --base-branch main "
+        "--required-jobs .github/required-jobs-policy.json"
+    )
+
+
 def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
