@@ -12,7 +12,7 @@ Contenedor de la gestión de vídeos de ayuda: un árbol ActiveX (`MSComctlLib.T
 | `Form_FormMenuPrincipalCalidad` | `SUBMENU1_Click`, mismo patrón | `Form_FormMenuPrincipalCalidad.cls:271-278` |
 | `EliminarNodo`, `CrearNodo` | llaman a `Form_FormVideosGestion.Arbol_NodeClick` tras modificar el árbol | `Funciones Genreales.bas:2687, 2732` |
 
-Abre en `FormDetalle` los subformularios [Form_FormVideosGestionArbolAplicacion](Form_FormVideosGestionArbolAplicacion.md) (`:56-57`) y `Form_FormVideosGestionArbolVideo` (`:62-63`).
+Abre en `FormDetalle` los subformularios [Form_FormVideosGestionArbolAplicacion](Form_FormVideosGestionArbolAplicacion.md) (`:56-57`) y [Form_FormVideosGestionArbolVideo](Form_FormVideosGestionArbolVideo.md) (`:62-63`).
 
 Estado compartido (globales de `Variables Globales.bas`): `m_ObjAplicacionActiva` (`:101`), `m_ObjVideoActivo` (`:102`) y `NodoActivo` (`:103`). Los subformularios leen las dos primeras.
 
