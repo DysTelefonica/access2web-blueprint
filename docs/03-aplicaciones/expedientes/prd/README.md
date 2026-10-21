@@ -104,7 +104,12 @@ Fichas de clase (`clases/`), una por objeto, con el mismo rigor que las de formu
 - [ExpedienteDatosAGEDY](clases/ExpedienteDatosAGEDY.md): sin uso en RC1.
 - [ExpedienteAntiguo](clases/ExpedienteAntiguo.md).
 
-El resto de clases y de módulos sin mención se cubre en los siguientes tramos de la cadena de #1073.
+- [ExpedientePECAL](clases/ExpedientePECAL.md), [ExpedienteRAC](clases/ExpedienteRAC.md), [ExpedienteCodigoCompra](clases/ExpedienteCodigoCompra.md), [ExpedienteBusquedaTecnica](clases/ExpedienteBusquedaTecnica.md) y [WebSocket](clases/WebSocket.md) (sin uso en RC1).
+
+Fichas de módulo (`modulos/`):
+
+- [Copiar y extender entidades](modulos/funciones-utiles-copiar-entidades.md) (`FUNCIONES UTILES.bas`): no estaba en el PRD; incluye un posible defecto grave en `CopiarSuministradores`.
+- [E2EFamilyExportHelper](modulos/E2EFamilyExportHelper.md), [modRealineacionCache](modulos/modRealineacionCache.md) y [modResponsableFiltroHelper](modulos/modResponsableFiltroHelper.md).
 
 ## Delta frente al estudio previo
 
