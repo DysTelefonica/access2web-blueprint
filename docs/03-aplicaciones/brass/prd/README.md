@@ -105,8 +105,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormPlanificacionCambioIDEvento | src/forms/Form_FormPlanificacionCambioIDEvento.cls | 282 | 31 | 6 | igual | analizado | [formularios/Form_FormPlanificacionCambioIDEvento.md](formularios/Form_FormPlanificacionCambioIDEvento.md) |
 | Form_FormPlanificacionCierre | src/forms/Form_FormPlanificacionCierre.cls | 242 | 44 | 8 | igual | analizado | [formularios/Form_FormPlanificacionCierre.md](formularios/Form_FormPlanificacionCierre.md) |
 | Form_FormPlanificacionEdicionEquipo | src/forms/Form_FormPlanificacionEdicionEquipo.cls | 287 | 22 | 7 | igual | analizado | [formularios/Form_FormPlanificacionEdicionEquipo.md](formularios/Form_FormPlanificacionEdicionEquipo.md) |
-| Form_FormPlanificacionEquipos | src/forms/Form_FormPlanificacionEquipos.cls | 862 | 38 | 25 | igual | pendiente | — |
-| Form_FormPlanificacionGestion | src/forms/Form_FormPlanificacionGestion.cls | 955 | 46 | 19 | igual | pendiente | — |
+| Form_FormPlanificacionEquipos | src/forms/Form_FormPlanificacionEquipos.cls | 862 | 38 | 25 | igual | analizado | [formularios/Form_FormPlanificacionEquipos.md](formularios/Form_FormPlanificacionEquipos.md) |
+| Form_FormPlanificacionGestion | src/forms/Form_FormPlanificacionGestion.cls | 955 | 46 | 19 | igual | analizado | [formularios/Form_FormPlanificacionGestion.md](formularios/Form_FormPlanificacionGestion.md) |
 | Form_FormPlanificacionReprogramacion | src/forms/Form_FormPlanificacionReprogramacion.cls | 278 | 47 | 11 | igual | pendiente | — |
 | Form_FormPlanificacionesBusqueda | src/forms/Form_FormPlanificacionesBusqueda.cls | 1058 | 52 | 32 | igual | pendiente | — |
 | Form_FormSubContratacionAlta | src/forms/Form_FormSubContratacionAlta.cls | 161 | 30 | 4 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 105 analizados · 5 no aplicables · 21 pendientes.
+Totales: 107 analizados · 5 no aplicables · 19 pendientes.
 
 ## Discrepancias abiertas
 
