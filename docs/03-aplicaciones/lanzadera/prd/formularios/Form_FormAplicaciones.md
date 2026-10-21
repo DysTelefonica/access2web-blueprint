@@ -14,13 +14,13 @@ Contenedor del catálogo de aplicaciones: tres pestañas dibujadas con rectángu
 
 El menú principal que se abre depende del rol del usuario tras el login (`Variables Globales.bas:724-736`). Al cargarse, los tres menús llaman a su `MENU1_Click` y después fuerzan en el subformulario el listado [FormAplicacionesFueraOficina](Form_FormAplicacionesFueraOficina.md) con la pestaña 1 resaltada (`Form_FormMenuPrincipalAdmin.cls:52-70`, `Form_FormMenuPrincipalCalidad.cls:44-64`, `Form_FormMenuPrincipalUsuario.cls:43-59`).
 
-Abre, dentro de `FormDetalle`: `FormAplicacionesFueraOficina`, [FormAplicacionesOficina](Form_FormAplicacionesOficina.md) y [FormAplicacionesPrueba](Form_FormAplicacionesPrueba.md).
+Abre, dentro de `FormDetalle`: [FormAplicacionesFueraOficina](Form_FormAplicacionesFueraOficina.md), [FormAplicacionesOficina](Form_FormAplicacionesOficina.md) y [FormAplicacionesPrueba](Form_FormAplicacionesPrueba.md).
 
 ## Controles y eventos
 
 | Control | Tipo | Evento y handler | Qué hace | Evidencia |
 |---|---|---|---|---|
-| `MENU1` / `lblMenu1` (rótulo de «fuera de la oficina») | rectángulo / etiqueta | `OnClick` → `MENU1_Click` (pública) | Carga `FormAplicacionesFueraOficina` en `FormDetalle` si no estaba | `:39-50`, `.form.txt:247-248, 288-291` |
+| `MENU1` / `lblMenu1` (rótulo de «fuera de la oficina») | rectángulo / etiqueta | `OnClick` → `MENU1_Click` (pública) | Carga [FormAplicacionesFueraOficina](Form_FormAplicacionesFueraOficina.md) en `FormDetalle` si no estaba | `:39-50`, `.form.txt:247-248, 288-291` |
 | `MENU2` / `lblMenu2` («Solo Oficina») | rectángulo / etiqueta | `OnClick` → `MENU2_Click` (pública) | Carga `FormAplicacionesOficina` | `:51-62`, `.form.txt:314-315, 357-360` |
 | `MENU3` / `lblMenu3` («En Pruebas») | rectángulo / etiqueta | `OnClick` → `MENU3_Click` (pública) | Carga `FormAplicacionesPrueba` | `:63-74`, `.form.txt:481-482, 523-526` |
 | `MENU1`-`MENU3`, `lblMenu1`-`lblMenu3`, `IND1` | rectángulos / etiquetas | `OnMouseMove` | Resaltan la pestaña bajo el ratón: muestran su `IND` y le dan `ColorMenuActivado`; apagan las otras dos | `:75-156` |
@@ -64,7 +64,7 @@ Sin acceso a datos: no requiere adaptación para PostgreSQL. Ver `../coexistenci
 
 **Posibles defectos (sin corregir, a verificar):**
 
-- Al cargar, los menús principales llaman a `MENU1_Click` (que puede elegir la pestaña de oficina por la última aplicación) y justo después fuerzan `FormAplicacionesFueraOficina` y la pestaña 1 (`Form_FormMenuPrincipalAdmin.cls:52-70`): la preferencia por última aplicación quedaría anulada en la apertura.
+- Al cargar, los menús principales llaman a `MENU1_Click` (que puede elegir la pestaña de oficina por la última aplicación) y justo después fuerzan [FormAplicacionesFueraOficina](Form_FormAplicacionesFueraOficina.md) y la pestaña 1 (`Form_FormMenuPrincipalAdmin.cls:52-70`): la preferencia por última aplicación quedaría anulada en la apertura.
 - `AllowEdits` se trata de forma opuesta en `MENU1_Click` (`:41, 45`) y en `MENU2_Click`/`MENU3_Click` (`:53, 57`, `:65, 69`).
 - `On Error Resume Next` en los tres cambios de pestaña oculta cualquier error (`:40, 52, 64`).
 - `IND1` declara `OnMouseMove` y tiene handler (`.form.txt:268`, `:101-104`); `IND2` e `IND3` no, así que el resaltado se pierde al pasar sobre ellos.
