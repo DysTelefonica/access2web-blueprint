@@ -61,18 +61,18 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_frmVerLogCambios | src/forms/Form_frmVerLogCambios.cls | 187 | 26 | 10 | igual | analizado | [formularios/Form_frmVerLogCambios.md](formularios/Form_frmVerLogCambios.md) |
 | Form_frmVerLogErrores | src/forms/Form_frmVerLogErrores.cls | 183 | 25 | 10 | igual | analizado | [formularios/Form_frmVerLogErrores.md](formularios/Form_frmVerLogErrores.md) |
 | Form_frmWebVisor | src/forms/Form_frmWebVisor.cls | 426 | 21 | 15 | igual | analizado | [formularios/Form_frmWebVisor.md](formularios/Form_frmWebVisor.md) |
-| Form_subfrmDatosCDCASUB_AprobacionSuministrador | src/forms/Form_subfrmDatosCDCASUB_AprobacionSuministrador.cls | 198 | 58 | 13 | distinto | pendiente | — |
-| Form_subfrmDatosCDCASUB_DecisionFinal | src/forms/Form_subfrmDatosCDCASUB_DecisionFinal.cls | 78 | 27 | 3 | distinto | pendiente | — |
-| Form_subfrmDatosCDCASUB_DictamenRAC | src/forms/Form_subfrmDatosCDCASUB_DictamenRAC.cls | 133 | 30 | 5 | igual | pendiente | — |
-| Form_subfrmDatosCDCASUB_Generales | src/forms/Form_subfrmDatosCDCASUB_Generales.cls | 205 | 37 | 6 | igual | pendiente | — |
-| Form_subfrmDatosCDCASUB_Impacto | src/forms/Form_subfrmDatosCDCASUB_Impacto.cls | 99 | 67 | 3 | igual | pendiente | — |
-| Form_subfrmDatosCDCASUB_Propuesta | src/forms/Form_subfrmDatosCDCASUB_Propuesta.cls | 27 | 31 | 3 | igual | pendiente | — |
-| Form_subfrmDatosCDCA_AprobacionSuministrador | src/forms/Form_subfrmDatosCDCA_AprobacionSuministrador.cls | 224 | 58 | 13 | distinto | pendiente | — |
-| Form_subfrmDatosCDCA_DecisionFinal | src/forms/Form_subfrmDatosCDCA_DecisionFinal.cls | 99 | 27 | 3 | distinto | pendiente | — |
-| Form_subfrmDatosCDCA_DictamenRAC | src/forms/Form_subfrmDatosCDCA_DictamenRAC.cls | 120 | 25 | 5 | distinto | pendiente | — |
-| Form_subfrmDatosCDCA_Generales | src/forms/Form_subfrmDatosCDCA_Generales.cls | 209 | 35 | 6 | igual | pendiente | — |
-| Form_subfrmDatosCDCA_Impacto | src/forms/Form_subfrmDatosCDCA_Impacto.cls | 129 | 67 | 3 | igual | pendiente | — |
-| Form_subfrmDatosCDCA_Propuesta | src/forms/Form_subfrmDatosCDCA_Propuesta.cls | 56 | 31 | 3 | igual | pendiente | — |
+| Form_subfrmDatosCDCASUB_AprobacionSuministrador | src/forms/Form_subfrmDatosCDCASUB_AprobacionSuministrador.cls | 198 | 58 | 13 | distinto | analizado | [formularios/Form_subfrmDatosCDCASUB.md](formularios/Form_subfrmDatosCDCASUB.md) |
+| Form_subfrmDatosCDCASUB_DecisionFinal | src/forms/Form_subfrmDatosCDCASUB_DecisionFinal.cls | 78 | 27 | 3 | distinto | analizado | [formularios/Form_subfrmDatosCDCASUB.md](formularios/Form_subfrmDatosCDCASUB.md) |
+| Form_subfrmDatosCDCASUB_DictamenRAC | src/forms/Form_subfrmDatosCDCASUB_DictamenRAC.cls | 133 | 30 | 5 | igual | analizado | [formularios/Form_subfrmDatosCDCASUB.md](formularios/Form_subfrmDatosCDCASUB.md) |
+| Form_subfrmDatosCDCASUB_Generales | src/forms/Form_subfrmDatosCDCASUB_Generales.cls | 205 | 37 | 6 | igual | analizado | [formularios/Form_subfrmDatosCDCASUB.md](formularios/Form_subfrmDatosCDCASUB.md) |
+| Form_subfrmDatosCDCASUB_Impacto | src/forms/Form_subfrmDatosCDCASUB_Impacto.cls | 99 | 67 | 3 | igual | analizado | [formularios/Form_subfrmDatosCDCASUB.md](formularios/Form_subfrmDatosCDCASUB.md) |
+| Form_subfrmDatosCDCASUB_Propuesta | src/forms/Form_subfrmDatosCDCASUB_Propuesta.cls | 27 | 31 | 3 | igual | analizado | [formularios/Form_subfrmDatosCDCASUB.md](formularios/Form_subfrmDatosCDCASUB.md) |
+| Form_subfrmDatosCDCA_AprobacionSuministrador | src/forms/Form_subfrmDatosCDCA_AprobacionSuministrador.cls | 224 | 58 | 13 | distinto | analizado | [formularios/Form_subfrmDatosCDCA.md](formularios/Form_subfrmDatosCDCA.md) |
+| Form_subfrmDatosCDCA_DecisionFinal | src/forms/Form_subfrmDatosCDCA_DecisionFinal.cls | 99 | 27 | 3 | distinto | analizado | [formularios/Form_subfrmDatosCDCA.md](formularios/Form_subfrmDatosCDCA.md) |
+| Form_subfrmDatosCDCA_DictamenRAC | src/forms/Form_subfrmDatosCDCA_DictamenRAC.cls | 120 | 25 | 5 | distinto | analizado | [formularios/Form_subfrmDatosCDCA.md](formularios/Form_subfrmDatosCDCA.md) |
+| Form_subfrmDatosCDCA_Generales | src/forms/Form_subfrmDatosCDCA_Generales.cls | 209 | 35 | 6 | igual | analizado | [formularios/Form_subfrmDatosCDCA.md](formularios/Form_subfrmDatosCDCA.md) |
+| Form_subfrmDatosCDCA_Impacto | src/forms/Form_subfrmDatosCDCA_Impacto.cls | 129 | 67 | 3 | igual | analizado | [formularios/Form_subfrmDatosCDCA.md](formularios/Form_subfrmDatosCDCA.md) |
+| Form_subfrmDatosCDCA_Propuesta | src/forms/Form_subfrmDatosCDCA_Propuesta.cls | 56 | 31 | 3 | igual | analizado | [formularios/Form_subfrmDatosCDCA.md](formularios/Form_subfrmDatosCDCA.md) |
 | Form_subfrmDatosPC_AprobacionSuministrador | src/forms/Form_subfrmDatosPC_AprobacionSuministrador.cls | 150 | 25 | 7 | distinto | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
 | Form_subfrmDatosPC_DecisionFinal | src/forms/Form_subfrmDatosPC_DecisionFinal.cls | 122 | 32 | 3 | distinto | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
 | Form_subfrmDatosPC_DictamenRAC | src/forms/Form_subfrmDatosPC_DictamenRAC.cls | 122 | 25 | 5 | igual | analizado | [formularios/Form_subfrmDatosPC.md](formularios/Form_subfrmDatosPC.md) |
@@ -183,7 +183,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | WebVisorCacheServicio | src/classes/WebVisorCacheServicio.cls | 180 | — | 9 | distinto | pendiente | — |
 | WorkflowServicio | src/classes/WorkflowServicio.cls | 4160 | — | 82 | distinto | pendiente | — |
 
-Totales: 26 analizados · 0 no aplicables · 105 pendientes.
+Totales: 38 analizados · 0 no aplicables · 93 pendientes.
 
 ## Discrepancias abiertas
 
