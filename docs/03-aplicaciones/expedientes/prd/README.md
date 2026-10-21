@@ -1,6 +1,6 @@
 # PRD — Expedientes
 
-> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 32 de 45.
+> **Estado:** en curso · fases 0 (fijación) y 1 (inventario) del [roadmap](../../../07-migracion/roadmap-descubrimiento-prd.md) cerradas; fase 2 (formularios) iniciada con 33 de 45.
 
 | Campo | Valor |
 |---|---|
@@ -65,7 +65,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormLugarEjecucionGestion | formulario | src/forms/Form_FormLugarEjecucionGestion.cls | 416 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormModificado | formulario | src/forms/Form_FormModificado.cls | 211 | 27 | 6 | distinto | analizado | [formularios/Form_FormModificado.md](formularios/Form_FormModificado.md) |
 | Form_FormOficinaPrograma | formulario | src/forms/Form_FormOficinaPrograma.cls | 197 | 23 | 6 | distinto | analizado | [formularios/Form_FormOficinaPrograma.md](formularios/Form_FormOficinaPrograma.md) |
-| Form_FormOficinasProgramaGestion | formulario | src/forms/Form_FormOficinasProgramaGestion.cls | 425 | 23 | 14 | distinto | pendiente | sin ficha todavía |
+| Form_FormOficinasProgramaGestion | formulario | src/forms/Form_FormOficinasProgramaGestion.cls | 425 | 23 | 14 | distinto | analizado | [formularios/Form_FormOficinasProgramaGestion.md](formularios/Form_FormOficinasProgramaGestion.md) |
 | Form_FormOrganoContratacion | formulario | src/forms/Form_FormOrganoContratacion.cls | 205 | 23 | 6 | distinto | pendiente | sin ficha todavía |
 | Form_FormOrganoContratacionGestion | formulario | src/forms/Form_FormOrganoContratacionGestion.cls | 427 | 23 | 14 | distinto | pendiente | sin ficha todavía |
 | Form_FormPECAL | formulario | src/forms/Form_FormPECAL.cls | 197 | 23 | 6 | distinto | pendiente | sin ficha todavía |
@@ -78,7 +78,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Formulario1 | formulario | src/forms/Form_Formulario1.cls | 89 | 9 | 5 | distinto | analizado | [formularios/Form_Formulario1.md](formularios/Form_Formulario1.md) |
 | Form_frmSplash | formulario | src/forms/Form_frmSplash.cls | 63 | 13 | 2 | distinto | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
-Totales (formularios): 32 analizados · 0 no aplicables · 13 pendientes.
+Totales (formularios): 33 analizados · 0 no aplicables · 12 pendientes.
 Totales (controles `Begin`): 1 276 · procedimientos: 618 · líneas de `.cls`: 20 923.
 
 ### Formularios retirados respecto al snapshot
