@@ -30,8 +30,10 @@ TREE_GATES = ("check_complexity", "check_dry", "check_mutation_sites")
 
 
 def _run(gate: str, root: Path) -> int:
+    # DQH 2.2: check_complexity requires an explicit policy date.
+    dated = ["--policy-date", "2026-10-21"] if gate == "check_complexity" else []
     return subprocess.run(
-        [sys.executable, str(SCRIPTS / f"{gate}.py"), "--root", str(root)],
+        [sys.executable, str(SCRIPTS / f"{gate}.py"), "--root", str(root), *dated],
         capture_output=True,
         text=True,
     ).returncode

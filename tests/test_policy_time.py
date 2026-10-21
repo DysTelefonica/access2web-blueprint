@@ -29,3 +29,10 @@ def test_policy_date_parser_accepts_only_iso_calendar_dates() -> None:
     for invalid in ("", "2026-8-12", "12/08/2026", "2026-02-30"):
         with pytest.raises(module.PolicyTimeError):
             module.parse_policy_date(invalid)
+
+
+def test_complexity_gate_never_reads_the_wall_clock_implicitly() -> None:
+    # The other ratchet gates adopt policy_time in their own T6 pull requests.
+    source = (SCRIPTS / "check_complexity.py").read_text(encoding="utf-8")
+    assert "date.today()" not in source
+    assert "add_policy_date_argument(parser)" in source
