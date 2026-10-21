@@ -1676,7 +1676,7 @@ class GovernedMergeDocTests(unittest.TestCase):
             repo = self._repo(tmp, "merge.yml", invoke_asset=True)
             text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
             self.assertIn("gh workflow run merge.yml", text)
-            self.assertIn("ningún agente mergea", text)
+            self.assertIn("por orden explícita y registrada de un mantenedor", text)
 
     def test_merge_lines_silent_without_wired_workflow(self):
         with tempfile.TemporaryDirectory() as tmp:

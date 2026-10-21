@@ -39,7 +39,7 @@ from check_push_compliance import (
     protected_branches,
     required_checks,
 )
-from github_rest import GitHubApiError, call, get_json
+from github_rest import MAX_PAGES, GitHubApiError, call, get_json
 
 CLOSING = re.compile(r"\b(closes|fixes|resolves)\s+#?\d+", re.IGNORECASE)
 WORKFLOWS_DIR = ".github/workflows/"
@@ -335,6 +335,56 @@ def _validate_one_workflow(repo: str, name: str,
     return _range_inputs(name, yaml_text)
 
 
+WORKFLOWS_PER_PAGE = 100  # el maximo que acepta el listado; el defecto (30) da falsos negativos (#966)
+WORKFLOWS_SHAPE = 'an object {"total_count": N, "workflows": [...]}, not a bare list'
+
+
+class WorkflowsListingError(Exception):
+    """El listado de workflows no sirve para validar ``post_merge_dispatch`` (#966).
+
+    El mensaje nombra la forma que espera el gate para que el operador sepa que
+    corregir. Lo captura ``validate_post_merge_dispatch`` y se vuelve un hallazgo
+    que bloquea el merge (exit 1), igual que un fallo de la llamada.
+    """
+
+    template = "the workflows listing could not be read: {0}"
+
+    def __init__(self, *details: object) -> None:
+        super().__init__(self.template.format(*details))
+
+
+class WorkflowsListingShapeError(WorkflowsListingError):
+    template = "workflows listing is not the API shape ({0}): expected {1} (#966)"
+
+
+class WorkflowsListingTooLongError(WorkflowsListingError):
+    template = ("the workflows listing of '{0}' exceeds {1} pages ({2} workflows); "
+                "refusing to continue")
+
+
+def list_workflows(repo: str) -> list[object]:
+    """Workflows del repo, todas las paginas y con la forma real de la API (#966).
+
+    ``GET repos/{repo}/actions/workflows`` responde un objeto ``{"total_count": N,
+    "workflows": [...]}``, no una lista; exigir la lista bloqueaba con
+    ``workflows listing is not the API shape: dict`` todo consumer con
+    ``post_merge_dispatch`` declarado. Pide ``per_page=100`` y sigue con ``page``
+    mientras la pagina venga llena, asi un repo con mas de 30 workflows no da un
+    falso «no existe». Sin la clave ``workflows``, o con un valor que no sea
+    lista, falla cerrado (HR-3) nombrando la forma esperada.
+    """
+    listed: list[object] = []
+    for page in range(1, MAX_PAGES + 1):
+        data = get_json(f"repos/{repo}/actions/workflows?per_page={WORKFLOWS_PER_PAGE}&page={page}")
+        items = data.get("workflows") if isinstance(data, dict) else None
+        if not isinstance(items, list):
+            raise WorkflowsListingShapeError(type(data).__name__, WORKFLOWS_SHAPE)
+        listed += items
+        if len(items) < WORKFLOWS_PER_PAGE:
+            return listed
+    raise WorkflowsListingTooLongError(repo, MAX_PAGES, MAX_PAGES * WORKFLOWS_PER_PAGE)
+
+
 def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str, bool], list[str]]:
     """Each name in ``names`` must exist as a workflow in this repo and declare
     ``workflow_dispatch``. Returns ``(resolved, findings)``; non-empty
@@ -352,11 +402,9 @@ def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str,
             "appear once in the contract")
     seen = sorted(set(names))
     try:
-        workflows = get_json(f"repos/{repo}/actions/workflows")
-    except GitHubApiError as exc:
+        workflows = list_workflows(repo)
+    except (GitHubApiError, WorkflowsListingError) as exc:
         return {}, [f"could not list the workflows to validate post_merge_dispatch: {exc}"]
-    if not isinstance(workflows, list):
-        return {}, [f"workflows listing is not the API shape: {type(workflows).__name__}"]
     by_basename: dict[str, str] = {}
     for item in workflows:
         if not isinstance(item, dict):

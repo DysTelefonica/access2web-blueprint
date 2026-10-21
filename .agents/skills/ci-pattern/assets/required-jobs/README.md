@@ -74,11 +74,47 @@ Marque `required` como check requerido en la protección de rama.
 | `events.<evento>.accepted_skips` | Sí | Jobs de `required_jobs` que ese evento puede saltar; `[]` si ninguno |
 | `dependencies` | No | Grafo `{downstream: [upstream, ...]}` para aceptar skips en cascada cuando algún upstream está en `accepted_skips` (#853) |
 | `docs_only_lane` | No | Lane condicional: `event`, `gate_job`, `output` y `skips`. El job `gate_job` debe publicar `output` = `"true"` en `event`; si no, esos skips no se aceptan (#857) |
+| `marker_lanes` | No | Lista de lanes condicionales con la misma forma que `docs_only_lane` más `equals` opcional: el lane acepta sus `skips` solo si el marker de `gate_job.output` vale exactamente `equals` en `event` (#863) |
 | `relaxation` | Solo al relajar | Objeto con `reason` y `reference`, ambos cadenas no vacías |
 
 `accepted_skips` es obligatoria en cada evento declarado. Un evento que la
 omite invalida la política completa, se ejecute o no ese evento. Una clave
 desconocida, en cualquier nivel, también la invalida.
+
+### Lanes condicionales: `docs_only_lane` y `marker_lanes`
+
+Un lane acepta un skip solo cuando un job de la propia ejecución prueba un marker.
+`equals` es `"true"` por defecto y `"false"` es el único otro valor admitido; el
+marker se compara como cadena exacta, de modo que un valor distinto, una salida
+ausente o otro evento dejan los skips sin declarar. Un lane nunca amplía
+`accepted_skips`. `marker_lanes` admite varios lanes a la vez; dos lanes no
+pueden compartir la firma `(event, gate_job, output)`, ni entre sí ni con
+`docs_only_lane`.
+
+Ejemplo, el carril `no_ui`: una PR que no toca UI puede saltar `e2e`, y solo `e2e`:
+
+```json
+{
+  "required_jobs": ["pr-gate", "lint", "typecheck", "e2e"],
+  "events": {
+    "pull_request": {"accepted_skips": []},
+    "push": {"accepted_skips": []}
+  },
+  "marker_lanes": [
+    {
+      "event": "pull_request",
+      "gate_job": "pr-gate",
+      "output": "ui_changed",
+      "equals": "false",
+      "skips": ["e2e"]
+    }
+  ]
+}
+```
+
+Con `ui_changed` igual a `"true"`, el skip de `e2e` sale por exit 1. Añadir un lane
+o un skip a un lane existente es una relajación frente a la base (tabla anterior)
+y exige `relaxation`. `tests/test_readme_marker_lanes.py` ejecuta este ejemplo.
 
 ## Comparación contra la rama base (HR-15)
 
@@ -196,6 +232,8 @@ descendente nunca se lee como la causa.
 | `tests/test_required_jobs.py` | Veredictos del gate, formas de `needs` y validación de la política |
 | `tests/test_base_comparison.py` | `--base-policy`: relajaciones, endurecimientos y campo `relaxation` |
 | `tests/test_docs_only_lane.py` | Lane docs-only: skips aceptados solo con el marcador `"true"` en el evento declarado, combinado con `dependencies` y su relajación contra la base (#857) |
+| `tests/test_marker_lane.py` | `marker_lanes`: lanes simultáneos, `equals` y su relajación contra la base (#863) |
+| `tests/test_readme_marker_lanes.py` | El ejemplo del carril `no_ui` de este README, ejecutado contra el gate (#973) |
 | `tests/test_readme_wiring.py` | Los pasos de este README, ejecutados con `bash` y `git` tal como están escritos |
 | `tests/test_parity.py` | `check_parity.py`: paridad, cada diferencia y cada construcción no soportada |
 

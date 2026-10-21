@@ -123,8 +123,12 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
             and "/runs" not in path and "/dispatches" not in path:
         # #817: lista de workflows para validar que cada nombre declarado en
         # `post_merge_dispatch` existe y declara `workflow_dispatch`. Sin
-        # `state["workflows"]`, devuelve el conjunto vacío.
-        return 200, state.get("workflows", []), {}
+        # `state["workflows"]`, devuelve el conjunto vacío. #966: la respuesta
+        # lleva la forma real de la API (`{"total_count", "workflows"}`) y se
+        # pagina con `page`/`per_page`; `state["workflows_body"]` sustituye el
+        # cuerpo entero para los dobles mal formados.
+        body = state.get("workflows_body")
+        return (200, body, {}) if body is not None else _workflows_page(state, query)
     if method == "GET" and "/contents/" in path:
         # #817: contenidos de un fichero del repo. La clave del fixture es la
         # ruta sin query (la API acepta `?ref=` y se ignora aquí).
@@ -163,6 +167,23 @@ def _route(method: str, path: str, query: dict, body: dict, state: dict, base: s
             return 200, override, {}
         return 200, {"state": "closed", "state_reason": "completed"}, {}
     return 404, {"message": "unsupported endpoint"}, {}
+
+
+def _workflows_page(state: dict, query: dict) -> tuple:
+    """Pagina del listado de workflows con la forma real de la API (#966).
+
+    `state["workflows"]` es el listado completo del repo (el doble del test) y el
+    corte lo decide la query `page`/`per_page` del cliente; `total_count` es el
+    tamaño de ese listado, como en `GET /repos/{repo}/actions/workflows`. Cada
+    query servida queda en `state["workflows_queries"]` para que el test pueda
+    fijar que se pide `per_page=100` y que se avanza de pagina.
+    """
+    items = state.get("workflows", [])
+    state.setdefault("workflows_queries", []).append(query)
+    per_page = int(query.get("per_page", ["30"])[0])
+    page = int(query.get("page", ["1"])[0])
+    start = max(page - 1, 0) * per_page
+    return 200, {"total_count": len(items), "workflows": items[start:start + per_page]}, {}
 
 
 def _pulls_page(state: dict, sha: str, query: dict, base: str) -> tuple:
