@@ -760,7 +760,7 @@ jobs:
           DATABASE_URL="$E2E_DATABASE_URL" PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
             alembic -c app/migrations/alembic.ini upgrade head
 
-      - name: Start the app and wait for /health
+      - name: Start the app and wait for the health check
         env:
           E2E_SECRET_KEY: e2e-smoke-test-key-not-a-real-secret
         run: |
