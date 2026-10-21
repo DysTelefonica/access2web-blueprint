@@ -614,6 +614,16 @@ jobs:
           python3 .agents/skills/ci-pattern/assets/docs-codeguide/check_docs_codeguide.py . \
             --docs-path docs/codebase \
             --code-root app/src/modules \
+            --code-glob "*.py" \
+            --code-root scripts \
+            --code-glob "*.py" \
+            --code-root data \
+            --code-glob "**/*.bas" \
+            --code-root app/src \
+            --code-glob "*.py" \
+            --code-root app/src/shared \
+            --code-glob "*.py" \
+            --code-root app/migrations \
             --code-glob "*.py"
 
   docs-links:
