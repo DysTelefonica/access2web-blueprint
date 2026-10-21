@@ -55,23 +55,23 @@ Cada columna de origen de las tablas locales del backend de Expedientes, con la 
 | `TbExpAGEDYS1` | 49 | 116 | 0 | histórica o auxiliar; comparte 3 de 49 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
 | `TbExpedientes` | 61 | 453 | 20 | cabecera y read-model | [cabecera](matriz-campos/cabecera.md#tbexpedientes) |
 | `TbExpedientes_antes` | 49 | 457 | 0 | histórica o auxiliar; comparte 3 de 49 columnas con `TbExpedientes`; pendiente de decisión de negocio | sin detalle por columna |
-| `TbExpedientesAnexos` | 3 | 710 | 3 | relación del expediente | tanda posterior |
-| `TbExpedientesAnualidades` | 11 | 174 | 5 | relación del expediente | tanda posterior |
-| `TbExpedientesCadenaContratacion` | 9 | 0 | 0 | relación del expediente | tanda posterior |
-| `TbExpedientesCodigoCompras` | 3 | 0 | 4 | relación del expediente | tanda posterior |
-| `TbExpedientesComerciales` | 3 | 333 | 5 | relación del expediente | tanda posterior |
+| `TbExpedientesAnexos` | 3 | 710 | 3 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesanexos) |
+| `TbExpedientesAnualidades` | 11 | 174 | 5 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesanualidades) |
+| `TbExpedientesCadenaContratacion` | 9 | 0 | 0 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientescadenacontratacion) |
+| `TbExpedientesCodigoCompras` | 3 | 0 | 4 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientescodigocompras) |
+| `TbExpedientesComerciales` | 3 | 333 | 5 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientescomerciales) |
 | `TbExpedientesConEntidades` | 21 | 451 | 7 | cabecera y read-model | [cabecera](matriz-campos/cabecera.md#tbexpedientesconentidades) |
-| `TbExpedientesCPVs` | 3 | 429 | 6 | relación del expediente | tanda posterior |
-| `TbExpedientesE2E` | 7 | 0 | 0 | relación del expediente | tanda posterior |
-| `TbExpedientesHitos` | 6 | 46 | 4 | relación del expediente | tanda posterior |
-| `TbExpedientesJefaturas` | 3 | 0 | 2 | relación del expediente | tanda posterior |
-| `TbExpedientesJuridicas` | 6 | 417 | 3 | relación del expediente | tanda posterior |
-| `TbExpedientesLugaresEjecucion` | 3 | 194 | 5 | relación del expediente | tanda posterior |
-| `TbExpedientesModificados` | 6 | 37 | 5 | relación del expediente | tanda posterior |
-| `TbExpedientesPECAL` | 3 | 366 | 5 | relación del expediente | tanda posterior |
-| `TbExpedientesRACS` | 3 | 193 | 4 | relación del expediente | tanda posterior |
-| `TbExpedientesResponsables` | 6 | 730 | 8 | relación del expediente | tanda posterior |
-| `TbExpedientesSuministradores` | 7 | 713 | 9 | relación del expediente | tanda posterior |
+| `TbExpedientesCPVs` | 3 | 429 | 6 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientescpvs) |
+| `TbExpedientesE2E` | 7 | 0 | 0 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientese2e) |
+| `TbExpedientesHitos` | 6 | 46 | 4 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedienteshitos) |
+| `TbExpedientesJefaturas` | 3 | 0 | 2 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesjefaturas) |
+| `TbExpedientesJuridicas` | 6 | 417 | 3 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesjuridicas) |
+| `TbExpedientesLugaresEjecucion` | 3 | 194 | 5 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedienteslugaresejecucion) |
+| `TbExpedientesModificados` | 6 | 37 | 5 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesmodificados) |
+| `TbExpedientesPECAL` | 3 | 366 | 5 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientespecal) |
+| `TbExpedientesRACS` | 3 | 193 | 4 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesracs) |
+| `TbExpedientesResponsables` | 6 | 730 | 8 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientesresponsables) |
+| `TbExpedientesSuministradores` | 7 | 713 | 9 | relación del expediente | [relaciones](matriz-campos/relaciones.md#tbexpedientessuministradores) |
 | `TbGradosClasificacion` | 3 | 5 | 5 | catálogo | tanda posterior |
 | `TbJefaturas` | 3 | 3 | 0 | catálogo | tanda posterior |
 | `TbJuridicas` | 4 | 17 | 2 | catálogo | tanda posterior |
@@ -86,4 +86,4 @@ Cada columna de origen de las tablas locales del backend de Expedientes, con la 
 
 ## Tandas de la matriz
 
-Esta tanda contiene la cabecera (`TbExpedientes` y `TbExpedientesConEntidades`). Siguen las relaciones del expediente, los catálogos, las tablas transversales, las tablas que solo `src` define (`TbE2ECola`, `TbE2EEnlaces`) y las vinculadas a otros backends. Las tablas históricas no tienen detalle por columna: el [ledger de la matriz de migración](../migration-matrix.md) las conserva hasta que negocio decida su disposición.
+Esta tanda añade las relaciones del expediente (16 tablas `TbExpedientes*` hijas). Siguen los catálogos, las tablas transversales, las que solo `src` define (`TbE2ECola`, `TbE2EEnlaces`) y las vinculadas a otros backends. Las tablas históricas no tienen detalle por columna: el [ledger de la matriz de migración](../migration-matrix.md) las conserva hasta que negocio decida su disposición.
