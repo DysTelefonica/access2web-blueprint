@@ -222,10 +222,17 @@ def test_envelope_is_bound_to_the_policy_and_its_date(tmp_path: Path) -> None:
     assert envelope["indicators"]["files_measured"] == 1
 
 
-def test_the_header_declares_the_canon_and_the_local_deviation() -> None:
-    header = (SCRIPTS_DIR / "check_mutation_sites.py").read_text(encoding="utf-8")[:2500]
+def test_the_header_declares_the_canon_and_only_its_data_as_deviation() -> None:
+    """The canon carries the docstring exclusion since team-skills#1008, so this copy does not.
+
+    A header that names a deviation which no longer exists is the silent drift this gate's
+    provenance line exists to prevent: the next reader would look for a difference that is not
+    there. Sliced to the header block, which ends well before the first function.
+    """
+    header = (SCRIPTS_DIR / "check_mutation_sites.py").read_text(encoding="utf-8")[:1200]
     assert "HARNESS-PROVENANCE: deterministic-quality-harness v2.2" in header
-    assert "_docstring_node_ids" in header, (
-        "the docstring exclusion is a declared local deviation until team-skills#999 "
-        "publishes it in the canon; the header must keep naming it"
+    assert "BASELINE" in header, "the tolerated site counts are BP data and stay declared as such"
+    assert "_docstring_node_ids" not in header, (
+        "the canon publishes the docstring exclusion (team-skills#1008); declaring it here as a "
+        "local deviation would claim a difference that no longer exists"
     )
