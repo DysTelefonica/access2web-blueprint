@@ -1,6 +1,6 @@
 # PRD — HPS
 
-> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 29 de 38.
+> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 31 de 38.
 
 | Campo | Valor |
 |---|---|
@@ -42,7 +42,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 279 | 24 | 8 | igual | analizada | [Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
 | Form_FormInicial | src/forms/Form_FormInicial.cls | 338 | 26 | 9 | igual | pendiente | — |
 | Form_FormInicial00Principal | src/forms/Form_FormInicial00Principal.cls | 150 | 22 | 5 | igual | analizada | [Form_FormInicial00Principal.md](formularios/Form_FormInicial00Principal.md) |
-| Form_FormInicial01Lateral | src/forms/Form_FormInicial01Lateral.cls | 495 | 27 | 18 | igual | pendiente | — |
+| Form_FormInicial01Lateral | src/forms/Form_FormInicial01Lateral.cls | 495 | 27 | 18 | igual | analizada | [Form_FormInicial01Lateral.md](formularios/Form_FormInicial01Lateral.md) |
 | Form_FormInicial02ConsultasPrincipal | src/forms/Form_FormInicial02ConsultasPrincipal.cls | 318 | 20 | 9 | igual | analizada | [Form_FormInicial02ConsultasPrincipal.md](formularios/Form_FormInicial02ConsultasPrincipal.md) |
 | Form_FormInicial03ConsultasContratistas | src/forms/Form_FormInicial03ConsultasContratistas.cls | 97 | 15 | 6 | igual | analizada | [Form_FormInicial03ConsultasContratistas.md](formularios/Form_FormInicial03ConsultasContratistas.md) |
 | Form_FormInicial03ConsultasDatos | src/forms/Form_FormInicial03ConsultasDatos.cls | 35 | 317 | 2 | igual | analizada | [Form_FormInicial03ConsultasDatos.md](formularios/Form_FormInicial03ConsultasDatos.md) |
@@ -54,7 +54,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormInicial03ConsultasNombre | src/forms/Form_FormInicial03ConsultasNombre.cls | 124 | 19 | 8 | igual | analizada | [Form_FormInicial03ConsultasNombre.md](formularios/Form_FormInicial03ConsultasNombre.md) |
 | Form_FormInicial03ConsultasProyectoAsignado | src/forms/Form_FormInicial03ConsultasProyectoAsignado.cls | 193 | 15 | 7 | igual | analizada | [Form_FormInicial03ConsultasProyectoAsignado.md](formularios/Form_FormInicial03ConsultasProyectoAsignado.md) |
 | Form_FormInicial05Configuracion | src/forms/Form_FormInicial05Configuracion.cls | 79 | 22 | 2 | igual | analizada | [Form_FormInicial05Configuracion.md](formularios/Form_FormInicial05Configuracion.md) |
-| Form_FormInicial06BusquedaGlobal | src/forms/Form_FormInicial06BusquedaGlobal.cls | 504 | 22 | 16 | igual | pendiente | — |
+| Form_FormInicial06BusquedaGlobal | src/forms/Form_FormInicial06BusquedaGlobal.cls | 504 | 22 | 16 | igual | analizada | [Form_FormInicial06BusquedaGlobal.md](formularios/Form_FormInicial06BusquedaGlobal.md) |
 | Form_FormInicial07UsuariosSICA | src/forms/Form_FormInicial07UsuariosSICA.cls | 236 | 24 | 9 | igual | analizada | [Form_FormInicial07UsuariosSICA.md](formularios/Form_FormInicial07UsuariosSICA.md) |
 | Form_FormInicial07UsuariosSICADatos | src/forms/Form_FormInicial07UsuariosSICADatos.cls | 40 | 48 | 3 | igual | analizada | [Form_FormInicial07UsuariosSICADatos.md](formularios/Form_FormInicial07UsuariosSICADatos.md) |
 | Form_FormInicial08UsuariosHistoricos | src/forms/Form_FormInicial08UsuariosHistoricos.cls | 225 | 20 | 8 | igual | analizada | [Form_FormInicial08UsuariosHistoricos.md](formularios/Form_FormInicial08UsuariosHistoricos.md) |
