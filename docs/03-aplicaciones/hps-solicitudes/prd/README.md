@@ -42,7 +42,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 407 | 33 | 13 | igual | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
 | Form_FormAdjuntaTraspasoONS | src/forms/Form_FormAdjuntaTraspasoONS.cls | 234 | 28 | 7 | igual | pendiente | — |
 | Form_FormAdjuntarExcelSolicitante | src/forms/Form_FormAdjuntarExcelSolicitante.cls | 215 | 28 | 7 | igual | pendiente | — |
-| Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | pendiente | — |
+| Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | analizado | [formularios/Form_FormAltaDatosSolicitante.md](formularios/Form_FormAltaDatosSolicitante.md) |
 | Form_FormCambioTipo | src/forms/Form_FormCambioTipo.cls | 107 | 26 | 4 | igual | pendiente | — |
 | Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | analizado | [formularios/Form_FormConfiguracion.md](formularios/Form_FormConfiguracion.md) |
 | Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | pendiente | — |
@@ -52,8 +52,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | pendiente | — |
 | Form_FormExpedienteDetalle | src/forms/Form_FormExpedienteDetalle.cls | 79 | 32 | 3 | igual | analizado | [formularios/Form_FormExpedienteDetalle.md](formularios/Form_FormExpedienteDetalle.md) |
 | Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 352 | 27 | 10 | igual | analizado | [formularios/Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
-| Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | pendiente | — |
-| Form_FormMotivosHPS | src/forms/Form_FormMotivosHPS.cls | 323 | 18 | 10 | igual | pendiente | — |
+| Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | analizado | [formularios/Form_FormMotivoHPS.md](formularios/Form_FormMotivoHPS.md) |
+| Form_FormMotivosHPS | src/forms/Form_FormMotivosHPS.cls | 323 | 18 | 10 | igual | analizado | [formularios/Form_FormMotivosHPS.md](formularios/Form_FormMotivosHPS.md) |
 | Form_FormPlantillasHTML | src/forms/Form_FormPlantillasHTML.cls | 181 | 17 | 7 | igual | pendiente | — |
 | Form_FormResponsable | src/forms/Form_FormResponsable.cls | 214 | 28 | 6 | igual | pendiente | — |
 | Form_FormResponsablesGestion | src/forms/Form_FormResponsablesGestion.cls | 392 | 28 | 13 | igual | pendiente | — |
@@ -124,7 +124,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
-Totales: 7 analizados · 0 no aplicables · 67 pendientes.
+Totales: 10 analizados · 0 no aplicables · 64 pendientes.
 
 
 
@@ -147,6 +147,19 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-11 | `HaHabidoCambios` exige una comparación manual por cada campo; añadir una propiedad sin agregar el `If <> Nz(...) Then` no marca el cambio, aunque se guarda si otra columna dispara `True`. | `Form_FormConfiguracion.cls:386-457` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 | H-HPS-S-12 | `Set m_ObjEntorno.Configuracion = Nothing` solo se invoca al guardar; `cmdSalir` deja la caché de `Configuracion` con la versión anterior en memoria. | `Form_FormConfiguracion.cls:13-15, 72` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 | H-HPS-S-13 | `ComandoRegistrar_Click` renueva la caché y emite `Modificado` solo en éxito; un fallo en `Registrar` deja al menú con la versión obsoleta en memoria y sin re-pintado. | `Form_FormConfiguracion.cls:72-78` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
+
+### Hallazgos del legado — tanda de AltaDatosSolicitante + motivos (H-HPS-S-23 a H-HPS-S-30)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-23 | `Form_FormAltaDatosSolicitante` queda compilado pero sin cablear: no hay lanzador en `src/`. | (no en `src/`) | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-24 | `ComandoRegistrar_Click` cierra `FormSolicitudAltaTraspaso` con `acSaveNo` y abre uno nuevo, descartando trabajo en curso sin aviso. | `Form_FormAltaDatosSolicitante.cls:372-377` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-25 | `ComandoRegistrar_Click` referencia `Err.Numbr`: el mensaje muestra «0» en lugar del código real. | `Form_FormAltaDatosSolicitante.cls:383` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-26 | `ComandoGenerarDNIValido` asigna un DNI/NIE sintético sin validar letra; puede persistirse. Hallazgo sensible fuera del lote. | `Form_FormAltaDatosSolicitante.cls:218-220, 292-296, 1870` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-27 | Rótulos heredados: `Caption` con una versión, `ComandoActualizar` («Contador»), `ComandoRegistrar` («Editar»). | `Form_FormAltaDatosSolicitante.cls:40, 603, 1870, 2047, 2125` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-28 | `MotivoHPS.EditarMotivo` ejecuta `UPDATE` en cuatro tablas sin transacción. Hallazgo sensible fuera del lote. | `MotivoHPS.cls:41-44, 180-182, 208-213` | [Form_FormMotivoHPS](formularios/Form_FormMotivoHPS.md) |
+| H-HPS-S-29 | `Form_FormMotivosHPS` queda compilado pero sin cablear: ningún lanzador en `src/`. | (no en `src/`) | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
+| H-HPS-S-30 | `EstablecerLista` activa `ComandoEditar` y `ComandoEliminar` al pintar; un doble clic aborta con «Seleccione una elemento de la lista» (typo). | `Form_FormMotivosHPS.cls:22-23, 91, 124` | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
 
 ## Discrepancias abiertas
 
