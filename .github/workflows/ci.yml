@@ -146,9 +146,14 @@ jobs:
         # .github/ISSUE_TEMPLATE/issue-canonical.yml). Sin la bandera, el gate solo
         # ejecuta las reglas 1..6; con ella, la regla 7 se aplica al cuerpo de la
         # issue consultada por la API en modo pr-event.
+        # --host-contract cablea la regla 3 del canon en su parte de QUIÉN
+        # (DysTelefonica/team-skills#998, BP#1330): de la clave `approvers` del
+        # contrato del host sale la lista de logins que pueden poner la etiqueta,
+        # y el gate la contrasta con el actor del último evento `labeled`. Sin la
+        # bandera el gate solo comprueba que la etiqueta esté puesta.
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" --required-sections scripts/required-sections.json
+        run: python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" --required-sections scripts/required-sections.json --host-contract .github/host-contract.json
 
       - name: walkthrough schema
         # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST

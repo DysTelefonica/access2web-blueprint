@@ -831,7 +831,8 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
     It needs `issues: read` (the job-level grant) and the runner token, so the
-    step gets both explicitly rather than inheriting a broader default.
+    step gets both explicitly rather than inheriting a broader default. Issue #1330:
+    `--host-contract` makes the gate check who applied `status:approved`.
     """
     job = workflow["jobs"]["pr-gate"]
     assert job["permissions"] == {"contents": "read", "issues": "read", "pull-requests": "read"}
@@ -840,7 +841,7 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     step = steps[0]
     assert step["run"] == (
         'python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" '
-        "--required-sections scripts/required-sections.json"
+        "--required-sections scripts/required-sections.json --host-contract .github/host-contract.json"
     )
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
