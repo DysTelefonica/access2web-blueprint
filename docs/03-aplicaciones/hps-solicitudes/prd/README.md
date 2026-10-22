@@ -124,9 +124,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
+
+
+
 Totales: 10 analizados · 0 no aplicables · 64 pendientes.
-
-
 
 ### Hallazgos del legado (fase 1)
 
@@ -148,7 +149,6 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-12 | `Set m_ObjEntorno.Configuracion = Nothing` solo se invoca al guardar; `cmdSalir` deja la caché de `Configuracion` con la versión anterior en memoria. | `Form_FormConfiguracion.cls:13-15, 72` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 | H-HPS-S-13 | `ComandoRegistrar_Click` renueva la caché y emite `Modificado` solo en éxito; un fallo en `Registrar` deja al menú con la versión obsoleta en memoria y sin re-pintado. | `Form_FormConfiguracion.cls:72-78` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 
-Totales: 0 analizados · 0 no aplicables · 74 pendientes.
 
 ### Hallazgos del legado — tanda del alta (H-HPS-S-14 a H-HPS-S-22)
 
