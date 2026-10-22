@@ -126,6 +126,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 Totales: 10 analizados · 0 no aplicables · 64 pendientes.
 
+
+
 ### Hallazgos del legado (fase 1)
 
 Comportamientos sospechosos detectados al analizar los formularios. No se corrigen, no generan issues, y cada uno queda **a verificar** en ejecución.
@@ -146,6 +148,8 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-12 | `Set m_ObjEntorno.Configuracion = Nothing` solo se invoca al guardar; `cmdSalir` deja la caché de `Configuracion` con la versión anterior en memoria. | `Form_FormConfiguracion.cls:13-15, 72` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 | H-HPS-S-13 | `ComandoRegistrar_Click` renueva la caché y emite `Modificado` solo en éxito; un fallo en `Registrar` deja al menú con la versión obsoleta en memoria y sin re-pintado. | `Form_FormConfiguracion.cls:72-78` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 
+Totales: 0 analizados · 0 no aplicables · 74 pendientes.
+
 ### Hallazgos del legado — tanda del alta (H-HPS-S-14 a H-HPS-S-22)
 
 | Id | Hallazgo | Evidencia | Ficha |
@@ -161,8 +165,6 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-22 | Los 38 `errores:` repiten «se ha producido el error n»; `ComandoEliminarExcelRecibido_Click` se identifica como `ComandoEliminarExcelEnviado_Click`. | `Form_FormSolicitudesAltaFechas.cls:703` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 
 > Nota: esta tanda arranca en `H-HPS-S-14` porque las dos tandas anteriores (`fichas-1` y `fichas-2`) ya publicaron `1..13`. Los identificadores quedan reservados en `9 hallazgos` por la propia numeración; el siguiente lote continúa con `H-HPS-S-23` y siguientes.
-
-
 ## Discrepancias abiertas
 
 | ID | Discrepancia | Evidencia | Estado |
