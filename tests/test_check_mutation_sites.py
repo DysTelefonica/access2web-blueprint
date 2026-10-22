@@ -22,8 +22,9 @@ the same AST except for the docstring. With the fix, the counter must
 return the same number for both.
 
 BP's copy of the canon is measured at an explicit policy date and its report is
-bound to ``quality-policy.json``, while the docstring exclusion above stays as a
-declared local deviation until the canon carries it (team-skills#999).
+bound to ``quality-policy.json``. The docstring exclusion above is not a local
+deviation: the canon carries it since team-skills#1008, so BP declares as local
+only its ``BASELINE``, which is data.
 
   1. ``--policy-date`` is mandatory: the ratchet never reads the wall clock.
   2. The envelope carries the policy date, the policy's ceilings, the subjects
