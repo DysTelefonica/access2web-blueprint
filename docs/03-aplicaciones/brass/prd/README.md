@@ -102,9 +102,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormPlanificacionAltaEquipo | src/forms/Form_FormPlanificacionAltaEquipo.cls | 86 | 21 | 3 | igual | analizado | [formularios/Form_FormPlanificacionAltaEquipo.md](formularios/Form_FormPlanificacionAltaEquipo.md) |
 | Form_FormPlanificacionAnexos | src/forms/Form_FormPlanificacionAnexos.cls | 351 | 25 | 7 | igual | analizado | [formularios/Form_FormPlanificacionAnexos.md](formularios/Form_FormPlanificacionAnexos.md) |
 | Form_FormPlanificacionCalendarios | src/forms/Form_FormPlanificacionCalendarios.cls | 200 | 18 | 4 | igual | analizado | [formularios/Form_FormPlanificacionCalendarios.md](formularios/Form_FormPlanificacionCalendarios.md) |
-| Form_FormPlanificacionCambioIDEvento | src/forms/Form_FormPlanificacionCambioIDEvento.cls | 282 | 31 | 6 | igual | pendiente | — |
-| Form_FormPlanificacionCierre | src/forms/Form_FormPlanificacionCierre.cls | 242 | 44 | 8 | igual | pendiente | — |
-| Form_FormPlanificacionEdicionEquipo | src/forms/Form_FormPlanificacionEdicionEquipo.cls | 287 | 22 | 7 | igual | pendiente | — |
+| Form_FormPlanificacionCambioIDEvento | src/forms/Form_FormPlanificacionCambioIDEvento.cls | 282 | 31 | 6 | igual | analizado | [formularios/Form_FormPlanificacionCambioIDEvento.md](formularios/Form_FormPlanificacionCambioIDEvento.md) |
+| Form_FormPlanificacionCierre | src/forms/Form_FormPlanificacionCierre.cls | 242 | 44 | 8 | igual | analizado | [formularios/Form_FormPlanificacionCierre.md](formularios/Form_FormPlanificacionCierre.md) |
+| Form_FormPlanificacionEdicionEquipo | src/forms/Form_FormPlanificacionEdicionEquipo.cls | 287 | 22 | 7 | igual | analizado | [formularios/Form_FormPlanificacionEdicionEquipo.md](formularios/Form_FormPlanificacionEdicionEquipo.md) |
 | Form_FormPlanificacionEquipos | src/forms/Form_FormPlanificacionEquipos.cls | 862 | 38 | 25 | igual | pendiente | — |
 | Form_FormPlanificacionGestion | src/forms/Form_FormPlanificacionGestion.cls | 955 | 46 | 19 | igual | pendiente | — |
 | Form_FormPlanificacionReprogramacion | src/forms/Form_FormPlanificacionReprogramacion.cls | 278 | 47 | 11 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 102 analizados · 5 no aplicables · 24 pendientes.
+Totales: 105 analizados · 5 no aplicables · 21 pendientes.
 
 ## Discrepancias abiertas
 
