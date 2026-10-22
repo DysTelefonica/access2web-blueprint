@@ -60,11 +60,11 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormSolicitudAlta | src/forms/Form_FormSolicitudAlta.cls | 130 | 24 | 4 | igual | analizado | [formularios/Form_FormSolicitudAlta.md](formularios/Form_FormSolicitudAlta.md) |
 | Form_FormSolicitudAltaTraspaso | src/forms/Form_FormSolicitudAltaTraspaso.cls | 142 | 25 | 5 | igual | pendiente | — |
 | Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | pendiente | — |
-| Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | pendiente | — |
+| Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | analizado | [formularios/Form_FormSolicitudRenovacionDatos.md](formularios/Form_FormSolicitudRenovacionDatos.md) |
 | Form_FormSolicitudRenovacionFechas | src/forms/Form_FormSolicitudRenovacionFechas.cls | 1652 | 82 | 40 | igual | pendiente | — |
 | Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | analizado | [formularios/Form_FormSolicitudesAltaFechas.md](formularios/Form_FormSolicitudesAltaFechas.md) |
 | Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | pendiente | — |
-| Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | pendiente | — |
+| Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | analizado | [formularios/Form_FormSolicitudesAltaTraspasoDatos.md](formularios/Form_FormSolicitudesAltaTraspasoDatos.md) |
 | Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | analizado | [formularios/Form_FormSolicitudesGestion.md](formularios/Form_FormSolicitudesGestion.md) |
 | Form_FormSolicitudesTraspasoFechas | src/forms/Form_FormSolicitudesTraspasoFechas.cls | 1166 | 56 | 29 | igual | pendiente | — |
 | Form_FormTareasTramitadorPendientes | src/forms/Form_FormTareasTramitadorPendientes.cls | 652 | 29 | 14 | igual | pendiente | — |
@@ -179,6 +179,19 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-41 | `txtBuscar_AfterUpdate` actúa sobre el resultado único sin pedir confirmación: una tecla abre el editor o elige la justificación y cierra el buscador. | `Form_frmBuscarJustificacion.cls:51-62` | [Form_frmBuscarJustificacion](formularios/Form_frmBuscarJustificacion.md) |
 
 > Nota: esta tanda arranca en `H-HPS-S-31` porque las fichas-1 y fichas-2 de esta cadena ya publicaron `1..13` y la cadena de `apap3` continúa con su propia numeración. Rango reservado para esta tanda: `H-HPS-S-31` a `H-HPS-S-41`.
+
+### Hallazgos del legado — formularios de datos de alta, traspaso y renovación (H-HPS-S-50 a H-HPS-S-57)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-50 | `Err.Numbr` deja el aviso de `ComandoActualizar_Click` sin código, como ya ocurría en otros dos formularios de la cadena. | `Form_FormSolicitudRenovacionDatos.cls:289` | [Form_FormSolicitudRenovacionDatos](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| H-HPS-S-51 | `RellenarObjeto` escribe `IDUsuarioHPS` dos veces: la asignación desde la sesión se anula con la del control, que puede estar vacío. | `Form_FormSolicitudRenovacionDatos.cls:640-643` | [Form_FormSolicitudRenovacionDatos](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| H-HPS-S-52 | Tras guardar se cierra `FormSolicitudAlta`, formulario de otro flujo, y no el contenedor de renovación. | `Form_FormSolicitudRenovacionDatos.cls:729-731` | [Form_FormSolicitudRenovacionDatos](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| H-HPS-S-53 | El grupo de campos se enumera tres veces de forma literal y las listas no coinciden: `HaHabidoCambios` no compara `IDUsuarioHPS` aunque `RellenarObjeto` sí lo escribe. | `Form_FormSolicitudRenovacionDatos.cls:535-602, 643` | [Form_FormSolicitudRenovacionDatos](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| H-HPS-S-54 | `Err.Numbr` deja el aviso de `ComandoActualizar_Click` sin código: tercera ocurrencia del mismo error. | `Form_FormSolicitudesAltaTraspasoDatos.cls:224` | [Form_FormSolicitudesAltaTraspasoDatos](formularios/Form_FormSolicitudesAltaTraspasoDatos.md) |
+| H-HPS-S-55 | `Public Event Alta()` y `Public Event Edicion()` se declaran y nunca se lanzan: el fichero no contiene ningún `RaiseEvent`. | `Form_FormSolicitudesAltaTraspasoDatos.cls:4-5` | [Form_FormSolicitudesAltaTraspasoDatos](formularios/Form_FormSolicitudesAltaTraspasoDatos.md) |
+| H-HPS-S-56 | `EstablecerDatos` lee `m_ObjSolicitudActiva.IDSolicitud` sin comprobar que el objeto exista, a diferencia del formulario hermano. | `Form_FormSolicitudesAltaTraspasoDatos.cls:371` | [Form_FormSolicitudesAltaTraspasoDatos](formularios/Form_FormSolicitudesAltaTraspasoDatos.md) |
+| H-HPS-S-57 | `Registrar` no recarga la fotografía inicial tras `RegistrarDatos`: un segundo guardado consecutivo compara contra datos obsoletos. | `Form_FormSolicitudesAltaTraspasoDatos.cls:813-822` | [Form_FormSolicitudesAltaTraspasoDatos](formularios/Form_FormSolicitudesAltaTraspasoDatos.md) |
 
 ## Discrepancias abiertas
 
