@@ -8,8 +8,16 @@
 #     entry. That identity needs the whole ten-slice matrix to be re-acquired on the ARM runner,
 #     which this copy cannot do; `scripts/mutation_shards.py` prepares the slices. The query below
 #     already selects the operator and the occurrence, so the adoption is a BASELINE rewrite.
-# Everything else (degenerate-run guard, completeness, overdue acquisition, policy binding) is the
-# asset 2.2.
+# Everything else (degenerate-run guard, completeness, overdue acquisition, policy binding,
+# acquired_on) is the asset 2.2.
+#
+# Local baseline: arranca con AwaitingAcquisition (team-skills#809 T6, BP #1341):
+# BP aun no ha re-adquirido la matriz en el runner ARM, asi que cada modulo del target
+# set figura como AwaitingAcquisition con `since` = fecha del bump. Cuando un mutante
+# aparezca superviviente, el canon emite una notice (no un fail) y al cabo de 14 dias
+# de GRACE_PERIOD_DAYS el gate cierra. La decision de arrancar asi (en lugar de regenerar
+# el BASELINE con --emit-baseline en la readquisicion ARM) la tomo el orquestador en el
+# comentario de aprobacion de BP#1341.
 """Mutation-survivor ratchet with a degenerate-run guard.
 
 Mutation testing is the only mechanical answer to "do these tests assert anything". Coverage
@@ -103,99 +111,61 @@ class AwaitingAcquisition:
 # `ReplaceBinaryOperator_BitAnd_Pow` convierten una operación en `**` y agotan el
 # timeout de 120 s por mutante.
 BASELINE: dict[str, BaselineEntry | AwaitingAcquisition] = {
-    "app/src/modules/expedientes/domain/anexo/agregado.py": BaselineEntry(
-        survivors=3, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anexo/agregado.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/anexo/reference.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anexo/reference.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anexo/retention.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anexo/retention.py": BaselineEntry(
-        survivors=22, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anexo/size_limit.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anexo/size_limit.py": BaselineEntry(
-        survivors=9, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/anualidad.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/cpv/code.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/cpv/structure.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/expediente.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/hash/versioning.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/anualidad.py": BaselineEntry(
-        survivors=20, target=0, target_date="2027-01-06"
+    "app/src/modules/expedientes/domain/hito.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/juridica.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/modificado.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/responsable.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/expedientes/domain/suministrador.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/app.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/audit_event.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/legacy_role_map.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/ports/__init__.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/ports/app_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/cpv/code.py": BaselineEntry(
-        survivors=28, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/assignment_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/cpv/structure.py": BaselineEntry(
-        survivors=18, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/jwt_signer.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/ports/presence_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/expediente.py": BaselineEntry(
-        survivors=8, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/profile_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/hash/versioning.py": BaselineEntry(
-        survivors=16, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/reset_token_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/hito.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/ports/session_repository.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/juridica.py": BaselineEntry(
-        survivors=2, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/profile.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/reset_token.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/modificado.py": BaselineEntry(
-        survivors=11, target=0, target_date="2027-01-06"
+    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": AwaitingAcquisition(
+        since="2026-10-22"
     ),
-    "app/src/modules/expedientes/domain/responsable.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/expedientes/domain/suministrador.py": BaselineEntry(
-        survivors=10, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/app.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/audit_event.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/legacy_role_map.py": BaselineEntry(
-        survivors=35, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/__init__.py": BaselineEntry(
-        survivors=38, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/app_repository.py": BaselineEntry(
-        survivors=45, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/assignment_repository.py": BaselineEntry(
-        survivors=12, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/jwt_signer.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/presence_repository.py": BaselineEntry(
-        survivors=2, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/profile_repository.py": BaselineEntry(
-        survivors=23, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/reset_token_repository.py": BaselineEntry(
-        survivors=11, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/ports/session_repository.py": BaselineEntry(
-        survivors=11, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/profile.py": BaselineEntry(
-        survivors=24, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/reset_token.py": BaselineEntry(
-        survivors=2, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/services/consume_reset_token.py": BaselineEntry(
-        survivors=17, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/services/issue_reset_token.py": BaselineEntry(
-        survivors=6, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/session.py": BaselineEntry(
-        survivors=4, target=0, target_date="2027-01-06"
-    ),
-    "app/src/modules/lanzadera/domain/user.py": BaselineEntry(
-        survivors=1, target=0, target_date="2027-01-06"
-    ),
+    "app/src/modules/lanzadera/domain/session.py": AwaitingAcquisition(since="2026-10-22"),
+    "app/src/modules/lanzadera/domain/user.py": AwaitingAcquisition(since="2026-10-22"),
 }
 
 
