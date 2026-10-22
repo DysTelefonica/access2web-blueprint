@@ -1,6 +1,6 @@
 # PRD — HPS
 
-> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 23 de 38.
+> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 25 de 38.
 
 | Campo | Valor |
 |---|---|
@@ -41,7 +41,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 |---|---|---|---|---|---|---|---|
 | Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 279 | 24 | 8 | igual | pendiente | — |
 | Form_FormInicial | src/forms/Form_FormInicial.cls | 338 | 26 | 9 | igual | pendiente | — |
-| Form_FormInicial00Principal | src/forms/Form_FormInicial00Principal.cls | 150 | 22 | 5 | igual | pendiente | — |
+| Form_FormInicial00Principal | src/forms/Form_FormInicial00Principal.cls | 150 | 22 | 5 | igual | analizada | [Form_FormInicial00Principal.md](formularios/Form_FormInicial00Principal.md) |
 | Form_FormInicial01Lateral | src/forms/Form_FormInicial01Lateral.cls | 495 | 27 | 18 | igual | pendiente | — |
 | Form_FormInicial02ConsultasPrincipal | src/forms/Form_FormInicial02ConsultasPrincipal.cls | 318 | 20 | 9 | igual | pendiente | — |
 | Form_FormInicial03ConsultasContratistas | src/forms/Form_FormInicial03ConsultasContratistas.cls | 97 | 15 | 6 | igual | analizada | [Form_FormInicial03ConsultasContratistas.md](formularios/Form_FormInicial03ConsultasContratistas.md) |
@@ -75,7 +75,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormUsuarioHistorico00Principal | src/forms/Form_FormUsuarioHistorico00Principal.cls | 98 | 19 | 3 | igual | analizada | [Form_FormUsuarioHistorico00Principal.md](formularios/Form_FormUsuarioHistorico00Principal.md) |
 | Form_FormUsuarioHistorico01Lateral | src/forms/Form_FormUsuarioHistorico01Lateral.cls | 130 | 13 | 4 | igual | analizada | [Form_FormUsuarioHistorico01Lateral.md](formularios/Form_FormUsuarioHistorico01Lateral.md) |
 | Form_FormUsuarioHistorico02Anexos | src/forms/Form_FormUsuarioHistorico02Anexos.cls | 156 | 8 | 4 | igual | analizada | [Form_FormUsuarioHistorico02Anexos.md](formularios/Form_FormUsuarioHistorico02Anexos.md) |
-| Form_FormUsuarioHistorico02Edicion | src/forms/Form_FormUsuarioHistorico02Edicion.cls | 235 | 54 | 5 | igual | pendiente | — |
+| Form_FormUsuarioHistorico02Edicion | src/forms/Form_FormUsuarioHistorico02Edicion.cls | 235 | 54 | 5 | igual | analizada | [Form_FormUsuarioHistorico02Edicion.md](formularios/Form_FormUsuarioHistorico02Edicion.md) |
 | Form_Formulario1 | src/forms/Form_Formulario1.cls | 28 | 24 | 1 | igual | analizada | [Form_Formulario1.md](formularios/Form_Formulario1.md) |
 
 ### Módulos estándar
