@@ -76,9 +76,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormEventoTipoGestion | src/forms/Form_FormEventoTipoGestion.cls | 222 | 18 | 7 | igual | analizado | [formularios/Form_FormEventoTipoGestion.md](formularios/Form_FormEventoTipoGestion.md) |
 | Form_FormEventosAltaMasivaPorNS | src/forms/Form_FormEventosAltaMasivaPorNS.cls | 629 | 55 | 17 | igual | analizado | [formularios/Form_FormEventosAltaMasivaPorNS.md](formularios/Form_FormEventosAltaMasivaPorNS.md) |
 | Form_FormFacturaAlta | src/forms/Form_FormFacturaAlta.cls | 248 | 37 | 6 | igual | analizado | [formularios/Form_FormFacturaAlta.md](formularios/Form_FormFacturaAlta.md) |
-| Form_FormFacturaResultado | src/forms/Form_FormFacturaResultado.cls | 337 | 48 | 6 | igual | pendiente | — |
-| Form_FormFacturacionGestion | src/forms/Form_FormFacturacionGestion.cls | 666 | 32 | 18 | igual | pendiente | — |
-| Form_FormGastoAlta | src/forms/Form_FormGastoAlta.cls | 250 | 34 | 8 | igual | pendiente | — |
+| Form_FormFacturaResultado | src/forms/Form_FormFacturaResultado.cls | 337 | 48 | 6 | igual | analizado | [formularios/Form_FormFacturaResultado.md](formularios/Form_FormFacturaResultado.md) |
+| Form_FormFacturacionGestion | src/forms/Form_FormFacturacionGestion.cls | 666 | 32 | 18 | igual | analizado | [formularios/Form_FormFacturacionGestion.md](formularios/Form_FormFacturacionGestion.md) |
+| Form_FormGastoAlta | src/forms/Form_FormGastoAlta.cls | 250 | 34 | 8 | igual | analizado | [formularios/Form_FormGastoAlta.md](formularios/Form_FormGastoAlta.md) |
 | Form_FormGastoEdicion | src/forms/Form_FormGastoEdicion.cls | 558 | 36 | 13 | igual | pendiente | — |
 | Form_FormGastoGestion | src/forms/Form_FormGastoGestion.cls | 683 | 36 | 23 | igual | pendiente | — |
 | Form_FormInformeSLA | src/forms/Form_FormInformeSLA.cls | 753 | 27 | 13 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 76 analizados · 5 no aplicables · 50 pendientes.
+Totales: 79 analizados · 5 no aplicables · 47 pendientes.
 
 ## Discrepancias abiertas
 
