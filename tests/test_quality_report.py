@@ -1,13 +1,10 @@
-"""The aggregator: it forwards the policy date to the gates that require it, and it trusts no gate.
+"""The aggregator forwards the policy date, and trusts no gate.
 
 ``quality_report.py`` is the canon's asset (``deterministic-quality-harness`` v2.2) with BP's gate
-list. Two properties are load-bearing and are pinned here:
-
-  1. The date reaches the gates whose canon copy requires it, and only those.
-  2. A gate that lies — a malformed envelope, an envelope for another gate, an exit code that
-     disagrees with its own verdict, or evidence that no longer matches the tree — is an ``error``,
-     never a quiet pass. An aggregator that cannot tell a broken gate from a clean one reports a
-     green that nobody earned.
+list. Two properties are load-bearing: the date reaches the gates whose canon copy requires it and
+only those, and a gate that lies — malformed envelope, someone else's identity, exit code that
+disagrees with its verdict, evidence that no longer matches the tree — is an ``error``, never a
+quiet pass.
 """
 
 from __future__ import annotations
@@ -89,8 +86,8 @@ def test_policy_date_reaches_only_the_dated_gates(monkeypatch, tmp_path, extra, 
 # The aggregator trusts no gate (DQH 2.2)
 # --------------------------------------------------------------------------------------------
 
-#: Evidence every bound gate is checked against. Stubbed so that the only error a test produces is
-#: the one it injected: with real evidence, every fake envelope would also fail the cross-check.
+#: Evidence every bound gate is checked against, stubbed so the only error a test produces is the
+#: one it injected; with real evidence, every fake envelope would also fail the cross-check.
 _EVIDENCE = {
     "candidate": {"commit": "abc", "tree": "def"},
     "policy_identity": "sha256:policy",
@@ -112,22 +109,22 @@ def _envelope(gate: str, bound: bool) -> dict:
     }
     if bound:
         payload.update(
-            {
-                "candidate": _EVIDENCE["candidate"],
-                "policy_identity": _EVIDENCE["policy_identity"],
-                "scope_identity": _EVIDENCE["scope_identity"],
-                "subject_manifest": _EVIDENCE["subject_manifest"],
-                "tool": _EVIDENCE["tool"],
-                "owner": _EVIDENCE["owner"],
-                "non_ownership": _EVIDENCE["non_ownership"],
-                "subjects": {},
-            }
+            {key: _EVIDENCE[key] for key in _EVIDENCE if key != "subject_manifest"}
+            | {"subject_manifest": [], "subjects": {}}
         )
     return payload
 
 
-def _report_with(monkeypatch, tmp_path: Path, script: str, payload: str | None, code: int = 0):
-    """Run the aggregator where `script` answers `payload`, and return its report."""
+def _gate(report: dict, script: str) -> dict:
+    name = script.removesuffix(".py").removeprefix("check_")
+    return next(item for item in report["gates"] if item["gate"] == name)
+
+
+def _report_with(monkeypatch, tmp_path: Path, script: str, mutate, code: int = 0) -> dict:
+    """Run the aggregator where `script` answers `mutate(envelope)` (None keeps it).
+
+    `code` is the exit status that gate reports; every other gate answers cleanly.
+    """
     module = _load()
     monkeypatch.setattr(module, "build_evidence", lambda *a, **k: _EVIDENCE)
 
@@ -136,13 +133,15 @@ def _report_with(monkeypatch, tmp_path: Path, script: str, payload: str | None, 
             return subprocess.CompletedProcess(command, 0, "abc\n", "")
         name = Path(command[1]).name
         gate = name.removesuffix(".py").removeprefix("check_")
-        bound = gate in module.KNOWN_GATES
-        body = (
-            payload
-            if (name == script and payload is not None)
-            else json.dumps(_envelope(gate, bound))
+        envelope = _envelope(gate, gate in module.KNOWN_GATES)
+        payload, exit_code = envelope, 0
+        if name == script:
+            replacement = mutate(envelope)
+            payload = envelope if replacement is None else replacement
+            exit_code = code
+        return subprocess.CompletedProcess(
+            command, exit_code, payload if isinstance(payload, str) else json.dumps(payload), ""
         )
-        return subprocess.CompletedProcess(command, code, body, "")
 
     monkeypatch.setattr(module.subprocess, "run", fake_run)
     out = tmp_path / "report.json"
@@ -150,82 +149,42 @@ def _report_with(monkeypatch, tmp_path: Path, script: str, payload: str | None, 
     return json.loads(out.read_text(encoding="utf-8"))
 
 
-def _gate(report: dict, name: str) -> dict:
-    return next(item for item in report["gates"] if item["gate"] == name)
-
-
-def test_a_malformed_envelope_is_an_error_not_a_pass(monkeypatch, tmp_path: Path) -> None:
-    report = _report_with(
-        monkeypatch,
-        tmp_path,
-        "check_legacy_hashes.py",
-        json.dumps({"gate": "legacy_hashes"}),
-    )
-    assert report["status"] == "fail"
-    entry = _gate(report, "legacy_hashes")
-    assert entry["status"] == "error"
-    assert "missing required field" in entry["detail"]
-
-
-def test_an_envelope_for_another_gate_is_rejected(monkeypatch, tmp_path: Path) -> None:
-    """A gate answering with someone else's name has not measured what the report claims."""
-    report = _report_with(
-        monkeypatch,
-        tmp_path,
-        "check_legacy_hashes.py",
-        json.dumps(_envelope("complexity", False)),
-    )
-    assert report["status"] == "fail"
-    entry = _gate(report, "legacy_hashes")
-    assert entry["status"] == "error"
-    assert "does not match expected" in entry["detail"]
-
-
-def test_an_exit_code_that_disagrees_with_the_envelope_is_an_error(
-    monkeypatch, tmp_path: Path
+@pytest.mark.parametrize(
+    "script, mutate, code, expected",
+    [
+        (
+            "check_legacy_hashes.py",
+            lambda envelope: json.dumps({"gate": "legacy_hashes"}),
+            0,
+            "missing required field",
+        ),
+        (
+            "check_legacy_hashes.py",
+            lambda envelope: json.dumps(_envelope("complexity", False)),
+            0,
+            "does not match expected",
+        ),
+        ("check_legacy_hashes.py", lambda envelope: None, 1, "disagrees with envelope status"),
+        (
+            "check_complexity.py",
+            lambda envelope: {
+                **envelope,
+                "subject_manifest": [{"path": "app/gone.py", "sha256": "x"}],
+            },
+            0,
+            "no longer matches current subjects",
+        ),
+    ],
+    ids=["malformed", "wrong-identity", "exit-code-disagrees", "stale-evidence"],
+)
+def test_a_gate_that_lies_is_an_error_not_a_pass(
+    monkeypatch, tmp_path: Path, script, mutate, code, expected
 ) -> None:
-    report = _report_with(
-        monkeypatch,
-        tmp_path,
-        "check_legacy_hashes.py",
-        None,
-        code=1,
-    )
+    report = _report_with(monkeypatch, tmp_path, script, mutate, code)
+    entry = _gate(report, script)
     assert report["status"] == "fail"
-    entry = _gate(report, "legacy_hashes")
     assert entry["status"] == "error"
-    assert "disagrees with envelope status" in entry["detail"]
-
-
-def test_evidence_that_no_longer_matches_the_tree_is_an_error(monkeypatch, tmp_path: Path) -> None:
-    """A gate that measured yesterday's tree cannot vouch for today's report.
-
-    The gate answers with a subject manifest from a different tree; the aggregator recomputes the
-    manifest from the policy and refuses the evidence instead of copying it into the report.
-    """
-    module = _load()
-    stale = dict(_envelope("complexity", True))
-    stale["subject_manifest"] = [{"path": "app/gone.py", "sha256": "sha256:gone"}]
-    current = {**_EVIDENCE, "subject_manifest": [{"path": "app/here.py", "sha256": "sha256:here"}]}
-    monkeypatch.setattr(module, "build_evidence", lambda *a, **k: current)
-
-    def fake_run(command, **_kwargs):
-        if command[0] == "git":
-            return subprocess.CompletedProcess(command, 0, "abc\n", "")
-        name = Path(command[1]).name
-        gate = name.removesuffix(".py").removeprefix("check_")
-        body = (
-            stale if name == "check_complexity.py" else _envelope(gate, gate in module.KNOWN_GATES)
-        )
-        return subprocess.CompletedProcess(command, 0, json.dumps(body), "")
-
-    monkeypatch.setattr(module.subprocess, "run", fake_run)
-    out = tmp_path / "report.json"
-    module.main(["--root", str(tmp_path), "--out", str(out), "--policy-date", POLICY_DATE])
-    report = json.loads(out.read_text(encoding="utf-8"))
-    entry = _gate(report, "complexity")
-    assert entry["status"] == "error"
-    assert "no longer matches current subjects" in entry["detail"]
+    assert expected in entry["detail"]
 
 
 def test_the_report_names_the_policy_date_and_the_evidence(tmp_path: Path) -> None:
