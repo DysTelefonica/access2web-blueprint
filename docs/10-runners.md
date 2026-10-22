@@ -41,6 +41,13 @@ PR dejaba fuera del gate al job `mutation`, pineado a
 registrados**—, que llevaba cuatro semanas en rojo mientras el agregador
 `required` publicaba verde (#785).
 
+Única excepción (#1074): el runner Windows del propietario, etiqueta
+`dysflow-erd`, para extraer ERD de solo lectura de los `.accdb`. Solo se admite
+en un workflow cuyo único disparador sea `workflow_dispatch`
+(`.github/workflows/dysflow-erd.yml`); cualquier otro disparador en ese workflow
+hace fallar el gate. El runner está en línea solo cuando el propietario lo
+arranca: un job en cola no es un fallo.
+
 Un job propio dentro de un workflow de PR debe excluir ese evento mediante una
 condición estática sobre `github.event_name`.
 

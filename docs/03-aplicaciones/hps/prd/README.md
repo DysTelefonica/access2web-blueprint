@@ -1,6 +1,6 @@
 # PRD — HPS
 
-> **Estado:** fase 1 (fijación e inventario). Los formularios, módulos y clases quedan **pendientes**; las fichas, la matriz, la coexistencia, las capacidades y las issues propuestas llegan en las PR siguientes de la cadena.
+> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 10 de 38.
 
 | Campo | Valor |
 |---|---|
@@ -47,10 +47,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormInicial03ConsultasContratistas | src/forms/Form_FormInicial03ConsultasContratistas.cls | 97 | 15 | 6 | igual | pendiente | — |
 | Form_FormInicial03ConsultasDatos | src/forms/Form_FormInicial03ConsultasDatos.cls | 35 | 317 | 2 | igual | pendiente | — |
 | Form_FormInicial03ConsultasEmpresaUsuario | src/forms/Form_FormInicial03ConsultasEmpresaUsuario.cls | 189 | 16 | 7 | igual | pendiente | — |
-| Form_FormInicial03ConsultasEstado | src/forms/Form_FormInicial03ConsultasEstado.cls | 56 | 13 | 3 | igual | pendiente | — |
+| Form_FormInicial03ConsultasEstado | src/forms/Form_FormInicial03ConsultasEstado.cls | 56 | 13 | 3 | igual | analizada | [Form_FormInicial03ConsultasEstado.md](formularios/Form_FormInicial03ConsultasEstado.md) |
 | Form_FormInicial03ConsultasGrado | src/forms/Form_FormInicial03ConsultasGrado.cls | 256 | 30 | 15 | igual | pendiente | — |
-| Form_FormInicial03ConsultasJuridicaTramitacion | src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls | 102 | 16 | 6 | igual | pendiente | — |
-| Form_FormInicial03ConsultasMotivoHPS | src/forms/Form_FormInicial03ConsultasMotivoHPS.cls | 93 | 16 | 6 | igual | pendiente | — |
+| Form_FormInicial03ConsultasJuridicaTramitacion | src/forms/Form_FormInicial03ConsultasJuridicaTramitacion.cls | 102 | 16 | 6 | igual | analizada | [Form_FormInicial03ConsultasJuridicaTramitacion.md](formularios/Form_FormInicial03ConsultasJuridicaTramitacion.md) |
+| Form_FormInicial03ConsultasMotivoHPS | src/forms/Form_FormInicial03ConsultasMotivoHPS.cls | 93 | 16 | 6 | igual | analizada | [Form_FormInicial03ConsultasMotivoHPS.md](formularios/Form_FormInicial03ConsultasMotivoHPS.md) |
 | Form_FormInicial03ConsultasNombre | src/forms/Form_FormInicial03ConsultasNombre.cls | 124 | 19 | 8 | igual | pendiente | — |
 | Form_FormInicial03ConsultasProyectoAsignado | src/forms/Form_FormInicial03ConsultasProyectoAsignado.cls | 193 | 15 | 7 | igual | pendiente | — |
 | Form_FormInicial05Configuracion | src/forms/Form_FormInicial05Configuracion.cls | 79 | 22 | 2 | igual | pendiente | — |
@@ -62,19 +62,19 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormInicial09Indicadores | src/forms/Form_FormInicial09Indicadores.cls | 712 | 28 | 22 | igual | pendiente | — |
 | Form_FormInicial09IndicadoresDatosLocalDatos | src/forms/Form_FormInicial09IndicadoresDatosLocalDatos.cls | 42 | 311 | 2 | igual | pendiente | — |
 | Form_FormInicial09IndicadoresUsuariosSICADatos | src/forms/Form_FormInicial09IndicadoresUsuariosSICADatos.cls | 47 | 61 | 2 | igual | pendiente | — |
-| Form_FormUsuario00Principal | src/forms/Form_FormUsuario00Principal.cls | 63 | 18 | 2 | igual | pendiente | — |
-| Form_FormUsuario01Lateral | src/forms/Form_FormUsuario01Lateral.cls | 167 | 14 | 5 | igual | pendiente | — |
+| Form_FormUsuario00Principal | src/forms/Form_FormUsuario00Principal.cls | 63 | 18 | 2 | igual | analizada | [Form_FormUsuario00Principal.md](formularios/Form_FormUsuario00Principal.md) |
+| Form_FormUsuario01Lateral | src/forms/Form_FormUsuario01Lateral.cls | 167 | 14 | 5 | igual | analizada | [Form_FormUsuario01Lateral.md](formularios/Form_FormUsuario01Lateral.md) |
 | Form_FormUsuario02Alta | src/forms/Form_FormUsuario02Alta.cls | 424 | 64 | 11 | igual | pendiente | — |
 | Form_FormUsuario02Anexos | src/forms/Form_FormUsuario02Anexos.cls | 590 | 16 | 13 | igual | pendiente | — |
-| Form_FormUsuario02DatosObservacion | src/forms/Form_FormUsuario02DatosObservacion.cls | 194 | 23 | 3 | igual | pendiente | — |
-| Form_FormUsuario02DatosObservacionHistorico | src/forms/Form_FormUsuario02DatosObservacionHistorico.cls | 60 | 22 | 2 | igual | pendiente | — |
+| Form_FormUsuario02DatosObservacion | src/forms/Form_FormUsuario02DatosObservacion.cls | 194 | 23 | 3 | igual | analizada | [Form_FormUsuario02DatosObservacion.md](formularios/Form_FormUsuario02DatosObservacion.md) |
+| Form_FormUsuario02DatosObservacionHistorico | src/forms/Form_FormUsuario02DatosObservacionHistorico.cls | 60 | 22 | 2 | igual | analizada | [Form_FormUsuario02DatosObservacionHistorico.md](formularios/Form_FormUsuario02DatosObservacionHistorico.md) |
 | Form_FormUsuario02Edicion | src/forms/Form_FormUsuario02Edicion.cls | 977 | 70 | 24 | igual | pendiente | — |
 | Form_FormUsuario02HPS | src/forms/Form_FormUsuario02HPS.cls | 988 | 90 | 16 | igual | pendiente | — |
 | Form_FormUsuario07SICAAlta | src/forms/Form_FormUsuario07SICAAlta.cls | 516 | 56 | 10 | igual | pendiente | — |
 | Form_FormUsuario07SICAEdicion | src/forms/Form_FormUsuario07SICAEdicion.cls | 911 | 57 | 14 | igual | pendiente | — |
-| Form_FormUsuarioHistorico00Principal | src/forms/Form_FormUsuarioHistorico00Principal.cls | 98 | 19 | 3 | igual | pendiente | — |
-| Form_FormUsuarioHistorico01Lateral | src/forms/Form_FormUsuarioHistorico01Lateral.cls | 130 | 13 | 4 | igual | pendiente | — |
-| Form_FormUsuarioHistorico02Anexos | src/forms/Form_FormUsuarioHistorico02Anexos.cls | 156 | 8 | 4 | igual | pendiente | — |
+| Form_FormUsuarioHistorico00Principal | src/forms/Form_FormUsuarioHistorico00Principal.cls | 98 | 19 | 3 | igual | analizada | [Form_FormUsuarioHistorico00Principal.md](formularios/Form_FormUsuarioHistorico00Principal.md) |
+| Form_FormUsuarioHistorico01Lateral | src/forms/Form_FormUsuarioHistorico01Lateral.cls | 130 | 13 | 4 | igual | analizada | [Form_FormUsuarioHistorico01Lateral.md](formularios/Form_FormUsuarioHistorico01Lateral.md) |
+| Form_FormUsuarioHistorico02Anexos | src/forms/Form_FormUsuarioHistorico02Anexos.cls | 156 | 8 | 4 | igual | analizada | [Form_FormUsuarioHistorico02Anexos.md](formularios/Form_FormUsuarioHistorico02Anexos.md) |
 | Form_FormUsuarioHistorico02Edicion | src/forms/Form_FormUsuarioHistorico02Edicion.cls | 235 | 54 | 5 | igual | pendiente | — |
 | Form_Formulario1 | src/forms/Form_Formulario1.cls | 28 | 24 | 1 | igual | pendiente | — |
 

@@ -324,6 +324,21 @@ def _check_public_pr_runner_isolation(doc: dict[str, Any]) -> Iterator[Finding]:
         )
 
 
+#: Etiqueta del runner Windows del propietario para extraer ERD de solo lectura
+#: (#1074). Es la única exención a la regla de #800 y exige un workflow cuyo
+#: único disparador sea `workflow_dispatch`.
+_DISPATCH_ONLY_RUNNER_LABEL = "dysflow-erd"
+
+
+def _is_dispatch_only_workflow(doc: dict[str, Any]) -> bool:
+    triggers = doc.get("on", doc.get(True))
+    if isinstance(triggers, str):
+        return triggers == "workflow_dispatch"
+    if isinstance(triggers, list):
+        return triggers == ["workflow_dispatch"]
+    return isinstance(triggers, dict) and list(triggers) == ["workflow_dispatch"]
+
+
 def _check_no_self_hosted_runners(doc: dict[str, Any]) -> Iterator[Finding]:
     """Reject ANY job pinned to a self-hosted runner (issue #800).
 
@@ -343,6 +358,8 @@ def _check_no_self_hosted_runners(doc: dict[str, Any]) -> Iterator[Finding]:
         runner = job_def.get("runs-on")
         labels = runner if isinstance(runner, list) else [runner]
         if not any(str(label) == "self-hosted" for label in labels):
+            continue
+        if _DISPATCH_ONLY_RUNNER_LABEL in map(str, labels) and _is_dispatch_only_workflow(doc):
             continue
         yield (
             "error",

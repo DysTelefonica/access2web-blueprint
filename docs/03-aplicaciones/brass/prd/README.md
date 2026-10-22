@@ -39,25 +39,25 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Form_Form0BDInformes | src/forms/Form_Form0BDInformes.cls | 107 | 21 | 16 | igual | pendiente | — |
-| Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 175 | 38 | 25 | igual | pendiente | — |
-| Form_Form0BDOpcionesOtras | src/forms/Form_Form0BDOpcionesOtras.cls | 144 | 40 | 29 | igual | pendiente | — |
-| Form_FormActividadAlta | src/forms/Form_FormActividadAlta.cls | 251 | 38 | 7 | igual | pendiente | — |
-| Form_FormActividadDeEventoPorLotes | src/forms/Form_FormActividadDeEventoPorLotes.cls | 383 | 31 | 10 | igual | pendiente | — |
-| Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | pendiente | — |
-| Form_FormActividadGestion | src/forms/Form_FormActividadGestion.cls | 1065 | 39 | 26 | igual | pendiente | — |
-| Form_FormActividadTipoAlta | src/forms/Form_FormActividadTipoAlta.cls | 148 | 23 | 4 | igual | pendiente | — |
-| Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | pendiente | — |
-| Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | pendiente | — |
-| Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | pendiente | — |
-| Form_FormAnexosNoAlcanzables | src/forms/Form_FormAnexosNoAlcanzables.cls | 219 | 28 | 6 | igual | pendiente | — |
-| Form_FormBUIGestion | src/forms/Form_FormBUIGestion.cls | 229 | 18 | 7 | igual | pendiente | — |
-| Form_FormCalibracionAlta | src/forms/Form_FormCalibracionAlta.cls | 228 | 35 | 4 | igual | pendiente | — |
-| Form_FormCalibracionEdicion | src/forms/Form_FormCalibracionEdicion.cls | 346 | 38 | 7 | igual | pendiente | — |
-| Form_FormCalibracionEquipoAlta | src/forms/Form_FormCalibracionEquipoAlta.cls | 188 | 31 | 4 | igual | pendiente | — |
-| Form_FormCalibracionEquipoEdicion | src/forms/Form_FormCalibracionEquipoEdicion.cls | 407 | 34 | 8 | igual | pendiente | — |
-| Form_FormCalibracionEquipoGestion | src/forms/Form_FormCalibracionEquipoGestion.cls | 800 | 38 | 26 | igual | pendiente | — |
-| Form_FormCalibracionGestion | src/forms/Form_FormCalibracionGestion.cls | 625 | 36 | 12 | igual | pendiente | — |
+| Form_Form0BDInformes | src/forms/Form_Form0BDInformes.cls | 107 | 21 | 16 | igual | analizado | [formularios/Form_Form0BDInformes.md](formularios/Form_Form0BDInformes.md) |
+| Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 175 | 38 | 25 | igual | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
+| Form_Form0BDOpcionesOtras | src/forms/Form_Form0BDOpcionesOtras.cls | 144 | 40 | 29 | igual | analizado | [formularios/Form_Form0BDOpcionesOtras.md](formularios/Form_Form0BDOpcionesOtras.md) |
+| Form_FormActividadAlta | src/forms/Form_FormActividadAlta.cls | 251 | 38 | 7 | igual | analizado | [formularios/Form_FormActividadAlta.md](formularios/Form_FormActividadAlta.md) |
+| Form_FormActividadDeEventoPorLotes | src/forms/Form_FormActividadDeEventoPorLotes.cls | 383 | 31 | 10 | igual | analizado | [formularios/Form_FormActividadDeEventoPorLotes.md](formularios/Form_FormActividadDeEventoPorLotes.md) |
+| Form_FormActividadEdicion | src/forms/Form_FormActividadEdicion.cls | 803 | 43 | 13 | igual | analizado | [formularios/Form_FormActividadEdicion.md](formularios/Form_FormActividadEdicion.md) |
+| Form_FormActividadGestion | src/forms/Form_FormActividadGestion.cls | 1065 | 39 | 26 | igual | analizado | [formularios/Form_FormActividadGestion.md](formularios/Form_FormActividadGestion.md) |
+| Form_FormActividadTipoAlta | src/forms/Form_FormActividadTipoAlta.cls | 148 | 23 | 4 | igual | analizado | [formularios/Form_FormActividadTipoAlta.md](formularios/Form_FormActividadTipoAlta.md) |
+| Form_FormActividadTipoEdicion | src/forms/Form_FormActividadTipoEdicion.cls | 323 | 23 | 6 | igual | analizado | [formularios/Form_FormActividadTipoEdicion.md](formularios/Form_FormActividadTipoEdicion.md) |
+| Form_FormActividadTipoGestion | src/forms/Form_FormActividadTipoGestion.cls | 180 | 19 | 7 | igual | analizado | [formularios/Form_FormActividadTipoGestion.md](formularios/Form_FormActividadTipoGestion.md) |
+| Form_FormAnexos | src/forms/Form_FormAnexos.cls | 606 | 39 | 12 | igual | analizado | [formularios/Form_FormAnexos.md](formularios/Form_FormAnexos.md) |
+| Form_FormAnexosNoAlcanzables | src/forms/Form_FormAnexosNoAlcanzables.cls | 219 | 28 | 6 | igual | analizado | [formularios/Form_FormAnexosNoAlcanzables.md](formularios/Form_FormAnexosNoAlcanzables.md) |
+| Form_FormBUIGestion | src/forms/Form_FormBUIGestion.cls | 229 | 18 | 7 | igual | analizado | [formularios/Form_FormBUIGestion.md](formularios/Form_FormBUIGestion.md) |
+| Form_FormCalibracionAlta | src/forms/Form_FormCalibracionAlta.cls | 228 | 35 | 4 | igual | analizado | [formularios/Form_FormCalibracionAlta.md](formularios/Form_FormCalibracionAlta.md) |
+| Form_FormCalibracionEdicion | src/forms/Form_FormCalibracionEdicion.cls | 346 | 38 | 7 | igual | analizado | [formularios/Form_FormCalibracionEdicion.md](formularios/Form_FormCalibracionEdicion.md) |
+| Form_FormCalibracionEquipoAlta | src/forms/Form_FormCalibracionEquipoAlta.cls | 188 | 31 | 4 | igual | analizado | [formularios/Form_FormCalibracionEquipoAlta.md](formularios/Form_FormCalibracionEquipoAlta.md) |
+| Form_FormCalibracionEquipoEdicion | src/forms/Form_FormCalibracionEquipoEdicion.cls | 407 | 34 | 8 | igual | analizado | [formularios/Form_FormCalibracionEquipoEdicion.md](formularios/Form_FormCalibracionEquipoEdicion.md) |
+| Form_FormCalibracionEquipoGestion | src/forms/Form_FormCalibracionEquipoGestion.cls | 800 | 38 | 26 | igual | analizado | [formularios/Form_FormCalibracionEquipoGestion.md](formularios/Form_FormCalibracionEquipoGestion.md) |
+| Form_FormCalibracionGestion | src/forms/Form_FormCalibracionGestion.cls | 625 | 36 | 12 | igual | analizado | [formularios/Form_FormCalibracionGestion.md](formularios/Form_FormCalibracionGestion.md) |
 | Form_FormEquipoAlta | src/forms/Form_FormEquipoAlta.cls | 329 | 31 | 6 | igual | pendiente | — |
 | Form_FormEquipoEdicion | src/forms/Form_FormEquipoEdicion.cls | 602 | 33 | 11 | igual | pendiente | — |
 | Form_FormEquipoGestion | src/forms/Form_FormEquipoGestion.cls | 838 | 38 | 27 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
 
-Totales: 0 analizados · 0 no aplicables · 131 pendientes.
+Totales: 19 analizados · 0 no aplicables · 112 pendientes.
 
 ## Discrepancias abiertas
 
