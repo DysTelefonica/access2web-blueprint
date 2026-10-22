@@ -593,5 +593,304 @@ class GatePathResolutionTests(unittest.TestCase):
         self.assertEqual(resolve_gate({GATE_ENV: ""}), resolve_gate({}))
 
 
+# --------------------------------------------------------------------------------------------
+# Regla 3 (quién) — la contramarca de quién puede aprobar (DysTelefonica/team-skills#998).
+#
+# La lista sale de la clave opcional `approvers` del `.github/host-contract.json` del
+# consumer. Aquí se fija de dónde se lee, que una declaración inservible sale 2 (HR-3) y
+# que la puerta dice en una línea si el contrato declara aprobadores o si todavía no los
+# declara (punto 3). El juicio de QUIÉN pone la etiqueta llega en el eslabón siguiente de
+# la cadena, con la lectura de la línea de tiempo de la issue.
+# --------------------------------------------------------------------------------------------
+
+APPROVERS = ("ardelperal", "dys-orquestador[bot]")
+
+
+def _write_host_contract(tmp, payload):
+    """Escribe un `host-contract.json` en ``tmp`` y devuelve la ruta."""
+    path = tmp / "host-contract.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _run_pr_event_without_api(tmp, *extra):
+    """Ejecuta `pr-event` con un payload que no llega a tocar la API.
+
+    Un payload sin `repository.full_name` hace que el gate salga 2 como entrada inválida
+    antes de cualquier llamada, así que lo observable aquí es exactamente lo que la puerta
+    anuncia al leer el contrato: sin token, sin red y sin depender del veredicto.
+    """
+    event = Path(tmp) / "event.json"
+    event.write_text('{"pull_request": {"number": 7}}', encoding="utf-8")
+    env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
+    env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
+    return subprocess.run(
+        [sys.executable, str(GATE), "pr-event", str(event), *extra],
+        capture_output=True, text=True, check=False, env=env, timeout=60)
+
+
+class LoadApproversTests(unittest.TestCase):
+    """Punto 1: `approvers` es una clave opcional de `.github/host-contract.json`."""
+
+    def test_absent_key_declares_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = _write_host_contract(Path(tmp), {"contract_version": 1})
+            self.assertEqual(check_issue_spec.load_approvers(str(path)), ())
+
+    def test_declared_list_is_read(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = _write_host_contract(
+                Path(tmp), {"contract_version": 1, "approvers": list(APPROVERS)})
+            self.assertEqual(check_issue_spec.load_approvers(str(path)), APPROVERS)
+
+    def test_invalid_declarations_fail_closed(self):
+        # Un contrato ilegible o inservible no puede dejar la puerta en verde (HR-3).
+        cases = {
+            "ilegible": None,
+            "no json": "{",
+            "no objeto": '["ardelperal"]',
+            "no lista": '{"approvers": "ardelperal"}',
+            "vacia": '{"approvers": []}',
+            "entrada no textual": '{"approvers": ["ardelperal", 7]}',
+            "entrada vacia": '{"approvers": [""]}',
+        }
+        for name, payload in cases.items():
+            with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
+                path = Path(tmp) / "host-contract.json"
+                path.write_text("{broken" if payload is None else payload, encoding="utf-8")
+                with self.assertRaises(check_issue_spec.HostContractError):
+                    check_issue_spec.load_approvers(str(path))
+
+    def test_pr_event_exits_2_on_an_unserviceable_contract(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = _write_host_contract(Path(tmp), {"approvers": []})
+            p = _run_pr_event_without_api(tmp, "--host-contract", str(contract))
+        # 2 por el contrato inservible, antes incluso de leer el evento.
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertIn("approvers", p.stderr)
+        self.assertNotIn("repository.full_name", p.stderr)
+
+
+class ApproversReportedTests(unittest.TestCase):
+    """Punto 3: la salida dice en una línea si el contrato declara aprobadores o no."""
+
+    def test_declared_approvers_are_announced_and_not_warned_about(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = _write_host_contract(
+                Path(tmp), {"contract_version": 1, "approvers": list(APPROVERS)})
+            p = _run_pr_event_without_api(tmp, "--host-contract", str(contract))
+        self.assertEqual(p.returncode, 2, p.stderr)  # el evento no identifica el repo
+        self.assertIn("repository.full_name", p.stderr)
+        self.assertIn("aprobadores declarados", p.stdout)
+        self.assertNotIn("aviso", p.stderr)
+
+    def test_contract_without_the_key_warns_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = _write_host_contract(Path(tmp), {"contract_version": 1})
+            p = _run_pr_event_without_api(tmp, "--host-contract", str(contract))
+        self.assertEqual(p.stderr.count("approvers"), 1, p.stderr)
+        self.assertIn("no declara", p.stderr)
+
+    def test_no_contract_flag_warns_too(self):
+        # El consumer que aún no adopta la opción tampoco declara aprobadores: se dice
+        # igual, porque su puerta sigue aceptando cualquier actor.
+        with tempfile.TemporaryDirectory() as tmp:
+            p = _run_pr_event_without_api(tmp)
+        self.assertEqual(p.stderr.count("approvers"), 1, p.stderr)
+        self.assertIn("no declara", p.stderr)
+
+
+# --------------------------------------------------------------------------------------------
+# Regla 3 (quién) — quién puso `status:approved` (DysTelefonica/team-skills#998).
+#
+# La etiqueta puesta ya no basta: con `approvers` declarado, el último evento `labeled` de
+# la aprobación tiene que llevar un `actor.login` de la lista. Es el mismo patrón que
+# `SIZE_EXCEPTION_APPROVER` en el gate de pr-size, con la identidad leída de la plataforma
+# en vez de por una variable de entorno. El eslabón anterior deja la lista a punto; aquí se
+# juzga.
+# --------------------------------------------------------------------------------------------
+
+APPROVERS = ("ardelperal", "dys-orquestador[bot]")
+
+
+def _labeled(login, label="status:approved", at="2026-10-22T10:00:00Z"):
+    """Evento `labeled` de la API de issues."""
+    return {"event": "labeled", "label": {"name": label},
+            "actor": {"login": login}, "created_at": at}
+
+
+def _unlabeled(login, label="status:approved", at="2026-10-22T11:00:00Z"):
+    return {"event": "unlabeled", "label": {"name": label},
+            "actor": {"login": login}, "created_at": at}
+
+
+def _remote(body, *, approvers=APPROVERS, events=(), issue=None, events_get=None):
+    """`validate_remote` con la lista declarada y un doble de la línea de tiempo."""
+    def by_number(number):
+        return list(events)
+    context = PrContext(approvers=approvers,
+                        events_fetcher=events_get if events_get is not None else by_number)
+    fetch = issue or (lambda n: approved_issue("status:approved", "type:feature"))
+    return validate_remote(body, "team/skills", fetch, context=context)
+
+
+class ApproverRuleTests(unittest.TestCase):
+    """Puntos 2 y 6: el actor del último `labeled` tiene que ser aprobador declarado."""
+
+    def test_declared_approver_passes(self):
+        self.assertEqual(
+            _remote("Closes #12\n", events=[_labeled("dys-orquestador[bot]")]), [])
+
+    def test_actor_outside_the_list_fails_naming_actor_and_list(self):
+        violations = _remote("Closes #12\n", events=[_labeled("dys-agentes[bot]")])
+        self.assertEqual(len(violations), 1)
+        self.assertIn("dys-agentes[bot]", violations[0])
+        for approver in APPROVERS:
+            self.assertIn(approver, violations[0])
+
+    def test_label_without_the_event_fails_closed(self):
+        # La etiqueta está puesta pero no consta el evento que la puso: no se puede probar
+        # quién aprobó, y la puerta falla cerrada.
+        violations = _remote("Closes #12\n", events=[])
+        self.assertEqual(len(violations), 1)
+        self.assertIn("no consta", violations[0])
+
+    def test_last_labeled_event_after_a_removal_decides(self):
+        # Un aprobador la puso, alguien la retiró y un actor no declarado la repuso: manda
+        # el ÚLTIMO `labeled`, no el primero (punto 6, caso 5).
+        violations = _remote("Closes #12\n", events=[
+            _labeled("ardelperal"), _unlabeled("ardelperal"), _labeled("dys-agentes[bot]")])
+        self.assertEqual(len(violations), 1)
+        self.assertIn("dys-agentes[bot]", violations[0])
+
+    def test_events_of_other_labels_are_not_the_approval(self):
+        self.assertEqual(_remote("Closes #12\n", events=[
+            _labeled("dys-agentes[bot]", label="type:bug"), _labeled("ardelperal")]), [])
+
+    def test_login_comparison_is_case_insensitive(self):
+        # GitHub no distingue mayúsculas en el login; el gate tampoco.
+        self.assertEqual(_remote("Closes #12\n", events=[_labeled("Ardelperal")]), [])
+
+    def test_api_error_reading_events_fails_closed(self):
+        # Punto 5: error de API al leer los eventos = fallo cerrado, como el resto.
+        def down(number):
+            raise _ApiDownError()
+        violations = _remote("Closes #12\n", events_get=down)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("cannot read", violations[0])
+
+    def test_missing_events_reader_fails_closed(self):
+        # Sin cliente de eventos no se puede probar la separación: hallazgo, no verde.
+        context = PrContext(approvers=APPROVERS)
+        violations = validate_remote(
+            "Closes #12\n", "team/skills",
+            lambda n: approved_issue("status:approved", "type:feature"), context=context)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("cannot read", violations[0])
+
+    def test_declared_approvers_do_not_read_events_without_the_label(self):
+        # Sin la etiqueta puesta la regla 3 ya falla por su ausencia; no se consulta la API.
+        def never(number):
+            raise _UnexpectedFetchError()
+        violations = _remote(
+            "Closes #12\n", events_get=never,
+            issue=lambda n: {"number": n, "labels": [{"name": "type:feature"}]})
+        self.assertEqual(violations, ["#12: requiere status:approved"])
+
+
+class ApproverExemptionsTests(unittest.TestCase):
+    """Punto 4 y #913: `chain:partial` exime, y las `Refs` no aceptan una aprobación ajena."""
+
+    @staticmethod
+    def _events_by_number(number):
+        """Línea de tiempo por issue: #12 la aprobó el orquestador, #13 alguien sin autoridad."""
+        actor = "dys-orquestador[bot]" if number == 12 else "dys-agentes[bot]"
+        return [_labeled(actor)]
+
+    def test_chain_partial_is_exempt_and_does_not_read_events(self):
+        def never(number):
+            raise _UnexpectedFetchError()
+        context = PrContext(chain_partial=True, approvers=APPROVERS, events_fetcher=never)
+        self.assertEqual(
+            validate_remote("Refs #12\n", "team/skills",
+                            lambda n: approved_issue("status:approved", "type:feature"),
+                            context=context),
+            [])
+
+    def test_informative_ref_does_not_count_an_approval_from_a_non_approver(self):
+        # Una `Refs` a una issue «aprobada» por un actor no declarado no da por buena la
+        # aprobación del PR: sigue faltando la issue aprobada (mensaje de #913). Como una
+        # `Refs` es informativa, el motivo va como aviso y no como hallazgo.
+        context = PrContext(approvers=APPROVERS,
+                            events_fetcher=lambda n: [_labeled("dys-agentes[bot]")])
+        violations = validate_remote(
+            "Refs #12\n", "team/skills",
+            lambda n: approved_issue("status:approved", "type:feature"), context=context)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("aprobada", violations[0])
+        self.assertEqual(len(context.warnings), 1)
+        self.assertIn("dys-agentes[bot]", context.warnings[0])
+
+    def test_informative_ref_by_a_non_approver_warns_even_when_another_approves(self):
+        # El aviso no bloquea: con otra issue aprobada de verdad, el PR pasa y aun asi se
+        # dice que una de las enlazadas la aprobó alguien sin autoridad.
+        context = PrContext(approvers=APPROVERS,
+                            events_fetcher=self._events_by_number)
+        violations = validate_remote(
+            "Closes #12\nRefs #13\n", "team/skills",
+            lambda n: approved_issue("status:approved", "type:feature"), context=context)
+        self.assertEqual(violations, [])
+        self.assertEqual(len(context.warnings), 1)
+        self.assertIn("dys-agentes[bot]", context.warnings[0])
+
+    def test_informative_ref_approved_by_a_declared_approver_passes(self):
+        self.assertEqual(_remote("Refs #12\n", events=[_labeled("ardelperal")]), [])
+
+    def test_without_the_declaration_the_verdict_is_unchanged(self):
+        # Punto 3: sin `approvers` no se lee la API de eventos y el veredicto no cambia.
+        def never(number):
+            raise _UnexpectedFetchError()
+        self.assertEqual(_remote("Closes #12\n", approvers=(), events_get=never), [])
+
+
+class IssueEventsPaginationTests(unittest.TestCase):
+    """El último evento `labeled` solo es fiable si se lee toda la línea de tiempo."""
+
+    class _Client(check_issue_spec.GitHubClient):
+        def __init__(self, pages):
+            super().__init__()
+            self.pages = pages
+            self.requested = []
+
+        def _events_page(self, repository, number, page):
+            self.requested.append(page)
+            return list(self.pages.get(page, []))
+
+    def test_pages_are_walked_until_a_short_page(self):
+        # La API devuelve 30 por defecto: una página llena no dice que sea la última, así
+        # que el gate pide la siguiente hasta recibir una corta.
+        full = [_labeled(f"a{i}") for i in range(100)]
+        client = self._Client({1: full, 2: [_labeled("b")]})
+        events = client.issue_events("team/skills", 12)
+        self.assertEqual(len(events), 101)
+        self.assertEqual(events[-1], _labeled("b"))
+        self.assertEqual(client.requested, [1, 2])
+
+    def test_a_short_first_page_ends_the_walk(self):
+        # Con una página corta ya no hay nada más que leer: no se pide la siguiente.
+        client = self._Client({1: [_labeled("a")]})
+        self.assertEqual(client.issue_events("team/skills", 12), [_labeled("a")])
+        self.assertEqual(client.requested, [1])
+
+    def test_a_timeline_longer_than_the_cap_fails_closed(self):
+        # Sin este techo una issue con miles de eventos devolvería un veredicto sobre un
+        # fragmento del historial: falso verde. Ante la duda, hallazgo (HR-3).
+        full = [_labeled("a")] * 100
+        client = self._Client({page: full for page in range(1, 20)})
+        with self.assertRaises(check_issue_spec.GitHubApiError):
+            client.issue_events("team/skills", 12)
+        self.assertEqual(client.requested, list(range(1, 11)))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
