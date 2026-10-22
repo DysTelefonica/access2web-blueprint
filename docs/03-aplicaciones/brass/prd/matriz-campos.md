@@ -64,16 +64,16 @@ Brass abre además el backend de Lanzadera con `getdbLanzadera` (`Variables Glob
 | `TbEventos` | 38 | 5773 | 38 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbeventos) |
 | `TbEventosEquipoMedida` | 4 | 302 | 4 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbeventosequipomedida) |
 | `TbEventosEquipoMedida_antes` | 3 | 26 | 0 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbeventosequipomedida_antes) |
-| `TbFacturaActividadesInvolucradas` | 18 | 25107 | 7 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbFacturaEventosInvolucrados` | 21 | 5514 | 7 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbFacturaGastosInvolucrados` | 8 | 519 | 4 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbFacturaMaterialesInvolucrados` | 15 | 1986 | 6 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbFacturaPrincipal` | 19 | 53 | 4 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbFacturaPrincipalPerfiles` | 7 | 304 | 2 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbFacturaSubcontratacionesInvolucradas` | 7 | 74 | 4 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbGastos` | 7 | 519 | 6 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbGastosImportePorTipo` | 6 | 3 | 2 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
-| `TbGuiaConciliaciones` | 7 | 0 | 0 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
+| `TbFacturaActividadesInvolucradas` | 18 | 25107 | 7 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbfacturaactividadesinvolucradas) |
+| `TbFacturaEventosInvolucrados` | 21 | 5514 | 7 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbfacturaeventosinvolucrados) |
+| `TbFacturaGastosInvolucrados` | 8 | 519 | 4 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbfacturagastosinvolucrados) |
+| `TbFacturaMaterialesInvolucrados` | 15 | 1986 | 6 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbfacturamaterialesinvolucrados) |
+| `TbFacturaPrincipal` | 19 | 53 | 4 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbfacturaprincipal) |
+| `TbFacturaPrincipalPerfiles` | 7 | 304 | 2 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbfacturaprincipalperfiles) |
+| `TbFacturaSubcontratacionesInvolucradas` | 7 | 74 | 4 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbfacturasubcontratacionesinvolucradas) |
+| `TbGastos` | 7 | 519 | 6 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbgastos) |
+| `TbGastosImportePorTipo` | 6 | 3 | 2 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbgastosimporteportipo) |
+| `TbGuiaConciliaciones` | 7 | 0 | 0 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbguiaconciliaciones) |
 | `TbHerramientaDocAyuda` | 2 | 4 | 1 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbherramientadocayuda) |
 | `TbMaterial` | 15 | 2351 | 14 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbmaterial) |
 | `TbMaterialSeguimiento` | 11 | 2049 | 6 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbmaterialseguimiento) |
@@ -89,7 +89,7 @@ Brass abre además el backend de Lanzadera con `getdbLanzadera` (`Variables Glob
 | `TbRepuestosTipo` | 1 | 3 | 0 | Equipos, calibraciones y materiales | [equipos-materiales](matriz-campos/equipos-materiales.md#tbrepuestostipo) |
 | `TbResultadoVerificacion` | 1 | 3 | 0 | Eventos, actividades y anexos | [eventos](matriz-campos/eventos.md#tbresultadoverificacion) |
 | `TbSistema` | 1 | 2 | 0 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbsistema) |
-| `TbSubcontrataciones` | 7 | 75 | 4 | Facturación, gastos y subcontratación | facturacion (en la tanda siguiente) |
+| `TbSubcontrataciones` | 7 | 75 | 4 | Facturación, gastos y subcontratación | [facturacion](matriz-campos/facturacion.md#tbsubcontrataciones) |
 | `TbSubsistemaBui` | 2 | 162 | 11 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbsubsistemabui) |
 | `TbTecnicos` | 8 | 115 | 6 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbtecnicos) |
 | `TbTecnicosAusencias` | 6 | 1236 | 9 | Técnicos, estructura y configuración | [tecnicos-estructura](matriz-campos/tecnicos-estructura.md#tbtecnicosausencias) |

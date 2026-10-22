@@ -55,10 +55,14 @@ Este índice enlaza las capacidades del Expedientes que ya están documentadas e
 | CAP-041 | Sesión E2E | [`CAP-041-sesion-e2e.md`](CAP-041-sesion-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-041--sesión-e2e)) | E2E |
 | CAP-042 | Ordinal E2E | [`CAP-042-ordinal-e2e.md`](CAP-042-ordinal-e2e.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/e2e.md#requirement-exp-cap-042--ordinal-e2e)) | E2E |
 | CAP-040 | Tareas (bandeja) | `data/staging/expedientes/docs/capabilities/CAP-040-tareas-bandeja.md` | Tareas |
+| CAP-062 | Retirada popups | [`CAP-062-retirada-popups.md`](CAP-062-retirada-popups.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-062--retirada-popups)) | Mecanismos legacy (RETIRAR) |
+| CAP-063 | Retirada menú JSON-hub | [`CAP-063-retirada-menu-json-hub.md`](CAP-063-retirada-menu-json-hub.md) ([spec](../../../../openspec/changes/expedientes-web-migration/specs/uat-cutover-legacy-retirement.md#requirement-exp-cap-063--retirada-menú-json-hub)) | Mecanismos legacy (RETIRAR) |
 
 ## Capacidades pendientes de documentar
 
-A 2026-08-18, todas las CAPs pedidas en issues abiertos están documentadas a nivel repo. Los 17 ya presentes en staging cubren la granularidad §0..§7; los 26 nuevos (CAP-004, 005, 016..022, 024, 026..039, 041, 042) son resúmenes vinculados a los Requirements del spec fuente. La lista exhaustiva está en las tablas de arriba (43 entradas totales).
+A 2026-08-18, todas las CAPs pedidas en issues abiertos están documentadas a nivel repo. Los 17 ya presentes en staging cubren la granularidad §0..§7; los 26 nuevos (CAP-004, 005, 016..022, 024, 026..039, 041, 042) son resúmenes vinculados a los Requirements del spec fuente. La lista exhaustiva está en las tablas de arriba (45 entradas totales).
+
+Las fichas restantes de la cadena de la issue #807 (CAP-001..003, 006..015, 023, 025, 040, 043..061) se incorporan a esta misma tabla en el PR de la cadena que las escribe: cada PR añade sólo las filas cuyos ficheros existen en su propia rama, porque una fila que apunte a un fichero ausente rompe el gate de enlaces HR-66. La issue #807 deja además abierta (P-EXP-*) la elección de la ruta canónica entre `docs/05-capacidades/...` y `docs/03-aplicaciones/.../capabilities/`; la tabla mantiene la ruta ya adoptada sin resolver esa decisión.
 
 ## Cómo se aplica a access2web-blueprint
 
