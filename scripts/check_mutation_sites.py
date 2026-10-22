@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.6 — assets/scripts/check_mutation_sites.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_mutation_sites.py
+# Desviaciones locales declaradas sobre el asset (team-skills#809 T6, issue BP #1316):
+#   - `_docstring_node_ids` (BP #947): los docstrings no cuentan como sitios. El canon 2.2 no la
+#     trae, así que sin ella el `BASELINE` de abajo describiría otra medición y el ratchet
+#     premiaría borrar documentación. Se retira cuando el canon la publique (team-skills#999).
+#   - `BASELINE`: datos de BP (techo 100, fecha de revisión DG-11), no código del asset.
+# Todo lo demás (mecanismo, sobre, `--emit-baseline`) es el asset 2.2 sin cambios.
 """Static mutation-site density gate.
 
 Counts AST-level mutation targets per file without running a single mutant. It is the cheap
@@ -28,6 +34,9 @@ import sys
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+
+from policy_time import add_policy_date_argument
+from quality_policy import bind_envelope, expected_subjects, load_policy, subject_paths
 
 # --------------------------------------------------------------------------------------------
 # CONFIGURATION
@@ -409,19 +418,13 @@ def _count_sites(tree: ast.AST) -> int:
 
 def measure(root: Path) -> list[Measurement]:
     measurements: list[Measurement] = []
-    for scan_dir in SCAN_DIRS:
-        base = root / scan_dir
-        if not base.is_dir():
-            continue
-        for path in sorted(base.rglob("*.py")):
-            if EXCLUDED_PARTS.intersection(path.parts):
-                continue
-            try:
-                tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-            except SyntaxError:
-                continue  # the docs-architecture job owns the unparseable-file failure
-            display = str(path.relative_to(root)).replace("\\", "/")
-            measurements.append(Measurement(file=display, sites=_count_sites(tree)))
+    for path in subject_paths(root, load_policy()):
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except SyntaxError:
+            continue  # check_layers.py owns the unparseable-file failure
+        display = str(path.relative_to(root)).replace("\\", "/")
+        measurements.append(Measurement(file=display, sites=_count_sites(tree)))
     return sorted(measurements, key=lambda item: item.file)
 
 
@@ -481,15 +484,19 @@ def render_baseline(offenders: list[Measurement], today: date, horizon_days: int
     return "\n".join(lines)
 
 
-def build_report(measurements: list[Measurement], status: str) -> dict:
+def build_report(
+    root: Path, measurements: list[Measurement], status: str, policy_date: date
+) -> dict:
     offenders = offenders_of(measurements)
-    return {
+    report = {
         "gate": "mutation_sites",
+        "policy_date": policy_date.isoformat(),
         "status": status,
         "indicators": {
             "max_mutation_sites": max((item.sites for item in measurements), default=0),
             "files_over_ceiling": len(offenders),
             "total_mutation_sites": sum(item.sites for item in measurements),
+            "files_measured": len(measurements),
         },
         "ceilings": {"max_mutation_sites": MAX_MUTATION_SITES, "files_over_ceiling": 0},
         "findings": [
@@ -497,6 +504,15 @@ def build_report(measurements: list[Measurement], status: str) -> dict:
             for item in sorted(offenders, key=lambda entry: entry.file)
         ],
     }
+    checked = [item.file for item in measurements]
+    unclassified = sorted(set(expected_subjects(root)) - set(checked))
+    return bind_envelope(
+        report,
+        root,
+        "mutation_sites",
+        checked=checked,
+        unclassified=unclassified,
+    )
 
 
 def _pin_output_encoding() -> None:
@@ -510,6 +526,7 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
+    add_policy_date_argument(parser)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
     parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     parser.add_argument(
@@ -523,7 +540,9 @@ def main(argv: list[str] | None = None) -> int:
     if not any((root / scan_dir).is_dir() for scan_dir in SCAN_DIRS):
         message = f"none of {SCAN_DIRS} found under {root}"
         if args.json:
-            print(json.dumps({"gate": "mutation_sites", "status": "error", "detail": message}))
+            report = build_report(root, [], "error", args.policy_date)
+            report["detail"] = message
+            print(json.dumps(report))
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
@@ -536,23 +555,27 @@ def main(argv: list[str] | None = None) -> int:
         # trivially satisfied — the healthiest possible number for the least
         # healthy possible state. Guard the subject set, not just the path: the
         # missing-package case was already covered above; this is the one that
-        # looks like success (harness v1.6).
-        message = f"{list(SCAN_DIRS)} under {root} yielded no files to measure"
+        # looks like success.
+        message = f"no eligible Python files found under {root}"
         if args.json:
-            print(json.dumps({"gate": "mutation_sites", "status": "error", "detail": message}))
+            report = build_report(root, measurements, "error", args.policy_date)
+            report["detail"] = message
+            print(json.dumps(report, indent=2))
         else:
             print(f"FAIL  {message}", file=sys.stderr)
         return 1
 
     if args.emit_baseline:
-        print(render_baseline(offenders_of(measurements), date.today()))
+        print(render_baseline(offenders_of(measurements), args.policy_date))
         return 0
 
-    exit_code, lines = evaluate(offenders_of(measurements), date.today())
+    exit_code, lines = evaluate(offenders_of(measurements), args.policy_date)
     if args.json:
         print(
             json.dumps(
-                build_report(measurements, "pass" if exit_code == 0 else "fail"),
+                build_report(
+                    root, measurements, "pass" if exit_code == 0 else "fail", args.policy_date
+                ),
                 indent=2,
             )
         )

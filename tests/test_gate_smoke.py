@@ -30,11 +30,13 @@ ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 #: DQH 2.2: check_complexity evaluates its BASELINE at an explicit date, never the wall clock.
+#: check_mutation_sites joined it when BP took the canon's copy (BP #1316).
 POLICY_DATE = "2026-10-21"
+DATED_SCRIPTS = frozenset({"check_complexity.py", "check_mutation_sites.py"})
 
 
 def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
-    if script == "check_complexity.py":
+    if script in DATED_SCRIPTS:
         args = (*args, "--policy-date", POLICY_DATE)
     return subprocess.run(
         [sys.executable, str(SCRIPTS / script), *args],
