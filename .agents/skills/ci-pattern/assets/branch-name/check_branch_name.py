@@ -22,7 +22,7 @@ import sys
 
 DEFAULT_PATTERN = "^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)/[a-z0-9._-]+$"
 ALWAYS_EXEMPT = re.compile(r"main|archive/.+|skill-fleet/[A-Za-z0-9._-]+")
-DEPENDABOT = re.compile(r"dependabot/(?:pip|npm_and_yarn|github_actions)/[A-Za-z0-9._/-]+")
+DEPENDABOT = re.compile(r"dependabot/(?:pip|uv|npm_and_yarn|github_actions)/[A-Za-z0-9._/-]+")
 DEPENDABOT_ACTOR = "dependabot[bot]"
 EXIT_FINDING, EXIT_INVALID = 1, 2
 
