@@ -43,6 +43,8 @@ Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos
 
 `check_complexity.py`, `check_mutation_sites.py` y `check_dry.py` son copias del asset del canon `deterministic-quality-harness` 2.2. Los tres toman de `quality-policy.json` los sujetos y los techos (BP no sube el techo de complejidad: 10, con fecha de revisión en el propio script) y exigen `--policy-date`, de modo que el `BASELINE` se evalúa contra una fecha explícita y no contra el reloj. `quality_report.py` propaga esa fecha a los gates que la necesitan (`DATED_GATES`).
 
+`quality_report.py` es el agregador y también es copia del asset 2.2: valida el sobre de cada gate (`gate`, `status`, `indicators`, `ceilings`, `findings`, y la ligadura a la política en los gates que la gobiernan), lo vuelve a contrastar con la evidencia que recalcula del árbol, y se niega a copiar al informe una evidencia que ya no cuadra. Conserva tres desviaciones declaradas en su cabecera: su propia lista de gates (los dos caminantes legacy no están en la política y el asset los filtraría), `DATED_GATES` (la fecha solo va a los gates que la aceptan) y `--policy-date` opcional. No tiene `--include-pr-gates`: BP los retiró en #854 y los gates de revisión viven en su propio job.
+
 `check_dry.py` no conserva ninguna desviación de mecanismo, solo sus datos: umbrales (`MIN_STATEMENTS = 5`, `MIN_OCCURRENCES = 2`), escaneo por la política, guarda de liveness y sobre ligado son el asset. Su `BASELINE` (cuatro grupos de duplicados tolerados hasta su fecha objetivo) es dato de BP y así lo declara su cabecera. Un fichero que el gate no puede parsear aparece en `subjects.unclassified` en vez de desaparecer del recuento.
 
 | Script | Qué mide | Cómo se lee su fallo | Dónde corre |
