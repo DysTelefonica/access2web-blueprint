@@ -67,9 +67,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormEquiposMedidaGestion | src/forms/Form_FormEquiposMedidaGestion.cls | 471 | 29 | 14 | igual | analizado | [formularios/Form_FormEquiposMedidaGestion.md](formularios/Form_FormEquiposMedidaGestion.md) |
 | Form_FormEventoAlta | src/forms/Form_FormEventoAlta.cls | 880 | 65 | 19 | igual | analizado | [formularios/Form_FormEventoAlta.md](formularios/Form_FormEventoAlta.md) |
 | Form_FormEventoCopia | src/forms/Form_FormEventoCopia.cls | 455 | 20 | 7 | igual | analizado | [formularios/Form_FormEventoCopia.md](formularios/Form_FormEventoCopia.md) |
-| Form_FormEventoEdicion | src/forms/Form_FormEventoEdicion.cls | 1308 | 72 | 25 | igual | pendiente | — |
-| Form_FormEventoEqMedida | src/forms/Form_FormEventoEqMedida.cls | 283 | 23 | 7 | igual | pendiente | — |
-| Form_FormEventoEqMedidaEdicion | src/forms/Form_FormEventoEqMedidaEdicion.cls | 307 | 23 | 7 | igual | pendiente | — |
+| Form_FormEventoEdicion | src/forms/Form_FormEventoEdicion.cls | 1308 | 72 | 25 | igual | analizado | [formularios/Form_FormEventoEdicion.md](formularios/Form_FormEventoEdicion.md) |
+| Form_FormEventoEqMedida | src/forms/Form_FormEventoEqMedida.cls | 283 | 23 | 7 | igual | analizado | [formularios/Form_FormEventoEqMedida.md](formularios/Form_FormEventoEqMedida.md) |
+| Form_FormEventoEqMedidaEdicion | src/forms/Form_FormEventoEqMedidaEdicion.cls | 307 | 23 | 7 | igual | analizado | [formularios/Form_FormEventoEqMedidaEdicion.md](formularios/Form_FormEventoEqMedidaEdicion.md) |
 | Form_FormEventoFranqueo | src/forms/Form_FormEventoFranqueo.cls | 103 | 19 | 3 | igual | pendiente | — |
 | Form_FormEventoGestion | src/forms/Form_FormEventoGestion.cls | 2892 | 74 | 63 | igual | pendiente | — |
 | Form_FormEventoSLA | src/forms/Form_FormEventoSLA.cls | 450 | 49 | 6 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 67 analizados · 5 no aplicables · 59 pendientes.
+Totales: 70 analizados · 5 no aplicables · 56 pendientes.
 
 ## Discrepancias abiertas
 
