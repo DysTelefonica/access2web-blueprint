@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ vf8c9a61 -->
+<!-- personal-skills:slice:access2web-blueprint @ v14446be -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -245,7 +245,7 @@ Al buscar una skill de este catálogo, resuelva en este orden:
    `PI_CODING_AGENT_DIR`. La separación entre los cinco destinos
    compartidos del catálogo y la ruta reservada a skills exclusivas
    de Pi (HR-12) está documentada en la skill `skill-propagation`.
-2. Repo: `.agents/skills/` del consumer, materializada desde `.team-skills.yaml` por `scripts/refresh-team-skills.ps1` (vía rama `skill-fleet/<name>`).
+2. Repo: `.agents/skills/` del consumer, materializada desde `.team-skills.yaml` por el propagador del catálogo (`scripts/propagate-team-skills.ps1` de `team-skills`, vía rama `skill-fleet/<name>`).
 3. Catálogo: `skills/<nombre>/SKILL.md` de personal-skills.
 
 Referencias por nombre en prosa; ruta absoluta exacta en la delegación: al pasar una tarea a un subagente, copie la ruta del `SKILL.md` desde el registro bajo `## Skills to load before work` (ver §Skill Registry Protocol). La regla anti-ruta-absoluta gobierna el texto de skills y docs — las rutas varían por máquina — no la delegación, donde la ruta exacta es obligatoria. Nota de precedencia: pi nativo conserva la primera copia encontrada (gana la global), mientras que el registry de gentle-pi prefiere la copia del repo; una copia global desactualizada tapa la del repo en pi, así que las copias globales deben seguir al catálogo. Si una skill citada en este partial no resuelve en ninguno de los tres niveles, repórtelo: falta declararla en `.team-skills.yaml` del consumer.
