@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_mutation_sites.py
-# Desviaciones locales declaradas sobre el asset (team-skills#809 T6, issue BP #1316):
-#   - `_docstring_node_ids` (BP #947): los docstrings no cuentan como sitios. El canon 2.2 no la
-#     trae, así que sin ella el `BASELINE` de abajo describiría otra medición y el ratchet
-#     premiaría borrar documentación. Se retira cuando el canon la publique (team-skills#999).
+# Desviación local declarada sobre el asset (team-skills#809 T6, issue BP #1338):
 #   - `BASELINE`: datos de BP (techo 100, fecha de revisión DG-11), no código del asset.
-# Todo lo demás (mecanismo, sobre, `--emit-baseline`) es el asset 2.2 sin cambios.
+# Mecanismo sin desviaciones: el asset 2.2 ya excluía los docstrings del recuento
+# (team-skills#1008), de modo que esta copia coincide con él. La forma del texto es la que produce
+# `ruff format` en este repositorio, que el job `quality` exige.
 """Static mutation-site density gate.
 
 Counts AST-level mutation targets per file without running a single mutant. It is the cheap

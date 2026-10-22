@@ -1,5 +1,6 @@
 {
   "contract_version": 1,
+  "approvers": ["ardelperal", "dys-orquestador[bot]"],
   "protected_branches": [
     "main"
   ],

@@ -14,7 +14,6 @@ import json
 import sqlite3
 import subprocess
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -95,17 +94,17 @@ def test_an_explicit_policy_date_is_recorded_in_the_envelope(tmp_path: Path) -> 
     assert json.loads(result.stdout)["policy_date"] == POLICY_DATE
 
 
-def test_without_a_policy_date_the_gate_falls_back_to_today(tmp_path: Path) -> None:
-    """Declared deviation from the canon asset: the date is optional here.
+def test_without_a_policy_date_the_gate_refuses_to_run(tmp_path: Path) -> None:
+    """The BASELINE is judged at an explicit date: without one the gate measures nothing (BP #1324).
 
-    The asset makes ``--policy-date`` mandatory. The weekly mutation run cannot pass it from a
-    pull request opened by an agent without the ``workflows`` permission, so the copy falls back
-    to today (UTC) instead of breaking that run. The envelope always names the date used.
+    Falling back to the wall clock would make the same session yield a different verdict tomorrow,
+    which is the determinism the canon's `policy_time` exists to prevent.
     """
     subject = _subject(tmp_path)
     session = _session(tmp_path / "s.sqlite", [(subject, "op", 1, "killed")])
-    result = _run(tmp_path, session, "--json")
-    assert json.loads(result.stdout)["policy_date"] == datetime.now(UTC).date().isoformat()
+    result = _run(tmp_path, session)
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "--policy-date" in result.stderr
 
 
 def test_the_baseline_is_judged_at_the_date_it_is_given(tmp_path: Path) -> None:

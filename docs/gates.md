@@ -41,9 +41,20 @@ Cuatro reglas que el diagrama no muestra y que conviene saber:
 
 Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos estructurados (rama, etiquetas, campos de la API, YAML, AST), nunca prosa ni gestos, y publican un veredicto con código de salida.
 
+
 `check_complexity.py`, `check_mutation_sites.py`, `check_mutation.py` y `check_dry.py` son copias del asset del canon `deterministic-quality-harness` 2.2. Los cuatro toman de `quality-policy.json` los sujetos y los techos (BP no sube el techo de complejidad: 10, con fecha de revisión en el propio script) y evalúan su `BASELINE` contra una fecha explícita (`--policy-date`), no contra el reloj. `quality_report.py` propaga esa fecha a los gates que la necesitan (`DATED_GATES`).
 
-Cada copia declara en su cabecera las desviaciones locales que conserva respecto del asset, para que la diferencia sea una decisión y no una deriva silenciosa. Hoy: el techo de complejidad 10 (`check_complexity.py`); la exclusión de docstrings en el contador de sitios (`check_mutation_sites.py`, pendiente de team-skills#999); en `check_mutation.py` el `--shards` de una sesión por tramo de la matriz, el `BASELINE` agregado por módulo en lugar de por mutante (readquirirlo por mutante exige la corrida completa en el runner ARM) y un `--policy-date` **opcional** que cae a la fecha UTC de hoy, porque el canon lo exige y la corrida semanal de `release.yml` todavía no puede pasarlo; y en `check_dry.py` ninguna desviación de mecanismo, solo sus datos: umbrales (`MIN_STATEMENTS = 5`, `MIN_OCCURRENCES = 2`), escaneo por la política, guarda de liveness y sobre ligado son el asset, y su `BASELINE` (cuatro grupos de duplicados tolerados hasta su fecha objetivo) es dato de BP. Un fichero que `check_dry.py` no puede parsear aparece en `subjects.unclassified` en vez de desaparecer del recuento.
+
+Cada copia declara en su cabecera las desviaciones locales que conserva respecto del asset, para que la diferencia sea una decisión y no una deriva silenciosa:
+
+- `check_complexity.py`: solo el techo 10, que es política de BP.
+- `check_mutation_sites.py`: ninguna de mecanismo. La exclusión de docstrings la publica el canon desde team-skills#1008, así que su única desviación es el `BASELINE` como dato.
+- `check_mutation.py`: `--shards` (una sesión por tramo de la matriz), el `BASELINE` agregado por módulo en lugar de por mutante (readquirirlo por mutante exige la corrida completa en el runner ARM). `--policy-date` dejó de ser opcional en BP #1324: `release.yml::mutation` y `ci.yml::quality` pasan la fecha, y el BASELINE se juzga contra ella, no contra el reloj.
+- `check_dry.py`: ninguna de mecanismo —umbrales (`MIN_STATEMENTS = 5`, `MIN_OCCURRENCES = 2`), escaneo por la política, guarda de liveness y sobre ligado son el asset—; su `BASELINE` (cuatro grupos de duplicados tolerados hasta su fecha objetivo) es dato de BP. Un fichero que el gate no puede parsear aparece en `subjects.unclassified` en vez de desaparecer del recuento.
+
+Dos copias no coinciden byte a byte con el asset aunque el mecanismo sea el mismo: el canon no exige `ruff format` y el job `quality` de BP sí, así que el reparto de líneas y algún comentario de contexto son de esta casa. La diferencia que importa —qué mide y con qué política— es la de estas listas.
+
+`quality_report.py` es el agregador y también es copia del asset 2.2: valida el sobre de cada gate (`gate`, `status`, `indicators`, `ceilings`, `findings`, y la ligadura a la política en los gates que la gobiernan), lo vuelve a contrastar con la evidencia que recalcula del árbol, y se niega a copiar al informe una evidencia que ya no cuadra. Conserva tres desviaciones declaradas en su cabecera: su propia lista de gates (los dos caminantes legacy no están en la política y el asset los filtraría), `DATED_GATES` (la fecha solo va a los gates que la aceptan, y desde BP #1324 la exige) y la ausencia de `--include-pr-gates`, que BP retiró en #854: los gates de revisión viven en su propio job.
 
 | Script | Qué mide | Cómo se lee su fallo | Dónde corre |
 |---|---|---|---|
