@@ -131,22 +131,22 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Constructor | src/modules/Constructor.bas | 5698 | — | 96 | igual | pendiente | — |
-| Funciones Generales | src/modules/Funciones Generales.bas | 7942 | — | 106 | igual | pendiente | — |
-| HTML | src/modules/HTML.bas | 258 | — | 4 | igual | pendiente | — |
-| JsonConverter | src/modules/JsonConverter.bas | 1399 | — | 31 | igual | pendiente | — |
-| Módulo1 | src/modules/Módulo1.bas | 181 | — | 4 | igual | pendiente | — |
-| Módulo2 | src/modules/Módulo2.bas | 448 | — | 6 | igual | pendiente | — |
-| Pruebas | src/modules/Pruebas.bas | 41 | — | 1 | igual | pendiente | — |
-| PruebasSLA | src/modules/PruebasSLA.bas | 1697 | — | 55 | igual | pendiente | — |
-| SLAHTMLService | src/modules/SLAHTMLService.bas | 1163 | — | 11 | igual | pendiente | — |
-| SLAReportService | src/modules/SLAReportService.bas | 629 | — | 6 | igual | pendiente | — |
-| SLAValidator | src/modules/SLAValidator.bas | 166 | — | 2 | igual | pendiente | — |
-| Test_SLAReportService | src/modules/Test_SLAReportService.bas | 411 | — | 13 | igual | pendiente | — |
-| Test_SLAValidator | src/modules/Test_SLAValidator.bas | 515 | — | 13 | igual | pendiente | — |
-| Variables Globales | src/modules/Variables Globales.bas | 583 | — | 5 | distinto | pendiente | — |
-| modMigracionesSLA | src/modules/modMigracionesSLA.bas | 199 | — | 5 | igual | pendiente | — |
-| modTestingSLA | src/modules/modTestingSLA.bas | 382 | — | 6 | igual | pendiente | — |
+| Constructor | src/modules/Constructor.bas | 5698 | — | 96 | igual | analizado | [modulos.md](modulos.md) |
+| Funciones Generales | src/modules/Funciones Generales.bas | 7942 | — | 106 | igual | analizado | [modulos.md](modulos.md) |
+| HTML | src/modules/HTML.bas | 258 | — | 4 | igual | analizado | [modulos.md](modulos.md) |
+| JsonConverter | src/modules/JsonConverter.bas | 1399 | — | 31 | igual | analizado | [modulos.md](modulos.md) |
+| Módulo1 | src/modules/Módulo1.bas | 181 | — | 4 | igual | analizado | [modulos.md](modulos.md) |
+| Módulo2 | src/modules/Módulo2.bas | 448 | — | 6 | igual | analizado | [modulos.md](modulos.md) |
+| Pruebas | src/modules/Pruebas.bas | 41 | — | 1 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| PruebasSLA | src/modules/PruebasSLA.bas | 1697 | — | 55 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| SLAHTMLService | src/modules/SLAHTMLService.bas | 1163 | — | 11 | igual | analizado | [modulos.md](modulos.md) |
+| SLAReportService | src/modules/SLAReportService.bas | 629 | — | 6 | igual | analizado | [modulos.md](modulos.md) |
+| SLAValidator | src/modules/SLAValidator.bas | 166 | — | 2 | igual | analizado | [modulos.md](modulos.md) |
+| Test_SLAReportService | src/modules/Test_SLAReportService.bas | 411 | — | 13 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| Test_SLAValidator | src/modules/Test_SLAValidator.bas | 515 | — | 13 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| Variables Globales | src/modules/Variables Globales.bas | 583 | — | 5 | distinto | analizado | [modulos.md](modulos.md) |
+| modMigracionesSLA | src/modules/modMigracionesSLA.bas | 199 | — | 5 | igual | analizado | [modulos.md](modulos.md) |
+| modTestingSLA | src/modules/modTestingSLA.bas | 382 | — | 6 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
 
 ### Clases
 
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
 
-Totales: 19 analizados · 0 no aplicables · 112 pendientes.
+Totales: 30 analizados · 5 no aplicables · 96 pendientes.
 
 ## Discrepancias abiertas
 
