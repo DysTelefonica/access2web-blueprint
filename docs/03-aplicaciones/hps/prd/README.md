@@ -1,6 +1,6 @@
 # PRD — HPS
 
-> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 25 de 38.
+> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 27 de 38.
 
 | Campo | Valor |
 |---|---|
@@ -39,7 +39,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 279 | 24 | 8 | igual | pendiente | — |
+| Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 279 | 24 | 8 | igual | analizada | [Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
 | Form_FormInicial | src/forms/Form_FormInicial.cls | 338 | 26 | 9 | igual | pendiente | — |
 | Form_FormInicial00Principal | src/forms/Form_FormInicial00Principal.cls | 150 | 22 | 5 | igual | analizada | [Form_FormInicial00Principal.md](formularios/Form_FormInicial00Principal.md) |
 | Form_FormInicial01Lateral | src/forms/Form_FormInicial01Lateral.cls | 495 | 27 | 18 | igual | pendiente | — |
@@ -57,7 +57,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormInicial06BusquedaGlobal | src/forms/Form_FormInicial06BusquedaGlobal.cls | 504 | 22 | 16 | igual | pendiente | — |
 | Form_FormInicial07UsuariosSICA | src/forms/Form_FormInicial07UsuariosSICA.cls | 236 | 24 | 9 | igual | analizada | [Form_FormInicial07UsuariosSICA.md](formularios/Form_FormInicial07UsuariosSICA.md) |
 | Form_FormInicial07UsuariosSICADatos | src/forms/Form_FormInicial07UsuariosSICADatos.cls | 40 | 48 | 3 | igual | analizada | [Form_FormInicial07UsuariosSICADatos.md](formularios/Form_FormInicial07UsuariosSICADatos.md) |
-| Form_FormInicial08UsuariosHistoricos | src/forms/Form_FormInicial08UsuariosHistoricos.cls | 225 | 20 | 8 | igual | pendiente | — |
+| Form_FormInicial08UsuariosHistoricos | src/forms/Form_FormInicial08UsuariosHistoricos.cls | 225 | 20 | 8 | igual | analizada | [Form_FormInicial08UsuariosHistoricos.md](formularios/Form_FormInicial08UsuariosHistoricos.md) |
 | Form_FormInicial08UsuariosHistoricosDatos | src/forms/Form_FormInicial08UsuariosHistoricosDatos.cls | 47 | 70 | 4 | igual | analizada | [Form_FormInicial08UsuariosHistoricosDatos.md](formularios/Form_FormInicial08UsuariosHistoricosDatos.md) |
 | Form_FormInicial09Indicadores | src/forms/Form_FormInicial09Indicadores.cls | 712 | 28 | 22 | igual | pendiente | — |
 | Form_FormInicial09IndicadoresDatosLocalDatos | src/forms/Form_FormInicial09IndicadoresDatosLocalDatos.cls | 42 | 311 | 2 | igual | analizada | [Form_FormInicial09IndicadoresDatosLocalDatos.md](formularios/Form_FormInicial09IndicadoresDatosLocalDatos.md) |

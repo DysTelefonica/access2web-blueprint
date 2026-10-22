@@ -63,10 +63,10 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormEquipoGestion | src/forms/Form_FormEquipoGestion.cls | 838 | 38 | 27 | igual | analizado | [formularios/Form_FormEquipoGestion.md](formularios/Form_FormEquipoGestion.md) |
 | Form_FormEquipoMedida | src/forms/Form_FormEquipoMedida.cls | 206 | 37 | 6 | igual | analizado | [formularios/Form_FormEquipoMedida.md](formularios/Form_FormEquipoMedida.md) |
 | Form_FormEquipoMedidaCalibracion | src/forms/Form_FormEquipoMedidaCalibracion.cls | 203 | 36 | 6 | igual | analizado | [formularios/Form_FormEquipoMedidaCalibracion.md](formularios/Form_FormEquipoMedidaCalibracion.md) |
-| Form_FormEquipoMedidaCalibracionesGestion | src/forms/Form_FormEquipoMedidaCalibracionesGestion.cls | 331 | 24 | 10 | igual | pendiente | — |
-| Form_FormEquiposMedidaGestion | src/forms/Form_FormEquiposMedidaGestion.cls | 471 | 29 | 14 | igual | pendiente | — |
-| Form_FormEventoAlta | src/forms/Form_FormEventoAlta.cls | 880 | 65 | 19 | igual | pendiente | — |
-| Form_FormEventoCopia | src/forms/Form_FormEventoCopia.cls | 455 | 20 | 7 | igual | pendiente | — |
+| Form_FormEquipoMedidaCalibracionesGestion | src/forms/Form_FormEquipoMedidaCalibracionesGestion.cls | 331 | 24 | 10 | igual | analizado | [formularios/Form_FormEquipoMedidaCalibracionesGestion.md](formularios/Form_FormEquipoMedidaCalibracionesGestion.md) |
+| Form_FormEquiposMedidaGestion | src/forms/Form_FormEquiposMedidaGestion.cls | 471 | 29 | 14 | igual | analizado | [formularios/Form_FormEquiposMedidaGestion.md](formularios/Form_FormEquiposMedidaGestion.md) |
+| Form_FormEventoAlta | src/forms/Form_FormEventoAlta.cls | 880 | 65 | 19 | igual | analizado | [formularios/Form_FormEventoAlta.md](formularios/Form_FormEventoAlta.md) |
+| Form_FormEventoCopia | src/forms/Form_FormEventoCopia.cls | 455 | 20 | 7 | igual | analizado | [formularios/Form_FormEventoCopia.md](formularios/Form_FormEventoCopia.md) |
 | Form_FormEventoEdicion | src/forms/Form_FormEventoEdicion.cls | 1308 | 72 | 25 | igual | pendiente | — |
 | Form_FormEventoEqMedida | src/forms/Form_FormEventoEqMedida.cls | 283 | 23 | 7 | igual | pendiente | — |
 | Form_FormEventoEqMedidaEdicion | src/forms/Form_FormEventoEqMedidaEdicion.cls | 307 | 23 | 7 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 63 analizados · 5 no aplicables · 63 pendientes.
+Totales: 67 analizados · 5 no aplicables · 59 pendientes.
 
 ## Discrepancias abiertas
 
