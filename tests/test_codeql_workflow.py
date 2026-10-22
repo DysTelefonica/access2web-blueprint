@@ -29,7 +29,13 @@ def test_codeql_scans_python_via_reusable_workflow_call() -> None:
     """
     workflow = _load_workflow()
     triggers = _triggers(workflow)
-    job = workflow["jobs"]["codeql"]
+    job = workflow["jobs"]["analyze"]
+    # The check name is published by the caller (`codeql (pull_request) / codeql`) and the code
+    # scanning analysis key is the caller's (`ci.yml:codeql`): the inner job id may change, the
+    # display name may not. The id is not `codeql` so it never collides with the required-jobs
+    # policy name, which belongs to the `codeql` job of `ci.yml` (canon workflow-policy, HR-30).
+    assert job["name"] == "codeql"
+    assert "codeql" not in workflow["jobs"]
 
     assert set(triggers) == {"workflow_call"}
     assert job["runs-on"] == "ubuntu-24.04"

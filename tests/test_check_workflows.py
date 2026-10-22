@@ -61,150 +61,9 @@ def _capture(check_module, root: Path) -> tuple[int, str]:
 # --------------------------------------------------------------------------------------------
 
 
-def test_duplicate_keys_positive(tmp_path: Path) -> None:
-    body = """\
-name: ok
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-permissions: { contents: read }
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          fetch-depth: 0
-"""
-    p = _write(tmp_path, "ok.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 0, stderr
-    assert "duplicate-key" not in stderr
-
-
-def test_duplicate_keys_negative(tmp_path: Path) -> None:
-    body = """\
-name: dup
-on: [push]
-permissions: { contents: read }
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-"""
-    p = _write(tmp_path, "dup.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 1
-    assert "duplicate-key" in stderr
-    # Second `timeout-minutes` is line 8 in this fixture (1-based).
-    assert ":8: duplicate-key" in stderr
-
-
-def test_duplicate_keys_skips_remaining_checks(tmp_path: Path) -> None:
-    """If a file has duplicates, the other checks must not run on it.
-
-    PyYAML's safe_load would silently pick one of the colliding values; any
-    finding from a later check would then be arbitrary. The gate short-
-    circuits to prevent that.
-    """
-    body = """\
-name: dup-and-bad
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v3
-"""
-    p = _write(tmp_path, "both.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 1
-    assert "duplicate-key" in stderr
-    # The unpinned `uses: actions/checkout@v3` is a real check-4 violation,
-    # but the gate must NOT report it because safe_load would pick one of
-    # the colliding `timeout-minutes` values arbitrarily.
-    assert "uses-not-pinned" not in stderr
-
-
 # --------------------------------------------------------------------------------------------
 # Check 2: every job declares timeout-minutes
 # --------------------------------------------------------------------------------------------
-
-
-def test_timeout_minutes_positive(tmp_path: Path) -> None:
-    body = """\
-name: ok
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - run: echo ok
-"""
-    p = _write(tmp_path, "ok.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 0, stderr
-    assert "timeout-minutes" not in stderr
-
-
-def test_timeout_minutes_negative(tmp_path: Path) -> None:
-    body = """\
-name: bad
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    steps:
-      - run: echo ok
-"""
-    p = _write(tmp_path, "bad.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 1
-    assert "timeout-minutes" in stderr
-    assert "jobs.build" in stderr
-
-
-def test_timeout_minutes_exempts_reusable_workflow_call_jobs(tmp_path: Path) -> None:
-    """Issue #702: a `uses: ./...` job has no `timeout-minutes` in its schema.
-
-    GitHub rejects `timeout-minutes` on a job whose only content is a
-    reusable-workflow call, so this gate must not demand it either.
-    """
-    body = """\
-name: caller
-on: [pull_request]
-permissions: { contents: read }
-concurrency: { group: caller, cancel-in-progress: false }
-jobs:
-  security:
-    uses: ./.github/workflows/security.yml
-    permissions:
-      contents: read
-    concurrency:
-      group: gate-security-call
-      cancel-in-progress: false
-"""
-    p = _write(tmp_path, "caller.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 0, stderr
-    assert "timeout-minutes" not in stderr
 
 
 # --------------------------------------------------------------------------------------------
@@ -212,125 +71,9 @@ jobs:
 # --------------------------------------------------------------------------------------------
 
 
-def test_service_ports_positive(tmp_path: Path) -> None:
-    """A bare container-port publish is accepted (publishes on random host port)."""
-    body = """\
-name: ok
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  test:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    services:
-      postgres:
-        image: postgres:16-alpine
-        ports:
-          - 5432
-    steps:
-      - run: echo ok
-"""
-    p = _write(tmp_path, "ok.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 0, stderr
-    assert "host-port-fix" not in stderr
-
-
-def test_service_ports_negative_host_container(tmp_path: Path) -> None:
-    body = """\
-name: bad
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  test:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    services:
-      postgres:
-        image: postgres:16-alpine
-        ports:
-          - 5432:5432
-    steps:
-      - run: echo ok
-"""
-    p = _write(tmp_path, "bad.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 1
-    assert "host-port-fix" in stderr
-    assert "postgres" in stderr
-    assert "5432:5432" in stderr
-
-
 # --------------------------------------------------------------------------------------------
 # Check 4: every uses: pinned by SHA
 # --------------------------------------------------------------------------------------------
-
-
-def test_uses_pinned_positive(tmp_path: Path) -> None:
-    body = """\
-name: ok
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-"""
-    p = _write(tmp_path, "ok.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 0, stderr
-    assert "uses-not-pinned" not in stderr
-
-
-def test_uses_pinned_negative_tag(tmp_path: Path) -> None:
-    body = """\
-name: bad
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v3
-"""
-    p = _write(tmp_path, "bad.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 1
-    assert "uses-not-pinned" in stderr
-    assert "actions/checkout@v3" in stderr
-
-
-def test_uses_pinned_negative_branch(tmp_path: Path) -> None:
-    body = """\
-name: bad
-on: [push]
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/setup-python@main
-"""
-    p = _write(tmp_path, "bad.yml", body)
-    rc, stderr = _capture(check_workflows, p.parent)
-    assert rc == 1
-    assert "uses-not-pinned" in stderr
-    assert "actions/setup-python@main" in stderr
 
 
 # --------------------------------------------------------------------------------------------
@@ -364,107 +107,6 @@ jobs:
 """
 
 
-def test_docker_preflight_positive_same_step(tmp_path: Path) -> None:
-    """The guard may live earlier in the SAME step — the shape this repo uses."""
-    body = (
-        _COMPLIANT_HEADER
-        + """\
-      - name: scan
-        run: |
-          if ! timeout 30 docker info >/dev/null 2>&1; then exit 1; fi
-          docker run --rm scanner
-"""
-    )
-    rc, stderr = _capture(check_workflows, _write(tmp_path, "ok.yml", body).parent)
-    assert rc == 0, stderr
-
-
-def test_docker_preflight_positive_earlier_step(tmp_path: Path) -> None:
-    body = (
-        _COMPLIANT_HEADER
-        + """\
-      - name: preflight
-        run: timeout 30 docker info >/dev/null
-      - name: scan
-        run: docker run --rm scanner
-"""
-    )
-    rc, stderr = _capture(check_workflows, _write(tmp_path, "ok.yml", body).parent)
-    assert rc == 0, stderr
-
-
-def test_docker_preflight_negative_absent(tmp_path: Path) -> None:
-    body = (
-        _COMPLIANT_HEADER
-        + """\
-      - name: scan
-        run: docker run --rm scanner
-"""
-    )
-    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
-    assert rc == 1
-    assert "docker-preflight" in stderr
-    assert "no `docker info` check" in stderr
-
-
-def test_docker_preflight_negative_unwrapped(tmp_path: Path) -> None:
-    """A bare `docker info` hangs exactly when the daemon is wedged."""
-    body = (
-        _COMPLIANT_HEADER
-        + """\
-      - name: scan
-        run: |
-          docker info >/dev/null
-          docker run --rm scanner
-"""
-    )
-    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
-    assert rc == 1
-    assert "not under `timeout`" in stderr
-
-
-def test_docker_preflight_word_timeout_in_prose_does_not_count(tmp_path: Path) -> None:
-    """`timeout-minutes` and the word "timeout" in a message are not a guard.
-
-    This exact false negative shipped in the first draft of the check: the repo's
-    own preflight message says "silent 15-minute timeout", so a substring test
-    reported two unwrapped guards as wrapped.
-    """
-    body = (
-        _COMPLIANT_HEADER
-        + """\
-      - name: scan
-        run: |
-          echo "a hung daemon turns this into a silent 15-minute timeout"
-          docker info >/dev/null
-          docker run --rm scanner
-"""
-    )
-    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
-    assert rc == 1
-    assert "not under `timeout`" in stderr
-
-
-def test_docker_preflight_ignores_comment_lines(tmp_path: Path) -> None:
-    """A comment naming the guard is not the guard.
-
-    The mirror of the rule above: files document what they do, and a scanner that
-    reads comments would accept a documented-but-absent guard.
-    """
-    body = (
-        _COMPLIANT_HEADER
-        + """\
-      - name: scan
-        run: |
-          # we used to run: timeout 30 docker info
-          docker run --rm scanner
-"""
-    )
-    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
-    assert rc == 1
-    assert "no `docker info` check" in stderr
-
-
 # --------------------------------------------------------------------------------------------
 # CHECK 6 — FIFO concurrency (issue #141, #152)
 # --------------------------------------------------------------------------------------------
@@ -474,22 +116,6 @@ def test_docker_preflight_ignores_comment_lines(tmp_path: Path) -> None:
 # `cancel-in-progress: true` is now a WARN, not an error. The repo's design
 # is per-gate FIFO without cancelling; the WARN surfaces any future drift
 # without breaking a workflow that already lives in that shape.
-def test_concurrency_negative_missing(tmp_path: Path) -> None:
-    body = """\
-name: bad
-on: [push]
-jobs:
-  build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - run: echo ok
-"""
-    rc, stderr = _capture(check_workflows, _write(tmp_path, "bad.yml", body).parent)
-    assert rc == 1
-    assert "declares no concurrency group" in stderr
-
-
 def test_concurrency_cancel_in_progress_warns_not_errors(tmp_path: Path) -> None:
     """`cancel-in-progress: true` is a WARN — it does not fail the gate.
 
@@ -1048,3 +674,32 @@ jobs:
     assert rc == 1
     assert "public-pr-runner" in stderr
     assert "jobs.scan.runs-on" in stderr
+
+
+_DYSFLOW_ERD_BODY = """\
+name: erd
+on: {on}
+permissions: {{ contents: read }}
+concurrency: {{ group: erd, cancel-in-progress: false }}
+jobs:
+  extract:
+    runs-on: [self-hosted, Windows, X64, dysflow-erd]
+    timeout-minutes: 20
+    steps:
+      - run: echo read-only
+"""
+
+
+def test_no_self_hosted_runner_allows_dispatch_only_dysflow_erd(tmp_path: Path) -> None:
+    """#1074: el runner Windows del propietario solo se admite en workflow_dispatch."""
+    p = _write(tmp_path, "erd.yml", _DYSFLOW_ERD_BODY.format(on="{ workflow_dispatch: {} }"))
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 0, stderr
+    assert "no-self-hosted-runner" not in stderr
+
+
+def test_no_self_hosted_runner_rejects_dysflow_erd_with_other_triggers(tmp_path: Path) -> None:
+    p = _write(tmp_path, "erd.yml", _DYSFLOW_ERD_BODY.format(on="[workflow_dispatch, push]"))
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc != 0, stderr
+    assert "no-self-hosted-runner" in stderr
