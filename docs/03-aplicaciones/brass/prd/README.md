@@ -125,7 +125,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormTecnicoTipo | src/forms/Form_FormTecnicoTipo.cls | 112 | 25 | 3 | igual | analizado | [formularios/Form_FormTecnicoTipo.md](formularios/Form_FormTecnicoTipo.md) |
 | Form_FormTipoTecnicoPrecio | src/forms/Form_FormTipoTecnicoPrecio.cls | 170 | 26 | 5 | igual | analizado | [formularios/Form_FormTipoTecnicoPrecio.md](formularios/Form_FormTipoTecnicoPrecio.md) |
 | Form_FormTipoTecnicoPreciosGestion | src/forms/Form_FormTipoTecnicoPreciosGestion.cls | 448 | 24 | 14 | igual | analizado | [formularios/Form_FormTipoTecnicoPreciosGestion.md](formularios/Form_FormTipoTecnicoPreciosGestion.md) |
-| Form_FormUbicacionGestion | src/forms/Form_FormUbicacionGestion.cls | 220 | 19 | 7 | igual | pendiente | — |
+| Form_FormUbicacionGestion | src/forms/Form_FormUbicacionGestion.cls | 220 | 19 | 7 | igual | analizado | [formularios/Form_FormUbicacionGestion.md](formularios/Form_FormUbicacionGestion.md) |
 
 ### Módulos estándar
 
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 125 analizados · 5 no aplicables · 1 pendientes.
+Totales: 126 analizados · 5 no aplicables · 0 pendientes.
 
 ## Discrepancias abiertas
 
