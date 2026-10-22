@@ -14,8 +14,8 @@
 #     the asset's own check_mutation_sites) or `statements_measured` (emitted by the asset's
 #     own check_dry), and its fallback `(name, "lower")` would report both as "lower is
 #     better" when they are how much the gate managed to measure. BP tabulates both as
-#     "higher" and drops `max_crap`/`line_coverage_pct`, which belong to the crap and
-#     coverage gates BP does not run.
+#     "higher". The asset's entries for the two gates BP does not run are likewise absent:
+#     those indicators could never reach this report, and DG-12 forbids naming them here.
 # Everything else (envelope validation, evidence cross-check, report and markdown shape) is
 # the asset 2.2.
 """Aggregate every gate's indicator envelope into one report.
