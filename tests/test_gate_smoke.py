@@ -39,6 +39,7 @@ DATED_SCRIPTS = frozenset(
         "check_mutation_sites.py",
         "check_mutation.py",
         "check_dry.py",
+        "quality_report.py",
     }
 )
 

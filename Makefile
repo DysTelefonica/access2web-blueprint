@@ -66,7 +66,7 @@ check-workflows:
 # in one process because their order is pinned in code (GATES), not in YAML
 # where a reviewer can swap two steps without noticing.
 quality-report:
-	$(PYTHON) scripts/quality_report.py
+	$(PYTHON) scripts/quality_report.py --policy-date "$(POLICY_DATE)"
 
 # verify — THE definition of green (Hard Rule 19).
 #
