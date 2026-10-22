@@ -8,9 +8,6 @@
 #     is pinned by tests/test_ci_workflow.py::test_gate_order_is_pinned_in_code.
 #   - DATED_GATES: the asset passes `--policy-date` to every selected gate. Two of BP's gates
 #     (the legacy walkers) do not accept it, so the date goes only to the gates that do.
-#   - `--policy-date` is optional here and falls back to today (UTC). The asset makes it
-#     mandatory; `ci.yml::quality` calls this script without it, and the agent that opens the
-#     PR cannot push workflow changes. The report always records the date it used.
 #   - No `--include-pr-gates`/`PR_GATES`: BP retired them in #854; the `review-budget` job
 #     owns branch-name and pr-size, and ROOTLESS_GATES is therefore empty.
 # Everything else (envelope validation, evidence cross-check, report and markdown shape) is
@@ -38,10 +35,9 @@ import json
 import os
 import subprocess
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 
-from policy_time import parse_policy_date
+from policy_time import add_policy_date_argument
 from quality_policy import (
     DEFAULT_POLICY_PATH,
     KNOWN_GATES,
@@ -375,13 +371,7 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--policy-date",
-        type=parse_policy_date,
-        metavar="YYYY-MM-DD",
-        default=None,
-        help="explicit BASELINE evaluation date (default: today, UTC)",
-    )
+    add_policy_date_argument(parser)
     parser.add_argument("--root", type=Path, default=Path.cwd(), help="repository root")
     parser.add_argument(
         "--scripts",
@@ -395,8 +385,6 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
-    if args.policy_date is None:
-        args.policy_date = datetime.now(UTC).date()
     scripts = (args.scripts or Path(__file__).resolve().parent).resolve()
     out = args.out or (root / "quality-report.json")
 

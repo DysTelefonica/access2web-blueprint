@@ -153,7 +153,9 @@ jobs:
         # Viene del job `mutation-ratchet` de ci.yml (retirado por
         # #881), integrado aquí como último step para que un fallo
         # bloquee `publish` directamente.
-        run: python scripts/check_mutation.py shard-session-*.sqlite --shards 10
+        # DQH 2.2: el BASELINE se evalúa contra una fecha explícita, nunca contra el
+        # reloj, y el sobre registra esa fecha (BP #1324).
+        run: python scripts/check_mutation.py shard-session-*.sqlite --shards 10 --policy-date "$(date -u +%F)"
 
   e2e:
     # Blocking Playwright smoke against the just-published image.
