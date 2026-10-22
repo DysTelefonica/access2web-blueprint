@@ -1,4 +1,4 @@
-[← Back to capabilities-index](index.md) · [← Back to DOCS](../../../DOCS.md)
+[← Back to capabilities-index](index.md) · [← Back to DOCS](../../../../DOCS.md)
 
 # CAP-004 — Cambio de tipo
 

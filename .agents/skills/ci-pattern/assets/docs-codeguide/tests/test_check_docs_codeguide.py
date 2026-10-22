@@ -160,6 +160,60 @@ class TestExtractPathRefs(unittest.TestCase):
 # --------------------------------------------------------------------- #
 
 
+class TestFencedBlocksAreNotCitations(unittest.TestCase):
+    """Un bloque cercado es un ejemplo, no una cita de ruta (issue #725).
+
+    El regex de comillas invertidas empareja tres de las seis comillas de
+    un bloque y deja dos sueltas; sin saltar los bloques, el código en
+    línea posterior queda con el emparejamiento invertido.
+    """
+
+    def test_slash_inside_backtick_fence_is_not_a_path(self) -> None:
+        """Falso positivo: el cuerpo de un bloque no es una cita."""
+        content = "```python\nfrom src/mod import a\n```\n\nVea `src/mod/a.py`.\n"
+        self.assertEqual(gate.extract_path_refs(content), ["src/mod/a.py"])
+
+    def test_inline_path_after_fence_is_still_extracted(self) -> None:
+        """Falso negativo: la ruta tras un bloque se extrae, no se pierde."""
+        content = "```text\nx\n```\n\nVea `src/ghost/gone.py`.\n"
+        self.assertEqual(gate.extract_path_refs(content), ["src/ghost/gone.py"])
+
+    def test_broken_path_after_fence_fails_closed(self) -> None:
+        """Extremo a extremo: una ruta rota tras un bloque deja el gate en rojo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(
+                repo, "after.md", "# After\n\n```text\nx\n```\n\nVea `internal/ghost/gone.go`.\n"
+            )
+            result = gate.check_docs_codeguide(repo)
+            self.assertEqual(result["missing_in_repo"], ["internal/ghost/gone.go"])
+
+    def test_inline_paths_around_a_fence_are_both_extracted(self) -> None:
+        content = "Antes `a/b.py`.\n\n```\nc/d.py\n```\n\nDespués `e/f.py`.\n"
+        self.assertEqual(gate.extract_path_refs(content), ["a/b.py", "e/f.py"])
+
+    def test_tilde_fence_is_ignored(self) -> None:
+        content = "~~~bash\ncd src/mod\n~~~\n\nVea `src/mod/a.py`.\n"
+        self.assertEqual(gate.extract_path_refs(content), ["src/mod/a.py"])
+
+    def test_longer_fence_contains_a_shorter_one(self) -> None:
+        """Un bloque de cuatro comillas solo lo cierra otro de al menos cuatro."""
+        content = "````md\n```python\nfrom a/b import c\n```\nd/e.py\n````\n\nVea `x/y.py`.\n"
+        self.assertEqual(gate.extract_path_refs(content), ["x/y.py"])
+
+    def test_tilde_fence_is_not_closed_by_backtick_fence(self) -> None:
+        content = "~~~\n```\na/b.py\n~~~\n\nVea `x/y.py`.\n"
+        self.assertEqual(gate.extract_path_refs(content), ["x/y.py"])
+
+    def test_indented_fence_in_a_list_item_is_ignored(self) -> None:
+        content = "1. Paso:\n\n   ```bash\n   cd src/mod\n   ```\n\nVea `x/y.py`.\n"
+        self.assertEqual(gate.extract_path_refs(content), ["x/y.py"])
+
+    def test_unclosed_fence_discards_until_end_of_page(self) -> None:
+        content = "Vea `x/y.py`.\n\n```text\na/b.py\n`c/d.py`\n"
+        self.assertEqual(gate.extract_path_refs(content), ["x/y.py"])
+
+
 class TestForwardDocsToRepo(unittest.TestCase):
     """Cada ruta citada en ``docs/codebase/**`` existe en el repo."""
 
@@ -196,6 +250,70 @@ class TestForwardDocsToRepo(unittest.TestCase):
             missing = result["missing_in_repo"]
             self.assertIn("internal/ghost-a/", missing)
             self.assertIn("internal/ghost-b/", missing)
+
+
+class TestGlobsMarkersAndBraces(unittest.TestCase):
+    """#737: globs con coincidencias, marcadores con prefijo existente y llaves son citas válidas."""
+
+    def _missing(self, cite: str, extra: dict[str, str] | None = None) -> list[str]:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            for rel, body in (extra or {}).items():
+                _write(repo / rel, body)
+            _add_codeguide_page(repo, "cites.md", f"Vea `{cite}`.\n")
+            return gate.check_docs_codeguide(repo)["missing_in_repo"]
+
+    def test_glob_matching_a_file_is_valid(self) -> None:
+        self.assertEqual(self._missing("internal/components/app/*.go"), [])
+
+    def test_glob_matching_nothing_is_red_and_named(self) -> None:
+        found = self._missing("internal/components/app/*.rs")
+        self.assertEqual(len(found), 1)
+        self.assertIn("internal/components/app/*.rs", found[0])
+        self.assertIn("glob sin coincidencias", found[0])
+
+    def test_marker_with_existing_prefix_is_valid(self) -> None:
+        self.assertEqual(self._missing("internal/components/<module>/core.go"), [])
+
+    def test_marker_with_missing_prefix_is_red_and_named(self) -> None:
+        found = self._missing("internal/ghost/<module>/core.go")
+        self.assertEqual(len(found), 1)
+        self.assertIn("internal/ghost/<module>/core.go", found[0])
+        self.assertIn("prefijo inexistente: internal/ghost", found[0])
+
+    def test_glob_before_a_marker_is_checked_as_prefix(self) -> None:
+        self.assertEqual(self._missing("internal/*/<module>/core.go"), [])
+        self.assertTrue(self._missing("nada/*/<module>/core.go"))
+
+    def test_marker_followed_by_glob_only_checks_the_prefix(self) -> None:
+        self.assertEqual(self._missing("internal/components/<module>/*.go"), [])
+
+    def test_literal_missing_path_keeps_its_old_message(self) -> None:
+        self.assertEqual(self._missing("internal/ghost/foo.go"), ["internal/ghost/foo.go"])
+
+    def test_braces_are_valid_when_every_expansion_is(self) -> None:
+        self.assertEqual(
+            self._missing("internal/components/{app/main,billing/core}.go"), [])
+        self.assertEqual(self._missing("internal/components/<m>/{main,core}.go"), [])
+
+    def test_braces_fail_when_one_expansion_is_not_valid(self) -> None:
+        found = self._missing("internal/components/{app/main,ghost/main}.go")
+        self.assertEqual(len(found), 1)
+        self.assertIn("internal/components/{app/main,ghost/main}.go", found[0])
+        self.assertIn("internal/components/ghost/main.go", found[0])
+
+    def test_glob_char_in_a_directory_name_resolves_by_glob(self) -> None:
+        self.assertEqual(self._missing("internal/comp*/app/main.go"), [])
+
+    def test_cli_exits_one_on_glob_without_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(repo, "cites.md", "Vea `internal/components/app/*.rs`.\n")
+            result = subprocess.run(
+                [sys.executable, str(GATE), str(repo)],
+                capture_output=True, text=True, check=False)
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("glob sin coincidencias", result.stderr)
 
 
 # --------------------------------------------------------------------- #
@@ -296,6 +414,147 @@ class TestConfigurableRoots(unittest.TestCase):
             )
             self.assertIn("billing", result["missing_in_codeguide"])
             self.assertNotIn("users", result["missing_in_codeguide"])
+
+
+class TestMultipleRoots(unittest.TestCase):
+    """#727: varias raíces de código, cada una con su glob."""
+
+    @staticmethod
+    def _repo_with_two_roots(root: Path, page: str) -> Path:
+        repo = root / "repo"
+        repo.mkdir()
+        _write(repo / "docs" / "codebase" / "page.md", page)
+        _write(repo / "app" / "users.py", "# users\n")
+        _write(repo / "templates" / "home.html", "<p>hola</p>\n")
+        return repo
+
+    def test_every_root_covered_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py` y home\n")
+            result = gate.check_docs_codeguide_roots(
+                repo, [("app", "*.py"), ("templates", "*.html")]
+            )
+            self.assertEqual(result, {"missing_in_repo": [], "missing_in_codeguide": []})
+
+    def test_module_missing_in_second_root_names_root_and_module(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py`\n")
+            result = gate.check_docs_codeguide_roots(
+                repo, [("app", "*.py"), ("templates", "*.html")]
+            )
+            self.assertEqual(result["missing_in_codeguide"], ["home (templates)"])
+
+    def test_empty_second_root_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py` y home\n")
+            result = gate.check_docs_codeguide_roots(
+                repo, [("app", "*.py"), ("static", "*.js")]
+            )
+            self.assertEqual(result["missing_in_codeguide"], ["<empty static/>"])
+
+    def test_cited_missing_path_is_reported_once_across_roots(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py`, home y `app/ghost.py`\n")
+            result = gate.check_docs_codeguide_roots(
+                repo, [("app", "*.py"), ("templates", "*.html")]
+            )
+            self.assertEqual(result["missing_in_repo"], ["app/ghost.py"])
+
+    def test_single_root_keeps_bare_module_names(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "nada\n")
+            result = gate.check_docs_codeguide_roots(repo, [("app", "*.py")])
+            self.assertEqual(result["missing_in_codeguide"], ["users"])
+
+    def test_cli_repeated_pairs_exit_zero_when_all_roots_are_covered(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py` y home\n")
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo), "--code-root", "app",
+                 "--code-glob", "*.py", "--code-root", "templates", "--code-glob", "*.html"],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_cli_repeated_pairs_exit_one_when_a_root_has_an_undescribed_module(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py`\n")
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo), "--code-root", "app",
+                 "--code-glob", "*.py", "--code-root", "templates", "--code-glob", "*.html"],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("home (templates)", proc.stderr)
+
+    def test_cli_unpaired_roots_and_globs_exit_two(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(Path(tmp), "`app/users.py`\n")
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo), "--code-root", "app",
+                 "--code-root", "templates", "--code-glob", "*.py"],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+            self.assertIn("code-root", proc.stderr)
+
+
+class TestGlobMatchesEquivalence(unittest.TestCase):
+    """#757: ``_glob_matches`` usa ``Path.glob``; el comportamiento observable se mantiene."""
+
+    def _repo(self, tmp: str) -> Path:
+        repo = Path(tmp)
+        _write(repo / "src" / "a" / "deep" / "m.py", "x = 1\n")
+        _write(repo / "src" / "b.py", "y = 1\n")
+        _write(repo / "src" / ".hidden.py", "z = 1\n")
+        return repo
+
+    def test_star_and_recursive_patterns_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertTrue(gate._glob_matches(repo, "src/*.py"))
+            self.assertTrue(gate._glob_matches(repo, "src/**/*.py"))
+            self.assertTrue(gate._glob_matches(repo, "src/a/**/m.py"))
+
+    def test_pattern_without_matches_does_not_match(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertFalse(gate._glob_matches(repo, "src/*.go"))
+            self.assertFalse(gate._glob_matches(repo, "nothing/**/*.py"))
+
+    def test_hidden_file_counts_as_a_match(self) -> None:
+        """Único cambio respecto a ``glob.glob``: los ficheros ocultos también casan."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            _write(repo / "src" / ".hidden.py", "z = 1\n")
+            self.assertTrue(gate._glob_matches(repo, "src/*.py"))
+
+    def test_unsupported_patterns_do_not_match_and_do_not_raise(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp)
+            self.assertFalse(gate._glob_matches(repo, "/etc/*"))
+            self.assertFalse(gate._glob_matches(repo, ""))
+
+    def test_repo_path_with_glob_metacharacters_is_literal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "we[ir]d*dir"
+            _write(repo / "src" / "b.py", "y = 1\n")
+            self.assertTrue(gate._glob_matches(repo, "src/*.py"))
+
+
+class TestPublicErrorTypes(unittest.TestCase):
+    """#757: los errores con mensaje propio siguen siendo ``ValueError`` y ``FileNotFoundError``."""
+
+    def test_no_roots_is_a_value_error_with_the_same_message(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaises(ValueError) as ctx:
+                gate.check_docs_codeguide_roots(Path(tmp), [])
+            self.assertEqual(str(ctx.exception), "at least one (code_root, code_glob) pair is required")
+
+    def test_missing_repo_is_a_file_not_found_error_with_the_same_message(self) -> None:
+        with self.assertRaises(FileNotFoundError) as ctx:
+            gate.check_docs_codeguide_roots(Path("/path/that/does/not/exist"), [("a", "*.py")])
+        self.assertEqual(str(ctx.exception), "repo path is not a directory: /path/that/does/not/exist")
 
 
 # --------------------------------------------------------------------- #

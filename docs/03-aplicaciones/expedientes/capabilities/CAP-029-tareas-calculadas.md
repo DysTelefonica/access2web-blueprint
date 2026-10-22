@@ -1,8 +1,8 @@
-[← Back to capabilities-index](index.md) · [← Back to DOCS](../../../DOCS.md)
+[← Back to capabilities-index](index.md) · [← Back to DOCS](../../../../DOCS.md)
 
 # CAP-029 — Tareas calculadas
 
-Capacidad de Expedientes. Resumen a nivel repo derivado del [spec fuente](../../../../openspec/changes/expedientes-web-migration/specs/query-and-tasks.md#requirement-exp-cap-029-tareas-calculadas). El spec contiene los escenarios G/W/T completos; este doc los resume y los vincula a las decisiones operativas vigentes.
+Capacidad de Expedientes. Resumen a nivel repo derivado del [spec fuente](../../../../openspec/changes/expedientes-web-migration/specs/query-and-tasks.md#requirement-exp-cap-029--tareas-calculadas). El spec contiene los escenarios G/W/T completos; este doc los resume y los vincula a las decisiones operativas vigentes.
 
 ## Escenario clave
 
@@ -34,4 +34,4 @@ Esta capacidad vive en `app/src/modules/expedientes/` siguiendo la forma hexagon
 
 ## Navigation
 
-Previous: [capabilities-index](index.md) | Next: [DOCS](../../../DOCS.md)
+Previous: [capabilities-index](index.md) | Next: [DOCS](../../../../DOCS.md)

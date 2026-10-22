@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — positive fixture
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — positive fixture
 """Small and fully covered: CRAP collapses to the complexity, which is well under the ceiling."""
 
 

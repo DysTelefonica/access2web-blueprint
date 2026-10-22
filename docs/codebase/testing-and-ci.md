@@ -10,7 +10,7 @@ Este repo separa el veredicto en **cinco niveles de disparo** sobre dos workflow
 
 | Nivel | Workflow | Disparador | Jobs | Veredicto |
 |---|---|---|---|---|
-| **PR** | `.github/workflows/ci.yml` | `pull_request` (cualquier rama) | `pr-gate`, `quality`, `integration`, `security`, `codeql`, `required` | Branch protection exige `required` verde. |
+| **PR** | `.github/workflows/ci.yml` | `pull_request` (cualquier rama) | `pr-gate`, `quality`, `integration`, `security`, `codeql`, `e2e-smoke`, `required` | Branch protection exige `required` verde. `e2e-smoke` solo corre aquí (issue #876). |
 | **Post-merge** | `.github/workflows/ci.yml` | `push` a `branches: [main]` (red de seguridad tras el merge) | `quality`, `integration`, `security`, `codeql`, `required` | Misma matriz que la PR, sin `pr-gate` (su `if: github.event_name == 'pull_request'` lo excluye; el `if:` de los heavy jobs acepta `skipped` de `pr-gate`). Issue #857, PR-D. |
 | **Nightly** | `.github/workflows/ci.yml` | `schedule` (`cron: "0 3 * * *"`) | `quality`, `integration`, `security`, `codeql`, `required` | Sin rama; alimenta el snapshot del quality report. |
 | **Manual** | `.github/workflows/ci.yml` | `workflow_dispatch` | `quality`, `integration`, `security`, `codeql`, `required` | El mismo set de jobs que el push a `main`; útil para reproducir el veredicto sin abrir una PR. |
@@ -24,18 +24,19 @@ Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.r
 
 | Job | Runs-on | Steps principales | Comando / coste |
 |---|---|---|---|
-| `pr-gate` | `ubuntu-24.04` | `pr size`, `issue spec`, `walkthrough schema` | Llama a `scripts/check_pr_size.py`, `scripts/check_issue_spec.py` y `scripts/check_walkthrough_schema.py`. Solo corre si `event == pull_request`. |
-| `quality` | `ubuntu-24.04` | `install`, `format scripts`, `format`, `lint`, `typecheck`, `workflow gate`, `suites populated`, `tests`, `quality gates and indicators` | `pytest -c app/pyproject.toml --rootdir=app -m "not integration"`; al final, `scripts/quality_report.py`. |
-| `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | `pytest -c app/pyproject.toml --rootdir=app -m integration`. El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera`) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
+| `pr-gate` | `ubuntu-24.04` | `pr size`, `issue spec`, `walkthrough schema` | Llama al `check_pr_size.py` del canon (`.agents/skills/ci-pattern/assets/pr-size/`), el `check_issue_spec.py` del canon (`.agents/skills/ci-pattern/assets/issue-spec/`) y `scripts/check_walkthrough_schema.py`. Solo corre si `event == pull_request`. |
+| `quality` | `ubuntu-24.04` | `install`, `format scripts`, `format`, `lint`, `typecheck`, `workflow gate`, `suites populated`, `tests`, `quality gates and indicators` | la suite sin el marker `integration` (comando 1 de «Comandos de referencia»); al final, `scripts/quality_report.py`. |
+| `integration` | `ubuntu-24.04` (Postgres como service) | `install`, `Resolve the DSN from the assigned host port`, `Apply migrations`, `Run integration tests` | la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El DSN no viene de un plugin: lo construye el step `Resolve the DSN from the assigned host port`, que lee `POSTGRES_HOST_PORT=${{ job.services.postgres.ports['5432'] }}` y exporta `INTEGRATION_DSN` y `APAP_INTEGRATION_URL` (`postgresql+asyncpg` sobre `127.0.0.1` y el puerto asignado) a `$GITHUB_ENV`. `app/migrations/env.py` lee `DATABASE_URL`, que el step `Apply migrations` iguala a `APAP_INTEGRATION_URL` antes de `alembic upgrade head`. |
+| `e2e-smoke` | `ubuntu-24.04` (Postgres como service) | `Build the PR image`, `Resolve the DSN from the assigned host port`, `Install the lockfile and apply the real migrations`, `Start the app and wait for the health check`, `Run the E2E smoke specs` | Solo `pull_request` (issue #876). Construye la imagen de la PR, espera a `/health` hasta 60 s y ejecuta `smoke.spec.ts` y `auth.spec.ts` de Playwright; tope de 5 min. En push, schedule y workflow_dispatch se salta y `.github/required-jobs-policy.json` acepta ese salto; en `pull_request` un salto deja `required` en rojo. La suite completa sigue en `release.yml` (job `e2e`). |
 | `security` | — (workflow reutilizado, jobs `gitleaks`, `trivy-config`, `pip-audit`) | Escaneo estático y de dependencias | `gitleaks`, `trivy config`, `pip-audit`. |
 | `codeql` | `ubuntu-24.04` | Análisis estático de GitHub | Lenguajes: python, javascript. |
-| `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta `scripts/check_required_jobs.py` — es el agregador que la branch protection exige. |
+| `required` | `ubuntu-24.04` | `Enforce the required-job policy` | Ejecuta el `check_required_jobs.py` del canon (`.agents/skills/ci-pattern/assets/required-jobs/`) contra `.github/required-jobs-policy.json` — es el agregador que la branch protection exige. |
 
 ### `pr-gate` (rápido, primer filtro)
 
 Sólo corre en `pull_request`. Los tres gates son baratos y rechazan PRs que no deberían gastar minutos de runner:
 
-- `pr size`: rechaza PRs de más de 400 líneas (`additions + deletions` = `MAX_CHANGED_LINES` en `scripts/check_pr_size.py`). La única exención es la etiqueta `size:exception` aplicada por el mantenedor (`SIZE_EXCEPTION_LABEL`, función `has_size_exception_label`); el cuerpo del PR no se lee. El modo local del mismo script no tiene exención: `El modo local no tiene excepción: reduzca el diff o parta el PR.`
+- `pr size`: rechaza PRs de más de 400 líneas (`additions + deletions` = `MAX_CHANGED_LINES` en `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py`, el gate del canon). La única exención es la etiqueta `size:exception` aplicada por el mantenedor (`OVERRIDE_LABEL`); el cuerpo del PR no se lee. En local, sin evento, el gate mide con `git diff` contra la base y la etiqueta se pasa con `--labels` o `$PR_LABELS`.
 - `issue spec`: verifica que el cuerpo del PR cita una issue (Refs/Closes) y, si es una epic de walkthrough, que el bloque de spec está bien formado.
 - `walkthrough schema`: valida que cada `docs/03-aplicaciones/<app>/walkthrough-G*.json` cumple el esquema vigente.
 
@@ -43,21 +44,21 @@ Sólo corre en `pull_request`. Los tres gates son baratos y rechazan PRs que no 
 
 Orden interno de los steps (ver `ci.yml` línea 188 a línea 360):
 
-1. `install` — `pip install --require-hashes --requirement app/requirements-dev.lock`. Hard Rule 2: pins exactos en `app/pyproject.toml` y `app/requirements-dev.lock`.
+1. `install` — instalación con hashes exigidos desde `app/requirements-dev.lock`. Hard Rule 2: pins exactos en `app/pyproject.toml` y `app/requirements-dev.lock`.
 2. `format scripts` — `ruff format` sobre `scripts/` (no sobre `app/`).
 3. `format` — `ruff format --check` sobre `app/src`, `tests/`, `openspec/`. Si falla, el runner reporta el diff.
 5. `lint` — `ruff check` con la `select` de `app/pyproject.toml`.
 6. `typecheck` — `mypy --explicit-package-bases` con la config en `app/pyproject.toml` (Hard Rule 15: pins de mypy==1.13.0).
-7. `workflow gate` — ejecuta `scripts/check_workflows.py` y `scripts/check_required_jobs.py` (parte de la matriz `required`).
+7. `workflow gate` — ejecuta `scripts/check_workflows.py`; la matriz `required` la comprueba el job `required` con el gate del canon.
 8. `suites populated` — ejecuta `scripts/check_suites_populated.py`. Issue #882: una suite obligatoria vacía es una garantía falsa; cada suite (`unit`, `integration`, `e2e_smoke`) debe recoger al menos un test bajo `--collect-only -m <expr>`.
-9. `tests` — `pytest -c app/pyproject.toml --rootdir=app -m "not integration"`. El flag `--rootdir=app` es load-bearing: sin él, `pytest` no encuentra la configuración y cada test falla con `import error`.
+9. `tests` — la suite sin el marker `integration` (comando 1 de «Comandos de referencia»). El flag `--rootdir=app` es load-bearing: sin él, `pytest` no encuentra la configuración y cada test falla con `import error`.
 10. `quality gates and indicators` — ejecuta `scripts/quality_report.py`. Renderiza el quality report en el step summary del job.
 
 Cobertura: el plugin `coverage` se retiró en #877; el `pytest-cov` ya no está en `app/pyproject.toml` y los flags `--cov` no existen. La ratchet shrink-only actual es la de mutación (release), no de cobertura.
 
 ### `integration` (Postgres + Alembic)
 
-El job arranca Postgres como service y aplica el esquema con `alembic upgrade head` antes de correr los tests. La fixture de tests/migrations (`tests/lanzadera/migrations/test_seed_migrations.py`) verifica el seed. El comando es `pytest -c app/pyproject.toml --rootdir=app -m integration`. El driver es `asyncpg` (no `psycopg2`) y no se usa `pytest-postgresql`: el DSN lo calcula y exporta el step `Resolve the DSN from the assigned host port` como se describe arriba.
+El job arranca Postgres como service y aplica el esquema con `alembic upgrade head` antes de correr los tests. La fixture de tests/migrations (`tests/lanzadera/migrations/test_seed_migrations.py`) verifica el seed. El comando es la suite con el marker `integration` (comando 2 de «Comandos de referencia»). El driver es `asyncpg` (no `psycopg2`) y no se usa `pytest-postgresql`: el DSN lo calcula y exporta el step `Resolve the DSN from the assigned host port` como se describe arriba.
 
 ## Level nightly
 
@@ -77,7 +78,7 @@ Sólo se dispara con push de tags (`v*`). El veredicto final es `cosign verify` 
 | `preflight` | `ubuntu-24.04` | 15 min | Identidad del tag (`scripts/release-preflight.sh`) y CI verde en el SHA (`scripts/require-ci-success.sh`). Clasifica el canal como `rc` o `stable`. |
 | `mutation` | `ubuntu-24.04-arm` | 150 min | Cosmic-ray sobre el dominio (`scripts/mutation_shards.py`, 10 tramos deterministas) y ratchet `scripts/check_mutation.py`. Issue #857, PR-C1d: la mutación salió de `ci.yml` (#881) y vive aquí porque un release es raro y la latencia es aceptable. |
 | `e2e` | `ubuntu-24.04-arm` | 20 min | Pull de la imagen publicada en `ghcr.io`, arranque con `docker run`, suite Playwright (`e2e/*.spec.ts`) contra `http://localhost:8000`. |
-| `publish` | `ubuntu-24.04-arm` | 45 min | Buildx multi-arch + push a `ghcr.io/<owner>/access2web-blueprint:<tag>` + firma keyless con `cosign sign`. Necesita `e2e` y `mutation` verdes. |
+| `publish` | `ubuntu-24.04-arm` | 45 min | Buildx multi-arch + push a `ghcr.io` (imagen del repositorio, con la etiqueta de la release) + firma keyless con `cosign sign`. Necesita `e2e` y `mutation` verdes. |
 | `verify` | `ubuntu-24.04` | 15 min | `cosign verify` con `--certificate-identity` y `--certificate-oidc-issuer` anclados al workflow y a la identidad OIDC de GitHub Actions. Pull del digest verificado. |
 
 ARM64 conservado: la imagen que `publish` produce se consume en `e2e`; si cambia la arquitectura, el smoke falla. Documentado en `docs/10-runners.md`.
@@ -102,12 +103,12 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 
 | Gate | Job que lo invoca | Protege |
 |---|---|---|
-| `scripts/check_pr_size.py` | `pr-gate` | PR ≤ 400 líneas. |
-| `scripts/check_issue_spec.py` | `pr-gate` | Cuerpo de issue conforme. |
+| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | `pr-gate` | PR ≤ 400 líneas. |
+| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` (canon) | `pr-gate` | Cuerpo de issue conforme. |
 | `scripts/check_walkthrough_schema.py` | `pr-gate` | `walkthrough-*.json` válidos. |
 | `scripts/check_workflows.py` | `quality` (`workflow gate`) | `.github/workflows/*.yml` bien formado. |
-| `scripts/check_required_jobs.py` | `quality` (`workflow gate`) + `required` (enforce) | Matriz `required` completa. |
-| `scripts/check_layers.py` | `quality` (paso de quality gates) | DA-1 hexagonalidad. |
+| `.agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py` (canon) | `required` (enforce) | Matriz `required` completa. |
+| `.importlinter` | `docs-architecture` (job requerido) | DA-1 hexagonalidad: derivado del bloque `architecture` de `docs/architecture.md`. |
 | `scripts/check_legacy_hashes.py` | `quality` | DA-13 prohibición legacy. |
 | `scripts/check_mutation_sites.py` | `quality` | DA-13 pin AST. |
 | `scripts/check_complexity.py` | `quality` | Complejidad. |
@@ -123,13 +124,32 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 
 | Tipo de test | Carpeta | Marker | Comando local |
 |---|---|---|---|
-| Unit (caso de uso) | `tests/lanzadera/application/<case>/` | (sin marker) | `pytest -c app/pyproject.toml --rootdir=app tests/lanzadera/application/<case>/` |
+| Unit (caso de uso) | `tests/lanzadera/application/<case>/` | (sin marker) | la suite de un caso de uso (comando 3 de «Comandos de referencia») |
 | Unit (adapter) | `tests/lanzadera/adapters/` | (sin marker) | Igual, con la subcarpeta del adapter. |
-| Unit (gate smoke) | `tests/lanzadera/scripts/` | `@pytest.mark.e2e_smoke` | `pytest -c app/pyproject.toml --rootdir=app -m e2e_smoke` |
+| Unit (gate smoke) | `tests/lanzadera/scripts/` | `@pytest.mark.e2e_smoke` | la suite con el marker `e2e_smoke` (comando 4 de «Comandos de referencia») |
 | Integration | `tests/lanzadera/` (subcarpeta específica) | `@pytest.mark.integration` | Requiere Postgres en `localhost:5432` o DSN exportado. |
-| E2E (Playwright) | `e2e/<spec>.spec.ts` | (no aplica, es TS) | `npx playwright test e2e/<spec>.spec.ts` (no corre en PR). |
+| E2E (Playwright) | `e2e/<spec>.spec.ts` | (no aplica, es TS) | Playwright sobre una spec (comando 5 de «Comandos de referencia») (no corre en PR). |
 
 La regla práctica: si el test toca Postgres, márquelo `integration`; si toca una dependencia de runtime externa (HTTP live, SMTP, S3), cree un fake o un adapter y déjelo en unit. Las pruebas que necesitan un servidor en vivo viven sólo en `e2e/` y se reservan al release.
+
+## Comandos de referencia
+
+Se ejecutan desde la raíz del repositorio. Los números son los que citan las secciones de arriba.
+
+```
+# 1. Suite sin el marker integration (job quality)
+pytest -c app/pyproject.toml --rootdir=app -m "not integration"
+# 2. Suite con el marker integration (job integration, con Postgres)
+pytest -c app/pyproject.toml --rootdir=app -m integration
+# 3. Suite de un caso de uso
+pytest -c app/pyproject.toml --rootdir=app tests/lanzadera/application/<case>/
+# 4. Suite con el marker e2e_smoke
+pytest -c app/pyproject.toml --rootdir=app -m e2e_smoke
+# 5. Playwright sobre una spec (no corre en PR)
+npx playwright test e2e/<spec>.spec.ts
+# Instalación con hashes exigidos
+pip install --require-hashes --requirement app/requirements-dev.lock
+```
 
 ## Pre-flight local
 
@@ -143,10 +163,22 @@ El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `c
 
 ## Fronteras explícitas
 
-- **No añada un job nuevo a `ci.yml` sin pasar por `scripts/check_workflows.py` y `scripts/check_required_jobs.py`.** Ambos gates validan la matriz y rompen la ratchet si se omite una actualización.
+- **No añada un job nuevo a `ci.yml` sin pasar por `scripts/check_workflows.py` y por la política `.github/required-jobs-policy.json`.** Ambos gates validan la matriz y rompen la ratchet si se omite una actualización.
 - **No mueva un step entre jobs sin revisar `tests/test_ci_workflow.py`.** El wiring está pinado por tests (`test_pull_request_types_cover_edit_and_label_events` y similares).
 - **No cambie los markers sin actualizar `docs/gates.md` §2 y `scripts/check_suites_populated.py`.** Con `--strict-markers` activo, un marker nuevo no declarado falla la recolección.
 - **No cubra un test que requiere servidor con la suite `unit`.** Use `e2e_smoke` (subproceso real) o `e2e` (release).
+
+## Si necesitas X, lee/toca Y
+
+| Si necesitas... | Empieza por... | Luego revisa... |
+|---|---|---|
+| Ejecutar los tests de un PR | La sección «Nivel PR» de esta página | `scripts/local-preflight.sh` |
+| Añadir un gate | `.github/required-jobs-policy.json` y su `needs` en el job `required` | `.github/workflows/ci.yml` y `tests/test_ci_workflow.py` |
+| Cambiar la suite E2E | `e2e/` | `.github/workflows/release.yml` |
+
+## Regla de colocación
+
+Un test vive junto a la capa que prueba, bajo `tests`, en la carpeta de su módulo y de su capa, y el job que lo ejecuta se declara en `.github/workflows/ci.yml`.
 
 ## Lista de comprobación del contribuidor
 

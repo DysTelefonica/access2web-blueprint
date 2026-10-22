@@ -11,9 +11,9 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 | Capability | Vista del mantenedor |
 |---|---|
 | Multi-app Lanzadera | ¿La nueva app declara su `[<APP>]` en el título y su `(app)` o `(platform)` en el commit? |
-| Hexagonalidad | ¿El nuevo código respeta `ROOT_PACKAGE = "app.src.modules"` y las capas `domain`, `ports`, `application` que `scripts/check_layers.py` enforces? |
-| Auth (Argon2id + JWT) | ¿La ruta nueva pasa por el middleware y los servicios `domain/services/issue_reset_token.py` / `consume_reset_token.py` si toca reset? |
-| CI por niveles | ¿El cambio sabe en qué nivel corre (PR, nightly, release) y respeta `scripts/check_pr_size.py` (≤400)? |
+| Hexagonalidad | ¿El nuevo código respeta las capas y las reglas del bloque `architecture` de `docs/architecture.md`, que impone el job `docs-architecture`? |
+| Auth (Argon2id + JWT) | ¿La ruta nueva pasa por el middleware y los servicios `app/src/modules/lanzadera/domain/services/issue_reset_token.py` / `consume_reset_token.py` si toca reset? |
+| CI por niveles | ¿El cambio sabe en qué nivel corre (PR, nightly, release) y respeta `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` (≤400)? |
 | Migración Alembic | ¿La nueva migración sigue Expand & Contract (D82), tiene una de bajada y un test en `tests/lanzadera/migrations/`? |
 | E2E | ¿El test nuevo usa `e2e/<spec>.spec.ts` y se reserva al release, no al PR? |
 | Quality gates | ¿Si añadió un gate, lo cableó en `.github/workflows/ci.yml`, en `docs/gates.md` y en `tests/test_ci_workflow.py`? |
@@ -29,11 +29,11 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 
 - **No toque el estado de runtime local**: `data/staging/<app>/` se R2-pullea; las fixtures viven en `tests/lanzadera/` o las crea `scripts/generate_lanzadera_fixtures.py`.
 - **No invente internos externos**: Engram, dysflow y Gentleman-Programming tienen owner externo; apunte a su contrato en vez de replicarlo.
-- **No evite los adapters**: las rutas HTTP y los paths de `scripts/` viven en sus paquetes, no en `application/`.
+- **No evite los adapters**: las rutas HTTP y los paths de `scripts/` viven en sus paquetes, no en `application`.
 - **No duplique referencias**: enlace a `docs/gates.md`, `docs/architecture.md` o las páginas de `docs/codebase/` en vez de copiar el detalle.
-- **No rebase ni force-push en una PR abierta**: use `git merge origin/main` (Hard Rule 12).
+- **No rebase ni force-push en una PR abierta**: use merge de origin/main (Hard Rule 12).
 
-## Listas por tipo de cambio
+## Checklists por tipo de cambio
 
 ### Cambiar una ruta HTTP de Lanzadera
 
@@ -47,7 +47,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 
 - [ ] Cree o edite `app/src/modules/expedientes/application/<case>/{command,service}.py`.
 - [ ] Añada test en `tests/expedientes/application/<case>/`.
-- [ ] Si la ruta HTTP la expone Lanzadera o Expedientes, coordine el router en su `delivery/http/`.
+- [ ] Si la ruta HTTP la expone Lanzadera o Expedientes, coordine el router en su `app/src/modules/lanzadera/delivery/http/`.
 
 ### Cambiar un quality gate
 
@@ -55,7 +55,7 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 - [ ] Documente el contrato en `docs/gates.md` §2.
 - [ ] Añada el wiring en `tests/test_ci_workflow.py`.
 - [ ] Invoque el gate en `.github/workflows/ci.yml::quality` o en `scripts/quality_report.py`.
-- [ ] Si el gate afecta a la matriz `required`, actualice también `scripts/check_required_jobs.py`.
+- [ ] Si el gate afecta a la matriz `required`, actualice también `.github/required-jobs-policy.json` (jobs requeridos y saltos aceptados por evento).
 
 ### Cambiar CI
 
@@ -82,12 +82,24 @@ Use esta página antes de revisar o hacer un cambio. Convierte el mapa del repos
 | ¿Las citas de paths en la doc están verificadas con `test -e`? | Citar paths falsos erosiona la confianza del codeguide. |
 | ¿El commit usa Conventional Commits con scope `(app)` o `(platform)`? | La convención mantiene el changelog navegable. |
 | ¿Si añade un gate, actualizó `docs/gates.md` y `tests/test_ci_workflow.py`? | Sin docs y sin wiring, el gate es invisible al siguiente mantenedor. |
-| ¿Se evitó rebase y force-push? | El repo exige historial lineal vía `git merge origin/main`. |
+| ¿Se evitó rebase y force-push? | El repo exige historial lineal vía merge de origin/main. |
+
+## Si necesitas X, lee/toca Y
+
+| Si necesitas... | Empieza por... | Luego revisa... |
+|---|---|---|
+| Revisar un PR | La sección «Playbook de revisión de PR» de esta página | `docs/gates.md` |
+| Saber qué comprobar según el tipo de cambio | La sección «Listas por tipo de cambio» de esta página | `docs/codebase/repository-map.md` |
+| Decidir dónde va un fichero nuevo | `docs/codebase/repository-map.md` | `docs/architecture.md` |
+
+## Regla de colocación
+
+Esta página no aloja código ni reglas nuevas: solo enruta. Una regla de revisión nueva va en la lista de su tipo de cambio y, si es un gate, en `docs/gates.md`.
 
 ## Lista de comprobación del contribuidor
 
-- [ ] El cambio respeta los 5 gates del workflow (`scripts/check_pr_size.py`, `scripts/check_issue_spec.py`, `scripts/check_walkthrough_schema.py`, ruff, mypy) — ver `docs/gates.md` §2.
-- [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/architecture.md` §Decisiones D-<n> cross-cutting antes de empezar.
+- [ ] El cambio respeta los 5 gates del workflow (`.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py`, el `check_issue_spec.py` del canon, `scripts/check_walkthrough_schema.py`, ruff, mypy) — ver `docs/gates.md` §2.
+- [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/decisions/README.md` antes de empezar.
 - [ ] Si toca `docs/`, leyó `skills/documentation-alan-style/SKILL.md` y aplica tono castellano peninsular formal con usted.
 - [ ] El commit usa Conventional Commits con el scope `(app)` o `(platform)` correspondiente.
 - [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, parte por unidad de trabajo o encadena.

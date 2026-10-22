@@ -18,5 +18,21 @@
   "codeql": {
     "outputs": {},
     "result": "success"
+  },
+  "docs-codeguide": {
+    "outputs": {},
+    "result": "success"
+  },
+  "docs-links": {
+    "outputs": {},
+    "result": "success"
+  },
+  "docs-decisions": {
+    "outputs": {},
+    "result": "success"
+  },
+  "docs-architecture": {
+    "outputs": {},
+    "result": "success"
   }
 }

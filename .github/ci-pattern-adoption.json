@@ -1,6 +1,17 @@
 {
   "schema_version": 1,
   "agents_md": "propagated",
+  "docs_manifest": {},
+  "architecture": {
+    "doc": "docs/architecture.md",
+    "job": "docs-architecture",
+    "stack": "python",
+    "linter_config": ".importlinter",
+    "code_roots": [
+      {"root": "app/src/modules/lanzadera", "glob": "*.py"},
+      {"root": "app/src/modules/expedientes", "glob": "*.py"}
+    ]
+  },
   "phases": {
     "0": {
       "inventory": [
@@ -19,20 +30,20 @@
         {"artifact": ".github/host-contract.json", "disposition": "adopted", "target": ".github/host-contract.json"},
         {"artifact": ".github/env-isolation-allowlist.json", "disposition": "adopted", "target": ".github/env-isolation-allowlist.json"},
         {"artifact": ".github/required-jobs-policy.json", "disposition": "adopted", "target": ".github/required-jobs-policy.json"},
+        {"artifact": ".github/docs-links.json", "disposition": "adopted", "target": ".github/docs-links.json"},
         {"artifact": ".github/local-ci-parity-policy.json", "disposition": "adopted", "target": ".github/local-ci-parity-policy.json"},
         {"artifact": "scripts/local-preflight.sh", "disposition": "adopted", "target": "scripts/local-preflight.sh"},
         {"artifact": "AGENTS.md", "disposition": "adopted", "target": "AGENTS.md"},
         {"artifact": ".team-skills.yaml (manifiesto de skills de la flota: lo escribe el propagador de DysTelefonica/team-skills en cada corrida, y el catálogo del patrón lo lista como artefacto de gobierno)", "disposition": "adopted", "target": ".team-skills.yaml"},
         {"artifact": "CONTRIBUTING.md", "disposition": "adopted", "target": "CONTRIBUTING.md"},
-        {"artifact": "scripts/check_issue_spec.py (gate del contrato de issue ejecutando desde el job review-budget de .github/workflows/ci.yml)", "disposition": "adopted", "target": "scripts/check_issue_spec.py"},
         {"artifact": "scripts/check_suites_populated.py (gate del job de tests garantizando que ninguna suite declarada quede vacía en el workflow de CI)", "disposition": "adopted", "target": "scripts/check_suites_populated.py"},
         {"artifact": "scripts/mutation_shards.py (gate de shards de mutación ejecutado desde el job mutation de .github/workflows/release.yml)", "disposition": "adopted", "target": "scripts/mutation_shards.py"},
         {"artifact": "scripts/check_branch_name.py (no existe en el árbol del repositorio y no queda ningún run: de CI que lo invoque tras la retirada de las plantillas de flota; se conserva la entrada solo para trazabilidad del fantasma de una adopción previa)", "disposition": "retired", "path": "scripts/check_branch_name.py"},
         {"artifact": "scripts/check_dry.py", "disposition": "adopted", "target": "scripts/check_dry.py"},
         {"artifact": "scripts/check_mutation.py", "disposition": "adopted", "target": "scripts/check_mutation.py"},
         {"artifact": "scripts/check_mutation_sites.py", "disposition": "adopted", "target": "scripts/check_mutation_sites.py"},
-        {"artifact": "scripts/check_pr_size.py", "disposition": "adopted", "target": "scripts/check_pr_size.py"},
-        {"artifact": "scripts/check_required_jobs.py", "disposition": "adopted", "target": "scripts/check_required_jobs.py"},
+        {"artifact": "scripts/check_pr_size.py (BP#1040: pr-gate y el preflight ejecutan el gate del canon desde .agents/skills/ci-pattern/assets/pr-size/)", "disposition": "retired", "path": "scripts/check_pr_size.py"},
+        {"artifact": "scripts/check_required_jobs.py (BP#1040: el job required ejecuta el gate del canon desde .agents/skills/ci-pattern/assets/required-jobs/; la política vive en .github/required-jobs-policy.json)", "disposition": "retired", "path": "scripts/check_required_jobs.py"},
         {"artifact": "scripts/check_walkthrough_schema.py", "disposition": "adopted", "target": "scripts/check_walkthrough_schema.py"},
         {"artifact": "scripts/check_workflows.py", "disposition": "adopted", "target": "scripts/check_workflows.py"},
         {"artifact": "scripts/quality_report.py", "disposition": "adopted", "target": "scripts/quality_report.py"},
@@ -40,7 +51,7 @@
         {"artifact": "scripts/require-ci-success.sh", "disposition": "adopted", "target": "scripts/require-ci-success.sh"},
         {"artifact": "scripts/check_complexity.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_complexity.py"},
         {"artifact": "scripts/check_decision_guards.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_decision_guards.py"},
-        {"artifact": "scripts/check_layers.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_layers.py"},
+        {"artifact": "scripts/check_layers.py (verificador de capas del harness de calidad; lo sustituye el job docs-architecture, que impone las capas desde el bloque architecture de docs/architecture.md con import-linter, con el mismo veredicto sobre sus fixtures; #1013)", "disposition": "retired", "path": "scripts/check_layers.py"},
         {"artifact": "scripts/check_legacy_hashes.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_legacy_hashes.py"},
         {"artifact": "scripts/check_legacy_retirement.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_legacy_retirement.py"},
         {"artifact": "scripts/check_test_classification.py (gate de calidad de código invocado desde quality_report.py y el preflight local)", "disposition": "adopted", "target": "scripts/check_test_classification.py"},
@@ -91,8 +102,6 @@
       "declared_governed_paths": [
         "scripts/check_complexity.py",
         "scripts/check_decision_guards.py",
-        "scripts/check_issue_spec.py",
-        "scripts/check_layers.py",
         "scripts/check_legacy_hashes.py",
         "scripts/check_legacy_retirement.py",
         "scripts/check_suites_populated.py",
@@ -197,9 +206,35 @@
     },
     "6": {
       "prs": [
-        {"number": 831, "sha": "ca15b3994a987b3edc895331c29b634d44775f36", "conclusion": "success"},
-        {"number": 834, "sha": "34cbcb32f639f4e3adfd6d1f42554680428e345b", "conclusion": "success"}
+        {"number": 1050, "sha": "832d66ac6abe24867390265637894d3cb621972e", "conclusion": "success"}
       ]
     }
+  },
+  "docs_map": {
+    "hub": "docs/CODEBASE-GUIDE.md",
+    "docs_path": "docs/codebase",
+    "code_roots": [
+      {"root": "app/src/modules", "glob": "*.py"},
+      {"root": "scripts", "glob": "*.py"},
+      {"root": "data", "glob": "**/*.bas"},
+      {"root": "app/src", "glob": "*.py"},
+      {"root": "app/src/shared", "glob": "*.py"},
+      {"root": "app/migrations", "glob": "*.py"}
+    ],
+    "job": "docs-codeguide",
+    "exclude_dirs": [
+      "e2e",
+      "skills",
+      "tests"
+    ]
+  },
+  "docs_links": {
+    "hub": "docs/CODEBASE-GUIDE.md",
+    "spokes": "docs/codebase",
+    "job": "docs-links"
+  },
+  "docs_decisions": {
+    "dir": "docs/decisions",
+    "job": "docs-decisions"
   }
 }

@@ -25,9 +25,10 @@ REQUIRED_COMMANDS = (
     'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
-    "python scripts/check_pr_size.py",
+    ".agents/skills/ci-pattern/assets/pr-size/check_pr_size.py",
+    ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
     "python scripts/check_walkthrough_schema.py --strict",
-    "python scripts/check_required_jobs.py",
+    ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
 )
 
 #: Gates CI runs that `make verify` deliberately does not (Hard Rule 19).
@@ -45,13 +46,12 @@ VERIFY_EXCLUSIONS = (
     "trivy",  # docker
     # needs the real `needs:` context (toJSON(needs)) from a GitHub Actions
     # run; there is nothing meaningful to feed it on a workstation (#702).
-    "python scripts/check_required_jobs.py",
+    ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
 )
 
 #: The code gates, in the order they must run. Deduplication moves code, which changes
 #: complexity — so the sequence is part of the contract, not a preference.
 REQUIRED_GATE_ORDER = (
-    "layers",
     "complexity",
     "mutation_sites",
     "dry",
@@ -594,16 +594,31 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
         "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
         "&& !cancelled()"
     )
-    assert required["needs"] == ["pr-gate", "quality", "integration", "security", "codeql"]
+    assert required["needs"] == [
+        "pr-gate",
+        "quality",
+        "integration",
+        "security",
+        "codeql",
+        "e2e-smoke",
+        "docs-codeguide",
+        "docs-links",
+        "docs-decisions",
+        "docs-architecture",
+    ]
 
     assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
     assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
     assert jobs["codeql"]["permissions"]["security-events"] == "write"
 
     step = required["steps"][-1]
-    assert step["run"] == "python scripts/check_required_jobs.py"
-    assert step["env"]["CI_NEEDS_JSON"] == "${{ toJSON(needs) }}"
-    assert step["env"]["CI_EVENT_NAME"] == "${{ github.event_name }}"
+    assert ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py" in step["run"]
+    assert step["env"]["NEEDS_JSON"] == "${{ toJSON(needs) }}"
+    assert step["env"]["EVENT_NAME"] == "${{ github.event_name }}"
+    assert step["env"]["BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
+    assert "--base-policy" in step["run"], (
+        "the relaxation check against the base policy must stay wired"
+    )
 
 
 def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
@@ -751,7 +766,9 @@ def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
     steps = [s for s in workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
     assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
     step = steps[0]
-    assert step["run"] == 'python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"'
+    assert step["run"] == (
+        'python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"'
+    )
     env = step.get("env") or {}
     assert "BASE_REF" not in env
     assert "PR_BODY" not in env
@@ -769,6 +786,47 @@ def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> 
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
 
+def test_workflow_policy_gate_runs_the_canon_over_every_workflow(workflow: dict) -> None:
+    """BP#1040 (B3b): the canon workflow-policy gate covers every workflow file, not only ci.yml.
+
+    The local `workflow gate` keeps only what the canon does not check; the rest (duplicate keys,
+    timeouts, host ports, SHA pins, docker preflight, concurrency groups) is the canon's job, so
+    the canon has to see every file the local gate used to scan.
+    """
+    steps = [s for s in workflow["jobs"]["quality"]["steps"] if s.get("name") == "workflow policy"]
+    assert len(steps) == 1, "quality must have exactly one `workflow policy` step"
+    run = steps[0]["run"]
+    assert 'for f in .github/workflows/*.yml; do args+=(--workflow "$f"); done' in run
+    assert (
+        "python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "
+        '"${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json'
+    ) in run
+
+
+def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
+    """The dependency scan audits `app/requirements-dev.lock`, the set that is installed and shipped.
+
+    `pip install "app[dev]"` is a registry requirement named `app` to pip (the path form needs a
+    `./` prefix), so it audited a homonym on PyPI and never the project. The lock is audited
+    directly and strictly, with hashes required and pip disabled, and an empty lock cannot pass.
+    """
+    security = yaml.safe_load(
+        (_find_workflow().parent / "security.yml").read_text(encoding="utf-8")
+    )
+    steps = [
+        s for s in security["jobs"]["pip-audit"]["steps"] if s.get("name") == "dependency scan"
+    ]
+    assert len(steps) == 1, "pip-audit must have exactly one `dependency scan` step"
+    run = steps[0]["run"]
+    assert "app[dev]" not in run
+    assert (
+        ".venv-audit/bin/pip-audit --strict --require-hashes --disable-pip -r app/requirements-dev.lock"
+        in run
+    )
+    assert "pip-audit==2.9.0" in run
+    assert "-lt 15" in run, "an empty or truncated lock must fail before the verdict is trusted"
+
+
 def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
@@ -780,7 +838,10 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
     assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
     step = steps[0]
-    assert step["run"] == 'python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"'
+    assert step["run"] == (
+        'python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" '
+        "--required-sections scripts/required-sections.json"
+    )
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
 
@@ -1041,9 +1102,9 @@ def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
 
     `merge_group` was the queue's verdict event; without the queue there
     is no merge-group run to listen to. Leaving the trigger in place
-    would re-introduce a class of `unsupported event` failures in
-    `scripts/check_required_jobs.py` (#857 PR-D dropped it from
-    `SKIPS_BY_EVENT`).
+    would re-introduce a class of `undeclared event` failures in the canon
+    required-jobs gate (#857 PR-D dropped it from the event set; the policy
+    declares no `merge_group`).
     """
     triggers = workflow.get(True) or workflow.get("on") or {}
     if isinstance(triggers, dict):
@@ -1113,3 +1174,60 @@ def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
         "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
         "when the body or labels change after opening (issue #857, PR-B)."
     )
+
+
+def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) -> None:
+    """team-skills#978: a run cancelled after its jobs exist leaves a cancelled `required` check
+    on the head SHA, and that check blocks the merge even when a later run of the same SHA is
+    green. Events that keep the SHA (`edited`, `labeled`, `reopened`) must queue, not cancel."""
+    value = workflow["concurrency"]["cancel-in-progress"]
+    assert value is not True, "cancel-in-progress: true cancels runs of the same head SHA"
+    assert isinstance(value, str) and "synchronize" in value
+
+
+def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None:
+    """HR-63 (team-skills#805): the CI gate checks exactly the roots the contract declares."""
+    import json
+
+    root = Path(__file__).resolve().parents[1]
+    doc = yaml.safe_load((root / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"))
+    run = next(
+        step["run"]
+        for step in doc["jobs"]["docs-codeguide"]["steps"]
+        if "check_docs_codeguide.py" in step.get("run", "")
+    )
+    pairs = re.findall(r'--code-root (\S+)[\s\\]+--code-glob "([^"]+)"', run)
+    contract = json.loads(
+        (root / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8")
+    )
+    declared = [(e["root"], e["glob"]) for e in contract["docs_map"]["code_roots"]]
+    assert pairs == declared
+
+
+def test_e2e_smoke_job_runs_on_pull_request_and_is_required(workflow: dict) -> None:
+    """Issue #876: the app boots and answers on every PR, not only at release time.
+
+    The job builds the PR image, waits up to 60 s for `/health` and runs the
+    Playwright smoke specs. It runs only on `pull_request`; on the other events
+    it is skipped and the policy accepts that skip. `release.yml` keeps its own
+    full E2E, which this job does not replace.
+    """
+    jobs = workflow["jobs"]
+    assert "e2e-smoke" in jobs, "ci.yml must declare the `e2e-smoke` job (#876)"
+    job = jobs["e2e-smoke"]
+
+    assert job["needs"] == "pr-gate"
+    assert "github.event_name == 'pull_request'" in job["if"]
+    assert "always()" not in job["if"]
+    assert job["runs-on"] == "ubuntu-24.04", "hosted runner: fork PRs are untrusted input"
+    assert job["timeout-minutes"] == 5
+    assert "e2e-smoke" in jobs["required"]["needs"]
+
+    steps = "\n".join(str(step.get("run", "")) for step in job["steps"])
+    assert "docker build" in steps
+    assert "seq 1 60" in steps and "/health" in steps, "/health must be awaited for 60 s"
+    assert "playwright test smoke.spec.ts auth.spec.ts" in steps
+    assert "|| true" not in steps and "continue-on-error" not in str(job)
+
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    assert "e2e" in release["jobs"], "the release E2E job stays as it is"

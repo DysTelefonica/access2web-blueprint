@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_gate_liveness.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_gate_liveness.py
 """Adversarial liveness tests for gates that walk source trees.
 
 An existing package directory is not proof that a gate inspected anything. These tests pin the

@@ -104,14 +104,14 @@ class InvalidInput(GateCase):
     ]
 
     def test_exit_two(self):
-        self.table([(l, f, b, 2, None) for l, f, b, _ in self.CASES])
+        self.table([(item, f, b, 2, None) for item, f, b, _ in self.CASES])
 
     def test_missing_required_argument(self):
         out = subprocess.run([sys.executable, str(GATE)], capture_output=True, text=True)
         self.assertEqual(out.returncode, 2)
 
 
-class NewIdentityIsAFinding(GateCase):
+class TestNewIdentityIsAFinding(GateCase):
     """HR-15: the ratchet rejects what is new; only the baseline can hold identities."""
     def test_findings(self):
         self.table([
@@ -137,7 +137,7 @@ class NewIdentityIsAFinding(GateCase):
         ])
 
 
-class StaleIdentityLockIn(GateCase):
+class TestStaleIdentityLockIn(GateCase):
     """HR-15: eliminated identities must be locked in by shrinking the baseline."""
     def test_findings(self):
         self.table([
@@ -155,7 +155,7 @@ class StaleIdentityLockIn(GateCase):
         self.assertIn("eliminated", out)
 
 
-class TargetDate(GateCase):
+class TestTargetDate(GateCase):
     """Every baseline entry carries target and target_date; expired is a finding."""
     def test_findings(self):
         self.table([
@@ -172,7 +172,7 @@ class TargetDate(GateCase):
         ])
 
 
-class LivenessAndZeroDebt(GateCase):
+class TestLivenessAndZeroDebt(GateCase):
     """HR-3 liveness: exit 2 without a valid measurement proof; with it, zero
     debt is the achievable target state (empty findings + empty baseline = 0)."""
     def test_zero_debt_is_reachable(self):
@@ -212,7 +212,7 @@ class Contract(GateCase):
         self.assertIn("RATCHET OK", out)
 
 
-class BaseComparison(GateCase):
+class TestBaseComparison(GateCase):
     """HR-15 shrink-only: candidate baseline vs base-branch baseline. Growth
     requires a relaxation field (reason + reference) the base does not carry;
     shrink is always allowed. Without --base-baseline the comparison is

@@ -1,0 +1,3 @@
+type: minor
+
+El gate de contrato de PR (`assets/pr-contract/check_pr_contract.py`) exige ahora la sección `## Asistencia de IA` en el cuerpo del PR (comprobación `ai_disclosure`, #876, HR-14). Falla cerrado si la sección falta, si está vacía o si solo tiene el comentario de la plantilla; «ninguna» o una descripción válida pasan. La plantilla de PR del patrón (`.github/PULL_REQUEST_TEMPLATE.md`) y el cuerpo que genera `scripts/propagate-team-skills.ps1` la incluyen, y el documento operativo (sección 4) la enuncia. Los commits siguen sin atribución de IA. Los PR abiertos sin la sección fallarán al re-ejecutar el gate.

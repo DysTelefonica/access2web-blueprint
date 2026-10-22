@@ -2,13 +2,41 @@
   "events": {
     "pull_request": {
       "accepted_skips": []
+    },
+    "push": {
+      "accepted_skips": [
+        "pr-gate",
+        "e2e-smoke"
+      ]
+    },
+    "schedule": {
+      "accepted_skips": [
+        "pr-gate",
+        "e2e-smoke"
+      ]
+    },
+    "workflow_dispatch": {
+      "accepted_skips": [
+        "pr-gate",
+        "e2e-smoke"
+      ]
     }
+  },
+  "relaxation": {
+    "reason": "El job e2e-smoke (humo E2E de la imagen de la PR) solo corre en pull_request: en push, schedule y workflow_dispatch se salta por su propio if, igual que pr-gate. La politica pasa a aceptar ese unico salto adicional en esos tres eventos; en pull_request no se acepta ningun salto, asi que un e2e-smoke saltado alli sigue dejando required en rojo. pr-gate conserva su salto aceptado.",
+    "reference": "DysTelefonica/access2web-blueprint#876",
+    "issue": 876
   },
   "required_jobs": [
     "pr-gate",
     "quality",
     "integration",
     "security",
-    "codeql"
+    "codeql",
+    "e2e-smoke",
+    "docs-codeguide",
+    "docs-links",
+    "docs-decisions",
+    "docs-architecture"
   ]
 }

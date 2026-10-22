@@ -14,7 +14,13 @@ kinds of leaks from the developer's local environment:
 
 The allowlist (``--allowlist``, versioned JSON: ``{"env_vars": [...]}``) is
 the contract of what the suites may read from the environment; anything
-outside it is a finding with file and line. Shell variables that a file
+outside it is a finding with file and line. ``dotenv_data_files`` (#635)
+declares, per file and with a reason, literal ``.env`` mentions that are data
+and not a read; a declaration that no longer applies is a finding. By their
+form alone (#626), a ``.env`` built under a test temp dir (``tmp_path / ".env"``),
+a regex-escaped ``\\.env``, a ``.env`` passed to a git query that does not emit its
+content (``check-ignore``, ``log``, ``ls-files``) and the prose of an assertion
+message are not findings. Shell variables that a file
 assigns are locals, not environment reads; a shell variable that is read
 but never assigned in its file is treated as an environment read (fail
 closed: the scanner cannot prove it is local, HR-1).
@@ -94,7 +100,63 @@ SH_READ = re.compile(r"\$\{([A-Z_][A-Z0-9_]*)(?:\[|[:=+-]|\}|\b)|\$([A-Z_][A-Z0-
 PY_READ = re.compile(r"os\.environ(?:\.get)?\[\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\]|"
                      r"os\.environ\.get\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]|"
                      r"os\.getenv\(\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]")
-DOTENV = re.compile(r"\.env\b|\bdotenv\b|load_dotenv")
+# #635: `.env` como FICHERO es un punto con frontera de palabra a la izquierda:
+# `templates.env` (acceso a atributo) y `TEMPLATES.env` no lo son. El cargador
+# se detecta por su forma (`load_dotenv`, `from dotenv`, `import dotenv`), no
+# por la palabra suelta: `postgresql://dotenv` es un dato, no una lectura.
+# Refs #851: la detección distingue tres casos adicionales por su forma y NO
+# por la palabra `dotenv` suelta: (a) `TEMPLATES.env.get_template(...)` —
+# atributo `env` de un binding local (Jinja2); (b) `"dotenv_schema"` /
+# `"postgresql://dotenv"` — substring `dotenv` dentro de un identificador,
+# schema name o URL, dato, no lectura; (c) `\\.env` con barra de escape —
+# patrón de regex, no ruta. Los casos (a) y (b) NO contienen `.env` (el
+# segundo) o lo tienen con frontera de palabra a la izquierda (el primero, vía
+# `(?<!\w)`); el caso (c) está cubierto por la segunda lookbehind
+# `(?<!(?<!\\)\\)\.env\b`. La suite `TestDotenvPrecision` lock-downea esto
+# desde #851 para que un refactor del regex no pueda regresionar.
+# #626: un `\.env` con barra de escape es un patrón de regex, no una ruta.
+DOTENV_FILE = re.compile(r"(?<!\w)(?<!(?<!\\)\\)\.env\b")
+# #626 B: un `.env` colgado de un directorio temporal del test (`tmp_path / ".env"`)
+# es un fixture propio, no el `.env` del desarrollador.
+TMP_DOTENV = re.compile(r"\b(?:Path\(\s*)?tmp\w*\s*\)?\s*/\s*['\"]\.env['\"]")
+# #626 C: consultar a git por el `.env` (ignorado, historial, índice) no lee su
+# contenido. `git show HEAD:.env` sí lo emite y sigue siendo hallazgo.
+GIT_META = re.compile(r"(?<![^\W_])check[_-]ignored?\b|\bgit\b['\",\s]+(?:-C['\",\s]+\S+['\",\s]+)?"
+                      r"(?:log|ls-files|status|add|rm)\b")
+# #626 C: el mensaje en prosa de una aserción o de un fallo (literal con espacios).
+ASSERT_LINE = re.compile(r"^\s*(?:assert|raise|pytest\.fail|self\.(?:fail|assert\w+))\b")
+PROSE_LITERAL = re.compile(r"(['\"])(?=[^'\"]*\s)[^'\"]*\1")
+
+
+def dotenv_file_ref(line: str, python: bool) -> bool:
+    r"""True si la línea nombra el ``.env`` local como fichero (#626, #851).
+
+    Es un detector POR FORMA: un ``.env`` con frontera de palabra a la
+    izquierda (``(?<!\w)``) y sin barra de escape precedente. Tres
+    formulaciones que la regex maneja correctamente y que cualquier
+    refactor del regex debe preservar (Refs #851):
+
+    - ``TEMPLATES.env.get_template(template_name)`` -- atributo ``env`` de
+      un binding local (Jinja2, dataclass, etc.). El carácter precedente
+      es una letra, así que la lookbehind ``(?<!\w)`` falla y la línea no
+      se marca.
+    - ``"dotenv_schema"``, ``"postgresql://dotenv"`` -- ``dotenv`` como
+      substring de un identificador o URL. No hay ``.env`` literal, así
+      que DOTENV_FILE no matchea; el cargador se detecta por
+      DOTENV_LOADER, no por la palabra suelta.
+    - ``\.env`` en código — patrón de regex escapado, no ruta. La
+      segunda lookbehind (``(?<!(?<!\)\)``) exige que NO haya una única
+      barra de escape precediendo al ``.env``.
+    """
+
+    if GIT_META.search(line):
+        return False
+    if python:
+        line = TMP_DOTENV.sub(" ", line)
+        if ASSERT_LINE.search(line):
+            line = PROSE_LITERAL.sub(" ", line)
+    return bool(DOTENV_FILE.search(line))
+DOTENV_LOADER = re.compile(r"\bload_dotenv\b|(?:^|\s)(?:from|import)\s+dotenv\b")
 DOTENV_EXEMPT = re.compile(r"\.env\.(?:example|sample|template)\b")
 
 
@@ -116,7 +178,7 @@ class GateError(Exception):
     """A condition the gate refuses to interpret; maps to exit 2."""
 
 
-def load_allowlist(path: str) -> set:
+def load_allowlist(path: str) -> tuple:
     try:
         doc = json.loads(Path(path).read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -129,7 +191,26 @@ def load_allowlist(path: str) -> set:
             isinstance(x, str) and x.startswith(".") for x in excluded):
         raise GateError('"excluded_extensions" must be a list of extensions '
                         'starting with "." (explicit exclusion of a language)')
-    return set(doc["env_vars"]), set(excluded)
+    return set(doc["env_vars"]), set(excluded), load_dotenv_data(doc)
+
+
+def load_dotenv_data(doc: dict) -> dict:
+    """#635: `dotenv_data_files` declara, fichero a fichero y con motivo, las
+    referencias literales a `.env` que son DATO (fixtures que escriben un
+    `.env` en tmp_path, aserciones sobre `.gitignore`), no lectura. Solo eximen
+    la mención de `.env`: un cargador o una lectura de entorno sigue siendo
+    hallazgo en el mismo fichero."""
+    entries = doc.get("dotenv_data_files", [])
+    if not isinstance(entries, list) or not all(
+            isinstance(e, dict) and isinstance(e.get("file"), str) and e["file"]
+            and isinstance(e.get("reason"), str) and e["reason"].strip()
+            for e in entries):
+        raise GateError('"dotenv_data_files" must be a list of {"file", "reason"} '
+                        'objects: a relative file path and a non-empty reason')
+    files = {e["file"] for e in entries}
+    if len(files) != len(entries):
+        raise GateError('"dotenv_data_files" repeats a file')
+    return {e["file"]: e["reason"] for e in entries}
 
 
 def suite_files(root: Path) -> list[Path]:
@@ -164,18 +245,21 @@ def domain_finding(root: Path, fuera: list[Path]) -> str:
             "its own scanner; an incomplete subject is not a pass (HR-3).")
 
 
-def scan_sh(path: Path, rel: str, allow: set, report: list) -> None:
+def scan_sh(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bool:
     text = path.read_text(encoding="utf-8", errors="replace")
     # Locals are file-wide: a variable assigned anywhere in the file is a
     # shell local, never an environment read (HR-1: structured, provable).
     assigned = set(ASSIGNED.findall(text)) | set(FOR_VAR.findall(text)) \
         | set(ASSIGN_CMD.findall(text)) \
         | set(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)=\(", text))
+    found_ref = False
     for number, raw in enumerate(text.splitlines(), 1):
         # Comments are stripped (quote-aware) before scanning: a ${VAR:-x}
         # mentioned in a comment is documentation, not an environment read.
         line = strip_comment(raw)
-        if DOTENV.search(line) and not DOTENV_EXEMPT.search(line):
+        file_ref = dotenv_file_ref(line, False) and not DOTENV_EXEMPT.search(line)
+        found_ref = found_ref or file_ref
+        if DOTENV_LOADER.search(line) or (file_ref and not data_ok):
             report.append(f"HR-28 {rel}:{number}: references a local .env file — "
                           "the suite must not read the developer's local environment")
         for m in SH_READ.finditer(line):
@@ -184,9 +268,10 @@ def scan_sh(path: Path, rel: str, allow: set, report: list) -> None:
                 continue
             report.append(f"HR-28 {rel}:{number}: reads environment variable "
                           f"{name!r} not declared in the versioned allowlist")
+    return found_ref
 
 
-def scan_py(path: Path, rel: str, allow: set, report: list) -> None:
+def scan_py(path: Path, rel: str, allow: set, report: list, data_ok: bool) -> bool:
     # Refs #618: prose inside Python string literals (docstrings, regular
     # strings) is not a real env read or a real reference to the
     # developer's ``.env``. Strip string contents before applying the
@@ -194,12 +279,15 @@ def scan_py(path: Path, rel: str, allow: set, report: list) -> None:
     # afterwards to drop ``#`` comments.
     text = path.read_text(encoding="utf-8", errors="replace")
     stripped = strip_py_strings(text)
+    found_ref = False
     for number, raw in enumerate(stripped.splitlines(), 1):
         # La exención solo ampara la coincidencia .env de plantilla; las
         # lecturas de os.environ de la misma línea se siguen escaneando.
         # El strip de comentarios es quote-aware también aquí.
         line = strip_comment(raw)
-        if DOTENV.search(line) and not DOTENV_EXEMPT.search(line):
+        file_ref = dotenv_file_ref(line, True) and not DOTENV_EXEMPT.search(line)
+        found_ref = found_ref or file_ref
+        if DOTENV_LOADER.search(line) or (file_ref and not data_ok):
             report.append(f"HR-28 {rel}:{number}: references a local .env file — "
                           "the suite must not read the developer's local environment")
         for m in PY_READ.finditer(line):
@@ -216,9 +304,18 @@ def scan_py(path: Path, rel: str, allow: set, report: list) -> None:
             report.append(f"HR-28 {rel}:{number}: reads environment variable "
                           f"{name!r} via os.environ/getenv not declared in the "
                           "versioned allowlist")
+    return found_ref
+
+
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
 
 
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Env isolation gate (HR-28).")
     ap.add_argument("--root", required=True)
     ap.add_argument("--allowlist", required=True)
@@ -227,7 +324,7 @@ def main(argv):
         root = Path(args.root)
         if not root.is_dir():
             raise GateError(f"root {str(root)!r} is not a directory (empty subject)")
-        allow, excluded = load_allowlist(args.allowlist)
+        allow, excluded, dotenv_data = load_allowlist(args.allowlist)
         fuera = out_of_domain_files(root, excluded)
         try:
             files = suite_files(root)
@@ -241,9 +338,16 @@ def main(argv):
         print(f"ENV-ISOLATION ERROR: {exc}", file=sys.stderr)
         return 2
     report = [domain_finding(root, fuera)] if fuera else []
+    refs = set()
     for path in files:
         rel = path.relative_to(root).as_posix()
-        (scan_py if path.suffix == ".py" else scan_sh)(path, rel, allow, report)
+        scan = scan_py if path.suffix == ".py" else scan_sh
+        if scan(path, rel, allow, report, rel in dotenv_data):
+            refs.add(rel)
+    # #635: una exención que ya no hace falta falla, para que la lista solo encoja.
+    for rel in sorted(set(dotenv_data) - refs):
+        report.append(f"HR-28 STALE: dotenv_data_files declares {rel!r} but it no longer "
+                      "references .env (or is not a suite file): remove the entry")
     if report:
         print(f"HR-28 FAIL: {len(report)} finding(s) — suite environment is not "
               "isolated from the local environment")

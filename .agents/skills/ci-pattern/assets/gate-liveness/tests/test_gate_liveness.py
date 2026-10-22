@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Suite del liveness gate (F3, #396, HR-3/HR-21)."""
-import subprocess, sys, tempfile, unittest
+import subprocess
+import sys
+import tempfile
+import unittest
 from pathlib import Path
 
 GATE = Path(__file__).resolve().parents[1] / "check_gate_liveness.py"
@@ -28,11 +31,12 @@ def _mk_repo(workflows: dict[str, str]) -> Path:
 
 def _gate(repo, threshold=24, check=False):
     cmd = [sys.executable, str(GATE), "--repo", str(repo), "--threshold", str(threshold)]
-    if check: cmd.append("--check")
+    if check:
+        cmd.append("--check")
     return SUBP(cmd, capture_output=True, text=True, check=False)
 
 
-class FclDetection(unittest.TestCase):
+class TestFclDetection(unittest.TestCase):
     """DetecciÃ³n de gates fail-closed."""
 
     def _wf(self, *names):
@@ -87,7 +91,7 @@ class FclDetection(unittest.TestCase):
         self.assertIn("health-check", p.stdout)
 
 
-class LivenessConfig(unittest.TestCase):
+class TestLivenessConfig(unittest.TestCase):
     """ConfiguraciÃ³n de liveness."""
 
     def test_no_liveness_is_finding(self):
@@ -121,7 +125,7 @@ class LivenessConfig(unittest.TestCase):
         self.assertIn("OK", p.stdout)
 
 
-class ThresholdConfig(unittest.TestCase):
+class TestThresholdConfig(unittest.TestCase):
     """Umbral configurado."""
 
     def test_default_is_24(self):

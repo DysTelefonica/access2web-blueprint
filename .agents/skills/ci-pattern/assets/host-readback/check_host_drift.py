@@ -24,6 +24,31 @@ host-enforced is drift in any enforcement mode other than ``disabled``
 unknown ``enforcement`` value is doubt and fails closed (HR-3). Missing/unreadable/malformed contract or snapshot is
 doubt, and doubt fails closed (HR-3). Exit codes: 0 no drift; 1 drift
 findings; 2 fail-closed.
+
+Labels were the one area that was not bidirectional: a host label the
+contract did not declare was never a finding. #955 closes that and adds the
+axis that was missing entirely — the host against the phase-0 label
+snapshot, which the inventory coverage (#312) reads but never compares with
+the host. With ``--labels-names`` the gate compares, in both directions,
+the readback (which IS the phase-4 ``labels`` snapshot) against:
+
+* the phase-0 snapshot, a JSON list of label names;
+* the contract's ``labels``, whether it declares them at all.
+
+Three details that are not negotiable:
+
+* **A label name may contain spaces** (``good first issue``,
+  ``help wanted``). Names are compared whole; splitting on whitespace
+  invents labels the host does not have and produces findings in both
+  directions at once.
+* **The readback must be fully paginated.** Block 3 of
+  ``assets/audit-issue-to-merge.md`` captures it; a readback truncated by
+  ``per_page`` turns every label past the page into a false finding.
+* **The mode is advisory by default.** A read-only GET of CADETE, BP and
+  APAP (comment on #955) shows all three would fail, so the rule ships as a
+  warning (exit 0, stderr) and becomes a failure in a later change, once
+  the consumers align. Doubt still fails closed in both modes: advisory
+  softens findings, never exit 2.
 """
 import argparse
 import json
@@ -50,6 +75,14 @@ PROTECTION_KEYS = frozenset({"enforce_admins", "required_linear_history", "requi
 RULESET_ENFORCEMENTS = frozenset({"active", "evaluate", "disabled"})
 SNAPSHOT_KINDS = ("repo", "labels", "branch-protection", "rulesets")
 
+# #946: single source of truth for the gate's `known` set is the schema
+# adjacent to this script. Adding a key to the canon means editing
+# `host-contract.schema.json`; the gate picks it up on next import.
+# HR-3 fail-closed applies: if the schema file is missing or malformed,
+# module load raises and the gate cannot start a check.
+_SCHEMA_PATH = Path(__file__).resolve().parent / "host-contract.schema.json"
+_HOST_CONTRACT_SCHEMA = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+
 class ContractError(Exception):
     """A condition the check refuses to interpret; maps to exit 2."""
 
@@ -65,8 +98,7 @@ def validate_contract(data: object) -> dict:
     """Validate the declared contract; every structural doubt raises (exit 2)."""
     if not isinstance(data, dict) or data.get("contract_version") != 1:
         raise ContractError("contract must be an object with contract_version 1")
-    known = {"contract_version", "labels", "required_checks", "merge_methods", "rulesets", "protection",
-             "host_capabilities", "runner", "protected_branches"}
+    known = set(_HOST_CONTRACT_SCHEMA["properties"].keys())
     protected = data.get("protected_branches")
     if protected is not None and (not isinstance(protected, list) or not protected
                                   or any(not isinstance(b, str) or not b for b in protected)):
@@ -323,7 +355,7 @@ def compare(contract: dict, snaps: dict) -> tuple[list[str], list[str], list[str
     host_rs = {e["name"]: e.get("enforcement") for e in snaps["rulesets"]
                if isinstance(e, dict) and isinstance(e.get("name"), str)}
     if rs_unavailable:
-        for name, enforcement, cls in contract["rulesets"]:
+        for name, _enforcement, cls in contract["rulesets"]:
             if cls == HOST_ENFORCED:
                 findings.append(f"ruleset '{name}' is declared host-enforced but the readback recorded "
                                 f"the plan 403 limit for 'rulesets': the host cannot apply it")
@@ -362,16 +394,116 @@ def compare(contract: dict, snaps: dict) -> tuple[list[str], list[str], list[str
             findings.append(f"ruleset '{name}' on the host has no known enforcement mode but is not declared host-enforced in the contract")
     return ok, documented, findings, notes
 
+
+def load_label_names(path: str) -> set[str]:
+    """Instantánea de etiquetas de la fase 0: lista JSON de nombres (#955).
+
+    Los nombres se comparan enteros: uno puede llevar espacios, y partirlo
+    inventaría etiquetas que el host no tiene.
+    """
+    data = load_json(path, "labels-names snapshot")
+    if not isinstance(data, list) or not all(isinstance(x, str) and x for x in data):
+        raise ContractError(  # noqa: TRY003
+            f"labels-names snapshot must be a list of non-empty label names: {path}")
+    return set(data)
+
+
+def host_label_names(snaps: dict) -> set[str]:
+    """Nombres que muestra el readback del host."""
+    return {e["name"] for e in snaps["labels"]
+            if isinstance(e, dict) and isinstance(e.get("name"), str)}
+
+
+def compare_label_drift(contract: dict, snaps: dict, names_path: str,
+                        names: set[str]) -> tuple[list[str], list[str], list[str]]:
+    """#955: host contra la instantánea de la fase 0 y contra el contrato.
+
+    Devuelve ``(findings, ok, notes)`` y no toca el veredicto: el modo decide
+    si sus hallazgos son aviso o fallo, para que la propagación no ponga a
+    ningún consumer en rojo de golpe (HR-21).
+    """
+    findings: list[str] = []
+    ok: list[str] = []
+    notes: list[str] = []
+    host = host_label_names(snaps)
+    declared = set(contract["labels"])
+    for name in sorted(names - host):
+        findings.append(f"label '{name}' is in snapshot '{names_path}' "
+                        "but absent from the host readback")
+    for name in sorted(host - names):
+        findings.append(f"label '{name}' is in the host readback "
+                        f"but absent from snapshot '{names_path}'")
+    for name in sorted(host & names):
+        ok.append(f"label '{name}' matches the phase-0 label snapshot")
+    # La dirección inversa de las etiquetas: el host la tiene y el contrato no
+    # la declara de ninguna clase. Declararla `documented-only` es la vía
+    # documentada para las etiquetas que crea el host (AC10, opción 1).
+    for name in sorted(host - declared):
+        findings.append(f"label '{name}' is in the host readback "
+                        "but not declared in the contract")
+    notes.append(f"labels compared: {len(host)} in the readback, "
+                 f"{len(names)} in the phase-0 snapshot, "
+                 f"{len(declared)} declared in the contract")
+    return findings, ok, notes
+
+
+def read_label_drift(contract: dict, snaps: dict, names_path: str | None
+                     ) -> tuple[list[str], list[str], list[str]]:
+    """Compara las etiquetas si el gate recibió la instantánea de la fase 0."""
+    if not names_path:
+        return [], [], []
+    findings, ok, notes = compare_label_drift(contract, snaps, names_path,
+                                              load_label_names(names_path))
+    return findings, ok, notes
+
+
+def report_label_drift(label_findings: list[str], mode: str) -> list[str]:
+    """Imprime la deriva de etiquetas y devuelve los hallazgos que cuentan.
+
+    En `strict` van al informe como DRIFT y salen 1. En `advisory` van a
+    stderr y no tocan el veredicto: la propagación no pone a ningún consumer en
+    rojo de golpe (#955, misma secuencia que HR-21). La duda no pasa por aquí:
+    sigue fallando cerrada en los dos modos.
+    """
+    if not label_findings:
+        return []
+    stream = sys.stdout if mode == "strict" else sys.stderr
+    prefix = "DRIFT  " if mode == "strict" else "label-drift warning  "
+    print(f"  label drift ({mode}): {len(label_findings)} finding(s)", file=stream)
+    for line in label_findings:
+        print(f"  {prefix}{line}", file=stream)
+    return label_findings if mode == "strict" else []
+
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main() -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(
         description="Read-only drift check: declared host contract vs JSON snapshots of the host API (HR-34).")
     parser.add_argument("--contract", required=True)
     parser.add_argument("--snapshot", action="append", default=[], metavar="KIND=PATH")
+    parser.add_argument("--labels-names", metavar="PATH",
+                        help="instantánea de etiquetas de la fase 0: lista JSON de "
+                             "nombres. Con ella el gate compara el readback con esa "
+                             "instantánea y con el contrato, en las dos direcciones (#955)")
+    parser.add_argument("--label-drift-mode", choices=("advisory", "strict"), default="advisory",
+                        help="advisory (por defecto, #955): los hallazgos de etiqueta van a "
+                             "stderr y el veredicto no cambia. strict: son DRIFT y salen 1. "
+                             "La duda sigue fallando cerrada en los dos modos")
     args = parser.parse_args()
     try:
         contract = validate_contract(load_json(args.contract, "contract"))
         snaps = load_snapshots(args.snapshot)
         ok, documented, findings, notes = compare(contract, snaps)
+        label_findings, label_ok, label_notes = read_label_drift(
+            contract, snaps, args.labels_names)
+        ok = ok + label_ok
+        notes = notes + label_notes
     except ContractError as exc:
         print(f"fail-closed: {exc}", file=sys.stderr)
         return 2
@@ -394,6 +526,10 @@ def main() -> int:
         print(f"  documented-only  {line}")
     for line in findings:
         print(f"  DRIFT  {line}")
+    # La deriva de etiquetas es la única que sale como aviso mientras los
+    # consumers se alinean (#955, lectura de CADETE/BP/APAP). Los hallazgos que
+    # ya existían antes de esta regla no se ablandan: siguen siendo DRIFT.
+    findings = findings + report_label_drift(label_findings, args.label_drift_mode)
     print("VERDICT: FAIL" if findings else "VERDICT: PASS")
     return 1 if findings else 0
 

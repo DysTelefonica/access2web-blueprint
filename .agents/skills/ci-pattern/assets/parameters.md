@@ -42,6 +42,8 @@ EAD
 | 30 | Perfil de runners del consumer | `self-hosted` en APAP_WEB (repo privado, cuenta Free: los minutos hosted agotados bloquean el CI entero — piloto ardelperal/APAP_WEB#1386) | `ci-pattern.yaml` (`P51_runners_profile`, default `hosted`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61) |
 | 31 | Etiquetas del pool self-hosted | conjunto exacto declarado por el consumer (precedente APAP_WEB: `self-hosted, Linux, ARM64, apap, oracle, coolify, noble, deploy` → P29 en `references/asset-inventory.md`) | `ci-pattern.yaml` (`P52_runners_pool_labels`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61); vacio con perfil self-hosted = entrada invalida |
 | 32 | Excepciones hosted justificadas | mapa job→motivo (causa de indivisibilidad, estilo HR-15) | `ci-pattern.yaml` (`P53_hosted_exceptions`) | gate `assets/runner-profile/check_runner_profile.py` (HR-61) |
+| 33 | Despacho post-merge via `workflow_dispatch` | lista opcional de basenames de workflows re-disparados por `gh workflow run` tras el merge gobernado (#817): ausente o vacia = no-op con warning; entrada inexistente o que no declara `workflow_dispatch` en su YAML = exit 1 antes del merge (el `POST .../dispatches` devolveria 404); 4xx/5xx tras el merge = exit 4 con el nombre del workflow y merge intacto (sin rollback). Sin secretos nuevos ni App ni PAT: `workflow_dispatch` se dispara con el `GITHUB_TOKEN` del job aunque este fusione con esa misma identidad | `.github/host-contract.json` (`post_merge_dispatch`) | gate `assets/runner-controls/check_governed_merge.py:250` (Refs #817); la adopcion por consumer (workflow_dispatch en `ci.yml`/`push-compliance.yml`/`force-push-guard.yml` en cadete, etc.) es PRs separadas posteriores |
+| 34 | Versionado del registro operativo de incidentes | `versioned`: el registro vive en el repo, en la ruta de P49 (por defecto `docs/incidents/`), y el gate de fase 5 lo escanea. `local-unversioned`: el registro es local, fuera de git; el gate no lo escanea ni lo exige y el documento operativo lo describe con esa frase, sin ruta. Con `local-unversioned` P49 no se usa. Si la ruta de P49 coincide con la del post-mortem (`docs/postmortems`), el gate de fase 5 falla con exit 1 nombrando `P49_incident_log_dir` (#927: endurecido a fallo tras la migración de cadete en #562; el resto de consumers ya no chocaba con el post-mortem). | `ci-pattern.yaml` (`P55_incident_log_versioning`), con default del esquema | HR-21 (el post-mortem se versiona siempre; el registro local no sale del equipo); gate de fase 5 |
 origin/main
 
 El nombre de rama (parámetro 1) lo aplica el **ruleset del repo** sobre el
@@ -49,8 +51,9 @@ nombre de la rama al push (#518); ya no hay generador local.
 
 Parámetros secundarios documentados en las fuentes: host de producción, versión
 de Python y lista de checks requeridos (en este repo: `required`,
-`pr-size / pr-size`; el gate `branch-name` está retirado — el ruleset
-del host aplica la regex).
+`pr-size / pr-size`; con ruleset en el host, este aplica la regex y el gate
+`branch-name` no hace falta; en un host sin rulesets —repo privado de plan Free—
+lo cumple `assets/branch-name/check_branch_name.py`, que compensa).
 
 ## Policy file de gates dormibles (HR-18)
 
@@ -153,7 +156,13 @@ Contrato de la política del agregador:
 El agregador de jobs requeridos ya está distribuido como asset portátil de
 esta skill: `assets/required-jobs/` (gate fail-closed + comprobación de
 paridad contra el workflow del consumer + política de ejemplo + suite; véase
-su `README.md`). El resto sigue
+su `README.md`). El presupuesto de revisión también: `assets/pr-size/`
+(gate de presupuesto con la regla BP portada como dato
+`VENDORED_ROOTS = (".agents/skills/", "skills/")` — las rutas vendorizadas
+por el propagador quedan fuera del presupuesto de 400, pero un renombrado
+desde una ruta de autoría hacia una vendorizada sigue contando porque el
+trabajo fue authored — más suite RED/GREEN de 15 tests; `#623`). El resto
+sigue
 versionado en el repositorio de origen del patrón, `ardelperal/APAP_WEB`
 (bajo `scripts/` y `.github/`), pendiente de publicarse como asset portátil;
 adáptelos a los parámetros de arriba, no al revés:
@@ -161,7 +170,6 @@ adáptelos a los parámetros de arriba, no al revés:
 | Script | Función |
 |---|---|
 | `scripts/preflight.py` | Lee el job de lint del workflow y lo reproduce en local, paso a paso |
-| `scripts/check_pr_size.py` | Presupuesto de revisión con excepción declarada en el cuerpo |
 | `scripts/check_issue_specs.py` | Trazabilidad determinista: rama, etiquetas, cierre de issue |
 | `scripts/check_release_evidence.py` | Evaluador fail-closed de un contexto de estado por SHA |
 | `scripts/check_release_e2e_required.py` | Decide si el rango toca rutas sensibles |

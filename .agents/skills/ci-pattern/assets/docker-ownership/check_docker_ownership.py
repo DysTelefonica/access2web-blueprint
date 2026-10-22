@@ -39,9 +39,8 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable, Optional
-
 
 SUPPORTED_KINDS = {"container", "volume", "network"}
 LABEL_KEY_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,62}$")
@@ -64,9 +63,9 @@ class Resource:
 
     kind: str
     name: str
-    labels: Optional[dict] = None
+    labels: dict | None = None
 
-    def label(self, key: str) -> Optional[str]:
+    def label(self, key: str) -> str | None:
         if not self.labels:
             return None
         return self.labels.get(key)
@@ -198,7 +197,15 @@ def evaluate(
     return out
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv: list[str]) -> int:
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(
         description="docker-ownership gate (Refs DysTelefonica/team-skills#454)"
     )

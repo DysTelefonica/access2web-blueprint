@@ -1,0 +1,3 @@
+type: patch
+
+Módulo compartido del presupuesto de revisión (#931): `personal/ardelperal/ci-pattern/assets/budget/vendored_budget.py` es la fuente única de la regla A1 (excluir `.agents/skills/` y `skills/`; un renombrado desde una ruta de autoría hacia una vendorizada sigue contando) y su suite vive en `assets/budget/tests/test_vendored_budget.py`. El módulo no importa `subprocess`: quien lo llama le inyecta su runner de git (`run_git(*args) -> str`, ligado a su repositorio, que lanza `RuntimeError` si el comando falla), el mismo camino que #753 abrió para `check_pr_contract.py`, así que el ratchet extendido lo mide con cero hallazgos y el activo se puede copiar byte a byte en consumers.

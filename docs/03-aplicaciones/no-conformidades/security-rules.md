@@ -64,7 +64,7 @@ El inventario Dysflow sobre NoConformidades **funciona correctamente**. No hay f
 - **438 filas en `TbNoConformidades`** (NC de Proyecto).
 - **55 filas en `TbNoConformidadesAuditoria`** (NC de Auditoría).
 - **14 FK relationships** entre tablas de usuario.
-- **44 columnas en `TbNoConformidades`** (ver [data-model.md § Esquema real](data-model.md#esquema-real-tbnoConformidades)).
+- **44 columnas en `TbNoConformidades`** (ver [data-model.md § Esquema real](data-model.md#esquema-real-tbnoconformidades-44-columnas-tipos-reales)).
 
 ### Lecciones aprendidas (capturadas en Engram)
 
@@ -76,7 +76,7 @@ El inventario Dysflow sobre NoConformidades **funciona correctamente**. No hay f
 
 ### Estado del hallazgo en el blueprint
 
-D89 queda registrado como **invalidado**. La diagnosis original fue retirada de [Matriz de migración § D89](migration-matrix.md#d89-diagnóstico-del-fallo-de-list_objects-de-dysflow) y reemplazada por los datos reales del inventario.
+D89 queda registrado como **invalidado**. La diagnosis original fue retirada de [Matriz de migración § D89](migration-matrix.md#d89--diagnóstico-del-fallo-de-list_objects-de-dysflow--invalidado) y reemplazada por los datos reales del inventario.
 
 ## D90 · Riesgo de seguridad: `backends.json` con contraseña en claro
 
@@ -98,11 +98,11 @@ D89 queda registrado como **invalidado**. La diagnosis original fue retirada de 
 
 ### Estado del hallazgo en el blueprint
 
-Registrado en [Matriz de migración § D90](migration-matrix.md#d90-riesgo-de-seguridad--backendsjson-con-contraseña-en-claro) como decisión propuesta. La remediación es **urgente** antes de continuar con cualquier lote que involucre Dysflow sobre NoConformidades.
+Registrado en [Matriz de migración § D90](migration-matrix.md#d90--riesgo-de-seguridad-backendsjson-con-contraseña-en-claro) como decisión propuesta. La remediación es **urgente** antes de continuar con cualquier lote que involucre Dysflow sobre NoConformidades.
 
 ## D91 · Caché selectivo maduro como referencia
 
-La capa de caché de NoConformidades es la **referencia principal del blueprint para el puerto de caché** de la nueva plataforma (D70-D71). Ver detalle en [Matriz de migración § D91](migration-matrix.md#d91-caché-selectivo-maduro-como-referencia-del-puerto-de-caché).
+La capa de caché de NoConformidades es la **referencia principal del blueprint para el puerto de caché** de la nueva plataforma (D70-D71). Ver detalle en [Matriz de migración § D91](migration-matrix.md#d91--caché-selectivo-maduro-como-referencia-del-puerto-de-caché).
 
 ## Riesgos de privacidad/migración
 

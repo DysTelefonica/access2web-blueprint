@@ -1,0 +1,5 @@
+type: patch
+
+El gate de contrato de PR (`assets/pr-contract/check_pr_contract.py`) admite una segunda forma de la sección «Tests que prueban el cierre» (HR-53, #911): el encabezado estable «No aplica», dentro de la misma sección, declara que el cierre no tiene test y nombra la EVIDENCIA que lo cubre — la ruta de un fichero del repo versionado en git (un ADR, un registro de decisión, la página de documentación); esa evidencia no tiene que ser un fichero de test. Sin evidencia la declaración no cierra nada, la prosa sigue sin cerrar nada, y ninguna etiqueta exime de la sección: `type:docs` no exonera nada.
+
+«No aplica» solo vale si todos los ficheros cambiados del PR son no ejecutables (#918): por defecto documentación (`**/*.md`, `docs/**`, `.github/ISSUE_TEMPLATE/**`, `.github/PULL_REQUEST_TEMPLATE.md`), configurable con `closure_not_applicable_paths`. Un workflow, un script o cualquier código ejecutable exige test y el hallazgo nombra el fichero; sin `--changed-files` la forma falla cerrada. La plantilla de PR del patrón (`.github/PULL_REQUEST_TEMPLATE.md`) y el porting guide (G3.2) describen las dos formas.

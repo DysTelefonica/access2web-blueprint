@@ -12,8 +12,6 @@ a base ref and a head ref, diffs the skill directory, and reports:
 - no skill files changed → clean (0).
 
 Exit codes: 0 clean · 1 findings · 2 invalid input."""
-import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -133,7 +131,7 @@ class Findings(unittest.TestCase):
             self.assertIn("HR-44", out)
 
 
-class Discovery(unittest.TestCase):
+class TestDiscovery(unittest.TestCase):
     def test_without_skill_dir_gates_every_touched_skill(self):
         with tempfile.TemporaryDirectory() as d:
             r = Repo(d)
@@ -153,7 +151,7 @@ class Discovery(unittest.TestCase):
             self.assertNotIn("owner/two", out)
 
 
-class MergeBaseDiff(unittest.TestCase):
+class TestMergeBaseDiff(unittest.TestCase):
     """#T6a (Refs #509): el diff se calcula contra el merge-base, no contra
     la punta de la base del PR. Caso de la auditoría (114818713399,
     115014106789, 115018249635, 115018311601, 115023387817, 115047671163):

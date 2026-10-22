@@ -5,7 +5,7 @@ NOT call ``audit_log.record_change``. The per-field ``ChangeRecord`` row in
 ``TbCambios`` is the caller's UoW responsibility (CAP-001 §Camino feliz, DA-11).
 
 Duck-typed ``audit_log: Any`` — a Protocol would force a cross-module import
-that the layer gate (``check_layers.py``) flags as application → driver.
+that the layer gate (``docs-architecture`` job) flags as application → driver.
 """
 
 from __future__ import annotations

@@ -1,0 +1,3 @@
+type: minor
+
+Merge gobernado (#800): un merge hecho con `GITHUB_TOKEN` no dispara el cierre implícito de GitHub (0 de 13 PR con `Closes #N` en APAP y CADETE). `check_governed_merge.py` cierra ahora, tras el merge, las issues abiertas de este repo que `closingIssuesReferences` enlaza al PR (`state_reason: completed` y un comentario con el PR y el merge), solo si la base es la rama por defecto. Si el listado o el cierre fallan con el merge ya hecho termina en exit 3 («fusionado, issue sin cerrar»), no en el 2; el workflow del consumidor necesita `issues: write`. Cada merge hace una consulta GraphQL y una llamada a `repos/<repo>` más (esta última solo si el PR no trae `base.repo.default_branch`), y una escritura por issue cerrada.

@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_policy_time.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_policy_time.py
 """The wall clock is an orchestration input, never hidden gate state."""
 
 from __future__ import annotations

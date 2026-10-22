@@ -415,7 +415,7 @@ def collect_groups(root: Path) -> list[CloneGroup]:
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         except SyntaxError:
-            continue  # check_layers.py owns the unparseable-file failure
+            continue  # the docs-architecture job owns the unparseable-file failure
         for body in _statement_bodies(tree):
             for start in range(len(body) - MIN_STATEMENTS + 1):
                 window = body[start : start + MIN_STATEMENTS]

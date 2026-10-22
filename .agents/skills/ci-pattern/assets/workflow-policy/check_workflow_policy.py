@@ -13,7 +13,9 @@ HR-26 (pinned toolchain), on every job, required or not: every ``uses:``
 action is pinned to a full 40-hex commit SHA, and ``docker://`` images
 by digest (``@sha256:`` + 64 hex; local ``./`` actions are exempt);
 ``actions/setup-python`` / ``actions/setup-node`` declare an exact
-``X.Y.Z`` version; ``pip install`` declares ``==`` inline, or a
+``X.Y.Z`` version (``python-version-file`` also counts when the file exists
+in the repository and holds exactly ``X.Y.Z``; an inline ``python-version``
+wins over it, as in the action); ``pip install`` declares ``==`` inline, or a
 requirements file (``-r``) with ``--require-hashes``. Constraint files
 (``-c``) are always a finding: the pins inside are invisible to a
 structural gate, and reporting OK without measuring them would be the
@@ -28,16 +30,41 @@ and no masking statement in run blocks — ``|| true``, ``|| :``,
 HR-30 (required names from PR events only), on required jobs: the
 workflow triggers on ``pull_request``; ``schedule`` and
 ``workflow_dispatch`` do not publish the required check name — the job
-either skips them via a job-level ``if`` whose ``event_name ==
-'<event>'`` comparisons prove it, or its name is event-qualified
-(``name: x (${{ github.event_name }})``); ``push`` must be filtered to
-the base branch. An ``if`` containing ``!=``, ``always()``, ``${{`` or
-``needs.`` is not provable and is treated as running on every event.
+either skips them via a job-level ``if`` that is provably false on
+``pull_request`` or its name is event-qualified
+(``name: x (${{ github.event_name }})``). The ``if`` is evaluated per event in
+three-valued logic: ``github.event_name ==``/``!=`` tests, ``!``, ``&&``,
+``||`` and groups are decided; any other atom (``needs.*``, ``always()``,
+``startsWith(...)``) is unknown and counts as "may run". A condition that
+cannot be parsed or is wrapped in ``${{`` is treated as running on every
+event. ``push`` is a finding only when it runs on the base branch and on
+others: a filter limited to the base, one that never reaches it (other
+branches, ``branches-ignore`` covering it, tags only) is fine; negations,
+unsupported globs and malformed filters are findings.
+
+With ``--host-contract`` the ``schedule``/``workflow_dispatch`` rule applies
+only to the job check names the contract lists in ``required_checks`` (a job
+that is not a required check cannot satisfy one from a run that is not the
+PR's), whether or not they are in the required-jobs policy; a name no
+analyzed job publishes is a finding, and a malformed contract exits 2.
+Without the option every job of the required-jobs policy is in scope.
 
 The list of required jobs always comes from the required-jobs policy,
 never from code. A required job named by the policy but absent from every
 analyzed workflow is a finding: silence there would be a gate reporting
 OK without having measured.
+
+Structure, on every job: a duplicate mapping key is refused (exit 2; GitHub rejects the
+file with ``startup_failure`` and the check never reaches the PR rollup, while a reader
+that keeps the last value would report OK), and every job declares ``timeout-minutes``
+(a job that calls a reusable workflow is exempt: its schema has none) (#806). Also on every
+job (#806): a ``concurrency`` group at job or workflow level, no service container pinning a
+host port (``H:C``, ``IP:H:C``), and a ``timeout``-wrapped ``docker info`` before the first
+``docker run`` (in an earlier step or earlier in the same step; a comment is no guard).
+
+A plain scalar that continues on a more indented line (``run: cmd \\`` followed by
+its arguments) is rejected with the line and the fix: YAML folds it and the
+``\\`` stays literal (#787).
 
 Exit codes: 0 no findings · 1 findings · 2 invalid input or empty subject.
 """
@@ -60,7 +87,6 @@ KEY = re.compile(r"""^('[^']*'|"[^"]*"|[^:\s][^:]*?):(?:\s+(.*))?$""")
 PIP_INSTALL = re.compile(r"\bpip3? install\b")
 PIP_REQUIREMENTS = re.compile(r"\s(-r|--requirement)(\s|=)")
 PIP_CONSTRAINTS = re.compile(r"\s(-c|--constraint)(\s|=)")
-EVENT_IF = re.compile(r"event_name\s*==\s*['\"]([^'\"]+)['\"]")
 MASK_TOKENS = ("|| true", "|| :", "|| exit 0")
 NORUN_TOKENS = ("set +e", "set +o errexit")
 SETUP_KEYS = {"actions/setup-python": "python-version", "actions/setup-node": "node-version"}
@@ -101,8 +127,19 @@ def read_lines(text: str) -> list[Line]:
 
 
 def parse_scalar(v: str) -> object:
-    if v[0] in "&!{" or (v[0] == "*" and ALIAS.fullmatch(v)):
+    if v[0] == "&" or v[0] == "!" or (v[0] == "*" and ALIAS.fullmatch(v)):
         raise InvalidInput(f"unsupported YAML construct: {v!r}")
+    if v[0] == "{":
+        if v == "{}":
+            # Mapa de flujo vacío: GitHub Actions lo admite en
+            # `on.workflow_call.inputs: {}` y `secrets: {}` (un reusable
+            # workflow sin inputs/secrets formales). Lo aceptamos como
+            # `dict` vacío. Refs: DysTelefonica/team-skills#903,
+            # DysTelefonica/team-skills#806 (cadete #533).
+            return {}
+        # Mapa inline con contenido (p. ej. `{a: b}`): no se parsea;
+        # las formas soportadas son el bloque indentado o el `{}` vacío.
+        raise InvalidInput(f"unsupported inline map {v!r}: use block indentation or empty map")  # noqa: TRY003 — diagnóstico inline
     if len(v) >= 2 and v[0] == v[-1] and v[0] in "'\"":
         if v[0] in v[1:-1]:
             raise InvalidInput(f"unterminated quoted scalar: {v!r}")
@@ -117,6 +154,25 @@ def parse_flow_seq(text: str, n: int) -> list:
     if any(c in inner for c in "[{"):
         raise InvalidInput(f"line {n}: nested flow collection")
     return [parse_scalar(x.strip()) for x in inner.split(",")] if inner else []
+
+
+FOLDED_SCALAR = (
+    "line {n}: the value of '{key}' continues on line {nxt}: YAML folds a multi-line plain "
+    "scalar into one line and keeps a trailing `\\` literally, so the arguments below never "
+    "reach the command; use a block scalar (`|`)")
+
+
+def folded_scalar_error(n: int, key: object, nxt: int) -> InvalidInput:
+    return InvalidInput(FOLDED_SCALAR.format(n=n, key=key, nxt=nxt))
+
+
+DUPLICATE_KEY = (
+    "line {n}: duplicate key {key!r} (first seen on line {first}): GitHub rejects the file "
+    "with `startup_failure` and the check never reaches the PR rollup")
+
+
+def duplicate_key_error(n: int, key: object, first: int) -> InvalidInput:
+    return InvalidInput(DUPLICATE_KEY.format(n=n, key=key, first=first))
 
 
 def parse_node(lines: list[Line], i: int, indent: int):
@@ -157,6 +213,7 @@ def parse_node(lines: list[Line], i: int, indent: int):
     if not KEY.match(line.text):
         raise InvalidInput(f"line {line.number}: unsupported construct: {line.text!r}")
     out = {}
+    first_seen: dict[object, int] = {}
     while i < len(lines) and lines[i].indent == indent:
         m = KEY.match(lines[i].text)
         if not m:
@@ -164,6 +221,9 @@ def parse_node(lines: list[Line], i: int, indent: int):
         key = parse_scalar(m.group(1))
         if key == "<<":
             raise InvalidInput(f"line {lines[i].number}: merge key")
+        if key in first_seen:
+            raise duplicate_key_error(lines[i].number, key, first_seen[key])
+        first_seen[key] = lines[i].number
         rest = m.group(2)
         n = lines[i].number
         i += 1
@@ -180,6 +240,8 @@ def parse_node(lines: list[Line], i: int, indent: int):
             out[key] = parse_flow_seq(rest, n)
         else:
             out[key] = parse_scalar(rest)
+            if i < len(lines) and lines[i].indent > indent:
+                raise folded_scalar_error(n, key, lines[i].number)
     return out, i
 
 
@@ -210,14 +272,170 @@ def workflow_events(doc: dict) -> dict:
     raise InvalidInput("unsupported 'on:' value")
 
 
-def allowed_events(job: dict):
-    """Events provably allowed by the job-level if; None when not provable."""
+EVENT_CMP = re.compile(r"""github\.event_name\s*(==|!=)\s*(?:'([^']*)'|"([^"]*)")""")
+
+
+def _cond_tokens(text: str) -> list | None:
+    """Split a job `if` into parens, `&&`, `||`, `!` and opaque atoms; None if malformed."""
+    toks, i, n = [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c.isspace():
+            i += 1
+        elif c in "()":
+            toks.append((c,))
+            i += 1
+        elif text.startswith(("&&", "||"), i):
+            toks.append((text[i:i + 2],))
+            i += 2
+        elif c == "!" and not text.startswith("!=", i):
+            toks.append(("!",))
+            i += 1
+        else:
+            j, depth, quote = i, 0, None
+            while j < n:
+                d = text[j]
+                if quote:
+                    quote = None if d == quote else quote
+                elif d in "'\"":
+                    quote = d
+                elif d == "(":
+                    depth += 1
+                elif d == ")":
+                    if depth == 0:
+                        break
+                    depth -= 1
+                elif depth == 0 and text.startswith(("&&", "||"), j):
+                    break
+                j += 1
+            if quote or depth:
+                return None
+            toks.append(("atom", text[i:j].strip()))
+            i = j
+    return toks
+
+
+def _parse_cond(text: str):
+    """Boolean tree of a job `if`; atoms are `github.event_name` tests or unknown. None on error."""
+    toks = _cond_tokens(text)
+    if not toks:
+        return None
+    pos = 0
+
+    def peek():
+        return toks[pos][0] if pos < len(toks) else None
+
+    def chain(op, sub):
+        nonlocal pos
+        parts = [sub()]
+        while peek() == op:
+            pos += 1
+            parts.append(sub())
+        return parts[0] if len(parts) == 1 else ("and" if op == "&&" else "or", parts)
+
+    def unary():
+        nonlocal pos
+        kind = peek()
+        if kind == "!":
+            pos += 1
+            return ("not", unary())
+        if kind == "(":
+            pos += 1
+            node = chain("||", lambda: chain("&&", unary))
+            if peek() != ")":
+                raise ValueError("unbalanced group")
+            pos += 1
+            return node
+        if kind == "atom":
+            atom = toks[pos][1]
+            pos += 1
+            m = EVENT_CMP.fullmatch(atom)
+            return ("ev", m.group(1), m.group(2) if m.group(2) is not None else m.group(3)) if m else ("unk",)
+        raise ValueError("unexpected token")
+
+    try:
+        tree = chain("||", lambda: chain("&&", unary))
+        return tree if pos == len(toks) else None
+    except (ValueError, RecursionError):
+        return None
+
+
+def _cond_value(node, event: str):
+    """True / False / None (unknown) of a condition tree when `github.event_name` is `event`."""
+    kind = node[0]
+    if kind == "ev":
+        hit = event == node[2]
+        return hit if node[1] == "==" else not hit
+    if kind == "unk":
+        return None
+    if kind == "not":
+        v = _cond_value(node[1], event)
+        return None if v is None else not v
+    vals = [_cond_value(n, event) for n in node[1]]
+    if kind == "and":
+        return False if any(v is False for v in vals) else (True if all(v is True for v in vals) else None)
+    return True if any(v is True for v in vals) else (False if all(v is False for v in vals) else None)
+
+
+def _cond_events(node) -> set:
+    if node[0] == "ev":
+        return {node[2]}
+    if node[0] == "not":
+        return _cond_events(node[1])
+    return set().union(*map(_cond_events, node[1])) if node[0] in ("and", "or") else set()
+
+
+def allowed_events(job: dict, events=()):
+    """Events the job-level if may run on; None when the condition is not provable.
+
+    The condition is evaluated once per event of the workflow (plus those it
+    names) in three-valued logic: a `github.event_name` test is true or false,
+    every other atom (`needs.*`, `always()`, `startsWith(...)`) is unknown and
+    counts as "may run". Only a provably false condition drops an event."""
     cond = job.get("if")
-    if not isinstance(cond, str) or not cond:
+    if not isinstance(cond, str) or not cond or "${{" in cond:
         return None
-    if "!=" in cond or "always()" in cond or "${{" in cond or "needs." in cond:
+    tree = _parse_cond(cond)
+    if tree is None:
         return None
-    return set(EVENT_IF.findall(cond))
+    return {ev for ev in set(events) | _cond_events(tree) if _cond_value(tree, ev) is not False}
+
+
+def _branch_glob(pattern: str, name: str) -> bool | None:
+    """Whether a push branch filter matches `name`; None when the pattern is not provable."""
+    if not pattern or any(c in pattern for c in "!?+[]"):
+        return None
+    rx, i = "", 0
+    while i < len(pattern):
+        if pattern.startswith("**", i):
+            rx, i = rx + ".*", i + 2
+        elif pattern[i] == "*":
+            rx, i = rx + "[^/]*", i + 1
+        else:
+            rx, i = rx + re.escape(pattern[i]), i + 1
+    return re.fullmatch(rx, name) is not None
+
+
+def push_reaches_base_and_others(cfg: dict, base: str) -> bool:
+    """HR-30: a `push` that runs on the base and also on other branches.
+
+    A push filtered to the base alone, or one that never reaches the base
+    (other branches, tags only), publishes no check on a PR commit. Anything
+    not provable (negations, malformed filters, both filter kinds) reports True."""
+    branches, ignore = cfg.get("branches"), cfg.get("branches-ignore")
+    if branches is not None and ignore is not None:
+        return True
+    for flt in (branches, ignore):
+        if flt is not None and not (isinstance(flt, list) and flt and all(isinstance(x, str) for x in flt)):
+            return True
+    if branches is not None and set(branches) == {base}:
+        return False
+    if branches is None and ignore is None:
+        return not ("tags" in cfg or "tags-ignore" in cfg)
+    hits = [_branch_glob(x, base) for x in (branches if branches is not None else ignore)]
+    if None in hits:
+        return True
+    return any(hits) if branches is not None else not any(hits)
 
 
 def scan_run(text: str) -> list[str]:
@@ -230,6 +448,22 @@ def scan_run(text: str) -> list[str]:
         if re.fullmatch(r"exit 0\s*;?", line) or line.endswith(("; exit 0", "; exit 0;")):
             found.append("bare `exit 0` masks failure (fail loud, HR-3)")
     return found
+
+
+def version_file_finding(ref: object, root: Path) -> str | None:
+    """HR-26: why a `python-version-file` is not an exact pin, or None when it holds X.Y.Z."""
+    if not isinstance(ref, str) or not ref or "${{" in ref or Path(ref).is_absolute():
+        return "is not a plain repository-relative path"
+    target = (root / ref).resolve()
+    if not target.is_relative_to(root.resolve()):
+        return "escapes the repository"
+    try:
+        text = target.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return "is not a readable file in the repository"
+    if not EXACT_VERSION.fullmatch(text.strip()):
+        return "does not hold exactly X.Y.Z"
+    return None
 
 
 def pin_finding(uses: str) -> str | None:
@@ -246,30 +480,121 @@ def pin_finding(uses: str) -> str | None:
     return None
 
 
-def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list):
+def load_declared_checks(path: str) -> list[str]:
+    """`required_checks` names of a host contract (same shape host-readback validates)."""
+    try:
+        data = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise InvalidInput(f"host contract unreadable: {exc}") from exc
+    entries = data.get("required_checks", []) if isinstance(data, dict) else None
+    if not isinstance(entries, list) or not all(
+            isinstance(e, dict) and isinstance(e.get("name"), str) and e["name"] for e in entries):
+        raise InvalidInput("host contract: `required_checks` must be a list of entries with a "
+                           "non-empty `name`")
+    return [e["name"] for e in entries]
+
+
+def declared_name(jid: str, job: dict, declared: list[str]) -> str | None:
+    """The declared required check this job publishes, or None. `${{ }}` in a name matches anything."""
+    name = job.get("name") if isinstance(job.get("name"), str) else jid
+    rx = ".+".join(re.escape(part) for part in re.split(r"\$\{\{.*?\}\}", name))
+    return next((d for d in declared if re.fullmatch(rx, d)), None)
+
+
+DOCKER_RUN = re.compile(r"\bdocker\s+run\b")
+DOCKER_INFO = re.compile(r"\bdocker\s+info\b")
+TIMEOUT_CALL = re.compile(r"(?:^|[\s;&|(`])timeout\s")
+
+
+def has_concurrency_group(node: object) -> bool:
+    """A `concurrency:` value that names a group: a non-empty string or a mapping with `group`."""
+    if isinstance(node, str):
+        return bool(node.strip())
+    return isinstance(node, dict) and bool(node.get("group"))
+
+
+def fixed_host_ports(job: dict) -> list[tuple[str, str]]:
+    """(service, port) for every service port that pins a host port (`H:C`, `IP:H:C`)."""
+    services = job.get("services")
+    found = []
+    for name, spec in (services.items() if isinstance(services, dict) else []):
+        ports = spec.get("ports") if isinstance(spec, dict) else None
+        found.extend((name, str(p)) for p in (ports if isinstance(ports, list) else []) if ":" in str(p))
+    return found
+
+
+def docker_preflight_finding(steps: list) -> str | None:
+    """Why the first `docker run` of the job is unguarded, or None.
+
+    The guard is `docker info` under `timeout`, earlier in a previous step or earlier in the same
+    step; only executable lines before the first `docker run` count (a comment is not a guard).
+    """
+    before: list[str] = []
+    for st in steps:
+        run = st.get("run") if isinstance(st, dict) else None
+        lines = [ln for ln in (run.splitlines() if isinstance(run, str) else [])
+                 if ln.strip() and not ln.lstrip().startswith("#")]
+        hit = next((i for i, ln in enumerate(lines) if DOCKER_RUN.search(ln)), None)
+        if hit is None:
+            before.extend(lines)
+            continue
+        guard = "\n".join([*before, *lines[:hit]])
+        if not DOCKER_INFO.search(guard):
+            return "reaches `docker run` with no `docker info` check before it"
+        if not any(DOCKER_INFO.search(ln) and TIMEOUT_CALL.search(ln) for ln in guard.splitlines()):
+            return ("checks `docker info` but not under `timeout`: an unwrapped check hangs "
+                    "exactly when the daemon is wedged")
+        return None
+    return None
+
+
+def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list,
+              root: Path = Path("."), declared: list[str] | None = None):
     def finding(msg):
         out.append(f"{wf} job '{jid}': {msg}")
 
+    events = workflow_events(doc)
+    allowed = allowed_events(job, events)
+    qualified = isinstance(job.get("name"), str) and "github.event_name" in job["name"]
+    # A job whose provable if excludes pull_request never publishes a PR check name,
+    # so its schedule/dispatch runs cannot satisfy one (HR-30).
+    never_on_pr = allowed is not None and "pull_request" not in allowed
     if required:
         if doc.get("continue-on-error") is True:
             finding("workflow-level `continue-on-error: true` masks failure (HR-3)")
         if job.get("continue-on-error") is True or isinstance(job.get("continue-on-error"), str):
             finding("`continue-on-error` masks failure (HR-3)")
-        events = workflow_events(doc)
         if "pull_request" not in events:
             finding("required check name is never published from a PR event (HR-30)")
-        allowed = allowed_events(job)
-        qualified = isinstance(job.get("name"), str) and "github.event_name" in job["name"]
-        for ev in ("schedule", "workflow_dispatch"):
-            if ev in events and not qualified and (allowed is None or ev in allowed):
-                finding(f"publishes its check name on '{ev}', which does not evaluate the PR (HR-30)")
         if "push" in events:
-            branches = events["push"].get("branches")
-            base_only = isinstance(branches, list) and branches and set(branches) == {base}
-            if not qualified and not base_only and (allowed is None or "push" in allowed):
+            if not qualified and push_reaches_base_and_others(events["push"], base) and \
+                    (allowed is None or "push" in allowed):
                 finding("`push` trigger reaches branches other than the base (HR-30)")
+    # With a host contract, only the names it requires are in scope for schedule/dispatch;
+    # without one, every job of the required-jobs policy is (a job that is not a required
+    # check cannot satisfy one from a run that is not the PR's).
+    if (declared_name(jid, job, declared) is not None) if declared is not None else required:
+        for ev in ("schedule", "workflow_dispatch"):
+            if ev in events and not qualified and not never_on_pr and (allowed is None or ev in allowed):
+                finding(f"publishes its check name on '{ev}', which does not evaluate the PR (HR-30)")
+
+    # A job that calls a reusable workflow has no `timeout-minutes` in its schema.
+    if "timeout-minutes" not in job and "uses" not in job:
+        finding("no `timeout-minutes`: GitHub's default is 360 minutes, so a wedged runner "
+                "holds the queue for six hours instead of failing (#806)")
+
+    if not has_concurrency_group(job.get("concurrency")) and not has_concurrency_group(doc.get("concurrency")):
+        finding("no `concurrency` group (job or workflow): a second push runs alongside the first "
+                "and both compete for the same runner (#806)")
+    for service, port in fixed_host_ports(job):
+        finding(f"service '{service}' pins host port '{port}': publish the container port alone "
+                "and read the assigned one from `job.services.<id>.ports`, or a second runner "
+                "collides or shares one database (#806)")
 
     steps = job.get("steps") or []
+    docker_why = docker_preflight_finding(steps)
+    if docker_why:
+        finding(f"{docker_why}: a wedged daemon blocks `docker run` instead of failing (#806)")
     for st in steps:
         if not isinstance(st, dict):
             raise InvalidInput(f"{wf}: step of job '{jid}' is not a mapping")
@@ -281,8 +606,14 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
             for repo, key in SETUP_KEYS.items():
                 if uses.startswith(repo + "@"):
                     with_block = st.get("with")
-                    version = with_block.get(key) if isinstance(with_block, dict) else None
-                    if not isinstance(version, str) or not EXACT_VERSION.fullmatch(version):
+                    with_block = with_block if isinstance(with_block, dict) else {}
+                    version = with_block.get(key)
+                    if version is None and key == "python-version" and "python-version-file" in with_block:
+                        # The inline key wins in actions/setup-python; the file is judged only without it.
+                        why = version_file_finding(with_block["python-version-file"], root)
+                        if why:
+                            finding(f"`{repo}` python-version-file {why} (HR-26)")
+                    elif not isinstance(version, str) or not EXACT_VERSION.fullmatch(version):
                         finding(f"`{repo}` does not declare an exact {key} X.Y.Z (HR-26)")
         if required and (st.get("continue-on-error") is True or
                          isinstance(st.get("continue-on-error"), str)):
@@ -450,25 +781,54 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
                        "sin alerta, el rojo programado queda sin abrir issue.")
 
 
+def repo_root(workflow: str, explicit: str | None) -> Path:
+    if explicit:
+        return Path(explicit)
+    wf = Path(workflow).resolve()
+    if wf.parent.name == "workflows" and wf.parent.parent.name == ".github":
+        return wf.parent.parent.parent
+    return Path(".")
+
+
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(description="Workflow policy gate "
                                 "(HR-3, HR-26, HR-30, HR-39).")
     ap.add_argument("--workflow", action="append", required=True)
     ap.add_argument("--required-jobs", required=True)
     ap.add_argument("--base-branch", default="main")
+    ap.add_argument("--host-contract", help="host contract (JSON): HR-30 for schedule/dispatch then "
+                    "applies only to the check names its `required_checks` lists")
+    ap.add_argument("--repo-root", help="directory a `python-version-file` is resolved against "
+                    "(default: the checkout holding .github/workflows/<file>, else the cwd)")
     args = ap.parse_args(argv)
     try:
         required, data = load_required(args.required_jobs)
+        declared = load_declared_checks(args.host_contract) if args.host_contract else None
         docs = [(w, parse_workflow(Path(w).read_text(encoding="utf-8"), w)) for w in args.workflow]
     except (InvalidInput, OSError) as exc:
         print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
         return 2
-    findings, seen = [], set()
+    findings, seen, published = [], set(), set()
     for w, doc in docs:
         for jid, job in doc["jobs"].items():
             if jid in required:
                 seen.add(jid)
-            check_job(w, jid, job, doc, jid in required, args.base_branch, findings)
+            if declared is not None:
+                published.add(declared_name(jid, job, declared))
+            check_job(w, jid, job, doc, jid in required, args.base_branch, findings,
+                      repo_root(w, args.repo_root), declared)
+    for name in (declared or []):
+        if name not in published:
+            findings.append(f"host contract requires check '{name}' but no analyzed workflow job "
+                            "publishes it; pass the workflow that does (HR-30)")
     for jid in required:
         if jid not in seen:
             findings.append(f"required job '{jid}' is absent from every analyzed workflow")

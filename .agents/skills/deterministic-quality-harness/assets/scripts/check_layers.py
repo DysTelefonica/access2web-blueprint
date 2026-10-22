@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/scripts/check_layers.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_layers.py
 """Hexagonal layer gate: dependency direction, vertical slicing, and layer purity.
 
 Stdlib only, so the gate runs before the project has installed anything. Walks the AST of every

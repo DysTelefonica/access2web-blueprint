@@ -34,19 +34,54 @@ CLI equivalente:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import os
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
-
 
 GIT_TIMEOUT = 15
+EXIT_FAIL_CLOSED = 2
 
 
-class EnvironmentFail(Exception):
-    """Error de entorno: rc=2, fail-closed."""
+class EnvironmentFailError(Exception):
+    """Error de entorno: rc=2, fail-closed.
+
+    Each subclass owns its message template; raise sites pass data only.
+    """
+
+    template = "environment failure"
+
+    def __init__(self, *details: object) -> None:
+        super().__init__(self.template.format(*details))
+
+
+class GitCallFailedError(EnvironmentFailError):
+    template = "git {0} failed: {1}"
+
+
+class RepoDirMissingError(EnvironmentFailError):
+    template = "repo_dir does not exist: {0}"
+
+
+class RepoDirNotGitError(EnvironmentFailError):
+    template = "repo_dir is not a git repo: {0}"
+
+
+class GitStatusFailedError(EnvironmentFailError):
+    template = "git status failed: {0}"
+
+
+class WorktreeRemoveFailedError(EnvironmentFailError):
+    template = "git worktree remove failed: {0}"
+
+
+class BranchDeleteFailedError(EnvironmentFailError):
+    template = "git branch -D {0} failed: {1}"
+
+
 
 
 @dataclass
@@ -57,32 +92,35 @@ class Result:
     ok: bool
     reason: str
     exit_code: int
-    bundled_to: Optional[Path] = None
+    bundled_to: Path | None = None
     deleted: list[str] = field(default_factory=list)
 
 
 def _run_git(args: list[str], cwd: Path) -> subprocess.CompletedProcess:
     """Ejecuta un subcomando git con timeout. Falla cerrado en OSError."""
     try:
+        git = shutil.which("git")
+        if git is None:
+            raise FileNotFoundError("git")
         return subprocess.run(
-            ["git", *args],
+            [git, *args],
             capture_output=True, text=True, cwd=cwd,
             timeout=GIT_TIMEOUT,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
-        raise EnvironmentFail(f"git {args[0] if args else ''} failed: {exc}") from exc
+        raise GitCallFailedError(args[0] if args else "", exc) from exc
 
 
 def _resolve_repo(repo_dir: str | Path) -> Path:
     p = Path(repo_dir).resolve()
     if not p.is_dir():
-        raise EnvironmentFail(f"repo_dir does not exist: {repo_dir}")
+        raise RepoDirMissingError(repo_dir)
     if not (p / ".git").exists():
-        raise EnvironmentFail(f"repo_dir is not a git repo: {repo_dir}")
+        raise RepoDirNotGitError(repo_dir)
     return p
 
 
-def _resolve_worktree(worktree: str | Path | None) -> Optional[Path]:
+def _resolve_worktree(worktree: str | Path | None) -> Path | None:
     if worktree is None:
         return None
     p = Path(worktree).resolve()
@@ -95,7 +133,7 @@ def _is_worktree_clean(wt: Path) -> tuple[bool, str]:
     """Comprueba ``git status --porcelain`` en el worktree."""
     proc = _run_git(["status", "--porcelain"], cwd=wt)
     if proc.returncode != 0:
-        raise EnvironmentFail(f"git status failed: {proc.stderr.strip()[:200]}")
+        raise GitStatusFailedError(proc.stderr.strip()[:200])
     if proc.stdout.strip():
         sample = "\n".join(proc.stdout.strip().splitlines()[:5])
         return False, sample
@@ -113,7 +151,7 @@ def _processes_in_path(path: Path) -> list[int]:
         if not entry.name.isdigit():
             continue
         try:
-            cwd = os.readlink(entry / "cwd")
+            cwd = str((entry / "cwd").readlink())
         except (OSError, PermissionError):
             continue
         if cwd == target or cwd.startswith(target + os.sep):
@@ -121,7 +159,7 @@ def _processes_in_path(path: Path) -> list[int]:
     return pids
 
 
-def _rev(repo: Path, ref: str) -> Optional[str]:
+def _rev(repo: Path, ref: str) -> str | None:
     """Resuelve un ref a SHA completo. None si no existe."""
     proc = _run_git(["rev-parse", "--verify", ref], cwd=repo)
     if proc.returncode != 0:
@@ -145,7 +183,7 @@ def _active_branch(repo: Path) -> str:
 
 
 def _is_preserved(
-    repo: Path, branch: str, pr_head: Optional[str]
+    repo: Path, branch: str, pr_head: str | None
 ) -> tuple[bool, str]:
     """Comprueba los tres criterios del OR de preservacion.
 
@@ -176,9 +214,7 @@ def _remove_worktree(repo: Path, wt: Path) -> None:
     """``git worktree remove`` + ``git worktree prune``. Falla cerrado."""
     proc = _run_git(["worktree", "remove", "--force", str(wt)], cwd=repo)
     if proc.returncode != 0:
-        raise EnvironmentFail(
-            f"git worktree remove failed: {proc.stderr.strip()[:200]}"
-        )
+        raise WorktreeRemoveFailedError(proc.stderr.strip()[:200])
     _run_git(["worktree", "prune"], cwd=repo)
 
 
@@ -200,12 +236,10 @@ def _delete_local_branch(repo: Path, branch: str) -> None:
         _run_git(["checkout", "-q", target], cwd=repo)
     delete = _run_git(["branch", "-D", branch], cwd=repo)
     if delete.returncode != 0:
-        raise EnvironmentFail(
-            f"git branch -D {branch} failed: {delete.stderr.strip()[:200]}"
-        )
+        raise BranchDeleteFailedError(branch, delete.stderr.strip()[:200])
 
 
-def _create_bundle(repo: Path, branch: str, bundle_dir: Path) -> Optional[Path]:
+def _create_bundle(repo: Path, branch: str, bundle_dir: Path) -> Path | None:
     """Crea un bundle de la rama y lo verifica. None si no se pudo.
 
     El bundle se nombra <sanitized-branch>.bundle dentro de bundle_dir.
@@ -221,59 +255,38 @@ def _create_bundle(repo: Path, branch: str, bundle_dir: Path) -> Optional[Path]:
         return None
     verify = _run_git(["bundle", "verify", str(bundle_path)], cwd=repo)
     if verify.returncode != 0:
-        try:
+        with contextlib.suppress(OSError):
             bundle_path.unlink()
-        except OSError:
-            pass
         return None
     return bundle_path
 
 
-def cleanup(
-    repo_dir: str | Path,
-    branch: str,
-    worktree: str | Path | None = None,
-    pr_head: Optional[str] = None,
-    bundle_dir: str | Path | None = None,
-) -> Result:
-    """Borra el worktree y la rama local SOLO si la informacion esta
-    preservada. Ver contrato en el docstring del modulo."""
+def _bundle_step(repo: Path, branch: str, bundle_path: Path | None) -> tuple[Path | None, Result | None]:
+    """Pre-chequeo: con bundle_dir el bundle se crea ANTES de negarse por
+    cualquier motivo. Devuelve (bundle, rechazo); un rechazo corta ``cleanup``."""
+    if bundle_path is None:
+        return None, None
     try:
-        repo = _resolve_repo(repo_dir)
-        wt = _resolve_worktree(worktree)
-        bundle_path = (
-            Path(bundle_dir).resolve() if bundle_dir is not None else None
+        written = _create_bundle(repo, branch, bundle_path)
+    except EnvironmentFailError as exc:
+        return None, Result(ok=False, reason=str(exc), exit_code=EXIT_FAIL_CLOSED)
+    if written is None:
+        return None, Result(
+            ok=False,
+            reason=(
+                f"could not create or verify bundle in '{bundle_path}' "
+                "before cleanup; refusing to proceed"
+            ),
+            exit_code=EXIT_FAIL_CLOSED,
+            bundled_to=None,
         )
-    except EnvironmentFail as exc:
-        return Result(ok=False, reason=str(exc), exit_code=2)
+    return written, None
 
-    # Pre-chequeos: con bundle_dir, el bundle se crea ANTES de negarse
-    # por cualquier motivo, para que el operador tenga respaldo.
-    bundle_written: Optional[Path] = None
-    if bundle_path is not None:
-        try:
-            bundle_written = _create_bundle(repo, branch, bundle_path)
-        except EnvironmentFail as exc:
-            return Result(ok=False, reason=str(exc), exit_code=2)
-        if bundle_written is None:
-            return Result(
-                ok=False,
-                reason=(
-                    f"could not create or verify bundle in '{bundle_path}' "
-                    "before cleanup; refusing to proceed"
-                ),
-                exit_code=2,
-                bundled_to=None,
-            )
 
-    if wt is not None:
-        try:
-            clean, dirty_sample = _is_worktree_clean(wt)
-        except EnvironmentFail as exc:
-            return Result(
-                ok=False, reason=str(exc), exit_code=2,
-                bundled_to=bundle_written,
-            )
+def _worktree_step(wt: Path, bundle_written: Path | None) -> Result | None:
+    """Rechaza si el worktree esta sucio o tiene procesos activos."""
+    try:
+        clean, dirty_sample = _is_worktree_clean(wt)
         if not clean:
             return Result(
                 ok=False,
@@ -285,38 +298,28 @@ def cleanup(
                 exit_code=3,
                 bundled_to=bundle_written,
             )
-        try:
-            pids = _processes_in_path(wt)
-        except EnvironmentFail as exc:
-            return Result(
-                ok=False, reason=str(exc), exit_code=2,
-                bundled_to=bundle_written,
-            )
-        if pids:
-            sample = ", ".join(str(p) for p in pids[:5])
-            return Result(
-                ok=False,
-                reason=(
-                    f"worktree '{wt}' has active processes (PIDs: {sample}); "
-                    "stop them or run cleanup from outside the worktree"
-                ),
-                exit_code=3,
-                bundled_to=bundle_written,
-            )
-
-    try:
-        preserved, why = _is_preserved(repo, branch, pr_head)
-    except EnvironmentFail as exc:
+        pids = _processes_in_path(wt)
+    except EnvironmentFailError as exc:
         return Result(
-            ok=False, reason=str(exc), exit_code=2,
+            ok=False, reason=str(exc), exit_code=EXIT_FAIL_CLOSED,
             bundled_to=bundle_written,
         )
-    if not preserved:
+    if pids:
+        sample = ", ".join(str(p) for p in pids[:5])
         return Result(
-            ok=False, reason=why, exit_code=3,
+            ok=False,
+            reason=(
+                f"worktree '{wt}' has active processes (PIDs: {sample}); "
+                "stop them or run cleanup from outside the worktree"
+            ),
+            exit_code=3,
             bundled_to=bundle_written,
         )
+    return None
 
+
+def _delete_step(repo: Path, branch: str, wt: Path | None, bundle_written: Path | None, why: str) -> Result:
+    """Borra el worktree y la rama local ya comprobada la preservacion."""
     deleted: list[str] = []
     try:
         if wt is not None:
@@ -324,9 +327,9 @@ def cleanup(
             deleted.append(f"worktree:{wt}")
         _delete_local_branch(repo, branch)
         deleted.append(f"branch:{branch}")
-    except EnvironmentFail as exc:
+    except EnvironmentFailError as exc:
         return Result(
-            ok=False, reason=str(exc), exit_code=2,
+            ok=False, reason=str(exc), exit_code=EXIT_FAIL_CLOSED,
             bundled_to=bundle_written, deleted=deleted,
         )
     return Result(
@@ -336,6 +339,47 @@ def cleanup(
         bundled_to=bundle_written,
         deleted=deleted,
     )
+
+
+def cleanup(
+    repo_dir: str | Path,
+    branch: str,
+    worktree: str | Path | None = None,
+    pr_head: str | None = None,
+    bundle_dir: str | Path | None = None,
+) -> Result:
+    """Borra el worktree y la rama local SOLO si la informacion esta
+    preservada. Ver contrato en el docstring del modulo."""
+    try:
+        repo = _resolve_repo(repo_dir)
+        wt = _resolve_worktree(worktree)
+        bundle_path = (
+            Path(bundle_dir).resolve() if bundle_dir is not None else None
+        )
+    except EnvironmentFailError as exc:
+        return Result(ok=False, reason=str(exc), exit_code=EXIT_FAIL_CLOSED)
+
+    bundle_written, refusal = _bundle_step(repo, branch, bundle_path)
+    if refusal is not None:
+        return refusal
+    if wt is not None:
+        refusal = _worktree_step(wt, bundle_written)
+        if refusal is not None:
+            return refusal
+
+    try:
+        preserved, why = _is_preserved(repo, branch, pr_head)
+    except EnvironmentFailError as exc:
+        return Result(
+            ok=False, reason=str(exc), exit_code=EXIT_FAIL_CLOSED,
+            bundled_to=bundle_written,
+        )
+    if not preserved:
+        return Result(
+            ok=False, reason=why, exit_code=3,
+            bundled_to=bundle_written,
+        )
+    return _delete_step(repo, branch, wt, bundle_written, why)
 
 
 def _build_parser() -> argparse.ArgumentParser:  # noqa: D401
@@ -360,7 +404,15 @@ def _build_parser() -> argparse.ArgumentParser:  # noqa: D401
     return parser
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main() -> int:
+    _pin_output_encoding()
     parser = _build_parser()
     args = parser.parse_args()
     result = cleanup(
@@ -376,11 +428,10 @@ def main() -> int:
         print(f"CLEAN: {item}")
     if result.ok:
         print(f"OK: {result.reason}")
+    elif result.exit_code == EXIT_FAIL_CLOSED:
+        print(f"fail-closed: {result.reason}", file=sys.stderr)
     else:
-        if result.exit_code == 2:
-            print(f"fail-closed: {result.reason}", file=sys.stderr)
-        else:
-            print(f"REFUSED: {result.reason}")
+        print(f"REFUSED: {result.reason}")
     return result.exit_code
 
 

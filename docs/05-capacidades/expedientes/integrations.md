@@ -2,18 +2,18 @@
 
 # Expedientes · integrations (D53 / EXP-CAP-051..056)
 
-Resumen a nivel repo del slice D53 del task plan. Fuente de verdad: [`openspec/changes/expedientes-web-migration/specs/integrations.md`](../../../../openspec/changes/expedientes-web-migration/specs/integrations.md).
+Resumen a nivel repo del slice D53 del task plan. Fuente de verdad: [`openspec/changes/expedientes-web-migration/specs/integrations.md`](../../../openspec/changes/expedientes-web-migration/specs/integrations.md).
 
 ## Capacidades
 
 | ID | Título | Contrato | Sistema destino |
 |---|---|---|---|
-| [EXP-CAP-051](../../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-051--hps) | HPS | Outbound JSON/HTTP con identidad compartida y timeout duro | Lanzadera vía XApp handshake (D132) |
-| [EXP-CAP-052](../../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-052--agedys) | AGEDYS | Outbound al servicio externo Agedys (genérico o específico) con logging de intentos y reversibilidad | Servicio externo AGEDYS |
-| [EXP-CAP-053](../../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-053--gestión-de-riesgos) | Gestión de Riesgos | Vinculación conceptual por `IDRiesgo` con orden de migración estricto (D95) | Gestion_Riesgos vía XApp (D132) |
-| [EXP-CAP-054](../../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-054--no-conformidades) | No Conformidades | Vinculación conceptual por `IDNC` con orden de migración estricto (D95) | NoConformidades vía XApp (D132) |
-| [EXP-CAP-055](../../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-055--correo) | Correo | Outbound SMTP/SES vía `NotificationDeliveryPort` con cola-por-tabla (DA-10) | SMTP server / SES |
-| [EXP-CAP-056](../../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-056--documentos) | Documentos | Object storage S3-compatible vía `DocumentStoragePort` con URL prefirmada y borrado lógico primero, físico después | S3-compatible (D16) |
+| [EXP-CAP-051](../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-051--hps) | HPS | Outbound JSON/HTTP con identidad compartida y timeout duro | Lanzadera vía XApp handshake (D132) |
+| [EXP-CAP-052](../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-052--agedys) | AGEDYS | Outbound al servicio externo Agedys (genérico o específico) con logging de intentos y reversibilidad | Servicio externo AGEDYS |
+| [EXP-CAP-053](../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-053--gestión-de-riesgos) | Gestión de Riesgos | Vinculación conceptual por `IDRiesgo` con orden de migración estricto (D95) | Gestion_Riesgos vía XApp (D132) |
+| [EXP-CAP-054](../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-054--no-conformidades) | No Conformidades | Vinculación conceptual por `IDNC` con orden de migración estricto (D95) | NoConformidades vía XApp (D132) |
+| [EXP-CAP-055](../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-055--correo) | Correo | Outbound SMTP/SES vía `NotificationDeliveryPort` con cola-por-tabla (DA-10) | SMTP server / SES |
+| [EXP-CAP-056](../../../openspec/changes/expedientes-web-migration/specs/integrations.md#requirement-exp-cap-056--documentos) | Documentos | Object storage S3-compatible vía `DocumentStoragePort` con URL prefirmada y borrado lógico primero, físico después | S3-compatible (D16) |
 
 Cada Requirement tiene escenarios de validación (credenciales ausentes, endpoint caído, version mismatch) y de concurrencia o fallo (idempotencia, retry con backoff). Ver el spec.
 

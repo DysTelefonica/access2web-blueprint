@@ -88,7 +88,7 @@ quality-report:
 #   - check_workflows                          ci.yml contract; CI quality job only
 #   - check_mutation + cosmic-ray              weekly schedule; far too slow per PR
 #   - pip-audit / gitleaks / trivy             Docker- and network-dependent scanners
-#   - check_required_jobs                      needs the real toJSON(needs) of a run
+#   - required-jobs (canon)                    needs the real toJSON(needs) of a run
 verify:
 	@bash scripts/local-preflight.sh
 	@echo "verify: all CI pull-request gates passed."

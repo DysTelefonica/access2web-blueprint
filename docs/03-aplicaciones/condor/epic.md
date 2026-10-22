@@ -143,7 +143,7 @@ Si aparece algo que no está en los 7 docs de Condor, se marca como **no documen
 | H7 | D104 | **Patrón de secret manager (cross-cutting)** | high | El patrón de contraseña hardcodeada puede existir también en otras apps (Brass D104 ya documentado como contraseña **REAL** directa, no fallback) | Descubrimiento paralelo necesario; la regla HR-3 aplica a todos los repos consumer. Acción: la migración de Condor no debe esperar al audit cross-cutting; D93 se cierra con rotación de la contraseña real y migración a secret manager (D9-D10). |
 
 **Detalle completo por hallazgo**:
-- [H1 D93](migration-matrix.md#d93--password-hardcodeado-como-fallback-en-getpassworddb) · [security-rules.md § D93](security-rules.md#d93--password-hardcodeado-como-fallback-en-getpassworddb)
+- [H1 D93](migration-matrix.md#d93--password-hardcoded-como-fallback-en-getpassworddb) · [security-rules.md § D93](security-rules.md#d93--password-hardcoded-como-fallback-en-getpassworddb)
 - [H2 D94](migration-matrix.md#d94--fks-conceptuales-sin-constraint)
 - [H3 D95](migration-matrix.md#d95--vinculación-con-noconformidades)
 - [H4 D96](migration-matrix.md#d96--workflow-declarativo-via-tbtransiciones)

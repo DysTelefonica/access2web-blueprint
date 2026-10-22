@@ -1,0 +1,3 @@
+type: minor
+
+`issue-spec` deja de exigir `status:approved` a cada issue enlazada: las `Refs` son informativas (#913). El PR debe enlazar al menos una issue del propio repositorio aprobada y tipada; si lleva `Closes`, la que cierra es esa aprobada. Pasan a verde los PR que cierran una issue aprobada y citan otras no aprobadas como `Refs`. Siguen en rojo los PR sin ninguna issue aprobada (solo `Refs` no aprobadas), los que cierran una issue no aprobada aunque citen una aprobada como `Refs`, y las `Refs` a una PR. Las `Refs` siguen comprobando el tipo y las secciones obligatorias, y en `chain:partial` no se exige aprobación (#787 S6). `pr_preflight` aplica la misma regla.

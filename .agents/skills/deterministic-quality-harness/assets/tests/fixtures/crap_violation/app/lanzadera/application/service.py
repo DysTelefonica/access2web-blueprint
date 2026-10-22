@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — negative fixture, do not "fix"
 """A modestly branchy function with no tests behind it.
 
 Complexity 4 is unremarkable on its own — it passes the complexity ceiling of 15 comfortably.

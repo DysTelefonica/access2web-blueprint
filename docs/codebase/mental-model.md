@@ -12,7 +12,7 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 |---|---|
 | Blueprint del refactor de 8 apps legadas a web hexagonal. | `docs/03-aplicaciones/<app>/{epic.md,walkthrough-*.json,capabilities.md}` para `lanzadera`, `expedientes`, `hps`, `hps-solicitudes`, `brass`, `gestion-riesgos`, `no-conformidades`, `condor`. |
 | Plataforma web hexagonal (FastAPI + HTMX + Alembic). | `app/src/main.py` (composition root) + `app/src/modules/<app>/{domain,ports,application,adapters,di,delivery}/`. |
-| Catálogo de decisiones arquitectónicas (D1-D178, DA-1..DA-13). | `docs/architecture.md` §Decisiones arquitectónicas D-<n> y DA-<n>. |
+| Catálogo de decisiones arquitectónicas (D1-D178, DA-1..DA-13). | `docs/decisions/README.md` (D-<n>) y `docs/architecture.md` §Decisiones de diseño del MVP (DA-<n>). |
 | Suite de quality gates deterministas. | `scripts/check_*.py` + `docs/gates.md` (manual de uso de cada gate). |
 | Pipeline de CI por nivel (PR / nightly / release) y agregador de branch protection. | `.github/workflows/ci.yml` (jobs `pr-gate`, `quality`, `integration`, `security`, `codeql`, `required`). |
 | Suite de tests: unit, integration, e2e, gate-smoke. | `tests/lanzadera/`, `tests/expedientes/`, `e2e/*.spec.ts`, marker `@pytest.mark.e2e_smoke` (gate-smoke subprocess tests). |
@@ -72,18 +72,30 @@ Este repo es el **monorepo de la plataforma + blueprint del refactor** de las 8 
 
 ## Invariantes del proyecto
 
-- **Naming multi-app**: cada issue y commit declara a qué app pertenece con el prefijo `[<APP>]` o `[XCUT]` en el título y el scope `(app)` o `(platform)` en el commit. El label `app/<slug>` aplica cuando afecta una sola app.
+- **Naming multi-app**: cada issue y commit declara a qué app pertenece con el prefijo `[<APP>]` o `[XCUT]` en el título y el scope `(app)` o `(platform)` en el commit. El label etiquetas con prefijo `app` aplica cuando afecta una sola app.
 - **Ownership de `data/staging/<app>/`**: los binarios legacy viven en R2 y se pull-ean con `scripts/setup-staging.ps1` y `scripts/sync-to-r2.ps1`. NO se commitean nuevas adiciones a `data/`; el staging se mantiene reproducible desde R2.
 - **Walkthrough JSONs son data**: los `walkthrough-*.json` viven en commits separados de la `epic.md` correspondiente. Mezclarlos dificulta la revisión y bloquea el ciclo de dysflow walkthrough.
 - **Issues a dysflow son work-in-progress**: los `docs/prompts/prompt-ia-mantenedora-dysflow-round-*.md` NO se mergean en `main` hasta que el issue upstream en DysTelefonica/dysflow se cierre.
 - **Ramas de MVP se conservan en remoto**: cada PR se integra con `--squash` y la rama remota se queda; la limpieza es local (`git worktree remove <ruta>`). Borrar la rama remota rompe la trazabilidad por unidad de trabajo.
-- **Hexagonalidad enforced por gate**: `scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `PURE_LAYERS = {domain, ports, application}`. Mover un adapter a la capa equivocada es un gate failure, no un estilo (DA-1, `docs/architecture.md` §Patrón hexagonal).
+- **Hexagonalidad enforced por gate**: el job `docs-architecture` rechaza imports que violen las reglas del bloque `architecture` de `docs/architecture.md` (capas, independencia entre aplicaciones y pureza de `domain`, `ports` y `application`). Mover un adapter a la capa equivocada es un gate failure, no un estilo (DA-1, `docs/architecture.md` §Capas y dependencias).
 - **Pin test AST rechaza símbolos legacy**: `scripts/check_mutation_sites.py` y `scripts/check_legacy_hashes.py` prohíben `legacy_hash`, `sha256`, `migrate_password` en código de plataforma (DA-13).
+
+## Si necesitas X, lee/toca Y
+
+| Si necesitas... | Empieza por... | Luego revisa... |
+|---|---|---|
+| Entender qué es Lanzadera y qué consumen las otras apps | Esta página | `docs/08-decisiones-y-preguntas-abiertas.md` |
+| Saber en qué capa va un cambio | `docs/codebase/repository-map.md` | `docs/architecture.md` |
+| Comprobar si algo existe antes de inventarlo | `docs/codebase/what-is-not-here.md` | `docs/codebase/interfaces.md` |
+
+## Regla de colocación
+
+El código nuevo sigue el orden `domain`, `ports`, `application`, `adapters`, `delivery`, `di`; una capa solo importa de las que su regla permite en el bloque `architecture` de `docs/architecture.md`.
 
 ## Lista de comprobación del contribuidor
 
 - [ ] El cambio respeta los 5 gates del workflow (`check_branch_name`, `check_pr_size`, `check_workflows`, ruff, mypy) — ver `docs/gates.md` §2.
-- [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/architecture.md` §Decisiones D-<n> cross-cutting antes de empezar.
+- [ ] Si toca `app/`, `tests/` u `openspec/`, leyó `docs/decisions/README.md` antes de empezar.
 - [ ] Si toca `docs/`, leyó `skills/documentation-alan-style/SKILL.md` y aplica tono castellano peninsular formal con usted.
 - [ ] El commit usa Conventional Commits con el scope `(app)` o `(platform)` correspondiente.
 - [ ] El PR es ≤ 400 líneas (`additions + deletions`); si no, parte por unidad de trabajo o encadena.

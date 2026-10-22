@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — assets/tests/test_ci_workflow.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/tests/test_ci_workflow.py
 """Wiring pin for the CI workflow (Hard Rule 4).
 
 A gate that exists only as a script is a gate nobody runs. These tests parse the workflow and

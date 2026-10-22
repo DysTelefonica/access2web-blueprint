@@ -26,12 +26,14 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 #: The gates that walk a source tree. `check_crap` is deliberately absent: it
 #: consumes coverage.json and already fails closed when that file is missing.
-TREE_GATES = ("check_complexity", "check_dry", "check_mutation_sites", "check_layers")
+TREE_GATES = ("check_complexity", "check_dry", "check_mutation_sites")
 
 
 def _run(gate: str, root: Path) -> int:
+    # DQH 2.2: check_complexity requires an explicit policy date.
+    dated = ["--policy-date", "2026-10-21"] if gate == "check_complexity" else []
     return subprocess.run(
-        [sys.executable, str(SCRIPTS / f"{gate}.py"), "--root", str(root)],
+        [sys.executable, str(SCRIPTS / f"{gate}.py"), "--root", str(root), *dated],
         capture_output=True,
         text=True,
     ).returncode

@@ -28,7 +28,7 @@ Do **not** load this skill for:
 
 1. **Front-door antes de tocar código.** Lea, en este orden: `AGENTS.md` → `CODEBASE-GUIDE.md` → `docs/architecture.md` → `CONTRIBUTING.md` → `openspec/changes/<change>/design.md` (si el cambio pertenece a un change vivo) → `docs/03-aplicaciones/<app>/epic.md` (si toca una app específica). Saltarse cualquiera de estos pasos deja a la IA operando contra arquitectura obsoleta.
 2. **Toda D-<n> tiene estado.** `vigente` u `OBSOLETO`. Las obsoletas se reemplazan, no se duplican. Buscar en `docs/architecture.md` §Decisiones arquitectónicas D-<n> cross-cutting vigentes antes de proponer una nueva.
-3. **Capas enforced por gate.** `scripts/check_layers.py` rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"` con `ALLOWED_IMPORTS` y `PURE_LAYERS = {domain, ports, application}` (DA-1). Mover un adapter a la capa equivocada es un gate failure, no un estilo.
+3. **Capas enforced por gate.** El job `docs-architecture` rechaza imports que violen las reglas del bloque `architecture` de `docs/architecture.md` (capas, independencia entre aplicaciones y pureza de `domain`, `ports` y `application`) (DA-1). Mover un adapter a la capa equivocada es un gate failure, no un estilo.
 4. **Cross-cutting se promote, no se filtra.** Si una decisión afecta a más de una app o a la plataforma entera, no se queda en `app/src/modules/<app>/`: aparece en `docs/architecture.md` §Decisiones y se etiqueta `cross-cutting` en su issue. Las apps restantes la leen desde allí.
 5. **Las D-<n> no se inventan.** Antes de crear una nueva, busque la vigente en `architecture.md`, proponga extensión con heredada visible, o marque el cambio como `##ABIERTO##` en `openspec/changes/<change>/design.md`. Las D obsoletas pasan a la sección `##OBSOLETO##` con el reemplazo visible.
 6. **El walkthrough no se edita a mano sin codegraph.** `docs/03-aplicaciones/<app>/walkthrough-*.json` se regenera con dysflow + codegraph-vba. Cambios «manuales» quedan desincronizados con la realidad del binario.
@@ -61,7 +61,7 @@ Antes de considerar cerrado cualquier trabajo que toque `app/`, `openspec/` o `d
 
 - [ ] El issue aprobado cita la D-<n> (o pide crear una).
 - [ ] La PR abierta etiqueta `app/<slug>` o `cross-cutting` y referencia el issue con `Closes #N`.
-- [ ] `scripts/check_layers.py` corre limpio sobre `app/src/`.
+- [ ] El job `docs-architecture` corre limpio sobre `app/`.
 - [ ] Si la decisión es cross-cutting, está en `docs/architecture.md` §Decisiones D-<n> con estado `vigente` u `OBSOLETO`.
 - [ ] Si promueve un cambio en la convention multi-app, `CONTRIBUTING.md` §Convención multi-app también lo refleja.
 - [ ] El walkthrough JSON de la app (si aplica) se regenera con dysflow + codegraph; no está editado a mano.

@@ -11,7 +11,7 @@ Este repo expone **HTTP (FastAPI + Jinja2)**, **CLI de plataforma** y **scripts 
 | Interface | Estado en este repo | Ficheros primarios | Detalle |
 |---|---|---|---|
 | HTTP API (JSON) | Implementada (MVP de Lanzadera) | `app/src/main.py`, `app/src/modules/lanzadera/delivery/http/admin_routes_apps.py`, `admin_routes_users_json.py`, `admin_routes_presence.py`, `auth_routes.py` | [Rutas HTTP](#rutas-http) abajo |
-| HTTP HTML (HTMX) | Implementada (admin + auth) | `app/src/modules/lanzadera/delivery/http/admin_routes_*.py`, `templates/admin/*.html` | [Plantillas](#plantillas) abajo |
+| HTTP HTML (HTMX) | Implementada (admin + auth) | `app/src/modules/lanzadera/delivery/http/admin_routes_*.py`, `app/src/modules/lanzadera/delivery/http/templates/admin/*.html` | [Plantillas](#plantillas) abajo |
 | CLI de plataforma | Implementada (5 subcomandos) | `app/src/modules/lanzadera/delivery/cli/platform_user.py`, `platform_user_auth.py`, `platform_user_apps.py`, `platform_user_types.py`, `seed_profiles_cli.py` | [CLI de plataforma](#cli-de-plataforma) abajo |
 | Scripts operativos | Implementados | `scripts/check_*.py`, `scripts/local-preflight.sh`, `scripts/release-preflight.sh`, `scripts/quality_report.py`, `scripts/mutation_shards.py`, `scripts/setup-staging.ps1`, `scripts/sync-to-r2.ps1`, `scripts/migrate_from_access.py` | [Scripts](#scripts) abajo |
 | API HTTP local en puerto separado | No presente | Ningún paquete de dashboard o servidor separado | Use la propia FastAPI app (puerto único) |
@@ -31,7 +31,7 @@ El composition root en `app/src/main.py` monta los routers de Lanzadera con los 
 | `GET` | `/auth/me` | `auth_routes.py` | Devuelve el usuario actual. |
 | `GET` | `/auth/me/apps` | `auth_routes.py` | Lista de aplicativos efectivos. |
 | `POST` | `/auth/reset/request` | `auth_routes.py` | Solicita reset (issue #885, dominio). |
-| `POST` | `/auth/reset/consume` | `auth_routes.py` | Consume token; ver `domain/services/issue_reset_token.py` y `domain/services/consume_reset_token.py`. |
+| `POST` | `/auth/reset/consume` | `auth_routes.py` | Consume token; ver `app/src/modules/lanzadera/domain/services/issue_reset_token.py` y `app/src/modules/lanzadera/domain/services/consume_reset_token.py`. |
 
 ### Admin JSON (`admin_routes_users_json.py` + `admin_routes_apps.py`)
 
@@ -48,17 +48,17 @@ El composition root en `app/src/main.py` monta los routers de Lanzadera con los 
 | `DELETE` | `/admin/apps/{app_id}` | `admin_routes_apps.py` | Baja (204). |
 | `GET` | `/admin/apps/{app_id}/records` | `admin.py` | Registros legacy. |
 
-### Admin HTML (`admin_routes_*.py` + `templates/admin/`)
+### Admin HTML (`admin_routes_*.py` + `app/src/modules/lanzadera/delivery/http/templates/admin/`)
 
 | Método | Ruta | Fichero de router | Plantilla | Notas |
 |---|---|---|---|---|
-| `GET` | `/admin/apps` | `admin_routes_misc.py` | `admin/apps.html` | Listado HTMX. |
-| `POST` | `/admin/apps/{app_id}/activate` | `admin_routes_misc.py` | `admin/app_activated.html` | Activación. |
-| `POST` | `/admin/assignments` | `admin_routes_misc.py` | `admin/assignment_created.html` | Crea asignación (201). |
-| `GET` | `/admin/audit` | `admin_routes_misc.py` | `admin/audit.html` | Eventos de auditoría. |
-| `GET` | `/admin/users` | `admin_routes_users.py` | `admin/users.html` | Listado. |
-| `POST` | `/admin/users` | `admin_routes_users.py` | `admin/user_created.html` | Alta (201). |
-| `PATCH` | `/admin/users/{user_id}/disable` | `admin_routes_users.py` | `admin/user_disabled.html` | Desactivación. |
+| `GET` | `/admin/apps` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/apps.html` | Listado HTMX. |
+| `POST` | `/admin/apps/{app_id}/activate` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | Activación. |
+| `POST` | `/admin/assignments` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | Crea asignación (201). |
+| `GET` | `/admin/audit` | `admin_routes_misc.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | Eventos de auditoría. |
+| `GET` | `/admin/users` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/users.html` | Listado. |
+| `POST` | `/admin/users` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html` | Alta (201). |
+| `PATCH` | `/admin/users/{user_id}/disable` | `admin_routes_users.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html` | Desactivación. |
 | `POST` | `/admin/presence/heartbeat` | `admin_routes_presence.py` | — | Latido de presencia (#771). |
 | `GET` | `/admin/presence` | `admin_routes_presence.py` | — | Snapshot. |
 | `GET` | `/admin/presence/stream` | `admin_routes_presence.py` | — | SSE puntual; `presence_stream` resuelve el container vía `request.state.container` (W60, #522). |
@@ -79,14 +79,14 @@ Jinja2 vive bajo `app/src/modules/lanzadera/delivery/http/templates/`. El compos
 
 | Plantilla | Sirve a | Notas |
 |---|---|---|
-| `base.html` | Layout común | Heredada por todas las `admin/*.html`. |
-| `admin/apps.html` | `GET /admin/apps` | Listado HTMX. |
-| `admin/users.html` | `GET /admin/users` | Listado HTMX. |
-| `admin/user_created.html` | `POST /admin/users` | Confirmación parcial HTMX. |
-| `admin/user_disabled.html` | `PATCH /admin/users/{user_id}/disable` | Confirmación parcial. |
-| `admin/app_activated.html` | `POST /admin/apps/{app_id}/activate` | Confirmación parcial. |
-| `admin/assignment_created.html` | `POST /admin/assignments` | Confirmación parcial. |
-| `admin/audit.html` | `GET /admin/audit` | Tabla de eventos. |
+| `base.html` | Layout común | Heredada por todas las `app/src/modules/lanzadera/delivery/http/templates/admin/*.html`. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/apps.html` | GET `/admin/apps` | Listado HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/users.html` | GET `/admin/users` | Listado HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/user_created.html` | POST `/admin/users` | Confirmación parcial HTMX. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/user_disabled.html` | PATCH `/admin/users/{user_id}/disable` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/app_activated.html` | POST `/admin/apps/{app_id}/activate` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/assignment_created.html` | POST `/admin/assignments` | Confirmación parcial. |
+| `app/src/modules/lanzadera/delivery/http/templates/admin/audit.html` | GET `/admin/audit` | Tabla de eventos. |
 
 Si añade una plantilla nueva, declárela en la tabla de arriba y mantenga el tono castellano peninsular formal con usted (ver `skills/documentation-alan-style/SKILL.md`).
 
@@ -112,18 +112,18 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 
 | Script | Tipo | Quién lo invoca | Notas |
 |---|---|---|---|
-| `scripts/check_layers.py` | Gate | `ci.yml::quality` | DA-1; rechaza imports que violen `ROOT_PACKAGE = "app.src.modules"`. |
+| `.importlinter` | Gate | `ci.yml::docs-architecture` | DA-1; derivado del bloque `architecture`, rechaza imports que violen las capas. |
 | `scripts/check_legacy_hashes.py` | Gate | `ci.yml::quality` | DA-13; prohíbe `legacy_hash`, `sha256`, `migrate_password`. |
 | `scripts/check_mutation_sites.py` | Gate | `ci.yml::quality` | DA-13; pin test AST. |
 | `scripts/check_complexity.py` | Gate | `ci.yml::quality` | Complejidad ciclomática. |
 | `scripts/check_dry.py` | Gate | `ci.yml::quality` | DRY. |
 | `scripts/check_deadcode.py` | Gate | `ci.yml::quality` | Código muerto. |
-| `scripts/check_pr_size.py` | Gate | `ci.yml::pr-gate` | ≤400 líneas. |
+| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | Gate | `ci.yml::pr-gate` | ≤400 líneas. |
 | `scripts/check_workflows.py` | Gate | `ci.yml::quality` | Valida `.github/workflows/*.yml`. |
-| `scripts/check_required_jobs.py` | Gate | `ci.yml::quality` | Valida la matriz `required`. |
+| `.github/required-jobs-policy.json` | Política del gate del canon | `ci.yml::required` | Declara la matriz `required` y los saltos aceptados por evento. |
 | `scripts/check_decision_guards.py` | Gate | `ci.yml::quality` | Decisiones D-<n> con guardia. |
 | `scripts/check_walkthrough_schema.py` | Gate | `ci.yml::pr-gate` | `docs/03-aplicaciones/<app>/walkthrough-G*.json`. |
-| `scripts/check_issue_spec.py` | Gate | `ci.yml::pr-gate` | Cuerpo de issue conforme a `docs/08-decisiones-y-preguntas-abiertas.md`. |
+| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` | Gate del canon | `ci.yml::pr-gate` | Cuerpo de issue conforme a `docs/08-decisiones-y-preguntas-abiertas.md`. |
 | `scripts/check_suites_populated.py` | Gate | `ci.yml::quality` | Suites obligatorias no vacías. |
 | `scripts/check_test_classification.py` | Gate | `ci.yml::quality` | Marca tests según marcador. |
 | `scripts/check_legacy_retirement.py` | Gate | `ci.yml::quality` | Retirada de paths legacy. |
@@ -132,6 +132,8 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/release-preflight.sh` | Tool | `release.yml::preflight` | Verifica identidad del tag. |
 | `scripts/require-ci-success.sh` | Tool | `release.yml::preflight` | Exige CI verde en el SHA. |
 | `scripts/quality_report.py` | Tool | `ci.yml::quality` (step final) | Renderiza el quality report a markdown. |
+| `scripts/quality_policy.py` | Tool | los gates de calidad (aún ninguno; llegan por tramos de #1126) | Carga y valida `quality-policy.json` (DQH 2.2): sujetos y techos por puerta, solo las puertas que BP usa. |
+| `scripts/policy_time.py` | Tool | los gates de calidad (aún ninguno) | Analiza `--policy-date`: la fecha es una entrada explícita, nunca estado oculto del gate. |
 | `scripts/mutation_shards.py` | Tool | `release.yml::mutation` | Reparte mutantes en 10 tramos deterministas. |
 | `scripts/setup-staging.ps1` | Tool | Local (desarrollador) | Pull de `data/staging/<app>/` desde R2. |
 | `scripts/sync-to-r2.ps1` | Tool | Local (desarrollador) | Sube binarios a R2. |
@@ -144,8 +146,8 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 ## Cómo añadir una ruta, plantilla o subcomando
 
 1. Identifique la capa correcta en [Mapa del repositorio](repository-map.md).
-2. Si es HTTP JSON → router en `app/src/modules/lanzadera/delivery/http/`, use case en `application/`, test en `tests/lanzadera/delivery/` o `tests/lanzadera/application/`.
-3. Si es HTTP HTML → router + plantilla nueva en `templates/admin/`; actualice esta tabla.
+2. Si es HTTP JSON → router en `app/src/modules/lanzadera/delivery/http/`, use case en `application`, test en `tests/lanzadera/delivery/` o `tests/lanzadera/application/`.
+3. Si es HTTP HTML → router + plantilla nueva en `app/src/modules/lanzadera/delivery/http/templates/admin/`; actualice esta tabla.
 4. Si es CLI → `app/src/modules/lanzadera/delivery/cli/`; añada `sub.add_parser(...)` en `build_parser()` y registre la rama en `scripts/check_test_classification.py`.
 5. Si es script → `scripts/<name>.py` o `.sh`; añada el wiring en `.github/workflows/*.yml` y la entrada en `docs/gates.md` si es un gate.
 
@@ -155,6 +157,19 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 - **No duplique rutas entre routers.** El orden en `app/src/main.py` es determinista; cambiarlo requiere justificación en la PR y un test en `tests/lanzadera/delivery/`.
 - **No exponga un puerto separado.** Toda la superficie HTTP va por la app FastAPI única (`/auth`, `/admin`, `/health`). Un puerto nuevo abre un riesgo de red distinto al que el repo ha modelado.
 - **No invoque los CLI desde los routers.** Los CLI son paths de bootstrap, no API. Si una vista necesita la misma operación, expóngala como endpoint (router + use case + test).
+
+## Si necesitas X, lee/toca Y
+
+| Si necesitas... | Empieza por... | Luego revisa... |
+|---|---|---|
+| Añadir o cambiar una ruta HTTP de administración | `app/src/modules/lanzadera/delivery/http/admin_routes.py` | `app/src/modules/lanzadera/delivery/http/templates/admin/` y `docs/codebase/testing-and-ci.md` |
+| Cambiar la autenticación HTTP | `app/src/modules/lanzadera/delivery/http/auth_routes.py` | `app/src/modules/lanzadera/delivery/http/auth_middleware.py` |
+| Añadir un subcomando de CLI | `app/src/modules/lanzadera/delivery/cli/platform_user.py` | `app/src/modules/lanzadera/delivery/cli/` |
+| Añadir un gate de CI | `scripts/check_complexity.py` como modelo | `docs/gates.md` y `.github/workflows/ci.yml` |
+
+## Regla de colocación
+
+Las rutas y plantillas HTTP van en el paquete `delivery` del módulo dueño; la lógica de negocio nunca va en una ruta, sino en `application`.
 
 ## Lista de comprobación del contribuidor
 
@@ -166,3 +181,27 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 ## Siguiente paso
 
 Continúe con [Testing y CI](testing-and-ci.md) para saber qué corre en PR, nightly y release.
+
+## Reference data (data/staging/<app>/)
+
+Snapshot self-contained del VBA legacy de las 8 aplicaciones que migra este blueprint. La convención del repo es no commitear los `.accdb`; este directorio solo lleva los modulos `.bas` que el propagador Dysflow usa como referencia de migración. Los binarios se R2-pullean con `scripts/setup-staging.ps1` y los usuarios los rehidratan localmente.
+
+| App | Modulos `.bas` commiteados | Snapshot |
+| --- | --- | --- |
+| `brass` | 16 | `data/staging/brass/src/` |
+| `condor` | 74 | `data/staging/condor/src/` |
+| `expedientes` | 143 | `data/staging/expedientes/src/` |
+| `gestion-riesgos` | 139 | `data/staging/gestion-riesgos/src/` |
+| `hps` | 31 | `data/staging/hps/src/` |
+| `hps-solicitudes` | 14 | `data/staging/hps-solicitudes/src/` |
+| `lanzaderas` | 17 | `data/staging/lanzaderas/src/` |
+| `no-conformidades` | 105 | `data/staging/no-conformidades/src/` |
+
+`data/fixtures/lanzadera/` lleva los `*.json` que alimentan a `scripts/generate_lanzadera_fixtures.py` (genera fixtures contra staging; los inputs van versionados).
+
+Lo que NO vive aquí y por qué:
+
+- Binarios `.accdb` (>5 MB) no se commitean; ver `docs/codebase/what-is-not-here.md` y `scripts/setup-staging.ps1`.
+- Scripts Access VBA propios de cada app quedan en el original Access.
+- Documentación de cada app vive en `docs/03-aplicaciones/<app>/` y `docs/02-topologia-ecosistema/`.
+

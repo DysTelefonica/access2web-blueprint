@@ -9,7 +9,7 @@
       "id": "P01",
       "name": "branch_name_pattern",
       "type": "regex",
-      "default": "^(?:(chore|feat|fix|perf|refactor|docs|ci|test)/[0-9]+-[a-z0-9-]+|archive/.+|main)$",
+      "default": "^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)/[a-z0-9._-]+$",
       "required": false,
       "consumed_by": ["scripts/check_branch_name.py:20"]
     },
@@ -494,6 +494,28 @@
       "assets/runner-profile/check_runner_profile.py"
     ],
     "description": "Excepciones hosted con causa de indivisibilidad, mapa job→motivo no vacio (estilo HR-15): jobs que por contrato o herramienta solo corren en runner hosted. La excepcion sin motivo es hallazgo del gate, no silencio."
+  },
+  {
+    "id": "P54",
+    "name": "post_merge_dispatch",
+    "type": "list",
+    "item_type": "string",
+    "default": [],
+    "required": false,
+    "consumed_by": [
+      "assets/runner-controls/check_governed_merge.py:250"
+    ],
+    "description": "Lista de basenames de workflows re-disparados por `gh workflow run` tras el merge gobernado (#817). Cada nombre debe existir como workflow en el repo y su YAML debe declarar `on: workflow_dispatch:`; el gate falla cerrado antes del merge si falta alguna de las dos (el dispatch 404). Ausente o vacia = no-op con un warning, para que los consumers que aun no migraron sigan fusionando."
+  },
+  {
+    "id": "P55",
+    "name": "incident_log_versioning",
+    "type": "enum",
+    "choices": ["versioned", "local-unversioned"],
+    "default": "versioned",
+    "required": false,
+    "consumed_by": ["assets/bin/ci-pattern (gate HR-21 y receta de incidentes)"],
+    "description": "Si el registro operativo de incidentes (P49) se versiona en el repo (versioned, por defecto) o es local y no versionado (local-unversioned). Con local-unversioned el gate de fase 5 no lo escanea ni lo exige, y el documento operativo lo describe con esa frase, sin ruta. El post-mortem (parametro 9) se versiona siempre."
   }
   ]
 }

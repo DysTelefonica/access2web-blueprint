@@ -50,8 +50,12 @@ def base_snapshots(**overrides: object) -> dict[str, str]:
     return {kind: json.dumps(snaps[kind]) for kind in KINDS}
 
 
-def run_gate(contract: dict | str, snapshots: dict[str, str]) -> subprocess.CompletedProcess:
-    """Run the script as CI would; a missing kind omits its ``--snapshot`` flag."""
+def run_gate(contract: dict | str, snapshots: dict[str, str], names: object = None,
+             mode: str | None = None) -> subprocess.CompletedProcess:
+    """Run the script as CI would; a missing kind omits its ``--snapshot`` flag.
+
+    ``names`` adds the phase-0 label snapshot (#955) and ``mode`` the drift mode.
+    """
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         contract_path = root / "contract.json"
@@ -64,6 +68,13 @@ def run_gate(contract: dict | str, snapshots: dict[str, str]) -> subprocess.Comp
             path = root / f"{kind}.json"
             path.write_text(snapshots[kind], encoding="utf-8")
             argv += ["--snapshot", f"{kind}={path}"]
+        if names is not None:
+            path = root / "host-labels-snapshot.json"
+            path.write_text(
+                names if isinstance(names, str) else json.dumps(names), encoding="utf-8")
+            argv += ["--labels-names", str(path)]
+        if mode:
+            argv += ["--label-drift-mode", mode]
         return subprocess.run(argv, capture_output=True, text=True)
 
 
@@ -388,6 +399,132 @@ class ExampleContractTests(unittest.TestCase):
         self.assertIn("documented-only  label 'status:blocked'", proc.stdout)
         self.assertIn("documented-only  protection flag 'required_conversation_resolution'", proc.stdout)
         self.assertIn("VERDICT: PASS", proc.stdout)
+
+
+class LabelDriftTests(unittest.TestCase):
+    """#955: la etiqueta del host se compara con la instantánea de la fase 0 y
+    con el contrato declarado, en las dos direcciones.
+
+    El readback es el `GET` de solo lectura del bloque 3; la instantánea de la
+    fase 0 es la lista de nombres que recorre la cobertura del inventario. La
+    lectura de los tres consumers (comentario en #955) dice que los tres
+    fallarían, así que la regla sale como AVISO por defecto y el paso a fallo
+    es otro PR, cuando estén alineados.
+    """
+
+    def _run(self, *, names=("status:approved",), contract=None, snapshots=None, mode=None):
+        snaps = base_snapshots(**(snapshots or {}))
+        # Un texto es un payload literal (para probar el fallo cerrado); una
+        # tupla o lista es la instantánea de la fase 0.
+        payload = names if isinstance(names, str) or names is None else list(names)
+        return run_gate(contract or base_contract(), snaps, names=payload, mode=mode)
+
+    # --- AC1: una etiqueta del host que no está en la instantánea ---
+    def test_a_host_label_absent_from_the_snapshot_is_reported(self):
+        proc = self._run(names=["status:approved"], snapshots={
+            "labels": [{"name": "status:approved"}, {"name": "type:ci"}]})
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)  # aviso, no fallo
+        self.assertIn("label 'type:ci' is in the host readback but absent from snapshot",
+                      proc.stderr)
+        self.assertNotIn("VERDICT: FAIL", proc.stdout)
+
+    # --- AC2: una etiqueta de la instantánea que el host no tiene ---
+    def test_a_snapshot_label_the_host_lacks_is_reported(self):
+        proc = self._run(names=["status:approved", "chain:partial"])
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("label 'chain:partial' is in snapshot", proc.stderr)
+        self.assertIn("but absent from the host readback", proc.stderr)
+
+    # --- AC3: una etiqueta del host que el contrato no declara ---
+    def test_a_host_label_the_contract_does_not_declare_is_reported(self):
+        proc = self._run(snapshots={"labels": [{"name": "status:approved"},
+                                               {"name": "abierto"}]})
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("label 'abierto' is in the host readback but not declared in the contract",
+                      proc.stderr)
+
+    def test_a_documented_only_declaration_is_enough_for_a_host_label(self):
+        """AC10 opción 1: el host tiene las nueve etiquetas que crea GitHub al
+        activar plantillas; declararlas `documented-only` (que ya significa «la
+        conozco y no la juzgo») basta para que no sean hallazgo, sin que la
+        regla tenga una lista de nombres magicalos."""
+        defaults = ["bug", "documentation", "duplicate", "enhancement", "good first issue",
+                    "help wanted", "invalid", "question", "wontfix"]
+        contract = base_contract()
+        contract["labels"] = contract["labels"] + [
+            {"name": n, "class": "documented-only"} for n in defaults]
+        snaps = base_snapshots(labels=[{"name": "status:approved"}]
+                               + [{"name": n} for n in defaults])
+        proc = run_gate(contract, snaps,
+                        names=["status:approved"] + defaults, mode="strict")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("VERDICT: PASS", proc.stdout)
+        self.assertNotIn("not declared in the contract", proc.stdout + proc.stderr)
+
+    # --- AC4: los tres de acuerdo ---
+    def test_three_sets_in_agreement_pass_in_both_modes(self):
+        for mode in ("advisory", "strict"):
+            with self.subTest(mode=mode):
+                proc = self._run(mode=mode)
+                self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+                self.assertIn("VERDICT: PASS", proc.stdout)
+                self.assertNotIn("DRIFT", proc.stdout)
+
+    # --- el paso a fallo: mismo hallazgo, veredicto y código distintos ---
+    def test_strict_mode_turns_every_label_finding_into_a_failure(self):
+        proc = self._run(names=["status:approved", "chain:partial"], mode="strict")
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("VERDICT: FAIL", proc.stdout)
+        self.assertIn("DRIFT  label 'chain:partial' is in snapshot", proc.stdout)
+
+    def test_strict_mode_does_not_touch_the_existing_one_directional_rule(self):
+        """La dirección que ya falla hoy sigue fallando en aviso, sin esperar
+        a que los consumers estén alineados: es un fallo, no una deriva nueva."""
+        contract = base_contract()
+        contract["labels"] = [{"name": "status:absent", "class": "host-enforced"}]
+        for mode in ("advisory", "strict"):
+            with self.subTest(mode=mode):
+                proc = self._run(contract=contract, names=["status:absent"], mode=mode)
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertIn("declared host-enforced but is absent from the host", proc.stdout)
+
+    # --- AC5: duda falla cerrado, también en aviso ---
+    def test_a_malformed_snapshot_fails_closed_in_advisory_mode(self):
+        for payload in ('{"not": "a list"}', '["", 3]', "no es json"):
+            with self.subTest(payload=payload):
+                proc = self._run(names=payload)
+                self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+                self.assertIn("labels-names", proc.stderr)
+
+    def test_an_unknown_mode_is_invalid_input(self):
+        proc = self._run(mode="warn")
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    # --- un nombre puede llevar espacios: se compara entero ---
+    def test_a_label_name_with_spaces_is_one_label(self):
+        """`good first issue` es UNA etiqueta. Partirla por espacios inventa tres
+        etiquetas que el host no tiene y genera hallazgos falsos en las dos
+        direcciones: es lo que pasó en la primera lectura de los consumers."""
+        snaps = base_snapshots(labels=[{"name": "status:approved"},
+                                       {"name": "good first issue"}])
+        contract = base_contract()
+        contract["labels"] = contract["labels"] + [
+            {"name": "good first issue", "class": "documented-only"}]
+        proc = run_gate(contract, snaps, names=["status:approved", "good first issue"],
+                        mode="strict")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("VERDICT: PASS", proc.stdout)
+        self.assertNotIn("'good'", proc.stdout + proc.stderr)
+        self.assertNotIn("'first'", proc.stdout + proc.stderr)
+        self.assertNotIn("'issue'", proc.stdout + proc.stderr)
+
+    # --- AC8: sin el argumento, el veredicto no cambia ---
+    def test_without_the_flag_the_verdict_is_unchanged(self):
+        snaps = base_snapshots(labels=[{"name": "status:approved"}, {"name": "type:ci"}])
+        proc = run_gate(base_contract(), snaps)  # sin --labels-names
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("VERDICT: PASS", proc.stdout)
+        self.assertNotIn("type:ci", proc.stdout)
 
 
 if __name__ == "__main__":

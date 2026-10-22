@@ -47,4 +47,4 @@ La aplicación cubre un agregado de gestión de No Conformidades (NC) sobre dos 
 
 ## Evidencia previa
 
-Se han cosechado PRD, Discovery Map, Architecture Overview, ERD, OpenSpec CAP-001..055, UAT y releases antes de inspeccionar staging. CodeGraph-VBA sobre `00_main` se consultó primero. La inspección Dysflow sobre el binario y el backend autoritativo queda **bloqueada por el fallo de `list_objects`** (ver [Seguridad § D89](security-rules.md#d89-diagnóstico-del-fallo-de-list_objects-de-dysflow)); requiere resolución previa.
+Se han cosechado PRD, Discovery Map, Architecture Overview, ERD, OpenSpec CAP-001..055, UAT y releases antes de inspeccionar staging. CodeGraph-VBA sobre `00_main` se consultó primero. La inspección Dysflow sobre el binario y el backend autoritativo queda **bloqueada por el fallo de `list_objects`** (ver [Seguridad § D89](security-rules.md#d89--diagnóstico-del-fallo-de-list_objects-de-dysflow--invalidado)); requiere resolución previa.

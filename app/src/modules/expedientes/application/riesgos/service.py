@@ -2,7 +2,7 @@
 
 ``RiesgosService.lookup`` wraps ``RiesgosPort.lookup`` with deny-by-default
 + one audit event per decision. Duck-typed to keep cross-module imports
-out of the application layer (``scripts/check_layers.py``).
+out of the application layer (``docs-architecture`` job).
 """
 
 from __future__ import annotations

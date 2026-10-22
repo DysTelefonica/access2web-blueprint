@@ -43,10 +43,6 @@ class GateError(Exception):
     """A condition the gate refuses to interpret; maps to exit 2."""
 
 
-class GateFinding(Exception):
-    """A definite verdict violation; maps to exit 1."""
-
-
 def parse_json(raw: bytes, label: str) -> object:
     """Decode and parse one JSON input; every way it can be unreadable raises."""
     try:
@@ -337,7 +333,15 @@ def render(report: dict) -> str:
     return "\n".join(lines)
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(
         description="fail-closed required-suites aggregator (HR-3 liveness, HR-15 shrink-only)")
     parser.add_argument("--policy", required=True, help="path to the required-suites policy JSON")

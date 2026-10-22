@@ -28,7 +28,40 @@ import re
 import sys
 from pathlib import Path
 
-from check_push_compliance import FailClosed
+from check_push_compliance import FailClosedError
+
+
+class _RefusalError(FailClosedError):
+    """Fail-closed refusal with a fixed message; raise sites pass data only."""
+
+    template = ""
+
+    def __init__(self, *details: object) -> None:
+        super().__init__(self.template.format(*details))
+
+class UnreadableInputError(_RefusalError):
+    template = "unreadable {0} '{1}': {2}"
+
+
+class InvalidJsonError(_RefusalError):
+    template = "{0} '{1}' is not valid JSON: {2}"
+
+
+class ContractRunnerMissingError(_RefusalError):
+    template = "runner-enforced rules require contract key 'runner' with a non-empty 'label'"
+
+
+class WorkflowNoJobsError(_RefusalError):
+    template = "workflow '{0}' has no 'jobs:' section: malformed input"
+
+
+class ContractNotObjectError(_RefusalError):
+    template = "contract must be a JSON object"
+
+
+class WorkflowsDirMissingError(_RefusalError):
+    template = "workflows directory '{0}' does not exist"
+
 
 DETECTIVE = "check_push_compliance.py"
 MERGE = "check_governed_merge.py"
@@ -44,9 +77,9 @@ def load_json(path: str, what: str) -> object:
     try:
         return json.loads(Path(path).read_text(encoding="utf-8"))
     except OSError as exc:
-        raise FailClosed(f"unreadable {what} '{path}': {exc}") from exc
+        raise UnreadableInputError(what, path, exc) from exc
     except json.JSONDecodeError as exc:
-        raise FailClosed(f"{what} '{path}' is not valid JSON: {exc}") from exc
+        raise InvalidJsonError(what, path, exc) from exc
 
 
 def declared_areas(contract: dict) -> tuple[dict, str | None]:
@@ -60,7 +93,7 @@ def declared_areas(contract: dict) -> tuple[dict, str | None]:
     runner = contract.get("runner", {})
     if not isinstance(runner, dict) or (areas and (
             not isinstance(runner.get("label"), str) or not runner["label"])):
-        raise FailClosed("runner-enforced rules require contract key 'runner' with a non-empty 'label'")
+        raise ContractRunnerMissingError()
     label = runner.get("label") if isinstance(runner.get("label"), str) else None
     return areas, label
 
@@ -68,7 +101,7 @@ def declared_areas(contract: dict) -> tuple[dict, str | None]:
 def job_blocks(text: str, name: str) -> list[str]:
     """Bloques de job (indentacion 2) de la seccion `jobs:`."""
     if not re.search(r"^jobs:\s*$", text, re.M):
-        raise FailClosed(f"workflow '{name}' has no 'jobs:' section: malformed input")
+        raise WorkflowNoJobsError(name)
     blocks: list[str] = []
     current: str | None = None
     for line in text.splitlines():
@@ -120,46 +153,68 @@ def wired_assets(wdir: Path, label: str) -> set[str]:
     return {asset for asset in ALL_ASSETS if wired_files(wdir, label, asset)}
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
+def unbound_findings(areas: dict, wired: set[str], label: str) -> list[str]:
+    """Areas declared runner-enforced and compensating assets without a wired workflow."""
+    findings = []
+    for area in sorted(areas):
+        coverage = AREA_ASSETS[area]
+        if not (coverage & wired):
+            findings.append(f"area '{area}' is declared runner-enforced but no workflow on runner "
+                            f"'{label}' invokes any of {sorted(coverage)}")
+    for asset in ALL_ASSETS:
+        if asset not in wired:
+            findings.append(f"compensating asset '{asset}' is not wired in any workflow "
+                            f"on runner '{label}'")
+    return findings
+
+
+def print_report(areas: dict, wired: set[str], label: str) -> None:
+    print("RUNNER BINDING REPORT")
+    for area in sorted(areas):
+        print(f"  ok  area '{area}' enforced by {sorted(AREA_ASSETS[area] & wired)} on '{label}'")
+    for asset in ALL_ASSETS:
+        print(f"  ok  compensating asset {asset} wired on '{label}'")
+    print(f"BINDING OK: runner-enforced declarations match the workflows on '{label}'")
+
+
+def run(args: argparse.Namespace) -> int:
+    contract = load_json(args.contract, "contract")
+    if not isinstance(contract, dict):
+        raise ContractNotObjectError()
+    areas, label = declared_areas(contract)
+    wdir = Path(args.workflows)
+    if not wdir.is_dir():
+        raise WorkflowsDirMissingError(wdir)
+    if not label:
+        print("SKIP: no runner-enforced rules declared; nothing to bind")
+        return 0
+    wired = wired_assets(wdir, label)
+    findings = unbound_findings(areas, wired, label)
+    if findings:
+        for finding in findings:
+            print(f"  UNBOUND  {finding}")
+        print(f"FAIL: {len(findings)} unbound runner-enforced declaration(s)")
+        return 1
+    print_report(areas, wired, label)
+    return 0
+
+
 def main() -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(description="runner-enforced declaration vs workflow wiring")
     parser.add_argument("--contract", required=True)
     parser.add_argument("--workflows", required=True, help="consumer .github/workflows directory")
     args = parser.parse_args()
     try:
-        contract = load_json(args.contract, "contract")
-        if not isinstance(contract, dict):
-            raise FailClosed("contract must be a JSON object")
-        areas, label = declared_areas(contract)
-        wdir = Path(args.workflows)
-        if not wdir.is_dir():
-            raise FailClosed(f"workflows directory '{wdir}' does not exist")
-        if not label:
-            print("SKIP: no runner-enforced rules declared; nothing to bind")
-            return 0
-        wired = wired_assets(wdir, label)
-        findings = []
-        for area in sorted(areas):
-            coverage = AREA_ASSETS[area]
-            if not (coverage & wired):
-                findings.append(f"area '{area}' is declared runner-enforced but no workflow on runner "
-                                f"'{label}' invokes any of {sorted(coverage)}")
-        for asset in ALL_ASSETS:
-            if asset not in wired:
-                findings.append(f"compensating asset '{asset}' is not wired in any workflow "
-                                f"on runner '{label}'")
-        if findings:
-            for finding in findings:
-                print(f"  UNBOUND  {finding}")
-            print(f"FAIL: {len(findings)} unbound runner-enforced declaration(s)")
-            return 1
-        print("RUNNER BINDING REPORT")
-        for area in sorted(areas):
-            print(f"  ok  area '{area}' enforced by {sorted(AREA_ASSETS[area] & wired)} on '{label}'")
-        for asset in ALL_ASSETS:
-            print(f"  ok  compensating asset {asset} wired on '{label}'")
-        print(f"BINDING OK: runner-enforced declarations match the workflows on '{label}'")
-        return 0
-    except FailClosed as exc:
+        return run(args)
+    except FailClosedError as exc:
         print(f"fail-closed: {exc}", file=sys.stderr)
         return 2
 

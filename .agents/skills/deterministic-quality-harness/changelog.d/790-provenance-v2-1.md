@@ -1,0 +1,3 @@
+type: patch
+
+Versión 2.1 (HR-44). Los 43 assets sin exención llevan `HARNESS-PROVENANCE: deterministic-quality-harness v2.1`: tras el bump a 2.0 seguían con `v1.9` (42) y `v1.8` (1), y `test_asset_provenance_matches_skill_version_or_has_explicit_exemption` fallaba (#790). La regla queda escrita en la skill: el marcador nombra la versión con la que se publicó el asset y un bump re-estampa todos los no exentos. Se sube de 2.0 a 2.1 porque #788 ya tocó 7 ficheros del harness (ruff limpio, fixtures DRY) sin subir versión. Los consumers del tier reciben solo la línea del marcador y esos 7 ficheros en su próxima propagación.

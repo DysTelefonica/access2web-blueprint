@@ -44,15 +44,6 @@ import json
 import sys
 from pathlib import Path
 
-VALID_RULES = frozenset({
-    "dead-code:unused-function",
-    "dead-code:unused-variable",
-    "dead-code:unused-class",
-    "dead-code:unused-attribute",
-    "dead-code:unused-import",
-    "dead-code:unused-property",
-})
-
 
 class AdapterError(Exception):
     """A condition the adapter refuses to interpret; maps to exit 2."""
@@ -83,7 +74,7 @@ def symbol_name(entry: dict) -> str:
 
 def fingerprint_for(rule: str, path: str, symbol: str) -> str:
     """Stable content- and route-based identifier (HR-16)."""
-    payload = f"{rule}|{path}|{symbol}".encode("utf-8")
+    payload = f"{rule}|{path}|{symbol}".encode()
     return hashlib.sha1(payload).hexdigest()
 
 
@@ -120,7 +111,15 @@ def normalize(raw: bytes) -> dict:
     }
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(
         description="normalize vulture --format json output into the ratchet's input shape")
     parser.add_argument(

@@ -43,17 +43,17 @@ Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos
 
 | Script | Qué mide | Cómo se lee su fallo | Dónde corre |
 |---|---|---|---|
-| `check_layers.py` | dirección de dependencias entre capas hexagonales, vertical slicing y pureza de capa | nombra cada violación y su clase; publica cuánto comprobó de verdad (un árbol que no pudo clasificar es fallo, no verde) | `quality_report.py` |
+| `docs-architecture` (job de `ci.yml`) | dirección de dependencias entre capas hexagonales, independencia entre aplicaciones, pureza de capa y ficheros fuera de las capas, desde el bloque `architecture` de `docs/architecture.md` | nombra `fichero:línea` y la regla incumplida; un fichero que no pertenece a ninguna capa ni a `exempt` es fallo, no verde | `ci.yml` |
 | `check_complexity.py` | complejidad ciclomática por función, con techo global absoluto | indica la función y su valor frente al techo | `quality_report.py` |
 | `check_mutation_sites.py` | densidad estática de sitios mutables | indica los ficheros con densidad fuera de rango | `ci.yml` + `quality_report.py` |
 | `check_dry.py` | bloques duplicados tipo 1 y 2 sobre el AST | nombra los pares de bloques y su ubicación | `ci.yml` + `quality_report.py` |
 | `check_legacy_hashes.py` | símbolos criptográficos legacy prohibidos en `platform/src/` | nombra el símbolo y el fichero | `quality_report.py` |
 | `check_legacy_retirement.py` | gates de retirada CAP-057..063 que invoca la capa UAT | nombra el gate y el artefacto que sigue vivo | `quality_report.py` |
 | `check_branch_name.py` | nombre de rama `tipo/nº-slug`, con lista blanca para ramas de plataforma y de flota | imprime el patrón esperado y el nombre recibido | `review-budget` + `quality_report.py` |
-| `check_pr_size.py` | presupuesto de revisión: 400 líneas contadas entre la base y la cabeza | imprime el recuento por fichero, de mayor a menor, y el despachador de la excepción | `review-budget` + `quality_report.py` |
+| `check_pr_size.py` (canon, `assets/pr-size/`) | presupuesto de revisión: 400 líneas contadas entre la base y la cabeza | imprime el recuento por fichero, de mayor a menor, y el despachador de la excepción | `review-budget` + `quality_report.py` |
 | `check_walkthrough_schema.py` | esquema de los `walkthrough-*.json` (`--strict`) | nombra el fichero y el campo obligatorio que falta | `review-budget` |
 | `check_workflows.py` | contrato de los workflows: `timeout-minutes`, puertos de servicios, `uses:` pinneado, preflight de Docker, concurrencia, permisos, aislamiento de runner en PRs y **prohibición de `self-hosted`** | `fichero:línea: NOMBRE-CHECK: ubicación: mensaje` | `review-budget` + `release.yml` + `local-preflight.sh` |
-| `check_required_jobs.py` | que todos los jobs exigidos por la protección de rama hayan terminado en success | falla cerrado: una lista vacía de jobs es un fallo de la API, no “cero problemas” | `ci.yml` (con `.github/required-jobs-policy.json` como política) |
+| `check_required_jobs.py` (canon, `.agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py`) | que todos los jobs exigidos por la protección de rama hayan terminado en success, con los saltos aceptados por evento que declara la política, y que la política no se relaje sin `relaxation` | falla cerrado: una lista vacía de jobs es un fallo de la API, no “cero problemas”; una clave de `needs` que la política no cubre o un salto no declarado también fallan | `ci.yml` (con `.github/required-jobs-policy.json` como política) |
 | `check_mutation.py` | supervivientes de la sesión semanal, con guarda de sesión degenerada | un árbol sin supervivientes evaluables no es verde | `ci.yml` (semanal) + `Makefile` |
 | `check_decision_guards.py` | que cada decisión con guarda tenga su guarda cruzada | — (**no cableado**: el script existe y está documentado, pero ningún job lo invoca todavía) | — |
 | `check_test_classification.py` | clasificación de cada `test_*.py` por capa (por defecto en modo seco) | — (**no cableado**: igual que el anterior; la clasificación vigente se mantiene a mano en `docs/testing/testing-strategy.md`) | — |

@@ -25,10 +25,8 @@ import re
 import sys
 from pathlib import Path
 
-SHA_EXPRESSIONS = ("github.sha", "GITHUB_SHA", "github.event")
 EVIDENCE_MARKERS = ("statuses/", "check-runs", "head_sha")
 DEFAULT_BRANCH_RE = re.compile(r"github\.ref\b|--ref\b")
-GLOBAL_ENV_USE_RE = re.compile(r"\$\{?\{?env\.([A-Za-z_][A-Za-z0-9_]*)|\$([A-Z][A-Z0-9_]{2,})\b")
 
 
 def fail2(msg):
@@ -39,8 +37,8 @@ def fail2(msg):
 def _job_block(workflow_text, job):
     """Extract one top-level job block (indentation-based), or None."""
     lines = workflow_text.splitlines()
-    starts = [i for i, l in enumerate(lines)
-              if re.match(rf"^  {re.escape(job)}:\s*(#.*)?$", l)]
+    starts = [i for i, item in enumerate(lines)
+              if re.match(rf"^  {re.escape(job)}:\s*(#.*)?$", item)]
     if len(starts) != 1:
         return None
     start = starts[0]
@@ -91,7 +89,7 @@ def _sha_position_tokens(line):
 
 def _global_sha_var(token, global_env_keys):
     """El token de la posición del SHA es una variable global del workflow."""
-    clean = token.strip("${}$ ")
+    clean = re.sub(r"^[ ${}]+|[ ${}]+$", "", token)
     return clean in global_env_keys
 
 
@@ -124,13 +122,13 @@ def check_evidence_job(workflow_text, job, forbidden_branches):
                        "en el workflow declarado."], []
     # las variables GLOBALES viven en el env: de nivel de workflow (columna 0)
     global_env_keys = _workflow_env_keys(workflow_text)
-    evidence_lines = [l.strip() for l in block.splitlines()
-                      if any(m in l for m in EVIDENCE_MARKERS)]
+    evidence_lines = [item.strip() for item in block.splitlines()
+                      if any(m in item for m in EVIDENCE_MARKERS)]
     if not evidence_lines:
         findings.append(f"el job '{job}' no publica evidencia sobre commits "
                         "(ninguna línea referencia statuses/, check-runs o head_sha).")
         return False, findings, []
-    with_sha = [l for l in evidence_lines if _has_sha_expression(l)]
+    with_sha = [item for item in evidence_lines if _has_sha_expression(item)]
     if not with_sha:
         findings.append(f"el job '{job}' publica evidencia sin un SHA explícito "
                         "(github.sha / GITHUB_SHA / needs.*.outputs / github.event.*.sha).")
@@ -145,7 +143,15 @@ def check_evidence_job(workflow_text, job, forbidden_branches):
     return (not findings), findings, evidence_lines
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv=None):
+    _pin_output_encoding()
     ap = argparse.ArgumentParser(
         description="Read-only deploy-evidence gate (HR-10, #253).")
     ap.add_argument("--policy", required=True)

@@ -269,7 +269,15 @@ def check_reserved_prefix_conflict(
     return findings
 
 
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
+
 def main(argv: list[str]) -> int:
+    _pin_output_encoding()
     parser = argparse.ArgumentParser(
         description="Migrations-immutable gate (#431)",
     )

@@ -1,0 +1,3 @@
+type: patch
+
+#909: la clave `governed_path` del detective post-push tiene dos rutas de cumplimiento y no valen lo mismo: la del actor (`merged_by.login` en `actors`) es la fuerte —la plataforma la firma y nadie la edita desde la interfaz— y la del mensaje (`merge_marker` sobre la primera línea del título del commit de merge) es la débil, porque quien mergea por la web puede escribir ese título y hacer pasar su merge por gobernado. El control detecta un bypass accidental, no uno deliberado; hay un test que fija ese límite como límite conocido. Para que el camino gobernado sea el único con valor, declara en `actors` los fusionadores legítimos y lee `merge_marker` como corroboración, no como prueba.

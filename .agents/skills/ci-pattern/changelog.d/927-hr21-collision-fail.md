@@ -1,0 +1,3 @@
+type: patch
+
+El gate de fase 5 de `adoption check` (#927, HR-21) endurece a fallo (exit 1) el aviso que `_incident_contract_warnings` emitía cuando el registro operativo (`P49_incident_log_dir`) y el post-mortem (`docs/postmortems`) compartían ruta. Hasta #915 era un aviso sin fallo; cadete ya migró su P49 a `docs/incidents` (#562), por lo que endurecer a fallo ya no le rompe la próxima propagación. El test de colisión espera ahora exit 1 con el mensaje que nombra `P49_incident_log_dir`; los tests de `local-unversioned` y de ruta distinta siguen verdes. `parameters.md` y `references/incidents.md` reflejan el nuevo comportamiento.

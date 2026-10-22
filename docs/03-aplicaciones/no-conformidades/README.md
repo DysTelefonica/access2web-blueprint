@@ -16,10 +16,10 @@ Evidencia de descubrimiento de **NoConformidades**, aplicación Access/VBA que m
 - **Backend autoritativo:** `C:\00repos\datos\NoConformidades_Datos.accdb` (27 MB).
 - **Dysflow:** `.dysflow/project.json` migrado (T18 caps-block) y `accessPath` absoluto explícito para invocaciones.
 - **Inventario Dysflow real**:
-  - **42 tablas** en el backend (ver [data-model.md § Inventario real](data-model.md#inventario-real-delflow-2026-08-05)).
+  - **42 tablas** en el backend (ver [data-model.md § Inventario real](data-model.md#inventario-real-dysflow-2026-08-05)).
   - **438 NCs de Proyecto** (`TbNoConformidades`) + **55 NCs de Auditoría** (`TbNoConformidadesAuditoria`) = **493 NCs totales**.
   - **14 FK relationships** entre tablas de usuario.
-- **Riesgo de seguridad detectado:** `backends.json` contiene `ACCESS_VBA_PASSWORD` en claro (ver [Seguridad § D90](security-rules.md#d90-riesgo-de-seguridad--backendsjson-con-contraseña-en-claro)). Sigue siendo válido como hallazgo.
+- **Riesgo de seguridad detectado:** `backends.json` contiene `ACCESS_VBA_PASSWORD` en claro (ver [Seguridad § D90](security-rules.md#d90--riesgo-de-seguridad-backendsjson-con-contraseña-en-claro)). Sigue siendo válido como hallazgo.
 
 ## Lote asociado
 

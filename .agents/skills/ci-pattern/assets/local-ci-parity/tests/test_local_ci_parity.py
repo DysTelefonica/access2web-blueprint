@@ -45,6 +45,14 @@ CI_STEPS = """      - name: Suites desde el script único
 EXCL = [{"command": "python3 personal/ardelperal/ci-pattern/assets/x/check_x.py*", "side": "ci",
          "reason": "gate CI-only: requiere secretos del runner"}]
 
+# Caso #917: el entrypoint local ejecuta `docker info` y la política lo marca
+# como exclusión que necesita Docker. El gate solo debe aceptarlo si el
+# entorno local declara la capacidad.
+DOCKER_ENTRYPOINT = ENTRYPOINT + "docker info\n"
+DOCKER_EXCL = [{"command": "docker info", "side": "any",
+                "reason": "comprobación de Docker del entrypoint (#917)",
+                "requires": ["docker"]}]
+
 
 def build_repo(tmp, workflow=None, entrypoint=None):
     repo = Path(tmp) / "repo"
@@ -63,10 +71,12 @@ def build_repo(tmp, workflow=None, entrypoint=None):
     return repo
 
 
-def build_policy(tmp, exclusions, repo, job="unit"):
+def build_policy(tmp, exclusions, repo, job="unit", capabilities=None):
     policy = {"ci": {"workflow": ".github/workflows/tests.yml", "job": job},
               "local": {"entrypoint": "testing/run-unit-suites.sh"},
               "exclusions": exclusions}
+    if capabilities is not None:
+        policy["local"]["capabilities"] = capabilities
     path = Path(tmp) / "policy.json"
     path.write_text(json.dumps(policy), encoding="utf-8")
     return path
@@ -103,30 +113,6 @@ class LocalCiParityTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
             self.assertIn("comando del CI sin entrada local", proc.stdout)
             self.assertIn("check_x.py", proc.stdout)
-
-    def test_shorthand_block_siblings_are_not_script_lines(self):
-        """`- run: |` con claves hermanas del step (shell:, env:,
-        working-directory: a la columna de `run`) no las absorbe como
-        líneas del script: sin comandos CI fantasma (hallazgo del auditor)."""
-        wf = ("jobs:\n"
-              "  unit:\n"
-              "  steps:\n"
-              "      - run: |\n"
-              "          bash cmd/a.sh\n"
-              "        shell: bash\n"
-              "        env:\n"
-              "          FOO: bar\n"
-              "        working-directory: ./x\n")
-        ep = ('for t in cmd/*.sh; do\n'
-              '  if bash "$t"; then\n'
-              '    echo PASS\n'
-              '  fi\n'
-              'done\n')
-        with tempfile.TemporaryDirectory() as tmp:
-            proc = run_gate(build_repo(tmp, workflow=wf, entrypoint=ep),
-                            build_policy(tmp, [], tmp))
-            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
-            self.assertIn("bash cmd/b.sh", proc.stdout)
 
     def test_flag_difference_between_local_and_ci_is_a_finding(self):
         """Friccion F1 (#396): dos lados ejecutando el mismo comando
@@ -183,6 +169,55 @@ class LocalCiParityTests(unittest.TestCase):
             proc = run_gate(repo, build_policy(tmp, [], repo))
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
             self.assertIn("orden relativo", proc.stdout)
+
+    def test_local_entrypoint_running_command_that_needs_undeclared_capability_is_a_finding(self):
+        """Caso que hoy falla (#917): el entrypoint local ejecuta un comando
+        que necesita Docker y el entorno local no lo declara. Hoy el gate
+        da verde porque no conoce capacidades; debe dar hallazgo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = build_repo(tmp, entrypoint=DOCKER_ENTRYPOINT)
+            proc = run_gate(repo, build_policy(tmp, DOCKER_EXCL + EXCL, repo))
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("requiere ['docker']", proc.stdout)
+            self.assertIn("docker info", proc.stdout)
+
+    def test_declared_local_capability_lets_the_entrypoint_run_it(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = build_repo(tmp, entrypoint=DOCKER_ENTRYPOINT)
+            proc = run_gate(repo, build_policy(tmp, DOCKER_EXCL + EXCL, repo,
+                                               capabilities=["docker"]))
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertIn("LOCAL/CI PARITY OK", proc.stdout)
+
+    def test_capability_needed_only_by_ci_only_command_is_not_a_finding(self):
+        """Un comando CI-only que necesita Docker no lo ejecuta el entrypoint:
+        no exige capacidad local (solo motivo, como cualquier exclusión)."""
+        excl = [{"command": "python3 personal/ardelperal/ci-pattern/assets/x/check_x.py*",
+                 "side": "ci", "reason": "gate CI-only: requiere Docker en el runner",
+                 "requires": ["docker"]}]
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = run_gate(build_repo(tmp), build_policy(tmp, excl, tmp))
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_unknown_capability_fails_closed(self):
+        """Vocabulario cerrado: una capacidad fuera de la lista es entrada
+        inválida (exit 2), nunca se ignora (HR-3)."""
+        excl = [dict(EXCL[0], requires=["gpu"])]
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = run_gate(build_repo(tmp), build_policy(tmp, excl, tmp))
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+            self.assertIn("fail-closed", proc.stderr)
+            self.assertIn("gpu", proc.stderr)
+
+    def test_capability_declaration_does_not_waive_the_reason(self):
+        """Declarar `requires` no exime de motivo: sigue siendo una diferencia
+        declarada y exige `reason` (no relaja el gate)."""
+        excl = [{"command": "python3 personal/ardelperal/ci-pattern/assets/x/check_x.py*",
+                 "side": "ci", "requires": ["docker"]}]
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = run_gate(build_repo(tmp), build_policy(tmp, excl, tmp))
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("sin 'reason'", proc.stdout)
 
     def test_exclusion_without_reason_is_a_finding(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -65,7 +65,10 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # team-skills#978: on a pull request only a new commit cancels. `edited`, `labeled` and
+  # `reopened` keep the head SHA; cancelling their run leaves a cancelled `required` check
+  # on that SHA, which blocks the merge even if a later run of the SHA is green.
+  cancel-in-progress: ${{ github.event_name != 'pull_request' || github.event.action == 'synchronize' }}
 
 env:
   # Hard Rule 15: the interpreter is part of the gate. A patch bump is a different verdict.
@@ -123,6 +126,7 @@ jobs:
           python-version: "3.12.11"
 
       - name: pr size
+        # Gate del canon (DysTelefonica/team-skills#806, BP#1040): ya no hay copia propia en scripts/.
         # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
         # The script reads it as data; the body is never interpolated into the shell.
         # GITHUB_TOKEN reads the per-file breakdown so vendored skills are not counted
@@ -130,14 +134,21 @@ jobs:
         env:
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/check_pr_size.py pr-event "$GITHUB_EVENT_PATH"
+        run: python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"
 
       - name: issue spec
+        # Gate del canon (DysTelefonica/team-skills#806, BP#1040): ya no hay copia propia en scripts/.
         # The PR body is attacker-controlled: the event file is read as data by the
         # gate, and the token is only used for the read-only issue lookup.
+        # --required-sections cablea la regla 7 del canon (DysTelefonica/team-skills#644):
+        # la lista de secciones obligatorias la declara el consumer en
+        # scripts/required-sections.json (las 6 secciones del contrato de issue de
+        # .github/ISSUE_TEMPLATE/issue-canonical.yml). Sin la bandera, el gate solo
+        # ejecuta las reglas 1..6; con ella, la regla 7 se aplica al cuerpo de la
+        # issue consultada por la API en modo pr-event.
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"
+        run: python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" --required-sections scripts/required-sections.json
 
       - name: walkthrough schema
         # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST
@@ -192,6 +203,13 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
+          # Cache the pip download keyed by the hash-pinned lockfile so the
+          # subsequent `pip install --require-hashes --requirement app/requirements-dev.lock`
+          # reuses the resolved dependencies across runs (same packages,
+          # same hashes, just faster). This is a cache key, not a relaxation:
+          # the lockfile is the gate. See issue #1067.
+          cache: 'pip'
+          cache-dependency-path: app/requirements-dev.lock
 
       - name: install
         # The dev pins live in app/pyproject.toml and are exact (ruff==0.15.21,
@@ -323,6 +341,16 @@ jobs:
         # SHA. Matches the `check-workflows` Makefile target.
         run: python scripts/check_workflows.py
 
+      - name: workflow policy
+        # Gate del canon (DysTelefonica/team-skills#806, BP#1040) sobre TODOS los workflows: claves
+        # duplicadas, `timeout-minutes`, puertos fijos, pines por SHA, preflight de docker y grupo de
+        # `concurrency` (HR-3, HR-26, HR-30). El `workflow gate` local conserva solo lo que el canon no
+        # comprueba: permisos, PYTHON_VERSION, unicidad del grupo y runners alcanzables por PR.
+        run: |
+          args=()
+          for f in .github/workflows/*.yml; do args+=(--workflow "$f"); done
+          python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json
+
       - name: suites populated
         # Issue #882 (PR-1): a green CI with zero tests in a suite is a false
         # guarantee. Each mandatory suite (unit, integration, e2e_smoke) must
@@ -406,11 +434,17 @@ jobs:
         # fixture to fail instead of skip.
         ports:
           - 5432
+        # Tighter readiness poll so `Resolve the DSN from the assigned host port`
+        # stops racing the container start. The container's digest, env, and
+        # ports stay untouched above this block; only the readiness poll cadence
+        # changes (10 s / 10 retries -> 2 s / 30 retries), and the probe still
+        # targets the project's database (`lanzadera`), not just the server.
+        # See issue #1067.
         options: >-
           --health-cmd "pg_isready -U lanzadera -d lanzadera"
-          --health-interval 10s
+          --health-interval 2s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -428,6 +462,14 @@ jobs:
         id: setup-python
         with:
           python-version: "3.12.11"
+          # Cache the pip download keyed by the hash-pinned lockfile so the
+          # subsequent `pip install --require-hashes --requirement app/requirements-dev.lock`
+          # reuses the resolved dependencies across runs. The integration suite
+          # additionally needs asyncpg + alembic which the lockfile already
+          # pins; the cache key is the lockfile, not the resolved graph, so
+          # the gate keeps enforcing the same hashes. See issue #1067.
+          cache: 'pip'
+          cache-dependency-path: app/requirements-dev.lock
 
       - name: install
         # Same #117 defensive guard as the `quality` job: prove the
@@ -533,6 +575,244 @@ jobs:
       group: gate-codeql-call-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
 
+  docs-architecture:
+    # HR-68 (#1013): docs/architecture.md no puede mentir. El gate compara el arbol
+    # de modulos con el codigo en los dos sentidos, valida el bloque de capas y
+    # ejecuta import-linter con la configuracion derivada de ese mismo bloque.
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: docs-architecture (${{ github.event_name }})
+    needs: pr-gate
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: gate-docs-architecture-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.11"
+
+      - name: Install import-linter
+        # Version exacta, igual que los demas pines de herramientas (Hard Rule 2).
+        run: python -m pip install "import-linter==2.15"
+
+      - name: Documento de arquitectura frente al codigo
+        run: |
+          PYTHONPATH="$PWD" python .agents/skills/ci-pattern/assets/docs-architecture/check_docs_architecture.py . \
+            --doc docs/architecture.md \
+            --code-root app/src/modules/lanzadera --code-glob "*.py" \
+            --code-root app/src/modules/expedientes --code-glob "*.py" \
+            --stack python --linter-config .importlinter
+
+  docs-codeguide:
+    # HR-63: mapa del codigo <-> codigo, en los dos sentidos. Mismo script que en
+    # local (canon vendorizado). Check requerido por PR (HR-29, `required_jobs`).
+    name: docs-codeguide (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-codeguide-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Map and code in sync
+        run: |
+          python3 .agents/skills/ci-pattern/assets/docs-codeguide/check_docs_codeguide.py . \
+            --docs-path docs/codebase \
+            --code-root app/src/modules \
+            --code-glob "*.py" \
+            --code-root scripts \
+            --code-glob "*.py" \
+            --code-root data \
+            --code-glob "**/*.bas" \
+            --code-root app/src \
+            --code-glob "*.py" \
+            --code-root app/src/shared \
+            --code-glob "*.py" \
+            --code-root app/migrations \
+            --code-glob "*.py"
+
+  docs-links:
+    # HR-66: enlaces locales de README.md, AGENTS.md y docs/. Check requerido por PR.
+    name: docs-links (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-links-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Local links resolve
+        run: python3 .agents/skills/ci-pattern/assets/docs-links/run_docs_links.py . --config .github/docs-links.json
+
+  docs-decisions:
+    # HR-67: registro de decisiones (formato, sustitucion, citas e indice). El canon
+    # no da entrada de linea de comandos al gate: se llama a su funcion `check`.
+    name: docs-decisions (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-decisions-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Decision register
+        run: |
+          python3 -I - <<'PY'
+          import importlib.util, sys
+          path = ".agents/skills/ci-pattern/assets/docs-decisions/check_docs_decisions.py"
+          spec = importlib.util.spec_from_file_location("check_docs_decisions", path)
+          gate = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(gate)
+          findings = gate.check(".", {"dir": "docs/decisions"})
+          print("\n".join(findings) if findings else "docs-decisions: OK")
+          sys.exit(1 if findings else 0)
+          PY
+
+  e2e-smoke:
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: e2e-smoke (${{ github.event_name }})
+    # Issue #876: humo E2E en cada PR. Imagen de la PR, /health y 2 specs
+    # de Playwright (smoke + login). La suite completa va en release.yml.
+    # Solo PR. Mismo patron que los heavy jobs: acepta `pr-gate` saltado y no
+    # usa `always()`; en push/schedule/workflow_dispatch el job se salta y la
+    # politica lo acepta (#876).
+    if: github.event_name == 'pull_request' && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')
+    needs: pr-gate
+    runs-on: ubuntu-24.04
+    # Cada PR tiene su propio run; no lo cancela el workflow.
+    concurrency:
+      group: gate-e2e-smoke-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    # Mismo service que el job `integration` (#882/#901); puerto dinámico.
+    services:
+      postgres:
+        image: postgres:16-alpine@sha256:1a66d744c1b459e13b05a8fca341da84cb63383e99ce262210efee5a319d4551
+        env:
+          POSTGRES_DB: lanzadera
+          POSTGRES_USER: lanzadera
+          POSTGRES_PASSWORD: lanzadera-dev-only
+        ports:
+          - 5432
+        options: >-
+          --health-cmd "pg_isready -U lanzadera -d lanzadera"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12.11"
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          # Exact version (HR-26): the one the hosted runner ships and the one
+          # the smoke specs were validated with.
+          node-version: "22.23.3"
+
+      - name: Build the PR image
+        working-directory: app
+        run: docker build --tag test-app:pr .
+
+      - name: Resolve the DSN from the assigned host port
+        env:
+          POSTGRES_HOST_PORT: ${{ job.services.postgres.ports['5432'] }}
+        run: |
+          set -euo pipefail
+          if [ -z "$POSTGRES_HOST_PORT" ]; then
+            echo "::error::service port did not resolve; refusing to run with a DSN that cannot connect" >&2
+            exit 1
+          fi
+          echo "E2E_DATABASE_URL=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
+
+      - name: Install the lockfile and apply the real migrations
+        # Igual que `integration`: 0003 lee data/fixtures/, fuera de la imagen.
+        run: |
+          set -euo pipefail
+          if [ -f app/pyproject.toml ]; then
+            python -m pip install --require-hashes --requirement app/requirements-dev.lock
+          elif [ -f pyproject.fragment.toml ]; then
+            echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
+            echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
+            echo "::error::See issue #117 (umbrebola) and the F2 acceptance criterion."
+            exit 1
+          else
+            echo "::error::Neither app/pyproject.toml nor pyproject.fragment.toml found in the worktree."
+            echo "::error::The CI cannot install a Python project that does not exist. See issue #117 F2."
+            exit 1
+          fi
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          DATABASE_URL="$E2E_DATABASE_URL" PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
+            alembic -c app/migrations/alembic.ini upgrade head
+
+      - name: Start the app and wait for the health check
+        env:
+          E2E_SECRET_KEY: e2e-smoke-test-key-not-a-real-secret
+        run: |
+          set -euo pipefail
+          if ! timeout 30 docker info > /dev/null 2>&1; then
+            echo "::error::docker daemon is not responding on the runner."
+            exit 1
+          fi
+          # PLATFORM_SECRET_KEY: 0004_seed_users cifra el DNI con AES-256-GCM
+          # y necesita la clave; mismo valor que el job `integration`.
+          PLATFORM_SECRET_KEY="$(python -c 'import base64; print(base64.urlsafe_b64encode(b"0" * 32).decode())')"
+          # --network host: el contenedor llega al Postgres en 127.0.0.1.
+          docker run -d --name test-app --network host \
+            -e DATABASE_URL="$E2E_DATABASE_URL" \
+            -e SECRET_KEY="$E2E_SECRET_KEY" \
+            -e PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
+            test-app:pr
+          # Espera a /health hasta 60 s (criterio 1 de #876).
+          ready=0
+          for i in $(seq 1 60); do
+            if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "::error::app did not respond on /health within 60s"
+            exit 1
+          fi
+          echo "App is ready"
+
+      - name: Install Playwright dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Chromium browser
+        run: npx playwright install chromium
+
+      - name: Run the E2E smoke specs
+        # Desde e2e/: ahí está la copia de @playwright/test que usan los specs.
+        # Desde la raíz, npx baja otra y Playwright no encuentra tests.
+        working-directory: e2e
+        env:
+          BASE_URL: http://localhost:8000
+          TEST_CONTAINER_NAME: test-app
+        run: |
+          set -euo pipefail
+          npx playwright test smoke.spec.ts auth.spec.ts
+
   required:
     # Issue #702: deterministic replacement for the six hand-configured
     # branch-protection checks (quality, pr-gate, pip-audit,
@@ -558,7 +838,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, codeql]
+    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}
@@ -568,7 +848,24 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Enforce the required-job policy
+        # Canon DysTelefonica/team-skills#806 (BP#1040): el agregador ya no es un script
+        # propio. Jobs, eventos y saltos aceptados viven en la política; la paridad
+        # workflow <-> `needs` <-> política y la comparación con la política de la base
+        # (cada relajación necesita su `relaxation`) las hace el canon. El objeto `needs`,
+        # el evento y el SHA base llegan por `env:`, nunca interpolados en el script.
         env:
-          CI_NEEDS_JSON: ${{ toJSON(needs) }}
-          CI_EVENT_NAME: ${{ github.event_name }}
-        run: python scripts/check_required_jobs.py
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          policy=.github/required-jobs-policy.json
+          python3 .agents/skills/ci-pattern/assets/required-jobs/check_parity.py --workflow .github/workflows/ci.yml --aggregator required --policy "$policy"
+          set -- --policy "$policy" --event "$EVENT_NAME"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "$BASE_SHA"
+            if git cat-file -e "$BASE_SHA:$policy" 2>/dev/null; then
+              git show "$BASE_SHA:$policy" > "$RUNNER_TEMP/base-policy.json"
+              set -- "$@" --base-policy "$RUNNER_TEMP/base-policy.json"
+            fi
+          fi
+          printf '%s' "$NEEDS_JSON" | python3 .agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py "$@"

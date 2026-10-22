@@ -1,4 +1,4 @@
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.9 — negative fixture, do not "fix"
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — negative fixture, do not "fix"
 """A file that does not fit the <package>/<module>/<layer>/ layout.
 
 The gate cannot place this into a (module, layer) pair. Before the fix it was skipped in

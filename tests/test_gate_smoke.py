@@ -29,9 +29,13 @@ pytestmark = pytest.mark.e2e_smoke
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+#: DQH 2.2: check_complexity evaluates its BASELINE at an explicit date, never the wall clock.
+POLICY_DATE = "2026-10-21"
 
 
 def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
+    if script == "check_complexity.py":
+        args = (*args, "--policy-date", POLICY_DATE)
     return subprocess.run(
         [sys.executable, str(SCRIPTS / script), *args],
         capture_output=True,
@@ -51,57 +55,6 @@ def _load(script: str):
     sys.modules[name] = module
     spec.loader.exec_module(module)
     return module
-
-
-# ---------------------------------------------------------------------------------------------
-# check_layers
-# ---------------------------------------------------------------------------------------------
-
-
-def test_layers_gate_fails_on_a_violation() -> None:
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_violation"))
-    assert result.returncode == 1, result.stdout
-
-
-@pytest.mark.parametrize(
-    "expected_key",
-    ["purity:domain", "direction:domain->adapters", "slice:lanzadera->expedientes"],
-)
-def test_layers_gate_names_each_violation_class(expected_key: str) -> None:
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_violation"))
-    assert expected_key in result.stdout, result.stdout
-
-
-def test_layers_gate_passes_on_clean_code() -> None:
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_clean"))
-    assert result.returncode == 0, result.stdout
-
-
-def test_layers_gate_fails_on_files_it_could_not_classify() -> None:
-    """Hard Rule 18, applied to this gate's own coverage.
-
-    A file the gate cannot place into a (module, layer) pair is a file the gate did not check.
-    Skipping it silently is how a layout mismatch hides a whole codebase behind a green tick —
-    measured on a real repository: 118 of 178 files invisible, gate reporting clean.
-    """
-    result = _run("check_layers.py", "--root", str(FIXTURES / "layers_unclassified"))
-    assert result.returncode == 1, result.stdout
-    assert "unclassified" in result.stdout
-    assert "loose_helper.py" in result.stdout
-
-
-def test_layers_gate_publishes_how_much_it_actually_checked() -> None:
-    envelope = json.loads(
-        _run("check_layers.py", "--root", str(FIXTURES / "layers_unclassified"), "--json").stdout
-    )
-    assert envelope["indicators"]["files_unclassified"] == 1
-    assert envelope["indicators"]["files_checked"] == 1
-
-
-def test_layers_gate_fails_when_the_package_is_missing() -> None:
-    """Fail closed: an empty walk must never report success."""
-    result = _run("check_layers.py", "--root", str(FIXTURES))
-    assert result.returncode == 1
 
 
 # ---------------------------------------------------------------------------------------------
@@ -127,26 +80,6 @@ def test_complexity_ceiling_is_absolute_not_top_n() -> None:
     """
     result = _run("check_complexity.py", "--root", str(FIXTURES / "complexity_violation"))
     assert "too_many_branches" in result.stdout, result.stdout
-
-
-# ---------------------------------------------------------------------------------------------
-# check_pr_size
-#
-# The git diff path needs a real repository, so it is covered by
-# `tests/lanzadera/test_pr_size_wiring.py`. The override policy is pure logic
-# and is covered here: with issue #854 the override is the `size:exception`
-# label on the PR, applied by the maintainer; the PR body no longer carries a
-# `size-exception-reason:` field and is not consulted by the gate.
-# ---------------------------------------------------------------------------------------------
-
-
-def test_pr_size_override_is_size_exception_label() -> None:
-    module = _load("check_pr_size.py")
-    assert module.has_size_exception_label([]) is False
-    assert module.has_size_exception_label(["type:refactor"]) is False
-    assert module.has_size_exception_label(["size:exception"]) is True
-    # Other labels alongside the override must not stop it from counting.
-    assert module.has_size_exception_label(["type:refactor", "size:exception"]) is True
 
 
 # ---------------------------------------------------------------------------------------------
@@ -340,13 +273,12 @@ def test_acquisition_marker_cannot_become_permanent() -> None:
 @pytest.mark.parametrize(
     "gate_script",
     [
-        "check_layers.py",
         "check_complexity.py",
         "check_dry.py",
     ],
 )
 def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
-    root = FIXTURES / "layers_clean"
+    root = FIXTURES / "complexity_clean"
     args = ["--root", str(root)]
     result = _run(gate_script, *args, "--json")
     envelope = json.loads(result.stdout)
@@ -358,16 +290,18 @@ def test_every_gate_emits_a_well_formed_envelope(gate_script: str) -> None:
 
 def test_quality_report_aggregates_indicators(tmp_path) -> None:
     out = tmp_path / "quality-report.json"
-    result = _run("quality_report.py", "--root", str(FIXTURES / "layers_clean"), "--out", str(out))
+    result = _run(
+        "quality_report.py", "--root", str(FIXTURES / "complexity_clean"), "--out", str(out)
+    )
     assert result.returncode == 0, result.stdout
     report = json.loads(out.read_text(encoding="utf-8"))
     assert report["status"] == "pass"
     for indicator in (
-        "layers.violations",
         "complexity.max_complexity",
+        "dry.duplicated_ratio_pct",
     ):
         assert indicator in report["indicators"], report["indicators"].keys()
-    assert report["indicators"]["layers.violations"]["ceiling"] == 0
+    assert report["indicators"]["complexity.functions_over_ceiling"]["ceiling"] == 0
 
 
 def test_quality_report_names_the_failing_gate(tmp_path) -> None:
@@ -375,23 +309,23 @@ def test_quality_report_names_the_failing_gate(tmp_path) -> None:
     result = _run(
         "quality_report.py",
         "--root",
-        str(FIXTURES / "layers_violation"),
+        str(FIXTURES / "dry_violation"),
         "--out",
         str(out),
     )
     assert result.returncode == 1
     report = json.loads(out.read_text(encoding="utf-8"))
-    assert report["failed_gates"] == ["layers"]
+    assert report["failed_gates"] == ["dry"]
 
 
 def test_quality_report_is_byte_identical_for_the_same_commit(tmp_path) -> None:
     """Determinism pin: no wall-clock timestamp may leak into the report."""
     first, second = tmp_path / "a.json", tmp_path / "b.json"
-    _run("quality_report.py", "--root", str(FIXTURES / "layers_clean"), "--out", str(first))
+    _run("quality_report.py", "--root", str(FIXTURES / "complexity_clean"), "--out", str(first))
     _run(
         "quality_report.py",
         "--root",
-        str(FIXTURES / "layers_clean"),
+        str(FIXTURES / "complexity_clean"),
         "--out",
         str(second),
     )

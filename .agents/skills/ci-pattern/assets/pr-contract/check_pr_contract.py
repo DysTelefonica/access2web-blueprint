@@ -1,52 +1,228 @@
 #!/usr/bin/env python3
-"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31. Sin API."""
+"""Gate de contrato de PR y commits (#193): HR-6/7/8/14/31. Sin API ni procesos.
+
+El gate no ejecuta `git`: el workflow genera los datos del rango y se los pasa
+por fichero (`--changed-files`, `--numstat-file`, `--commits-file`,
+`--tracked-files`), de modo que un consumer lo copia byte a byte sin hallazgos
+de S603/S607 (DysTelefonica/team-skills#753). Un fichero necesario que falta
+sale 2 (HR-3)."""
 
 import argparse
+import fnmatch
+import importlib.util
 import json
-from pathlib import Path
 import os
 import re
-import subprocess
 import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+# Fuente única del presupuesto (#931): la regla A1 la comparte con pr-size.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
+from vendored_budget import budget_lines, parse_origins  # noqa: E402
+
+MIN_MERGE_PARENTS = 2
+
+
+class EventFileMissingError(FileNotFoundError):
+    def __init__(self, path):
+        super().__init__(f"payload del evento ausente: {path}")
+
+
+class PullRequestMissingError(TypeError):
+    def __init__(self):
+        super().__init__("el payload no contiene `pull_request`.")
+
+
+class PolicyFileMissingError(FileNotFoundError):
+    def __init__(self, path):
+        super().__init__(f"política ausente: {path}")
+
+
+class ChecksConfigError(ValueError):
+    """`checks` declarado pero inválido: falla cerrado (exit 2)."""
+
+
+class ChecksNotObjectError(ChecksConfigError, TypeError):
+    def __init__(self):
+        super().__init__("`checks` debe ser un objeto {comprobación: true|false}")
+
+
+class UnknownChecksError(ChecksConfigError):
+    def __init__(self, names, valid):
+        super().__init__(
+            f"`checks` nombra comprobaciones desconocidas: {', '.join(names)} "
+            f"(válidas: {', '.join(valid)})")
+
+
+class NonBooleanChecksError(ChecksConfigError, TypeError):
+    def __init__(self, names):
+        super().__init__(f"`checks` exige valores booleanos; no lo son: {', '.join(names)}")
+
+
+class NoActiveChecksError(ChecksConfigError):
+    def __init__(self):
+        super().__init__("`checks` apaga todas las comprobaciones: ninguna activa")
+
+
+class DocsEvidenceConfigError(ValueError):
+    """`docs_evidence` declarado pero inválido: falla cerrado (exit 2)."""
+
+    def __init__(self):
+        super().__init__(
+            "docs_evidence necesita 'pages' (lista de {page, covers}) y 'checklists' (objeto)")
+
+
+# #938: el gate lee `labels` y `body` por API en vivo. Sin token o con la API
+# caída, no se vuelve al payload del evento: se sale 2 (HR-3) con un motivo
+# explícito. La llamada al API se delega a `runner-controls/github_rest.py`
+# (cliente REST compartido del catálogo), que se carga por ruta con el
+# mismo patrón que `check_docs_architecture` (consumers con pin y
+# vendorizados lo encuentran igual).
+
+OBSOLETE_NOTE = "payload obsoleto tras ediciones/re-runs del job"
+_PAYLOAD_INCOMPLETE_MSG = "payload sin owner/repo o número"
+_LABELS_NOT_LIST_MSG = "labels no es lista"
+_PULL_NOT_OBJECT_MSG = "pull no es objeto"
+
+
+def _load_github_rest():
+    """Carga `runner-controls/github_rest.py` por ruta. Fail-closed (#938)."""
+    rest_path = Path(__file__).resolve().parent.parent / "runner-controls" / "github_rest.py"
+    if not rest_path.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location(
+        "pr_contract_github_rest", str(rest_path))
+    if spec is None or spec.loader is None:
+        return None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_GITHUB_REST = _load_github_rest()
+if _GITHUB_REST is None:
+    print("ERROR: runner-controls/github_rest.py no esta en el catalogo "
+          "(HR-3 fail-closed).", file=sys.stderr)
+    sys.exit(2)
+
 
 def load_event(path):
     p = Path(path)
     if not p.is_file():
-        raise FileNotFoundError(f"payload del evento ausente: {path}")
+        raise EventFileMissingError(path)
     data = json.loads(p.read_text(encoding="utf-8"))
     pr = data.get("pull_request")
     if not isinstance(pr, dict):
-        raise ValueError("el payload no contiene `pull_request`.")
+        raise PullRequestMissingError
     return data, pr
 
 def load_policy(path):
     p = Path(path)
     if not p.is_file():
-        raise FileNotFoundError(f"política ausente: {path}")
+        raise PolicyFileMissingError(path)
     return json.loads(p.read_text(encoding="utf-8"))
 
-def git_range(repo, base_sha, head_sha, fmt):
-    result = subprocess.run(
-        ["git", "-C", str(repo), "log", f"--format={fmt}", f"{base_sha}..{head_sha}"],
-        capture_output=True, text=True, check=False,
-    )
-    return result.stdout if result.returncode == 0 else ""
 
-def git_shortstat(repo, base_sha, head_sha):
-    result = subprocess.run(
-        ["git", "-C", str(repo), "diff", "--shortstat", f"{base_sha}..{head_sha}"],
-        capture_output=True, text=True, check=False,
-    )
-    # " 5 files changed, 100 insertions(+), 50 deletions(-)"
-    m = re.search(r"(\d+) insertion", result.stdout)
-    ins = int(m.group(1)) if m else 0
-    m = re.search(r"(\d+) deletion", result.stdout)
-    dele = int(m.group(1)) if m else 0
-    return ins + dele
+def fetch_pr_live(data, pr):
+    """Lee labels y body actuales por API; fail-closed si no se puede.
+
+    Delega a `runner-controls/github_rest.py` (cliente REST compartido del
+    catálogo): valida el esquema, lee el token, paginata, lanza
+    `GitHubApiError` en cualquier fallo. Las plantillas de error viven
+    como constantes de módulo para no disparar TRY003 en el call site."""
+    repo_full_name = (data.get("repository") or {}).get("full_name")
+    number = pr.get("number")
+    if not isinstance(repo_full_name, str) or not repo_full_name or \
+            not isinstance(number, int):
+        raise _GITHUB_REST.GitHubApiError(_PAYLOAD_INCOMPLETE_MSG)
+    live_labels = _GITHUB_REST.get_json(
+        f"/repos/{repo_full_name}/issues/{number}/labels")
+    pull = _GITHUB_REST.get_json(
+        f"/repos/{repo_full_name}/pulls/{number}")
+    if not isinstance(live_labels, list):
+        raise _GITHUB_REST.GitHubApiError(_LABELS_NOT_LIST_MSG)
+    if not isinstance(pull, dict):
+        raise _GITHUB_REST.GitHubApiError(_PULL_NOT_OBJECT_MSG)
+    labels = [{"name": str(item.get("name", ""))} for item in live_labels
+              if isinstance(item, dict)]
+    return labels, pull.get("body") or ""
+
+
+def read_data_file(path):
+    """Texto de un fichero de datos del rango; ausente o ilegible: FileNotFoundError."""
+    return Path(path).read_text(encoding="utf-8")
+
+
+CHECK_NAMES = ("labels", "closes", "chain_context", "issue_links", "closure_tests",
+               "docs_evidence", "budget", "commits", "ai_disclosure")
+
+
+def active_checks(policy):
+    """#735: comprobaciones activas. Sin `checks` lo están todas; con `checks`,
+    una ausente está activa y `false` la apaga. Valor inválido o ninguna
+    activa: ChecksConfigError (HR-3, un gate sin nada que comprobar no da OK)."""
+    config = policy.get("checks")
+    if config is None:
+        return set(CHECK_NAMES)
+    if not isinstance(config, dict):
+        raise ChecksNotObjectError
+    unknown = sorted(set(config) - set(CHECK_NAMES))
+    if unknown:
+        raise UnknownChecksError(unknown, CHECK_NAMES)
+    bad = sorted(name for name, value in config.items() if not isinstance(value, bool))
+    if bad:
+        raise NonBooleanChecksError(bad)
+    active = {name for name in CHECK_NAMES if config.get(name, True)}
+    if not active:
+        raise NoActiveChecksError
+    return active
+
+
+def _anchor_exists(text, anchor):
+    slugs = {re.sub(r"[^\w\- ]", "", m.group(1)).strip().lower().replace(" ", "-")
+             for m in re.finditer(r"^#{1,6}\s+(.*?)\s*#*$", text, re.M)}
+    return anchor.lower() in slugs
+
+
+def check_docs_evidence(pr, repo, files, policy, findings):
+    """#710 (HR-64): un PR que toca codigo cubierto por una pagina del mapa toca
+    la pagina o lleva la seccion «Documentacion» no vacia (`files`: ficheros del
+    rango, uno por elemento); las checklists por
+    tipo de cambio existen y el cuerpo enlaza la de su tipo. Activacion por
+    DECLARACION `docs_evidence` en la politica: sin ella avisa y no falla."""
+    config = policy.get("docs_evidence")
+    if config is None:
+        print("HR-64: docs_evidence no declarado en la politica; la evidencia de "
+              "documentacion por PR todavia no se exige.", file=sys.stderr)
+        return
+    pages = config.get("pages") if isinstance(config, dict) else None
+    checklists = config.get("checklists", {}) if isinstance(config, dict) else None
+    if not isinstance(pages, list) or not pages or not isinstance(checklists, dict) \
+            or not all(isinstance(p, dict) and p.get("page") and p.get("covers") for p in pages):
+        raise DocsEvidenceConfigError
+    reason = re.sub(r"<!--.*?-->", "", section_body(pr.get("body"), "Documentación"), flags=re.S).strip()
+    for entry in pages:
+        touched = [f for f in files if any(fnmatch.fnmatch(f, g) for g in entry["covers"])]
+        if touched and entry["page"] not in files and not reason:
+            findings.append(
+                f"HR-64: el PR toca {', '.join(touched)}, cubierto por {entry['page']}, y ni "
+                "cambia la pagina ni lleva la seccion «Documentación» con el motivo.")
+    body = pr.get("body") or ""
+    types = {label["name"] for label in pr.get("labels", [])}
+    for label, link in sorted(checklists.items()):
+        path, _, anchor = link.partition("#")
+        target = Path(repo) / path
+        if not target.is_file() or (anchor and not _anchor_exists(target.read_text(encoding="utf-8"), anchor)):
+            findings.append(f"HR-64: la checklist de {label} apunta a {link} y no existe.")
+        elif label in types and link not in body:
+            findings.append(f"HR-64: el cuerpo del PR ({label}) no enlaza su checklist {link}.")
+
 
 def check_labels(pr, policy, findings):
     required = policy.get("required_labels", [])
-    labels = {l["name"] for l in pr.get("labels", [])}
+    labels = {item["name"] for item in pr.get("labels", [])}
     if not required:
         return
     if not labels:
@@ -64,7 +240,7 @@ def check_closes(pr, base, default_branch, policy, findings):
     pattern = policy.get("closes_pattern", "Closes|Fixes|Resolves")
     requires = policy.get("chain_tip_requires_closes", True)
     chain_label = policy.get("chain_partial_label", "chain:partial")
-    labels = {l["name"] for l in pr.get("labels", [])}
+    labels = {item["name"] for item in pr.get("labels", [])}
     rx = re.compile(rf"\b(?:{pattern})\s+#\d+", re.IGNORECASE)
     refs_rx = re.compile(r"\bRefs\s+#\d+", re.IGNORECASE)
     is_tip = base == default_branch
@@ -104,18 +280,17 @@ def size_exception_applied(pr, policy):
     Devuelve True si la etiqueta está aplicada, False en caso contrario.
     """
     label_name = policy.get("size_exception_label", "size:exception")
-    labels = {l.get("name") for l in pr.get("labels", []) if isinstance(l, dict)}
+    labels = {item.get("name") for item in pr.get("labels", []) if isinstance(item, dict)}
     return label_name in labels
 
 
-def check_budget(pr, repo, base_sha, head_sha, policy, findings):
+def check_budget(pr, diff_lines, policy, findings):
     """A1: el presupuesto es 400 (adiciones + eliminaciones del PR, sin
     exclusiones). Si el diff lo supera, la única vía válida es la
     etiqueta `size:exception` aplicada por el mantenedor; el campo
     `size-exception-reason:` del cuerpo está retirado."""
     budget = policy.get("review_budget_lines", 400)
     label_name = policy.get("size_exception_label", "size:exception")
-    diff_lines = git_shortstat(repo, base_sha, head_sha)
     if diff_lines <= budget:
         return
     if not size_exception_applied(pr, policy):
@@ -126,25 +301,55 @@ def check_budget(pr, repo, base_sha, head_sha, policy, findings):
             "4 preguntas de '## Excepción de tamaño' en el cuerpo."
         )
 
-def check_commits(repo, base_sha, head_sha, policy, findings):
+# #944: los patrones de atribución de IA se aplicaban con `re.search(pat, msg,
+# re.IGNORECASE)`, sin límite de palabra ni ancla, así que una palabra que
+# CONTIENE el patrón disparaba el hallazgo: el marcador de «generado con» casa
+# dentro de «regenerated with» (la redacción natural de un commit que describe
+# una regeneración) y el guion hace lo mismo con el de co-autoría tras un `No-`
+# o un `hand-`. El límite va en el PATRÓN, compilado una vez, y no en cada
+# cadena: así la lista que declara cada consumer queda cubierta sin tocar su
+# política. Se exige que la marca NO esté pegada a un carácter de palabra ni a
+# un guion; el resto (inicio de línea, espacio, puntuación, emoji previo) sigue
+# dando hallazgo, que es lo que cazan los trailers reales. Solo límite izquierdo:
+# los tres patrones por defecto acaban en `:` o en letra, y un `\b` final
+# dejaría de cazarlos. Los tres marcadores se listan en
+# `pr-contract.policy.example.json`, no aquí: citarlos en el código los arrastra
+# a los mensajes de commit, que es lo que este gate mide.
+AI_ATTR_BOUNDARY = r"(?<![\w-])"
+INLINE_FLAGS_RX = re.compile(r"^\(\?[aiLmsux]+\)")
+
+def compile_ai_attribution(patterns):
+    """Compila los patrones de `ai_attribution_patterns` exigiendo el límite
+    izquierdo de #944. El cuerpo va en un grupo no capturante para que una
+    alternancia del patrón (`a|b`) reciba el límite en las dos ramas, y un
+    prefijo de flags en línea (`(?i)…`) se conserva delante porque Python exige
+    los flags globales al principio de la expresión."""
+    compiled = []
+    for pat in patterns:
+        m = INLINE_FLAGS_RX.match(pat)
+        head, body = (pat[:m.end()], pat[m.end():]) if m else ("", pat)
+        compiled.append(re.compile(f"{head}{AI_ATTR_BOUNDARY}(?:{body})", re.IGNORECASE))
+    return compiled
+
+def check_commits(messages, policy, findings):
     pattern = policy.get("conventional_commit_pattern",
                          r"^(feat|fix|docs|chore|ci|test|perf|refactor|revert)(\([^)]+\))?!?: ")
-    ai_patterns = policy.get("ai_attribution_patterns",
-                             ["Co-Authored-By:", "Generated-by:", "Generated with"])
+    ai_patterns = compile_ai_attribution(
+        policy.get("ai_attribution_patterns",
+                   ["Co-Authored-By:", "Generated-by:", "Generated with"]))
     # %P delante: un commit de merge no tiene asunto conventional —la regla
     # mide los commits de trabajo— y la disciplina de cadenas obliga a
     # sincronizar con `git merge origin/main` en vez de rebase (#333).
-    messages = git_range(repo, base_sha, head_sha, "%P%n%B%n---COMMIT-END---")
     for block in messages.split("---COMMIT-END---"):
         msg = block.strip()
         if not msg:
             continue
         parents, _, message = msg.partition("\n")
         subject = message.split("\n", 1)[0].strip()
-        if len(parents.split()) < 2 and not re.match(pattern, subject):
+        if len(parents.split()) < MIN_MERGE_PARENTS and not re.match(pattern, subject):
             findings.append(f"HR-14: commit no convencional: '{subject[:80]}'.")
         for pat in ai_patterns:
-            if re.search(pat, msg, re.IGNORECASE):
+            if pat.search(msg):
                 findings.append(f"HR-14: atribución de IA detectada en commit '{subject[:80]}'.")
                 break
 
@@ -167,8 +372,29 @@ CASE_DEF_PATTERNS = (
     r"\bfunc\s+{name}\b",                      # Go
     r"\b(?:it|test)\s*\(\s*['\"]{name}['\"]",  # JS/TS (Jest, Mocha)
 )
-GIT_TIMEOUT = 60
 DEFAULT_CLOSURE_HEADING = "Tests que prueban el cierre"
+# #911: la forma «no aplica» — un cierre SIN test declara, con un encabezado
+# estable, la evidencia que cubre el cierre. La evidencia es una ruta
+# versionada en git (un documento, un ADR, un registro); no tiene que ser un
+# fichero de test. Sin exención por etiqueta: la etiqueta la pone el autor del
+# PR y no es una evidencia.
+DEFAULT_CLOSURE_NOT_APPLICABLE_HEADING = "No aplica"
+# #918: «No aplica» solo vale si TODOS los ficheros cambiados no son ejecutables.
+# La política puede declarar `closure_not_applicable_paths`; un workflow o un
+# script no entra por defecto. Patrones con `**` (cualquier profundidad) y `*`.
+DEFAULT_NOT_APPLICABLE_PATHS = (
+    "**/*.md", "docs/**", ".github/ISSUE_TEMPLATE/**", ".github/PULL_REQUEST_TEMPLATE.md")
+
+
+@dataclass(frozen=True)
+class ClosureData:
+    """Lo que la comprobación de cierre necesita del repo y del rango (#918).
+
+    `changed` es None si no llegó `--changed-files`: «No aplica» falla cerrado."""
+    repo: Path
+    tracked: frozenset
+    changed: tuple | None
+    not_applicable_paths: tuple
 
 
 def section_body(body, heading):
@@ -208,18 +434,6 @@ def closure_entries(text):
     return CLOSURE_ENTRY_RX.findall(text)
 
 
-def is_tracked(repo, rel):
-    """La ruta está versionada en git. Un fichero sin versionar no demuestra
-    nada: no entra en el PR. Timeout explícito y fallo cerrado."""
-    try:
-        proc = subprocess.run(
-            ["git", "-C", str(repo), "ls-files", "--error-unmatch", "--", rel],
-            capture_output=True, text=True, check=False, timeout=GIT_TIMEOUT)
-    except (OSError, subprocess.TimeoutExpired):
-        return False
-    return proc.returncode == 0
-
-
 def case_is_defined(repo, rel, case):
     """El caso está DEFINIDO en el fichero (no basta con que la cadena
     aparezca). Se lee solo ese fichero: nada de recorrer el árbol."""
@@ -231,20 +445,105 @@ def case_is_defined(repo, rel, case):
                for pattern in CASE_DEF_PATTERNS)
 
 
-def check_closure_tests(pr, repo, policy, findings):
+def glob_matches(rel, pattern):
+    """Ruta contra un patrón: `**/` cualquier profundidad, `**` cualquier resto, `*` sin barra."""
+    regex, i = "", 0
+    while i < len(pattern):
+        if pattern.startswith("**/", i):
+            regex, i = regex + "(?:.*/)?", i + 3
+        elif pattern.startswith("**", i):
+            regex, i = regex + ".*", i + 2
+        elif pattern[i] == "*":
+            regex, i = regex + "[^/]*", i + 1
+        else:
+            regex, i = regex + re.escape(pattern[i]), i + 1
+    return re.fullmatch(regex, rel) is not None
+
+
+def not_applicable_scope_findings(data, heading, marker):
+    """#918: «No aplica» solo vale si el PR no cambia nada ejecutable. Sin lista
+    de cambios no se puede comprobar: falla cerrado."""
+    if data.changed is None:
+        return [f"HR-53: la sección '{heading}' declara '{marker}' y el gate no recibió "
+                "la lista de ficheros cambiados (--changed-files): sin ella no puede "
+                "comprobar que el cambio no es ejecutable."]
+    if not data.changed:
+        return [f"HR-53: la sección '{heading}' declara '{marker}' y el PR no cambia "
+                "ningún fichero."]
+    executable = [rel for rel in data.changed
+                  if not any(glob_matches(rel, pat) for pat in data.not_applicable_paths)]
+    if not executable:
+        return []
+    listed = ", ".join(f"`{rel}`" for rel in executable)
+    return [f"HR-53: la sección '{heading}' declara '{marker}' y el PR cambia ficheros "
+            f"ejecutables ({listed}): «{marker}» solo vale para documentación. Añada un "
+            "test que pruebe el cambio y nómbrelo en la sección."]
+
+
+def not_applicable_findings(data, heading, marker, evidence_text):
+    """#911: la sección HR-53 declara «No aplica» y nombra la evidencia del
+    cierre. La evidencia es una ruta versionada en git; no tiene que ser un
+    fichero de test. Sin evidencia, la declaración no cierra nada. #918: y el
+    cambio no puede ser ejecutable."""
+    scope = not_applicable_scope_findings(data, heading, marker)
+    if scope:
+        return scope
+    repo, tracked = data.repo, data.tracked
+    entries = closure_entries(evidence_text)
+    if not entries:
+        return [
+            f"HR-53: la sección '{heading}' declara '{marker}' y no nombra la "
+            "evidencia del cierre: escriba la ruta del fichero que lo cubre, en el "
+            "formato `ruta/al/fichero.ext`."]
+    problems = []
+    for entry in entries:
+        rel, _, case = entry.partition("::")
+        if rel not in tracked:
+            problems.append(f"`{entry}` (la evidencia del cierre no está versionada en git)")
+            continue
+        if case and not case_is_defined(repo, rel, case):
+            problems.append(f"`{entry}` (el caso '{case}' no está definido en {rel})")
+    if problems:
+        return [
+            f"HR-53: la sección '{heading}' declara '{marker}' y la evidencia del "
+            "cierre no prueba nada: " + "; ".join(problems) + "."]
+    return []
+
+
+def missing_section_finding(body, heading, marker):
+    """#334/#911: el hallazgo cuando no hay sección HR-53 dentro del cuerpo."""
+    if section_body(body, marker):
+        return (f"HR-53: la declaración '{marker}' debe ir dentro de la sección "
+                f"'{heading}'.")
+    return (f"HR-53: el PR lleva 'Closes #<issue>' y no tiene la sección "
+            f"'{heading}': el cierre lo demuestra el test que prueba el "
+            "comportamiento, no el merge.")
+
+
+def check_closure_tests(pr, data, policy, findings):
     """#334 (HR-53): un PR que cierra una issue nombra el test que demuestra
     el comportamiento corregido, en formato estructurado y con el test
-    existiendo de verdad. Un «debería estar arreglado» no cierra nada."""
+    existiendo de verdad (`tracked`: rutas de `git ls-files`). Un «debería estar arreglado» no cierra nada.
+    #911: si el cierre no tiene test, la sección declara «No aplica» y nombra la
+    evidencia del cierre (una ruta versionada); la etiqueta no exonera nada."""
     body = pr.get("body") or ""
     if not CLOSES_RX.search(body):
         return
     heading = policy.get("closure_tests_heading", DEFAULT_CLOSURE_HEADING)
+    marker = policy.get("closure_not_applicable_heading",
+                        DEFAULT_CLOSURE_NOT_APPLICABLE_HEADING)
     text = section_body(body, heading)
+    marker_text = section_body(text, marker) if text else ""
     if not text:
+        findings.append(missing_section_finding(body, heading, marker))
+        return
+    if marker_text:
+        findings.extend(not_applicable_findings(data, heading, marker, marker_text))
+        return
+    if section_body(body, marker):
         findings.append(
-            f"HR-53: el PR lleva 'Closes #<issue>' y no tiene la sección "
-            f"'{heading}': el cierre lo demuestra el test que prueba el "
-            "comportamiento, no el merge.")
+            f"HR-53: la declaración '{marker}' debe ir dentro de la sección "
+            f"'{heading}'.")
         return
     entries = closure_entries(text)
     if not entries:
@@ -253,21 +552,26 @@ def check_closure_tests(pr, repo, policy, findings):
             "formato `ruta/al/fichero_de_test.ext` o `ruta::nombre_de_caso`: "
             "la prosa no nombra un test.")
         return
+    findings.extend(structured_test_findings(data.repo, data.tracked, entries, heading))
+
+
+def structured_test_findings(repo, tracked, entries, heading):
+    """HR-53: cada entrada `ruta` o `ruta::caso` es un test versionado que existe."""
     problems = []
     for entry in entries:
         rel, _, case = entry.partition("::")
         if not TEST_FILE_RX.search(rel):
             problems.append(f"`{entry}` (no es un fichero de test)")
             continue
-        if not is_tracked(repo, rel):
+        if rel not in tracked:
             problems.append(f"`{entry}` (la ruta no está versionada en git)")
             continue
         if case and not case_is_defined(repo, rel, case):
             problems.append(f"`{entry}` (el caso '{case}' no está definido en {rel})")
-    if problems:
-        findings.append(
-            f"HR-53: la sección '{heading}' nombra test(s) que no prueban nada: "
-            + "; ".join(problems) + ".")
+    if not problems:
+        return []
+    return [f"HR-53: la sección '{heading}' nombra test(s) que no prueban nada: "
+            + "; ".join(problems) + "."]
 
 
 # #333: la sección Chain Context es obligatoria en un PR con `chain:partial` y
@@ -280,8 +584,6 @@ CHAIN_FIELDS = ("chain", "position", "base", "depends-on", "follow-up",
 CHAIN_FIELD_RX = re.compile(r"^\s*-\s*([a-z][a-z0-9-]*)\s*:\s*(.*\S)\s*$", re.MULTILINE)
 PAIR_RX = re.compile(r"^\d+\s*/\s*\d+$")
 CHAIN_MARKER = "📍"
-CLOSES_NUMBER_RX = re.compile(r"\b(?:Closes|Fixes|Resolves)\s+#(\d+)", re.IGNORECASE)
-REFS_NUMBER_RX = re.compile(r"\bRefs\s+#(\d+)", re.IGNORECASE)
 # #333 (auditoría de #352): el ENLACE de la issue es `Closes|Fixes|Resolves|Refs
 # owner/repo#N`. Una mención informativa del cuerpo —citar una issue de Cadete
 # como antecedente, por ejemplo— no es un enlace y no se juzga.
@@ -298,7 +600,7 @@ def chain_fields(text):
 def check_chain_context(pr, base, default_branch, policy, findings):
     """#333: la cadena se declara como dato, no se reconstruye a mano."""
     body = pr.get("body") or ""
-    labels = {l["name"] for l in pr.get("labels", [])}
+    labels = {item["name"] for item in pr.get("labels", [])}
     chain_label = policy.get("chain_partial_label", "chain:partial")
     if chain_label not in labels and base != default_branch:
         return  # ni forma parte de una cadena ni es su punta
@@ -333,17 +635,29 @@ def check_chain_context(pr, base, default_branch, policy, findings):
             f"📍 y tiene {markers}.")
 
 
-def check_issue_links(pr, data, findings):
-    """#333: el enlace de la issue no admite mezclas (cierre y referencia del
-    mismo número) ni enlaza una issue de otro repositorio; una mención
-    informativa del cuerpo no es un enlace."""
-    body = pr.get("body") or ""
-    both = sorted(set(CLOSES_NUMBER_RX.findall(body)) & set(REFS_NUMBER_RX.findall(body)))
-    if both:
+# #876: la asistencia de IA se declara en el CUERPO del PR; los commits no llevan
+# atribución (HR-14). Vacía o solo con el comentario de la plantilla no cuenta.
+AI_DISCLOSURE_HEADING = "Asistencia de IA"
+AI_DISCLOSURE_TEXT_RX = re.compile(r"[^\W\d_]")  # al menos una letra
+
+
+def check_ai_disclosure(pr, findings):
+    """#876: el cuerpo del PR declara la asistencia de IA en su sección. Ausente,
+    vacía o solo con comentarios HTML falla; «ninguna» o una descripción pasan."""
+    text = re.sub(r"<!--.*?-->", "", section_body(pr.get("body"), AI_DISCLOSURE_HEADING),
+                  flags=re.S).strip()
+    if not AI_DISCLOSURE_TEXT_RX.search(text):
         findings.append(
-            "HR-54: el cuerpo cierra y referencia la MISMA issue ("
-            + ", ".join(f"#{n}" for n in both)
-            + "): use 'Closes #N' o 'Refs #N', nunca las dos para el mismo número.")
+            f"HR-14: falta la sección '{AI_DISCLOSURE_HEADING}' en el cuerpo del PR, o está "
+            "vacía: escriba «ninguna» o la herramienta de IA y la parte que ayudó. La "
+            "declaración va en el PR, no en los commits.")
+
+
+def check_issue_links(pr, data, findings):
+    """#333: el enlace de la issue no enlaza una issue de otro repositorio; una
+    mención informativa del cuerpo no es un enlace. Cerrar y referenciar el
+    mismo número no es un fallo aquí ni en issue-spec (#787 retiró el aviso)."""
+    body = pr.get("body") or ""
     current = (data.get("repository") or {}).get("full_name") or ""
     for owner_repo, number in sorted(set(FOREIGN_LINK_RX.findall(body))):
         if owner_repo != current:
@@ -352,56 +666,179 @@ def check_issue_links(pr, data, findings):
                 f"({owner_repo}#{number}): el enlace apunta al repositorio del PR.")
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(description="Gate de contrato de PR y commits (#193).")
-    parser.add_argument("--event-file", required=True, help="Payload del evento de PR.")
-    parser.add_argument("--policy-file", required=True, help="Política del gate.")
-    parser.add_argument("--repo", default=".", help="Ruta del repo para git log/diff.")
-    args = parser.parse_args()
+def _pin_output_encoding() -> None:
+    """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
 
+
+# Cada comprobación activa que lee el rango git exige su fichero de datos; la
+# ausencia sale 2 (HR-3), nunca pasa en silencio.
+DATA_FLAGS = (
+    ("closure_tests", "tracked_files", "--tracked-files"),
+    ("docs_evidence", "changed_files", "--changed-files"),
+    ("budget", "numstat_file", "--numstat-file"),
+    ("commits", "commits_file", "--commits-file"),
+)
+
+
+def _load_inputs(args):
+    """Evento y política; (data, pr, policy, error). `error` es el mensaje de salida 2."""
     try:
         data, pr = load_event(args.event_file)
-    except (FileNotFoundError, ValueError) as exc:
-        print(f"ERROR: {exc}", file=sys.stderr)
-        return 2
+    except (FileNotFoundError, ValueError, TypeError) as exc:
+        return None, None, None, str(exc)
     except json.JSONDecodeError as exc:
-        print(f"ERROR: payload JSON inválido: {exc}", file=sys.stderr)
-        return 2
-
+        return None, None, None, f"payload JSON inválido: {exc}"
     try:
         policy = load_policy(args.policy_file)
     except (FileNotFoundError, json.JSONDecodeError) as exc:
-        print(f"ERROR: política ilegible: {exc}", file=sys.stderr)
+        return None, None, None, f"política ilegible: {exc}"
+    return data, pr, policy, None
+
+
+def _load_range_data(args, active):
+    """Textos de los ficheros del rango que las comprobaciones activas necesitan."""
+    texts = {}
+    if getattr(args, "changed_files", None) and "docs_evidence" not in active:
+        try:
+            texts["changed_files"] = read_data_file(args.changed_files)
+        except OSError as exc:
+            return None, f"--changed-files ilegible: {exc}"
+    for check, attr, flag in DATA_FLAGS:
+        if check not in active:
+            continue
+        path = getattr(args, attr)
+        if not path:
+            return None, f"la comprobación '{check}' está activa y falta {flag} (el gate no ejecuta git)."
+        try:
+            texts[attr] = read_data_file(path)
+        except OSError as exc:
+            return None, f"{flag} ilegible: {exc}"
+    if "budget" in active and getattr(args, "origins_file", None):
+        try:
+            texts["origins_file"] = read_data_file(args.origins_file)
+        except OSError as exc:
+            return None, f"--origins-file ilegible: {exc}"
+    return texts, None
+
+
+def _pr_level_checks(active, data, pr, ctx, findings):
+    repo, policy = ctx
+    base_ref = pr.get("base", {}).get("ref", "main")
+    default_branch = data.get("repository", {}).get("default_branch", "main")
+    if "labels" in active:
+        check_labels(pr, policy, findings)
+    if "closes" in active:
+        check_closes(pr, base_ref, default_branch, policy, findings)
+    if "chain_context" in active:
+        check_chain_context(pr, base_ref, default_branch, policy, findings)
+    if "issue_links" in active:
+        check_issue_links(pr, data, findings)
+    if "ai_disclosure" in active:
+        check_ai_disclosure(pr, findings)
+    return repo
+
+
+def closure_data(repo, texts, policy):
+    """ClosureData desde los textos del rango (#918). Política inválida: sin rutas
+    no ejecutables, así que «No aplica» falla (cerrado)."""
+    raw = policy.get("closure_not_applicable_paths", DEFAULT_NOT_APPLICABLE_PATHS)
+    paths = tuple(raw) if isinstance(raw, (list, tuple)) and all(
+        isinstance(x, str) for x in raw) else ()
+    changed = None
+    if "changed_files" in texts:
+        changed = tuple(line for line in texts["changed_files"].split("\n") if line)
+    return ClosureData(Path(repo), frozenset(texts["tracked_files"].split("\n")),
+                       changed, paths)
+
+
+def _range_checks(active, pr, ctx, texts, findings):
+    """Comprobaciones sobre el rango git; `DocsEvidenceConfigError` sube a main."""
+    repo, policy = ctx
+    if "closure_tests" in active:
+        check_closure_tests(pr, closure_data(repo, texts, policy), policy, findings)
+    if "docs_evidence" in active:
+        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, findings)
+    if "budget" in active:
+        origins = parse_origins(texts["origins_file"]) if "origins_file" in texts else None
+        check_budget(pr, budget_lines(texts["numstat_file"], origins), policy, findings)
+    if "commits" in active:
+        check_commits(texts["commits_file"], policy, findings)
+
+
+def main(argv=None):
+    _pin_output_encoding()
+    parser = argparse.ArgumentParser(description="Gate de contrato de PR y commits (#193).")
+    parser.add_argument("--event-file", required=True, help="Payload del evento de PR.")
+    parser.add_argument("--policy-file", required=True, help="Política del gate.")
+    parser.add_argument("--repo", default=".", help="Raíz del repo, para leer ficheros (no ejecuta git).")
+    parser.add_argument("--changed-files", help="`git diff --name-only BASE..HEAD`.")
+    parser.add_argument("--numstat-file", help="`git diff --numstat BASE..HEAD`.")
+    parser.add_argument("--commits-file",
+                        help="`git log --format='%%P%%n%%B%%n---COMMIT-END---' BASE..HEAD`.")
+    parser.add_argument("--tracked-files", help="`git ls-files`.")
+    parser.add_argument("--origins-file",
+                        help="Opcional (#931): origen de cada fichero vendorizado, que genera el runner local.")
+    args = parser.parse_args(argv)
+
+    data, pr, policy, error = _load_inputs(args)
+    if error:
+        print(f"ERROR: {error}", file=sys.stderr)
         return 2
 
-    base_ref = pr.get("base", {}).get("ref", "main")
-    base_sha = pr.get("base", {}).get("sha", "")
-    head_sha = pr.get("head", {}).get("sha", "")
-    repo = Path(args.repo)
-    action = data.get("action", "opened")
+    try:
+        active = active_checks(policy)
+    except ChecksConfigError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+    off = [name for name in CHECK_NAMES if name not in active]
+    if off:
+        print(f"PR-CONTRACT: apagadas por política: {', '.join(off)}", file=sys.stderr)
 
+    # #938: el modo por defecto del gate es leer del payload, como en
+    # `origin/main`. El modo vivo por API es opt-in (`PR_CONTRACT_USE_LIVE_API=1`
+    # + `GITHUB_TOKEN`); preserva el contrato de modo local, parity y
+    # propagador, que invocan el gate como subproceso sin token.
+    if os.environ.get("PR_CONTRACT_USE_LIVE_API") == "1":
+        try:
+            live_labels, live_body = fetch_pr_live(data, pr)
+        except _GITHUB_REST.GitHubApiError as exc:
+            print(f"ERROR: {exc}; {OBSOLETE_NOTE}", file=sys.stderr)
+            return 2
+        pr_with_live = dict(pr)
+        pr_with_live["labels"] = live_labels
+        pr_with_live["body"] = live_body
+    else:
+        pr_with_live = pr
+
+    texts, error = _load_range_data(args, active)
+    if error:
+        print(f"ERROR: {error}", file=sys.stderr)
+        return 2
+
+    ctx = (Path(args.repo), policy)
     findings = []
-    check_labels(pr, policy, findings)
-    check_closes(pr, base_ref, data.get("repository", {}).get("default_branch", "main"), policy, findings)
-    check_chain_context(pr, base_ref,
-                        data.get("repository", {}).get("default_branch", "main"),
-                        policy, findings)
-    check_issue_links(pr, data, findings)
-    check_closure_tests(pr, repo, policy, findings)
-
-    if base_sha and head_sha and base_sha != head_sha:
-        check_budget(pr, repo, base_sha, head_sha, policy, findings)
-        check_commits(repo, base_sha, head_sha, policy, findings)
+    _pr_level_checks(active, data, pr_with_live, ctx, findings)
+    try:
+        _range_checks(active, pr_with_live, ctx, texts, findings)
+    except DocsEvidenceConfigError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
+    return _verdict(findings, pr, action_text=data.get("action", "opened"))
 
+
+def _verdict(findings, pr, *, action_text):
+    """Imprime el veredicto y devuelve 0 (OK) o 1 (hallazgos)."""
     if findings:
         print(f"FAIL: contrato de PR con {len(findings)} hallazgo(s):")
         for f in findings:
             print(f"  ✗ {f}")
         return 1
-
-    print(f"PR-CONTRACT OK: PR #{pr.get('number', '?')} ({action}) sin hallazgos.")
+    print(f"PR-CONTRACT OK: PR #{pr.get('number', '?')} ({action_text}) sin hallazgos.")
     return 0
 
 if __name__ == "__main__":

@@ -73,7 +73,7 @@ def make_contract_repo(tmp, contract=None, contract_raw=None, complete_upto=0):
         json.dumps({"env_vars": []}), encoding="utf-8")
     (repo / ".github" / "workflows").mkdir()
     (repo / ".github" / "workflows" / "ci.yml").write_text(
-        "on:\n  pull_request:\njobs:\n  unit:\n    steps:\n"
+        "on:\n  pull_request:\njobs:\n  unit:\n    timeout-minutes: 5\n    concurrency: u\n    steps:\n"
         "      - run: bash testing/run-unit-suites.sh\n      - uses: ./local@8f4b7f8d\n",
         encoding="utf-8")
     (repo / ".github" / "required-jobs-policy.json").write_text(json.dumps({
@@ -1084,7 +1084,7 @@ class LaterPhasesTests(unittest.TestCase):
             init_git_with_commit(repo)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("historial", err)
@@ -1146,7 +1146,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("12", err)
@@ -1160,7 +1160,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("failure", err)
@@ -1172,7 +1172,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("fase 6", err)
@@ -1201,7 +1201,7 @@ class LaterPhasesTests(unittest.TestCase):
             repo, _ = make_contract_repo(tmp, contract=contract)
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
-            
+
             code, _, err = run_cli(["adoption", "check", "--all", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("fase 6", err)
@@ -1676,7 +1676,7 @@ class GovernedMergeDocTests(unittest.TestCase):
             repo = self._repo(tmp, "merge.yml", invoke_asset=True)
             text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
             self.assertIn("gh workflow run merge.yml", text)
-            self.assertIn("ningún agente mergea", text)
+            self.assertIn("por orden explícita y registrada de un mantenedor", text)
 
     def test_merge_lines_silent_without_wired_workflow(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1910,7 +1910,7 @@ class DocFidelityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = self.consumer_with_contract_types(tmp)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(l for l in doc.splitlines() if "etiqueta `type:*` por PR" in l)
+            line = next(item for item in doc.splitlines() if "etiqueta `type:*` por PR" in item)
             for label in ("type:bug", "type:chore", "type:docs", "type:feature"):
                 self.assertIn(label, line)
 
@@ -1923,7 +1923,7 @@ class DocFidelityTests(unittest.TestCase):
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(l for l in doc.splitlines() if "etiqueta `type:*` por PR" in l)
+            line = next(item for item in doc.splitlines() if "etiqueta `type:*` por PR" in item)
             self.assertIn("type:bug", line)
             self.assertIn("type:feature", line)
 
@@ -1953,7 +1953,7 @@ class DocFidelityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = self.governed_merge_repo(tmp)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(l for l in doc.splitlines() if "Camino gobernado" in l)
+            line = next(item for item in doc.splitlines() if "Camino gobernado" in item)
             self.assertIn("mantenedor", line)
             self.assertNotIn("operador", line)
 
@@ -1989,6 +1989,19 @@ class IncidentRecordTests(unittest.TestCase):
             touch(repo, "docs/postmortems/2026-10-06-incidente.md", postmortem)
         if record:
             touch(repo, "docs/incidents/2026-10-06-incidente.md", record)
+        return repo
+
+    def repo_with_params(self, tmp, params_extra):
+        # #915: el documento operativo se genera DESPUÉS de escribir el
+        # contrato, para que lo que se prueba sea el contrato declarado.
+        contract = complete_contract(upto=5)
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        params = repo / "ci-pattern.yaml"
+        params.write_text(params.read_text(encoding="utf-8") + params_extra,
+                          encoding="utf-8")
+        seed_operating_doc(repo)
+        seed_manifest(repo)
         return repo
 
     def test_secret_in_postmortem_names_file_and_line(self):
@@ -2070,6 +2083,91 @@ class IncidentRecordTests(unittest.TestCase):
             code, _, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
             self.assertEqual(code, 1, err)
             self.assertRegex(err, r"docs/bitacora/2026-10-06-otro\.md:3")
+
+    def test_postmortem_and_record_sharing_a_path_fails(self):
+        # #927 (HR-21): el post-mortem y el registro operativo son niveles
+        # distintos; compartir ruta es un hallazgo de fase 5 (exit 1) que
+        # nombra el parámetro a cambiar. Hasta #915 era solo un aviso.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.repo_with_params(
+                tmp, "P49_incident_log_dir: docs/postmortems\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn("hallazgo: fase 5", err)
+            self.assertIn("P49_incident_log_dir", err)
+            self.assertIn("docs/postmortems", err)
+
+    def test_postmortem_collision_appears_alongside_other_phase_5_findings(self):
+        # #927 (HR-21): la colisión es un hallazgo de fase 5 más, no un
+        # `return` aparte. Cuando hay otro hallazgo de fase 5 (un secreto
+        # embebido en el post-mortem, que también lo es) y la colisión, la
+        # salida lista los dos en una sola pasada, con el prefijo `hallazgo:`
+        # y sin un `return` posterior que oculte la colisión. El valor del
+        # secreto NO se imprime (HR-21: las credenciales no salen a stderr);
+        # el gate nombra el fichero y la línea.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.repo_with_incidents(
+                tmp,
+                postmortem="# Incidente\n\n- password: hunter2\n",
+                params_extra="P49_incident_log_dir: docs/postmortems\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(code, 1, out + err)
+            # Ambos hallazgos en la misma pasada:
+            self.assertIn("P49_incident_log_dir", err)
+            self.assertIn("docs/postmortems", err)
+            # El log del secreto nombra el fichero y la línea, no el valor;
+            # la colisión nombra el parámetro a cambiar. Los dos llevan
+            # prefijo hallazgo:
+            self.assertRegex(err, r"hallazgo: fase 5:.*P49_incident_log_dir")
+            self.assertRegex(err, r"hallazgo: fase 5:.*docs/postmortems/[^ ]*\.md:3")
+
+    def test_distinct_record_path_has_no_collision_warning(self):
+        # #915: con rutas distintas no hay aviso de colisión.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.repo_with_params(
+                tmp, "P49_incident_log_dir: docs/incidents\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertNotIn("aviso", err)
+
+    def test_local_unversioned_record_is_described_and_not_required(self):
+        # #915: un registro operativo local no tiene ruta en el repo: no se
+        # exige ni se escanea, y el documento lo describe con la frase, no con
+        # una ruta.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.repo_with_params(
+                tmp, "P55_incident_log_versioning: local-unversioned\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
+            self.assertIn("local y no versionado", doc)
+            self.assertNotIn("docs/incidents/", doc)
+
+    def test_local_unversioned_record_is_not_scanned(self):
+        # #915: lo que el consumer declara como local no vive en el repo: el
+        # gate no lo escanea, así que un fichero de esa ruta no es hallazgo.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.repo_with_params(
+                tmp, "P55_incident_log_versioning: local-unversioned\n")
+            touch(repo, "docs/incidents/run.log", "password: hunter2\n")
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_params_validate_accepts_local_unversioned_and_rejects_other_values(self):
+        # #915: el vocabulario de P55 es cerrado: versioned o local-unversioned.
+        with tempfile.TemporaryDirectory() as tmp:
+            ok = Path(tmp) / "ok.yaml"
+            ok.write_text("P55_incident_log_versioning: local-unversioned\n",
+                          encoding="utf-8")
+            bad = Path(tmp) / "bad.yaml"
+            bad.write_text("P55_incident_log_versioning: quizas\n", encoding="utf-8")
+            # El fichero es parcial: `validate` exige los obligatorios, así que
+            # el criterio es que P55 no aparezca entre los errores.
+            code, out, err = run_cli(["params", "validate", str(ok)])
+            self.assertNotIn("P55_incident_log_versioning", out + err)
+            code, out, err = run_cli(["params", "validate", str(bad)])
+            self.assertEqual(code, 1, out + err)
+            self.assertRegex(out + err, r"P55_incident_log_versioning: debe ser uno de")
 
     def test_scan_limit_exceeded_is_not_a_silent_pass(self):
         # 201 ficheros: el límite no puede dar verde parcial saltándose el
@@ -2310,6 +2408,24 @@ class OperatingDocTests(unittest.TestCase):
                 out1.read_bytes(), out2.read_bytes(),
                 "el documento operativo no es determinista byte a byte")
 
+    def test_generate_doc_prose_has_no_decorative_emoji_or_shouting_caps(self):
+        # #652: check_alantyle (ALAN002/ALAN003) rechaza el documento generado.
+        # El 📍 de Chain Context vive en el diagrama de la plantilla de PR, no
+        # en la prosa, y las instrucciones van en minúsculas.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            out = Path(tmp) / "docs" / "ci-pattern-flow.md"
+            code, _, err = run_cli(
+                ["adoption", "generate-doc", str(repo), "--out", str(out)])
+            self.assertEqual(code, 0, err)
+            text = out.read_text(encoding="utf-8")
+            self.assertNotIn("\U0001F4CD", text,
+                             "el 📍 no puede ir en la prosa del documento generado")
+            shouting = re.findall(
+                r"\b(GENERADO|CERO|CONTENIDO|NUNCA|ANTES|SIEMPRE|ESTE)\b", text)
+            self.assertEqual(shouting, [],
+                             "mayúsculas de prosa en el documento generado")
+
     def test_generate_doc_out_writes_file(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = make_docs_repo(tmp)
@@ -2326,7 +2442,7 @@ class OperatingDocTests(unittest.TestCase):
             # Datos reales del consumer, no prosa genérica: regex de rama
             # (default del esquema P01), jobs requeridos y mapeo formulario
             # → etiqueta.
-            self.assertIn("(chore|feat|fix|perf", text)
+            self.assertIn("(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)", text)
             self.assertIn("unit", text)
             self.assertIn("lint", text)
             self.assertIn("type:bug", text)
@@ -2338,6 +2454,173 @@ class OperatingDocTests(unittest.TestCase):
             code, _, err = run_cli(["adoption", "generate-doc", str(repo)])
             self.assertEqual(code, 2, err)
             self.assertIn("--out", err)
+
+
+def _lifecycle_section(text):
+    """Cuerpo de la sección 'lifecycle' del documento generado."""
+    start = text.index("<!-- ci-pattern-doc:begin lifecycle -->")
+    end = text.index("<!-- ci-pattern-doc:end lifecycle -->")
+    return text[start:end]
+
+
+def _pull_request_section(text):
+    """Cuerpo de la sección 'pull-request' del documento generado."""
+    start = text.index("<!-- ci-pattern-doc:begin pull-request -->")
+    end = text.index("<!-- ci-pattern-doc:end pull-request -->")
+    return text[start:end]
+
+
+class OperatingDocAuditHolesTests(unittest.TestCase):
+    """Oleada 1 (#873): cubre los cuatro huecos estructurales que la
+    auditoría del repo cadete encontró en el documento operativo que el
+    patrón genera. RED primero sobre el `bin/ci-pattern` actual; GREEN
+    cuando se actualiza el generador.
+
+    Fuera de alcance (a oleada 2): la condicionalidad de la línea HR-44
+    sobre el cableado del gate `changelog-fragment` requiere detectar el
+    cableado desde los datos que ya existen (workflows del consumer) y
+    mover el esquema del host-contract queda descartado por decisión del
+    owner."""
+
+    def _generate(self, repo):
+        out = repo.parent / "doc.md"
+        code, _, err = run_cli(
+            ["adoption", "generate-doc", str(repo), "--out", str(out)])
+        self.assertEqual(code, 0, err)
+        return out.read_text(encoding="utf-8")
+
+    def test_gh_issue_create_carries_type_label_marker(self):
+        """S1: etapa 1 lleva `gh issue create ... --label type:<tipo>` como
+        MARCADOR LITERAL cuando el host-contract declara al menos una
+        etiqueta `type:*`. La receta NO concreta la etiqueta: el agente
+        elige entre los valores de la sección 4, no toma la primera del
+        contrato (defecto del round 1)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            text = self._generate(repo)
+            lifecycle = _lifecycle_section(text)
+            self.assertIn(
+                "gh issue create --title ", lifecycle)
+            self.assertIn(
+                "--label type:<tipo>", lifecycle,
+                "la etapa 1 del doc no lleva el marcador literal "
+                "`--label type:<tipo>` (S1)")
+            for forbidden in ("--label type:bug", "--label type:feature"):
+                self.assertNotIn(
+                    forbidden, lifecycle,
+                    f"la etapa 1 del doc concreta una etiqueta ({forbidden!r}); "
+                    "un agente que copiara la receta la aplicaría a todo: "
+                    "use el marcador literal `--label type:<tipo>`")
+
+    def test_gh_pr_create_carries_type_label_marker(self):
+        """S2: etapa 6 lleva `gh pr create ... --label type:<tipo>` como
+        MARCADOR LITERAL. Misma regla que S1: NUNCA concreta la etiqueta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            text = self._generate(repo)
+            lifecycle = _lifecycle_section(text)
+            self.assertIn("gh pr create", lifecycle)
+            self.assertIn(
+                "--label type:<tipo>", lifecycle,
+                "la etapa 6 del doc no lleva el marcador literal "
+                "`--label type:<tipo>` (S2)")
+            for forbidden in ("--label type:bug", "--label type:feature"):
+                self.assertNotIn(
+                    forbidden, lifecycle,
+                    f"la etapa 6 del doc concreta una etiqueta ({forbidden!r}); "
+                    "use el marcador literal `--label type:<tipo>`")
+
+    def test_no_type_label_when_host_contract_omits_type(self):
+        """S1/S2 (inverso): sin etiquetas `type:*` en el host-contract, los
+        comandos `gh issue create` y `gh pr create` se emiten SIN la bandera
+        `--label` (no se inventa)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            # quita todas las etiquetas `type:*` del host-contract; deja
+            # el resto (status:approved, chain:partial).
+            host_path = repo / ".github" / "host-contract.json"
+            host = json.loads(host_path.read_text(encoding="utf-8"))
+            host["labels"] = [label for label in (host.get("labels") or [])
+                              if not (isinstance(label, dict)
+                                      and isinstance(label.get("name"), str)
+                                      and label["name"].startswith("type:"))]
+            host_path.write_text(json.dumps(host), encoding="utf-8")
+            text = self._generate(repo)
+            lifecycle = _lifecycle_section(text)
+            self.assertIn("gh issue create", lifecycle)
+            self.assertNotIn(
+                "--label type:<tipo>", lifecycle,
+                "sin `type:*` en el host-contract, el `gh issue create` del "
+                "doc no debe llevar `--label type:<tipo>` (S1)")
+            self.assertIn("gh pr create", lifecycle)
+            self.assertNotIn(
+                "--label type:<tipo>", lifecycle,
+                "sin `type:*` en el host-contract, el `gh pr create` del "
+                "doc no debe llevar `--label type:<tipo>` (S2)")
+
+    def test_command_lines_keep_backticks_balanced(self):
+        """S1/S2: cada línea de `gh issue create` / `gh pr create` tiene un
+        número par de backticks. Un backtick suelto abre un bloque de código
+        que se come el resto de la sección del doc."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            lifecycle = _lifecycle_section(self._generate(repo))
+            checked = 0
+            for line in lifecycle.splitlines():
+                if "gh issue create" in line or "gh pr create" in line:
+                    checked += 1
+                    self.assertEqual(line.count("`") % 2, 0,
+                                     f"backticks desbalanceados: {line!r}")
+            self.assertEqual(checked, 2)
+
+    def test_worktree_path_uses_worktrees_sibling(self):
+        """S3 (etapa 3): la ruta del worktree va a `../<repo>-worktrees/<número>-<tema>`,
+        como el hook pre-commit de agent-guards y worktree-reorg-per-project v2.0.
+        Antes decía `../<repo>-<número>-<tema>` (layout huérfano)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            text = self._generate(repo)
+            lifecycle = _lifecycle_section(text)
+            self.assertIn(
+                "../<repo>-worktrees/", lifecycle,
+                "la etapa 3 no usa el layout `worktrees/` sibling-container; "
+                "la receta contradice worktree-reorg-per-project v2.0 (S3)")
+            self.assertNotIn(
+                "../<repo>-<número>-<tema>`", lifecycle,
+                "la etapa 3 sigue usando el layout antiguo `../<repo>-<número>-<tema>` "
+                "que worktree-reorg-per-project v2.0 retiró")
+
+    def test_worktree_remove_uses_worktrees_sibling(self):
+        """S3 (etapa 10): limpieza usa la misma ruta `../<repo>-worktrees/<número>-<tema>`."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            text = self._generate(repo)
+            lifecycle = _lifecycle_section(text)
+            occurrences = lifecycle.count("../<repo>-worktrees/")
+            self.assertGreaterEqual(
+                occurrences, 2,
+                "la sección lifecycle debe llevar la ruta `worktrees/` en "
+                "etapas 3 y 10 (S3)")
+            self.assertNotIn(
+                "../<repo>-<número>-<tema>`", lifecycle,
+                "la sección lifecycle aún contiene el layout antiguo (S3)")
+
+    def test_hr_gate_matrix_line_withdrawn(self):
+        """S4: la sección 'pull-request' del doc NO contiene la línea de la
+        matriz HR→gate, retirada del catálogo en #513/#540/#542. La receta
+        apuntaba a `references/hr-gate-matrix.json`, que ya no existe."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = make_docs_repo(tmp)
+            text = self._generate(repo)
+            pull_request = _pull_request_section(text)
+            self.assertNotIn(
+                "matriz HR", pull_request,
+                "la sección pull-request sigue mencionando la matriz HR→gate (S4); "
+                "el fichero fue retirado del catálogo en #513/#540/#542")
+            self.assertNotIn(
+                "hr-gate-matrix.json", pull_request,
+                "la sección pull-request apunta a un fichero retirado (S4)")
+
 
 class LifecycleRecipeTests(unittest.TestCase):
     """#305: la sección 'lifecycle' del documento operativo recorre el ciclo
@@ -2357,8 +2640,6 @@ class LifecycleRecipeTests(unittest.TestCase):
         code, _, err = run_cli(
             ["adoption", "generate-doc", str(repo), "--out", str(out)])
         self.assertEqual(code, 0, err)
-        sections = dict(zip(
-            ("begin",), (None,))) if False else None
         text = out.read_text(encoding="utf-8")
         start = text.index("<!-- ci-pattern-doc:begin lifecycle -->")
         end = text.index("<!-- ci-pattern-doc:end lifecycle -->")
@@ -2372,7 +2653,7 @@ class LifecycleRecipeTests(unittest.TestCase):
                   "Limpieza")
         positions = [body.find(f"**{n}. {name}")
                      for n, name in enumerate(stages, start=1)]
-        for pos, (n, name) in zip(positions, enumerate(stages, start=1)):
+        for pos, (n, name) in zip(positions, enumerate(stages, start=1), strict=True):
             self.assertGreaterEqual(pos, 0, f"falta la etapa {n} ({name})")
         self.assertEqual(positions, sorted(positions),
                          "las etapas del ciclo no están en orden")
@@ -2381,6 +2662,25 @@ class LifecycleRecipeTests(unittest.TestCase):
         body = self.doc_of(tempfile.mkdtemp())
         self.assertEqual(body.count("Hecho:"), 10,
                          "cada etapa exige su condición de «hecho»")
+
+    def test_approval_stage_stops_and_never_self_approves(self):
+        # #916: el agente crea la issue y para; la aprueba un mantenedor;
+        # si la orden del mantenedor incluye la aprobación, se declara en
+        # el cuerpo del PR. El texto lo dice con las mismas palabras que
+        # cadete #540.
+        body = self.doc_of(tempfile.mkdtemp())
+        stage = body[body.index("**2. Aprobación.**"):body.index("**3. Worktree.**")]
+        for fragment in (
+            "crea la issue y para",
+            "la aprueba un mantenedor",
+            "se auto-aprueba",
+            "cuerpo del PR",
+            "Hecho: la lista contiene `status:approved`",
+            "pare y pregunte",
+        ):
+            self.assertIn(fragment, stage, f"la etapa 2 no dice: {fragment}")
+        self.assertNotIn("aplique la etiqueta", stage)
+        self.assertNotIn("aplicar la etiqueta", stage)
 
     def test_commands_are_literal_and_complete(self):
         body = self.doc_of(tempfile.mkdtemp())
@@ -2399,7 +2699,7 @@ class LifecycleRecipeTests(unittest.TestCase):
         body = self.doc_of(tempfile.mkdtemp())
         # regex de rama (default P01), presupuesto (P06), etiqueta de
         # aprobación (P10) y método de merge del contrato del host.
-        self.assertIn("(chore|feat|fix|perf", body)
+        self.assertIn("(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)", body)
         self.assertIn("400 líneas", body)
         self.assertIn("status:approved", body)
         self.assertIn("merge commit", body)
@@ -2438,6 +2738,50 @@ class LifecycleRecipeTests(unittest.TestCase):
             code, _, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
             self.assertEqual(code, 1)
             self.assertIn("lifecycle", err)
+
+class BranchNameShapeTests(unittest.TestCase):
+    """#842: el apartado de rama del documento operativo describe la forma que
+    declara P01 (`<tipo>/<slug>` o `<tipo>/<número>-<slug>`), no un texto fijo.
+    Sin P01 declarado el documento no cambia."""
+
+    NUMBERED_REGEX = "^(?:(chore|feat|fix|perf|refactor|docs|ci|test)/[0-9]+-[a-z0-9-]+|archive/.+|main)$"
+    SLUG_BRANCH_LINE = ("- Nombre de rama: `<tipo>/<slug>`, con el slug del t\u00edtulo de la issue "
+                        "en min\u00fasculas y guiones y sin n\u00famero de issue:")
+    NUMBERED_BRANCH_LINE = ("- Nombre de rama: `<tipo>/<n\u00famero>-<slug>`, con el n\u00famero de la issue "
+                            "y el slug del t\u00edtulo en min\u00fasculas y guiones:")
+
+    def doc_of(self, tmp, p01=None):
+        repo = make_docs_repo(tmp)
+        if p01 is not None:
+            ci_yaml = repo / "ci-pattern.yaml"
+            ci_yaml.write_text(
+                ci_yaml.read_text(encoding="utf-8")
+                + f'P01_branch_name_pattern: "{p01}"\n', encoding="utf-8")
+        out = Path(tmp) / "doc.md"
+        code, _, err = run_cli(
+            ["adoption", "generate-doc", str(repo), "--out", str(out)])
+        self.assertEqual(code, 0, err)
+        return out.read_text(encoding="utf-8")
+
+    def test_default_p01_keeps_slug_wording(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            text = self.doc_of(tmp)
+        self.assertIn(self.SLUG_BRANCH_LINE, text)
+        self.assertIn("  `git switch -c <tipo>/<slug>`", text)
+        self.assertIn("  `<rama-nueva>` = `<tipo>/<slug>`, con el `<slug>` del t\u00edtulo de la "
+                      "issue en min\u00fasculas y guiones, sin n\u00famero de issue", text)
+
+    def test_numbered_p01_describes_issue_number(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            text = self.doc_of(tmp, p01=self.NUMBERED_REGEX)
+        self.assertIn(self.NUMBERED_BRANCH_LINE, text)
+        self.assertIn("  `git switch -c <tipo>/<n\u00famero>-<slug>`", text)
+        self.assertIn("  `<rama-nueva>` = `<tipo>/<n\u00famero>-<slug>`, con el n\u00famero de la "
+                      "issue", text)
+        self.assertIn(self.NUMBERED_REGEX, text)
+        self.assertNotIn("sin n\u00famero de issue", text)
+        self.assertNotIn("<tipo>/<slug>", text)
+
 
 class ChecksTableTests(unittest.TestCase):
     """#305: la sección 'required-checks' es una tabla generada 1:1 desde
@@ -2502,8 +2846,8 @@ class ChecksTableTests(unittest.TestCase):
             seed_operating_doc(repo)
             doc = repo / "docs" / "ci-pattern-flow.md"
             text = doc.read_text(encoding="utf-8")
-            line = next(l for l in text.splitlines()
-                        if l.startswith("| `unit` |"))
+            line = next(item for item in text.splitlines()
+                        if item.startswith("| `unit` |"))
             doc.write_text(text.replace(line + "\n", "", 1), encoding="utf-8")
             code, _, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
             self.assertEqual(code, 1)
@@ -2519,8 +2863,8 @@ class ChecksTableTests(unittest.TestCase):
             seed_operating_doc(repo)
             doc = repo / "docs" / "ci-pattern-flow.md"
             text = doc.read_text(encoding="utf-8")
-            line = next(l for l in text.splitlines()
-                        if l.startswith("| `unit` |"))
+            line = next(item for item in text.splitlines()
+                        if item.startswith("| `unit` |"))
             doc.write_text(
                 text.replace(line, line + "\n| `ghost-check` | inventado | no | no |", 1),
                 encoding="utf-8")
@@ -2733,13 +3077,13 @@ class RunnerEnforcedAdoptionTests(unittest.TestCase):
     def wire_workflows(self, repo):
         touch(repo, ".github/workflows/guard.yml",
               "name: guard\non: push\njobs:\n  guard:\n"
-              "    runs-on: [self-hosted, %s]\n    steps:\n"
+              f"    runs-on: [self-hosted, {RUNNER_LABEL}]\n    steps:\n"
               "      - run: python3 x/check_force_push_guard.py\n"
-              "      - run: python3 x/check_push_compliance.py\n" % RUNNER_LABEL)
+              "      - run: python3 x/check_push_compliance.py\n")
         touch(repo, ".github/workflows/merge.yml",
               "name: merge\non: workflow_dispatch\njobs:\n  merge:\n"
-              "    runs-on: [self-hosted, %s]\n    steps:\n"
-              "      - run: python3 x/check_governed_merge.py\n" % RUNNER_LABEL)
+              f"    runs-on: [self-hosted, {RUNNER_LABEL}]\n    steps:\n"
+              "      - run: python3 x/check_governed_merge.py\n")
         # los workflows nuevos son gobierno del consumer: inventariados (fase 0)
         # y el contrato re-sellado tras el cambio.
         contract = json.loads(
@@ -3035,6 +3379,59 @@ class PhaseZeroWorkflowCommentsTests(unittest.TestCase):
             code, 1,
             f"fase 0 sigue exigiendo paths referenciados en run: "
             f"(regresión negativa del fix #607); salida del CLI:\n{joined}")
+
+
+HR44_LINE = "Toda edición material de una skill añade un fragmento válido en `changelog.d/`"
+GATE_WORKFLOW = (
+    "on:\n  pull_request:\njobs:\n  changelog:\n    steps:\n"
+    "      - run: python3 personal/ardelperal/ci-pattern/assets/changelog-fragment/"
+    "check_changelog_fragment.py --base origin/main --head HEAD\n")
+
+
+class ChangelogFragmentLineTests(unittest.TestCase):
+    """HR-44 condicional (#875, oleada 2 de #873): la línea del doc operativo
+    sólo aparece si algún .github/workflows/*.yml cablea el gate
+    check_changelog_fragment.py. Sin campo nuevo en el host-contract."""
+
+    def generate(self, tmp, wire_gate):
+        repo, _ = make_contract_repo(tmp, contract=complete_contract(upto=5))
+        seed_evidence(repo, 3)
+        if wire_gate:
+            (repo / ".github" / "workflows" / "tests.yml").write_text(
+                GATE_WORKFLOW, encoding="utf-8")
+        seed_operating_doc(repo)
+        return repo, (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
+
+    def test_hr44_line_absent_without_gate_wiring(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _, doc = self.generate(tmp, wire_gate=False)
+            self.assertNotIn(HR44_LINE, doc)
+
+    def test_hr44_line_present_with_gate_wiring(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _, doc = self.generate(tmp, wire_gate=True)
+            self.assertEqual(doc.count(HR44_LINE), 1)
+
+    def test_removing_gate_wiring_is_drift_in_pull_request_section(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self.generate(tmp, wire_gate=True)
+            (repo / ".github" / "workflows" / "tests.yml").unlink()
+            code, _, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(code, 1, err)
+            self.assertIn("deriva", err)
+            self.assertIn("pull-request", err)
+
+    def test_hr44_line_present_with_yaml_extension_wiring(self):
+        # #883: GitHub acepta .github/workflows/*.yaml además de *.yml;
+        # el helper debe reconocer ambas extensiones.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = make_contract_repo(tmp, contract=complete_contract(upto=5))
+            seed_evidence(repo, 3)
+            (repo / ".github" / "workflows" / "tests.yaml").write_text(
+                GATE_WORKFLOW, encoding="utf-8")
+            seed_operating_doc(repo)
+            doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
+            self.assertEqual(doc.count(HR44_LINE), 1)
 
 
 if __name__ == "__main__":

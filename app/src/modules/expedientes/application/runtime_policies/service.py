@@ -15,7 +15,7 @@
 Each method emits ONE ``ExpedienteAuditEvent`` with the prefix
 ``runtime.<category>.recorded``. The ``audit_log`` dependency is
 duck-typed (``Any``) to keep the cross-module ``lanzadera`` import out
-of this slice (``scripts/check_layers.py`` would reject it).
+of this slice (the ``docs-architecture`` job would reject it).
 """
 
 from __future__ import annotations

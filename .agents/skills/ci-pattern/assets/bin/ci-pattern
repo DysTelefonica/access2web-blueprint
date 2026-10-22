@@ -18,6 +18,7 @@ reportarlo como hallazgo.
 
 import fnmatch
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -53,6 +54,12 @@ Comandos:
                              Verifica el cumplimiento dirigido por el manifiesto.
   status <repo> [--json]     Resumen de una línea por clase del repo destino.
   manifest show <repo>       Imprime el manifiesto leído.
+  pr preflight --pr-body <file> [--issue N] [--branch <ref>] [--repository owner/name]
+  pr contract --body <file> [--base main] [--label L]... [--print-payload]
+                             [--token <token>] [--actor <user>] [--with-adoption]
+                             [--policy <path> --changed-files <file>] [--json]
+                             Mismos veredictos que la CI sobre un PR abierto,
+                             reusando los gates en proceso; corre antes de push.
   adoption check (--phase N | --all) <repo>
                              Gate por fase del contrato de adopción: fases del
                              porting-guide verificadas sobre el árbol real.
@@ -906,6 +913,19 @@ def cmd_verify(args):
     return EXIT_OK if clean else EXIT_FINDINGS
 
 
+def cmd_checkout_sync(args):
+    """Control local del checkout atrasado (#914): delega en checkout-sync.sh.
+
+    Sin red y sin escribir nada. Exit: 0 sincronizado · 1 atrasado o rama
+    equivocada · 2 no puede medir (sin origin, sin sincronizar, fetch viejo).
+    Acepta las mismas opciones que el script: --repo, --base, --max-age-hours.
+    """
+    script = Path(__file__).resolve().parent.parent / "checkout-sync" / "checkout-sync.sh"
+    if not script.is_file():
+        raise MissingResourceError(f"falta {script}")
+    return subprocess.call(["sh", str(script), *args])
+
+
 def cmd_status(args):
     as_json = "--json" in args
     positional = [a for a in args if a != "--json"]
@@ -1489,7 +1509,7 @@ OPERATING_DOC_PARAMS = (
     "P10_label_approval", "P11_label_chain_partial", "P12_issue_form_dir",
     "P14_status_context_e2e", "P15_status_context_smoke",
     "P16_release_runbook_path", "P28_required_status_contexts",
-    "P49_incident_log_dir", "P50_secrets_manager",
+    "P49_incident_log_dir", "P50_secrets_manager", "P55_incident_log_versioning",
 )
 
 # Recetas canónicas de recuperación por check (#305): qué verifica y qué
@@ -1528,7 +1548,7 @@ CHECK_RECOVERY_GENERIC = ("verificación del agregador del patrón",
 
 OPERATING_DOC_HEADER = """# Flujo operativo del repositorio
 
-Documento GENERADO por `ci-pattern adoption generate-doc` a partir de los datos del
+Documento generado por `ci-pattern adoption generate-doc` a partir de los datos del
 repositorio (ci-pattern.yaml, .github/host-contract.json, .github/required-jobs-policy.json,
 formularios de issue). NO lo edite a mano: regenérelo con el mismo comando. La deriva la
 detecta el gate de documentación operativa de `ci-pattern adoption check`."""
@@ -1590,6 +1610,34 @@ def _operating_doc_inputs(repo):
     return host, [j for j in jobs if isinstance(j, str)], entrypoint.strip()
 
 
+# #875 (HR-44 condicional, oleada 2 de #873) y #883: la regla de fragmento
+# sólo es verificable si algún workflow del consumer cablea el gate. Lectura
+# pura de .github/workflows/*.{yml,yaml} (ambas extensiones que GitHub acepta);
+# no hay campo nuevo en el host-contract.
+CHANGELOG_FRAGMENT_GATE = "check_changelog_fragment.py"
+
+
+def _changelog_fragment_gate_wired(repo):
+    workflows = repo / ".github" / "workflows"
+    if not workflows.is_dir():
+        return False
+    for path in sorted(list(workflows.glob("*.yml")) + list(workflows.glob("*.yaml"))):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if CHANGELOG_FRAGMENT_GATE in text:
+            return True
+    return False
+
+
+def _changelog_fragment_lines(repo):
+    if not _changelog_fragment_gate_wired(repo):
+        return []
+    return ["- Toda edición material de una skill añade un fragmento válido en `changelog.d/` "
+            "(HR-44, #665)."]
+
+
 OPERATING_DOC_AGENTS_BLOCK = """<!-- ci-pattern-agents:begin -->
 ## Flujo operativo y mandato de no invención
 
@@ -1618,7 +1666,7 @@ pregunte en la issue o al mantenedor.
 
 ## Dónde vive la documentación
 
-Toda la documentación de este proyecto vive en ESTE repositorio, bajo `docs/`
+Toda la documentación de este proyecto vive en este mismo repositorio, bajo `docs/`
 por materia; los post-mortems en `docs/postmortems/<AAAA-MM-DD>-<slug>.md`.
 Fuera del repositorio, y sin copia en él, quedan solo los secretos, los
 backups, los datos en bruto y el material privado. Nunca ubique documentación
@@ -1631,21 +1679,41 @@ def _operating_doc_incident_lines(params):
     """#322 (HR-21 ampliada): los cuatro niveles de un incidente y la regla
     de identificadores. La ruta del registro operativo y el gestor de
     secretos salen de los parámetros del consumer."""
-    log_dir = str(params["P49_incident_log_dir"]).rstrip("/")
     secrets = str(params["P50_secrets_manager"]).strip()
+    if _incident_log_is_local(params):
+        # #915: el registro local no tiene ruta en el repo; el documento lo dice
+        # con la frase y no nombra ninguna ruta de registro.
+        level_two = (
+            "- **2. Registro operativo**: local y no versionado. Vive fuera de git, en el "
+            "equipo que lo mantiene, con todo el detalle necesario para seguir atendiendo "
+            "los tickets abiertos; este repositorio no lo guarda ni lo escanea. El "
+            "post-mortem lo enlaza por identificador.")
+        gate_line = (
+            "- El gate de esta fase rechaza secretos y datos personales en el post-mortem, "
+            "y la evidencia declarada sin hash ni ubicación. El registro operativo local "
+            "no se escanea desde aquí. Las IPs, los hostnames y los comandos internos "
+            "están permitidos.")
+    else:
+        log_dir = str(params["P49_incident_log_dir"]).rstrip("/")
+        level_two = (
+            f"- **2. Registro operativo**: `{log_dir}/<AAAA-MM-DD>-<slug>.md` —todo el detalle "
+            "necesario para seguir atendiendo los tickets abiertos (IPs, hostnames, comandos, "
+            "logs, cronología fina y el estado con el siguiente paso de cada ticket)—. Con el "
+            "parámetro por defecto vive en este mismo repositorio; el post-mortem lo enlaza "
+            "por ruta o por identificador.")
+        gate_line = (
+            "- El gate de esta fase rechaza secretos y datos personales en el post-mortem y "
+            "en el registro operativo, y la evidencia declarada sin hash ni ubicación. Las "
+            "IPs, los hostnames y los comandos internos están permitidos.")
     return "\n".join([
         "Un incidente de producción deja cuatro niveles, enlazados por identificadores "
         "(ID de incidente, número de ticket, SHA, ejecución de CI, issues y PRs); el "
-        "CONTENIDO de los datos personales nunca entra en el repo.",
+        "contenido de los datos personales nunca entra en el repo.",
         f"- **1. Post-mortem** (parámetro 9): `docs/postmortems/<AAAA-MM-DD>-<slug>.md`, "
         "blameless, con causas de sistema y cada action item como issue con owner. Aquí "
         "sí van identificadores y nombres de sistemas: qué pasó, por qué y qué lo evita.",
-        f"- **2. Registro operativo**: `{log_dir}/<AAAA-MM-DD>-<slug>.md` —todo el detalle "
-        "necesario para seguir atendiendo los tickets abiertos (IPs, hostnames, comandos, "
-        "logs, cronología fina y el estado con el siguiente paso de cada ticket)—. Con el "
-        "parámetro por defecto vive en este mismo repositorio; el post-mortem lo enlaza "
-        "por ruta o por identificador.",
-        f"- **3. Secretos**: credenciales y tokens viven en {secrets}, NUNCA en git, ni "
+        level_two,
+        f"- **3. Secretos**: credenciales y tokens viven en {secrets}, nunca en git, ni "
         "siquiera en un repositorio privado. El post-mortem y el registro los citan por "
         "su identificador en el gestor.",
         "- **4. Datos personales y conversaciones con terceros**: se quedan en el sistema "
@@ -1653,9 +1721,7 @@ def _operating_doc_incident_lines(params):
         "- La evidencia se cita con su `sha256` y su ubicación de acceso controlado. Lo "
         "que se redacta se marca de forma explícita (`[IP interna redactada]`): nunca se "
         "borra en silencio.",
-        "- El gate de esta fase rechaza secretos y datos personales en el post-mortem y "
-        "en el registro operativo, y la evidencia declarada sin hash ni ubicación. Las "
-        "IPs, los hostnames y los comandos internos están permitidos.",
+        gate_line,
     ])
 
 
@@ -1678,38 +1744,84 @@ def _operating_doc_docs_location_lines(params):
     ])
 
 
-def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
+def _branch_takes_issue_number(pattern):
+    """#842: True si P01 exige el número de la issue tras el tipo (`[0-9]+`).
+    Sin esa declaración (default `<tipo>/<slug>`) el texto del documento no cambia."""
+    return re.search(r"\[0-9\]\+", pattern or "") is not None
+
+
+def _branch_form(params):
+    """#842: forma del nombre de rama que declara P01, con su condición de hecho."""
+    if _branch_takes_issue_number(params["P01_branch_name_pattern"]):
+        return ("<tipo>/<número>-<slug>",
+                "con el número de la issue y el `<slug>` del título en minúsculas y guiones")
+    return ("<tipo>/<slug>",
+            "con el `<slug>` del título de la issue en minúsculas y guiones, sin número de issue")
+
+
+def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
     """Ciclo de vida completo (#305), de la issue al CI verde sin pasos
-    implícitos: cada etapa con su comando exacto y su condición de «hecho»."""
+    implícitos: cada etapa con su comando exacto y su condición de «hecho».
+
+    Cambios (#873, auditoría cadete):
+    - Etapa 1 y etapa 6 emiten `--label type:<tipo>` como MARCADOR LITERAL
+      (S1, S2) cuando el host-contract declara al menos una etiqueta `type:*`.
+      El `<tipo>` no se sustituye por una etiqueta concreta del contrato
+      (un agente que copiara la receta no etiqueta el PR como la primera
+      `type:*` declarada, e.g. «type:bug» para todo). El agente elige
+      entre los valores declarados en la sección 4 del propio doc.
+      Sin declaración de `type:*`, el comando se queda sin la bandera.
+    - Etapa 3 y etapa 10 citan la ruta `../<repo>-worktrees/<número>-<tema>`
+      (S3): el mismo layout sibling-container que `worktree-reorg-per-project`
+      v2.0 y el hook pre-commit de `agent-guards`.
+    """
     merge_names = {"allow_merge_commit": "merge commit", "allow_squash_merge": "squash",
                    "allow_rebase_merge": "rebase", "allow_auto_merge": "auto-merge"}
     allowed_merges = sorted(merge_names[k] for k, v in (host.get("merge_methods") or {}).items()
                             if isinstance(v, dict) and v.get("declared") is True and k in merge_names)
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
+    # #873 (S1, S2): el comando lleva el MARCADOR literal `type:<tipo>` cuando
+    # el host-contract declara al menos una `type:*`. La receta NO concreta
+    # la etiqueta (un agente que la copiara no etiquetaría todo como la
+    # primera declarada). Sin declaraciones el comando se mantiene sin la
+    # bandera (no se inventa).
+    if _host_has_any_type_label(host):
+        type_label_flag = " --label type:<tipo>"
+    else:
+        type_label_flag = ""
+    # Backticks pares: el flag va dentro del span de código y la nota fuera.
+    issue_type_note = (" Elija exactamente un `type:*` de la sección 4."
+                       if type_label_flag else "")
+    pr_type_note = (" Elija exactamente un `type:*` de la sección 4; "
+                    "el merge gobernado rechaza el PR sin él."
+                    if type_label_flag else "")
     return [f"Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. "
             f"Jobs requeridos que debe ver en verde antes del merge: {_or_none(sorted(jobs))}.",
         "- **1. Issue.** Con el formulario del consumer (sección 1), busque duplicados "
         "y cree la issue:\n"
         "  `gh issue list --search \"<términos>\" --json number,title,state --state all --limit 20`\n"
-        "  `gh issue create --title \"<título>\" --body-file <cuerpo-de-la-issue.md>`\n"
+        f"  `gh issue create --title \"<título>\" --body-file <cuerpo-de-la-issue.md>{type_label_flag}`{issue_type_note}\n"
         "  Hecho: la issue existe y lleva su etiqueta de tipo.",
-        f"- **2. Aprobación.** No empiece sin ella; consulte la issue:\n"
+        f"- **2. Aprobación.** El agente crea la issue y para; la aprueba un mantenedor. "
+        "Nunca se auto-aprueba, ni aunque la orden del mantenedor incluya la "
+        "aprobación: en ese caso lo declara en el cuerpo del PR (quién aprobó "
+        "y con qué instrucción). Consulte la etiqueta:\n"
         f"  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
-        f"  Hecho: la lista contiene `{params['P10_label_approval']}`.",
-        "- **3. Worktree.** Desde la rama base actualizada, y con el nombre de rama "
-        "compuesto aquí, nunca escrito a mano (regex "
-        f"`{params['P01_branch_name_pattern']}`):\n"
+        f"  Hecho: la lista contiene `{params['P10_label_approval']}`. "
+        "Si no está, pare y pregunte; no cree rama ni PR.",
+        "- **3. Worktree.** Desde la rama base actualizada, con un nombre de rama que "
+        "cumpla la regex "
+        f"`{params['P01_branch_name_pattern']}`:\n"
         "  `git fetch origin && git switch <rama-base> && git pull --ff-only`\n"
-        "  `<rama-nueva>` = `<tipo>/<número>-<slug>`, con el `<slug>` del título de la "
-        "issue en minúsculas y guiones\n"
-        "  `git worktree add ../<repo>-<número>-<tema> -b <rama-nueva>`\n"
+        f"  `<rama-nueva>` = `{_branch_form(params)[0]}`, {_branch_form(params)[1]}\n"
+        "  `git worktree add ../<repo>-worktrees/<número>-<tema> -b <rama-nueva>`\n"
         "  Hecho: `git worktree list` muestra la ruta nueva.",
         "- **4. Commits.** Por unidad de trabajo: código, tests y docs juntos; "
         "Conventional Commits (sección 3); sin atribución de IA.\n"
         "  Hecho: `git log --oneline <rama-base>..HEAD` muestra una entrada "
         "por unidad.",
         "- **5. Integración de la base y preflight local idéntico al CI "
-        "(HR-4).** Sincronice la rama de feature con la base remota ANTES de "
+        "(HR-4).** Sincronice la rama de feature con la base remota antes de "
         "publicar: tráigala con `git merge` —nunca rebase, `--amend` ni "
         "force-push sobre la rama publicada—, resuelva los conflictos si los "
         "hay y ejecute el preflight sobre el resultado integrado:\n"
@@ -1724,9 +1836,9 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
         "defecto) el cuerpo lleva ADEMÁS la sección **Chain Context** (HR-54) "
         "como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, "
         "`starts-at`, `ends-with` y `review-budget`, con `base` igual a la base "
-        "del PR y un único `📍` en el diagrama.\n"
+        "del PR y un único marcador del PR actual en el diagrama de la plantilla de PR.\n"
         "  `gh pr create --base <rama-base> --head <rama-nueva> "
-        "--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>`\n"
+        f"--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>{type_label_flag}`{pr_type_note}\n"
         "  Hecho: `gh pr view <número> --json number,url` devuelve número y URL.",
         "- **7. Checks.** Consulte la tabla de checks requeridos (sección 5) y el "
         "estado del PR:\n"
@@ -1738,18 +1850,45 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint):
         "(merge, nunca rebase) y vuelva a comprobar: el verde de una cabeza "
         "anterior a la integración no es evidencia del resultado nuevo.\n"
         "  Hecho: todos los checks en pass sobre la cabeza y la base actuales.",
-        "- **9. Merge gobernado.** El merge lo decide un humano con CI en verde; "
-        "ningún agente mergea. Métodos permitidos (host-contract): "
+        "- **9. Merge gobernado.** El merge lo decide un humano con CI en verde. "
+        "Un agente lo lanza solo por orden explícita y registrada de un mantenedor "
+        "con cuenta de mantenedor, por el camino gobernado y nunca con `--admin`. "
+        "Métodos permitidos (host-contract): "
         f"{_or_none(allowed_merges)}.\n"
         "  Hecho: `gh pr view <número> --json state --jq .state` devuelve MERGED.",
         "- **10. Limpieza.** Solo después del merge verificado y sin cambios "
         "pendientes, retire el worktree local; la rama remota se conserva "
-        "SIEMPRE (nunca `git push origin --delete`, `--delete-branch` ni borrado "
+        "siempre (nunca `git push origin --delete`, `--delete-branch` ni borrado "
         "de ramas):\n"
-        "  `git worktree remove ../<repo>-<número>-<tema>`\n"
+        "  `git worktree remove ../<repo>-worktrees/<número>-<tema>`\n"
         "  Hecho: `git worktree list` ya no muestra la ruta y la rama sigue en "
         "`origin`.",
     ]
+
+
+def _host_has_any_type_label(host):
+    """#873 (S1, S2): el contrato del consumer declara al menos una
+    etiqueta `type:*`. La receta del doc operativo lleva el MARCADOR
+    literal `--label type:<tipo>` cuando este predicado es verdadero; sin
+    declaración, el comando se queda sin la bandera (no se inventa).
+    Determinista byte a byte."""
+    if not isinstance(host, dict):
+        return False
+    for label in host.get("labels") or []:
+        if not isinstance(label, dict):
+            continue
+        name = label.get("name")
+        if isinstance(name, str) and name.startswith("type:"):
+            return True
+    return False
+
+
+# #873 (S5): la condicionalidad de la línea HR-44 sobre el cableado del gate
+# `changelog-fragment` queda POSPUESTA a la oleada 2; en esta oleada la prosa
+# del doc operativo siempre enuncia la regla. La detección preferida para la
+# oleada 2 lee los workflows del destino en busca de la cadena
+# `check_changelog_fragment.py` (datos que ya existen), no añade un campo al
+# esquema del host-contract (decisión owner).
 
 
 def _local_entrypoint(repo, policy):
@@ -1815,7 +1954,9 @@ def _operating_doc_merge_lines(repo, allowed_merges):
     """#351: seccion Merge; el camino gobernado solo con declaracion."""
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
     lines = [
-        "- El merge es decisión humana con CI en verde; ningún agente mergea.",
+        "- El merge lo decide un humano con CI en verde. Un agente lo lanza solo por "
+        "orden explícita y registrada de un mantenedor con cuenta de mantenedor, "
+        "nunca con `--admin`.",
         f"- Métodos de merge permitidos (host-contract): {_or_none(allowed_merges)}.",
     ]
     gm = _governed_merge_workflow(repo)
@@ -1869,17 +2010,19 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
         "- Antes de crear la issue, busque duplicados en issues abiertas y cerradas.",
         f"- La implementación solo arranca con la etiqueta `{params['P10_label_approval']}` en la issue.",
     ]
+    numbered = _branch_takes_issue_number(params["P01_branch_name_pattern"])
     return {
         "issues": "\n".join(issues_lines),
         "branch": "\n".join([
-            "- Genere el nombre de rama; nunca lo escriba a mano (HR-35): "
-            "`<tipo>/<número>-<slug>`, con el slug del título de la issue en "
-            "minúsculas y guiones:",
-            "  `git switch -c <tipo>/<número>-<slug>`",
+            ("- Nombre de rama: `<tipo>/<número>-<slug>`, con el número de la issue y el slug "
+             "del título en minúsculas y guiones:" if numbered else
+             "- Nombre de rama: `<tipo>/<slug>`, con el slug del título de la issue en "
+             "minúsculas y guiones y sin número de issue:"),
+            ("  `git switch -c <tipo>/<número>-<slug>`" if numbered else
+             "  `git switch -c <tipo>/<slug>`"),
             f"- Regex obligatoria: `{params['P01_branch_name_pattern']}`",
-            "- El generador que construye y valida el nombre (HR-35) es un activo de la "
-            "skill del patrón: no se instala en el consumer, así que aquí se compone el "
-            "nombre y se valida contra la regex.",
+            "- La regex la aplica el ruleset del host; en un host sin rulesets, el gate "
+            "de nombre de rama del patrón.",
         ]),
         "commits": "\n".join([
             "- Conventional Commits: `tipo[(scope)]: descripción` con tipo en "
@@ -1889,17 +2032,19 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
         "pull-request": "\n".join([
             f"- Presupuesto: {params['P06_review_budget_lines']} líneas (añadidas + borradas, "
             "tests y docs incluidos). Si no cabe, cadena de PRs.",
-            f"- Slice intermedio de cadena: etiqueta `{params['P11_label_chain_partial']}` y "
-            "`Refs #N` en el cuerpo; CERO palabras de cierre.",
+            f"- PR que no cierra la issue: etiqueta `{params['P11_label_chain_partial']}` y "
+            "`Refs #<issue>` en el cuerpo; sin `Closes|Fixes|Resolves`. HR-7 deduce "
+            f"que `{params['P11_label_chain_partial']}` significa «este PR no cierra la "
+            "issue»; los propagadores y los eslabones intermedios de una cadena la llevan.",
             "- Con `chain:partial` o en la punta de cadena, el cuerpo lleva la "
             "sección Chain Context (HR-54): posición N/M, base igual a la del PR, "
-            "dependencias, presupuesto y un único `📍`.",
-            "- Solo el PR punta de cadena lleva `Closes #N`.",
-            "- Antes de un `Closes #N`, compruebe la matriz HR→gate de la skill "
-            "adoptada: `rg '\"issue\": <número>' <skill>/references/hr-gate-matrix.json`; "
-            "una entrada `manual` apuntando a la issue exige reclasificarla en el mismo PR.",
+            "dependencias, presupuesto y un único marcador del PR actual en el diagrama.",
+            "- El PR que cierra la issue lleva `Closes #<issue>` sin la etiqueta de cadena.",
             f"- Exactamente una etiqueta `type:*` por PR: {_or_none(type_labels)}.",
-            "- Toda edición material de una skill sube su `metadata.version` (HR-44).",
+            "- El cuerpo lleva la sección `## Asistencia de IA` no vacía (HR-14): «ninguna» o la "
+            "herramienta de IA y la parte que ayudó. La declaración vive en el PR; los commits no "
+            "llevan atribución de IA.",
+            *_changelog_fragment_lines(repo),
         ]),
         "required-checks": "\n".join(
             [f"- Jobs requeridos del agregador: {_or_none(sorted(jobs))}. "
@@ -1928,7 +2073,7 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
             _operating_doc_lifecycle_lines(params, host, jobs, entrypoint)),
         "incidents": _operating_doc_incident_lines(params),
         "docs-location": _operating_doc_docs_location_lines(params),
-        "agents-block": OPERATING_DOC_AGENTS_BLOCK,
+        "agents-block": _agents_block_for(repo),
     }
 
 
@@ -2661,6 +2806,32 @@ INCIDENT_LOCATION_RE = re.compile(
     r"|\b(?:INC|CHG|REQ|TKT)[0-9]{5,}\b")
 
 
+def _incident_log_is_local(params):
+    """#915 (HR-21): el registro operativo es local y no versionado cuando el
+    consumer lo declara así en `P55_incident_log_versioning`."""
+    return str(params.get("P55_incident_log_versioning") or "versioned") == "local-unversioned"
+
+
+def _incident_contract_findings(params):
+    """#927 (HR-21): el post-mortem (parámetro 9) y el registro operativo son
+    niveles distintos y no deben compartir directorio. Es un hallazgo de
+    fase 5 (exit 1) en `cmd_adoption`. Hasta #915 se avisaba con exit 0;
+    cadete ya migró su P49 a `docs/incidents` (#562), por lo que endurecer
+    a fallo ya no le rompe la próxima propagación. Ver `references/incidents.md`."""
+    if _incident_log_is_local(params):
+        return []
+    declared = PurePosixPath(str(params.get("P49_incident_log_dir") or "").strip() or ".").as_posix()
+    if declared != INCIDENT_POSTMORTEM_DIR:
+        return []
+    return [
+        f"fase 5: el post-mortem (parámetro 9: '{INCIDENT_POSTMORTEM_DIR}') y el registro "
+        f"operativo (P49_incident_log_dir: '{declared}') comparten ruta; son niveles "
+        "distintos de HR-21. Cambie P49_incident_log_dir a otra ruta del repo, o declare "
+        "el registro como 'local-unversioned' en P55_incident_log_versioning si no se "
+        "versiona."
+    ]
+
+
 def _incident_record_dirs(repo, params):
     """Directorios de registro de incidentes a escanear: la ruta canónica de
     post-mortems (parámetro 9) y la del registro operativo declarada por el
@@ -2669,6 +2840,9 @@ def _incident_record_dirs(repo, params):
     respeta pero no se escanea desde aquí."""
     dirs = []
     declared = str(params.get("P49_incident_log_dir") or "").strip()
+    if _incident_log_is_local(params):
+        # #915: el registro local no vive en el repo: no se escanea desde aquí.
+        declared = ""
     for rel in (INCIDENT_POSTMORTEM_DIR, declared):
         rel = rel.rstrip("/")
         if not rel or rel in dirs:
@@ -2959,6 +3133,43 @@ def _check_docs_phase(repo, decl):
     return findings + _check_checks_table_coverage(existing, repo) + incidents
 
 
+def _agents_block_for(repo):
+    """#716 (HR-69): bloque gobernado `ci-pattern-agents` de este consumer. Sin
+    `docs_manifest` en su contrato es la constante canonica (byte a byte); con
+    el, anade la tabla «Donde trabajar» generada del manifiesto y del contrato."""
+    try:
+        contract = json.loads((Path(repo) / ADOPTION_CONTRACT_NAME).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return OPERATING_DOC_AGENTS_BLOCK
+    if not isinstance(contract, dict) or "docs_manifest" not in contract:
+        return OPERATING_DOC_AGENTS_BLOCK
+    gate, manifest_path = _load_docs_manifest()
+    rows = gate.routing_rows(gate.load_manifest(manifest_path), contract, repo)
+    if not rows:
+        return OPERATING_DOC_AGENTS_BLOCK
+    table = "\n".join(f"| {when} | {read} |" for when, read, _path in rows)
+    section = ("\n## Dónde trabajar\n\nAntes de actuar, vaya al documento de su situación; "
+               "no deduzca dónde va el trabajo.\n\n| Si vas a… | Lee… |\n| --- | --- |\n" + table + "\n")
+    return OPERATING_DOC_AGENTS_BLOCK.replace("\n<!-- ci-pattern-agents:end -->",
+                                              section + "<!-- ci-pattern-agents:end -->")
+
+
+def _routed_path_findings(repo):
+    """#716: toda ruta enrutada por el contrato existe en el repo del consumer."""
+    try:
+        contract = json.loads((Path(repo) / ADOPTION_CONTRACT_NAME).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    if not isinstance(contract, dict) or "docs_manifest" not in contract:
+        return []
+    gate, manifest_path = _load_docs_manifest()
+    findings = []
+    for _when, _read, path in gate.routing_rows(gate.load_manifest(manifest_path), contract, repo):
+        if not (Path(repo) / path.split("*")[0].rstrip("/")).exists():
+            findings.append(f"fase 5: el enrutado de AGENTS.md apunta a {path} y no existe en el repositorio")
+    return findings
+
+
 def _check_agents_block(repo):
     """#305: AGENTS.md del consumer contiene el bloque canónico generado
     (índice de skills por situación + mandato «no inventar, deténgase y
@@ -2981,13 +3192,14 @@ def _check_agents_block(repo):
             "bloque del documento operativo generado"]
     start = text.index(begin)
     found = text[start:text.index(end, start) + len(end)]
-    if found != OPERATING_DOC_AGENTS_BLOCK:
+    expected = _agents_block_for(repo)
+    if found != expected:
         return [
             "fase 5: el bloque de AGENTS.md está alterado respecto al "
             "canónico generado; una copia alterada es peor que la ausencia: "
             "la IA confiaría en una regla que el patrón no emitió; regenere "
             "el documento y vuelva a copiar el bloque 'agents-block'"]
-    return []
+    return _routed_path_findings(repo)
 
 
 def _check_checks_table_coverage(doc_text, repo):
@@ -3184,6 +3396,370 @@ def _check_slice_content(catalog, paths):
     return findings
 
 
+DOCS_MAP_KEYS = ("hub", "docs_path", "job")
+DOCS_MAP_ROOTS_HINT = "code_roots (o code_root y code_glob)"
+_MD_LINK_RE = re.compile(r"\]\(([^)#\s]+)(?:#[^)]*)?\)")
+
+
+def _load_codeguide():
+    """Importa el gate de assets/docs-codeguide en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "docs-codeguide" / "check_docs_codeguide.py"
+    spec = importlib.util.spec_from_file_location("check_docs_codeguide", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_ABSENT_HEAD_RE = re.compile(r"^#{1,6}\s+No existe en este repo\s*$", re.I)
+
+
+def _absent_path_findings(repo, docs_path):
+    """#709: paginas negativas. Las rutas listadas (en texto plano, no entre
+    comillas invertidas, para no cruzarse con el sentido docs->repo) bajo el
+    encabezado «No existe en este repo» NO pueden existir; si aparecen, rojo
+    hasta que la pagina se actualice."""
+    findings = []
+    for page in sorted((repo / docs_path).rglob("*.md")):
+        in_section = False
+        for number, line in enumerate(page.read_text(encoding="utf-8").splitlines(), 1):
+            if line.startswith("#"):
+                in_section = bool(_ABSENT_HEAD_RE.match(line))
+            elif in_section and line.lstrip().startswith(("- ", "* ")):
+                path = line.lstrip()[2:].strip().split(" ")[0]
+                if path and (repo / path).exists():
+                    findings.append(
+                        f"HR-63: {page.relative_to(repo).as_posix()}:{number} declara "
+                        f"ausente {path} y existe; actualice la pagina")
+    return findings
+
+
+def _required_job_findings(repo, job, hr="HR-63"):
+    """#709: el job del mapa tiene que figurar en `required_jobs` de la politica
+    del consumer; sin politica legible no hay medicion (HR-3)."""
+    path = repo / ".github" / "required-jobs-policy.json"
+    try:
+        policy = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return [f"{hr}: falta o es ilegible .github/required-jobs-policy.json; "
+                f"no se puede comprobar que {job} sea un job requerido"]
+    jobs = policy.get("required_jobs") if isinstance(policy, dict) else None
+    if not isinstance(jobs, list) or job not in jobs:
+        return [f"{hr}: el job {job} no figura en required_jobs de "
+                ".github/required-jobs-policy.json"]
+    return []
+
+
+def _workflow_job_findings(repo, job, hr="HR-63"):
+    """Algun workflow define el job `job` (clave de primer nivel de `jobs:`)."""
+    job_re = re.compile(r"^\s+" + re.escape(job) + r":\s*$", re.M)
+    workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+    if any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+        return []
+    return [f"{hr}: ningun workflow define el job {job}"]
+
+
+def _docs_map_roots(decl):
+    """#727: raíces de código de `docs_map` como lista de pares (raíz, glob).
+
+    Forma nueva `code_roots: [{root, glob}, ...]`; las claves escalares
+    `code_root` y `code_glob` siguen valiendo (una lista de un elemento).
+    Mezclar las dos formas, una lista vacía o un elemento incompleto fallan
+    cerrado nombrando la clave (HR-3: sin dato no hay medición)."""
+    scalar = [k for k in ("code_root", "code_glob") if str(decl.get(k, "")).strip()]
+    if "code_roots" in decl:
+        if scalar:
+            return None, ["HR-63: docs_map mezcla code_roots con "
+                          + ", ".join(scalar) + "; declare una sola forma"]
+        items = decl["code_roots"]
+        if not isinstance(items, list) or not items:
+            return None, ["HR-63: docs_map.code_roots debe ser una lista no vacia "
+                          "de {root, glob}"]
+        roots = []
+        for index, item in enumerate(items):
+            ok = (isinstance(item, dict)
+                  and all(isinstance(item.get(k), str) and item[k].strip()
+                          for k in ("root", "glob")))
+            if not ok:
+                return None, [f"HR-63: docs_map.code_roots[{index}] debe ser "
+                              "{root, glob} con ambos no vacios"]
+            roots.append((item["root"], item["glob"]))
+        return roots, []
+    if len(scalar) == 2:
+        return [(decl["code_root"], decl["code_glob"])], []
+    return None, []
+
+
+DOCS_MAP_CODE_SUFFIXES = frozenset({
+    ".py", ".php", ".js", ".mjs", ".cjs", ".ts", ".tsx", ".jsx", ".go", ".rb", ".java", ".kt",
+    ".rs", ".cs", ".sh", ".ps1", ".bas", ".cls"})
+DOCS_MAP_SKIPPED_DIRS = frozenset({"node_modules", "vendor", "venv", "dist", "build", "docs", "__pycache__"})
+
+
+def _holds_code(directory):
+    """#805: el directorio contiene algun fichero de codigo, sin entrar en ocultos ni dependencias."""
+    for current, dirs, files in os.walk(directory):
+        dirs[:] = [d for d in dirs if not d.startswith(".") and d not in DOCS_MAP_SKIPPED_DIRS]
+        if any(Path(name).suffix.lower() in DOCS_MAP_CODE_SUFFIXES for name in files):
+            return True
+    return False
+
+
+def _uncovered_root_findings(repo, roots, decl):
+    """#805 (HR-63): cada directorio de codigo de primer nivel cae dentro de alguna raiz.
+
+    El sentido repo -> doc a nivel de directorio: `docs-codeguide` solo mide los modulos
+    dentro de las raices declaradas, asi que un `scripts/` o un `src/` entero fuera de todas
+    ellas pasaba sin que el mapa lo supiera. Una raiz cubre el directorio si es ese
+    directorio o esta dentro de el. `docs_map.exclude_dirs` nombra los directorios que no
+    hay que mapear (generados, vendorizados); ocultos y de dependencias no cuentan."""
+    excluded = decl.get("exclude_dirs", [])
+    if not isinstance(excluded, list) or not all(isinstance(n, str) and n.strip() for n in excluded):
+        return ["HR-63: docs_map.exclude_dirs debe ser una lista de nombres de directorio no vacios"]
+    covered = set()
+    for root, _ in roots:
+        parts = [part for part in PurePosixPath(root.strip().replace("\\", "/")).parts if part != "."]
+        if parts:
+            covered.add(parts[0])
+    findings = []
+    for entry in sorted(repo.iterdir()):
+        name = entry.name
+        if (not entry.is_dir() or entry.is_symlink() or name.startswith(".")
+                or name in DOCS_MAP_SKIPPED_DIRS or name in covered or name in excluded):
+            continue
+        if _holds_code(entry):
+            findings.append(
+                f"HR-63: repo -> docs: el directorio {name}/ contiene codigo y ninguna raiz de "
+                f"docs_map.code_roots lo cubre; declare una raiz o excluyalo en docs_map.exclude_dirs")
+    return findings
+
+
+def _check_docs_map(repo, contract):
+    """#709 (HR-63): mapa del codigo hub+spokes en fase 5.
+
+    Activacion por DECLARACION explicita `docs_map` en el contrato de
+    adopcion (como agents_md en HR-55): sin ella avisa por stderr y sale 0.
+    Con ella exige el hub, los spokes enlazados en los dos sentidos, la
+    sincronia mapa<->codigo de docs-codeguide y el job requerido en un
+    workflow."""
+    decl = contract.get("docs_map") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-63: docs_map no declarado en el contrato de adopcion; el mapa "
+              "del codigo todavia no se exige (se activa con docs_map).",
+              file=sys.stderr)
+        return []
+    missing = [k for k in DOCS_MAP_KEYS
+               if not isinstance(decl, dict) or not str(decl.get(k, "")).strip()]
+    roots, root_findings = _docs_map_roots(decl) if isinstance(decl, dict) else (None, [])
+    if root_findings:
+        return root_findings
+    if roots is None:
+        missing.append(DOCS_MAP_ROOTS_HINT)
+    if missing:
+        return ["HR-63: docs_map incompleto, faltan: " + ", ".join(missing)]
+    findings = []
+    hub = repo / decl["hub"]
+    if not hub.is_file():
+        return [f"HR-63: falta el hub {decl['hub']}"]
+    linked = set()
+    for target in _MD_LINK_RE.findall(hub.read_text(encoding="utf-8")):
+        if "://" in target or target.startswith("mailto:"):
+            continue
+        resolved = (hub.parent / target).resolve()
+        if not resolved.exists():
+            findings.append(f"HR-63: {decl['hub']} enlaza {target} y no existe")
+        linked.add(resolved)
+    for page in sorted((repo / decl["docs_path"]).rglob("*.md")):
+        if page.resolve() not in linked:
+            rel = page.relative_to(repo).as_posix()
+            findings.append(f"HR-63: el spoke {rel} no esta enlazado desde el hub")
+    findings += _absent_path_findings(repo, decl["docs_path"])
+    try:
+        verdict = _load_codeguide().check_docs_codeguide_roots(
+            repo, roots, decl["docs_path"])
+    except FileNotFoundError as exc:
+        return findings + [f"HR-63: {exc}"]
+    findings += [f"HR-63: docs -> repo: la pagina cita {p} y no existe"
+                 for p in verdict["missing_in_repo"]]
+    findings += [f"HR-63: repo -> docs: el modulo {m} no esta descrito"
+                 for m in verdict["missing_in_codeguide"]]
+    findings += _uncovered_root_findings(repo, roots, decl)
+    findings += _workflow_job_findings(repo, decl["job"])
+    findings += _required_job_findings(repo, decl["job"])
+    return findings
+
+
+ARCHITECTURE_KEYS = ("doc", "job", "stack", "linter_config")
+ARCHITECTURE_STACKS = ("python", "typescript")
+# Sin linter de imports (p. ej. PHP): se exige el arbol y las capas del documento,
+# pero las dependencias entre capas no las impone ningun linter (#805).
+ARCHITECTURE_NO_LINTER = "none"
+
+
+def _load_architecture():
+    """Importa el gate de assets/docs-architecture en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "docs-architecture" / "check_docs_architecture.py"
+    spec = importlib.util.spec_from_file_location("check_docs_architecture", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _check_architecture(repo, contract):
+    """#714 (HR-68): documento de arquitectura en fase 5.
+
+    Activacion por DECLARACION `architecture` en el contrato de adopcion (como
+    docs_map): sin ella avisa por stderr y sale 0. Con ella exige el documento
+    con su arbol de modulos cuadrando con el codigo en los dos sentidos, el bloque
+    de capas coherente, las reglas de imports del stack (python o typescript) impuestas por su linter
+    (`stack`, `linter_config`; `stack: none` las omite, #805) y el job requerido por PR. Las raices de codigo se
+    declaran igual que en docs_map (`code_roots`, o `code_root` y `code_glob`)."""
+    decl = contract.get("architecture") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-68: architecture no declarado en el contrato de adopcion; el "
+              "documento de arquitectura todavia no se exige (se activa con "
+              "architecture).", file=sys.stderr)
+        return []
+    no_linter = isinstance(decl, dict) and decl.get("stack") == ARCHITECTURE_NO_LINTER
+    missing = [k for k in ARCHITECTURE_KEYS
+               if not (no_linter and k == "linter_config")
+               and (not isinstance(decl, dict) or not str(decl.get(k, "")).strip())]
+    roots, root_findings = _docs_map_roots(decl) if isinstance(decl, dict) else (None, [])
+    if root_findings:
+        return [f.replace("HR-63", "HR-68").replace("docs_map", "architecture") for f in root_findings]
+    if roots is None:
+        missing.append(DOCS_MAP_ROOTS_HINT)
+    if missing:
+        return ["HR-68: architecture incompleto, faltan: " + ", ".join(missing)]
+    if no_linter and str(decl.get("linter_config", "")).strip():
+        return ["HR-68: architecture.stack 'none' no usa linter de imports; quite linter_config "
+                "o declare un stack con linter"]
+    if not no_linter and decl["stack"] not in ARCHITECTURE_STACKS:
+        return [f"HR-68: architecture.stack {decl['stack']!r} no soportado; use uno de: "
+                + ", ".join(ARCHITECTURE_STACKS + (ARCHITECTURE_NO_LINTER,))]
+    try:
+        found = _load_architecture().check_architecture(
+            repo, decl["doc"], roots, None if no_linter else decl["linter_config"],
+            "python" if no_linter else decl["stack"])
+    except FileNotFoundError as exc:
+        return [f"HR-68: {exc}"]
+    return ([f"HR-68: {f}" for f in found]
+            + _workflow_job_findings(repo, decl["job"], "HR-68")
+            + _required_job_findings(repo, decl["job"], "HR-68"))
+
+
+def _load_docs_manifest():
+    """Importa el gate de assets/docs-manifest en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "docs-manifest" / "check_docs_manifest.py"
+    spec = importlib.util.spec_from_file_location("check_docs_manifest", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module, path.parent / "required-docs.json"
+
+
+def _check_docs_manifest(repo, contract):
+    """#719 (HR-70): documentos exigidos y sus secciones, desde el manifiesto
+    canonico. Activacion por DECLARACION `docs_manifest`: sin ella avisa por
+    stderr y sale 0; con ella cada documento activado existe y cada seccion
+    obligatoria existe y no esta vacia."""
+    declared = contract.get("docs_manifest") if isinstance(contract, dict) else None
+    if declared is None:
+        print("HR-70: docs_manifest no declarado en el contrato de adopcion; la "
+              "lista de documentos exigidos todavia no se mide (se activa con "
+              "docs_manifest).", file=sys.stderr)
+        return []
+    if not isinstance(declared, dict):
+        return ["HR-70: docs_manifest debe ser un objeto"]
+    gate, manifest_path = _load_docs_manifest()
+    try:
+        return gate.check(repo, gate.load_manifest(manifest_path), contract)
+    except gate.ManifestError as exc:
+        raise UsageError(f"HR-70: {exc}") from exc
+
+
+def _check_docs_links(repo, contract):
+    """#712 (HR-66): enlaces locales de README, AGENTS.md y docs/. Activacion por
+    DECLARACION `docs_links`: sin ella avisa por stderr y sale 0; con ella la
+    fase 5 exige enlaces que resuelven, navegacion hub<->spokes, retirados al
+    margen y, si declara `job`, el check requerido por PR."""
+    decl = contract.get("docs_links") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-66: docs_links no declarado en el contrato de adopcion; los "
+              "enlaces locales todavia no se miden (se activa con docs_links).",
+              file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-66: docs_links debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_docs_links", skill_dir() / "assets" / "docs-links" / "check_docs_links.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    unknown = sorted(set(decl) - set(gate.CONFIG_KEYS))
+    findings = [f"HR-66: clave desconocida en docs_links: {k}" for k in unknown]
+    findings += gate.check(repo, decl)
+    job = decl.get("job")
+    if job:
+        job_re = re.compile(r"^\s+" + re.escape(job) + r":\s*$", re.M)
+        workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+        if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+            findings.append(f"HR-66: ningun workflow define el job {job}")
+        findings += _required_job_findings(repo, job, "HR-66")
+    return findings
+
+
+def _check_docs_commands(repo, contract):
+    """#711 (HR-65): comandos documentados probados. Activacion por DECLARACION
+    `docs_commands`: sin ella avisa por stderr y sale 0. La fase 5 solo valida
+    la declaracion y el job requerido; los comandos los EJECUTA el job
+    (assets/docs-commands/run_docs_commands.py), nunca esta CLI como subproceso
+    (leccion #342: el recursado de la CLI del patron es un fork-bomb)."""
+    decl = contract.get("docs_commands") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-65: docs_commands no declarado en el contrato de adopcion; los "
+              "comandos documentados todavia no se prueban (se activa con docs_commands).",
+              file=sys.stderr)
+        return []
+    keys = ("cli_name", "cli_command", "job")
+    missing = [k for k in keys if not isinstance(decl, dict) or not decl.get(k)]
+    if missing:
+        return ["HR-65: docs_commands incompleto, faltan: " + ", ".join(missing)]
+    job_re = re.compile(r"^\s+" + re.escape(decl["job"]) + r":\s*$", re.M)
+    workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+    findings = []
+    if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+        findings.append(f"HR-65: ningun workflow define el job {decl['job']}")
+    return findings + _required_job_findings(repo, decl["job"], "HR-65")
+
+
+def _check_docs_decisions(repo, contract):
+    """#713 (HR-67): registro de decisiones por consumer. Activacion por
+    DECLARACION `docs_decisions`: sin ella avisa por stderr y sale 0; con ella la
+    fase 5 exige el formato de cada decision, la sustitucion enlazada, las citas
+    que existen, el indice alineado y, si declara `job`, el check requerido."""
+    decl = contract.get("docs_decisions") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-67: docs_decisions no declarado en el contrato de adopcion; el "
+              "registro de decisiones todavia no se exige (se activa con docs_decisions).",
+              file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-67: docs_decisions debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_docs_decisions", skill_dir() / "assets" / "docs-decisions" / "check_docs_decisions.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    findings = [f"HR-67: clave desconocida en docs_decisions: {k}"
+                for k in sorted(set(decl) - set(gate.CONFIG_KEYS))]
+    findings += gate.check(repo, decl)
+    job = decl.get("job")
+    if job:
+        job_re = re.compile(r"^\s+" + re.escape(job) + r":\s*$", re.M)
+        workflows = (repo / ".github" / "workflows").glob("*.y*ml")
+        if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
+            findings.append(f"HR-67: ningun workflow define el job {job}")
+        findings += _required_job_findings(repo, job, "HR-67")
+    return findings
+
+
 def _phase_findings(repo, n, decl, contract):
     """Hallazgos de la fase n contra el árbol real; [] si cumple."""
     if not isinstance(decl, dict):
@@ -3201,7 +3777,13 @@ def _phase_findings(repo, n, decl, contract):
     if n == 4:
         return _check_gates_phase(repo, decl, contract)
     if n == 5:
-        return _check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
+        return (_check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
+                + _check_docs_map(repo, contract) + _check_architecture(repo, contract)
+                + _check_docs_manifest(repo, contract)
+                + _check_docs_links(repo, contract)
+                + _check_docs_commands(repo, contract)
+                + _check_docs_decisions(repo, contract)
+                + _incident_contract_findings(_operating_doc_params(repo)))
     if n == 6:
         return _check_acceptance_phase(repo, decl)
     return [f"fase {n}: fase fuera del rango 0..{ADOPTION_PHASES - 1}"]
@@ -3213,6 +3795,11 @@ def cmd_adoption(args):
         return EXIT_OK
     if args[:1] == ["generate-doc"]:
         return _cmd_adoption_generate_doc(args[1:])
+    if args[:1] == ["render-agents-block"]:
+        if len(args) != 2:
+            raise UsageError("uso: ci-pattern adoption render-agents-block <repo>")
+        print(_agents_block_for(Path(args[1])))
+        return EXIT_OK
     if args[:1] != ["check"]:
         raise UsageError(
             "adoption: subcomando desconocido; use 'adoption check (--phase N | --all) <repo>' "
@@ -3309,8 +3896,62 @@ COMMANDS = {
         )
     ),
     "adoption": cmd_adoption,
+    "checkout-sync": cmd_checkout_sync,
     "report-friction": cmd_report_friction,
+    "pr": lambda args: _pr_dispatch(args),
 }
+
+
+def _pr_dispatch(args):
+    """Despacha ``ci-pattern pr <subcomando>``: ``contract`` (#912) o ``preflight`` (#865)."""
+    if args and args[0] == "contract":
+        return _pr_contract_dispatch(args[1:])
+    return _pr_preflight_dispatch(args)
+
+
+def _pr_contract_dispatch(args):
+    """Despacha ``ci-pattern pr contract`` al módulo ``pr_contract_local.py`` (#912).
+
+    Mismo patrón que el preflight: el módulo hermano se importa en proceso (HR-46)
+    y su parser recibe sólo los flags."""
+    import importlib.util
+    script = Path(__file__).resolve().parent / "pr_contract_local.py"
+    if not script.is_file():
+        raise MissingResourceError(
+            f"pr contract: módulo hermano ausente ({script}). Cópielo o reinstale la skill.")
+    spec = importlib.util.spec_from_file_location("ci_pattern_pr_contract_local", script)
+    if spec is None or spec.loader is None:
+        raise MissingResourceError(f"pr contract: módulo no cargable ({script})")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.main(args)
+
+
+def _pr_preflight_dispatch(args):
+    """Despacha ``ci-pattern pr preflight`` al módulo ``pr_preflight.py`` (#865).
+
+    El módulo hermano vive en este mismo directorio y contiene la implementación
+    y el parser argparse; se importa en proceso (HR-46). El token ``preflight``
+    se descarta porque ya lo consumió este CLI al enrutar; el parser del módulo
+    hermano espera sólo los flags (``--pr-body``, etc.). Si ``pr_preflight.py``
+    no está disponible (consumer vendorizado que no lo copia), se informa como
+    recurso ausente en lugar de fallar con traceback.
+    """
+    import importlib.util
+    if args and args[0] == "preflight":
+        args = args[1:]
+    script = Path(__file__).resolve().parent / "pr_preflight.py"
+    if not script.is_file():
+        raise MissingResourceError(
+            f"pr preflight: módulo hermano ausente ({script}). El subcomando "
+            "vive en este directorio junto al CLI; cópielo o reinstale la skill."
+        )
+    spec = importlib.util.spec_from_file_location("ci_pattern_pr_preflight", script)
+    if spec is None or spec.loader is None:
+        raise MissingResourceError(f"pr preflight: módulo no cargable ({script})")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.main(args)
 
 
 def main(argv=None):

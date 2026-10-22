@@ -23,6 +23,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 # --------------------------------------------------------------------------------------------
@@ -32,7 +33,6 @@ from pathlib import Path
 #: Fixed execution order (Hard Rule 13). Cheap and structural first, so the first failure a
 #: developer sees is the one that changes the most downstream numbers.
 GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
-    ("layers", "check_layers.py", ()),
     ("complexity", "check_complexity.py", ()),
     ("mutation_sites", "check_mutation_sites.py", ()),
     ("dry", "check_dry.py", ()),
@@ -57,6 +57,9 @@ GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
         ("--gate", "CAP-057", "--gate-name", "legacy_retirement"),
     ),
 )
+
+#: Gates that evaluate their BASELINE at an explicit policy date (DQH 2.2 ``policy_time``).
+DATED_GATES = frozenset({"complexity"})
 
 #: The mutation gate is not here on purpose: it consumes a session database produced by a real
 #: mutation run, which is far too slow for every PR. It runs on a schedule and reports through
@@ -222,6 +225,12 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="report path (default: <root>/quality-report.json)",
     )
+    parser.add_argument(
+        "--policy-date",
+        default=datetime.now(UTC).date().isoformat(),
+        metavar="YYYY-MM-DD",
+        help="policy evaluation date forwarded to DATED_GATES (default: today, UTC)",
+    )
     args = parser.parse_args(argv)
 
     root = args.root.resolve()
@@ -230,7 +239,11 @@ def main(argv: list[str] | None = None) -> int:
 
     # PR-scoped gates (branch name, PR size) live in the ``pr-gate`` CI job
     # (issue #854 removed ``--include-pr-gates`` and the ``PR_GATES`` tuple above).
-    envelopes = [run_gate(scripts, script, root, extra) for _, script, extra in GATES]
+    dated = ("--policy-date", args.policy_date)
+    envelopes = [
+        run_gate(scripts, script, root, (*extra, *dated) if gate in DATED_GATES else extra)
+        for gate, script, extra in GATES
+    ]
     report = build_report(root, envelopes)
 
     out.write_text(json.dumps(report, indent=2, sort_keys=False) + "\n", encoding="utf-8")

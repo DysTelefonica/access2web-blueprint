@@ -1,5 +1,5 @@
 {
-  "note": "Molde genérico de allowlist (HR-28): variables de entorno que las suites pueden leer. El consumer versione la suya (p. ej. .github/env-isolation-allowlist.json) con las variables que sus suites realmente lean; todo lo no declarado es hallazgo.",
+  "note": "Molde genérico de allowlist (HR-28): variables de entorno que las suites pueden leer. El consumer versione la suya (p. ej. .github/env-isolation-allowlist.json) con las variables que sus suites realmente lean; todo lo no declarado es hallazgo. dotenv_data_files (opcional): {\"file\", \"reason\"} por fichero, relativo a --root, para menciones literales de .env que son dato; sin motivo no es válido y una entrada obsoleta falla.",
   "env_vars": [
     "TMPDIR",
     "TMP",
@@ -7,5 +7,6 @@
     "HOME",
     "PATH",
     "CI"
-  ]
+  ],
+  "dotenv_data_files": []
 }

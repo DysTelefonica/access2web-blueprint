@@ -1,0 +1,3 @@
+type: patch
+
+El gate `required` del asset `personal/ardelperal/ci-pattern/assets/required-jobs/check_required_jobs.py` acepta ahora el skip en cascada de un dependiente cuyo cierre transitivo de upstreams intersecta `accepted_skips` del evento (causa→consecuencia). El campo opcional `dependencies` de la política declara el grafo (`{job: [upstream, ...]}`); el grafo se valida al cargar (nombres en `required_jobs`, sin auto-bucles, sin ciclos) y la cascada se evalúa sin tocar las reglas HR-15 ni el formato del verdict. Caso real: APAP_WEB PR #2191, run 39191214280, con el único cambio `.github/ci-pattern-adoption.json` (#853).
