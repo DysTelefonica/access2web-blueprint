@@ -42,11 +42,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 407 | 33 | 13 | igual | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
 | Form_FormAdjuntaTraspasoONS | src/forms/Form_FormAdjuntaTraspasoONS.cls | 234 | 28 | 7 | igual | pendiente | — |
 | Form_FormAdjuntarExcelSolicitante | src/forms/Form_FormAdjuntarExcelSolicitante.cls | 215 | 28 | 7 | igual | analizado | [formularios/Form_FormAdjuntarExcelSolicitante.md](formularios/Form_FormAdjuntarExcelSolicitante.md) |
-<<<<<<< HEAD
-| Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | pendiente | — |
-=======
 | Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | analizado | [formularios/Form_FormAltaDatosSolicitante.md](formularios/Form_FormAltaDatosSolicitante.md) |
->>>>>>> origin/docs/1077-prd-fichas-4
 | Form_FormCambioTipo | src/forms/Form_FormCambioTipo.cls | 107 | 26 | 4 | igual | pendiente | — |
 | Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | analizado | [formularios/Form_FormConfiguracion.md](formularios/Form_FormConfiguracion.md) |
 | Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | pendiente | — |
@@ -56,23 +52,18 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | pendiente | — |
 | Form_FormExpedienteDetalle | src/forms/Form_FormExpedienteDetalle.cls | 79 | 32 | 3 | igual | analizado | [formularios/Form_FormExpedienteDetalle.md](formularios/Form_FormExpedienteDetalle.md) |
 | Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 352 | 27 | 10 | igual | analizado | [formularios/Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
-<<<<<<< HEAD
-| Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | pendiente | — |
-| Form_FormMotivosHPS | src/forms/Form_FormMotivosHPS.cls | 323 | 18 | 10 | igual | pendiente | — |
-=======
 | Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | analizado | [formularios/Form_FormMotivoHPS.md](formularios/Form_FormMotivoHPS.md) |
 | Form_FormMotivosHPS | src/forms/Form_FormMotivosHPS.cls | 323 | 18 | 10 | igual | analizado | [formularios/Form_FormMotivosHPS.md](formularios/Form_FormMotivosHPS.md) |
->>>>>>> origin/docs/1077-prd-fichas-4
 | Form_FormPlantillasHTML | src/forms/Form_FormPlantillasHTML.cls | 181 | 17 | 7 | igual | pendiente | — |
 | Form_FormResponsable | src/forms/Form_FormResponsable.cls | 214 | 28 | 6 | igual | pendiente | — |
 | Form_FormResponsablesGestion | src/forms/Form_FormResponsablesGestion.cls | 392 | 28 | 13 | igual | pendiente | — |
 | Form_FormSolicitudAlta | src/forms/Form_FormSolicitudAlta.cls | 130 | 24 | 4 | igual | analizado | [formularios/Form_FormSolicitudAlta.md](formularios/Form_FormSolicitudAlta.md) |
 | Form_FormSolicitudAltaTraspaso | src/forms/Form_FormSolicitudAltaTraspaso.cls | 142 | 25 | 5 | igual | pendiente | — |
-| Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | pendiente | — |
-| Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | pendiente | — |
-| Form_FormSolicitudRenovacionFechas | src/forms/Form_FormSolicitudRenovacionFechas.cls | 1652 | 82 | 40 | igual | pendiente | — |
+| Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | analizado | [formularios/Form_FormSolicitudRenovacion.md](formularios/Form_FormSolicitudRenovacion.md) |
+| Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | analizado | [formularios/Form_FormSolicitudRenovacionDatos.md](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| Form_FormSolicitudRenovacionFechas | src/forms/Form_FormSolicitudRenovacionFechas.cls | 1652 | 82 | 40 | igual | analizado | [formularios/Form_FormSolicitudRenovacionFechas.md](formularios/Form_FormSolicitudRenovacionFechas.md) |
 | Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | analizado | [formularios/Form_FormSolicitudesAltaFechas.md](formularios/Form_FormSolicitudesAltaFechas.md) |
-| Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | pendiente | — |
+| Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | analizado | [formularios/Form_FormSolicitudesAltaRenovacionFechas.md](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
 | Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | pendiente | — |
 | Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | analizado | [formularios/Form_FormSolicitudesGestion.md](formularios/Form_FormSolicitudesGestion.md) |
 | Form_FormSolicitudesTraspasoFechas | src/forms/Form_FormSolicitudesTraspasoFechas.cls | 1166 | 56 | 29 | igual | pendiente | — |
@@ -133,33 +124,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
-<<<<<<< HEAD
-Totales: 10 analizados · 0 no aplicables · 64 pendientes.
-
-### Hallazgos del legado (fase 1)
-
-Comportamientos sospechosos detectados al analizar los formularios. No se corrigen, no generan issues, y cada uno queda **a verificar** en ejecución.
-
-| Id | Hallazgo | Evidencia | Ficha |
-|---|---|---|---|
-| H-HPS-S-1 | Splash hereda `Caption = "CONDOR - Iniciando..."` del diseño y solo se sobreescribe al disparar `OnTimer`; la ventana arranca con un rótulo de otra aplicación. | `Form_frmSplash.form.txt:40`; `Form_frmSplash.cls:50` | [Form_frmSplash](formularios/Form_frmSplash.md) |
-| H-HPS-S-2 | Subtítulo «Control y Gestión de las Solcitudes de HPS» con typo «Solcitudes» en el subtítulo fijo. | `Form_frmSplash.form.txt:1259` | [Form_frmSplash](formularios/Form_frmSplash.md) |
-| H-HPS-S-3 | `/dev` se pasa también a `EVE` como pseudo-correo, así que el arranque cae en «usuario no registrado». | `Form_frmSplash.cls:17`; `VG.bas:103-108` | [Form_frmSplash](formularios/Form_frmSplash.md) |
-| H-HPS-S-4 | La rama `errores:` de `Form_Timer` abre `Form0BDOpciones` para no cerrar la app aunque `EVE` falle: deja entrar al menú con la identidad local de Windows. | `Form_frmSplash.cls:74-79` | [Form_frmSplash](formularios/Form_frmSplash.md) |
-| H-HPS-S-5 | El botón «Ayuda» del menú principal envía un correo real al administrador con la cadena «Prueba de Error» antes de llamar a `AbrirAyuda`; marcador residual. | `Form_Form0BDOpciones.cls:83-95` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) |
-| H-HPS-S-6 | Para perfil técnico, el contador de `lblTareasPendientes` siempre muestra `0` literal en lugar del total por usuario (`0/<global>`). | `Form_Form0BDOpciones.cls:393-405` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) |
-| H-HPS-S-7 | `m_NombreTramitadorAlInicio` se declara en `Form_Form0BDOpciones.cls:5` y nunca se usa; candidata a retirar o referencia dinámica no resuelta. | `Form_Form0BDOpciones.cls:5` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) |
-| H-HPS-S-8 | `ComandoTareasPendientes_Click` re-engancha `m_FormTareas` cada vez sin `Set m_FormTareas = Nothing` previo; los `WithEvents` podrían mantener referencias colgantes. | `Form_Form0BDOpciones.cls:265-269` | [Form_Form0BDOpciones](formularios/Form_Form0BDOpciones.md) |
-| H-HPS-S-9 | Los cuatro `errores:` de `Form_FormConfiguracion` repiten el literal «Al Form_Load se ha producido» aunque estén en `ComandoAyuda_Click`, `ComandoRegistrar_Click` o `ComandoURLPlantillas*_Click`. | `Form_FormConfiguracion.cls:42, 84, 218, 280` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
-| H-HPS-S-10 | `cmdSalir_Click` cierra el formulario de configuración sin pedir confirmación; cambios pendientes se descartan en silencio. | `Form_FormConfiguracion.cls:13-15` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
-| H-HPS-S-11 | `HaHabidoCambios` exige una comparación manual por cada campo; añadir una propiedad sin agregar el `If <> Nz(...) Then` no marca el cambio, aunque se guarda si otra columna dispara `True`. | `Form_FormConfiguracion.cls:386-457` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
-| H-HPS-S-12 | `Set m_ObjEntorno.Configuracion = Nothing` solo se invoca al guardar; `cmdSalir` deja la caché de `Configuracion` con la versión anterior en memoria. | `Form_FormConfiguracion.cls:13-15, 72` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
-| H-HPS-S-13 | `ComandoRegistrar_Click` renueva la caché y emite `Modificado` solo en éxito; un fallo en `Registrar` deja al menú con la versión obsoleta en memoria y sin re-pintado. | `Form_FormConfiguracion.cls:72-78` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
-
-Totales: 10 analizados · 0 no aplicables · 64 pendientes.
-=======
-Totales: 13 analizados · 0 no aplicables · 61 pendientes.
->>>>>>> origin/docs/1077-prd-fichas-4
+Totales: 17 analizados · 0 no aplicables · 57 pendientes.
 
 ### Hallazgos del legado — tanda del alta (H-HPS-S-14 a H-HPS-S-22)
 
@@ -175,10 +140,6 @@ Totales: 13 analizados · 0 no aplicables · 61 pendientes.
 | H-HPS-S-21 | Rótulos residuales: `Caption` de otra app, typo «SOLCITUD», 7× `Comando36`, 8× `Comando47`, 2× «E», duplicados Excel/MARGA. | `Form_FormSolicitudesAltaFechas.form.txt:39, 708, 809, 1043, 1620, 1784, 1895, 1939, 1981-2764` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 | H-HPS-S-22 | Los 38 `errores:` repiten «se ha producido el error n»; `ComandoEliminarExcelRecibido_Click` se identifica como `ComandoEliminarExcelEnviado_Click`. | `Form_FormSolicitudesAltaFechas.cls:703` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 
-<<<<<<< HEAD
-> Nota: esta tanda arranca en `H-HPS-S-14` porque las dos tandas anteriores (`fichas-1` y `fichas-2`) ya publicaron `1..13`. Los identificadores quedan reservados en `9 hallazgos` por la propia numeración; el siguiente lote continúa con `H-HPS-S-23` y siguientes.
-
-=======
 ### Hallazgos del legado — tanda de AltaDatosSolicitante + motivos (H-HPS-S-23 a H-HPS-S-30)
 
 | Id | Hallazgo | Evidencia | Ficha |
@@ -191,12 +152,27 @@ Totales: 13 analizados · 0 no aplicables · 61 pendientes.
 | H-HPS-S-28 | `MotivoHPS.EditarMotivo` ejecuta `UPDATE` en `TbMotivoHPS`, `TbSolicitudes`, `TbUsuarios` y `TbUsuariosHistoricos` sin transacción; caída intermedia deja el renombrado a medias. Hallazgo sensible fuera del lote. | `MotivoHPS.cls:41-44, 180-182, 208-213` | [Form_FormMotivoHPS](formularios/Form_FormMotivoHPS.md) |
 | H-HPS-S-29 | `Form_FormMotivosHPS` (catálogo) también queda compilado pero sin cablear: ningún `DoCmd.OpenForm "FormMotivosHPS"` ni `SourceObject` en `src/`. Confirmar lanzador externo. | (no en `src/`) | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
 | H-HPS-S-30 | `EstablecerLista` activa `ComandoEditar` y `ComandoEliminar` al pintar (`:22-23`); un doble clic accidental dispara `ComandoEditar_Click`, que aborta con «Seleccione una elemento de la lista» (typo «un elemento», `:91`, `:124`). | `Form_FormMotivosHPS.cls:22-23, 91, 124` | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
-| H-HPS-S-22 | Los 38 `errores:` repiten «se ha producido el error n»; `ComandoEliminarExcelRecibido_Click` se identifica como `ComandoEliminarExcelEnviado_Click`. | `Form_FormSolicitudesAltaFechas.cls:703` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 
 > Nota: esta tanda arranca en `H-HPS-S-14` porque las dos tandas anteriores (`fichas-1` y `fichas-2`) ya publicaron `1..13`. Los identificadores quedan reservados en `9 hallazgos` por la propia numeración; el siguiente lote continúa con `H-HPS-S-23` y siguientes.
 
 
->>>>>>> origin/docs/1077-prd-fichas-4
+### Hallazgos del legado — tanda de renovación (H-HPS-S-31 a H-HPS-S-42)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-31 | `Form_FormSolicitudesAltaRenovacionFechas` no tiene vía de apertura: ningún `.form.txt` lo embebe y ningún `DoCmd.OpenForm` lo nombra; la única referencia llama a `EstablecerDatos` sobre el módulo de clase bajo `On Error Resume Next`. | `Form_FormSolicitudesAltaRenovacionFechas.cls:612`; `Form_FormEnvioCorreo.cls:285-288` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+| H-HPS-S-32 | `ComandoAdjuntarExcelRecibido` visible y deshabilitado por código, pero sin handler: botón inerte. | `Form_FormSolicitudesAltaRenovacionFechas.form.txt:710-711`; `.cls:705` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+| H-HPS-S-33 | SQL concatenado sin validar el tipo del `IDSolicitud` en cabecera y en hitos. | `SolicitudOperaciones.cls:70-74, 1339-1360` | [Form_FormSolicitudRenovacionDatos](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| H-HPS-S-34 | `RellenarObjeto` asigna `IDUsuarioHPS` dos veces seguidas: la primera, al usuario HPS activo, es código muerto. | `Form_FormSolicitudRenovacionDatos.cls:640-643` | [Form_FormSolicitudRenovacionDatos](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| H-HPS-S-35 | El rótulo de «alta» se sobrescribe a mitad del método: la visibilidad de la etiqueta de modificación y el título pasan de «alta» a «renovación» en el mismo flujo. | `Form_FormSolicitudRenovacion.cls:108-137` | [Form_FormSolicitudRenovacion](formularios/Form_FormSolicitudRenovacion.md) |
+| H-HPS-S-36 | Botón de ayuda con rótulo «Salir» en diseño, duplicando el botón real de salida. | `Form_FormSolicitudRenovacion.form.txt:314, 624` | [Form_FormSolicitudRenovacion](formularios/Form_FormSolicitudRenovacion.md) |
+| H-HPS-S-37 | `Err.Numbr` (typo) en la rama de errores de `ComandoAyuda_Click`: el mensaje falla al construirse. Mismo patrón en el panel de datos. | `Form_FormSolicitudRenovacion.cls:19`; `Form_FormSolicitudRenovacionDatos.cls:291` | [Form_FormSolicitudRenovacion](formularios/Form_FormSolicitudRenovacion.md) |
+| H-HPS-S-38 | Literal de aviso copiado en handlers ajenos, en ambos paneles de hitos. | `Form_FormSolicitudRenovacionFechas.cls:466, 539, 588`; `Form_FormSolicitudesAltaRenovacionFechas.cls:288, 365` | [Form_FormSolicitudRenovacionFechas](formularios/Form_FormSolicitudRenovacionFechas.md) |
+| H-HPS-S-39 | La rama «sin resultados» de la búsqueda de expediente vacía el identificador y acto seguido lo comprueba contra cadena vacía: condición siempre cierta; el botón «Actualizar» se deshabilita sin motivo. | `Form_FormSolicitudRenovacionDatos.cls:98-104` | [Form_FormSolicitudRenovacionDatos](formularios/Form_FormSolicitudRenovacionDatos.md) |
+| H-HPS-S-40 | `EstablecerDatos` solo anula a `Null` las fechas no válidas en el panel de renovación, no en el de alta/renovación: al cambiar de solicitud sobre el mismo formulario quedan valores del registro anterior. | `Form_FormSolicitudRenovacionFechas.cls:1496-1499`; `Form_FormSolicitudesAltaRenovacionFechas.cls:628-673` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+| H-HPS-S-41 | Comparación inhomogénea de nulos en el mismo método: `IsDate` en unas ramas, comparación contra cadena vacía en otra. | `Form_FormSolicitudRenovacionFechas.cls:1598` | [Form_FormSolicitudRenovacionFechas](formularios/Form_FormSolicitudRenovacionFechas.md) |
+| H-HPS-S-42 | `DiasParaCancelacion` conserva el valor previo si no hay fecha prevista; el botón de registro en HPS se rotula «Quitar registro en HPS» sin implementar esa operación. | `Form_FormSolicitudRenovacionFechas.cls:1636-1638`; `Form_FormSolicitudesAltaRenovacionFechas.cls:691-692, 697` | [Form_FormSolicitudesAltaRenovacionFechas](formularios/Form_FormSolicitudesAltaRenovacionFechas.md) |
+
 ## Discrepancias abiertas
 
 | ID | Discrepancia | Evidencia | Estado |
