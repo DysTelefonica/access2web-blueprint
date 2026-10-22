@@ -10,6 +10,12 @@
 #     (the legacy walkers) do not accept it, so the date goes only to the gates that do.
 #   - No `--include-pr-gates`/`PR_GATES`: BP retired them in #854; the `review-budget` job
 #     owns branch-name and pr-size, and ROOTLESS_GATES is therefore empty.
+#   - INDICATOR_MEANINGS: the asset's table carries no entry for `files_measured` (emitted by
+#     the asset's own check_mutation_sites) or `statements_measured` (emitted by the asset's
+#     own check_dry), and its fallback `(name, "lower")` would report both as "lower is
+#     better" when they are how much the gate managed to measure. BP tabulates both as
+#     "higher". The asset's entries for the two gates BP does not run are likewise absent:
+#     those indicators could never reach this report, and DG-12 forbids naming them here.
 # Everything else (envelope validation, evidence cross-check, report and markdown shape) is
 # the asset 2.2.
 """Aggregate every gate's indicator envelope into one report.

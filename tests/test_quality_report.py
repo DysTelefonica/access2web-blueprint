@@ -210,3 +210,26 @@ def test_the_report_names_the_policy_date_and_the_evidence(tmp_path: Path) -> No
     assert report["scope_identity"].startswith("sha256:")
     assert report["subject_manifest"]
     assert f"Policy date `{POLICY_DATE}`" in module.render_markdown(report)
+
+
+def test_the_header_declares_the_indicator_table_deviation_it_keeps() -> None:
+    """BP tabulates two indicators the canon's table lacks, so the header has to say so.
+
+    The canon's ``INDICATOR_MEANINGS`` carries no entry for ``files_measured`` or
+    ``statements_measured`` even though its own ``check_mutation_sites`` and ``check_dry`` emit
+    them, and its fallback ``(name, "lower")`` would print both as "lower is better" when they
+    are how much the gate managed to measure. The header closes by claiming everything else is
+    the asset 2.2, so an undeclared table contradicts that claim outright — the same silent
+    drift #1338 removed from ``check_mutation_sites``.
+    """
+    header = (SCRIPTS / "quality_report.py").read_text(encoding="utf-8")[:1600]
+    assert "HARNESS-PROVENANCE: deterministic-quality-harness v2.2" in header
+    assert "INDICATOR_MEANINGS" in header, (
+        "BP keeps an indicator table the asset does not have; the header must declare it"
+    )
+
+    module = _load()
+    for indicator in ("files_measured", "statements_measured"):
+        meaning, direction = module.INDICATOR_MEANINGS[indicator]
+        assert direction == "higher", f"{indicator} is measurement coverage, not a thing to reduce"
+        assert meaning, f"{indicator} needs a meaning of its own, not the raw key as fallback"
