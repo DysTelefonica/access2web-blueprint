@@ -30,7 +30,7 @@ TREE_GATES = ("check_complexity", "check_dry", "check_mutation_sites")
 
 #: DQH 2.2: ``check_complexity`` and ``check_mutation_sites`` are BP's copies of the canon's
 #: assets (BP #1316) and both demand an explicit policy date.
-DATED_GATES = frozenset({"check_complexity", "check_mutation_sites"})
+DATED_GATES = frozenset({"check_complexity", "check_mutation_sites", "check_dry"})
 
 
 def _run(gate: str, root: Path) -> int:

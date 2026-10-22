@@ -41,14 +41,16 @@ Cuatro reglas que el diagrama no muestra y que conviene saber:
 
 Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos estructurados (rama, etiquetas, campos de la API, YAML, AST), nunca prosa ni gestos, y publican un veredicto con código de salida.
 
-`check_complexity.py` y `check_mutation_sites.py` son copias del asset del canon `deterministic-quality-harness` 2.2. Los dos toman de `quality-policy.json` los sujetos y los techos (BP no sube el techo de complejidad: 10, con fecha de revisión en el propio script) y exigen `--policy-date`, de modo que el `BASELINE` se evalúa contra una fecha explícita y no contra el reloj. `quality_report.py` propaga esa fecha a los gates que la necesitan (`DATED_GATES`).
+`check_complexity.py`, `check_mutation_sites.py` y `check_dry.py` son copias del asset del canon `deterministic-quality-harness` 2.2. Los tres toman de `quality-policy.json` los sujetos y los techos (BP no sube el techo de complejidad: 10, con fecha de revisión en el propio script) y exigen `--policy-date`, de modo que el `BASELINE` se evalúa contra una fecha explícita y no contra el reloj. `quality_report.py` propaga esa fecha a los gates que la necesitan (`DATED_GATES`).
+
+`check_dry.py` no conserva ninguna desviación de mecanismo, solo sus datos: umbrales (`MIN_STATEMENTS = 5`, `MIN_OCCURRENCES = 2`), escaneo por la política, guarda de liveness y sobre ligado son el asset. Su `BASELINE` (cuatro grupos de duplicados tolerados hasta su fecha objetivo) es dato de BP y así lo declara su cabecera. Un fichero que el gate no puede parsear aparece en `subjects.unclassified` en vez de desaparecer del recuento.
 
 | Script | Qué mide | Cómo se lee su fallo | Dónde corre |
 |---|---|---|---|
 | `docs-architecture` (job de `ci.yml`) | dirección de dependencias entre capas hexagonales, independencia entre aplicaciones, pureza de capa y ficheros fuera de las capas, desde el bloque `architecture` de `docs/architecture.md` | nombra `fichero:línea` y la regla incumplida; un fichero que no pertenece a ninguna capa ni a `exempt` es fallo, no verde | `ci.yml` |
 | `check_complexity.py` | complejidad ciclomática por función, con techo global absoluto | indica la función y su valor frente al techo | `quality_report.py` |
 | `check_mutation_sites.py` | densidad estática de sitios mutables, con techo y sujetos desde `quality-policy.json` | indica los ficheros con densidad fuera de rango | `ci.yml` + `quality_report.py` |
-| `check_dry.py` | bloques duplicados tipo 1 y 2 sobre el AST | nombra los pares de bloques y su ubicación | `ci.yml` + `quality_report.py` |
+| `check_dry.py` | bloques duplicados tipo 1 y 2 sobre el AST, con techo y sujetos desde `quality-policy.json` | nombra los pares de bloques y su ubicación | `ci.yml` + `quality_report.py` |
 | `check_legacy_hashes.py` | símbolos criptográficos legacy prohibidos en `platform/src/` | nombra el símbolo y el fichero | `quality_report.py` |
 | `check_legacy_retirement.py` | gates de retirada CAP-057..063 que invoca la capa UAT | nombra el gate y el artefacto que sigue vivo | `quality_report.py` |
 | `check_branch_name.py` | nombre de rama `tipo/nº-slug`, con lista blanca para ramas de plataforma y de flota | imprime el patrón esperado y el nombre recibido | `review-budget` + `quality_report.py` |

@@ -30,9 +30,10 @@ ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 #: DQH 2.2: check_complexity evaluates its BASELINE at an explicit date, never the wall clock.
-#: check_mutation_sites joined it when BP took the canon's copy (BP #1316).
+#: check_mutation_sites, check_mutation and check_dry joined it when BP took the
+#: canon's copies (BP #1316, #1327).
 POLICY_DATE = "2026-10-21"
-DATED_SCRIPTS = frozenset({"check_complexity.py", "check_mutation_sites.py"})
+DATED_SCRIPTS = frozenset({"check_complexity.py", "check_mutation_sites.py", "check_dry.py"})
 
 
 def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
@@ -49,6 +50,10 @@ def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
 
 def _load(script: str):
     name = script.removesuffix(".py")
+    # The canon's gates import their siblings (`policy_time`, `quality_policy`) by module name
+    # (DQH 2.2), so `scripts/` has to be importable before the file is executed.
+    if str(SCRIPTS) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS))
     spec = importlib.util.spec_from_file_location(name, SCRIPTS / script)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)

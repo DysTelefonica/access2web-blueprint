@@ -48,7 +48,7 @@ def _gate_commands(monkeypatch, tmp_path: Path, *extra: str) -> dict[str, list[s
 def test_policy_date_reaches_only_the_dated_gates(monkeypatch, tmp_path, extra, expected):
     commands = _gate_commands(monkeypatch, tmp_path, *extra)
 
-    dated = {"check_complexity.py", "check_mutation_sites.py"}
+    dated = {"check_complexity.py", "check_mutation_sites.py", "check_dry.py"}
     for script in dated:
         assert commands[script][-2:] == ["--policy-date", expected]
     others = [args for script, args in commands.items() if script not in dated]
