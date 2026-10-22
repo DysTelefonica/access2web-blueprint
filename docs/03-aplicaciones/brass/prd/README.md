@@ -58,8 +58,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormCalibracionEquipoEdicion | src/forms/Form_FormCalibracionEquipoEdicion.cls | 407 | 34 | 8 | igual | analizado | [formularios/Form_FormCalibracionEquipoEdicion.md](formularios/Form_FormCalibracionEquipoEdicion.md) |
 | Form_FormCalibracionEquipoGestion | src/forms/Form_FormCalibracionEquipoGestion.cls | 800 | 38 | 26 | igual | analizado | [formularios/Form_FormCalibracionEquipoGestion.md](formularios/Form_FormCalibracionEquipoGestion.md) |
 | Form_FormCalibracionGestion | src/forms/Form_FormCalibracionGestion.cls | 625 | 36 | 12 | igual | analizado | [formularios/Form_FormCalibracionGestion.md](formularios/Form_FormCalibracionGestion.md) |
-| Form_FormEquipoAlta | src/forms/Form_FormEquipoAlta.cls | 329 | 31 | 6 | igual | pendiente | — |
-| Form_FormEquipoEdicion | src/forms/Form_FormEquipoEdicion.cls | 602 | 33 | 11 | igual | pendiente | — |
+| Form_FormEquipoAlta | src/forms/Form_FormEquipoAlta.cls | 329 | 31 | 6 | igual | analizado | [formularios/Form_FormEquipoAlta.md](formularios/Form_FormEquipoAlta.md) |
+| Form_FormEquipoEdicion | src/forms/Form_FormEquipoEdicion.cls | 602 | 33 | 11 | igual | analizado | [formularios/Form_FormEquipoEdicion.md](formularios/Form_FormEquipoEdicion.md) |
 | Form_FormEquipoGestion | src/forms/Form_FormEquipoGestion.cls | 838 | 38 | 27 | igual | pendiente | — |
 | Form_FormEquipoMedida | src/forms/Form_FormEquipoMedida.cls | 206 | 37 | 6 | igual | pendiente | — |
 | Form_FormEquipoMedidaCalibracion | src/forms/Form_FormEquipoMedidaCalibracion.cls | 203 | 36 | 6 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 58 analizados · 5 no aplicables · 68 pendientes.
+Totales: 60 analizados · 5 no aplicables · 66 pendientes.
 
 ## Discrepancias abiertas
 
