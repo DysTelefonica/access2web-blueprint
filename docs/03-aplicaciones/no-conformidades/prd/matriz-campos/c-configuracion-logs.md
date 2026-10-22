@@ -11,7 +11,7 @@ Búsqueda realizada: coincidencia sobre todo el contenido de `src/classes`, `src
 Precisiones sobre la configuración y la caché en `main`:
 
 - La configuración de backend que conserva `main` se lee de otra tabla, `TbConfiguracionBackends` (`Variables Globales.bas:540-541`, vía `CurrentDb`), que no figura en el DDL del esquema previo; queda fuera de esta parte. `TbConfiguracion` (interruptor de caché) no es esa tabla y no se lee en `main`.
-- La caché por NC (`TbCacheNCProyecto`) se conserva: `CacheNCProyecto.bas` e `InicializadorCache.bas`. Las cachés de listados e indicadores están retiradas (véase [la parte b](b-cache-indicadores.md)).
+- La caché por NC (`TbCacheNCProyecto`) se conserva: `CacheNCProyecto.bas` e `InicializadorCache.bas`. Las cachés de listados e indicadores están retiradas (véase la parte `b-cache-indicadores`).
 - El interruptor efectivo de la caché es la variable global `AplicarCache`, fijada a `False` en `Variables Globales.bas:286` y `Variables Globales.bas:328` (la asignación a `True` está comentada en `Variables Globales.bas:329`). Solo se consulta en `constructor.bas:441` y `NCProyectoOperaciones.cls:438`. Por tanto, en `main` la lectura de la caché y su regeneración tras guardar una NC no se ejecutan; en cambio, las invalidaciones (`CacheNCProyecto.InvalidarCache`) se invocan sin consultar esa variable en las líneas citadas, de modo que siguen escribiendo en `TbCacheNCProyecto` y `TbLogCache`.
 - No existe transacción DAO en ninguna de estas tablas: la búsqueda de `BeginTrans`/`CommitTrans` en `src` solo encuentra nombres de funciones de la caché (`CacheNCProyecto.bas:646`), que gestionan un diccionario en memoria (`CacheNCProyecto.bas:633`) y no una transacción del motor.
 
