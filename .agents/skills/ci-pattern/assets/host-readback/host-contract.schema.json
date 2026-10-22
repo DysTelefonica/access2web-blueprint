@@ -25,6 +25,13 @@
       "type": "array",
       "description": "Label definitions with host-enforced / documented-only / runner-enforced classification (HR-15)."
     },
+    "approvers": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Optional (DysTelefonica/team-skills#998). Logins that may put `status:approved` on an issue. The issue-spec gate reads this list when invoked with `--host-contract`. Without the key it keeps checking only that the label is present, and warns in one line, so consumers that have not adopted it are unaffected."
+    },
     "required_checks": {
       "type": "array",
       "description": "Required check names with classification."
