@@ -83,7 +83,7 @@ Pendiente de `../coexistencia.md`. Aquí ya se ve: la pantalla depende de una se
 - **H-GR-27.** `EstablecerDatos` no distingue «sin edición activa» de «edición no activa»: si `m_ObjEdicionActiva` está vacía, sale sin error (`:99-101`) y `Form_Open` abre igualmente la pantalla, con el botón deshabilitado por defecto y el rótulo del diseño («Usuario conectado: …»).
 - **H-GR-28.** Tras un error de registro, el formulario **no se cierra ni se restaura** (`:53-59`): el texto sigue en pantalla y el usuario puede reintentar. Es un comportamiento distinto del de `Form_Open`, que sí cierra (`:88`); conviene decidir cuál es el correcto.
 - **H-GR-29.** `EstablecerDatos` es una `Private Function` que devuelve `As String` y no devuelve nada (`:92-113`), como en el resto de la cadena; el error viaja solo por el segundo argumento.
-- **H-GR-30.** El formulario conserva en el diseño controles sin código asociado (grupo de opciones, lista desplegable, marco de objeto sin enlazar: `.form.txt:806-910`). Están inertes en esta pantalla; conviene confirmar que no responden a eventos heredados.
+- **H-GR-213.** El formulario conserva en el diseño controles sin código asociado (grupo de opciones, lista desplegable, marco de objeto sin enlazar: `.form.txt:806-910`). Están inertes en esta pantalla; conviene confirmar que no responden a eventos heredados.
 
 **Propuestas web pendientes de decisión:** ninguna aprobada. Candidatas: campo de notas con guardado explícito y contador de caracteres; confirmación al vaciar; validación de obligatoriedad coherente con la señalización del diseño; permisos de lectura y escritura diferenciados en el recurso de notas, ya que hoy el código solo distingue edición activa o no.
 
@@ -101,4 +101,4 @@ Propuestos, no aprobados:
 
 - Qué tabla o procedimiento usa `RegistrarNotasParaCalidad` dentro de `Edicion.cls:3370` y si admite historial de cambios.
 - Si la obligatoriedad anunciada en el diseño se cumple en algún otro punto de la cadena de publicación (**H-GR-25**).
-- Para qué se usan los controles inertes del diseño (**H-GR-30**).
+- Para qué se usan los controles inertes del diseño (**H-GR-213**).
