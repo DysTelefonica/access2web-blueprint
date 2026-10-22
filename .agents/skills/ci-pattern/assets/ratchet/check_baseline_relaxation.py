@@ -16,6 +16,13 @@ The field must be new in this PR: one that the base copy already carries
 justified an earlier change and cannot cover another. Lowering a baseline or
 removing entries is always accepted.
 
+The same field covers the other way to loosen a baseline (#982): deleting the
+comment that justifies an entry. A justification is a ``#`` comment inside the
+span of a ``*BASELINE*`` constant, tied to the entry that follows it (or
+written on its line); a comment with no entry after it belongs to the
+constant. Dropping or rewording one is rejected unless its entry went away
+with it. Moving it, or re-spacing it, is free.
+
 Usage::
 
     python check_baseline_relaxation.py [--base-ref origin/main] [--gate-glob "scripts/*.py"]
@@ -31,10 +38,12 @@ from __future__ import annotations
 
 import argparse
 import ast
+import io
 import os
 import re
 import subprocess
 import sys
+import tokenize
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -88,6 +97,75 @@ def read_baselines(source: str) -> dict[str, object]:
         except (ValueError, TypeError):
             continue
     return found
+
+
+def _entry_key(node: ast.expr) -> str:
+    try:
+        return repr(ast.literal_eval(node))
+    except (ValueError, TypeError):
+        return ast.dump(node)
+
+
+def _entries(value: ast.expr) -> list[tuple[int, str]]:
+    """``(line, key)`` of each top-level entry or element of a baseline literal."""
+    container = _unwrap(value)
+    if isinstance(container, ast.Dict):
+        return [(k.lineno, _entry_key(k)) for k in container.keys if k is not None]
+    if isinstance(container, ast.Set | ast.List | ast.Tuple):
+        return [(e.lineno, _entry_key(e)) for e in container.elts]
+    return []
+
+
+def read_justifications(source: str) -> dict[str, tuple[set[str], list[tuple[str | None, str]]]]:
+    """Per ``*BASELINE*`` constant: its entry keys and ``(entry, comment)`` pairs.
+
+    A comment belongs to the entry on its own line, else to the next entry; with
+    none after it, to the constant (``None``). Text is whitespace-normalised.
+    """
+    comments = [
+        (tok.start[0], " ".join(tok.string.lstrip("#").split()))
+        for tok in tokenize.generate_tokens(io.StringIO(source).readline)
+        if tok.type == tokenize.COMMENT
+    ]
+    found: dict[str, tuple[set[str], list[tuple[str | None, str]]]] = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign):
+            names = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            names = [node.target.id]
+        else:
+            continue
+        if node.value is None:
+            continue
+        entries = _entries(node.value)
+        end = node.end_lineno or node.lineno
+        for name in (n for n in names if BASELINE_NAME.match(n)):
+            pairs: list[tuple[str | None, str]] = []
+            for line, text in comments:
+                if node.lineno <= line <= end and text:
+                    owner = next((k for ln, k in entries if ln == line), None) or next(
+                        (k for ln, k in entries if ln > line), None
+                    )
+                    pairs.append((owner, text))
+            found[name] = ({key for _, key in entries}, pairs)
+    return found
+
+
+def deleted_justifications(base_source: str, head_source: str) -> list[str]:
+    """Justifications the base carries that ``head`` dropped while their entry stays."""
+    base, head = read_justifications(base_source), read_justifications(head_source)
+    deleted: list[str] = []
+    for name, (_, pairs) in base.items():
+        if name not in head:
+            continue
+        head_keys, head_pairs = head[name]
+        head_texts = {text for _, text in head_pairs}
+        deleted += [
+            f"{name} lost the justification {text!r}"
+            for owner, text in pairs
+            if text not in head_texts and (owner is None or owner in head_keys)
+        ]
+    return deleted
 
 
 def read_relaxation(source: str) -> object:
@@ -152,13 +230,14 @@ def check_sources(path: str, base_source: str, head_source: str) -> list[str]:
             violations.append(f"{path}: {name} is no longer a readable literal")
             continue
         relaxed += [f"{name} {item}" for item in raised_entries(base_value, head[name])]
+    relaxed += deleted_justifications(base_source, head_source)
     if relaxed:
         problem = relaxation_problem(read_relaxation(head_source), read_relaxation(base_source))
         if problem is not None:
             violations.append(
                 f"{path}: baseline relaxed without justification ({problem}): "
                 + "; ".join(relaxed)
-                + ". Lower the baseline, or declare RELAXATION = "
+                + ". Lower the baseline, restore the dropped justification, or declare RELAXATION = "
                 + '{"reason": "...", "reference": "...", "issue": N} in this PR (HR-15).'
             )
     return violations
