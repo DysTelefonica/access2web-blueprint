@@ -152,7 +152,6 @@ Totales: 13 analizados · 0 no aplicables · 61 pendientes.
 | H-HPS-S-28 | `MotivoHPS.EditarMotivo` ejecuta `UPDATE` en `TbMotivoHPS`, `TbSolicitudes`, `TbUsuarios` y `TbUsuariosHistoricos` sin transacción; caída intermedia deja el renombrado a medias. Hallazgo sensible fuera del lote. | `MotivoHPS.cls:41-44, 180-182, 208-213` | [Form_FormMotivoHPS](formularios/Form_FormMotivoHPS.md) |
 | H-HPS-S-29 | `Form_FormMotivosHPS` (catálogo) también queda compilado pero sin cablear: ningún `DoCmd.OpenForm "FormMotivosHPS"` ni `SourceObject` en `src/`. Confirmar lanzador externo. | (no en `src/`) | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
 | H-HPS-S-30 | `EstablecerLista` activa `ComandoEditar` y `ComandoEliminar` al pintar (`:22-23`); un doble clic accidental dispara `ComandoEditar_Click`, que aborta con «Seleccione una elemento de la lista» (typo «un elemento», `:91`, `:124`). | `Form_FormMotivosHPS.cls:22-23, 91, 124` | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
-| H-HPS-S-22 | Los 38 `errores:` repiten «se ha producido el error n»; `ComandoEliminarExcelRecibido_Click` se identifica como `ComandoEliminarExcelEnviado_Click`. | `Form_FormSolicitudesAltaFechas.cls:703` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 
 > Nota: esta tanda arranca en `H-HPS-S-14` porque las dos tandas anteriores (`fichas-1` y `fichas-2`) ya publicaron `1..13`. Los identificadores quedan reservados en `9 hallazgos` por la propia numeración; el siguiente lote continúa con `H-HPS-S-23` y siguientes.
 
