@@ -1,5 +1,19 @@
 #!/usr/bin/env python3
-# HARNESS-PROVENANCE: deterministic-quality-harness v1.4 — assets/scripts/check_mutation.py
+# HARNESS-PROVENANCE: deterministic-quality-harness v2.2 — assets/scripts/check_mutation.py
+# Declared local deviations from the asset (team-skills#809 T6, BP issue #1316):
+#   - `--shards N` and the per-slice session list (BP #785): `release.yml` runs the matrix as ten
+#     slices and passes one session per slice. The asset reads a single session.
+#   - BASELINE aggregated per module, with `measure_survivors`/`check_ratchet` to match: the asset
+#     keys survivors by `module|operator|occurrence` (`mutant_identity`) and refuses an aggregate
+#     entry. That identity needs the whole ten-slice matrix to be re-acquired on the ARM runner,
+#     which this copy cannot do; `scripts/mutation_shards.py` prepares the slices. The query below
+#     already selects the operator and the occurrence, so the adoption is a BASELINE rewrite.
+#   - `--policy-date` is optional here and falls back to today's UTC date. The asset makes it
+#     mandatory; the weekly run in `release.yml` cannot pass it from a pull request opened by an
+#     agent without the `workflows` permission, and a mandatory flag would break that run. Pass it
+#     explicitly to pin the date; the envelope always records the date it judged against.
+# Everything else (degenerate-run guard, completeness, overdue acquisition, policy binding) is the
+# asset 2.2.
 """Mutation-survivor ratchet with a degenerate-run guard.
 
 Mutation testing is the only mechanical answer to "do these tests assert anything". Coverage
@@ -43,9 +57,12 @@ import json
 import sqlite3
 import sys
 from dataclasses import dataclass
-from datetime import date
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
+
+from policy_time import parse_policy_date
+from quality_policy import bind_envelope, expected_subjects
 
 # --------------------------------------------------------------------------------------------
 # CONFIGURATION
@@ -198,6 +215,8 @@ _SKIPPED = "skipped"
 #: Cosmic-ray session layout. Read-only, and never through the tool's own API.
 _QUERY = """
     SELECT ms.module_path AS module_path,
+           ms.operator_name AS operator_name,
+           ms.occurrence AS occurrence,
            wr.test_outcome AS test_outcome,
            wr.worker_outcome AS worker_outcome
     FROM work_items AS wi
@@ -230,6 +249,8 @@ def read_session(session_path: Path) -> tuple[list[dict[str, Any]], list[str]]:
     return [
         {
             "module_path": str(row["module_path"]).replace("\\", "/"),
+            "operator_name": str(row["operator_name"]),
+            "occurrence": int(row["occurrence"]),
             "test_outcome": _normalise(row["test_outcome"]),
             "worker_outcome": _normalise(row["worker_outcome"]),
         }
@@ -347,9 +368,21 @@ def render_baseline(survivors: dict[str, int], today: date, horizon_days: int = 
     return "\n".join(lines)
 
 
-def build_report(metrics: dict[str, float], violations: list[str], status: str) -> dict:
-    return {
+def build_report(
+    root: Path,
+    metrics: dict[str, float],
+    violations: list[str],
+    status: str,
+    policy_date: date,
+    observed_subjects: list[str],
+) -> dict:
+    expected = expected_subjects(root)
+    expected_set = set(expected)
+    observed_set = set(observed_subjects)
+    unclassified = sorted(observed_set - expected_set)
+    report = {
         "gate": "mutation",
+        "policy_date": policy_date.isoformat(),
         "status": status,
         "indicators": {
             "mutation_score_pct": metrics.get("mutation_score_pct", 0.0),
@@ -360,6 +393,17 @@ def build_report(metrics: dict[str, float], violations: list[str], status: str) 
         "ceilings": {"incompetent_ratio_pct": MAX_INCOMPETENT_RATIO * 100},
         "findings": [{"file": "<session>", "line": 0, "detail": item} for item in violations],
     }
+    return bind_envelope(
+        report,
+        root,
+        "mutation",
+        checked=sorted(observed_set & expected_set),
+        skipped=[
+            {"path": path, "reason": "no mutation specification in session"}
+            for path in sorted(expected_set - observed_set)
+        ],
+        unclassified=unclassified,
+    )
 
 
 def _pin_output_encoding() -> None:
@@ -373,6 +417,17 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
+    # Declared deviation: the asset makes --policy-date mandatory. Here it falls back to
+    # today's UTC date, because the weekly run in `release.yml` cannot pass it (the agent
+    # that opens this PR has no `workflows` permission) and a mandatory flag would break that
+    # run. Pass it explicitly to pin the date; drop this fallback once `release.yml` does.
+    parser.add_argument(
+        "--policy-date",
+        type=parse_policy_date,
+        metavar="YYYY-MM-DD",
+        default=None,
+        help="explicit BASELINE evaluation date (default: today, UTC)",
+    )
     parser.add_argument(
         "sessions",
         type=Path,
@@ -386,11 +441,21 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--json", action="store_true", help="emit the indicator envelope")
     parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path.cwd(),
+        help="repository root; its quality policy decides the subjects and ceilings",
+    )
+    parser.add_argument(
         "--emit-baseline",
         action="store_true",
         help="print a BASELINE block for the measured survivors instead of judging them",
     )
     args = parser.parse_args(argv)
+    # The clock is the fallback, not the default of record: the envelope below always names
+    # the date the BASELINE was judged against.
+    if args.policy_date is None:
+        args.policy_date = datetime.now(UTC).date()
 
     if args.shards is not None and len(args.sessions) != args.shards:
         print(
@@ -401,12 +466,15 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
+    root = args.root.resolve()
     rows: list[dict[str, Any]] = []
     for session in args.sessions:
         part, errors = read_session(session)
         if errors:
             if args.json:
-                print(json.dumps({"gate": "mutation", "status": "error", "detail": errors[0]}))
+                report = build_report(root, {}, errors, "error", args.policy_date, [])
+                report["detail"] = errors[0]
+                print(json.dumps(report))
                 return 1
             for message in errors:
                 print(f"FAIL  {message}", file=sys.stderr)
@@ -422,7 +490,9 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         rows.extend(part)
 
-    today = date.today()
+    today = args.policy_date
+    observed_subjects = sorted({str(row["module_path"]).replace("\\", "/") for row in rows})
+    unexpected_subjects = sorted(set(observed_subjects) - set(expected_subjects(root)))
     health, metrics = check_run_health(rows)
     survivors = measure_survivors(rows)
 
@@ -433,10 +503,22 @@ def main(argv: list[str] | None = None) -> int:
     ratchet, notices = check_ratchet(survivors, today)
     overdue = check_pending_overdue(today)
     violations = health + ratchet + overdue
+    if unexpected_subjects:
+        violations.append(
+            "mutation session contains subjects outside quality policy: "
+            + ", ".join(unexpected_subjects)
+        )
 
     if args.json:
         status = "pass" if not violations else "fail"
-        print(json.dumps(build_report(metrics, violations, status), indent=2))
+        print(
+            json.dumps(
+                build_report(
+                    root, metrics, violations, status, args.policy_date, observed_subjects
+                ),
+                indent=2,
+            )
+        )
         return 0 if not violations else 1
 
     for message in violations:
