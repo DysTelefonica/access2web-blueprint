@@ -8,7 +8,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **0** fichero(s) de producción — ninguna: la tabla no aparece en el código, solo en el ERD.
-- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -17,7 +17,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **2** fichero(s) de producción — `Documento.cls`, `Constructor.bas`
-- **Tabla vinculada**: aporta `AGEDO20_Datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `AGEDO20_Datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -26,7 +26,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **0** fichero(s) de producción — ninguna: la tabla no aparece en el código, solo en el ERD.
-- **Tabla vinculada**: aporta `AGEDO20_Datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `AGEDO20_Datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -35,7 +35,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **1** fichero(s) de producción — `Constructor.bas`
-- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -44,7 +44,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **1** fichero(s) de producción — `Constructor.bas`
-- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -53,7 +53,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **2** fichero(s) de producción — `ExpedienteResponsable.cls`, `Constructor.bas`
-- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -62,7 +62,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **1** fichero(s) de producción — `Constructor.bas`
-- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -71,7 +71,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **4** fichero(s) de producción — `NC.cls`, `FormRiesgoNC.form.txt`, `Form_FormRiesgoNC.cls`, `Constructor.bas`
-- **Tabla vinculada**: aporta `NoConformidades_Datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `NoConformidades_Datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -80,7 +80,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **0** fichero(s) de producción — ninguna: la tabla no aparece en el código, solo en el ERD.
-- **Tabla vinculada**: aporta `Gestion_Riesgos_Datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Gestion_Riesgos_Datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -89,7 +89,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **0** fichero(s) de producción — ninguna: la tabla no aparece en el código, solo en el ERD.
-- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -98,7 +98,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **1** fichero(s) de producción — `Constructor.bas`
-- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Expedientes_datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -107,7 +107,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **0** fichero(s) de producción — ninguna: la tabla no aparece en el código, solo en el ERD.
-- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `AGEDYS_DATOS.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
