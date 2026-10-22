@@ -107,9 +107,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormPlanificacionEdicionEquipo | src/forms/Form_FormPlanificacionEdicionEquipo.cls | 287 | 22 | 7 | igual | analizado | [formularios/Form_FormPlanificacionEdicionEquipo.md](formularios/Form_FormPlanificacionEdicionEquipo.md) |
 | Form_FormPlanificacionEquipos | src/forms/Form_FormPlanificacionEquipos.cls | 862 | 38 | 25 | igual | analizado | [formularios/Form_FormPlanificacionEquipos.md](formularios/Form_FormPlanificacionEquipos.md) |
 | Form_FormPlanificacionGestion | src/forms/Form_FormPlanificacionGestion.cls | 955 | 46 | 19 | igual | analizado | [formularios/Form_FormPlanificacionGestion.md](formularios/Form_FormPlanificacionGestion.md) |
-| Form_FormPlanificacionReprogramacion | src/forms/Form_FormPlanificacionReprogramacion.cls | 278 | 47 | 11 | igual | pendiente | — |
-| Form_FormPlanificacionesBusqueda | src/forms/Form_FormPlanificacionesBusqueda.cls | 1058 | 52 | 32 | igual | pendiente | — |
-| Form_FormSubContratacionAlta | src/forms/Form_FormSubContratacionAlta.cls | 161 | 30 | 4 | igual | pendiente | — |
+| Form_FormPlanificacionReprogramacion | src/forms/Form_FormPlanificacionReprogramacion.cls | 278 | 47 | 11 | igual | analizado | [formularios/Form_FormPlanificacionReprogramacion.md](formularios/Form_FormPlanificacionReprogramacion.md) |
+| Form_FormPlanificacionesBusqueda | src/forms/Form_FormPlanificacionesBusqueda.cls | 1058 | 52 | 32 | igual | analizado | [formularios/Form_FormPlanificacionesBusqueda.md](formularios/Form_FormPlanificacionesBusqueda.md) |
+| Form_FormSubContratacionAlta | src/forms/Form_FormSubContratacionAlta.cls | 161 | 30 | 4 | igual | analizado | [formularios/Form_FormSubContratacionAlta.md](formularios/Form_FormSubContratacionAlta.md) |
 | Form_FormSubContratacionEdicion | src/forms/Form_FormSubContratacionEdicion.cls | 495 | 32 | 9 | igual | pendiente | — |
 | Form_FormSubContratacionGestion | src/forms/Form_FormSubContratacionGestion.cls | 762 | 35 | 24 | igual | pendiente | — |
 | Form_FormSubSistemaAlta | src/forms/Form_FormSubSistemaAlta.cls | 146 | 23 | 4 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 107 analizados · 5 no aplicables · 19 pendientes.
+Totales: 110 analizados · 5 no aplicables · 16 pendientes.
 
 ## Discrepancias abiertas
 
