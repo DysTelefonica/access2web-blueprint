@@ -39,19 +39,19 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 407 | 33 | 13 | igual | pendiente | — |
+| Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 407 | 33 | 13 | igual | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
 | Form_FormAdjuntaTraspasoONS | src/forms/Form_FormAdjuntaTraspasoONS.cls | 234 | 28 | 7 | igual | pendiente | — |
 | Form_FormAdjuntarExcelSolicitante | src/forms/Form_FormAdjuntarExcelSolicitante.cls | 215 | 28 | 7 | igual | analizado | [formularios/Form_FormAdjuntarExcelSolicitante.md](formularios/Form_FormAdjuntarExcelSolicitante.md) |
 | Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | pendiente | — |
 | Form_FormCambioTipo | src/forms/Form_FormCambioTipo.cls | 107 | 26 | 4 | igual | pendiente | — |
-| Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | pendiente | — |
+| Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | analizado | [formularios/Form_FormConfiguracion.md](formularios/Form_FormConfiguracion.md) |
 | Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | pendiente | — |
 | Form_FormCorreoPruebas | src/forms/Form_FormCorreoPruebas.cls | 259 | 38 | 8 | igual | pendiente | — |
 | Form_FormCorreosGestion | src/forms/Form_FormCorreosGestion.cls | 541 | 34 | 19 | igual | pendiente | — |
-| Form_FormEntidades | src/forms/Form_FormEntidades.cls | 170 | 17 | 7 | igual | pendiente | — |
+| Form_FormEntidades | src/forms/Form_FormEntidades.cls | 170 | 17 | 7 | igual | analizado | [formularios/Form_FormEntidades.md](formularios/Form_FormEntidades.md) |
 | Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | pendiente | — |
-| Form_FormExpedienteDetalle | src/forms/Form_FormExpedienteDetalle.cls | 79 | 32 | 3 | igual | pendiente | — |
-| Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 352 | 27 | 10 | igual | pendiente | — |
+| Form_FormExpedienteDetalle | src/forms/Form_FormExpedienteDetalle.cls | 79 | 32 | 3 | igual | analizado | [formularios/Form_FormExpedienteDetalle.md](formularios/Form_FormExpedienteDetalle.md) |
+| Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 352 | 27 | 10 | igual | analizado | [formularios/Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
 | Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | pendiente | — |
 | Form_FormMotivosHPS | src/forms/Form_FormMotivosHPS.cls | 323 | 18 | 10 | igual | pendiente | — |
 | Form_FormPlantillasHTML | src/forms/Form_FormPlantillasHTML.cls | 181 | 17 | 7 | igual | pendiente | — |
@@ -65,14 +65,14 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | analizado | [formularios/Form_FormSolicitudesAltaFechas.md](formularios/Form_FormSolicitudesAltaFechas.md) |
 | Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | pendiente | — |
 | Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | pendiente | — |
-| Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | pendiente | — |
+| Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | analizado | [formularios/Form_FormSolicitudesGestion.md](formularios/Form_FormSolicitudesGestion.md) |
 | Form_FormSolicitudesTraspasoFechas | src/forms/Form_FormSolicitudesTraspasoFechas.cls | 1166 | 56 | 29 | igual | pendiente | — |
 | Form_FormTareasTramitadorPendientes | src/forms/Form_FormTareasTramitadorPendientes.cls | 652 | 29 | 14 | igual | pendiente | — |
 | Form_FormUsuariosHPSBusqueda | src/forms/Form_FormUsuariosHPSBusqueda.cls | 295 | 26 | 9 | igual | pendiente | — |
 | Form_FormWeb | src/forms/Form_FormWeb.cls | 56 | 16 | 2 | igual | pendiente | — |
 | Form_frmBuscarJustificacion | src/forms/Form_frmBuscarJustificacion.cls | 333 | 29 | 17 | igual | pendiente | — |
 | Form_frmJustificacion | src/forms/Form_frmJustificacion.cls | 139 | 28 | 6 | igual | pendiente | — |
-| Form_frmSplash | src/forms/Form_frmSplash.cls | 63 | 15 | 2 | igual | pendiente | — |
+| Form_frmSplash | src/forms/Form_frmSplash.cls | 63 | 15 | 2 | igual | analizado | [formularios/Form_frmSplash.md](formularios/Form_frmSplash.md) |
 
 ### Módulos estándar
 
@@ -124,7 +124,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
-Totales: 3 analizados · 0 no aplicables · 71 pendientes.
+Totales: 10 analizados · 0 no aplicables · 64 pendientes.
 
 ### Hallazgos del legado — tanda del alta (H-HPS-S-14 a H-HPS-S-22)
 
