@@ -1045,5 +1045,100 @@ class LiveApiTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
 
+    # --- #996: el modo vivo es el defecto cuando se juzga el evento real de Actions ---
+
+    def _run_actions(self, env, *, payload_labels=None, payload_body="", event_path_is_actions=True):
+        """Como en CI: sin `PR_CONTRACT_USE_LIVE_API` y con `GITHUB_EVENT_PATH` apuntando al
+        evento que se juzga (o a otro fichero, si `event_path_is_actions` es falso)."""
+        env = dict(env)
+        env.pop("PR_CONTRACT_USE_LIVE_API", None)
+        with tempfile.TemporaryDirectory() as tmp:
+            event = self._event(tmp, payload_labels=payload_labels, payload_body=payload_body)
+            env["GITHUB_EVENT_PATH"] = str(event if event_path_is_actions else Path(tmp) / "otro.json")
+            policy = Path(tmp) / "policy.json"
+            policy.write_text(json.dumps(self.LIVE_POLICY), encoding="utf-8")
+            return subprocess.run(
+                [sys.executable, str(GATE), "--event-file", str(event),
+                 "--policy-file", str(policy)],
+                capture_output=True, text=True, check=False, env=env, timeout=60)
+
+    def _token_env(self, server):
+        env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
+        env["GITHUB_TOKEN"] = "test-token"
+        env["GITHUB_API_URL"] = server.base_url
+        return env
+
+    def test_996_actions_event_with_token_reads_live_labels_by_default(self):
+        """Payload congelado sin etiquetas, API con `type:chore`: el PR etiquetado después de
+        abrirse pasa HR-6 sin cerrar y reabrir ni activar nada."""
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[{"name": "type:chore"}])
+        try:
+            proc = self._run_actions(self._token_env(server), payload_labels=[],
+                                     payload_body="cuerpo obsoleto")
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        finally:
+            server.close()
+
+    def test_996_live_mode_does_not_relax_the_contract(self):
+        """Sin etiquetas en la API sigue siendo HR-6 aunque el payload las trajera."""
+        body = _good_api_body()["body"]
+        server = _MockApiServer(pull_body={"body": body}, labels=[])
+        try:
+            proc = self._run_actions(self._token_env(server), payload_labels=["type:chore"],
+                                     payload_body=body)
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("HR-6", proc.stdout)
+        finally:
+            server.close()
+
+    def test_996_explicit_opt_out_keeps_reading_the_payload(self):
+        """`PR_CONTRACT_USE_LIVE_API=0` vuelve al payload: sin etiquetas en él, HR-6."""
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[{"name": "type:chore"}])
+        try:
+            env = self._token_env(server)
+            with tempfile.TemporaryDirectory() as tmp:
+                event = self._event(tmp, payload_labels=[], payload_body="cuerpo obsoleto")
+                env.update(GITHUB_EVENT_PATH=str(event), PR_CONTRACT_USE_LIVE_API="0")
+                policy = Path(tmp) / "policy.json"
+                policy.write_text(json.dumps(self.LIVE_POLICY), encoding="utf-8")
+                proc = subprocess.run(
+                    [sys.executable, str(GATE), "--event-file", str(event),
+                     "--policy-file", str(policy)],
+                    capture_output=True, text=True, check=False, env=env, timeout=60)
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("HR-6", proc.stdout)
+        finally:
+            server.close()
+
+    def test_996_default_live_mode_fails_closed_when_the_api_is_down(self):
+        env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
+        env["GITHUB_TOKEN"] = "test-token"
+        env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
+        proc = self._run_actions(env, payload_labels=["type:chore"],
+                                 payload_body="Closes #42 - cuerpo unico")
+        self.assertEqual(proc.returncode, 2, proc.stderr)
+        self.assertIn("transport error", proc.stderr)
+        self.assertNotIn("cuerpo unico", proc.stderr)
+
+    def test_996_actions_event_without_token_keeps_reading_the_payload(self):
+        """Sin token no hay API que consultar: el gate sigue en modo payload, como en local."""
+        env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
+        proc = self._run_actions(env, payload_labels=["type:bug"],
+                                 payload_body="Closes #42\n\n## Tests\n\n- `t.py`\n")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_996_an_event_file_that_is_not_the_actions_event_stays_in_payload_mode(self):
+        """Los scripts locales, el propagador y la parity pasan su propio evento: no cambian."""
+        server = _MockApiServer(pull_body=_good_api_body(), labels=[{"name": "type:chore"}])
+        try:
+            proc = self._run_actions(self._token_env(server), payload_labels=[],
+                                     payload_body="cuerpo obsoleto",
+                                     event_path_is_actions=False)
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("HR-6", proc.stdout)
+        finally:
+            server.close()
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
