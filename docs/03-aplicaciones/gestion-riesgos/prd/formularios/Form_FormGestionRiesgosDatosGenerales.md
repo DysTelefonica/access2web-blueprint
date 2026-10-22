@@ -64,16 +64,16 @@ Vuelca ocho campos al objeto de proyecto mediante `RellenarDatosAlObjeto` (`:110
 
 ### `RellenarDatosAlObjeto` (`:419-444`)
 
-Escribe en el proyecto activo: `IDExpediente`, `CodigoDocumento`, `ParaInformeAvisos`, `EnUTE`, `CorreoRAC`, `Elaborado`, `Revisado` y `Aprobado`, todos con `Nz(...)` (`:424-431`).
+Escribe en el proyecto activo: `IDExpediente`, `CodigoDocumento`, `ParaInformeAvisos`, `EnUTE`, `CorreoRAC`, `Elaborado`, `Revisado` y `Aprobado`, todos con `Nz(...)` (`:428-435`).
 
 ## Reglas, validaciones y cálculos
 
 - **El permiso de edición se hereda del contenedor**, no se calcula aquí (`:495-499`).
 - **Publicada la edición, el expediente queda congelado** (`:470-475`).
-- **Tres campos de circuit breaker.** `Nemotecnico`, `EnUTE` y `CodigoDocumento` prefieren el valor del proyecto **al inicio** si existe, y solo entonces el del expediente (`:352-359`, `:377-384`, `:387-395`). En una edición cargada desde el principio, el valor del expediente no se ve nunca.
-- **`ParaInformeAvisos` tiene valor por defecto**: si el proyecto no lo tiene, se fuerza a «Sí» al cargar (`:513-515`).
-- **Las fechas solo se escriben si son fechas** (`IsDate`): en caso contrario el control conserva su valor anterior en lugar de vaciarse (`:363-370`).
-- **Los desplegables de personas** se rellenan con usuarios técnicos; si se está en alta solo se ofrecen los activos, si no, todos (`:570-585`).
+- **Tres campos con derivación de valor.** `Nemotecnico`, `EnUTE` y `CodigoDocumento` prefieren el valor del proyecto **al inicio** si existe, y solo entonces el del expediente (`:353-365`, `:381-394`, `:396-403`). En una edición cargada desde el principio, el valor del expediente no se ve nunca.
+- **`ParaInformeAvisos` tiene valor por defecto**: si el proyecto no lo tiene, se fuerza a «Sí» al cargar (`:516-520`).
+- **Las fechas solo se escriben si son fechas** (`IsDate`): en caso contrario el control conserva su valor anterior en lugar de vaciarse (`:368-374`).
+- **Los desplegables de personas** se rellenan con usuarios técnicos; si se está en alta solo se ofrecen los activos, si no, todos (`:578-595`).
 
 ## Lecturas y escrituras
 
@@ -82,8 +82,8 @@ Escribe en el proyecto activo: `IDExpediente`, `CodigoDocumento`, `ParaInformeAv
 | Expediente por identificador | `Constructor.getExpediente` | `:33` |
 | Búsqueda por palabra clave | `Constructor.getExpedientesBusqueda` | `:257` |
 | Proyecto del inicio | `Constructor.getProyecto` | `:455` |
-| Usuarios de los desplegables | `m_ObjEntorno.ColUsuariosTecnicos(Activos)` | `:619-624` |
-| Escritura | Propiedades del objeto de proyecto | `:424-431`, `:21`, `:98`, `:189`, `:194` |
+| Usuarios de los desplegables | `m_ObjEntorno.ColUsuariosTecnicos(Activos)` | `:624-628` |
+| Escritura | Propiedades del objeto de proyecto | `:428-435`, `:21`, `:98`, `:189`, `:194` |
 
 La escritura real en base de datos no se produce aquí: se escriben propiedades del **objeto en memoria**; quién las persiste y cuándo queda fuera de este formulario.
 
@@ -93,15 +93,15 @@ La escritura real en base de datos no se produce aquí: se escriben propiedades 
 
 **Posibles defectos (sin corregir, a verificar):**
 
-- **H-GR-267.** Hallazgo.** La lista de campos que se limpian cuando la búsqueda no devuelve nada (`:262-271`) tiene **diez entradas**, pero `RellenarDatosExpediente` limpia **doce** (`:334-345`): faltan `Titulo` y `EnUTE`. Si el usuario tenía un expediente cargado y busca una palabra clave sin resultados, esos dos campos conservan el valor anterior.
-- **H-GR-268.** Hallazgo.** `Err.Raise 1000` (`:35, 39, 210`, etc.) no lleva `vbObjectError`; conviene verificar en ejecución que el manejador se ejecuta siempre.
-- **H-GR-269.** Hallazgo.** `ComandoActualizar_Click` y `ComandoBuscarExpediente_Click` **no** llaman a `AvanceCerrar` en el camino correcto, mientras que el resto de manejadores del formulario sí lo hacen (`:43`, `:79`, `:114`, `:150`). La cesión de pantalla es inconsistente entre manejadores.
-- **H-GR-270.** Hallazgo.** El manejador de error de `Form_Unload` (`:119-128`) y el de `m_FormExpedientes_Seleccionado` (`:157-165`) llaman a `AvanceCerrar` **después** de mostrar el `MsgBox`; si el usuario no cierra el diálogo, la cesión se retrasa indefinidamente.
-- **H-GR-271.** Hallazgo.** En `Form_Load`, `AvanceCerrar` (`:213`) se ejecuta también en el camino de error (`:227`), de modo que el subformulario cede la pantalla y luego se cierra (`:229`): comportamiento difícil de reproducir.
-- **H-GR-272.** Hallazgo.** La comparación `If Not m_ObjProyectoAlInicio.EdicionActiva.FechaPublicacion <> ""` (`:470`) usa la forma negada; un valor `Null` hace que la expresión sea distinta a la de una cadena vacía. El congelamiento depende de ese matiz.
-- **H-GR-273.** Hallazgo.** `RellenarDatosAlObjeto` copia `EnUTE` (`:427`) como cadena, pero `RellenarDatosExpediente` lo pinta en pantalla como «Sí»/«No» a partir de la enumeración (`:379-384`). El valor persistido y el mostrado no tienen por qué coincidir.
-- **H-GR-274.** Hallazgo.** Los tres `BeforeUpdate` escriben en el objeto de proyecto **antes** de validar nada, y no cancelan el evento niDevuelven error si la escritura falla: el fallo solo aparecería al abandonar el formulario.
-- **H-GR-275.** Hallazgo.** `EstablecerComboTecnicos` contiene una etiqueta `siguiente:` (`:634`) que no está referenciada por ningún `GoTo`: es código muerto de una depuración anterior.
+- **H-GR-267.** La lista de campos que se limpian cuando la búsqueda no devuelve nada (`:262-271`) tiene **diez entradas**, pero `RellenarDatosExpediente` limpia **doce** (`:334-345`): faltan `Titulo` y `EnUTE`. Si el usuario tenía un expediente cargado y busca una palabra clave sin resultados, esos dos campos conservan el valor anterior.
+- **H-GR-268.** `Err.Raise 1000` (`:35, 39, 210`, etc.) no lleva `vbObjectError`; conviene verificar en ejecución que el manejador se ejecuta siempre.
+- **H-GR-269.** `ComandoActualizar_Click` y `ComandoBuscarExpediente_Click` **no** llaman a `AvanceCerrar` en el camino correcto, mientras que el resto de manejadores del formulario sí lo hacen (`:43`, `:79`, `:114`, `:150`). La cesión de pantalla es inconsistente entre manejadores.
+- **H-GR-270.** El manejador de error de `Form_Unload` (`:119-128`) y el de `m_FormExpedientes_Seleccionado` (`:157-165`) llaman a `AvanceCerrar` **después** de mostrar el `MsgBox`; si el usuario no cierra el diálogo, la cesión se retrasa indefinidamente.
+- **H-GR-271.** En `Form_Load`, `AvanceCerrar` (`:213`) se ejecuta también en el camino de error (`:227`), de modo que el subformulario cede la pantalla y luego se cierra (`:229`): comportamiento difícil de reproducir.
+- **H-GR-272.** La comparación `If Not m_ObjProyectoAlInicio.EdicionActiva.FechaPublicacion <> ""` (`:470`) usa la forma negada; un valor `Null` hace que la expresión sea distinta a la de una cadena vacía. El congelamiento depende de ese matiz.
+- **H-GR-273.** `RellenarDatosAlObjeto` copia `EnUTE` (`:431`) como cadena, pero `RellenarDatosExpediente` lo pinta en pantalla como «Sí»/«No» a partir de la enumeración (`:388-392`). El valor persistido y el mostrado no tienen por qué coincidir.
+- **H-GR-274.** Los tres `BeforeUpdate` escriben en el objeto de proyecto **antes** de validar nada, y no cancelan el evento ni devuelven error si la escritura falla: el fallo solo aparecería al abandonar el formulario.
+- **H-GR-275.** `EstablecerComboTecnicos` contiene una etiqueta `siguiente:` (`:637`) que no está referenciada por ningún `GoTo`: es código muerto de una depuración anterior.
 
 **Propuestas web pendientes de decisión:** ninguna aprobada. Candidatas: modelar la edición como un formulario de cabecera con guardado explícito en lugar del volcado implícito al cerrar; sustituir la búsqueda por texto libre por un buscador con resultados en la misma página; hacer que el circuito elaborado/revisado/aprobado sea un estado con transiciones en lugar de tres campos libres; mover el «para informe de avisos» a una configuración de la edición; unificar la cesión de pantalla en un único mecanismo del contenedor.
 

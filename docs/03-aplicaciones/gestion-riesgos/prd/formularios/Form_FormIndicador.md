@@ -35,7 +35,7 @@ Salidas: abre `FormIndicadorProyectos` como modal con `OpenArgs` con nombre (`:7
 
 1. `AjustarTamaño Me` y copia `lblTitulo` al título de la ventana (`:13-15`).
 2. **Reinicia el estado**: `IndicadorState_ResetAll` (`:17`), `LimpiarTempVarsIndicador` (`:24`) y `m_IdsCsvUltimoCalculo` a vacío (`:16`). Tres mecanismos distintos de limpieza.
-3. Deja semestre `S1` y el año en curso (`:18-20`); pone los seis tiles y el botón Calcular a cero o deshabilitado (`:26-34`).
+3. Deja semestre `S1` y el año en curso (`:18-20`); pone los seis tiles a cero y deshabilita Calcular (`:29-35`).
 4. `ActualizarBotonesExport` y `RefrescarEstadoProyectos` (`:36-37`).
 
 El manejador de error avisa con `MsgBox` y **no asigna `Cancel`** (`:39-40`): el formulario queda abierto con valores a medio inicializar.
@@ -44,12 +44,12 @@ El manejador de error avisa con `MsgBox` y **no asigna `Cancel`** (`:39-40`): el
 
 1. Exige confirmación previa del diálogo (`:100`) y una lista de identificadores no vacía (`:107-110`); guarda esa lista en `m_IdsCsvUltimoCalculo` (`:112`).
 2. Valida el año y resuelve el rango con `CalcularRangoSemestre` (`:115-127`).
-3. Llama a `IndicadorRiesgosV2_GetResumen` (`:131`, `IndicadorRiesgosRepositorio.bas:185`) y pinta los seis campos en las etiquetas (`:135-140`). Si el recordset llega vacío, pone los seis a cero (`:142-148`).
-4. `ActualizarBotonesExport` habilita la descarga solo de los tiles con valor mayor que cero (`:155`, `:251-267`).
+3. Llama a `IndicadorRiesgosV2_GetResumen` (`:131`, `IndicadorRiesgosRepositorio.bas:185`) y pinta los seis campos en las etiquetas (`:135-140`). Si el recordset llega vacío, pone los seis a cero (`:143-148`).
+4. `ActualizarBotonesExport` habilita la descarga solo de los tiles con valor mayor que cero (`:155`, `:251-268`).
 
 ### Alternativo — carga de proyectos (`cmdCargarProyectos_Click`, `:43-80`)
 
-1. Valida el año y normaliza el semestre a `1`, `2` o vacío (`:50-65`).
+1. Valida el año y normaliza el semestre a `1`, `2` o vacío (`:51-65`).
 2. `IndicadorState_Init` y marca el formulario como abierto (`:67-68`).
 3. Abre `FormIndicadorProyectos` en modal con `ANIO=...;SEM=...` (`:73`).
 4. Al volver, `RefrescarEstadoProyectos` (`:76`): habilita Calcular solo si hay confirmación y al menos un proyecto.
@@ -67,8 +67,8 @@ Cada manejador termina en `MsgBox` con su propio prefijo (`:40`, `:80`, `:163`, 
 ## Reglas, validaciones y cálculos
 
 - **El botón Calcular no se habilita solo, sino por un flag de sesión.** `RefrescarEstadoProyectos` exige `IndicadorState_HaConfirmado` y un recuento mayor que cero (`:198`).
-- **El semestre viaja en dos formatos.** Al diálogo sale como `1`, `2` o vacío (`:57-64`); el rango lo resuelve `CalcularRangoSemestre`, que además acepta `S1`, `S2`, `ANUAL` y sus formas cortas (`modIndicadorDashboard.bas:41-55`).
-- **La habilitación de la descarga se decide leyendo el texto del tile.** `ToLongSafe` (`:232-249`) filtra los dígitos de la etiqueta y compara con cero (`:257-266`); un número con signo negativo o decimal se lee como su parte entera.
+- **El semestre viaja en dos formatos.** Al diálogo sale como `1`, `2` o vacío (`:57-65`); el rango lo resuelve `CalcularRangoSemestre`, que además acepta `S1`, `S2`, `ANUAL` y sus formas cortas (`modIndicadorDashboard.bas:41-55`).
+- **La habilitación de la descarga se decide leyendo el texto del tile.** `ToLongSafe` (`:232-249`) filtra los dígitos de la etiqueta y compara con cero (`:255-268`); un número con signo negativo o decimal se lee como su parte entera.
 - **`m_IdsCsvUltimoCalculo` es una caché de sesión, no un estado derivado del filtro** (`:5`, `:283`).
 
 ## Lecturas y escrituras
@@ -85,7 +85,7 @@ Sin escrituras en base de datos. Escribe un fichero Excel por descarga y deja es
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Aquí la dependencia de ficheros es doble: la ayuda se abre desde una ruta local construida por el entorno (`Entorno.cls:876`) y la exportación produce un fichero en la carpeta del usuario. En la web, la ayuda debe servirse desde la propia aplicación y la descarga debe pasar por una ruta autenticada en lugar del disco del cliente. El estado de sesión (selección de proyectos y confirmación) es el segundo punto que hay que decidir: hoy vive en memoria del proceso de Access.
+Pendiente de decisión de coexistencia. Aquí la dependencia de ficheros es doble: la ayuda se abre desde una ruta local construida por el entorno (`Entorno.cls:876`) y la exportación produce un fichero en la carpeta del usuario. En la web, la ayuda debe servirse desde la propia aplicación y la descarga debe pasar por una ruta autenticada en lugar del disco del cliente. El estado de sesión (selección de proyectos y confirmación) es el segundo punto que hay que decidir: hoy vive en memoria del proceso de Access.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 
@@ -93,16 +93,16 @@ Pendiente de `../coexistencia.md`. Aquí la dependencia de ficheros es doble: la
 
 **Posibles defectos (sin corregir, a verificar):**
 
-- **H-GR-276.** Hallazgo.** Hay **dos procedimientos de salida idénticos** (`btnSalir_Click` en `:7-9` y `CmdSalir_Click` en `:188-190`) con la misma acción y distinto casing. En Access ambos son el mismo nombre, así que solo uno puede quedar enlazado y el otro es código muerto; conviene confirmar en el binario cuál está vivo.
-- **H-GR-277.** Hallazgo.** La exportación reutiliza los proyectos del último cálculo (`:283`) pero **recalcula el rango con el año y el semestre que haya en pantalla en ese momento** (`:292-301`). Si el usuario cambia el filtro después de calcular, el fichero sale con datos de dos periodos distintos sin ningún aviso.
-- **H-GR-278.** Hallazgo.** `ActualizarBotonesExport` decide la habilitación solo mirando la cifra de cada etiqueta (`:251-267`), no la selección ni el filtro. Tras cambiar el filtro, los botones siguen activos y el usuario puede descargar un detalle que no corresponde a lo que ve.
-- **H-GR-279.** Hallazgo.** `Form_Open` no asigna `Cancel` en su manejador de error (`:39-40`): si el reinicio de estado falla a mitad, el formulario queda abierto con tiles a cero, Calcular deshabilitado y el diálogo como único camino de salida.
-- **H-GR-280.** Hallazgo.** La limpieza de estado happens por tres vías distintas: `IndicadorState_ResetAll` (`:17`), `LimpiarTempVarsIndicador` (`:24`) y el borrado de `m_IdsCsvUltimoCalculo` (`:16`). Conviene verificar que no se pisan entre sí y que ninguno deja restos.
-- **H-GR-281.** Hallazgo.** `Err.Raise 1000` de `:132` se lanza sin descripción, y el mensaje final depende de `errTxt` (`:163`). Si el resumen falla por otra causa, el texto mostrado sería el de Access y no el del módulo.
-- **H-GR-282.** Hallazgo.** `ToLongSafe` (`:232-249`) descarta cualquier carácter no numérico: un tile con formato monetario o con separador de miles se leería como un número distinto del mostrado.
-- **H-GR-283.** Hallazgo.** `cmdAyuda` muestra el literal «Pendiente de Integrar» (`:182`) si el HTML no está en disco: es un mensaje de estado interno de desarrollo expuesto al usuario final, en un título de diálogo que dice «Sin Ayuda».
-- **H-GR-284.** Hallazgo.** Cada exportación crea una instancia de Excel (`modIndicadorDashboard.bas:127`); conviene verificar que la función cierra libro y aplicación al salir, o se acumulan procesos huérfanos por cada descarga.
-- **H-GR-285.** Hallazgo.** El contenido descargable depende de que el estado de sesión siga vivo. Si el proceso se reinicia entre el cálculo y la descarga, `m_IdsCsvUltimoCalculo` se pierde y la exportación cae a la selección actual, que puede ser otra.
+- **H-GR-276.** Hay **dos procedimientos de salida idénticos** (`btnSalir_Click` en `:7-9` y `CmdSalir_Click` en `:188-190`) con la misma acción y distinto casing. En Access ambos son el mismo nombre, así que solo uno puede quedar enlazado y el otro es código muerto; conviene confirmar en el binario cuál está vivo.
+- **H-GR-277.** La exportación reutiliza los proyectos del último cálculo (`:283`) pero **recalcula el rango con el año y el semestre que haya en pantalla en ese momento** (`:292-301`). Si el usuario cambia el filtro después de calcular, el fichero sale con datos de dos periodos distintos sin ningún aviso.
+- **H-GR-278.** `ActualizarBotonesExport` decide la habilitación solo mirando la cifra de cada etiqueta (`:251-268`), no la selección ni el filtro. Tras cambiar el filtro, los botones siguen activos y el usuario puede descargar un detalle que no corresponde a lo que ve.
+- **H-GR-279.** `Form_Open` no asigna `Cancel` en su manejador de error (`:39-40`): si el reinicio de estado falla a mitad, el formulario queda abierto con tiles a cero, Calcular deshabilitado y el diálogo como único camino de salida.
+- **H-GR-280.** La limpieza de estado se produce por tres vías distintas: `IndicadorState_ResetAll` (`:17`), `LimpiarTempVarsIndicador` (`:24`) y el borrado de `m_IdsCsvUltimoCalculo` (`:16`). Conviene verificar que no se pisan entre sí y que ninguno deja restos.
+- **H-GR-281.** `Err.Raise 1000` de `:132` se lanza sin descripción, y el mensaje final depende de `errTxt` (`:163`). Si el resumen falla por otra causa, el texto mostrado sería el de Access y no el del módulo.
+- **H-GR-282.** `ToLongSafe` (`:232-249`) descarta cualquier carácter no numérico: un tile con formato monetario o con separador de miles se leería como un número distinto del mostrado.
+- **H-GR-283.** `cmdAyuda` muestra el literal «Pendiente de Integrar» (`:182`) si el HTML no está en disco: es un mensaje de estado interno de desarrollo expuesto al usuario final, en un título de diálogo que dice «Sin Ayuda».
+- **H-GR-284.** Cada exportación crea una instancia de Excel (`modIndicadorDashboard.bas:127`); conviene verificar que la función cierra libro y aplicación al salir, o se acumulan procesos huérfanos por cada descarga.
+- **H-GR-285.** El contenido descargable depende de que el estado de sesión siga vivo. Si el proceso se reinicia entre el cálculo y la descarga, `m_IdsCsvUltimoCalculo` se pierde y la exportación cae a la selección actual, que puede ser otra.
 
 **Propuestas web pendientes de decisión:** ninguna aprobada. Candidatas: convertir las seis tarjetas en una tabla de indicadores con descarga bajo demanda en lugar de seis botones; recalcular siempre la descarga desde los filtros visibles y no desde una caché del último cálculo; servir la ayuda desde una ruta de la propia web en lugar de un fichero en disco; mantener la selección de proyectos en el servidor, con identificador de sesión, en vez de en memoria del proceso.
 

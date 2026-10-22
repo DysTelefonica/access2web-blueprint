@@ -86,7 +86,7 @@ Sin escrituras en base de datos ni en disco: solo lectura y estado en memoria.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Es la pantalla que más se apoya en una peculiaridad del motor de Access: el `ListBox` con origen de valores, la cabecera inyectada como fila y la anchura cero de la columna clave. En la web esa lista se sustituye por una tabla con columna de identificador visible o identificable, y la selección se resuelve en el servidor. El punto a decidir es el estado de sesión: hoy la lista vive en memoria del proceso y se pierde si el proceso se reinicia entre el diálogo y la confirmación.
+Pendiente de decisión de coexistencia. Es la pantalla que más se apoya en una peculiaridad del motor de Access: el `ListBox` con origen de valores, la cabecera inyectada como fila y la anchura cero de la columna clave. En la web esa lista se sustituye por una tabla con columna de identificador visible o identificable, y la selección se resuelve en el servidor. El punto a decidir es el estado de sesión: hoy la lista vive en memoria del proceso y se pierde si el proceso se reinicia entre el diálogo y la confirmación.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 
@@ -94,17 +94,17 @@ Pendiente de `../coexistencia.md`. Es la pantalla que más se apoya en una pecul
 
 **Posibles defectos (sin corregir, a verificar):**
 
-- **H-GR-286.** Hallazgo.** Los dos ficheros de diseño que solo difieren en mayúsculas son un riesgo real de despliegue: en un sistema de ficheros que no distingue mayúsculas no pueden coexistir, y en Linux el que se lea puede no ser el compilado. Hay que determinar cuál refleja el binario.
-- **H-GR-287.** Hallazgo.** Si `getProyectosAbiertos` devuelve una colección vacía o `Nothing`, `Form_Open` y `CargarLista_RespetandoExcluidos` **no avisan** (`:58-60`, `:273-277`): el usuario ve un diálogo con cabecera y sin filas, indistinguible de «no hay proyectos en ese periodo».
-- **H-GR-288.** Hallazgo.** El bucle parte cada elemento en cinco campos sin comprobar la longitud (`:66`, `:67-71`). Si el nombre del proyecto contiene una tubería, el acceso a un campo inexistente falla con error en tiempo de ejecución y el usuario ve el `MsgBox` del manejador.
-- **H-GR-289.** Hallazgo.** La cabecera es una fila de datos real (`:48`): se puede seleccionar, `SelectedIDProyecto` intenta leer su identificador (`:113-125`) y el botón Quitar se habilita si el valor numérico es mayor que cero (`:109`). Cuando está habilitada y se pulsa, la respuesta es el aviso de la `:137`.
-- **H-GR-290.** Hallazgo.** **Cancelar no deshace nada**: no limpia la selección ni desactiva el flag de confirmación (`:185-188`). Si el usuario ya había confirmado antes en el mismo proceso, al volver al panel la selección anterior sigue viva y Calcular queda habilitado con proyectos que no ve en pantalla.
-- **H-GR-291.** Hallazgo.** El ancho cero de la columna del identificador (`.form.txt:556`) oculta la clave de cada fila: el usuario ve código, proyecto y fechas, pero no qué proyecto es en términos del modelo de datos.
-- **H-GR-292.** Hallazgo.** `Err.Raise 1000` en `:214` y `:229` se lanza sin descripción; el texto lo aporta `p_Error`. Si algún camino futuro depende de `Err.Description` en lugar de `p_Error`, el mensaje se pierde.
-- **H-GR-293.** Hallazgo.** La sustitución de punto y coma por dos puntos (`:70-71`) **altera el texto mostrado** de proyectos y nombres que contengan ese carácter. Es una corrección de formato aplicada a un dato de negocio.
-- **H-GR-294.** Hallazgo.** En `getProyectosAbiertos` el recordset se cierra (`:267-268`) pero el `QueryDef` solo se libera con `Set qd = Nothing` (`:270`), sin cierre explícito.
-- **H-GR-295.** Hallazgo.** Hay variables de módulo (`flag` y `dato`, `:6-7`) **sombreadas** por variables locales de igual nombre (`:39-40`), que quedan sin uso. El mismo nombre para el estado global y el local invita a errores en cambios futuros.
-- **H-GR-296.** Hallazgo.** `cmdRecargarTodos` vuelve a ejecutar la consulta y puede devolver un conjunto distinto del que tenía el usuario delante (`:159-162`), sin avisar de si algo ha cambiado.
+- **H-GR-286.** Los dos ficheros de diseño que solo difieren en mayúsculas son un riesgo real de despliegue: en un sistema de ficheros que no distingue mayúsculas no pueden coexistir, y en Linux el que se lea puede no ser el compilado. Hay que determinar cuál refleja el binario.
+- **H-GR-287.** Si `getProyectosAbiertos` devuelve una colección vacía o `Nothing`, `Form_Open` y `CargarLista_RespetandoExcluidos` **no avisan** (`:58-60`, `:273-277`): el usuario ve un diálogo con cabecera y sin filas, indistinguible de «no hay proyectos en ese periodo».
+- **H-GR-288.** El bucle parte cada elemento en cinco campos sin comprobar la longitud (`:66`, `:67-71`). Si el nombre del proyecto contiene una tubería, el acceso a un campo inexistente falla con error en tiempo de ejecución y el usuario ve el `MsgBox` del manejador.
+- **H-GR-289.** La cabecera es una fila de datos real (`:48`): se puede seleccionar, `SelectedIDProyecto` intenta leer su identificador (`:113-125`) y el botón Quitar se habilita si el valor numérico es mayor que cero (`:109`). Cuando está habilitada y se pulsa, la respuesta es el aviso de la `:137`.
+- **H-GR-290.** **Cancelar no deshace nada**: no limpia la selección ni desactiva el flag de confirmación (`:185-188`). Si el usuario ya había confirmado antes en el mismo proceso, al volver al panel la selección anterior sigue viva y Calcular queda habilitado con proyectos que no ve en pantalla.
+- **H-GR-291.** El ancho cero de la columna del identificador (`.form.txt:556`) oculta la clave de cada fila: el usuario ve código, proyecto y fechas, pero no qué proyecto es en términos del modelo de datos.
+- **H-GR-292.** `Err.Raise 1000` en `:214` y `:229` se lanza sin descripción; el texto lo aporta `p_Error`. Si algún camino futuro depende de `Err.Description` en lugar de `p_Error`, el mensaje se pierde.
+- **H-GR-293.** La sustitución de punto y coma por dos puntos (`:70-71`) **altera el texto mostrado** de proyectos y nombres que contengan ese carácter. Es una corrección de formato aplicada a un dato de negocio.
+- **H-GR-294.** En `getProyectosAbiertos` el recordset se cierra (`:267-268`) pero el `QueryDef` solo se libera con `Set qd = Nothing` (`:270`), sin cierre explícito.
+- **H-GR-295.** Hay variables de módulo (`flag` y `dato`, `:6-7`) **sombreadas** por variables locales de igual nombre (`:39-40`), que quedan sin uso. El mismo nombre para el estado global y el local invita a errores en cambios futuros.
+- **H-GR-296.** `cmdRecargarTodos` vuelve a ejecutar la consulta y puede devolver un conjunto distinto del que tenía el usuario delante (`:159-162`), sin avisar de si algo ha cambiado.
 
 **Propuestas web pendientes de decisión:** ninguna aprobada. Candidatas: sustituir la lista con cabecera inyectada por una tabla con columna de identificador real y selección visible; devolver la selección por parámetro en la ruta en lugar de por estado en memoria; hacer que cancelar descarte explícitamente la confirmación anterior; y mover el filtro de proyectos a una consulta de servidor reutilizable por otroslistados.
 
@@ -114,15 +114,13 @@ Propuestos, no aprobados:
 
 1. Abrir el diálogo carga los proyectos abiertos en el periodo indicado.
 2. Sin proyectos en el periodo se avisa, en vez de mostrar una lista vacía sin explicación.
-3. Quitar un proyecto lo desaparece de la lista y no lo devuelve al aceptar.
-4. Recargar devuelve todos los proyectos, incluidos los excluidos.
-5. Aceptar devuelve exactamente los proyectos visibles y habilita el cálculo en el panel.
-6. Cancelar no cambia lo confirmado anteriormente.
-7. Un identificador de proyecto no numérico o mal formado no rompe la carga.
+3. Quitar un proyecto lo desaparece de la lista; Recargar lo devuelve.
+4. Aceptar devuelve exactamente los proyectos visibles y habilita el cálculo en el panel.
+5. Cancelar no cambia lo confirmado anteriormente.
+6. Un identificador de proyecto no numérico o mal formado no rompe la carga.
 
 ## Pendientes
 
 - Qué versión del diseño está realmente en el binario, dados los dos ficheros que solo difieren en mayúsculas.
-- Si la colección de proyectos vacía significa «sin resultados» o «consulta fallida» en producción, ya que el código no lo distingue.
-- Qué consultas del resto de la aplicación reutilizan el mismo criterio de proyecto abierto en el periodo.
-- Si la ayuda de indicadores enlaza con esta pantalla con algún parámetro que hoy no se observa en el código.
+- Si una colección de proyectos vacía significa «sin resultados» o «consulta fallida» en producción, ya que el código no lo distingue.
+- Qué consultas del resto de la aplicación reutilizan el criterio de proyecto abierto en el periodo.
