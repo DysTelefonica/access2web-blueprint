@@ -125,6 +125,14 @@ class TestHR26PinnedToolchain(GateCase):
             ("pip install without ==", yml(run="pip install requests\n          " + RUN_OK), 1, "HR-26"),
             ("pip -r without hashes", yml(run="pip install -r requirements.txt\n          " + RUN_OK), 1, "HR-26"),
             ("pip -c constraints unverifiable", yml(run="pip install -c constraints.txt\n          " + RUN_OK), 1, "HR-26"),
+            ("bare name with extras is a registry requirement", yml(
+                run="pip install \"app[dev]\"\n          " + RUN_OK), 1, "HR-26"),
+            ("local path mixed with an unpinned registry name", yml(
+                run="pip install ./app requests\n          " + RUN_OK), 1, "HR-26"),
+            ("local path with a requirements file without hashes", yml(
+                run="pip install ./app -r requirements.txt\n          " + RUN_OK), 1, "HR-26"),
+            ("editable bare name is a registry requirement", yml(
+                run="pip install -e app\n          " + RUN_OK), 1, "HR-26"),
             ("finding in non-required job", yml(
                 tail="  other:\n    timeout-minutes: 5\n    steps:\n      - uses: actions/checkout@v4\n"), 1, "HR-26"),
         ])
@@ -138,6 +146,12 @@ class TestHR26PinnedToolchain(GateCase):
             ("pip install with ==", yml(run="pip install requests==2.31.0\n          " + RUN_OK), 0, None),
             ("pip install -r with hashes stays clean", yml(
                 run="pip install -r requirements.txt --require-hashes\n          " + RUN_OK), 0, None),
+            ("pip install of a local path with extras", yml(
+                run="python -m pip install --quiet \"./app[dev]\"\n          " + RUN_OK), 0, None),
+            ("pip install -e of a local path", yml(run="pip install -e ./app\n          " + RUN_OK), 0, None),
+            ("pip install of the current directory", yml(run="pip install .\n          " + RUN_OK), 0, None),
+            ("pip install of several local paths", yml(
+                run="pip install --quiet ../x ./y /abs/z ~/w\n          " + RUN_OK), 0, None),
             ("local action needs no sha", yml(uses="uses: ./.github/actions/local"), 0, None),
             ("docker mutable tag", yml(uses="uses: docker://alpine:3.20"), 1, "HR-26"),
             ("docker digest clean", yml(uses="uses: docker://alpine@sha256:" + "c"*64), 0, None),
@@ -698,6 +712,60 @@ class TestConcurrency(GateCase):
         code, out = self.run_gate(text)
         self.assertEqual(code, 1, out)
         self.assertIn("concurrency", out)
+
+
+class TestCancelInProgress(GateCase):
+    """#978: a run cancelled after its jobs exist leaves a `cancelled` check run on the head SHA,
+    and a cancelled required check blocks the merge even when a later run of the same SHA is green.
+    On `pull_request` only a new commit (`synchronize`) may cancel: its victim is the old SHA."""
+
+    def wf(self, concurrency, on="on:\n  pull_request:\n"):
+        return yml(on=on).replace("concurrency:\n  group: wf-${{ github.ref }}\n", concurrency)
+
+    def test_literal_true_on_a_pull_request_workflow_is_a_finding(self):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: true\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("cancel-in-progress", out)
+        self.assertIn("synchronize", out)
+
+    def test_string_true_is_a_finding_too(self):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: 'true'\n")
+        self.assertEqual(self.run_gate(text)[0], 1)
+
+    def test_a_job_level_true_is_a_finding(self):
+        text = self.wf("concurrency:\n  group: wf\n").replace(
+            "    timeout-minutes: 5\n",
+            "    timeout-minutes: 5\n    concurrency:\n      group: j\n      cancel-in-progress: true\n")
+        code, out = self.run_gate(text)
+        self.assertEqual(code, 1, out)
+        self.assertIn("job 'build'", out)
+
+    def test_false_passes(self):
+        text = self.wf("concurrency:\n  group: wf\n  cancel-in-progress: false\n")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_an_expression_that_names_synchronize_passes(self):
+        text = self.wf("concurrency:\n  group: wf\n"
+                       "  cancel-in-progress: ${{ github.event.action == 'synchronize' }}\n")
+        self.assertEqual(self.run_gate(text)[0], 0)
+
+    def test_an_expression_that_does_not_name_synchronize_is_a_finding(self):
+        text = self.wf("concurrency:\n  group: wf\n"
+                       "  cancel-in-progress: ${{ github.event_name == 'pull_request' }}\n")
+        self.assertEqual(self.run_gate(text)[0], 1)
+
+    def test_without_a_pull_request_trigger_true_is_not_judged(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("cwp", Path(__file__).resolve().parents[1] / "check_workflow_policy.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        doc = mod.parse_workflow(self.wf("concurrency:\n  group: wf\n  cancel-in-progress: true\n",
+                                         on="on:\n  push:\n    branches: [main]\n"), "wf.yml")
+        self.assertEqual(mod.cancel_in_progress_findings("wf.yml", doc), [])
+
+    def test_absent_cancel_in_progress_passes(self):
+        self.assertEqual(self.run_gate(yml())[0], 0)
 
 
 class TestServicePorts(GateCase):
