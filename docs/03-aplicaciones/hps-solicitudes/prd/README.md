@@ -41,9 +41,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 |---|---|---|---|---|---|---|---|
 | Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 407 | 33 | 13 | igual | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
 | Form_FormAdjuntaTraspasoONS | src/forms/Form_FormAdjuntaTraspasoONS.cls | 234 | 28 | 7 | igual | pendiente | — |
-Totales: 0 analizados · 0 no aplicables · 74 pendientes.
-
-
+| Form_FormAdjuntarExcelSolicitante | src/forms/Form_FormAdjuntarExcelSolicitante.cls | 215 | 28 | 7 | igual | analizado | [formularios/Form_FormAdjuntarExcelSolicitante.md](formularios/Form_FormAdjuntarExcelSolicitante.md) |
+| Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | analizado | [formularios/Form_FormAltaDatosSolicitante.md](formularios/Form_FormAltaDatosSolicitante.md) |
 | Form_FormCambioTipo | src/forms/Form_FormCambioTipo.cls | 107 | 26 | 4 | igual | pendiente | — |
 | Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | analizado | [formularios/Form_FormConfiguracion.md](formularios/Form_FormConfiguracion.md) |
 | Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | pendiente | — |
@@ -53,16 +52,20 @@ Totales: 0 analizados · 0 no aplicables · 74 pendientes.
 | Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | pendiente | — |
 | Form_FormExpedienteDetalle | src/forms/Form_FormExpedienteDetalle.cls | 79 | 32 | 3 | igual | analizado | [formularios/Form_FormExpedienteDetalle.md](formularios/Form_FormExpedienteDetalle.md) |
 | Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 352 | 27 | 10 | igual | analizado | [formularios/Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
-Totales: 0 analizados · 0 no aplicables · 74 pendientes.
-
-
+| Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | analizado | [formularios/Form_FormMotivoHPS.md](formularios/Form_FormMotivoHPS.md) |
+| Form_FormMotivosHPS | src/forms/Form_FormMotivosHPS.cls | 323 | 18 | 10 | igual | analizado | [formularios/Form_FormMotivosHPS.md](formularios/Form_FormMotivosHPS.md) |
+| Form_FormPlantillasHTML | src/forms/Form_FormPlantillasHTML.cls | 181 | 17 | 7 | igual | pendiente | — |
+| Form_FormResponsable | src/forms/Form_FormResponsable.cls | 214 | 28 | 6 | igual | pendiente | — |
+| Form_FormResponsablesGestion | src/forms/Form_FormResponsablesGestion.cls | 392 | 28 | 13 | igual | pendiente | — |
+| Form_FormSolicitudAlta | src/forms/Form_FormSolicitudAlta.cls | 130 | 24 | 4 | igual | analizado | [formularios/Form_FormSolicitudAlta.md](formularios/Form_FormSolicitudAlta.md) |
 | Form_FormSolicitudAltaTraspaso | src/forms/Form_FormSolicitudAltaTraspaso.cls | 142 | 25 | 5 | igual | pendiente | — |
 | Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | pendiente | — |
 | Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | pendiente | — |
 | Form_FormSolicitudRenovacionFechas | src/forms/Form_FormSolicitudRenovacionFechas.cls | 1652 | 82 | 40 | igual | pendiente | — |
-Totales: 0 analizados · 0 no aplicables · 74 pendientes.
-
-
+| Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | analizado | [formularios/Form_FormSolicitudesAltaFechas.md](formularios/Form_FormSolicitudesAltaFechas.md) |
+| Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | pendiente | — |
+| Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | pendiente | — |
+| Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | analizado | [formularios/Form_FormSolicitudesGestion.md](formularios/Form_FormSolicitudesGestion.md) |
 | Form_FormSolicitudesTraspasoFechas | src/forms/Form_FormSolicitudesTraspasoFechas.cls | 1166 | 56 | 29 | igual | pendiente | — |
 | Form_FormTareasTramitadorPendientes | src/forms/Form_FormTareasTramitadorPendientes.cls | 652 | 29 | 14 | igual | pendiente | — |
 | Form_FormUsuariosHPSBusqueda | src/forms/Form_FormUsuariosHPSBusqueda.cls | 295 | 26 | 9 | igual | pendiente | — |
@@ -121,6 +124,9 @@ Totales: 0 analizados · 0 no aplicables · 74 pendientes.
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
+
+
+
 Totales: 13 analizados · 0 no aplicables · 61 pendientes.
 
 ### Hallazgos del legado (fase 1)
@@ -143,6 +149,7 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-12 | `Set m_ObjEntorno.Configuracion = Nothing` solo se invoca al guardar; `cmdSalir` deja la caché de `Configuracion` con la versión anterior en memoria. | `Form_FormConfiguracion.cls:13-15, 72` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 | H-HPS-S-13 | `ComandoRegistrar_Click` renueva la caché y emite `Modificado` solo en éxito; un fallo en `Registrar` deja al menú con la versión obsoleta en memoria y sin re-pintado. | `Form_FormConfiguracion.cls:72-78` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 
+
 ### Hallazgos del legado — tanda del alta (H-HPS-S-14 a H-HPS-S-22)
 
 | Id | Hallazgo | Evidencia | Ficha |
@@ -157,20 +164,19 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-21 | Rótulos residuales: `Caption` de otra app, typo «SOLCITUD», 7× `Comando36`, 8× `Comando47`, 2× «E», duplicados Excel/MARGA. | `Form_FormSolicitudesAltaFechas.form.txt:39, 708, 809, 1043, 1620, 1784, 1895, 1939, 1981-2764` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 | H-HPS-S-22 | Los 38 `errores:` repiten «se ha producido el error n»; `ComandoEliminarExcelRecibido_Click` se identifica como `ComandoEliminarExcelEnviado_Click`. | `Form_FormSolicitudesAltaFechas.cls:703` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 
+> Nota: esta tanda arranca en `H-HPS-S-14` porque las dos tandas anteriores (`fichas-1` y `fichas-2`) ya publicaron `1..13`. Los identificadores quedan reservados en `9 hallazgos` por la propia numeración; el siguiente lote continúa con `H-HPS-S-23` y siguientes.
 ### Hallazgos del legado — tanda de AltaDatosSolicitante + motivos (H-HPS-S-23 a H-HPS-S-30)
 
 | Id | Hallazgo | Evidencia | Ficha |
 |---|---|---|---|
-| H-HPS-S-23 | `Form_FormAltaDatosSolicitante` queda compilado pero sin cablear en `cfa1937a`: no hay `DoCmd.OpenForm` ni `SourceObject` que lo invoque. Verificar si es residuo de un refactor previo o si `Form_FormSolicitudesAltaTraspasoDatos` cubre su rol. | (no en `src/`) | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
-| H-HPS-S-24 | `ComandoRegistrar_Click` cierra `FormSolicitudAltaTraspaso` con `acSaveNo` y abre uno nuevo, descartando trabajo en curso sin aviso. Mismo patrón que H-HPS-S-16. | `Form_FormAltaDatosSolicitante.cls:372-377` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
-| H-HPS-S-25 | `ComandoRegistrar_Click` referencia `Err.Numbr` (`:383`); el mensaje muestra «0» en lugar del código real. `cmdSalir_Click` cierra sin capturador de error. | `Form_FormAltaDatosSolicitante.cls:10-16, 383` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
-| H-HPS-S-26 | `ComandoGenerarDNIValido` (`:218-220`, caption `Comando247`) asigna un DNI/NIE sintético sin validar letra; combinado con `ComandoRegistrar` puede persistirlo. Visibilidad por `TempVars("EnPruebas") = "Sí"`. Hallazgo sensible fuera del lote. | `Form_FormAltaDatosSolicitante.cls:218-220, 292-296, 1870` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
-| H-HPS-S-27 | Rótulos heredados: `Caption` del formulario contiene una versión (`:40`); `ComandoAyuda` (`:603`), `ComandoGenerarDNIValido` (`:1870`), `ComandoActualizar` («Contador»), `ComandoRegistrar` («Editar»). | `Form_FormAltaDatosSolicitante.cls:40, 603, 1870, 2047, 2125` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
-| H-HPS-S-28 | `MotivoHPS.EditarMotivo` ejecuta `UPDATE` en `TbMotivoHPS`, `TbSolicitudes`, `TbUsuarios` y `TbUsuariosHistoricos` sin transacción; caída intermedia deja el renombrado a medias. Hallazgo sensible fuera del lote. | `MotivoHPS.cls:41-44, 180-182, 208-213` | [Form_FormMotivoHPS](formularios/Form_FormMotivoHPS.md) |
-| H-HPS-S-29 | `Form_FormMotivosHPS` (catálogo) también queda compilado pero sin cablear: ningún `DoCmd.OpenForm "FormMotivosHPS"` ni `SourceObject` en `src/`. Confirmar lanzador externo. | (no en `src/`) | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
-| H-HPS-S-30 | `EstablecerLista` activa `ComandoEditar` y `ComandoEliminar` al pintar (`:22-23`); un doble clic accidental dispara `ComandoEditar_Click`, que aborta con «Seleccione una elemento de la lista» (typo «un elemento», `:91`, `:124`). | `Form_FormMotivosHPS.cls:22-23, 91, 124` | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
-
-> Nota: esta tanda arranca en `H-HPS-S-14` porque las dos tandas anteriores (`fichas-1` y `fichas-2`) ya publicaron `1..13`. Los identificadores quedan reservados en `9 hallazgos` por la propia numeración; el siguiente lote continúa con `H-HPS-S-23` y siguientes.
+| H-HPS-S-23 | `Form_FormAltaDatosSolicitante` queda compilado pero sin cablear: no hay `DoCmd.OpenForm` ni `SourceObject` que lo invoque. | (no en `src/`) | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-24 | `ComandoRegistrar_Click` cierra `FormSolicitudAltaTraspaso` con `acSaveNo` y abre uno nuevo, descartando trabajo en curso sin aviso. | `Form_FormAltaDatosSolicitante.cls:372-377` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-25 | `ComandoRegistrar_Click` referencia `Err.Numbr` (`:383`): el mensaje muestra «0» en lugar del código real. | `Form_FormAltaDatosSolicitante.cls:383` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-26 | `ComandoGenerarDNIValido` asigna un DNI/NIE sintético sin validar letra; combinado con `ComandoRegistrar` puede persistirlo. Hallazgo sensible fuera del lote. | `Form_FormAltaDatosSolicitante.cls:218-220, 292-296, 1870` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-27 | Rótulos heredados: `Caption` con una versión, `ComandoAyuda`, `ComandoGenerarDNIValido`, `ComandoActualizar` («Contador»), `ComandoRegistrar` («Editar»). | `Form_FormAltaDatosSolicitante.cls:40, 603, 1870, 2047, 2125` | [Form_FormAltaDatosSolicitante](formularios/Form_FormAltaDatosSolicitante.md) |
+| H-HPS-S-28 | `MotivoHPS.EditarMotivo` ejecuta `UPDATE` en cuatro tablas sin transacción; caída intermedia deja el renombrado a medias. Hallazgo sensible fuera del lote. | `MotivoHPS.cls:41-44, 180-182, 208-213` | [Form_FormMotivoHPS](formularios/Form_FormMotivoHPS.md) |
+| H-HPS-S-29 | `Form_FormMotivosHPS` queda compilado pero sin cablear: ningún lanzador en `src/`. | (no en `src/`) | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
+| H-HPS-S-30 | `EstablecerLista` activa `ComandoEditar` y `ComandoEliminar` al pintar; un doble clic accidental aborta con «Seleccione una elemento de la lista» (typo). | `Form_FormMotivosHPS.cls:22-23, 91, 124` | [Form_FormMotivosHPS](formularios/Form_FormMotivosHPS.md) |
 
 ## Discrepancias abiertas
 
