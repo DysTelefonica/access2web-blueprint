@@ -13,7 +13,6 @@ import importlib.util
 import json
 import subprocess
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -65,21 +64,24 @@ def _gate_commands(monkeypatch, tmp_path: Path, *extra: str) -> dict[str, list[s
     return commands
 
 
-@pytest.mark.parametrize(
-    "extra, expected",
-    [
-        (("--policy-date", "2026-10-21"), "2026-10-21"),
-        ((), datetime.now(UTC).date().isoformat()),
-    ],
-)
-def test_policy_date_reaches_only_the_dated_gates(monkeypatch, tmp_path, extra, expected):
-    commands = _gate_commands(monkeypatch, tmp_path, *extra)
+def test_policy_date_reaches_only_the_dated_gates(monkeypatch, tmp_path):
+    commands = _gate_commands(monkeypatch, tmp_path, "--policy-date", "2026-10-21")
 
     dated = {"check_complexity.py", "check_mutation_sites.py", "check_dry.py"}
     for script in dated:
-        assert commands[script][-2:] == ["--policy-date", expected]
+        assert commands[script][-2:] == ["--policy-date", "2026-10-21"]
     others = [args for script, args in commands.items() if script not in dated]
     assert others and all("--policy-date" not in args for args in others)
+
+
+def test_without_a_policy_date_the_aggregator_refuses_to_run(monkeypatch, tmp_path):
+    """No date, no report: the same commit must not produce two verdicts (BP #1324)."""
+    module = _load()
+    out = tmp_path / "report.json"
+    with pytest.raises(SystemExit) as exit_info:
+        module.main(["--root", str(tmp_path), "--out", str(out)])
+    assert exit_info.value.code == 2
+    assert not out.exists(), "nothing was measured, so nothing was written"
 
 
 # --------------------------------------------------------------------------------------------
