@@ -674,3 +674,32 @@ jobs:
     assert rc == 1
     assert "public-pr-runner" in stderr
     assert "jobs.scan.runs-on" in stderr
+
+
+_DYSFLOW_ERD_BODY = """\
+name: erd
+on: {on}
+permissions: {{ contents: read }}
+concurrency: {{ group: erd, cancel-in-progress: false }}
+jobs:
+  extract:
+    runs-on: [self-hosted, Windows, X64, dysflow-erd]
+    timeout-minutes: 20
+    steps:
+      - run: echo read-only
+"""
+
+
+def test_no_self_hosted_runner_allows_dispatch_only_dysflow_erd(tmp_path: Path) -> None:
+    """#1074: el runner Windows del propietario solo se admite en workflow_dispatch."""
+    p = _write(tmp_path, "erd.yml", _DYSFLOW_ERD_BODY.format(on="{ workflow_dispatch: {} }"))
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc == 0, stderr
+    assert "no-self-hosted-runner" not in stderr
+
+
+def test_no_self_hosted_runner_rejects_dysflow_erd_with_other_triggers(tmp_path: Path) -> None:
+    p = _write(tmp_path, "erd.yml", _DYSFLOW_ERD_BODY.format(on="[workflow_dispatch, push]"))
+    rc, stderr = _capture(check_workflows, p.parent)
+    assert rc != 0, stderr
+    assert "no-self-hosted-runner" in stderr
