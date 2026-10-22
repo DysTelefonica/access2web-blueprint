@@ -45,11 +45,11 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | pendiente | — |
 | Form_FormCambioTipo | src/forms/Form_FormCambioTipo.cls | 107 | 26 | 4 | igual | pendiente | — |
 | Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | analizado | [formularios/Form_FormConfiguracion.md](formularios/Form_FormConfiguracion.md) |
-| Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | pendiente | — |
+| Form_FormCorreo | src/forms/Form_FormCorreo.cls | 403 | 36 | 10 | igual | analizado | [formularios/Form_FormCorreo.md](formularios/Form_FormCorreo.md) |
 | Form_FormCorreoPruebas | src/forms/Form_FormCorreoPruebas.cls | 259 | 38 | 8 | igual | pendiente | — |
 | Form_FormCorreosGestion | src/forms/Form_FormCorreosGestion.cls | 541 | 34 | 19 | igual | pendiente | — |
 | Form_FormEntidades | src/forms/Form_FormEntidades.cls | 170 | 17 | 7 | igual | analizado | [formularios/Form_FormEntidades.md](formularios/Form_FormEntidades.md) |
-| Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | pendiente | — |
+| Form_FormEnvioCorreo | src/forms/Form_FormEnvioCorreo.cls | 428 | 36 | 10 | igual | analizado | [formularios/Form_FormEnvioCorreo.md](formularios/Form_FormEnvioCorreo.md) |
 | Form_FormExpedienteDetalle | src/forms/Form_FormExpedienteDetalle.cls | 79 | 32 | 3 | igual | analizado | [formularios/Form_FormExpedienteDetalle.md](formularios/Form_FormExpedienteDetalle.md) |
 | Form_FormExpedientesBusqueda | src/forms/Form_FormExpedientesBusqueda.cls | 352 | 27 | 10 | igual | analizado | [formularios/Form_FormExpedientesBusqueda.md](formularios/Form_FormExpedientesBusqueda.md) |
 | Form_FormMotivoHPS | src/forms/Form_FormMotivoHPS.cls | 124 | 23 | 4 | igual | pendiente | — |
@@ -124,7 +124,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
-Totales: 10 analizados · 0 no aplicables · 64 pendientes.
+Totales: 12 analizados · 0 no aplicables · 62 pendientes.
 
 
 
@@ -161,6 +161,26 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-20 | `EstablecerDatos` decide el estado de botones leyendo controles aún sin pintar. | `Form_FormSolicitudesAltaFechas.cls:1592-1596, 1600, 1612, 1625-1629` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 | H-HPS-S-21 | Rótulos residuales: `Caption` de otra app, typo «SOLCITUD», botones `Comando36`/`Comando47` duplicados. | `Form_FormSolicitudesAltaFechas.form.txt:39, 708, 809, 1043` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
 | H-HPS-S-22 | Los 38 `errores:` repiten «se ha producido el error n»; un handler se identifica con otro nombre. | `Form_FormSolicitudesAltaFechas.cls:703` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
+
+### Hallazgos del legado — correos-a (H-HPS-S-31 a S-36 + S-50 a S-58)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-31 | `ComandoReenviar_Click` clona `cadenaRecursos` y `URLAdjunto` antiguos: si la plantilla o el adjunto cambiaron, el clon usa los valores obsoletos. | `Form_FormCorreo.cls:151-174` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-32 | Los `Comando*_Click` repiten el patrón de error copy-paste: literal «Al ComandoAyuda_Click se ha devuelto el error» reutilizado en todos los handlers. | `Form_FormCorreo.cls:42, 132-137` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-33 | `ComandoReenviar_Click` no recalcula `cadenaRecursos` desde la solicitud origen: la cadena queda con los `||parametros||` del correo original aunque la solicitud haya cambiado. | `Form_FormCorreo.cls:165` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-34 | `HaHabidoCambios` solo compara 5 campos y devuelve `True` con la primera diferencia. | `Form_FormCorreo.cls:187-235` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-35 | `BloquearControles True` con `On Error Resume Next` no bloquea controles no presentes (p. ej. `DestinatariosConCopiaOculta`). | `Form_FormCorreo.cls:305-318` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-36 | `Me.OpenArgs = "MODO_GESTION"` se valida como string literal: cualquier llamante puede desactivar la edición. | `Form_FormCorreo.cls:60-65, 278-285` | [Form_FormCorreo](formularios/Form_FormCorreo.md) |
+| H-HPS-S-50 | `ComandoEnviar_Click` refresca el padre según `TIPO`: para `Renovación` solo cubre `AltaRenovacionFechas`, no las demás pantallas de renovación abiertas. | `Form_FormEnvioCorreo.cls:113-119` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-51 | `Registrar` aborta con «Acción no codificada» ante `m_TipoEnvioCorreo` desconocido: el usuario pierde el trabajo. | `Form_FormEnvioCorreo.cls:275-277` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-52 | `HabilitarEdicionFecha` desenlaza el `ControlSource` cuando parece calculado; con `Form_Current` re-ejecutándose, el desenlace ocurre en cada cambio. | `Form_FormEnvioCorreo.cls:395-441` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-53 | `ComandoEnviar_Click` usa `On Error Resume Next` solo al refrescar el padre: errores quedan silenciados. | `Form_FormEnvioCorreo.cls:108-119` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-54 | `Registrar` no actualiza `m_ObjSolicitudActiva.SolicitudFechas` antes de volver: la versión en memoria queda obsoleta. | `Form_FormEnvioCorreo.cls:244-292` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-55 | `Me.Caption = m_TituloFormulario` y el caption calculado en `EstablecerDatos` compiten en `Form_Open`. | `Form_FormEnvioCorreo.cls:174-181, 375` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-56 | `chkActualizarFecha.Enabled = False` cuando el hito no existe; `ComandoGrabarFecha` no tiene caption explícito de su rol. | `Form_FormEnvioCorreo.cls:220-222, 310-352` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-57 | `ComandoGrabarFecha_Click` no refresca el padre tras grabar. | `Form_FormEnvioCorreo.cls:310-340` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
+| H-HPS-S-58 | `ValidarFechaEdicion` rechaza fechas futuras pero acepta cualquier fecha anterior. | `Form_FormEnvioCorreo.cls:407-422` | [Form_FormEnvioCorreo](formularios/Form_FormEnvioCorreo.md) |
 
 ## Discrepancias abiertas
 
