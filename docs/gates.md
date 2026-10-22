@@ -56,7 +56,7 @@ Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos
 | `check_required_jobs.py` (canon, `.agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py`) | que todos los jobs exigidos por la protección de rama hayan terminado en success, con los saltos aceptados por evento que declara la política, y que la política no se relaje sin `relaxation` | falla cerrado: una lista vacía de jobs es un fallo de la API, no “cero problemas”; una clave de `needs` que la política no cubre o un salto no declarado también fallan | `ci.yml` (con `.github/required-jobs-policy.json` como política) |
 | `check_mutation.py` | supervivientes de la sesión semanal, con guarda de sesión degenerada | un árbol sin supervivientes evaluables no es verde | `ci.yml` (semanal) + `Makefile` |
 | `check_decision_guards.py` | que cada decisión con guarda tenga su guarda cruzada | — (**no cableado**: el script existe y está documentado, pero ningún job lo invoca todavía) | — |
-| `check_test_classification.py` | clasificación de cada `test_*.py` por capa (por defecto en modo seco) | — (**no cableado**: igual que el anterior; la clasificación vigente se mantiene a mano en `docs/testing/testing-strategy.md`) | — |
+| `check_test_classification.py` | clasificación de cada `test_*.py` por **directorio de capa** (por defecto en modo seco); es política local de BP, declarada en la cabecera del propio script, no el asset del canon | — (**no cableado**: igual que el anterior; la clasificación vigente se mantiene a mano en `docs/testing/testing-strategy.md`) | — |
 
 Los dos últimos se declaran aquí a propósito: un script sin gate es deuda visible, no un gate más. Cuando se cableen, la matriz de `tests/test_ci_workflow.py` lo exigirá.
 
