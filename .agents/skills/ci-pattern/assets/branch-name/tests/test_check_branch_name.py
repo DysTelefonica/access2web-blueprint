@@ -79,6 +79,12 @@ class TestExemptions(unittest.TestCase):
         self.assertEqual(run("--actor", "someone", ref)[0], 1)
         self.assertEqual(run(ref)[0], 1)
 
+    def test_dependabot_uv_branch_is_exempt_only_for_the_bot(self):
+        ref = "dependabot/uv/virtualenv-21.14.7"
+        self.assertEqual(run("--actor", "dependabot[bot]", ref)[0], 0)
+        self.assertEqual(run("--actor", "someone", ref)[0], 1)
+        self.assertEqual(run(ref)[0], 1)
+
     def test_dependabot_pattern_is_narrow(self):
         self.assertEqual(run("--actor", "dependabot[bot]", "dependabot/evil/x")[0], 1)
 

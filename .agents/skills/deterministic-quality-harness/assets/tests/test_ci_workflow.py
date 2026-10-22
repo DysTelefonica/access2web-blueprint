@@ -18,6 +18,12 @@ from pathlib import Path
 import pytest
 import yaml
 
+#: Gate scripts a consumer adopts only when it has what they measure. They are exempt from the
+#: "exists on disk, so it must run" walk below, because wiring them into every adopter would make
+#: the template fail closed where the subject does not exist (Hard Rule 18). A consumer that copies
+#: one MUST wire it in its own ci.yml.
+OPTIONAL_GATE_SCRIPTS = frozenset({"check_test_classification.py"})
+
 #: Every gate CI must execute, represented by a stable identity rather than text snippets.
 REQUIRED_GATE_IDENTITIES = (
     "branch_name",
@@ -433,7 +439,9 @@ def test_every_gate_script_on_disk_is_wired_in_ci(steps: list[dict]) -> None:
         wired.update(script for _, script, _ in gates)
 
     unwired = sorted(
-        path.name for path in scripts_dir.glob("check_*.py") if path.name not in wired
+        path.name
+        for path in scripts_dir.glob("check_*.py")
+        if path.name not in wired and path.name not in OPTIONAL_GATE_SCRIPTS
     )
     assert not unwired, (
         f"these gate scripts exist but no CI step runs them: {unwired}. A gate that "

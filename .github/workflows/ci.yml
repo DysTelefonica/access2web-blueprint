@@ -381,10 +381,18 @@ jobs:
         run: pytest -c app/pyproject.toml --rootdir=app -m "not integration"
 
 
+      - name: record policy time
+        # DQH 2.2: the aggregator and the ratchet gates judge their BASELINE against this
+        # explicit date, never the wall clock, and the report records it (BP #1324).
+        run: |
+          POLICY_DATE="$(date -u +%F)"
+          echo "POLICY_DATE=$POLICY_DATE" >> "$GITHUB_ENV"
+          echo "Policy date: \`$POLICY_DATE\`" >> "$GITHUB_STEP_SUMMARY"
+
       - name: quality gates and indicators
         # Runs layers -> complexity -> DRY in that fixed order, writes
         # quality-report.json, and renders the indicator table into the job summary.
-        run: python scripts/quality_report.py
+        run: python scripts/quality_report.py --policy-date "$POLICY_DATE"
 
       # The `actions/upload-artifact` step that previously published
       # `quality-report.json` as a downloadable blob is intentionally

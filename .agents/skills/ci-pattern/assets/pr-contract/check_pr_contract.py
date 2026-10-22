@@ -150,6 +150,37 @@ def fetch_pr_live(data, pr):
     return labels, pull.get("body") or ""
 
 
+def _same_file(a, b):
+    """`a` y `b` nombran el mismo fichero (rutas resueltas)."""
+    try:
+        return Path(a).resolve() == Path(b).resolve()
+    except (OSError, RuntimeError):
+        return False
+
+
+def use_live_api(event_file, pr, env):
+    """#938/#996: ¿juzgar etiquetas y cuerpo vivos por API en vez de los del payload?
+
+    El payload de un `pull_request` queda congelado al abrir el PR: un PR que se etiqueta
+    después falla HR-6 aunque la etiqueta ya esté puesta cuando el job corre. Por eso:
+
+    - `PR_CONTRACT_USE_LIVE_API=0`: opt-out explícito, siempre el payload.
+    - `PR_CONTRACT_USE_LIVE_API=1`: siempre por API (sin token es fallo cerrado).
+    - Sin la variable: por API si se juzga el evento real de Actions (`--event-file` es
+      `GITHUB_EVENT_PATH`), el payload es de un `pull_request` y hay token. Los scripts
+      locales, el propagador y la suite de parity pasan su propio fichero de evento y no
+      cambian. Con la API caída o rechazada el gate falla cerrado (exit 2).
+    """
+    flag = env.get("PR_CONTRACT_USE_LIVE_API")
+    if flag == "0":
+        return False
+    if flag == "1":
+        return True
+    actions_event = env.get("GITHUB_EVENT_PATH")
+    has_token = bool(env.get("GITHUB_TOKEN") or env.get("GH_TOKEN"))
+    return bool(actions_event and has_token and pr and _same_file(event_file, actions_event))
+
+
 def read_data_file(path):
     """Texto de un fichero de datos del rango; ausente o ilegible: FileNotFoundError."""
     return Path(path).read_text(encoding="utf-8")
@@ -797,11 +828,8 @@ def main(argv=None):
     if off:
         print(f"PR-CONTRACT: apagadas por política: {', '.join(off)}", file=sys.stderr)
 
-    # #938: el modo por defecto del gate es leer del payload, como en
-    # `origin/main`. El modo vivo por API es opt-in (`PR_CONTRACT_USE_LIVE_API=1`
-    # + `GITHUB_TOKEN`); preserva el contrato de modo local, parity y
-    # propagador, que invocan el gate como subproceso sin token.
-    if os.environ.get("PR_CONTRACT_USE_LIVE_API") == "1":
+    # #938/#996: etiquetas y cuerpo se leen por API (vivos) o del payload (congelado al abrir).
+    if use_live_api(args.event_file, pr, os.environ):
         try:
             live_labels, live_body = fetch_pr_live(data, pr)
         except _GITHUB_REST.GitHubApiError as exc:

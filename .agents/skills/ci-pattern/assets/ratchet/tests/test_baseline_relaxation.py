@@ -87,6 +87,80 @@ class SourceRules(unittest.TestCase):
         self.assertIn("no longer a readable literal", violations[0])
 
 
+JUSTIFIED = (
+    "BASELINE = {\n"
+    "    # legacy upload path, retired in #12\n"
+    '    "app/a.py": 3,\n'
+    "    # shim kept for the importer\n"
+    '    "app/b.py": 2,\n'
+    "}\n"
+)
+
+
+class JustificationRules(unittest.TestCase):
+    """Issue #982: deleting the comment that justifies a baseline entry is a relaxation."""
+
+    def setUp(self) -> None:
+        self.guard = load_guard()
+
+    def check(self, base: str, head: str) -> list[str]:
+        return self.guard.check_sources("scripts/g.py", base, head)
+
+    def test_deleting_the_comment_of_a_surviving_entry_is_rejected(self) -> None:
+        head = JUSTIFIED.replace("    # shim kept for the importer\n", "")
+        violations = self.check(JUSTIFIED, head)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("scripts/g.py", violations[0])
+        self.assertIn("BASELINE", violations[0])
+        self.assertIn("shim kept for the importer", violations[0])
+        self.assertIn("RELAXATION", violations[0])
+
+    def test_removing_an_entry_together_with_its_comment_passes(self) -> None:
+        head = JUSTIFIED.replace(
+            "    # shim kept for the importer\n" '    "app/b.py": 2,\n', ""
+        )
+        self.assertEqual(self.check(JUSTIFIED, head), [])
+
+    def test_moving_a_comment_without_changing_its_text_passes(self) -> None:
+        head = (
+            "BASELINE = {\n"
+            '    "app/a.py": 3,  # legacy upload path, retired in #12\n'
+            "    #   shim  kept for the importer\n"
+            '    "app/b.py": 2,\n'
+            "}\n"
+        )
+        self.assertEqual(self.check(JUSTIFIED, head), [])
+
+    def test_rewording_a_comment_needs_a_new_relaxation_field(self) -> None:
+        head = JUSTIFIED.replace("shim kept for the importer", "kept")
+        self.assertEqual(len(self.check(JUSTIFIED, head)), 1)
+        self.assertEqual(self.check(JUSTIFIED, head + FIELD), [])
+
+    def test_deleting_with_a_new_valid_relaxation_field_passes(self) -> None:
+        head = JUSTIFIED.replace("    # shim kept for the importer\n", "") + FIELD
+        self.assertEqual(self.check(JUSTIFIED, head), [])
+
+    def test_a_relaxation_field_inherited_from_the_base_does_not_cover(self) -> None:
+        head = JUSTIFIED.replace("    # shim kept for the importer\n", "")
+        violations = self.check(JUSTIFIED + FIELD, head + FIELD)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("already carries", violations[0])
+
+    def test_a_comment_on_a_set_element_and_on_the_constant_are_both_tracked(self) -> None:
+        base = 'BASELINE = {\n    # why x\n    "x",\n    # tail note\n}\n'
+        self.assertEqual(len(self.check(base, base.replace("    # why x\n", ""))), 1)
+        self.assertEqual(len(self.check(base, base.replace("    # tail note\n", ""))), 1)
+
+    def test_comments_outside_any_baseline_constant_are_ignored(self) -> None:
+        base = "# header\n" + JUSTIFIED + "# footer\nOTHER = 1  # unrelated\n"
+        head = JUSTIFIED + "OTHER = 1\n"
+        self.assertEqual(self.check(base, head), [])
+
+
+def gate_with_comment() -> str:
+    return "BASELINE = {\n    # why a\n    'a': 1,\n    # why b\n    'b': 1,\n}\n"
+
+
 def git(root: Path, *args: str) -> None:
     subprocess.run(["git", "-C", str(root), "-c", "user.name=t", "-c", "user.email=t@t",
                     *args], check=True, capture_output=True)
@@ -99,10 +173,12 @@ class CliAgainstGit(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.root = Path(self.tmp.name)
 
-    def repo_with(self, head_source: str, directory: str = "scripts") -> None:
+    def repo_with(
+        self, head_source: str, directory: str = "scripts", base: str | None = None
+    ) -> None:
         (self.root / directory).mkdir(parents=True)
         path = self.root / directory / "gate.py"
-        path.write_text(gate(362), encoding="utf-8")
+        path.write_text(base or gate(362), encoding="utf-8")
         git(self.root, "init", "-q", "-b", "main")
         git(self.root, "add", "-A")
         git(self.root, "commit", "-qm", "base")
@@ -128,6 +204,15 @@ class CliAgainstGit(unittest.TestCase):
         self.assertEqual(code, self.guard.EXIT_OK)
         self.assertIn("OK (compared with main)", out)
 
+    def test_branch_that_drops_a_justification_fails(self) -> None:
+        self.repo_with(
+            "BASELINE = {\n    # why a\n    'a': 1,\n    'b': 1,\n}\n", base=gate_with_comment()
+        )
+        # the head keeps 'b' but loses '# why b'; 'a' keeps its comment
+        code, out = self.run_cli("--base-ref", "main")
+        self.assertEqual(code, self.guard.EXIT_RELAXED)
+        self.assertIn("lost the justification 'why b'", out)
+
     def test_unknown_base_ref_fails_closed(self) -> None:
         self.repo_with(gate(300))
         code, _ = self.run_cli("--base-ref", "nope")
@@ -150,5 +235,5 @@ class CliAgainstGit(unittest.TestCase):
 
 if __name__ == "__main__":
     loader = unittest.defaultTestLoader
-    suite = unittest.TestSuite(loader.loadTestsFromTestCase(c) for c in (SourceRules, CliAgainstGit))
+    suite = unittest.TestSuite(loader.loadTestsFromTestCase(c) for c in (SourceRules, JustificationRules, CliAgainstGit))
     sys.exit(not unittest.TextTestRunner().run(suite).wasSuccessful())

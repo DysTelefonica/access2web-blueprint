@@ -35,7 +35,7 @@
       "id": "P04",
       "name": "dependabot_branch_pattern",
       "type": "regex",
-      "default": "^dependabot/(pip|npm_and_yarn|github_actions)/.+",
+      "default": "^dependabot/(pip|uv|npm_and_yarn|github_actions)/.+",
       "required": false,
       "consumed_by": ["scripts/check_branch_name.py:22"]
     },

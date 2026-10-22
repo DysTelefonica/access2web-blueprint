@@ -28,7 +28,7 @@ from pathlib import Path
 from policy_time import add_policy_date_argument
 from quality_policy import (
     DEFAULT_POLICY_PATH,
-    REQUIRED_GATES,
+    KNOWN_GATES,
     PolicyError,
     build_evidence,
     load_policy,
@@ -137,7 +137,7 @@ def _envelope_error(envelope: object, expected_gate: str) -> str | None:
     if envelope["status"] not in {"pass", "fail", "error"}:
         return "gate envelope status must be one of: pass, fail, error"
 
-    if expected_gate in REQUIRED_GATES:
+    if expected_gate in KNOWN_GATES:
         binding_types = {
             "candidate": dict,
             "policy_identity": str,
@@ -196,6 +196,14 @@ def run_gate(
     return envelope
 
 
+def _declared_gates() -> frozenset[str]:
+    """Gates the policy declares; an unusable policy keeps every gate so the report fails closed."""
+    try:
+        return frozenset(load_policy(DEFAULT_POLICY_PATH)["gates"])
+    except PolicyError:
+        return KNOWN_GATES
+
+
 def build_report(root: Path, envelopes: list[dict], policy_date: str) -> dict:
     report_evidence: dict = {}
     try:
@@ -203,14 +211,14 @@ def build_report(root: Path, envelopes: list[dict], policy_date: str) -> dict:
     except PolicyError as exc:
         policy = None
         for envelope in envelopes:
-            if envelope.get("gate") in REQUIRED_GATES:
+            if envelope.get("gate") in KNOWN_GATES:
                 envelope["status"] = "error"
                 envelope["detail"] = str(exc)
 
     if policy is not None:
         for envelope in envelopes:
             gate = envelope.get("gate")
-            if gate not in REQUIRED_GATES or envelope.get("status") == "error":
+            if gate not in KNOWN_GATES or envelope.get("status") == "error":
                 continue
             try:
                 expected = build_evidence(root, policy, gate)
@@ -346,7 +354,12 @@ def main(argv: list[str] | None = None) -> int:
     out = args.out or (root / "quality-report.json")
 
     policy_args = ("--policy-date", args.policy_date.isoformat())
-    selected = [(name, script, extra + policy_args) for name, script, extra in GATES]
+    declared = _declared_gates()
+    selected = [
+        (name, script, extra + policy_args)
+        for name, script, extra in GATES
+        if name in declared
+    ]
     if args.include_pr_gates:
         selected += list(PR_GATES)
     envelopes = [

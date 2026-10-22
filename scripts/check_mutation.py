@@ -8,10 +8,6 @@
 #     entry. That identity needs the whole ten-slice matrix to be re-acquired on the ARM runner,
 #     which this copy cannot do; `scripts/mutation_shards.py` prepares the slices. The query below
 #     already selects the operator and the occurrence, so the adoption is a BASELINE rewrite.
-#   - `--policy-date` is optional here and falls back to today's UTC date. The asset makes it
-#     mandatory; the weekly run in `release.yml` cannot pass it from a pull request opened by an
-#     agent without the `workflows` permission, and a mandatory flag would break that run. Pass it
-#     explicitly to pin the date; the envelope always records the date it judged against.
 # Everything else (degenerate-run guard, completeness, overdue acquisition, policy binding) is the
 # asset 2.2.
 """Mutation-survivor ratchet with a degenerate-run guard.
@@ -57,11 +53,11 @@ import json
 import sqlite3
 import sys
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
+from datetime import date
 from pathlib import Path
 from typing import Any
 
-from policy_time import parse_policy_date
+from policy_time import add_policy_date_argument
 from quality_policy import bind_envelope, expected_subjects
 
 # --------------------------------------------------------------------------------------------
@@ -417,17 +413,7 @@ def _pin_output_encoding() -> None:
 def main(argv: list[str] | None = None) -> int:
     _pin_output_encoding()
     parser = argparse.ArgumentParser(description=__doc__)
-    # Declared deviation: the asset makes --policy-date mandatory. Here it falls back to
-    # today's UTC date, because the weekly run in `release.yml` cannot pass it (the agent
-    # that opens this PR has no `workflows` permission) and a mandatory flag would break that
-    # run. Pass it explicitly to pin the date; drop this fallback once `release.yml` does.
-    parser.add_argument(
-        "--policy-date",
-        type=parse_policy_date,
-        metavar="YYYY-MM-DD",
-        default=None,
-        help="explicit BASELINE evaluation date (default: today, UTC)",
-    )
+    add_policy_date_argument(parser)
     parser.add_argument(
         "sessions",
         type=Path,
@@ -452,10 +438,6 @@ def main(argv: list[str] | None = None) -> int:
         help="print a BASELINE block for the measured survivors instead of judging them",
     )
     args = parser.parse_args(argv)
-    # The clock is the fallback, not the default of record: the envelope below always names
-    # the date the BASELINE was judged against.
-    if args.policy_date is None:
-        args.policy_date = datetime.now(UTC).date()
 
     if args.shards is not None and len(args.sessions) != args.shards:
         print(

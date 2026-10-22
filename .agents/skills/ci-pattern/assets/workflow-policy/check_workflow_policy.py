@@ -20,7 +20,10 @@ requirements file (``-r``) with ``--require-hashes``. Constraint files
 (``-c``) are always a finding: the pins inside are invisible to a
 structural gate, and reporting OK without measuring them would be the
 failure HR-3 forbids — declare the pins inline or in a hash-pinned
-requirements file instead.
+requirements file instead. A line whose every target is an explicit local path
+(``./app[dev]``, ``-e ./app``, ``.``; prefixes ``./`` ``../`` ``/`` ``~/``) is not a
+registry dependency: its pins live in the project's own lock, so it is exempt.
+A bare name such as ``app[dev]`` is a registry requirement to pip and stays a finding.
 
 HR-3 (fail loud), on required jobs: no ``continue-on-error: true``
 (workflow, job or step level; a conditional expression is a finding too)
@@ -61,6 +64,9 @@ that keeps the last value would report OK), and every job declares ``timeout-min
 job (#806): a ``concurrency`` group at job or workflow level, no service container pinning a
 host port (``H:C``, ``IP:H:C``), and a ``timeout``-wrapped ``docker info`` before the first
 ``docker run`` (in an earlier step or earlier in the same step; a comment is no guard).
+In a workflow with a ``pull_request`` trigger, ``cancel-in-progress`` may be ``false`` or an
+expression naming ``synchronize``; a literal ``true`` is refused (#978): a run cancelled after
+its jobs exist leaves a cancelled required check on the head SHA, which blocks the merge.
 
 A plain scalar that continues on a more indented line (``run: cmd \\`` followed by
 its arguments) is rejected with the line and the fix: YAML folds it and the
@@ -75,6 +81,7 @@ import argparse
 import fnmatch
 import json
 import re
+import shlex
 import sys
 from pathlib import Path
 from typing import NamedTuple
@@ -87,6 +94,12 @@ KEY = re.compile(r"""^('[^']*'|"[^"]*"|[^:\s][^:]*?):(?:\s+(.*))?$""")
 PIP_INSTALL = re.compile(r"\bpip3? install\b")
 PIP_REQUIREMENTS = re.compile(r"\s(-r|--requirement)(\s|=)")
 PIP_CONSTRAINTS = re.compile(r"\s(-c|--constraint)(\s|=)")
+#: A pip target that is a local path: ``.``/``..``, or a prefix ``./`` ``../`` ``/`` ``~/``; extras optional.
+#: A bare name (``app[dev]``) is a registry requirement to pip, never a path.
+PIP_LOCAL_PATH = re.compile(r"^(\.{1,2}|(\.{1,2}/|/|~/)[^\s\[\]]*)(\[[\w.,-]+\])?$")
+#: Options that take a value, so the value is not a positional target.
+PIP_VALUE_OPTIONS = frozenset({"-i", "--index-url", "--extra-index-url", "-f", "--find-links", "-t",
+                               "--target", "--prefix", "--root", "--python", "--cache-dir"})
 MASK_TOKENS = ("|| true", "|| :", "|| exit 0")
 NORUN_TOKENS = ("set +e", "set +o errexit")
 SETUP_KEYS = {"actions/setup-python": "python-version", "actions/setup-node": "node-version"}
@@ -548,6 +561,43 @@ def docker_preflight_finding(steps: list) -> str | None:
     return None
 
 
+def _cancels_on_any_event(value: object) -> bool:
+    """`cancel-in-progress` that can cancel a run of the same head SHA: literal true, or an
+    expression that does not restrict itself to `synchronize` (a new commit)."""
+    if value is True:
+        return True
+    if not isinstance(value, str):
+        return False
+    text = value.strip()
+    if text.lower() == "true":
+        return True
+    return "${{" in text and "synchronize" not in text
+
+
+def cancel_in_progress_findings(wf: str, doc: dict) -> list[str]:
+    """#978: in a workflow with a `pull_request` trigger, only a new commit may cancel a run.
+
+    `edited`, `labeled` and `reopened` fire runs on the same head SHA; cancelling one after its
+    jobs exist leaves a `cancelled` check run on that SHA, and a cancelled required check blocks
+    the merge even when a later run of the same SHA is green. A pending run that is replaced
+    creates no check run, so `cancel-in-progress: ${{ github.event.action == 'synchronize' }}`
+    keeps the saving where it matters (the superseded run belongs to an old SHA)."""
+    if "pull_request" not in workflow_events(doc):
+        return []
+    why = ("`cancel-in-progress` can cancel a run of the same head SHA and leave a cancelled "
+           "required check that blocks the merge: use `false` or an expression on "
+           "`github.event.action == 'synchronize'` (#978)")
+    found = []
+    block = doc.get("concurrency")
+    if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress")):
+        found.append(f"{wf} workflow concurrency: {why}")
+    for jid, job in doc["jobs"].items():
+        block = job.get("concurrency")
+        if isinstance(block, dict) and _cancels_on_any_event(block.get("cancel-in-progress")):
+            found.append(f"{wf} job '{jid}' concurrency: {why}")
+    return found
+
+
 def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list,
               root: Path = Path("."), declared: list[str] | None = None):
     def finding(msg):
@@ -632,8 +682,45 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
                     elif PIP_CONSTRAINTS.search(raw):
                         finding("constraint-file install cannot be verified as exact; declare "
                                 "pins inline or in a hash-pinned requirements file (HR-26)")
-                    else:
+                    elif not pip_install_is_local_only(raw):
                         finding("`pip install` without an exact `==` pin (HR-26)")
+
+
+def pip_install_is_local_only(raw: str) -> bool:
+    """True when every target of this ``pip install`` line is a local path (an explicit one).
+
+    ``-e``/``--editable`` values count as targets. A line with no target, a registry name, or
+    anything the tokenizer cannot read is not local-only: the caller keeps reporting it.
+    """
+    try:
+        tokens = shlex.split(raw, comments=True)
+    except ValueError:
+        return False
+    start = next((j for j in range(1, len(tokens))
+                  if tokens[j] == "install" and tokens[j - 1].rsplit("/", 1)[-1] in ("pip", "pip3")), None)
+    if start is None:
+        return False
+    targets: list[str] = []
+    skip = False
+    editable = False
+    for tok in tokens[start + 1:]:
+        if skip:
+            skip = False
+            continue
+        if editable:
+            targets.append(tok)
+            editable = False
+        elif tok in ("-e", "--editable"):
+            editable = True
+        elif tok.startswith("--editable="):
+            targets.append(tok.split("=", 1)[1])
+        elif tok in PIP_VALUE_OPTIONS:
+            skip = True
+        elif tok.startswith("-"):
+            continue
+        else:
+            targets.append(tok)
+    return bool(targets) and not editable and all(PIP_LOCAL_PATH.fullmatch(tg) for tg in targets)
 
 
 def load_required(path: str) -> tuple[list[str], dict]:
@@ -818,6 +905,7 @@ def main(argv):
         return 2
     findings, seen, published = [], set(), set()
     for w, doc in docs:
+        findings.extend(cancel_in_progress_findings(w, doc))
         for jid, job in doc["jobs"].items():
             if jid in required:
                 seen.add(jid)

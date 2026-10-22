@@ -37,6 +37,7 @@ drift, and drift is Hard Rule 10.
 | `scripts/quality_report.py` | `scripts/quality_report.py` |
 | `scripts/check_pr_size.py` | `scripts/check_pr_size.py` |
 | `scripts/check_branch_name.py` | `scripts/check_branch_name.py` |
+| `scripts/check_test_classification.py` | `scripts/check_test_classification.py` (optional: adopt it when the repo has `tests/integration/`, and wire it in your own `ci.yml`) |
 | `scripts/check_adoption.py` | `scripts/check_adoption.py` |
 | `scripts/policy_time.py` | `scripts/policy_time.py` |
 | `cosmic-ray.toml` | `cosmic-ray.toml` |
@@ -47,6 +48,7 @@ drift, and drift is Hard Rule 10.
 | `tests/test_gate_liveness.py` | `tests/test_gate_liveness.py` |
 | `tests/test_adoption_preflight.py` | `tests/test_adoption_preflight.py` |
 | `tests/test_policy_time.py` | `tests/test_policy_time.py` |
+| `tests/test_test_classification.py` | `tests/test_test_classification.py` |
 | `tests/test_quality_policy.py` | `tests/test_quality_policy.py` |
 | `tests/test_quality_report_contract.py` | `tests/test_quality_report_contract.py` |
 | `tests/fixtures/**` | `tests/fixtures/**` |
@@ -69,10 +71,12 @@ drift, and drift is Hard Rule 10.
 | `quality_report.py` | 13 (gate order pinned in code), 16 (indicators plus mismatch/stale-evidence rejection) |
 | `check_pr_size.py` | Decision Gate "PR exceeds 400-line review budget" |
 | `check_branch_name.py` | Naming discipline, allowlisted defaults only |
+| `check_test_classification.py` | 18 (an empty or missing integration directory fails closed); every `tests/integration/test_*.py` carries the marker the CI selection depends on, so no file is collected by neither job |
 | `check_adoption.py` | 2, 6, 14, 15, 18: required configs and locks exist; coverage and mutation roots match policy |
 | `policy_time.py` | 12, 17: ratchet expiry receives a validated, recorded input instead of reading the clock |
 | `test_ci_workflow.py` | 4 (wiring pin, per gate AND over the whole set), 19 (`make verify` <-> ci.yml parity), and re-asserts 1, 13 and 15 mechanically |
 | `test_gate_smoke.py` | Execution Step 5 (each gate observed exiting 1 on a real violation), 17 |
+| `test_test_classification.py` | Execution Step 5 for `check_test_classification.py`: marked, unmarked, partial, unparseable, and unmeasured trees observed |
 | `test_gate_liveness.py` | 18: empty, missing, or unmeasured subjects fail closed instead of scoring clean |
 | `test_quality_policy.py` | 14, 16, 17: policy validity, deterministic manifest identity, and fail-closed denominator |
 | `test_quality_report_contract.py` | 16: subprocess contract, identity mismatch, and evidence-reuse rejection |

@@ -4,7 +4,7 @@
     ".github/ISSUE_TEMPLATE/issue-canonical.yml": "sha256:0625d0b26a3d97d3a788d2142feaf9ecee86eb7a99023e7a82f8a280c8134198",
     ".github/PULL_REQUEST_TEMPLATE.md": "sha256:b603312bf4c6cba3a3ecad89812303d55b74874af34844c624d85a00ca4e1926",
     ".github/env-isolation-allowlist.json": "sha256:0384fa60b06eaea1df4410b7ad1d2c06b0f50ca7893915a574d8d1afe0192b82",
-    ".github/host-contract.json": "sha256:d3878b93aea923ea46d8d68d75581be5be36b602acc068fa8754b4dea3040b98",
+    ".github/host-contract.json": "sha256:264f83e594d12cc183898648e4d0cb184bb349a92aff309896849fbc39299af9",
     ".github/host-labels-snapshot.json": "sha256:09fe2ba60e590b3f61d469427e0137e84ad76a9d952f33665c953db1ed031b8b"
   },
   "parameters": {
