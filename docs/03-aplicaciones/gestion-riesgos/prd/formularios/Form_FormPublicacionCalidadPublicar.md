@@ -113,15 +113,15 @@ Pendiente de `../coexistencia.md`. Aquí ya se ve: la pantalla es un coordinador
 
 **Posibles defectos (sin corregir, a verificar):**
 
-- **H-GR-31.** El diálogo de publicación se abre sin confirmación ni comprobación de que las evidencias estén complementadas (`:182-192`): `EstablecerDatos` calcula y pinta el estado de las dos evidencias (`:311-345`), pero ningún camino impide publicar con «No complementado». La validación, si existe, tiene que estar en `FormPublicacionCalidadPublicarEjecutar`.
-- **H-GR-32.** Tras `m_FormPublicar_Publicado` solo se cierra el formulario (`:457`): ni se recarga la edición ni se repinta el estado. Si el usuario cierra después el contenedor, los rótulos pueden seguir mostrando «PROPUESTA ESPERANDO A CALIDAD» en lugar de la publicación ya realizada.
-- **H-GR-33.** El mensaje de consulta al ver un rechazo ya registrado dice «¿Desea ver las observaciones registradaSí» (`:226`): le falta el signo de interrogación de cierre y la palabra está mal construida. Es un texto visible para el usuario final.
-- **H-GR-34.** Tras enviar el correo a los responsables se recarga la edición activa (`:44`), pero `EstablecerDatos` **no se vuelve a llamar**: la pantalla no refleja el nuevo estado hasta que se reabra. La recarga solo sirve para la sesión.
-- **H-GR-35.** `ComandoGenerarInformePublicabilidad` guarda la URL en la global `m_URLHTMLActivo` (`:80`) y no muestra ningún mensaje al usuario: el resultado solo es visible a través del mecanismo de avance, lo que deja la acción sin confirmación visible.
-- **H-GR-36.** Los dos handlers de historial entregan HTML a `HTMLENTXT` (`:106, 134`) sin comprobar el valor devuelto ni el error: si la generación falla, el usuario no recibe ningún aviso desde esta pantalla.
-- **H-GR-37.** `Private WithEvents m_FormAnexos As Form_FormAnexos` (`:16`) se declara y nunca se asigna: la referencia queda siempre vacía. Conviene confirmar que no falta un cableado de eventos.
-- **H-GR-38.** `Form_Open` (`:263-299`) y `ComandoPublicar_Click` (`:182-216`) no ponen el reloj de arena en la rama normal, a diferencia del resto de handlers: la apertura y el cierre del diálogo no muestran espera.
-- **H-GR-39.** El rechazo ofrece dos intenciones indistintas: si ya está rechazada, el botón muestra los motivos (`:224-230`); si no, pide rellenarlos (`:231-235`). Ambos caminos abren el mismo formulario y el rótulo del botón siempre dice «Rechazar» (`.form.txt:848`).
+- **H-GR-214.** El diálogo de publicación se abre sin confirmación ni comprobación de que las evidencias estén complementadas (`:182-192`): `EstablecerDatos` calcula y pinta el estado de las dos evidencias (`:311-345`), pero ningún camino impide publicar con «No complementado». La validación, si existe, tiene que estar en `FormPublicacionCalidadPublicarEjecutar`.
+- **H-GR-215.** Tras `m_FormPublicar_Publicado` solo se cierra el formulario (`:457`): ni se recarga la edición ni se repinta el estado. Si el usuario cierra después el contenedor, los rótulos pueden seguir mostrando «PROPUESTA ESPERANDO A CALIDAD» en lugar de la publicación ya realizada.
+- **H-GR-216.** El mensaje de consulta al ver un rechazo ya registrado dice «¿Desea ver las observaciones registradaSí» (`:226`): le falta el signo de interrogación de cierre y la palabra está mal construida. Es un texto visible para el usuario final.
+- **H-GR-217.** Tras enviar el correo a los responsables se recarga la edición activa (`:44`), pero `EstablecerDatos` **no se vuelve a llamar**: la pantalla no refleja el nuevo estado hasta que se reabra. La recarga solo sirve para la sesión.
+- **H-GR-218.** `ComandoGenerarInformePublicabilidad` guarda la URL en la global `m_URLHTMLActivo` (`:80`) y no muestra ningún mensaje al usuario: el resultado solo es visible a través del mecanismo de avance, lo que deja la acción sin confirmación visible.
+- **H-GR-219.** Los dos handlers de historial entregan HTML a `HTMLENTXT` (`:106, 134`) sin comprobar el valor devuelto ni el error: si la generación falla, el usuario no recibe ningún aviso desde esta pantalla.
+- **H-GR-220.** `Private WithEvents m_FormAnexos As Form_FormAnexos` (`:16`) se declara y nunca se asigna: la referencia queda siempre vacía. Conviene confirmar que no falta un cableado de eventos.
+- **H-GR-221.** `Form_Open` (`:263-299`) y `ComandoPublicar_Click` (`:182-216`) no ponen el reloj de arena en la rama normal, a diferencia del resto de handlers: la apertura y el cierre del diálogo no muestran espera.
+- **H-GR-222.** El rechazo ofrece dos intenciones indistintas: si ya está rechazada, el botón muestra los motivos (`:224-230`); si no, pide rellenarlos (`:231-235`). Ambos caminos abren el mismo formulario y el rótulo del botón siempre dice «Rechazar» (`.form.txt:848`).
 
 **Propuestas web pendientes de decisión:** ninguna aprobada. Candidatas: un único endpoint de estado de publicación que exponga evidencias, propuesta, fechas y motivo; acciones asíncronas con realimentación inmediata en lugar de diálogos HTML externos; historiales como recursos consultables y paginados; estados explícitos en lugar de rótulos con color.
 
@@ -138,7 +138,7 @@ Propuestos, no aprobados:
 
 ## Pendientes
 
-- Si `FormPublicacionCalidadPublicarEjecutar` bloquea la publicación cuando las evidencias no están complementadas (**H-GR-31**).
-- Si la recarga de la edición tras el correo tiene efecto observable en otra pantalla (**H-GR-34**).
-- Para qué se declara `m_FormAnexos` sin usar (**H-GR-37**).
-- Dónde se recarga la edición tras publicar, si no es en este formulario (**H-GR-32**).
+- Si `FormPublicacionCalidadPublicarEjecutar` bloquea la publicación cuando las evidencias no están complementadas (**H-GR-214**).
+- Si la recarga de la edición tras el correo tiene efecto observable en otra pantalla (**H-GR-217**).
+- Para qué se declara `m_FormAnexos` sin usar (**H-GR-220**).
+- Dónde se recarga la edición tras publicar, si no es en este formulario (**H-GR-215**).
