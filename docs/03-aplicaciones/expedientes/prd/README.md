@@ -104,7 +104,19 @@ Fichas de clase (`clases/`), una por objeto, con el mismo rigor que las de formu
 - [ExpedienteDatosAGEDY](clases/ExpedienteDatosAGEDY.md): sin uso en RC1.
 - [ExpedienteAntiguo](clases/ExpedienteAntiguo.md).
 
-El resto de clases y de módulos sin mención se cubre en los siguientes tramos de la cadena de #1073.
+- [ExpedienteCPV](clases/ExpedienteCPV.md), [ExpedienteConsulta](clases/ExpedienteConsulta.md) (sin uso en `src`) y [UltimoCambio](clases/UltimoCambio.md) (auditoría de creación y última modificación).
+- [ExpedientePECAL](clases/ExpedientePECAL.md), [ExpedienteRAC](clases/ExpedienteRAC.md), [ExpedienteCodigoCompra](clases/ExpedienteCodigoCompra.md), [ExpedienteBusquedaTecnica](clases/ExpedienteBusquedaTecnica.md) y [WebSocket](clases/WebSocket.md) (sin uso en RC1).
+
+Fichas de módulo (`modulos/`):
+
+- [Copiar y extender entidades](modulos/funciones-utiles-copiar-entidades.md) (`FUNCIONES UTILES.bas`): no estaba en el PRD; incluye un posible defecto grave en `CopiarSuministradores`.
+- [E2EFamilyExportHelper](modulos/E2EFamilyExportHelper.md), [modRealineacionCache](modulos/modRealineacionCache.md) y [modResponsableFiltroHelper](modulos/modResponsableFiltroHelper.md).
+
+**Fuera de alcance explícito:** los 53 módulos `Test_*` y `TEST` del snapshot son pruebas del legacy, no comportamiento a migrar; se usan como evidencia cuando una ficha los cita.
+
+### Cobertura de procedimientos de formulario
+
+Medida mecánica sobre `src/forms/*.cls` en el commit fijado: un procedimiento cuenta como cubierto si su nombre aparece en la ficha de su formulario o si un rango de línea citado de su `.cls` lo solapa. **579 de 621 (93,2 %)**; los 42 restantes están detallados en la sección «Procedimientos auxiliares» de `Form_FormExpedientesGestion`, `Form_FormExpedienteSuministradores` y `Form_FormExpedienteEntidades`, o son manejadores sin lógica propia que no se detallan: `m_Form*_Editado` de los seis formularios de gestión de catálogos (anulan la caché del catálogo en `m_ObjEntorno` y relanzan `ComandoBuscar_Click`, 22-24 líneas) y el de `FormSuministradoresGestion` (relanza la búsqueda y propaga el evento `Editado`), `CmdSalir_Click`, `ListaFiltrados_DblClick`, `ComandoIniciarJP_Click`, `ImagenTareasON_Click` y los `m_For*_Alta` de `FormExpedienteAltaParaHPS`.
 
 ## Delta frente al estudio previo
 

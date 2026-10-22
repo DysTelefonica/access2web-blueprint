@@ -139,6 +139,13 @@ Propuestos, no aprobados:
 5. En un expediente existente, añadir o quitar una entidad se refleja en la lista y en la base de datos sin pulsar guardar.
 6. Elegir un responsable ya asignado abre su edición con las marcas actuales; uno nuevo, el alta.
 
+## Procedimientos auxiliares
+
+Citas `Form_FormExpedienteEntidades.cls:línea`.
+
+- **Alta rápida de un catálogo desde la pestaña** (`m_FormComercial_Alta`, `m_FormCPV_Alta`, `m_FormLugar_Alta`, `m_FormPECAL_Alta`, `m_FormRAC_Alta`, `:1261-1290`, `:1291`, `:1853`, `:1883`, `:1913`): al recibir el evento `Alta` del formulario del catálogo, cada uno invalida la caché de ese catálogo en `m_ObjEntorno`, vuelve a llamar a `EstablecerCombos`, preselecciona en el combo el elemento recién creado y pulsa por código el botón de alta de ese catálogo (`ComandoAlta*_Click`). Si el elemento activo ya no existe, solo se recarga el combo.
+- **Listas del expediente** (`RellenarListaComerciales`, `RellenarListaCPVs`, `RellenarListaRACs`, `:1511-1584`): vacían el `RowSource` y añaden una fila `id;nombre` por cada elemento de la colección correspondiente del DTO activo (p. ej. `m_ObjExpedienteDTOActivo.ColComerciales`). Con colección vacía dejan la lista sin filas.
+
 ## Pendientes
 
 - Si `Expediente.<Colección>` relee la base tras cada alta o baja o devuelve una caché (`:155, 677`).
