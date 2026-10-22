@@ -41,7 +41,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 |---|---|---|---|---|---|---|---|
 | Form_Form0BDOpciones | src/forms/Form_Form0BDOpciones.cls | 407 | 33 | 13 | igual | analizado | [formularios/Form_Form0BDOpciones.md](formularios/Form_Form0BDOpciones.md) |
 | Form_FormAdjuntaTraspasoONS | src/forms/Form_FormAdjuntaTraspasoONS.cls | 234 | 28 | 7 | igual | pendiente | — |
-| Form_FormAdjuntarExcelSolicitante | src/forms/Form_FormAdjuntarExcelSolicitante.cls | 215 | 28 | 7 | igual | pendiente | — |
+| Form_FormAdjuntarExcelSolicitante | src/forms/Form_FormAdjuntarExcelSolicitante.cls | 215 | 28 | 7 | igual | analizado | [formularios/Form_FormAdjuntarExcelSolicitante.md](formularios/Form_FormAdjuntarExcelSolicitante.md) |
 | Form_FormAltaDatosSolicitante | src/forms/Form_FormAltaDatosSolicitante.cls | 452 | 63 | 15 | igual | pendiente | — |
 | Form_FormCambioTipo | src/forms/Form_FormCambioTipo.cls | 107 | 26 | 4 | igual | pendiente | — |
 | Form_FormConfiguracion | src/forms/Form_FormConfiguracion.cls | 418 | 50 | 11 | igual | analizado | [formularios/Form_FormConfiguracion.md](formularios/Form_FormConfiguracion.md) |
@@ -57,12 +57,12 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormPlantillasHTML | src/forms/Form_FormPlantillasHTML.cls | 181 | 17 | 7 | igual | pendiente | — |
 | Form_FormResponsable | src/forms/Form_FormResponsable.cls | 214 | 28 | 6 | igual | pendiente | — |
 | Form_FormResponsablesGestion | src/forms/Form_FormResponsablesGestion.cls | 392 | 28 | 13 | igual | pendiente | — |
-| Form_FormSolicitudAlta | src/forms/Form_FormSolicitudAlta.cls | 130 | 24 | 4 | igual | pendiente | — |
+| Form_FormSolicitudAlta | src/forms/Form_FormSolicitudAlta.cls | 130 | 24 | 4 | igual | analizado | [formularios/Form_FormSolicitudAlta.md](formularios/Form_FormSolicitudAlta.md) |
 | Form_FormSolicitudAltaTraspaso | src/forms/Form_FormSolicitudAltaTraspaso.cls | 142 | 25 | 5 | igual | pendiente | — |
 | Form_FormSolicitudRenovacion | src/forms/Form_FormSolicitudRenovacion.cls | 151 | 25 | 5 | igual | pendiente | — |
 | Form_FormSolicitudRenovacionDatos | src/forms/Form_FormSolicitudRenovacionDatos.cls | 957 | 64 | 19 | igual | pendiente | — |
 | Form_FormSolicitudRenovacionFechas | src/forms/Form_FormSolicitudRenovacionFechas.cls | 1652 | 82 | 40 | igual | pendiente | — |
-| Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | pendiente | — |
+| Form_FormSolicitudesAltaFechas | src/forms/Form_FormSolicitudesAltaFechas.cls | 1661 | 82 | 40 | igual | analizado | [formularios/Form_FormSolicitudesAltaFechas.md](formularios/Form_FormSolicitudesAltaFechas.md) |
 | Form_FormSolicitudesAltaRenovacionFechas | src/forms/Form_FormSolicitudesAltaRenovacionFechas.cls | 751 | 63 | 18 | igual | pendiente | — |
 | Form_FormSolicitudesAltaTraspasoDatos | src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls | 953 | 66 | 23 | igual | pendiente | — |
 | Form_FormSolicitudesGestion | src/forms/Form_FormSolicitudesGestion.cls | 912 | 48 | 23 | igual | analizado | [formularios/Form_FormSolicitudesGestion.md](formularios/Form_FormSolicitudesGestion.md) |
@@ -124,7 +124,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | UsuarioEntidad | src/classes/UsuarioEntidad.cls | 1099 | — | 3 | igual | pendiente | — |
 | UsuarioHPS | src/classes/UsuarioHPS.cls | 409 | — | 7 | igual | pendiente | — |
 
-Totales: 7 analizados · 0 no aplicables · 67 pendientes.
+Totales: 10 analizados · 0 no aplicables · 64 pendientes.
 
 ### Hallazgos del legado (fase 1)
 
@@ -146,7 +146,23 @@ Comportamientos sospechosos detectados al analizar los formularios. No se corrig
 | H-HPS-S-12 | `Set m_ObjEntorno.Configuracion = Nothing` solo se invoca al guardar; `cmdSalir` deja la caché de `Configuracion` con la versión anterior en memoria. | `Form_FormConfiguracion.cls:13-15, 72` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 | H-HPS-S-13 | `ComandoRegistrar_Click` renueva la caché y emite `Modificado` solo en éxito; un fallo en `Registrar` deja al menú con la versión obsoleta en memoria y sin re-pintado. | `Form_FormConfiguracion.cls:72-78` | [Form_FormConfiguracion](formularios/Form_FormConfiguracion.md) |
 
-Totales: 7 analizados · 0 no aplicables · 67 pendientes.
+Totales: 10 analizados · 0 no aplicables · 64 pendientes.
+
+### Hallazgos del legado — tanda del alta (H-HPS-S-14 a H-HPS-S-22)
+
+| Id | Hallazgo | Evidencia | Ficha |
+|---|---|---|---|
+| H-HPS-S-14 | `AvanceCerrar` desde `Form_FormSolicitudAlta` no cierra nada; el selector de tipo queda abierto debajo del destino abierto. | `Form_FormSolicitudAlta.cls:73-84`; `FU.bas:555-582` | [Form_FormSolicitudAlta](formularios/Form_FormSolicitudAlta.md) |
+| H-HPS-S-15 | `Form_Open` reactiva `AllowEdits` incondicionalmente, anulando la restricción de perfil técnico del propio formulario. | `Form_FormSolicitudAlta.cls:107, 109-112, 119` | [Form_FormSolicitudAlta](formularios/Form_FormSolicitudAlta.md) |
+| H-HPS-S-16 | `DoCmd.Close … acSaveNo` sobre el destino ya abierto descarta trabajo del usuario que tenía esa ventana abierta. | `Form_FormSolicitudAlta.cls:69-71` | [Form_FormSolicitudAlta](formularios/Form_FormSolicitudAlta.md) |
+| H-HPS-S-17 | Rótulo de diseño de otra app + botón «Ayuda» rotulado «Salir» (y la etiqueta contigua también «Salir»). | `Form_FormSolicitudAlta.form.txt:40, 827-831` | [Form_FormSolicitudAlta](formularios/Form_FormSolicitudAlta.md) |
+| H-HPS-S-18 | `ComandoAdjuntarExcel_Click` interpola el nombre del fichero y la fecha en la SQL; un apóstrofo en el nombre rompe la consulta o se inyecta. | `SolicitudOperaciones.cls:1516-1525` | [Form_FormAdjuntarExcelSolicitante](formularios/Form_FormAdjuntarExcelSolicitante.md) |
+| H-HPS-S-19 | Rótulos heredados: `Caption` de otra aplicación, «Salir»/«Ayuda» invertidos, botones «Extender» y «Editar» sin acción clara. | `Form_FormAdjuntarExcelSolicitante.form.txt:40, 289-293, 412, 610-614` | [Form_FormAdjuntarExcelSolicitante](formularios/Form_FormAdjuntarExcelSolicitante.md) |
+| H-HPS-S-20 | `EstablecerDatos` decide el estado de los botones leyendo controles aún sin pintar (`FechaRegistroEnHPS` y `FechaEnvioDPS`): el orden importa y la rama de error queda indeterminada. | `Form_FormSolicitudesAltaFechas.cls:1592-1596, 1600, 1612, 1625-1629` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
+| H-HPS-S-21 | Rótulos residuales: `Caption` de otra app, typo «SOLCITUD», 7× `Comando36`, 8× `Comando47`, 2× «E», duplicados Excel/MARGA. | `Form_FormSolicitudesAltaFechas.form.txt:39, 708, 809, 1043, 1620, 1784, 1895, 1939, 1981-2764` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
+| H-HPS-S-22 | Los 38 `errores:` repiten «se ha producido el error n»; `ComandoEliminarExcelRecibido_Click` se identifica como `ComandoEliminarExcelEnviado_Click`. | `Form_FormSolicitudesAltaFechas.cls:703` | [Form_FormSolicitudesAltaFechas](formularios/Form_FormSolicitudesAltaFechas.md) |
+
+> Nota: esta tanda arranca en `H-HPS-S-14` porque las dos tandas anteriores (`fichas-1` y `fichas-2`) ya publicaron `1..13`. Los identificadores quedan reservados en `9 hallazgos` por la propia numeración; el siguiente lote continúa con `H-HPS-S-23` y siguientes.
 
 ## Discrepancias abiertas
 
