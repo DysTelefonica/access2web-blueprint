@@ -231,3 +231,74 @@ def test_include_pr_gates_executes_with_valid_inputs(monkeypatch, tmp_path) -> N
     report = json.loads((repo / "quality-report.json").read_text(encoding="utf-8"))
     assert [gate["gate"] for gate in report["gates"]] == ["branch_name", "pr_size"]
     assert all(gate["status"] == "pass" for gate in report["gates"])
+
+
+def _subset_policy(tmp_path: Path, *names: str) -> Path:
+    payload = json.loads((ROOT / "quality-policy.json").read_text(encoding="utf-8"))
+    payload["gates"] = {name: payload["gates"][name] for name in names}
+    policy_path = tmp_path / "quality-policy.json"
+    policy_path.write_text(json.dumps(payload), encoding="utf-8")
+    return policy_path
+
+
+def _run_subset_report(monkeypatch, tmp_path, silent_gate: str | None) -> tuple[dict, list[str]]:
+    module = _load_quality_report()
+    root = tmp_path / "repo"
+    (root / "app").mkdir(parents=True)
+    (root / "app" / "subject.py").write_text("VALUE = 1\n", encoding="utf-8")
+    policy_path = _subset_policy(tmp_path, "complexity", "dry", "mutation_sites", "mutation")
+    monkeypatch.setattr(module, "DEFAULT_POLICY_PATH", policy_path)
+    envelopes = {
+        gate: _bound_envelope(module, root, gate) for gate in ("complexity", "dry", "mutation_sites")
+    }
+    executed: list[str] = []
+
+    def fake_run(command, *args, **kwargs):
+        if command[0] == "git":
+            return subprocess.CompletedProcess(args=command, returncode=128, stdout="", stderr="")
+        gate = next(name for name, script, _ in module.GATES if command[1].endswith(script))
+        executed.append(gate)
+        if gate == silent_gate:
+            return subprocess.CompletedProcess(args=command, returncode=1, stdout="", stderr="")
+        return _completed(envelopes[gate])
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    out = tmp_path / "quality-report.json"
+    result = module.main(
+        ["--root", str(root), "--out", str(out), "--policy-date", "2026-08-12"]
+    )
+    report = json.loads(out.read_text(encoding="utf-8"))
+    assert result == (0 if report["status"] == "pass" else 1)
+    return report, executed
+
+
+def test_report_expects_only_the_envelopes_of_declared_gates(monkeypatch, tmp_path) -> None:
+    report, executed = _run_subset_report(monkeypatch, tmp_path, silent_gate=None)
+
+    assert executed == ["complexity", "mutation_sites", "dry"]
+    assert [gate["gate"] for gate in report["gates"]] == executed
+    assert report["status"] == "pass"
+    assert report["failed_gates"] == []
+
+
+def test_report_fails_when_a_declared_gate_produces_no_envelope(monkeypatch, tmp_path) -> None:
+    report, executed = _run_subset_report(monkeypatch, tmp_path, silent_gate="dry")
+
+    assert executed == ["complexity", "mutation_sites", "dry"]
+    assert report["status"] == "fail"
+    assert report["failed_gates"] == ["dry"]
+
+
+def test_report_rejects_an_envelope_of_an_undeclared_gate(monkeypatch, tmp_path) -> None:
+    module = _load_quality_report()
+    (tmp_path / "app").mkdir()
+    (tmp_path / "app" / "subject.py").write_text("VALUE = 1\n", encoding="utf-8")
+    layers = _bound_envelope(module, tmp_path, "layers")
+    monkeypatch.setattr(
+        module, "DEFAULT_POLICY_PATH", _subset_policy(tmp_path, "complexity", "dry")
+    )
+
+    report = module.build_report(tmp_path, [layers], "2026-08-12")
+
+    assert report["failed_gates"] == ["layers"]
+    assert "'layers' is not governed" in layers["detail"]
