@@ -1,6 +1,6 @@
 # PRD — HPS
 
-> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 6 de 38.
+> **Estado:** fases 0 (fijación) y 1 (inventario) cerradas; fase 2 (formularios) con 8 de 38.
 
 | Campo | Valor |
 |---|---|
@@ -62,8 +62,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormInicial09Indicadores | src/forms/Form_FormInicial09Indicadores.cls | 712 | 28 | 22 | igual | pendiente | — |
 | Form_FormInicial09IndicadoresDatosLocalDatos | src/forms/Form_FormInicial09IndicadoresDatosLocalDatos.cls | 42 | 311 | 2 | igual | pendiente | — |
 | Form_FormInicial09IndicadoresUsuariosSICADatos | src/forms/Form_FormInicial09IndicadoresUsuariosSICADatos.cls | 47 | 61 | 2 | igual | pendiente | — |
-| Form_FormUsuario00Principal | src/forms/Form_FormUsuario00Principal.cls | 63 | 18 | 2 | igual | pendiente | — |
-| Form_FormUsuario01Lateral | src/forms/Form_FormUsuario01Lateral.cls | 167 | 14 | 5 | igual | pendiente | — |
+| Form_FormUsuario00Principal | src/forms/Form_FormUsuario00Principal.cls | 63 | 18 | 2 | igual | analizada | [Form_FormUsuario00Principal.md](formularios/Form_FormUsuario00Principal.md) |
+| Form_FormUsuario01Lateral | src/forms/Form_FormUsuario01Lateral.cls | 167 | 14 | 5 | igual | analizada | [Form_FormUsuario01Lateral.md](formularios/Form_FormUsuario01Lateral.md) |
 | Form_FormUsuario02Alta | src/forms/Form_FormUsuario02Alta.cls | 424 | 64 | 11 | igual | pendiente | — |
 | Form_FormUsuario02Anexos | src/forms/Form_FormUsuario02Anexos.cls | 590 | 16 | 13 | igual | pendiente | — |
 | Form_FormUsuario02DatosObservacion | src/forms/Form_FormUsuario02DatosObservacion.cls | 194 | 23 | 3 | igual | pendiente | — |
