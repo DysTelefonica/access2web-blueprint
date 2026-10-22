@@ -93,9 +93,9 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormMaterialRepuestoAlta | src/forms/Form_FormMaterialRepuestoAlta.cls | 247 | 58 | 7 | igual | analizado | [formularios/Form_FormMaterialRepuestoAlta.md](formularios/Form_FormMaterialRepuestoAlta.md) |
 | Form_FormMaterialRepuestoEdicion | src/forms/Form_FormMaterialRepuestoEdicion.cls | 631 | 63 | 10 | igual | analizado | [formularios/Form_FormMaterialRepuestoEdicion.md](formularios/Form_FormMaterialRepuestoEdicion.md) |
 | Form_FormMaterialSeguimiento | src/forms/Form_FormMaterialSeguimiento.cls | 803 | 54 | 12 | igual | analizado | [formularios/Form_FormMaterialSeguimiento.md](formularios/Form_FormMaterialSeguimiento.md) |
-| Form_FormMaterialesGestion | src/forms/Form_FormMaterialesGestion.cls | 1393 | 51 | 44 | igual | pendiente | — |
-| Form_FormNodoBUIGestion | src/forms/Form_FormNodoBUIGestion.cls | 321 | 26 | 13 | igual | pendiente | — |
-| Form_FormNodoGestion | src/forms/Form_FormNodoGestion.cls | 235 | 18 | 7 | igual | pendiente | — |
+| Form_FormMaterialesGestion | src/forms/Form_FormMaterialesGestion.cls | 1393 | 51 | 44 | igual | analizado | [formularios/Form_FormMaterialesGestion.md](formularios/Form_FormMaterialesGestion.md) |
+| Form_FormNodoBUIGestion | src/forms/Form_FormNodoBUIGestion.cls | 321 | 26 | 13 | igual | analizado | [formularios/Form_FormNodoBUIGestion.md](formularios/Form_FormNodoBUIGestion.md) |
+| Form_FormNodoGestion | src/forms/Form_FormNodoGestion.cls | 235 | 18 | 7 | igual | analizado | [formularios/Form_FormNodoGestion.md](formularios/Form_FormNodoGestion.md) |
 | Form_FormOriginadorGestion | src/forms/Form_FormOriginadorGestion.cls | 218 | 18 | 7 | igual | pendiente | — |
 | Form_FormParteGestion | src/forms/Form_FormParteGestion.cls | 657 | 30 | 15 | igual | pendiente | — |
 | Form_FormPlanificacionAlta | src/forms/Form_FormPlanificacionAlta.cls | 208 | 35 | 7 | igual | pendiente | — |
@@ -181,7 +181,7 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
 | UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 93 analizados · 5 no aplicables · 33 pendientes.
+Totales: 96 analizados · 5 no aplicables · 30 pendientes.
 
 ## Discrepancias abiertas
 
