@@ -8,7 +8,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **0** fichero(s) de producción — ninguna: la tabla no aparece en el código, solo en el ERD.
-- **Tabla vinculada**: aporta `Lanzadera_Datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Lanzadera_Datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -17,7 +17,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **2** fichero(s) de producción — `Usuario.cls`, `Constructor.bas`
-- **Tabla vinculada**: aporta `Lanzadera_Datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Lanzadera_Datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|
@@ -26,7 +26,7 @@
 
 - Columnas: **0**. Filas: sin recuento en el esquema disponible.
 - Evidencia en `src`: **2** fichero(s) de producción — `UsuarioAplicacionPermisos.cls`, `Constructor.bas`
-- **Tabla vinculada**: aporta `Lanzadera_Datos.accdb`. No es propiedad de esta aplicación; ver `coexistencia.md` (tanda posterior).
+- **Tabla vinculada**: aporta `Lanzadera_Datos.accdb`. No es propiedad de esta aplicación; ver [coexistencia](../coexistencia.md).
 
 | Columna | Tipo de origen | Clase de dato |
 |---|---|---|

@@ -126,6 +126,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 Totales: 7 analizados · 0 no aplicables · 67 pendientes.
 
+
+
 ### Hallazgos del legado (fase 1)
 
 Comportamientos sospechosos detectados al analizar los formularios. No se corrigen, no generan issues, y cada uno queda **a verificar** en ejecución.

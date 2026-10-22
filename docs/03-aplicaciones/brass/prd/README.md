@@ -58,8 +58,8 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 | Form_FormCalibracionEquipoEdicion | src/forms/Form_FormCalibracionEquipoEdicion.cls | 407 | 34 | 8 | igual | analizado | [formularios/Form_FormCalibracionEquipoEdicion.md](formularios/Form_FormCalibracionEquipoEdicion.md) |
 | Form_FormCalibracionEquipoGestion | src/forms/Form_FormCalibracionEquipoGestion.cls | 800 | 38 | 26 | igual | analizado | [formularios/Form_FormCalibracionEquipoGestion.md](formularios/Form_FormCalibracionEquipoGestion.md) |
 | Form_FormCalibracionGestion | src/forms/Form_FormCalibracionGestion.cls | 625 | 36 | 12 | igual | analizado | [formularios/Form_FormCalibracionGestion.md](formularios/Form_FormCalibracionGestion.md) |
-| Form_FormEquipoAlta | src/forms/Form_FormEquipoAlta.cls | 329 | 31 | 6 | igual | pendiente | — |
-| Form_FormEquipoEdicion | src/forms/Form_FormEquipoEdicion.cls | 602 | 33 | 11 | igual | pendiente | — |
+| Form_FormEquipoAlta | src/forms/Form_FormEquipoAlta.cls | 329 | 31 | 6 | igual | analizado | [formularios/Form_FormEquipoAlta.md](formularios/Form_FormEquipoAlta.md) |
+| Form_FormEquipoEdicion | src/forms/Form_FormEquipoEdicion.cls | 602 | 33 | 11 | igual | analizado | [formularios/Form_FormEquipoEdicion.md](formularios/Form_FormEquipoEdicion.md) |
 | Form_FormEquipoGestion | src/forms/Form_FormEquipoGestion.cls | 838 | 38 | 27 | igual | pendiente | — |
 | Form_FormEquipoMedida | src/forms/Form_FormEquipoMedida.cls | 206 | 37 | 6 | igual | pendiente | — |
 | Form_FormEquipoMedidaCalibracion | src/forms/Form_FormEquipoMedidaCalibracion.cls | 203 | 36 | 6 | igual | pendiente | — |
@@ -131,57 +131,57 @@ Líneas: `.cls` del formulario. Controles: bloques `Begin` del `.form.txt`. Proc
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Constructor | src/modules/Constructor.bas | 5698 | — | 96 | igual | pendiente | — |
-| Funciones Generales | src/modules/Funciones Generales.bas | 7942 | — | 106 | igual | pendiente | — |
-| HTML | src/modules/HTML.bas | 258 | — | 4 | igual | pendiente | — |
-| JsonConverter | src/modules/JsonConverter.bas | 1399 | — | 31 | igual | pendiente | — |
-| Módulo1 | src/modules/Módulo1.bas | 181 | — | 4 | igual | pendiente | — |
-| Módulo2 | src/modules/Módulo2.bas | 448 | — | 6 | igual | pendiente | — |
-| Pruebas | src/modules/Pruebas.bas | 41 | — | 1 | igual | pendiente | — |
-| PruebasSLA | src/modules/PruebasSLA.bas | 1697 | — | 55 | igual | pendiente | — |
-| SLAHTMLService | src/modules/SLAHTMLService.bas | 1163 | — | 11 | igual | pendiente | — |
-| SLAReportService | src/modules/SLAReportService.bas | 629 | — | 6 | igual | pendiente | — |
-| SLAValidator | src/modules/SLAValidator.bas | 166 | — | 2 | igual | pendiente | — |
-| Test_SLAReportService | src/modules/Test_SLAReportService.bas | 411 | — | 13 | igual | pendiente | — |
-| Test_SLAValidator | src/modules/Test_SLAValidator.bas | 515 | — | 13 | igual | pendiente | — |
-| Variables Globales | src/modules/Variables Globales.bas | 583 | — | 5 | distinto | pendiente | — |
-| modMigracionesSLA | src/modules/modMigracionesSLA.bas | 199 | — | 5 | igual | pendiente | — |
-| modTestingSLA | src/modules/modTestingSLA.bas | 382 | — | 6 | igual | pendiente | — |
+| Constructor | src/modules/Constructor.bas | 5698 | — | 96 | igual | analizado | [modulos.md](modulos.md) |
+| Funciones Generales | src/modules/Funciones Generales.bas | 7942 | — | 106 | igual | analizado | [modulos.md](modulos.md) |
+| HTML | src/modules/HTML.bas | 258 | — | 4 | igual | analizado | [modulos.md](modulos.md) |
+| JsonConverter | src/modules/JsonConverter.bas | 1399 | — | 31 | igual | analizado | [modulos.md](modulos.md) |
+| Módulo1 | src/modules/Módulo1.bas | 181 | — | 4 | igual | analizado | [modulos.md](modulos.md) |
+| Módulo2 | src/modules/Módulo2.bas | 448 | — | 6 | igual | analizado | [modulos.md](modulos.md) |
+| Pruebas | src/modules/Pruebas.bas | 41 | — | 1 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| PruebasSLA | src/modules/PruebasSLA.bas | 1697 | — | 55 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| SLAHTMLService | src/modules/SLAHTMLService.bas | 1163 | — | 11 | igual | analizado | [modulos.md](modulos.md) |
+| SLAReportService | src/modules/SLAReportService.bas | 629 | — | 6 | igual | analizado | [modulos.md](modulos.md) |
+| SLAValidator | src/modules/SLAValidator.bas | 166 | — | 2 | igual | analizado | [modulos.md](modulos.md) |
+| Test_SLAReportService | src/modules/Test_SLAReportService.bas | 411 | — | 13 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| Test_SLAValidator | src/modules/Test_SLAValidator.bas | 515 | — | 13 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
+| Variables Globales | src/modules/Variables Globales.bas | 583 | — | 5 | distinto | analizado | [modulos.md](modulos.md) |
+| modMigracionesSLA | src/modules/modMigracionesSLA.bas | 199 | — | 5 | igual | analizado | [modulos.md](modulos.md) |
+| modTestingSLA | src/modules/modTestingSLA.bas | 382 | — | 6 | igual | no aplicable | módulo de pruebas; ver [modulos.md](modulos.md) |
 
 ### Clases
 
 | Objeto | Ruta | Líneas | Controles | Proc. | Frente al snapshot | Estado | Ficha o motivo |
 |---|---|---|---|---|---|---|---|
-| Actividad | src/classes/Actividad.cls | 623 | — | 15 | igual | pendiente | — |
-| Anexo | src/classes/Anexo.cls | 1083 | — | 31 | igual | pendiente | — |
-| Entorno | src/classes/Entorno.cls | 1207 | — | 37 | igual | pendiente | — |
-| Equipo | src/classes/Equipo.cls | 189 | — | 5 | igual | pendiente | — |
-| EquipoMedida | src/classes/EquipoMedida.cls | 671 | — | 16 | igual | pendiente | — |
-| EquipoMedidaCalibracion | src/classes/EquipoMedidaCalibracion.cls | 299 | — | 7 | igual | pendiente | — |
-| Evento | src/classes/Evento.cls | 3015 | — | 60 | igual | pendiente | — |
-| EventoBusqueda | src/classes/EventoBusqueda.cls | 21 | — | 0 | igual | pendiente | — |
-| EventoEquipoMedida | src/classes/EventoEquipoMedida.cls | 200 | — | 8 | igual | pendiente | — |
-| EventoEquipoMedidaAntes | src/classes/EventoEquipoMedidaAntes.cls | 185 | — | 7 | igual | pendiente | — |
-| Factura | src/classes/Factura.cls | 6827 | — | 98 | igual | pendiente | — |
-| FacturaPerfiles | src/classes/FacturaPerfiles.cls | 324 | — | 9 | igual | pendiente | — |
-| Fiesta | src/classes/Fiesta.cls | 202 | — | 6 | igual | pendiente | — |
-| Gasto | src/classes/Gasto.cls | 433 | — | 12 | igual | pendiente | — |
-| GestorInforme | src/classes/GestorInforme.cls | 281 | — | 8 | igual | pendiente | — |
-| Informe | src/classes/Informe.cls | 987 | — | 11 | igual | pendiente | — |
-| LIbranza | src/classes/LIbranza.cls | 398 | — | 9 | igual | pendiente | — |
-| Material | src/classes/Material.cls | 714 | — | 17 | igual | pendiente | — |
-| MaterialSeguimiento | src/classes/MaterialSeguimiento.cls | 378 | — | 9 | igual | pendiente | — |
-| Parte | src/classes/Parte.cls | 645 | — | 16 | igual | pendiente | — |
-| Subcontratacion | src/classes/Subcontratacion.cls | 374 | — | 10 | igual | pendiente | — |
-| Tecnico | src/classes/Tecnico.cls | 703 | — | 13 | igual | pendiente | — |
-| TecnicoHoras | src/classes/TecnicoHoras.cls | 528 | — | 15 | igual | pendiente | — |
-| TipoDia | src/classes/TipoDia.cls | 186 | — | 5 | igual | pendiente | — |
-| TipoTecnico | src/classes/TipoTecnico.cls | 526 | — | 17 | igual | pendiente | — |
-| TipoTecnicoPrecio | src/classes/TipoTecnicoPrecio.cls | 892 | — | 24 | igual | pendiente | — |
-| Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | pendiente | — |
-| UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | pendiente | — |
+| Actividad | src/classes/Actividad.cls | 623 | — | 15 | igual | analizado | [clases-1.md](clases-1.md) |
+| Anexo | src/classes/Anexo.cls | 1083 | — | 31 | igual | analizado | [clases-1.md](clases-1.md) |
+| Entorno | src/classes/Entorno.cls | 1207 | — | 37 | igual | analizado | [clases-1.md](clases-1.md) |
+| Equipo | src/classes/Equipo.cls | 189 | — | 5 | igual | analizado | [clases-1.md](clases-1.md) |
+| EquipoMedida | src/classes/EquipoMedida.cls | 671 | — | 16 | igual | analizado | [clases-1.md](clases-1.md) |
+| EquipoMedidaCalibracion | src/classes/EquipoMedidaCalibracion.cls | 299 | — | 7 | igual | analizado | [clases-1.md](clases-1.md) |
+| Evento | src/classes/Evento.cls | 3015 | — | 60 | igual | analizado | [clases-1.md](clases-1.md) |
+| EventoBusqueda | src/classes/EventoBusqueda.cls | 21 | — | 0 | igual | analizado | [clases-1.md](clases-1.md) |
+| EventoEquipoMedida | src/classes/EventoEquipoMedida.cls | 200 | — | 8 | igual | analizado | [clases-1.md](clases-1.md) |
+| EventoEquipoMedidaAntes | src/classes/EventoEquipoMedidaAntes.cls | 185 | — | 7 | igual | analizado | [clases-1.md](clases-1.md) |
+| Factura | src/classes/Factura.cls | 6827 | — | 98 | igual | analizado | [clases-1.md](clases-1.md) |
+| FacturaPerfiles | src/classes/FacturaPerfiles.cls | 324 | — | 9 | igual | analizado | [clases-1.md](clases-1.md) |
+| Fiesta | src/classes/Fiesta.cls | 202 | — | 6 | igual | analizado | [clases-1.md](clases-1.md) |
+| Gasto | src/classes/Gasto.cls | 433 | — | 12 | igual | analizado | [clases-1.md](clases-1.md) |
+| GestorInforme | src/classes/GestorInforme.cls | 281 | — | 8 | igual | analizado | [clases-2.md](clases-2.md) |
+| Informe | src/classes/Informe.cls | 987 | — | 11 | igual | analizado | [clases-2.md](clases-2.md) |
+| LIbranza | src/classes/LIbranza.cls | 398 | — | 9 | igual | analizado | [clases-2.md](clases-2.md) |
+| Material | src/classes/Material.cls | 714 | — | 17 | igual | analizado | [clases-2.md](clases-2.md) |
+| MaterialSeguimiento | src/classes/MaterialSeguimiento.cls | 378 | — | 9 | igual | analizado | [clases-2.md](clases-2.md) |
+| Parte | src/classes/Parte.cls | 645 | — | 16 | igual | analizado | [clases-2.md](clases-2.md) |
+| Subcontratacion | src/classes/Subcontratacion.cls | 374 | — | 10 | igual | analizado | [clases-2.md](clases-2.md) |
+| Tecnico | src/classes/Tecnico.cls | 703 | — | 13 | igual | analizado | [clases-2.md](clases-2.md) |
+| TecnicoHoras | src/classes/TecnicoHoras.cls | 528 | — | 15 | igual | analizado | [clases-2.md](clases-2.md) |
+| TipoDia | src/classes/TipoDia.cls | 186 | — | 5 | igual | analizado | [clases-2.md](clases-2.md) |
+| TipoTecnico | src/classes/TipoTecnico.cls | 526 | — | 17 | igual | analizado | [clases-2.md](clases-2.md) |
+| TipoTecnicoPrecio | src/classes/TipoTecnicoPrecio.cls | 892 | — | 24 | igual | analizado | [clases-2.md](clases-2.md) |
+| Usuario | src/classes/Usuario.cls | 412 | — | 6 | igual | analizado | [clases-2.md](clases-2.md) |
+| UsuarioAplicacionPermisos | src/classes/UsuarioAplicacionPermisos.cls | 402 | — | 19 | igual | analizado | [clases-2.md](clases-2.md) |
 
-Totales: 19 analizados · 0 no aplicables · 112 pendientes.
+Totales: 60 analizados · 5 no aplicables · 66 pendientes.
 
 ## Discrepancias abiertas
 
