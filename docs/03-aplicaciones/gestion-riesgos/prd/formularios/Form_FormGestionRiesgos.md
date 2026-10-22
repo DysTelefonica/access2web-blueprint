@@ -100,15 +100,15 @@ Coordinación con los hijos en tres niveles, sin un patrón único. **Dentro de 
 
 **Posibles defectos (sin corregir, a verificar):**
 
-- **H-GR-252.** Hallazgo.** `grabar` lee los controles del subformulario solo si `SourceObject` es exactamente el de datos generales (`:104`). Si el usuario está en «Responsables» o «Suministradores» y pulsa Guardar, el objeto de proyecto no se actualiza desde esos hijos.
-- **H-GR-253.** Hallazgo.** `Err.Raise 1000` sin `vbObjectError` aparece en todo el archivo (`:32`, `:62`, `:117`…): depende de que el manejador siga el flujo correcto y no se comporta como un error de usuario de Access.
-- **H-GR-254.** Hallazgo.** El aviso de «no generar correos» se abandona con `AvanceCerrar` y `Exit Function` (`:139-141`): ni mensaje de cancelación ni restauración de la barra; el usuario no distingue cancelar de un fallo de guardado.
-- **H-GR-255.** Hallazgo.** `EstablecerDatos` rechaza el alta de un técnico con un `Err.Raise` (`:323-326`), pero `Form_Load` solo distingue ese error del resto: el mensaje mostrado es el acumulado en `p_Error`, no el específico de «usuario no autorizado».
-- **H-GR-256.** Hallazgo.** El estado de las subpestañas depende de `blnPermitidoEditar`, pero los tres botones se habilitan sin comprobar ese flag (`:342-344`, frente a `:350-353`): un técnico puede navegar a subformularios que no puede editar.
-- **H-GR-257.** Hallazgo.** `HaHabidoCambios` compara siete campos y no cubre el resto del objeto; si un hijo modifica un campo no listado, el guardado se rechaza como «sin cambios» (`:377-408`).
-- **H-GR-258.** Hallazgo.** `EstablecerDatos` recalcula el título cada vez que se llama y `grabar` lo vuelve a invocar (`:72`), de modo que el rótulo depende del momento de la última llamada.
-- **H-GR-259.** Hallazgo.** El «cerrar y reabrir» está replicado en cuatro formularios (`:221-225` y las cuatro entradas de la tabla); cualquier punto de entrada nuevo puede dejar dos instancias vivas.
-- **H-GR-260.** Hallazgo.** `lblPendienteGrabacion` se oculta tras guardar (`:199`) pero este archivo no la muestra nunca: su estado inicial solo depende del diseño (`.form.txt:825`).
+- **H-GR-252.** `grabar` lee los controles del subformulario solo si `SourceObject` es exactamente el de datos generales (`:104`). Si el usuario está en «Responsables» o «Suministradores» y pulsa Guardar, el objeto de proyecto no se actualiza desde esos hijos.
+- **H-GR-253.** `Err.Raise 1000` sin `vbObjectError` aparece en todo el archivo (`:32`, `:62`, `:117`…): depende de que el manejador siga el flujo correcto y no se comporta como un error de usuario de Access.
+- **H-GR-254.** El aviso de «no generar correos» se abandona con `AvanceCerrar` y `Exit Function` (`:139-141`): ni mensaje de cancelación ni restauración de la barra; el usuario no distingue cancelar de un fallo de guardado.
+- **H-GR-255.** `EstablecerDatos` rechaza el alta de un técnico con un `Err.Raise` (`:323-326`), pero `Form_Load` solo distingue ese error del resto: el mensaje mostrado es el acumulado en `p_Error`, no el específico de «usuario no autorizado».
+- **H-GR-256.** El estado de las subpestañas depende de `blnPermitidoEditar`, pero los tres botones se habilitan sin comprobar ese flag (`:342-344`, frente a `:350-353`): un técnico puede navegar a subformularios que no puede editar.
+- **H-GR-257.** `HaHabidoCambios` compara siete campos y no cubre el resto del objeto; si un hijo modifica un campo no listado, el guardado se rechaza como «sin cambios» (`:377-408`).
+- **H-GR-258.** `EstablecerDatos` recalcula el título cada vez que se llama y `grabar` lo vuelve a invocar (`:72`), de modo que el rótulo depende del momento de la última llamada.
+- **H-GR-259.** El «cerrar y reabrir» está replicado en cuatro formularios (`:221-225` y las cuatro entradas de la tabla); cualquier punto de entrada nuevo puede dejar dos instancias vivas.
+- **H-GR-260.** `lblPendienteGrabacion` se oculta tras guardar (`:199`) pero este archivo no la muestra nunca: su estado inicial solo depende del diseño (`.form.txt:825`).
 
 **Propuestas web pendientes de decisión:** ninguna aprobada. Candidatas: un único endpoint de guardado que devuelva el objeto completo en lugar de volcar controles del subformulario; derivar el permiso de edición del rol en el servidor y no de una bandera pública entre módulos; sustituir el conjunto cerrado de campos de «¿ha cambiado?» por comparación de versión o marca de tiempo; un solo punto de entrada con rutas en el servidor en vez del patrón «cerrar y reabrir»; pestañas como navegación de cliente con estado compartido en el servidor, sin controles INSTANCEADOS dinámicamente.
 
