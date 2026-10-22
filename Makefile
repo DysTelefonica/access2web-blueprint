@@ -15,6 +15,8 @@
 # --- configuration ----------------------------------------------------
 PYTHON ?= python
 PACKAGE ?= app
+#: Explicit BASELINE evaluation date for the ratchet gates (DQH 2.2, BP #1316).
+POLICY_DATE ?= $(shell date -u +%F)
 # ----------------------------------------------------------------------
 
 RUFF ?= $(PYTHON) -m ruff
@@ -95,11 +97,13 @@ verify:
 
 # Slow, scheduled, and Linux-only in most setups. Kept out of `verify` on
 # purpose (Hard Rule 19's exclusion list), available on demand.
+# POLICY_DATE is the explicit evaluation date of the BASELINE (DQH 2.2, BP #1316):
+# the gate never reads the wall clock. Override it to re-evaluate a past date.
 mutation:
 	cosmic-ray baseline docs/quality/cosmic-ray.toml
 	cosmic-ray init docs/quality/cosmic-ray.toml mutation.sqlite
 	cosmic-ray exec docs/quality/cosmic-ray.toml mutation.sqlite
-	$(PYTHON) scripts/check_mutation.py mutation.sqlite
+	$(PYTHON) scripts/check_mutation.py mutation.sqlite --policy-date "$(POLICY_DATE)"
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache quality-report.json

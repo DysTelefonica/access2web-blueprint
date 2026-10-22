@@ -59,7 +59,8 @@ GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
 )
 
 #: Gates that evaluate their BASELINE at an explicit policy date (DQH 2.2 ``policy_time``).
-DATED_GATES = frozenset({"complexity"})
+#: ``mutation_sites`` joins ``complexity`` in BP #1316: its copy of the canon requires the date.
+DATED_GATES = frozenset({"complexity", "mutation_sites"})
 
 #: The mutation gate is not here on purpose: it consumes a session database produced by a real
 #: mutation run, which is far too slow for every PR. It runs on a schedule and reports through
@@ -76,6 +77,7 @@ INDICATOR_MEANINGS: dict[str, tuple[str, str]] = {
     "functions_measured": ("functions the gate could measure", "higher"),
     "max_mutation_sites": ("largest mutation surface of any file", "lower"),
     "files_over_ceiling": ("files above the gate ceiling", "lower"),
+    "files_measured": ("files the gate could measure", "higher"),
     "total_mutation_sites": ("mutation surface of the whole package", "lower"),
     "mutation_score_pct": ("mutants the suite killed", "higher"),
     "survivors_total": ("mutants no test noticed", "lower"),

@@ -28,10 +28,14 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 #: consumes coverage.json and already fails closed when that file is missing.
 TREE_GATES = ("check_complexity", "check_dry", "check_mutation_sites")
 
+#: DQH 2.2: ``check_complexity`` and ``check_mutation_sites`` are BP's copies of the canon's
+#: assets (BP #1316) and both demand an explicit policy date.
+DATED_GATES = frozenset({"check_complexity", "check_mutation_sites"})
+
 
 def _run(gate: str, root: Path) -> int:
-    # DQH 2.2: check_complexity requires an explicit policy date.
-    dated = ["--policy-date", "2026-10-21"] if gate == "check_complexity" else []
+    # DQH 2.2: gates on the canon's copy evaluate their BASELINE at an explicit policy date.
+    dated = ["--policy-date", "2026-10-21"] if gate in DATED_GATES else []
     return subprocess.run(
         [sys.executable, str(SCRIPTS / f"{gate}.py"), "--root", str(root), *dated],
         capture_output=True,

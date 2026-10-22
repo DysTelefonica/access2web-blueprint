@@ -1,4 +1,4 @@
-"""quality_report forwards the policy date to the complexity gate, and only to it."""
+"""quality_report forwards the policy date to the gates that require it, and only to them."""
 
 from __future__ import annotations
 
@@ -45,9 +45,11 @@ def _gate_commands(monkeypatch, tmp_path: Path, *extra: str) -> dict[str, list[s
         ((), datetime.now(UTC).date().isoformat()),
     ],
 )
-def test_policy_date_reaches_only_the_complexity_gate(monkeypatch, tmp_path, extra, expected):
+def test_policy_date_reaches_only_the_dated_gates(monkeypatch, tmp_path, extra, expected):
     commands = _gate_commands(monkeypatch, tmp_path, *extra)
 
-    assert commands["check_complexity.py"][-2:] == ["--policy-date", expected]
-    others = [args for script, args in commands.items() if script != "check_complexity.py"]
+    dated = {"check_complexity.py", "check_mutation_sites.py"}
+    for script in dated:
+        assert commands[script][-2:] == ["--policy-date", expected]
+    others = [args for script, args in commands.items() if script not in dated]
     assert others and all("--policy-date" not in args for args in others)

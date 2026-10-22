@@ -19,6 +19,10 @@
     "outputs": {},
     "result": "success"
   },
+  "e2e-smoke": {
+    "outputs": {},
+    "result": "success"
+  },
   "docs-codeguide": {
     "outputs": {},
     "result": "success"

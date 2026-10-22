@@ -41,11 +41,15 @@ Cuatro reglas que el diagrama no muestra y que conviene saber:
 
 Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos estructurados (rama, etiquetas, campos de la API, YAML, AST), nunca prosa ni gestos, y publican un veredicto con código de salida.
 
+`check_complexity.py`, `check_mutation_sites.py` y `check_mutation.py` son copias del asset del canon `deterministic-quality-harness` 2.2. Los tres toman de `quality-policy.json` los sujetos y los techos (BP no sube el techo de complejidad: 10, con fecha de revisión en el propio script) y exigen `--policy-date`, de modo que el `BASELINE` se evalúa contra una fecha explícita y no contra el reloj. `quality_report.py` propaga esa fecha a los gates que la necesitan (`DATED_GATES`).
+
+Cada copia declara en su cabecera las desviaciones locales que conserva respecto del asset, para que la diferencia sea una decisión y no una deriva silenciosa. Hoy son tres gates con desviaciones: el techo de complejidad 10 (`check_complexity.py`); la exclusión de docstrings en el contador de sitios (`check_mutation_sites.py`, pendiente de team-skills#999); y en `check_mutation.py` el `--shards` de una sesión por tramo de la matriz, el `BASELINE` agregado por módulo en lugar de por mutante (readquirirlo por mutante exige la corrida completa en el runner ARM) y un `--policy-date` **opcional** que cae a la fecha UTC de hoy, porque el canon lo exige y la corrida semanal de `release.yml` todavía no puede pasarlo.
+
 | Script | Qué mide | Cómo se lee su fallo | Dónde corre |
 |---|---|---|---|
 | `docs-architecture` (job de `ci.yml`) | dirección de dependencias entre capas hexagonales, independencia entre aplicaciones, pureza de capa y ficheros fuera de las capas, desde el bloque `architecture` de `docs/architecture.md` | nombra `fichero:línea` y la regla incumplida; un fichero que no pertenece a ninguna capa ni a `exempt` es fallo, no verde | `ci.yml` |
 | `check_complexity.py` | complejidad ciclomática por función, con techo global absoluto | indica la función y su valor frente al techo | `quality_report.py` |
-| `check_mutation_sites.py` | densidad estática de sitios mutables | indica los ficheros con densidad fuera de rango | `ci.yml` + `quality_report.py` |
+| `check_mutation_sites.py` | densidad estática de sitios mutables, con techo y sujetos desde `quality-policy.json` | indica los ficheros con densidad fuera de rango | `ci.yml` + `quality_report.py` |
 | `check_dry.py` | bloques duplicados tipo 1 y 2 sobre el AST | nombra los pares de bloques y su ubicación | `ci.yml` + `quality_report.py` |
 | `check_legacy_hashes.py` | símbolos criptográficos legacy prohibidos en `platform/src/` | nombra el símbolo y el fichero | `quality_report.py` |
 | `check_legacy_retirement.py` | gates de retirada CAP-057..063 que invoca la capa UAT | nombra el gate y el artefacto que sigue vivo | `quality_report.py` |
@@ -54,9 +58,9 @@ Catorce scripts viven en `scripts/`; su contrato es siempre el mismo: leen datos
 | `check_walkthrough_schema.py` | esquema de los `walkthrough-*.json` (`--strict`) | nombra el fichero y el campo obligatorio que falta | `review-budget` |
 | `check_workflows.py` | contrato de los workflows: `timeout-minutes`, puertos de servicios, `uses:` pinneado, preflight de Docker, concurrencia, permisos, aislamiento de runner en PRs y **prohibición de `self-hosted`** | `fichero:línea: NOMBRE-CHECK: ubicación: mensaje` | `review-budget` + `release.yml` + `local-preflight.sh` |
 | `check_required_jobs.py` (canon, `.agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py`) | que todos los jobs exigidos por la protección de rama hayan terminado en success, con los saltos aceptados por evento que declara la política, y que la política no se relaje sin `relaxation` | falla cerrado: una lista vacía de jobs es un fallo de la API, no “cero problemas”; una clave de `needs` que la política no cubre o un salto no declarado también fallan | `ci.yml` (con `.github/required-jobs-policy.json` como política) |
-| `check_mutation.py` | supervivientes de la sesión semanal, con guarda de sesión degenerada | un árbol sin supervivientes evaluables no es verde | `ci.yml` (semanal) + `Makefile` |
+| `check_mutation.py` | supervivientes de las sesiones de la corrida semanal (una por tramo, `--shards`), con guarda de sesión degenerada y `BASELINE` agregado por módulo | un árbol sin supervivientes evaluables no es verde; una sesión con sujetos fuera de `quality-policy.json` tampoco | `release.yml::mutation` + `Makefile` |
 | `check_decision_guards.py` | que cada decisión con guarda tenga su guarda cruzada | — (**no cableado**: el script existe y está documentado, pero ningún job lo invoca todavía) | — |
-| `check_test_classification.py` | clasificación de cada `test_*.py` por capa (por defecto en modo seco) | — (**no cableado**: igual que el anterior; la clasificación vigente se mantiene a mano en `docs/testing/testing-strategy.md`) | — |
+| `check_test_classification.py` | clasificación de cada `test_*.py` por **directorio de capa** (por defecto en modo seco); es política local de BP, declarada en la cabecera del propio script, no el asset del canon | — (**no cableado**: igual que el anterior; la clasificación vigente se mantiene a mano en `docs/testing/testing-strategy.md`) | — |
 
 Los dos últimos se declaran aquí a propósito: un script sin gate es deuda visible, no un gate más. Cuando se cableen, la matriz de `tests/test_ci_workflow.py` lo exigirá.
 

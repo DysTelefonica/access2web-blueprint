@@ -30,11 +30,13 @@ ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = ROOT / "scripts"
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 #: DQH 2.2: check_complexity evaluates its BASELINE at an explicit date, never the wall clock.
+#: check_mutation_sites joined it when BP took the canon's copy (BP #1316).
 POLICY_DATE = "2026-10-21"
+DATED_SCRIPTS = frozenset({"check_complexity.py", "check_mutation_sites.py", "check_mutation.py"})
 
 
 def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
-    if script == "check_complexity.py":
+    if script in DATED_SCRIPTS:
         args = (*args, "--policy-date", POLICY_DATE)
     return subprocess.run(
         [sys.executable, str(SCRIPTS / script), *args],
@@ -47,6 +49,10 @@ def _run(script: str, *args: str) -> subprocess.CompletedProcess[str]:
 
 def _load(script: str):
     name = script.removesuffix(".py")
+    # The canon's gates import their siblings (`policy_time`, `quality_policy`) by module name
+    # (DQH 2.2), so `scripts/` has to be importable before the file is executed.
+    if str(SCRIPTS) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS))
     spec = importlib.util.spec_from_file_location(name, SCRIPTS / script)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -185,20 +191,30 @@ def test_mutation_sites_emits_a_baseline_with_target_and_date() -> None:
 # ---------------------------------------------------------------------------------------------
 
 
+#: DQH 2.2 (BP #1316): the session subjects must be inside `quality-policy.json`, so the
+#: fixture uses a file the policy really measures instead of an invented path.
+SUBJECT = "app/src/main.py"
+#: A second real subject, for the two-session shard cases.
+SECOND_SUBJECT = "app/src/modules/lanzadera/domain/user.py"
+
+
 def _make_session(path: Path, rows: list[tuple[str, str | None]]) -> Path:
     """Build a minimal cosmic-ray session so these tests run without the mutation runner."""
     connection = sqlite3.connect(path)
     connection.executescript(
         """
         CREATE TABLE work_items (job_id TEXT PRIMARY KEY);
-        CREATE TABLE mutation_specs (job_id TEXT, module_path TEXT);
+        CREATE TABLE mutation_specs (job_id TEXT, module_path TEXT,
+                                     operator_name TEXT, occurrence INTEGER);
         CREATE TABLE work_results (job_id TEXT, test_outcome TEXT, worker_outcome TEXT);
         """
     )
     for index, (module, outcome) in enumerate(rows):
         job = f"job-{index}"
         connection.execute("INSERT INTO work_items VALUES (?)", (job,))
-        connection.execute("INSERT INTO mutation_specs VALUES (?, ?)", (job, module))
+        connection.execute(
+            "INSERT INTO mutation_specs VALUES (?, ?, ?, ?)", (job, module, "op", index)
+        )
         if outcome is not None:
             connection.execute(
                 "INSERT INTO work_results VALUES (?, ?, ?)", (job, outcome, "normal")
@@ -209,7 +225,7 @@ def _make_session(path: Path, rows: list[tuple[str, str | None]]) -> Path:
 
 
 def test_mutation_gate_passes_a_healthy_run(tmp_path) -> None:
-    session = _make_session(tmp_path / "s.sqlite", [("app/a.py", "killed")] * 10)
+    session = _make_session(tmp_path / "s.sqlite", [(SUBJECT, "killed")] * 10)
     result = _run("check_mutation.py", str(session))
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -220,14 +236,14 @@ def test_mutation_gate_rejects_a_run_that_measured_nothing(tmp_path) -> None:
     Every mutant came back INCOMPETENT: the runner never executed. A plain survival-rate
     threshold reports this as a flawless run, which is the failure mode this gate exists for.
     """
-    session = _make_session(tmp_path / "s.sqlite", [("app/a.py", "incompetent")] * 10)
+    session = _make_session(tmp_path / "s.sqlite", [(SUBJECT, "incompetent")] * 10)
     result = _run("check_mutation.py", str(session))
     assert result.returncode == 1
     assert "degenerate" in result.stdout.lower()
 
 
 def test_mutation_gate_rejects_an_incomplete_run(tmp_path) -> None:
-    rows = [("app/a.py", "killed")] * 5 + [("app/a.py", None)] * 5
+    rows = [(SUBJECT, "killed")] * 5 + [(SUBJECT, None)] * 5
     session = _make_session(tmp_path / "s.sqlite", rows)
     result = _run("check_mutation.py", str(session))
     assert result.returncode == 1
@@ -235,7 +251,7 @@ def test_mutation_gate_rejects_an_incomplete_run(tmp_path) -> None:
 
 
 def test_mutation_gate_fails_on_an_unrecorded_survivor(tmp_path) -> None:
-    rows = [("app/a.py", "killed")] * 9 + [("app/a.py", "survived")]
+    rows = [(SUBJECT, "killed")] * 9 + [(SUBJECT, "survived")]
     session = _make_session(tmp_path / "s.sqlite", rows)
     result = _run("check_mutation.py", str(session))
     assert result.returncode == 1
@@ -248,7 +264,7 @@ def test_mutation_gate_fails_closed_on_a_missing_session(tmp_path) -> None:
 
 
 def test_mutation_gate_reports_score_and_incompetent_ratio(tmp_path) -> None:
-    rows = [("app/a.py", "killed")] * 8 + [("app/a.py", "incompetent")]
+    rows = [(SUBJECT, "killed")] * 8 + [(SUBJECT, "incompetent")]
     session = _make_session(tmp_path / "s.sqlite", rows)
     envelope = json.loads(_run("check_mutation.py", str(session), "--json").stdout)
     assert envelope["indicators"]["mutation_score_pct"] == 100.0
@@ -368,7 +384,7 @@ def test_mutation_shard_assignment_fails_closed_with_too_few_modules() -> None:
     """Un módulo no se parte entre dos jobs: con menos módulos que tramos, error."""
     module = _load("mutation_shards.py")
     with pytest.raises(module.ShardError):
-        module.assign({"app/a.py": 3}, 4)
+        module.assign({SUBJECT: 3}, 4)
     with pytest.raises(module.ShardError):
         module.assign(MUTATION_DOMAIN_COUNTS, 0)
 
@@ -388,24 +404,24 @@ def test_mutation_shard_config_keeps_the_shared_config() -> None:
 
 
 def test_mutation_gate_accepts_one_session_per_shard(tmp_path) -> None:
-    first = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
-    second = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "killed")] * 5)
+    first = _make_session(tmp_path / "s0.sqlite", [(SUBJECT, "killed")] * 5)
+    second = _make_session(tmp_path / "s1.sqlite", [(SECOND_SUBJECT, "killed")] * 5)
     result = _run("check_mutation.py", str(first), str(second), "--shards", "2")
     assert result.returncode == 0, result.stdout + result.stderr
     assert "run healthy" in result.stdout
 
 
 def test_mutation_gate_fails_closed_when_a_shard_is_missing(tmp_path) -> None:
-    first = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
-    second = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "killed")] * 5)
+    first = _make_session(tmp_path / "s0.sqlite", [(SUBJECT, "killed")] * 5)
+    second = _make_session(tmp_path / "s1.sqlite", [(SECOND_SUBJECT, "killed")] * 5)
     result = _run("check_mutation.py", str(first), str(second), "--shards", "3")
     assert result.returncode == 1
     assert "se esperaban 3" in result.stderr
 
 
 def test_mutation_gate_fails_closed_when_a_shard_is_degenerate(tmp_path) -> None:
-    healthy = _make_session(tmp_path / "s0.sqlite", [("app/a.py", "killed")] * 5)
-    degenerate = _make_session(tmp_path / "s1.sqlite", [("app/b.py", "incompetent")] * 5)
+    healthy = _make_session(tmp_path / "s0.sqlite", [(SUBJECT, "killed")] * 5)
+    degenerate = _make_session(tmp_path / "s1.sqlite", [("app/src/main.py", "incompetent")] * 5)
     result = _run("check_mutation.py", str(healthy), str(degenerate), "--shards", "2")
     assert result.returncode == 1
     assert "degenerate" in result.stdout.lower()
