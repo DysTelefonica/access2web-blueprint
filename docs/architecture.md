@@ -365,7 +365,7 @@ Dieciséis `scripts/check_*.py` + `.github/workflows/`:
 
 | Gate | Vive en | QC |
 |---|---|---|
-| `check_pr_size.py` | scripts/ | QC-6 |
+| `check_pr_size.py` | .agents/skills/ci-pattern/assets/pr-size/ (canon) | QC-6 |
 | `docs-architecture` (job) | ci.yml | QC-2, QC-9: capas, independencia y pureza desde el bloque `architecture` |
 | `check_deadcode.py` | scripts/ | Código muerto (vulture) |
 | `check_issue_spec.py` | .agents/skills/ci-pattern/assets/issue-spec/ (canon) | Trazabilidad PR→issue aprobada y tipada |
