@@ -17,6 +17,7 @@
       "inventory": [
         {"artifact": ".github/workflows/ci.yml", "disposition": "adopted", "target": ".github/workflows/ci.yml"},
         {"artifact": ".github/workflows/codeql.yml", "disposition": "adopted", "target": ".github/workflows/codeql.yml"},
+        {"artifact": ".github/workflows/dysflow-erd.yml (#1074: extracción manual y de solo lectura del ERD de un backend Access, en el runner propio del dueño; el gate check_workflows admite ese runner solo por ser un fichero workflow_dispatch-only)", "disposition": "adopted", "target": ".github/workflows/dysflow-erd.yml"},
         {"artifact": ".github/workflows/release.yml", "disposition": "adopted", "target": ".github/workflows/release.yml"},
         {"artifact": ".github/workflows/security.yml", "disposition": "adopted", "target": ".github/workflows/security.yml"},
         {"artifact": ".github/workflows/security-deep.yml", "disposition": "adopted", "target": ".github/workflows/security-deep.yml"},
@@ -40,6 +41,7 @@
         {"artifact": "scripts/mutation_shards.py (gate de shards de mutación ejecutado desde el job mutation de .github/workflows/release.yml)", "disposition": "adopted", "target": "scripts/mutation_shards.py"},
         {"artifact": "scripts/check_branch_name.py (no existe en el árbol del repositorio y no queda ningún run: de CI que lo invoque tras la retirada de las plantillas de flota; se conserva la entrada solo para trazabilidad del fantasma de una adopción previa)", "disposition": "retired", "path": "scripts/check_branch_name.py"},
         {"artifact": "scripts/check_dry.py", "disposition": "adopted", "target": "scripts/check_dry.py"},
+        {"artifact": "scripts/dysflow-erd/extract-erd.ps1 (script que ejecuta el job dysflow-erd sobre una copia temporal del .accdb, en solo lectura; el binario original nunca se escribe)", "disposition": "adopted", "target": "scripts/dysflow-erd/extract-erd.ps1"},
         {"artifact": "scripts/check_mutation.py", "disposition": "adopted", "target": "scripts/check_mutation.py"},
         {"artifact": "scripts/check_mutation_sites.py", "disposition": "adopted", "target": "scripts/check_mutation_sites.py"},
         {"artifact": "scripts/check_pr_size.py (BP#1040: pr-gate y el preflight ejecutan el gate del canon desde .agents/skills/ci-pattern/assets/pr-size/)", "disposition": "retired", "path": "scripts/check_pr_size.py"},
