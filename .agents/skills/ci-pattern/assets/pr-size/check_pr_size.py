@@ -4,8 +4,12 @@
 
 Counts semantic changed lines between the merge base and ``HEAD``. Paths
 under :data:`VENDORED_ROOTS` are excluded from the budget because they
-hold propagated skill content that no human reads line by line. A
-rename FROM a non-vendored (authored) path INTO a vendored path still
+hold propagated skill content that no human reads line by line. That is
+``.agents/skills/`` only: the vendored tree a consumer receives from the
+canon. ``skills/`` counts, because it is the authoring catalog of the
+repo (#1088): in the canon it holds the 64 skills written here, and in a
+consumer it holds that consumer's own catalog. A rename FROM a
+non-vendored (authored) path INTO a vendored path still
 counts: the work was authored outside the vendored subtree and the
 budget has to cover it. A rename within the vendored subtree, or a
 new file under it, is excluded.

@@ -2020,9 +2020,9 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
              "minúsculas y guiones y sin número de issue:"),
             ("  `git switch -c <tipo>/<número>-<slug>`" if numbered else
              "  `git switch -c <tipo>/<slug>`"),
-            f"- Regex obligatoria: `{params['P01_branch_name_pattern']}`",
-            "- La regex la aplica el ruleset del host; en un host sin rulesets, el gate "
-            "de nombre de rama del patrón.",
+            f"- Regex de la convención (aviso, no bloquea): `{params['P01_branch_name_pattern']}`",
+            "- La regex la aplica el ruleset del host. En un host sin rulesets, el gate de "
+            "nombre de rama solo avisa: no bloquea el PR (team-skills#1093, R10).",
         ]),
         "commits": "\n".join([
             "- Conventional Commits: `tipo[(scope)]: descripción` con tipo en "

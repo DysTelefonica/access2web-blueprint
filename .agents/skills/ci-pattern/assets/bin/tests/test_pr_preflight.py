@@ -89,12 +89,13 @@ class BranchNameParityTests(unittest.TestCase):
                 self.assertEqual(code, 0)
                 self.assertIn("[branch-name] OK", err)
 
-    def test_non_conforming_branch_fails_with_gate_text(self):
+    def test_non_conforming_branch_warns_without_blocking(self):
         for branch in ("Feat/x", "feature/x", "feat/", "main2"):
             with self.subTest(branch=branch):
                 code, _, err = _invoke(self.preflight, self._kwargs(branch))
-                self.assertEqual(code, 1)
-                self.assertIn("[branch-name]", err)
+                self.assertEqual(code, 0, err)
+                self.assertIn("[branch-name] AVISO", err)
+                self.assertNotIn("FAIL", err)
                 self.assertIn(branch, err)
                 self.assertIn("<type>/<", err)
 

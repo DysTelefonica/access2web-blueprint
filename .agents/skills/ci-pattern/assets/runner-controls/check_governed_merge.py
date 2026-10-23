@@ -28,6 +28,7 @@ import json
 import re
 import sys
 import time
+from typing import NamedTuple
 
 from check_push_compliance import (
     SHA_RE,
@@ -208,17 +209,34 @@ def _issue_now_closed(repo: str, issue: int) -> bool:
 
 
 def _workflow_basename(path: str) -> str:
-    """Returns the workflow file name without extension (``deploy.yml`` -> ``deploy``).
+    """The contract key of a workflow: its file name without extension.
 
-    El endpoint de dispatch acepta el nombre con y sin extension; usamos
-    la forma corta para mantener la convencion del catalogo (``deploy``,
-    ``push-compliance``, ``runner-merge``) sin arrastrar ``.yml``.
+    ``post_merge_dispatch`` in the host-contract names workflows the way the
+    catalog does (``deploy``, ``push-compliance``, ``runner-merge``), so the
+    listing is normalised to that form to match a contract entry against a
+    workflow. This is NOT the identifier the dispatch endpoint accepts: that one
+    is the file name with its extension, or the numeric id (#1086).
     """
     base = path.rsplit("/", 1)[-1]
     for suffix in (".yml", ".yaml"):
         if base.endswith(suffix):
             return base[: -len(suffix)]
     return base
+
+
+def _workflow_dispatch_id(path: str) -> str:
+    """The identifier the dispatch endpoint accepts: the workflow FILE NAME (#1086).
+
+    ``POST /repos/{repo}/actions/workflows/{workflow_id}/dispatches`` resolves
+    ``workflow_id`` as the workflow file name (``ci.yml``), its path
+    (``.github/workflows/ci.yml``) or its numeric id. The basename without the
+    extension is not a workflow: the endpoint answers 404, the post-merge
+    detective never fires, and the merge stays unaudited (#1086).
+
+    The id is read from the workflows listing, so a ``.yaml`` workflow is
+    dispatched as ``deploy.yaml`` and not as a guessed ``.yml``.
+    """
+    return path.rsplit("/", 1)[-1]
 
 
 def declares_workflow_dispatch(yaml_text: str) -> bool:
@@ -385,13 +403,23 @@ def list_workflows(repo: str) -> list[object]:
     raise WorkflowsListingTooLongError(repo, MAX_PAGES, MAX_PAGES * WORKFLOWS_PER_PAGE)
 
 
-def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str, bool], list[str]]:
+class DispatchTarget(NamedTuple):
+    """What to dispatch for one validated ``post_merge_dispatch`` entry (#1086)."""
+
+    #: The identifier the API accepts: the workflow file name (``ci.yml``).
+    dispatch_id: str
+    #: Whether the workflow declares the ``before``/``after`` range inputs (#933).
+    with_range: bool
+
+
+def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str, DispatchTarget], list[str]]:
     """Each name in ``names`` must exist as a workflow in this repo and declare
     ``workflow_dispatch``. Returns ``(resolved, findings)``; non-empty
     ``findings`` blocks the merge (exit 1, no API call is fired).
 
-    ``resolved`` maps each file basename ready for the dispatch endpoint to whether it
-    takes the ``before``/``after`` range inputs (#933). Order matches
+    ``resolved`` maps each contract entry to the target to dispatch: the
+    identifier the API accepts (the workflow FILE NAME, ``ci.yml``; #1086) and
+    whether it takes the ``before``/``after`` range inputs (#933). Order matches
     ``sorted(set(names))`` so the listing is stable across rounds even when the user
     reorders the contract.
     """
@@ -412,13 +440,13 @@ def validate_post_merge_dispatch(repo: str, names: list[str]) -> tuple[dict[str,
         path = item.get("path")
         if isinstance(path, str):
             by_basename[_workflow_basename(path)] = path
-    resolved: dict[str, bool] = {}
+    resolved: dict[str, DispatchTarget] = {}
     for name in seen:
         finding, with_range = _validate_one_workflow(repo, name, by_basename)
         if finding is not None:
             findings.append(finding)
             continue
-        resolved[name] = with_range
+        resolved[name] = DispatchTarget(_workflow_dispatch_id(by_basename[name]), with_range)
     return resolved, findings
 
 
@@ -438,12 +466,15 @@ def base_tip(repo: str, branch: str) -> str:
     return sha
 
 
-def run_post_merge_dispatch(repo: str, items: dict[str, bool], branch: str,
+def run_post_merge_dispatch(repo: str, items: dict[str, DispatchTarget], branch: str,
                             after: str, before: str | None) -> None:
     """Fire ``gh workflow run`` for each validated workflow on the base branch.
 
-    Cada llamada es ``POST /repos/{repo}/actions/workflows/{name}/dispatches``
-    con cuerpo ``{"ref": branch}``: esa API solo acepta una rama o una etiqueta
+    Cada llamada es ``POST /repos/{repo}/actions/workflows/{workflow_id}/dispatches``
+    con ``workflow_id`` = el **nombre del fichero** del workflow (``ci.yml``): el
+    endpoint no reconoce el basename sin extension y responde 404, con lo que el
+    detective post-merge no dispara nunca (#1086). El cuerpo es ``{"ref": branch}``:
+    esa API solo acepta una rama o una etiqueta
     en ``ref`` y responde 422 a un SHA (#933), asi que el commit fusionado viaja
     solo en ``inputs.after`` para los workflows que declaran el rango. Un 2xx es
     exito (la API responde 204 sin
@@ -452,13 +483,13 @@ def run_post_merge_dispatch(repo: str, items: dict[str, bool], branch: str,
     a una. El merge NO se deshace en ninguno de esos fallos.
     """
     failures: list[str] = []
-    for name, with_range in items.items():
+    for name, target in items.items():
         body: dict = {"ref": branch}
-        if with_range:
+        if target.with_range:
             # #933: el detective audita `before...after`; el dispatch lo declara en `inputs`.
             body["inputs"] = {"before": before, "after": after}
         try:
-            call("POST", f"repos/{repo}/actions/workflows/{name}/dispatches", body)
+            call("POST", f"repos/{repo}/actions/workflows/{target.dispatch_id}/dispatches", body)
         except GitHubApiError as exc:
             failures.append(f"{name} ({exc})")
             continue
@@ -619,7 +650,7 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
     hacia atrás, HR-34).
     """
     findings = gate_findings(args, pull, contract, required)
-    resolved: dict[str, bool] = {}
+    resolved: dict[str, DispatchTarget] = {}
     if dispatch_names:
         resolved, dispatch_findings = validate_post_merge_dispatch(args.repo, dispatch_names)
         findings.extend(dispatch_findings)
@@ -628,8 +659,11 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
             print(f"  BLOCKED  {finding}")
         print(f"VERDICT: PR #{args.pr} not merged: contract not satisfied")
         return 1
-    # #933: el `before` del rango es la punta de la base antes del merge.
-    before = base_tip(args.repo, pull["base"]["ref"]) if any(resolved.values()) else None
+    # #933: el `before` del rango es la punta de la base antes del merge. Solo
+    # se lee si algun workflow lo recibe: `DispatchTarget` es una tupla y
+    # `any(resolved.values())` seria siempre cierto (#1086).
+    before = (base_tip(args.repo, pull["base"]["ref"])
+              if any(target.with_range for target in resolved.values()) else None)
     sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
     print(f"MERGED: PR #{args.pr} merged by the governed path as {sha}")
     try:

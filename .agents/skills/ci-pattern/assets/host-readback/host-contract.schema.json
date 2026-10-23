@@ -19,11 +19,11 @@
     },
     "host_capabilities": {
       "type": "object",
-      "description": "Capability declarations per area (HR-303). Keys: branch_protection, rulesets, required_checks."
+      "description": "Capability declarations per area (HR-303), verified by the readback in both directions. Keys: branch_protection, rulesets, required_checks. `available` = the host can apply that area; `unavailable` = it cannot (a private repo without Pro answers the API with the plan 403). An absent capability is read as `available`, so declaring it stops the contract from promising by omission what the host does not apply."
     },
     "labels": {
       "type": "array",
-      "description": "Label definitions with host-enforced / documented-only / runner-enforced classification (HR-15)."
+      "description": "Label definitions with host-enforced / documented-only / runner-enforced classification (HR-15). `host-enforced` = the host holds the label in its catalog (`GET /labels`), which is what the drift check contrasts; the host does not demand the label at merge time, the CI does. `documented-only` = the host does not hold it or does not demand it. Labels exist on every plan, so their class does not depend on `host_capabilities`."
     },
     "approvers": {
       "type": "array",
@@ -34,19 +34,19 @@
     },
     "required_checks": {
       "type": "array",
-      "description": "Required check names with classification."
+      "description": "Required check names with classification. `host-enforced` = the host DEMANDS that check (branch protection), and it is only admissible when `host_capabilities.required_checks` is `available`; with the capability `unavailable` the host cannot demand it and the honest class is `documented-only` (the CI runs the check, the host does not require it)."
     },
     "merge_methods": {
       "type": "object",
-      "description": "Merge method declarations (allow_merge_commit, allow_squash_merge, allow_rebase_merge, allow_update_branch, allow_auto_merge)."
+      "description": "Merge method declarations (allow_merge_commit, allow_squash_merge, allow_rebase_merge, allow_update_branch, allow_auto_merge). Repository settings exist on every plan: `host-enforced` means the host shows that value, and it does not depend on `host_capabilities`."
     },
     "protection": {
       "type": "object",
-      "description": "Repository protection declarations."
+      "description": "Repository protection declarations. `host-enforced` = the host applies that flag, and it is only admissible when `host_capabilities.branch_protection` is `available`; with the capability `unavailable` the host cannot protect the branch and the honest class is `documented-only`."
     },
     "rulesets": {
       "type": "array",
-      "description": "Ruleset declarations with enforcement and classification."
+      "description": "Ruleset declarations with enforcement and classification. `host-enforced` = the host applies that ruleset, and it is only admissible when `host_capabilities.rulesets` is `available`; with the capability `unavailable` the host cannot apply rulesets and the honest class is `documented-only`."
     },
     "runner": {
       "type": "object",
