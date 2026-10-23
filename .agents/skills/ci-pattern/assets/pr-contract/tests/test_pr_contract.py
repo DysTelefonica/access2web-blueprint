@@ -669,6 +669,109 @@ class ChainContextGateTests(unittest.TestCase):
         self.assertIn("review-budget", proc.stdout)
 
 
+class ClosingKeywordInCommitsTests(unittest.TestCase):
+    """#1056 (HR-7): GitHub cierra la issue por el CUERPO del PR y también por
+    los MENSAJES de commit, y HR-7 solo miraba el cuerpo.
+
+    Un PR con `chain:partial` cuyo commit dice `(Closes #N)` cierra su issue al
+    mergearse aunque el cuerpo diga `Refs #N`: así se cerraron la issue 1035 (PR
+    1050, commit `27d6817d`, cerrado a los cinco segundos del merge y reabierto
+    por el mantenedor) y la 1033 (PR 1037). El dato es el `--commits-file` que
+    el workflow ya genera para HR-14 con merge-base (#1013): el gate no llama a
+    la API ni ejecuta git para esto.
+    """
+
+    KEYWORDS = ("close", "closes", "closed", "fix", "fixes", "fixed",
+                "resolve", "resolves", "resolved")
+
+    def run_case(self, commits, *, body=None,
+                 labels=("type:bug", "chain:partial"), base="feature/x"):
+        tmp = tempfile.mkdtemp()
+        repo, base_sha, head_sha = make_repo(tmp, commits=commits)
+        event = make_event(
+            tmp, body=body if body is not None else "Refs #1035\n\n" + chain_ok(base) + "\n" + AI_OK,
+            labels=list(labels), base=base, base_sha=base_sha, head_sha=head_sha)
+        return run_gate(event, make_policy(tmp), repo=repo)
+
+    def test_chain_partial_con_closes_en_el_commit_falla(self):
+        """Caso real (PR 1050): el cuerpo cumple HR-7 y el commit cierra la issue."""
+        proc = self.run_case(
+            ["fix(propagate): el banner del ensayo calcula la longitud (Closes #1035)"])
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("HR-7", proc.stdout)
+        self.assertIn("Closes #1035", proc.stdout)
+        self.assertIn("Refs #1035", proc.stdout)
+
+    def test_tip_sin_chain_partial_puede_llevar_closes_en_su_commit(self):
+        proc = self.run_case(
+            ["feat(x): el cierre de la cadena (Closes #1035)"],
+            body="Closes #1035\n\n## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+                 + chain_block("main") + "\n" + AI_OK,
+            labels=("type:bug",), base="main")
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_las_nueve_palabras_clave_sin_distinguir_mayusculas(self):
+        for keyword in self.KEYWORDS:
+            for forma in (keyword, keyword.capitalize(), keyword.upper()):
+                with self.subTest(palabra=forma):
+                    proc = self.run_case([f"feat(x): algo ({forma} #1035)"])
+                    self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                    self.assertIn("HR-7", proc.stdout)
+
+    def test_palabra_clave_sin_numero_no_cierra_nada(self):
+        proc = self.run_case(["fix(x): el close del banner, sin referencia (#7 cerrado a mano)"])
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_palabra_clave_en_el_cuerpo_del_commit_tambien_falla(self):
+        proc = self.run_case(["feat(x): algo\n\nCloses #1035"])
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("HR-7", proc.stdout)
+class ClosingTargetsInBodyTests(unittest.TestCase):
+    """#1059 (HR-7): el gate decía «tiene o no tiene una palabra de cierre», no
+    «cuáles». Un PR punta que declara `Closes #1056` y que además nombra
+    `Closes #1035` al citar un ejemplo pasaba igual, y GitHub cerraba las dos:
+    pasó con la PR 1058 de este repo, que habría cerrado la issue 1035 —la
+    que tiene trabajo pendiente— al mergearse.
+
+    Aqui el veredicto NO cambia (cerrar varias issues en un PR punta es
+    legitimo): lo que se agrega es la visibilidad de la lista, por `stderr`.
+    Con `chain:partial` el hallazgo de HR-7 no se toca: ahi la palabra de cierre
+    ya es el fallo.
+    """
+
+    def run_case(self, body, labels=("type:bug",), base="main"):
+        tmp = tempfile.mkdtemp()
+        repo, base_sha, head_sha = make_repo(tmp)
+        event = make_event(tmp, body=body, labels=list(labels), base=base,
+                           base_sha=base_sha, head_sha=head_sha)
+        return run_gate(event, make_policy(tmp), repo=repo)
+
+    def test_el_cuerpo_que_cierra_dos_issues_reporta_las_dos(self):
+        proc = self.run_case(
+            "Closes #1056\n\nEl commit decia (Closes #1035) y por eso lo arreglo.\n\n"
+            "## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+            + chain_block("main") + "\n" + AI_OK)
+        # El veredicto no cambia: cerrar varias issues en el punta es legítimo.
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("#1035", proc.stderr)
+        self.assertIn("#1056", proc.stderr)
+
+    def test_una_sola_issue_se_comporta_igual_que_hoy(self):
+        proc = self.run_case(
+            "Closes #1056\n\n## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+            + chain_block("main") + "\n" + AI_OK)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("#1056", proc.stderr)
+
+    def test_la_misma_issue_dos_veces_no_es_una_lista(self):
+        proc = self.run_case(
+            "Closes #1056\n\nCorrijo lo que decia Fixes #1056.\n\n"
+            "## " + CLOSURE_HEADING + "\n\n- `tests/test_gate.py`\n"
+            + chain_block("main") + "\n" + AI_OK)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("#1056", proc.stderr)
+
+
 class IssueLinkGateTests(unittest.TestCase):
     """#333: el enlace de la issue no admite referencias a otro repo (la mezcla Closes/Refs es aviso, #787)."""
 

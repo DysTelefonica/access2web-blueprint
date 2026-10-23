@@ -261,7 +261,14 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   blameless** en la ruta de post-mortems del consumer (parámetro 9;
   secciones: Timeline UTC / Impact / Root cause / What worked / What failed),
   con causas de sistema y nunca de personas, y cada action item `MUST`
-  abrirse como issue de GitHub con owner. La trazabilidad del incidente `MUST`
+  abrirse como issue de GitHub con owner. **Incidente** es un fallo observado en
+  producción (caída, degradación, pérdida o corrupción de datos, explotación) o
+  un defecto propio que llegó a producción; **no** lo es el hotfix preventivo por
+  un aviso externo o por el fin de soporte de un componente **sin fallo
+  observado**: no exige post-mortem y se traza en la issue `type:bug` y en las
+  notas, que citan el aviso (`references/incidents.md`; decisión del dueño,
+  2026-10-23). La excepción pide las dos condiciones a la vez: con explotación o
+  degradación hay incidente y post-mortem. La trazabilidad del incidente `MUST`
   repartirse en **cuatro niveles enlazados por identificadores** —ID de
   incidente, número de ticket, SHA, ejecución de CI, issues, PRs y nombres de
   sistemas; identificadores sí, contenido de datos personales no—: **(1) el
@@ -283,8 +290,7 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   hostnames y los comandos internos están permitidos (el repositorio es
   privado y lo ven las mismas personas). (canon del sector, precedente GitLab
   2017; `references/incidents.md`; decisión del operador, 2026-10-06;
-  DysTelefonica/team-skills#322; gate: `assets/bin/ci-pattern adoption check
-  --phase 5`)
+  DysTelefonica/team-skills#322; gate: `assets/bin/ci-pattern adoption check --phase 5`)
 - **HR-22 retirada (2026-10-15)**
 - **HR-23 retirada (2026-10-15)**
 - **HR-24 retirada (2026-10-15)**
@@ -561,6 +567,7 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La clave opci
 | Debe reiniciar la aplicación de producción | Use el procedimiento del runbook de deploy; el reinicio directo redespliega el HEAD de la rama por defecto sin gate de evidencia. |
 | Hereda un proceso vivo (vigía) de otra sesión | Verifique qué hace leyendo su script; cumplido su propósito, termínelo; inesperado, deténgase y reporte su contenido. |
 | Se declara un incidente de producción | Hotfix: issue `type:bug` → fix en main → deploy inmediato → release PATCH → post-mortem blameless con action items como issues (HR-20, HR-21). |
+| Llega un aviso de seguridad externo o el fin de soporte de un componente y no hay fallo observado en producción | Hotfix preventivo: issue `type:bug` que cita el aviso → fix en main → deploy inmediato → release PATCH → notas que enlazan el aviso; sin post-mortem ni action items (HR-20, HR-21). |
 | Va a esperar un resultado de CI o de otro actor | Aplique el modelo gentle-ai: required checks en la PR, sin strict; push a main más un nightly diario como red de seguridad; nunca un vigía IA. |
 | Va a delegar una tarea que correrá en paralelo con otra | Asígnele worktree y rama propios en el encargo ; nunca dos actores sobre el mismo working tree. |
 | Va a emitir un encargo de delegación | Llene `references/delegation-template.md` bloque a bloque desde lectura en vivo, con comando, salida y `verified_at`; una prescripción sin comando es hipótesis, no hecho. |
@@ -753,37 +760,29 @@ con los actores y patrones concretos como datos del parámetro 16:
 
 **Corte de release (semver, estilo gentle-ai).**
 
-1. Confirme que main está verde contra la base actual y sin rebase pendiente;
-   el verde contra una base obsoleta no autoriza el release.
-2. **Lanza un mantenedor, con su credencial**: corte el tag anotado con
-   `git tag -a vX.Y.Z <sha> -m "vX.Y.Z"` sobre el commit de la rama por defecto
-   y empújelo; el workflow publica. Los prereleases usan `vX.Y.Z-rc.N` y
-   quedan excluidos de la estable con el patrón `v*-*` (HR-19).
-3. Escriba las notas en el commit etiquetado como `RELEASE-<TAG>.md`, desde
-   `assets/templates/RELEASE-NOTES.md.tmpl`: resumen (diciendo si es hotfix),
-   Procedencia (versión y SHA anterior y nuevo, enlace al run), Qué cambia,
-   Cambios incompatibles, Cómo actualizar y Qué se arregla con el enlace al
-   post-mortem. La causa raíz completa vive en su doc dedicado, nunca dentro de
-   las notas (HR-21).
-4. Ejecute el playbook de deploy: `RELEASE-<TAG>.md` con build/push si aplica,
-   apply, rollout, verificación y rollback; capture la imagen de rollback
-   antes de desplegar.
+1. Confirme que main está verde contra la base actual; el verde contra una base obsoleta no autoriza el release.
+2. **Lanza un mantenedor, con su credencial**: corte el tag anotado sobre la
+   cabeza de la rama por defecto y empújelo; el workflow publica (HR-19).
+3. Escriba las notas en el commit etiquetado como `RELEASE-<TAG>.md` desde
+   `assets/templates/RELEASE-NOTES.md.tmpl`, que fija las secciones; la causa
+   raíz completa vive en su doc dedicado, nunca en las notas (HR-21).
+4. Ejecute el playbook de deploy (`RELEASE-<TAG>.md`): build/push, apply,
+   rollout, verificación y rollback; captura la imagen de rollback antes.
 
-**Hotfix (incidente de producción).** El procedimiento completo, paso a paso y
-con la política de suites, vive en `references/release-runbook.md`.
+**Hotfix (incidente de producción).** Procedimiento y política de suites: `references/release-runbook.md`.
 
 1. Abra la issue canónica (`type:bug`) con la evidencia del incidente.
 2. Aterrice el fix en main por el pipeline normal (issue aprobada `type:bug`,
-   rama `fix/`, PR suelto con Chain Context 1/1, CI, merge); sin rutas paralelas
-   ni fixes que vivan solo en una rama (HR-20, HR-54).
-3. Despliegue inmediatamente tras el merge y registre el veredicto sobre el
-   SHA desplegado (HR-10).
+   rama `fix/`, PR suelto, CI, merge); sin rutas paralelas (HR-20, HR-54).
+3. Despliegue inmediatamente tras el merge y registre el veredicto sobre el SHA (HR-10).
 4. Corte el release PATCH con notas que enlacen al issue (HR-19).
-5. Escriba el post-mortem blameless en la ruta de post-mortems del consumer
-   (parámetro 9) con secciones Timeline (UTC) / Impact / Root cause / What
-   worked / What failed; causas de sistema, nunca personas (HR-21).
-6. Abra cada action item como issue de GitHub con owner asignado y verifique
-   que no queden solo en el doc (HR-21).
+5. **Solo si hubo incidente**, escriba el post-mortem blameless en la ruta de
+   post-mortems del consumer (parámetro 9) con secciones Timeline (UTC) /
+   Impact / Root cause / What worked / What failed; causas de sistema, nunca
+   personas (HR-21). En el preventivo sin fallo observado, este paso no aplica:
+   las notas citan el aviso (HR-21).
+6. **Solo si hubo incidente**, abra cada action item como issue de GitHub con
+   owner y verifique que no queden solo en el doc (HR-21).
 
 ### Destilación de fricciones (protocolo de mejora continua)
 

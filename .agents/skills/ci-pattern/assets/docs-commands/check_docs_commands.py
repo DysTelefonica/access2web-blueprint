@@ -19,6 +19,10 @@ El nombre de la CLI es parámetro del consumer. Extraer cero comandos falla
 Tres causas, tres hallazgos distintos y tres remedios distintos (#1021): el parser
 rechazó el comando documentado, la CLI no está en el runner, o el comando no
 terminó a tiempo. La segunda es del entorno y sale **una vez**, no una por comando.
+Es además la única que baja a **aviso**: si la política no declara ninguna forma de
+ejecutar, todo comando es presence-only, el gate no ejecuta nada y no hay medición
+que la CLI ausente pueda ocultar (#1038). El aviso va a `stderr` con prefijo `AVISO`
+y los hallazgos vuelven al llamador, como el resto de la familia.
 """
 
 from __future__ import annotations
@@ -28,6 +32,7 @@ import re
 import shlex
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -74,6 +79,15 @@ def _entorno(repo, config):
     por_que = ("existe en el repo pero no es ejecutable" if Path(argv[0]).is_file()
                else "no está en el `PATH` ni es un fichero del repo")
     return argv, _sin_cli(config, argv, por_que)
+
+
+def _nunca_ejecuta(config):
+    """Verdadero si la política no declara ninguna forma de ejecutar un comando: sin
+    `dry_run_flag` ni verbos en `executed_verbs`, `_tier` devuelve `presence-only`
+    para todos ellos y el gate no lanza nada. Lo que el runner no tenga instalado
+    no puede estar ocultando una medición, así que su ausencia avisa y no bloquea
+    (#1038: el `make` de APAP#2324 son 58 comandos que nadie iba a ejecutar)."""
+    return not config.get("dry_run_flag") and not config.get("executed_verbs")
 
 
 def _load_fences():
@@ -161,7 +175,13 @@ def check(repo, config):
     findings = [f"HR-65: STALE en exclude: «{e}» ya no se documenta; elimine la entrada"
                 for e in sorted(excluded - {c["command"] for c in commands})]
     argv, ausente = _entorno(repo, config)
-    if ausente:
+    if ausente and _nunca_ejecuta(config):
+        # Aviso, no hallazgo: aquí el gate no iba a ejecutar nada, así que la CLI
+        # ausente no oculta ninguna medición y el rojo señalaría un problema del
+        # runner donde no hay problema (#1038). Mismo texto y mismo remedio, otro
+        # canal: `stderr` con `AVISO`, y el job sale 0.
+        print(f"AVISO: HR-65: {ausente}", file=sys.stderr)
+    elif ausente:
         findings.append(f"HR-65: {ausente}")
     seen = {}
     for item in commands:
