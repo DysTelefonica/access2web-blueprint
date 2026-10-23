@@ -669,6 +669,28 @@ jobs:
       - name: Local links resolve
         run: python3 .agents/skills/ci-pattern/assets/docs-links/run_docs_links.py . --config .github/docs-links.json
 
+  docs-commands:
+    # HR-65: los comandos que el mapa documenta se prueban. La fuente única de
+    # la declaración es `docs_commands` en el contrato de adopción (#1020), asi
+    # que este job ejecuta exactamente lo que la fase 5 valida.
+    # tests/test_docs_commands_wiring.py ata la declaracion al job que la mide.
+    # Los ocho comandos de BP salen en `parse-only` —`executed_verbs` no cubre
+    # ninguno—, asi que este job no lanza la suite de tests.
+    name: docs-commands (${{ github.event_name }})
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-docs-commands-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Comandos documentados
+        run: python3 .agents/skills/ci-pattern/assets/docs-commands/run_docs_commands.py .
+
   docs-decisions:
     # HR-67: registro de decisiones (formato, sustitucion, citas e indice). El canon
     # no da entrada de linea de comandos al gate: se llama a su funcion `check`.
@@ -851,7 +873,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture]
+    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, docs-commands]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

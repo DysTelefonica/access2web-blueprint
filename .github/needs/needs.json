@@ -38,5 +38,9 @@
   "docs-architecture": {
     "outputs": {},
     "result": "success"
+  },
+  "docs-commands": {
+    "outputs": {},
+    "result": "success"
   }
 }
