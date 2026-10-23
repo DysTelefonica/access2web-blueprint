@@ -9,6 +9,7 @@ quiet pass.
 
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 import subprocess
@@ -233,3 +234,46 @@ def test_the_header_declares_the_indicator_table_deviation_it_keeps() -> None:
         meaning, direction = module.INDICATOR_MEANINGS[indicator]
         assert direction == "higher", f"{indicator} is measurement coverage, not a thing to reduce"
         assert meaning, f"{indicator} needs a meaning of its own, not the raw key as fallback"
+
+
+def _top_level_names(path: Path) -> dict[str, int]:
+    """Count how many times each module-level name is bound in ``path``.
+
+    Only the outermost scope is counted. A name bound twice there is a redefinition: the second
+    binding silently wins, so whatever the first one said stops being true without any gate, lint
+    rule or test noticing.
+    """
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    counts: dict[str, int] = {}
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            names = [node.name]
+        elif isinstance(node, ast.Assign):
+            names = [t.id for t in node.targets if isinstance(t, ast.Name)]
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            names = [node.target.id]
+        else:
+            continue
+        for name in names:
+            counts[name] = counts.get(name, 0) + 1
+    return counts
+
+
+def test_the_aggregator_never_rebinds_a_module_level_name() -> None:
+    """Every top-level name in the aggregator is configuration or a public helper, bound once.
+
+    The merge that landed #1329 left ``DATED_GATES`` defined twice with the same value, the
+    paragraph explaining why the ``mutation`` gate stays out copied verbatim beside it, and the
+    ``#:`` comment for the indicator table left behind after that table had moved above it.
+    Nothing failed: the second binding equals the first, so the report was byte-identical and
+    ``ruff`` does not flag a repeated module constant. A block nobody asked for is not a deviation
+    from the asset either — the header claims the file is the asset apart from its listed
+    deviations, and a duplicated block is not one.
+    """
+    counts = _top_level_names(SCRIPTS / "quality_report.py")
+    repeated = {name: count for name, count in counts.items() if count > 1}
+    assert not repeated, (
+        f"module-level name(s) bound more than once: {repeated}. The second binding wins silently; "
+        "delete the duplicate block, or declare the redefinition in the header next to BP's "
+        "deviations from the asset."
+    )

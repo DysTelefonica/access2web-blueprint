@@ -123,22 +123,10 @@ INDICATOR_MEANINGS: dict[str, tuple[str, str]] = {
     "conformant": ("branch name matches the convention", "higher"),
 }
 
-#: Gates that evaluate their BASELINE at an explicit policy date (DQH 2.2 `policy_time`).
-#: The two legacy walkers take no date; the three canonic copies require it (BP #1327).
-DATED_GATES = frozenset({"complexity", "mutation_sites", "dry"})
-
-#: The mutation gate is not here on purpose: it consumes a session database produced by a real
-#: mutation run, which is far too slow for every PR. It runs on a schedule and reports through
-#: the same envelope. Its absence from a PR report is expected; a PR report that claimed to
-#: include it would be lying.
-
 #: PR-scoped gates. They need a base ref and a PR body, so they only run with --include-pr-gates.
 
 #: PR gates operate on Git/CI context from their working directory and do not accept ``--root``.
 ROOTLESS_GATES = frozenset()  # no gate here consumes anything but the tree
-
-#: The published indicator set: what it means, and which direction is good. Everything here is
-#: derived from a gate envelope — this table never computes anything itself.
 
 # --------------------------------------------------------------------------------------------
 # MECHANISM
