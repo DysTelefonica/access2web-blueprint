@@ -17,11 +17,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MANIFEST_PATH = REPO_ROOT / ".governance-manifest.json"
 ADOPTION_PATH = REPO_ROOT / ".github" / "ci-pattern-adoption.json"
+CI_PATTERN_CLI = REPO_ROOT / ".agents" / "skills" / "ci-pattern" / "assets" / "bin" / "ci-pattern"
 
 # Los tres gates de gobierno que BP#1040 sustituyó por el canon `ci-pattern`:
 # su copia local se borró del árbol y su ejecución la toma ahora la copia
@@ -207,4 +210,41 @@ def test_manifest_files_are_the_pattern_paths() -> None:
     assert not extra_in_manifest, (
         f"manifest files not declared as pattern_paths (residuo o entrada no inventariada): "
         f"{sorted(extra_in_manifest)}"
+    )
+
+
+def test_every_job_the_manifest_requires_is_a_real_workflow_job() -> None:
+    """``P23_required_jobs`` nombra jobs que existen como clave de ``jobs:``.
+
+    El otro lado del veredicto: los tests de arriba sellan ``manifest.files``
+    contra el árbol, pero nadie miraba ``manifest.parameters``. El 2026-10-09
+    (``96d7c32``) el manifiesto declaró ``review-budget`` entre los jobs que el
+    patrón exige; el 2026-10-15 (``2a0fa5a``) ese job se renombró a ``pr-gate``
+    y el manifiesto no se re-selló. ``ci-pattern verify .`` quedó en rojo por
+    ``gate-not-wired`` y nadie lo ejecutó desde entonces: la puerta que cerró
+    las fases 0 a 6 es ``adoption check``, que no lee ``P23_required_jobs``.
+
+    El predicado es el del propio canon (``_jobs_in_workflow``, detección
+    estructural por indentación), no una segunda implementación: un test que
+    reimplementa la detección puede discrepar de la puerta que verifica.
+    """
+    completed = subprocess.run(
+        [sys.executable, str(CI_PATTERN_CLI), "verify", str(REPO_ROOT), "--json"],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    assert completed.returncode in (0, 1), (
+        "la CLI del canon no se pudo ejecutar sobre el árbol; sin veredicto no hay "
+        f"prueba: rc={completed.returncode}\n{completed.stderr[-800:]}"
+    )
+
+    report = json.loads(completed.stdout)
+    unwired = [f for f in report["findings"] if f.get("code") == "gate-not-wired"]
+
+    assert not unwired, (
+        "el manifiesto declara jobs que ningún workflow cablea; un job declarado y "
+        "ausente hace rojo `ci-pattern verify`, y la corrección es re-sellar el "
+        "manifiesto con los nombres reales, no crear un job nuevo para satisfacerlo "
+        "(BP#1354):\n  - " + "\n  - ".join(f["detail"] for f in unwired)
     )
