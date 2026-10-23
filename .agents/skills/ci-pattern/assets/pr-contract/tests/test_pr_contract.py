@@ -89,9 +89,11 @@ def write_range_data(event_file, repo, dest):
     base = pr.get("base", {}).get("sha", "")
     head = pr.get("head", {}).get("sha", "")
     rng = f"{base}..{head}" if base and head and base != head else "HEAD..HEAD"
+    # Diff de la PR: merge-base (...), no el árbol de base.sha, que se mueve al reapuntar la PR (#1013).
+    diff_rng = rng.replace("..", "...")
     files = {
-        "changed.txt": git_text(repo, "diff", "--name-only", rng),
-        "numstat.txt": git_text(repo, "diff", "--numstat", rng),
+        "changed.txt": git_text(repo, "diff", "--name-only", diff_rng),
+        "numstat.txt": git_text(repo, "diff", "--numstat", diff_rng),
         "commits.txt": git_text(repo, "log", "--format=%P%n%B%n---COMMIT-END---", rng),
         "tracked.txt": git_text(repo, "ls-files"),
     }
@@ -816,6 +818,52 @@ class RangeDataFilesTests(unittest.TestCase):
             numstat.write_text("300\t100\ta.py\n-\t-\timg.png\n", encoding="utf-8")
             proc = self._only("budget", tmp, ["--numstat-file", str(numstat)])
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+class MovedBaseRangeTests(unittest.TestCase):
+    """HR-64 tras reapuntar una PR apilada: el rango de los ficheros es el de la PR, no el de main."""
+
+    COVERED = {"checks": {name: name == "docs_evidence" for name in ALL_CHECKS},
+               "docs_evidence": {"pages": [{"page": "docs/codebase/scripts.md",
+                                           "covers": ["scripts/check_*.py"]}],
+                                 "checklists": {}}}
+
+    def _git(self, repo, *args):
+        subprocess.run(["git", "-C", str(repo), "-c", "user.name=t", "-c", "user.email=t@e.invalid",
+                        "-c", "commit.gpgsign=false", *args], check=True, capture_output=True)
+
+    def _commit(self, repo, msg, files):
+        for rel, text in files.items():
+            (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+            (repo / rel).write_text(text, encoding="utf-8")
+        self._git(repo, "add", "-A")
+        self._git(repo, "commit", "-q", "-m", msg)
+        return git_text(repo, "rev-parse", "HEAD").strip()
+
+    def _stacked_pr_after_main_moved(self, tmp):
+        """PR de una rama sobre B0 que solo toca tests/. Después main mergea otra PR
+        (M1, toca scripts/) y la PR se reapunta a main: base.sha = M1, head = F1."""
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        self._git(repo, "init", "-q", "-b", "main")
+        self._commit(repo, "base", {"docs/codebase/scripts.md": "scripts\n"})
+        self._git(repo, "checkout", "-q", "-b", "feature/x")
+        head = self._commit(repo, "feat: la PR", {"tests/test_own.py": "x = 1\n"})
+        self._git(repo, "checkout", "-q", "main")
+        base = self._commit(repo, "merge de otra PR", {"scripts/check_crap.py": "y = 1\n"})
+        return repo, base, head
+
+    def test_pr_que_solo_toca_tests_no_hereda_lo_que_main_mergeo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, base, head = self._stacked_pr_after_main_moved(tmp)
+            event = make_event(tmp, body="x\n", labels=["type:chore"], base_sha=base, head_sha=head)
+            proc = run_gate(event, make_policy(tmp, **self.COVERED), repo=repo)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_el_rango_documentado_del_gate_es_el_de_tres_puntos(self):
+        done = subprocess.run([sys.executable, str(GATE), "--help"], capture_output=True,
+                              text=True, check=True)
+        self.assertIn("git diff --name-only BASE...HEAD", " ".join(done.stdout.split()))
 
 
 def ai_section(text):

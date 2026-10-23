@@ -35,9 +35,9 @@ drift, and drift is Hard Rule 10.
 | `scripts/check_mutation_sites.py` | `scripts/check_mutation_sites.py` |
 | `scripts/check_mutation.py` | `scripts/check_mutation.py` |
 | `scripts/quality_report.py` | `scripts/quality_report.py` |
-| `scripts/check_pr_size.py` | `scripts/check_pr_size.py` |
-| `scripts/check_branch_name.py` | `scripts/check_branch_name.py` |
 | `scripts/check_test_classification.py` | `scripts/check_test_classification.py` (optional: adopt it when the repo has `tests/integration/`, and wire it in your own `ci.yml`) |
+| `ci-pattern/assets/pr-size/check_pr_size.py` | `ci-pattern/assets/pr-size/check_pr_size.py` (vendorizado en `.agents/skills/ci-pattern/`) |
+| `ci-pattern/assets/branch-name/check_branch_name.py` | `ci-pattern/assets/branch-name/check_branch_name.py` (vendorizado en `.agents/skills/ci-pattern/`) |
 | `scripts/check_adoption.py` | `scripts/check_adoption.py` |
 | `scripts/policy_time.py` | `scripts/policy_time.py` |
 | `cosmic-ray.toml` | `cosmic-ray.toml` |
@@ -54,6 +54,31 @@ drift, and drift is Hard Rule 10.
 | `tests/fixtures/**` | `tests/fixtures/**` |
 | `pyproject.fragment.toml` | merged into `pyproject.toml` |
 
+## `pr-size` y `branch-name` ya no viven aquí
+
+Desde #1011 (D1 de #809) el canon de los dos gates es `ci-pattern`, que es el que
+ejecutan los tres consumers. DQH no lleva su propia copia, y su plantilla
+`ci.yml` los invoca desde `.agents/skills/ci-pattern/`: **quien use esta plantilla
+tiene que vendorizar `ci-pattern`**, un requisito que antes no tenía.
+
+Las dos copias no eran idénticas al canon. La retirada cambia el veredicto, y la
+tabla se midió ejecutando las dos sobre los mismos nombres de rama:
+
+| | retired (DQH) | canon (`ci-pattern`) |
+|---|---|---|
+| `branch-name` | `^(feat\|fix\|refactor\|docs\|ci\|test\|chore)/\d+-[a-z0-9]+(-[a-z0-9]+)*$` | `^(feat\|fix\|chore\|docs\|style\|refactor\|perf\|test\|build\|ci\|revert)/[a-z0-9._-]+$` |
+| número de issue | obligatorio | no exigido |
+| tipos aceptados | 7 | 11 |
+| exenciones | `main` | `main`, `archive/…`, `skill-fleet/…`, dependabot (si el actor es dependabot) |
+| `pr-size` | suma con git contra el merge-base, sin exclusiones | excluye las raíces vendorizadas del presupuesto, cuenta por la API con `--event`, y falla cerrado si no puede medir |
+
+Cinco formas de rama cambian de veredicto, todas de *falla* a *pasa*:
+`docs/mi-rama` (sin número), `perf/cache`, `build/deps`, `revert/12-x` (tipos que
+DQH no conocía), y `archive/viejo` junto con `skill-fleet/…` (exenciones). En
+`pr-size` el presupuesto se relaja para lo vendorizado y se endurece cuando la
+medición falla: ese endurecimiento es deliberado y ya es el que aplica BP.
+
+
 ## What each asset enforces
 
 | Asset | Hard Rule it makes executable |
@@ -63,14 +88,12 @@ drift, and drift is Hard Rule 10.
 | `quality-policy.json` | 11, 12, 14, 16: canonical subjects, exclusions, owners, non-ownership, ceilings, and command identities |
 | `quality_policy.py` | 14, 16, 17: ordered content-bound manifest plus candidate, policy, scope, and tool evidence |
 | `check_layers.py` | 9 (AST, not regex), 12 (ratchet with target and expiry date), 14 (declared testable boundary) |
-| `check_complexity.py` | 12 (absolute global ceiling — never `top-N`) |
+| `check_complexity.py` | 12 (absolute global ceiling — never `top-N`); a BASELINE entry whose function is gone fails, one that merely fell under the ceiling is a note |
 | `check_crap.py` | 12, plus the complexity-against-coverage axis; fails closed without coverage data |
 | `check_dry.py` | 17 (sha256 over a normalised AST — never `hash()`, which is salted per process) |
-| `check_mutation_sites.py` | 12; the per-file surface that no per-function gate can see |
-| `check_mutation.py` | 18 (degenerate-run guard), 12 (survivor ratchet + acquisition grace) |
+| `check_mutation_sites.py` | 12; the per-file surface that no per-function gate can see. Docstrings are excluded from the count: a ratchet that charged for documentation would reward deleting it |
+| `check_mutation.py` | 18 (degenerate-run guard), 12 (survivor ratchet + acquisition grace); a run that measured mutants and killed none fails; each entry records the `acquired_on` date, which a re-emission never moves, apart from the renegotiable `target_date` |
 | `quality_report.py` | 13 (gate order pinned in code), 16 (indicators plus mismatch/stale-evidence rejection) |
-| `check_pr_size.py` | Decision Gate "PR exceeds 400-line review budget" |
-| `check_branch_name.py` | Naming discipline, allowlisted defaults only |
 | `check_test_classification.py` | 18 (an empty or missing integration directory fails closed); every `tests/integration/test_*.py` carries the marker the CI selection depends on, so no file is collected by neither job |
 | `check_adoption.py` | 2, 6, 14, 15, 18: required configs and locks exist; coverage and mutation roots match policy |
 | `policy_time.py` | 12, 17: ratchet expiry receives a validated, recorded input instead of reading the clock |

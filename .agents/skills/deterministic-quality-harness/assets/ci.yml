@@ -43,6 +43,12 @@ jobs:
     # Hard Rule 15: exact runner label. `ubuntu-latest` silently becomes a different machine.
     runs-on: ubuntu-24.04
     if: github.event_name == 'pull_request'
+    # `pull-requests: read` lets the canon's pr-size read the per-file breakdown from the
+    # GitHub API (#1011, D1 of #809). Without it the gate falls back to git and cannot
+    # exclude the vendored subtree from the budget.
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -53,17 +59,20 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: branch name
+        # D1 de #809: el canon de este gate es ci-pattern. Esta plantilla ya no lleva su
+        # propia copia, asi que el gate exige que el consumer tenga ci-pattern vendorizado
+        # en .agents/skills/ci-pattern/ (BP ya lo ejecuta asi desde #814-#816).
         env:
           BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-        run: python scripts/check_branch_name.py
+        run: python .agents/skills/ci-pattern/assets/branch-name/check_branch_name.py --ref "$BRANCH_NAME"
 
       - name: pr size
-        # PR_BODY is attacker-controlled text. It is passed through the environment, never
-        # interpolated into the shell, so a crafted title or body cannot inject a command.
+        # El canon cuenta por la API con el payload del evento, de modo que PR_BODY no hace
+        # falta: el texto del PR es texto del solicitante y no llega al shell. BASE_REF sigue
+        # siendo la via git cuando el evento no trae desglose.
         env:
           BASE_REF: origin/${{ github.event.pull_request.base.ref }}
-          PR_BODY: ${{ github.event.pull_request.body }}
-        run: python scripts/check_pr_size.py
+        run: python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"
 
   quality:
     runs-on: ubuntu-24.04

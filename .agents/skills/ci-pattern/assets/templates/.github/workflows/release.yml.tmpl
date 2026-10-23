@@ -1,0 +1,136 @@
+# Workflow de release del consumer (HR-19, HR-20; canon #1015).
+#
+# Para adoptarlo: copie este fichero a `.github/workflows/release.yml` y
+# cambie los valores del bloque `env` de abajo. Nada más es parametrizable:
+# los tres jobs no llevan ramas ni nombres de repositorios.
+#
+# Se dispara con un **tag estable**: `v*` y nunca `v*-*`. Un prerelease
+# (`v2.2.0-rc.1`) no se publica —el gate del tag solo acepta semver estricto,
+# así que dispararse con él solo podría poner el repositorio en rojo—.
+#
+#   preflight  los dos gates: el tag (semver anotado, versión creciente,
+#              commit alcanzable desde la rama por defecto) y el CI en verde
+#              sobre el commit exacto que se etiqueta.
+#   release    publica en el entorno protegido `release`. El token con
+#              permiso de escritura vive solo en este job.
+#   verify     comprueba que lo publicado corresponde al tag. Es una
+#              comprobación de salida, no una batería de tests: el CI ya
+#              quedó verde en preflight y no se repite aquí.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+      - "!v*-*"
+
+# El workflow es de solo lectura por defecto. Solo el job de publicación
+# recibe la capacidad de escritura, y solo mientras dura.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  # Nunca se cancela una release en curso: dos tags a la vez no se
+  # entrelazan, y una publicación a medias no se relanza sola.
+  cancel-in-progress: false
+
+env:
+  # 1. Raíz donde el propagador materializó la skill: `.agents/skills/` en
+  #    los consumers del catálogo, `skills/` en los que la usan en local.
+  CI_PATTERN_ROOT: .agents/skills/ci-pattern
+  # 2. Basename del workflow de CI cuyo run en verde exige el gate.
+  CI_WORKFLOW: ci.yml
+  # 3. Script del consumer que comprueba el artefacto ya desplegado.
+  RELEASE_VERIFY_SCRIPT: scripts/verify-release-output.sh
+  # 4. Solo si su endpoint de salud no está donde el script lo espera: la
+  #    verificación de salida lee de aquí la revisión desplegada (parámetro 6).
+  # RELEASE_HEALTH_URL: ${{ vars.RELEASE_HEALTH_URL }}
+
+jobs:
+  preflight:
+    name: release preflight (tag + CI en verde)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      # Leer el veredicto del CI de este mismo commit. Release y CI son
+      # workflows independientes: sin este permiso el camino de release
+      # nunca se entera de que el CI estaba rojo sobre lo que va a firmar.
+      actions: read
+    steps:
+      - name: Checkout del tag exacto
+        # actions/checkout v4.4.0
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          # actions/checkout descarga con --no-tags: sin esto el ref del tag
+          # no existe en el runner y el gate del tag muere sobre un tag que
+          # sí está anotado.
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Gate del tag (HR-19, HR-20)
+        run: python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_tag.py" --repo . --tag "$GITHUB_REF_NAME" --default-branch main
+
+      - name: Gate de CI en verde sobre el commit del tag (HR-19)
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 "$CI_PATTERN_ROOT/assets/release-gate/check_release_ci.py" --repo . --tag "$GITHUB_REF_NAME" --workflow "$CI_WORKFLOW"
+
+  release:
+    name: publicar la release
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # Entorno protegido: quien lo aprueba es quien aprueba la publicación.
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - name: Las notas del release están en el commit etiquetado (HR-19)
+        run: test -f "RELEASE-$GITHUB_REF_NAME.md"
+
+      - name: Crear la GitHub Release y marcarla Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file "RELEASE-$GITHUB_REF_NAME.md" --latest
+      # Sin `--admin`: el tag ya existe y es la release de ese tag, no un
+      # movimiento de etiqueta que deba anteponerse a nadie.
+
+  verify:
+    name: verificar lo publicado
+    needs: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout del tag exacto
+        # actions/checkout v4.4.0
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: La release publicada es la del tag y está marcada Latest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag_sha=$(git rev-parse "refs/tags/$GITHUB_REF_NAME^{}")
+          draft=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" --jq .draft)
+          test "$draft" = "false" || { echo "la release de $GITHUB_REF_NAME es un borrador" >&2; exit 1; }
+          latest=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+          test "$latest" = "$GITHUB_REF_NAME" || { echo "la release Latest es $latest y no $GITHUB_REF_NAME" >&2; exit 1; }
+          printf 'RELEASE_SHA=%s\n' "$tag_sha" >> "$GITHUB_ENV"
+
+      - name: Lo desplegado lleva el commit del tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: "$RELEASE_VERIFY_SCRIPT"

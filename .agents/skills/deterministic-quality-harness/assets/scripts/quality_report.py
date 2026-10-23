@@ -54,10 +54,10 @@ GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
 #: include it would be lying.
 
 #: PR-scoped gates. They need a base ref and a PR body, so they only run with --include-pr-gates.
-PR_GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = (
-    ("branch_name", "check_branch_name.py", ()),
-    ("pr_size", "check_pr_size.py", ()),
-)
+#: Empty since #1011 (D1 of #809): `branch_name` and `pr_size` were retired here and their
+#: canon is `ci-pattern`, whose `branch-name/` and `pr-size/` assets every consumer already
+#: runs. DQH no longer ships a second copy that can drift, so it has no PR gate of its own.
+PR_GATES: tuple[tuple[str, str, tuple[str, ...]], ...] = ()
 
 #: PR gates operate on Git/CI context from their working directory and do not accept ``--root``.
 ROOTLESS_GATES = frozenset(name for name, _, _ in PR_GATES)

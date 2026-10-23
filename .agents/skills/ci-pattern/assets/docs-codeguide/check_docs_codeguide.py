@@ -8,8 +8,16 @@
 - **Adelante (docs -> repo)**: toda ruta citada en una página del
   codeguide (``docs/codebase/**/*.md`` por defecto) existe en el repo.
 - **Atrás (repo -> docs)**: todo módulo de primer nivel bajo
-  ``--code-root`` que case con ``--code-glob`` aparece mencionado por
-  su nombre en alguna página del codeguide.
+  ``--code-root`` que case con ``--code-glob`` está nombrado en alguna
+  página del codeguide. Nombrado son dos condiciones que valen juntas
+  (team-skills#1004): el nombre aparece **completo**, delimitado por
+  caracteres que no son del nombre, y además lo hace
+  **en contexto de código** —dentro de backticks o de un bloque
+  cercado— o **como segmento de una ruta** en el texto de la página.
+  Un nombre que solo aparece en la prosa no cuenta: «nuevo» y «datos»
+  son palabras del español que cualquier mapa menciona, y «core» es un
+  trozo de «encore». Sin esa condición un módulo sin mapear pasaba el
+  gate por casualidad, que es lo que este gate existe para evitar.
 
 Visibilidad: idéntico en público y en privado Free — el script es
 local, no usa la API de GitHub, ni secretos, ni red. Sale 0 si ambos
@@ -259,7 +267,9 @@ def check_docs_codeguide(
     Las listas vacías en ambas claves significan «OK»; cualquier
     entrada ausente en cualquier lado es un FAIL. La entrada
     ``"<empty docs/codebase/>"`` o ``"<empty internal/components/>"``
-    nombra el lado vacío cuando uno de los dos está sin contenido.
+    nombra el lado vacío cuando uno de los dos está sin contenido. En el
+    sentido atrás, «nombrado» es la regla de :func:`_backward_findings`:
+    nombre completo y en contexto de código o como segmento de ruta.
     """
     return check_docs_codeguide_roots(repo, [(code_root, code_glob)], docs_path)
 
@@ -276,20 +286,69 @@ def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str
     return [problem for problem in problems if problem is not None]
 
 
-def _backward_findings(repo: Path, roots: list[tuple[str, str]], docs_text: str) -> list[str]:
-    """Sentido atrás: módulos de cada raíz que el codeguide no menciona por su nombre.
+# team-skills#1004: qué cuenta como «nombrado». Un nombre de módulo solo
+# cuenta completo (delimitado por caracteres que no son del nombre) y, además,
+# en contexto de código: backticks, bloque cercado, o segmento de ruta. El
+# texto del codeguide es prosa además de ser documentación de código, y una
+# comparación por subcadena dejaba pasar un módulo sin mapear en cuanto su
+# nombre era una palabra corriente.
+_NAME_CHARS = r"A-Za-z0-9_-"
+_CODE_SPAN_RX = re.compile(r"(?<!`)(`+)(?!`)(.+?)(?<!`)\1(?!`)")
 
-    El nombre debe aparecer literalmente en el texto del codeguide: una PR que
-    cambie un nombre de módulo debe actualizar el codeguide, mientras tanto el
-    gate lo nombra."""
+
+def _code_contexts(text: str) -> list[str]:
+    """Trozos del documento que son contexto de código, no prosa.
+
+    Los bloques cercados salen enteros con el detector compartido
+    (``markdown_fences``, el mismo que evita que las citas del sentido
+    adelante emparejen mal los backticks). Los backticks en línea se
+    emparejan por longitud: la apertura captura su propio número de
+    comillas y el cierre solo cierra con ese mismo número.
+    """
+    contexts = [body for _info, body, _start in _FENCES.fenced_blocks(text)]
+    for _number, line in _FENCES.unfenced_lines(text):
+        contexts.extend(match.group(2) for match in _CODE_SPAN_RX.finditer(line))
+    return contexts
+
+
+def _is_named_as_code(module: str, contexts: list[str]) -> bool:
+    """El nombre completo aparece dentro de backticks o de un bloque cercado."""
+    whole = re.compile(rf"(?<![{_NAME_CHARS}]){re.escape(module)}(?![{_NAME_CHARS}])")
+    return any(whole.search(context) for context in contexts)
+
+
+def _is_named_as_path_segment(module: str, text: str) -> bool:
+    """El nombre completo aparece justo detrás de un separador de ruta.
+
+    Un mapa que dibuja el árbol cita ``app/src/modules/lanzadera`` sin
+    adornarlo de backticks; eso lo nombra igual que `` `lanzadera` ``.
+    """
+    segment = re.compile(rf"(?<=[/\\]){re.escape(module)}(?![{_NAME_CHARS}])")
+    return segment.search(text) is not None
+
+
+def _backward_findings(repo: Path, roots: list[tuple[str, str]], docs_text: str) -> list[str]:
+    """Sentido atrás: módulos de cada raíz que el codeguide no nombra.
+
+    El nombre tiene que aparecer completo y en contexto de código (backticks,
+    bloque cercado) o como segmento de una ruta: el texto de un codeguide es
+    también prosa, y ahí cualquier nombre corriente se encuentra por casualidad.
+    Una PR que cambie el nombre de un módulo, o que añada uno sin documentar,
+    tiene que tocar el codeguide; mientras tanto, el gate lo nombra.
+    """
+    contexts = _code_contexts(docs_text)
     missing: list[str] = []
     for code_root, code_glob in roots:
         modules = _list_modules(repo / code_root, code_glob)
         if not modules:
             missing.append(f"<empty {code_root}/>")
             continue
-        missing += [module if len(roots) == 1 else f"{module} ({code_root})"
-                    for module in modules if module not in docs_text]
+        missing += [
+            module if len(roots) == 1 else f"{module} ({code_root})"
+            for module in modules
+            if not (_is_named_as_code(module, contexts)
+                    or _is_named_as_path_segment(module, docs_text))
+        ]
     return missing
 
 

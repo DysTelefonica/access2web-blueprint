@@ -96,6 +96,18 @@
       },
       "description": "Declaracion explicita (HR-68, #714): sin ella adoption check avisa por stderr y sale 0; con ella la fase 5 exige el documento, su arbol de modulos cuadrando con el codigo en los dos sentidos, el bloque de capas coherente y el job requerido."
     },
+    "governance_seals": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "type": "string",
+          "description": "Job de CI requerido que ejecuta `adoption check --phase 3`: los sellos de `.governance-manifest.json` y el cableado de `P23_required_jobs`, medidos en un pull request."
+        }
+      },
+      "required": ["job"],
+      "additionalProperties": false,
+      "description": "Declaracion explicita (HR-72, #1027): sin ella adoption check avisa por stderr y sale 0; con ella la fase 3 exige que el job exista en un workflow y figure en `required_jobs` de `.github/required-jobs-policy.json`, que es la via de enforcement en repos privados con plan Free (sin proteccion de rama ni required checks del host). El job invoca la CLI como comando de primer nivel, nunca encadenada a otro gate (HR-46)."
+    },
     "docs_map": {
       "type": "object",
       "required": ["hub", "docs_path", "job"],
