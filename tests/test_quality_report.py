@@ -263,11 +263,12 @@ def test_the_aggregator_never_rebinds_a_module_level_name() -> None:
     """Every top-level name in the aggregator is configuration or a public helper, bound once.
 
     The merge that landed #1329 left ``DATED_GATES`` defined twice with the same value, the
-    paragraph explaining why the ``mutation`` gate stays out copied verbatim beside it, and two
-    ``#:`` comments whose declarations had moved above them. Nothing failed: the second binding
-    equals the first, so the report was byte-identical and ``ruff`` does not flag a repeated module
-    constant. A block nobody asked for is not a deviation from the asset either — the header claims
-    the file is the asset apart from its listed deviations, and a duplicated block is not one.
+    paragraph explaining why the ``mutation`` gate stays out copied verbatim beside it, and the
+    ``#:`` comment for the indicator table left behind after that table had moved above it.
+    Nothing failed: the second binding equals the first, so the report was byte-identical and
+    ``ruff`` does not flag a repeated module constant. A block nobody asked for is not a deviation
+    from the asset either — the header claims the file is the asset apart from its listed
+    deviations, and a duplicated block is not one.
     """
     counts = _top_level_names(SCRIPTS / "quality_report.py")
     repeated = {name: count for name, count in counts.items() if count > 1}
