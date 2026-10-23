@@ -50,6 +50,14 @@ AUSENTE = {"cli_name": "herramienta-ficticia", "cli_command": ["herramienta-fict
            "executed_verbs": ["--help"], "dry_run_flag": "--dry"}
 DOS_COMANDOS = ("# Tool\n\n`herramienta-ficticia subcomando --dry`\n\n"
                 "Y tambien: `herramienta-ficticia otro --help`.\n")
+# APAP#2324: `{"cli_name": "make", "cli_command": ["make"]}` sobre un runner sin
+# `make`. El nombre es ficticio porque `make` sí está en el PATH de este runner y
+# el caso se repetiría como «la CLI está» (#1038). Sin `dry_run_flag` ni
+# `executed_verbs` con valor, `_tier` devuelve presence-only para todo comando.
+SIN_EJECUCION = {"cli_name": "herramienta-ausente", "cli_command": ["herramienta-ausente"],
+                 "executed_verbs": [], "dry_run_flag": ""}
+DOC_SIN_EJECUCION = ("# Tool\n\nPara compilar: `herramienta-ausente build`.\n\n```sh\n"
+                     "herramienta-ausente test | tee salida.txt\n```\n")
 
 
 def _run(files=None, config=None):
@@ -117,6 +125,81 @@ class DocsCommandsTests(unittest.TestCase):
         findings, _ = _run({"README.md": DOS_COMANDOS, "tool.py": TOOL}, AUSENTE)
         self.assertNotIn("no se pudo ejecutar", findings[0])
         self.assertNotIn("[Errno 2]", findings[0])
+
+    def test_presence_only_por_construccion_con_cli_ausente_avisa_y_no_roja(self):
+        # APAP#2324: sin `dry_run_flag` ni `executed_verbs` declarados, `_tier`
+        # devuelve presence-only para todo comando, así que el gate no ejecuta
+        # nada y una CLI ausente no puede estar ocultando ninguna medición: el
+        # hallazgo se mantiene como aviso y el job sale 0 (#1038).
+        tmp, repo = _job_repo(SIN_EJECUCION, {"README.md": DOC_SIN_EJECUCION})
+        with tmp:
+            code, out, err = _job(repo)
+        self.assertEqual(code, 0, out + err)
+        self.assertEqual(_counts(out), {"executed": "0", "parse-only": "0",
+                                        "presence-only": "2"})
+        self.assertIn("entorno", err)
+        self.assertIn("instale", err.lower())
+        self.assertEqual(len(err.strip().splitlines()), 1, err)
+        self.assertNotIn("entorno", out)
+
+    def test_el_aviso_se_distingue_del_hallazgo_por_canal_y_por_forma(self):
+        tmp, repo = _job_repo(SIN_EJECUCION, {"README.md": DOC_SIN_EJECUCION})
+        with tmp:
+            _, _, err_aviso = _job(repo)
+        tmp, repo = _job_repo({**SIN_EJECUCION, "dry_run_flag": "--dry"},
+                              {"README.md": DOC_SIN_EJECUCION})
+        with tmp:
+            _, out_hallazgo, err_hallazgo = _job(repo)
+        self.assertTrue(err_aviso.startswith("AVISO"), err_aviso)
+        self.assertEqual(err_hallazgo, "", err_hallazgo)
+        (hallazgo,) = [línea for línea in out_hallazgo.splitlines() if línea.startswith("HR-65:")]
+        self.assertIn("entorno", hallazgo)
+
+    def test_con_dry_run_declarado_la_cli_ausente_sigue_siendo_roja(self):
+        tmp, repo = _job_repo({**SIN_EJECUCION, "dry_run_flag": "--dry"},
+                              {"README.md": DOC_SIN_EJECUCION})
+        with tmp:
+            code, out, err = _job(repo)
+        self.assertEqual(code, 1, out + err)
+        self.assertEqual(_counts(out.splitlines()[0]), {"executed": "0", "parse-only": "1",
+                                                        "presence-only": "1"})
+        (hallazgo,) = [línea for línea in out.splitlines() if línea.startswith("HR-65:")]
+        self.assertIn("entorno", hallazgo)
+
+    def test_con_executed_verbs_declarados_la_cli_ausente_sigue_siendo_roja(self):
+        # `build` es un verbo que sí aparece en la documentación del fixture, así
+        # que el gate tenía una medición que perder.
+        tmp, repo = _job_repo({**SIN_EJECUCION, "executed_verbs": ["build"]},
+                              {"README.md": DOC_SIN_EJECUCION})
+        with tmp:
+            code, out, err = _job(repo)
+        self.assertEqual(code, 1, out + err)
+        self.assertEqual(_counts(out.splitlines()[0]), {"executed": "1", "parse-only": "0",
+                                                        "presence-only": "1"})
+        (hallazgo,) = [línea for línea in out.splitlines() if línea.startswith("HR-65:")]
+        self.assertIn("entorno", hallazgo)
+
+    def test_una_cli_que_arranca_y_revienta_sigue_siendo_roja(self):
+        # `which` la da por lanzable y revienta al arrancar (shebang roto): es el
+        # camino de `CliAusenteError`, que #1038 no relaja. Con `executed_verbs`
+        # declarado el gate iba a ejecutar, así que la ausencia sí oculta algo.
+        tmp, repo = _job_repo({**SIN_EJECUCION, "executed_verbs": ["build"]},
+                              {"README.md": DOC_SIN_EJECUCION})
+        cli = repo / SIN_EJECUCION["cli_name"]
+        cli.write_text("#!/interprete-que-no-existe\n", encoding="utf-8")
+        cli.chmod(0o755)
+        with tmp:
+            code, out, err = _job(repo)
+        self.assertEqual(code, 1, out + err)
+        self.assertTrue(any("no arranca" in línea for línea in out.splitlines()), out)
+
+    def test_el_resumen_es_identico_con_y_sin_cli_en_presence_only(self):
+        con_cli, con = _run({"README.md": DOC_SIN_EJECUCION},
+                            {**SIN_EJECUCION, "cli_command": ["python3", "tool.py"]})
+        sin_cli, sin = _run({"README.md": DOC_SIN_EJECUCION}, SIN_EJECUCION)
+        self.assertEqual(con, {"executed": 0, "parse-only": 0, "presence-only": 2})
+        self.assertEqual(con, sin)
+        self.assertEqual((con_cli, sin_cli), ([], []))
 
     def test_cli_del_repo_sin_permiso_de_ejecucion_no_dice_que_falta(self):
         with tempfile.TemporaryDirectory() as d:

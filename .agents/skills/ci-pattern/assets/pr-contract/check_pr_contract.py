@@ -266,6 +266,24 @@ def check_labels(pr, policy, findings):
             f"el PR tiene {sorted(labels)}."
         )
 
+# HR-7 (#1059): el gate decia «tiene o no tiene una palabra de cierre», no
+# «cuáles». Un PR punta que declara `Closes #1056` y que ademas nombra
+# `Closes #1035` al citar un ejemplo pasaba igual, y GitHub cerraba LAS DOS al
+# mergearse: pasó con la PR 1058 de este repo, que habria cerrado la issue 1035
+# —la que tenia trabajo pendiente— al mergearse. Cerrar varias issues en un PR
+# punta es legitimo, asi que el veredicto NO cambia: lo que se agrega es la lista
+# por `stderr`, para que la segunda issue se vea antes del merge. Con
+# `chain:partial` el hallazgo de HR-7 no se toca: ahi la palabra de cierre ya es
+# el fallo. La lista sale solo si hay MAS DE UNA issue, que es el caso
+# sorprendente; un PR normal no paga ruido. Las nueve palabras clave son las de
+# GitHub y las mismas que lee el mensaje de los commits (#1056).
+# SAME. La clave `closes` es la del veredicto (HR-7); esta lista es solo
+# visibilidad por `stderr`, asi que no toca el codigo de salida y ningun
+# consumer se pone rojo por ella.
+GITHUB_CLOSING_RX = re.compile(
+    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+)", re.IGNORECASE)
+
+
 def check_closes(pr, base, default_branch, policy, findings):
     body = pr.get("body") or ""
     pattern = policy.get("closes_pattern", "Closes|Fixes|Resolves")
@@ -300,6 +318,17 @@ def check_closes(pr, base, default_branch, policy, findings):
             "HR-7: solo el PR punta de cadena lleva 'Closes #<issue>'; "
             "los PR encadenados intermedios no deben cerrar la issue."
         )
+    # HR-7 (#1059): la lista, sin cambiar el veredicto. Con `chain:partial` ya
+    # hay hallazgo por la palabra de cierre, asi que la nota solo aporta en el
+    # punta, y solo cuando el cuerpo apuna a mas de una issue.
+    targets = sorted(set(GITHUB_CLOSING_RX.findall(body)), key=int)
+    if len(targets) > 1 and not is_partial:
+        print(
+            f"HR-7 AVISO: el cuerpo cierra {len(targets)} issues "
+            f"({', '.join('#' + num for num in targets)}); GitHub las cerrara todas "
+            f"al mergearse. Si solo debe cerrar una, quita de las demas la palabra "
+            f"de cierre.",
+            file=sys.stderr)
 
 def size_exception_applied(pr, policy):
     """A1: la excepción de presupuesto la aplica solo el mantenedor cuando
@@ -383,6 +412,45 @@ def check_commits(messages, policy, findings):
             if pat.search(msg):
                 findings.append(f"HR-14: atribución de IA detectada en commit '{subject[:80]}'.")
                 break
+
+# HR-7 (#1056): GitHub cierra una issue por el CUERPO del PR y también por los
+# MENSAJES de commit, y HR-7 solo miraba el cuerpo. Un PR con `chain:partial`
+# cuyo commit dice «(Closes #N)» cerraba su issue al mergearse con la cadena
+# abierta: el PR 1050 cerró la issue 1035 con la fricción (c) pendiente —el
+# timeline la registra cerrada por `commit_id: 27d6817d`, cinco segundos después
+# del merge, y hubo que reabrirla— y el PR 1037 cerró la 1033 a medias. Se lee el
+# MISMO texto que juzga HR-14, que el workflow genera con merge-base desde
+# #1013: ni una llamada nueva a la API ni git dentro del gate. Las nueve palabras
+# clave son las de GitHub, sin distinguir mayúsculas; un «close» sin «#N» no
+# cierra nada y no dispara el hallazgo. La definición vive arriba, en
+# `GITHUB_CLOSING_RX` (#1059): el cuerpo y los commits de un PR se riegan con la
+# misma lista, porque es la misma lista de GitHub.
+
+
+def check_closing_in_commits(messages, pr, policy, findings):
+    """HR-7 sobre los mensajes de commit: el intermedio no cierra la issue.
+
+    Sin la etiqueta de intermedio no hace nada: en el PR punta `Closes #N` en el
+    commit es exactamente lo que HR-7 pide. El hallazgo nombra el commit por su
+    subject —el dato del rango es `%P%n%B`, sin SHA— y propone `Refs #N` con el
+    número que el propio commit cita.
+    """
+    label = policy.get("chain_partial_label", "chain:partial")
+    if label not in {item["name"] for item in pr.get("labels", [])}:
+        return
+    for block in messages.split("---COMMIT-END---"):
+        # El bloque es `%P` (parents) + `%B` (mensaje); el cierre se busca en el
+        # mensaje entero porque GitHub también lee el cuerpo del commit.
+        message = block.strip().partition("\n")[2]
+        match = GITHUB_CLOSING_RX.search(message)
+        if not match:
+            continue
+        subject = message.split("\n", 1)[0].strip()
+        findings.append(
+            f"HR-7: el commit «{subject}» del PR con «{label}» lleva «{match.group(0)}»: "
+            f"GitHub cierra la issue con los mensajes de commit, no solo con el cuerpo "
+            f"del PR. Escriba `Refs #{match.group(1)}` en el mensaje del commit; el "
+            f"cierre lo pone el PR punta de cadena (HR-7).")
 
 CLOSES_RX = re.compile(r"\b(?:Closes|Fixes|Resolves)\s+#\d+", re.IGNORECASE)
 # #334 (HR-53): el cierre se demuestra con una LISTA ESTRUCTURADA de entradas
@@ -797,6 +865,10 @@ def _range_checks(active, pr, ctx, texts, findings):
         check_budget(pr, budget_lines(texts["numstat_file"], origins), policy, findings)
     if "commits" in active:
         check_commits(texts["commits_file"], policy, findings)
+        # HR-7 (#1056) sobre el mismo texto: cuelga de `commits` porque comparte
+        # el fichero de datos, así la política lo apaga con la clave que ya usa
+        # para HR-14 y el contrato `checks` no crece.
+        check_closing_in_commits(texts["commits_file"], pr, policy, findings)
 
 
 def main(argv=None):

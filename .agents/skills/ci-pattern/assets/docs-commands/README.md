@@ -19,14 +19,23 @@ ilustrativos y solo puede encoger (una entrada obsoleta es `STALE`).
 ## Tres causas, tres hallazgos
 
 El veredicto distingue **por qué** falló el gate, porque arreglarlo es distinto en
-cada caso (#1021). Los tres son rojos: el fallo de entorno también para el pipeline,
-lo que cambia es el diagnóstico, no la severidad.
+cada caso (#1021). Los dos primeros son rojos para el pipeline. El de entorno también
+sale rojo para el pipeline **salvo** que la política no declare ninguna forma de
+ejecutar (#1038): entonces baja a aviso, porque no hay medición que la CLI ausente
+pueda ocultar. Lo que cambia en los tres casos es el diagnóstico, y en el tercero
+también la severidad, pero solo cuando el gate no iba a ejecutar nada.
 
-| Hallazgo | Qué pasó | Qué hacer |
-|---|---|---|
-| `rechazado por el parser (exit N)` | La CLI recibió el comando documentado y lo rechazó | Corregir el comando en `fichero:línea` o quitarlo de la documentación |
-| `timeout: no terminó en Ns` | El runner cortó la ejecución; el parser no llegó a rechazarlo | Sacar el comando del corpus con `exclude` o hacerlo más rápido; si el comando está mal, corregirlo |
-| `entorno: la CLI «X» no se puede ejecutar aquí` | La CLI no está donde corre el job | Instalar la CLI en la imagen del runner |
+| Hallazgo | Qué pasó | Qué hacer | Severidad |
+|---|---|---|---|
+| `rechazado por el parser (exit N)` | La CLI recibió el comando documentado y lo rechazó | Corregir el comando en `fichero:línea` o quitarlo de la documentación | rojo |
+| `timeout: no terminó en Ns` | El runner cortó la ejecución; el parser no llegó a rechazarlo | Sacar el comando del corpus con `exclude` o hacerlo más rápido; si el comando está mal, corregirlo | rojo |
+| `entorno: la CLI «X» no se puede ejecutar aquí` | La CLI no está donde corre el job | Instalar la CLI en la imagen del runner | rojo, o **aviso** si la política no declara `dry_run_flag` ni `executed_verbs` |
+
+Sin `dry_run_flag` ni verbos en `executed_verbs`, `_tier` devuelve `presence-only`
+para cualquier comando y el gate no lanza nada. En ese caso la ausencia de la CLI se
+reporta igual, pero a `stderr` con prefijo `AVISO` y el job sale 0. Basta con que se
+declare **una** de las dos claves para que vuelva a bloquear. Es el caso de
+APAP_WEB#2324: 58 comandos que su runner nunca iba a ejecutar porque no tiene `make`.
 
 El tercero sale **una vez**, no una por comando documentado: la disponibilidad de la
 CLI se decide una sola vez por gate. Antes un único `except` cubría las tres causas y
