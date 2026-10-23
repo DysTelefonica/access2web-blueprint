@@ -37,6 +37,7 @@
     "docs-codeguide",
     "docs-links",
     "docs-decisions",
-    "docs-architecture"
+    "docs-architecture",
+    "docs-commands"
   ]
 }

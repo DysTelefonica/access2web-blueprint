@@ -239,5 +239,17 @@
   "docs_decisions": {
     "dir": "docs/decisions",
     "job": "docs-decisions"
+  },
+  "docs_commands": {
+    "cli_name": "pytest",
+    "cli_command": [
+      "pytest"
+    ],
+    "executed_verbs": [
+      "--help",
+      "version"
+    ],
+    "dry_run_flag": "--help",
+    "job": "docs-commands"
   }
 }
