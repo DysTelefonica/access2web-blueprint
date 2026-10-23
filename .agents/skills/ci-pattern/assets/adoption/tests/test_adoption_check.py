@@ -1814,7 +1814,7 @@ class DocsPhaseTests(unittest.TestCase):
             repo = self.docs_repo(tmp)
             doc = repo / "docs" / "ci-pattern-flow.md"
             text = doc.read_text(encoding="utf-8")
-            needle = "Regex obligatoria: `"
+            needle = "Regex de la convención (aviso, no bloquea): `"
             k = text.index(needle) + len(needle)
             end = text.index("`", k)
             drifted = text[:k] + "^main$" + text[end:]

@@ -54,7 +54,7 @@ Parámetros secundarios documentados en las fuentes: host de producción, versi�
 de Python y lista de checks requeridos (en este repo: `required`,
 `pr-size / pr-size`; con ruleset en el host, este aplica la regex y el gate
 `branch-name` no hace falta; en un host sin rulesets —repo privado de plan Free—
-lo cumple `assets/branch-name/check_branch_name.py`, que compensa).
+lo mide `assets/branch-name/check_branch_name.py`, que avisa sin bloquear: R10 de #1093).
 
 ## Policy file de gates dormibles (HR-18)
 
@@ -159,10 +159,13 @@ esta skill: `assets/required-jobs/` (gate fail-closed + comprobación de
 paridad contra el workflow del consumer + política de ejemplo + suite; véase
 su `README.md`). El presupuesto de revisión también: `assets/pr-size/`
 (gate de presupuesto con la regla BP portada como dato
-`VENDORED_ROOTS = (".agents/skills/", "skills/")` — las rutas vendorizadas
-por el propagador quedan fuera del presupuesto de 400, pero un renombrado
+`VENDORED_ROOTS = (".agents/skills/",)` — el árbol vendorizado que recibe
+el consumer queda fuera del presupuesto de 400, pero un renombrado
 desde una ruta de autoría hacia una vendorizada sigue contando porque el
-trabajo fue authored — más suite RED/GREEN de 15 tests; `#623`). El resto
+trabajo fue authored — más suite RED/GREEN de 15 tests; `#623`). `skills/`
+**no** está excluido (`#1088`): en el canon es el catálogo de autoría y en
+un consumer es su catálogo propio, así que sus líneas cuentan para el
+presupuesto. El resto
 sigue
 versionado en el repositorio de origen del patrón, `ardelperal/APAP_WEB`
 (bajo `scripts/` y `.github/`), pendiente de publicarse como asset portátil;

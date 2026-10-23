@@ -42,12 +42,17 @@ def _git(repo: Path, *args: str) -> str:
 
 
 class TestVendoredRoots(unittest.TestCase):
-    def test_the_roots_are_the_two_vendored_trees(self) -> None:
-        self.assertEqual(budget.VENDORED_ROOTS, (".agents/skills/", "skills/"))
+    def test_the_only_root_is_the_vendored_tree(self) -> None:
+        """#1088: solo queda fuera el árbol vendorizado de los consumers."""
+        self.assertEqual(budget.VENDORED_ROOTS, (".agents/skills/",))
 
     def test_a_path_under_a_root_is_vendored(self) -> None:
         self.assertTrue(budget.is_under_vendored(".agents/skills/foo/x.py"))
-        self.assertTrue(budget.is_under_vendored("skills/legacy/x.py"))
+
+    def test_the_catalog_is_not_vendored(self) -> None:
+        """#1088: ``skills/`` es el catálogo de autoría del canon."""
+        self.assertFalse(budget.is_under_vendored("skills/legacy/x.py"))
+        self.assertFalse(budget.is_under_vendored("skills/acme/SKILL.md"))
 
     def test_an_authored_path_is_not_vendored(self) -> None:
         self.assertFalse(budget.is_under_vendored("app/auth.py"))
@@ -60,7 +65,10 @@ class TestCountsToBudget(unittest.TestCase):
 
     def test_vendored_path_without_rename_does_not_count(self) -> None:
         self.assertFalse(budget.counts_to_budget(".agents/skills/foo/x.py", ".agents/skills/foo/x.py"))
-        self.assertFalse(budget.counts_to_budget("skills/legacy/x.py", "skills/legacy/x.py"))
+
+    def test_catalog_path_without_rename_counts(self) -> None:
+        """#1088: bajo ``skills/`` es autoría y cuenta para el presupuesto."""
+        self.assertTrue(budget.counts_to_budget("skills/legacy/x.py", "skills/legacy/x.py"))
 
     def test_rename_from_authored_into_vendored_counts(self) -> None:
         self.assertTrue(budget.counts_to_budget("app/auth.py", ".agents/skills/foo/auth.py"))

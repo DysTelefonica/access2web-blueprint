@@ -10,8 +10,11 @@ own branches, the latter only when ``--actor`` is ``dependabot[bot]`` (the name 
 not proof of who pushed it). Branches that pre-date the convention are listed with
 ``--allow`` (repeatable), never by loosening the pattern.
 
-Exit codes: 0 conforming or exempt · 1 the name does not comply · 2 invalid input
-(empty or missing ref, unreadable pattern): a gate that could not measure never says OK.
+A name that does not comply prints ``AVISO`` and exits 0: the convention is advisory and
+no longer blocks a PR (team-skills#1093, R10). The measurement stays visible.
+
+Exit codes: 0 conforming, exempt or advisory · 2 invalid input (empty or missing ref,
+unreadable pattern): a gate that could not measure never says OK.
 """
 
 from __future__ import annotations
@@ -24,7 +27,7 @@ DEFAULT_PATTERN = "^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|rever
 ALWAYS_EXEMPT = re.compile(r"main|archive/.+|skill-fleet/[A-Za-z0-9._-]+")
 DEPENDABOT = re.compile(r"dependabot/(?:pip|uv|npm_and_yarn|github_actions)/[A-Za-z0-9._/-]+")
 DEPENDABOT_ACTOR = "dependabot[bot]"
-EXIT_FINDING, EXIT_INVALID = 1, 2
+EXIT_INVALID = 2
 
 
 class InvalidInputError(Exception):
@@ -85,8 +88,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"branch-name: {exc}", file=sys.stderr)
         return EXIT_INVALID
     if not ok:
-        print(f"FAIL  {note}")
-        return EXIT_FINDING
+        print(f"AVISO {note} (no bloquea: team-skills#1093, R10)")
+        return 0
     print(f"OK    {note or args.ref + ' matches the pattern'}")
     return 0
 

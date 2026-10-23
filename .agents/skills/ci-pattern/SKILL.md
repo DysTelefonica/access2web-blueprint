@@ -155,7 +155,6 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
 - **HR-1 — Los gates `MUST` leer datos estructurados** (nombre de rama, etiquetas,
   campos de la API, campos del cuerpo del PR) y `MUST NOT` deducir nada de prosa,
   gestos ni etiquetas aplicadas tarde. (evidencia: R2; fricciones F-004, B4)
-- **HR-2 retirada (2026-10-15)**
 - **HR-3 — Un gate `MUST` fallar en voz alta cuando no ha medido** y `MUST NOT`
   imprimir «OK» sin ejecución real detrás. (evidencia: R4; fricción A9; gate:
   `assets/workflow-policy/check_workflow_policy.py`)
@@ -180,7 +179,6 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   DysTelefonica/team-skills#156, #396, #865; gate:
   `assets/local-ci-parity/check_local_ci_parity.py` y módulo
   `assets/bin/pr_preflight.py`)
-- **HR-5 retirada (2026-10-15)**
 - **HR-6 — Las etiquetas del PR `MUST` aplicarse en el comando de creación**
   (higiene del autor): aplicadas tarde, alguien tiene que reejecutar o empujar
   para que el gate lea el dato nuevo, y esa higiene `MUST NOT` tratarse como
@@ -190,9 +188,6 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   intermedios llevan `Refs` más la etiqueta de cadena, la rama se nombra
   `<tipo>/<N>-<slug>`, el autor `MUST` verificar `closingIssuesReferences` tras
   crear el PR y `MUST NOT` escribir palabras de cierre en el título. (R2; B11; playbook reglas 3-4)
-- **HR-8 retirada (2026-10-15)**
-- **HR-9 retirada (2026-10-15)**
-  (R14; vigías zombis del 2026-09-29)
 - **HR-10 — La evidencia de deploy o batería `MUST` registrarse sobre el SHA de la
   revisión desplegada** (estado de commit por SHA) y `MUST NOT` colgar de una
   variable global ni de la rama por defecto. (R6; ardelperal/APAP_WEB#1082)
@@ -204,7 +199,6 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   (clasificación explícita, saneado y deduplicación por huella; el comentario de
   ocurrencia lleva el recuento y la segunda ocurrencia marca la etiqueta no
   protegida `friction:recurrent`). (R14; protocolo de mejora continua)
-- **HR-12 retirada (2026-10-15)**
 - **HR-13 — Los mensajes de un gate `MUST` describir la causa real** y, cuando el
   fallo depende de un dato que el autor no puede corregir, `MUST` decirlo y ofrecer
   una vía manual auditable. (R10; B4, B11)
@@ -224,7 +218,8 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   política del asset, no aquí: citarlos en prosa los arrastra a los mensajes de
   commit, que es exactamente lo que este gate mide (#944).
   La asistencia de IA se declara en el cuerpo del PR, en la sección `## Asistencia de IA`
-  (no vacía; «ninguna» vale): la comprueba el gate como `ai_disclosure` (#876).
+  (no vacía; «ninguna» vale): la comprueba el gate como `ai_disclosure` (#876). Desde
+  #1093 (R9) es un aviso: sin la sección el PR avisa y no sale en rojo.
   (COL3; regla del repo)
 - **HR-15 — Los ratchets `MUST` ser shrink-only** (rechazan lo nuevo, aceptan el
   inventario actual, regeneran baseline con un comando). Toda entrada de gate
@@ -243,8 +238,6 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   identificadores estables** (SHA de contenido o ruta), nunca a números de línea
   mutables que rompen el gate en el primer reordenado. (seguimiento
   ardelperal/APAP_WEB#1112; gate: `assets/ratchet/check_ratchet.py`)
-- **HR-17 retirada (2026-10-15)**
-- **HR-18 retirada (2026-10-15)**
 - **HR-19 — Todo release `MUST` ser un tag semver anotado** (`vMAJOR.MINOR.PATCH`)
   con GitHub Release asociada y marcada `Latest`; los prereleases
   (`vX.Y.Z-rc.N`) `MUST` quedar excluidos de la estable (`v*-*`), y las notas de
@@ -291,17 +284,12 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   privado y lo ven las mismas personas). (canon del sector, precedente GitLab
   2017; `references/incidents.md`; decisión del operador, 2026-10-06;
   DysTelefonica/team-skills#322; gate: `assets/bin/ci-pattern adoption check --phase 5`)
-- **HR-22 retirada (2026-10-15)**
-- **HR-23 retirada (2026-10-15)**
-- **HR-24 retirada (2026-10-15)**
-- **HR-25 retirada (2026-10-15)**
 - **HR-26 — Todo gate que compara números `MUST` medir con la toolchain
   versionada que lo juzga en CI** (pin de versiones en la stack de medición o
   re-medición por la toolchain del juez) y `MUST NOT` comparar una medición
   local con un baseline producido por otra versión: cobertura y baselines no
   son comparables entre toolchains. (baseline local 11503 vs runner 11559 por
   xdebug sin pinear; gate: `assets/workflow-policy/check_workflow_policy.py`)
-- **HR-27 retirada (2026-10-15)**
 - **HR-28 — El entorno de la suite `MUST` aislar del `.env` local del
   desarrollador, y el gate de aislamiento `MUST` declarar su dominio y fallar
   fuera de él**: un `.env` gitignored en la raíz filtra sus variables
@@ -398,32 +386,18 @@ los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
   `repository-delivery-governance`; esta skill aporta el paso de adopción y
   el ejecutable (`assets/host-readback/`). (team-skills#138; API del host
   de origen, 2026-10-01; fricciones D9)
-- **HR-35 retirada (2026-10-15)**
-- **HR-36 retirada (2026-10-15)**
-  el desajuste y se detiene, nunca se adapta en silencio. (repo
-  equivocado en un encargo y superficies prescritas de memoria, 2026-10-02;
-  hueco G10 del inventario de activos portable)
-- **HR-37 retirada (2026-10-15)**
-  presupuesto y su excepción es de `repository-delivery-governance` (HR-10)
-  y se referencia, no se copia. (auditoría issue→merge del consumer de
-  origen, solo lectura, 2026-10-01: de los últimos 60 PRs fusionados, 60 de
-  60 con autor y quien fusiona en la misma cuenta, 3 de 60 con alguna
-  revisión registrada y 0 aprobaciones requeridas;
-  DysTelefonica/team-skills#139; fricciones D10)
+
 Cada HR de esta lista figura en este SKILL.md y su clase de enforcement y la
 evidencia actual están registradas en el bloque 2 de
 `assets/audit-issue-to-merge.md` (matriz de enforcement con la clase
 `documented-only` / `locally-validated` / `CI-enforced` / `host-enforced` /
-`manual` y la ruta del activo que la sostiene; la antigua matriz
-`references/hr-gate-matrix.json` y su meta-gate
-`assets/hr-gate-matrix/check_hr_matrix.py` se retiraron por #513/#540).
+`manual` y la ruta del activo que la sostiene).
 
 Las HR-6 y HR-7 y HR-14 y HR-31 están gobernadas por el gate
 `assets/pr-contract/check_pr_contract.py` (etiquetas obligatorias, Closes
 solo en la punta de cadena, excepciones como dato, commits convencionales
-sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La clave opcional `checks` de la política (`{comprobación: true|false}` sobre `labels`, `closes`, `chain_context`, `issue_links`, `closure_tests`, `docs_evidence`, `budget`, `commits`) apaga comprobaciones sueltas para adoptar el contrato de forma incremental (DysTelefonica/team-skills#735): sin `checks` están todas activas; un nombre desconocido, un valor no booleano o las ocho apagadas salen 2 (HR-3), y las apagadas se listan por `stderr`. El gate no ejecuta `git`: el workflow genera los datos del rango y se los pasa por fichero (`--changed-files`, `--numstat-file`, `--commits-file`, `--tracked-files`); cada comprobación activa exige el suyo y su ausencia sale 2 (DysTelefonica/team-skills#753). Etiquetas y cuerpo se leen **vivos por API** cuando se juzga el evento real de Actions (`--event-file` es `GITHUB_EVENT_PATH`, el payload es de un `pull_request` y hay `GITHUB_TOKEN` o `GH_TOKEN`): el payload queda congelado al abrir el PR y un PR etiquetado después fallaría HR-6 con la etiqueta ya puesta (#996). `PR_CONTRACT_USE_LIVE_API=0` es el opt-out, `=1` fuerza la API en cualquier caso, y con la API caída o rechazada el gate falla cerrado (exit 2). Quien invoca el gate con su propio fichero de evento (preflight local, propagador, parity) conserva la lectura del payload.
+sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La clave opcional `checks` de la política (`{comprobación: true|false}` sobre `labels`, `closes`, `chain_context`, `issue_links`, `closure_tests`, `docs_evidence`, `budget`, `commits`) apaga comprobaciones sueltas para adoptar el contrato de forma incremental (DysTelefonica/team-skills#735): sin `checks` están todas activas; `chain_context` y `ai_disclosure` son avisos desde #1093 (R3, R9): no bloquean, y su clave solo apaga el aviso; un nombre desconocido, un valor no booleano o las ocho apagadas salen 2 (HR-3), y las apagadas se listan por `stderr`. El gate no ejecuta `git`: el workflow genera los datos del rango y se los pasa por fichero (`--changed-files`, `--numstat-file`, `--commits-file`, `--tracked-files`); cada comprobación activa exige el suyo y su ausencia sale 2 (DysTelefonica/team-skills#753). Etiquetas y cuerpo se leen **vivos por API** cuando se juzga el evento real de Actions (`--event-file` es `GITHUB_EVENT_PATH`, el payload es de un `pull_request` y hay `GITHUB_TOKEN` o `GH_TOKEN`): el payload queda congelado al abrir el PR y un PR etiquetado después fallaría HR-6 con la etiqueta ya puesta (#996). `PR_CONTRACT_USE_LIVE_API=0` es el opt-out, `=1` fuerza la API en cualquier caso, y con la API caída o rechazada el gate falla cerrado (exit 2). Quien invoca el gate con su propio fichero de evento (preflight local, propagador, parity) conserva la lectura del payload.
 
-- **HR-38 retirada (2026-10-15)**
 - **HR-39 — Un gate requerido por PR `MUST` ser función del diff y de entradas
   versionadas, y `MUST NOT` depender de un estado externo que cambia solo**
   (bases de avisos, registros, servicios): el gate cuyo veredicto depende de
@@ -474,11 +448,11 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La clave opci
   de changelog válido en `changelog.d/` del propio skill** (`type: patch`
   para reglas y evidencia, `type: minor` para piezas de ola, más una
   entrada). El PR no fija `metadata.version` ni `CHANGELOG.md`: el PR de
-  release consolida los fragmentos pendientes y sube la versión (#665). Un
-  cambio sin fragmento válido falla cerrado en el gate
-  `changelog-fragment`; solo el PR de release lo esquiva, y lo reconoce por su
-  forma exacta: borra fragmentos, no añade ninguno, cambia en `SKILL.md` solo
-  la línea `metadata.version` y en la skill nada más que un `CHANGELOG.md`. Y una sync de espejo `MUST` partir de un SHA resuelto de la
+  release consolida los fragmentos pendientes y sube la versión (#665). Desde
+  #1093 (R4) ningún gate bloquea el PR de trabajo por falta de fragmento: el
+  consolidador valida cada fragmento pendiente en el PR de release y falla
+  cerrado si uno es inválido. El script `check_changelog_fragment.py` se
+  conserva para ejecutarlo a mano. Y una sync de espejo `MUST` partir de un SHA resuelto de la
   fuente (`fetch` + `rev-parse`) verificando el readback contra ese SHA —
   nunca contra un working tree. (la v0.3 ganó HR-29 / 30 / 31 sin bump / el
   espejo del consumer quedó desincronizado; segunda deriva por sync desde
@@ -506,25 +480,30 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La clave opci
   python y tumbó el VPS por OOM el 2026-10-05). Cualquier subproceso que
   esta CLI lance nace con `CI_PATTERN_NESTED=1`; si la marca ya está
   presente, `verify` y `adoption` fallan cerrados con exit 2.
-  El smoke-run del meta-gate HR no es un gate anidado: el test declarado
-  corre con la marca RETIRADA (puede llamar a `adoption` en proceso) y el
-  encadenamiento se cierra por identidad —el test que ya se está ejecutando
-  no se vuelve a smoke-ejecutar, `CI_PATTERN_SMOKE_TESTS` lleva sus rutas—,
-  con `CI_PATTERN_SMOKE` como profundidad y tope trampa. Así ningún camino
-  recursa y los tests declarados por los fixtures siguen juzgándose
-  (DysTelefonica/team-skills#342).
   (decisión del operador,
   2026-10-05; DysTelefonica/team-skills#277; gate:
   `assets/bin/ci-pattern adoption check --phase 3`)
 - **HR-47 — El ciclo de vida documentado se comprueba con una prueba de recorrido**: una IA que solo dispone del documento operativo generado completa el ciclo issue → CI verde sobre un consumer de fixture con un `gh` simulado de forma real; los objetos creados (issue, rama, PR) pasan los gates del consumer y una receta corrupta (regex, etiqueta inexistente) hace fallar el recorrido. Vive en el repo del patrón (`testing/suites/ci-pattern-docs-walkthrough`), no en la skill: la ejecuta el CI del patrón. (#305)
 - **HR-48 — Toda la documentación de un proyecto `MUST` vivir en su propio repositorio**, bajo `docs/` por materia y con rutas relativas al repo: los post-mortems en la ruta del parámetro 9 (`docs/postmortems/<AAAA-MM-DD>-<slug>.md`). Fuera del repositorio, y sin copia en él, quedan solo los secretos, los backups, los datos en bruto y el material privado. Una instrucción que mande documentación a una ruta absoluta o externa al repo (otra unidad, un recurso de red o un directorio de usuario) `MUST NOT` propagarse ni adoptarse: el gate de las fases 3 y 5 de `adoption check` la rechaza nombrando fichero y línea, y la sección «Dónde vive la documentación» del documento operativo —y del bloque de `AGENTS.md`— la emite el generador. Las convenciones compartidas entre proyectos viven en el catálogo de team-skills y se propagan; la documentación de cada proyecto, no. (decisión del operador, 2026-10-06; `DysTelefonica/cadete` `AGENTS.md` «Documentation location», DysTelefonica/team-skills#319; gate: `assets/bin/ci-pattern adoption check --phase 5` y `--phase 3`)
 
-- **HR-49 retirada (2026-10-15)**
-- **HR-50 retirada (2026-10-15)**
-- **HR-51 retirada (2026-10-15)**
-- **HR-52 retirada (2026-10-15)**
 - **HR-53 — Toda issue se triagea por causa raíz antes de tocar código y se cierra contra un test con nombre.** La clasificación `MUST` ser exactamente una de cinco clases —(A) cubierta por un cambio en curso, nombrando el cambio y su test; (B) duplicada de una clase conocida, nombrando la issue canónica; (C) bug nuevo, asignado a su clúster de causa raíz; (D) feature; (E) poco clara, se pregunta al autor sin suponer—, y el juicio de clasificación, la unicidad de raíz y la prueba de sobreingeniería son `documented-only`, sin gate (HR-34). Dos o más issues con la misma raíz se resuelven con UN solo fix en la raíz que las cierra todas, cada una con su test con nombre. Un PR que cierra una issue `MUST` nombrar el test que demuestra el comportamiento corregido, y ese test `MUST` existir en el árbol: un «debería estar arreglado» no cierra nada. Si el cierre NO tiene test —documentación, configuración, texto—, la sección `MUST` declarar el encabezado estable «No aplica» y, debajo, la EVIDENCIA que cubre el cierre: la ruta de un fichero del repo versionado en git (un ADR, un registro de decisión, la página de documentación); esa evidencia no tiene que ser un fichero de test. «No aplica» solo vale si TODOS los ficheros cambiados del PR son no ejecutables: por defecto, `**/*.md`, `docs/**`, `.github/ISSUE_TEMPLATE/**` y `.github/PULL_REQUEST_TEMPLATE.md`; la política puede declarar otros patrones en `closure_not_applicable_paths`. Un workflow, un script o cualquier código ejecutable exige test, y el hallazgo nombra el fichero. Sin la lista de cambios (`--changed-files`) «No aplica» falla cerrado. Ninguna etiqueta exime de la sección: `type:docs` no exonera nada (#911, #918). Y una issue que mezcla dos fallos de los que solo se resuelve uno no se cierra —se comenta qué se resolvió y qué sigue pendiente—. Si el fix añade un estado, un verbo, un flag, un gate o una representación paralela de un dato existente, el PR `MUST` justificar por qué no basta con borrar o relajar algo. Un gate publicado sin el cambio que permite cumplirlo bloquea a todos sus consumers y es incidente, no fricción (HR-21). El mecanismo que describe una issue es una hipótesis y el síntoma es la evidencia: `MUST` reproducirse el síntoma antes de implementar, y un test escrito contra el mecanismo descrito que pasa en main sin cambios invalida el diagnóstico, no la issue. (decisión del operador, 2026-10-06; DysTelefonica/team-skills#334; gate: `assets/pr-contract/check_pr_contract.py`)
-- **HR-54 — La cadena de PRs se declara como dato y el enlace de la issue no admite mezclas.** Todo PR `MUST` declarar la sección **Chain Context** como dato: los que llevan `chain:partial` y **todo PR cuya base es la rama por defecto** —la punta de una cadena o un PR suelto, que el gate no distingue por el cuerpo y por eso exige la sección a los dos—; un PR suelto declara `position: 1/1`, `depends-on: none` y `follow-up: none`. La sección lleva los campos `chain`, `position` (N/M), `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget` (líneas añadidas + borradas / 400) y un diagrama que marca el PR actual con exactamente un `📍`: el gate verifica que `base` coincida con el `baseRefName` del PR, que `position` y `review-budget` tengan forma N/M y que haya un solo marcador. Cerrar y referenciar la MISMA issue a la vez (`Closes #N` junto a `Refs #N`) es válido: `issue-spec` no lo marca (#787 retiró el aviso). **Refs informativas (DysTelefonica/team-skills#913):** el PR `MUST` enlazar al menos una issue del propio repositorio que esté aprobada (`status:approved` y un `type:*`); si lleva `Closes`, la que cierra `MUST` ser esa aprobada. Las demás `Refs` son informativas: no exigen aprobación, pero sí que resuelvan a una issue y no a una PR, y siguen aplicando el tipo y las secciones obligatorias. Un PR con solo `Refs` a issues no aprobadas sigue en rojo. El eslabón `chain:partial` queda fuera de la exigencia de aprobación (#787 S6). El cuerpo `MUST NOT` enlazar una issue de otro repositorio: el enlace apunta al repositorio del PR. Regla escrita (DysTelefonica/team-skills#633): `Refs`/`Closes` solo apuntan a issues del mismo repositorio, nunca a PRs; la PR de la que se depende va en `depends-on` de Chain Context; las referencias dentro de spans de código o bloques no cuentan como closing keywords, como en GitHub (gate: `assets/issue-spec/check_issue_spec.py`, con modo `local --body-file` sin payload, token ni red). **Quién aprobó (DysTelefonica/team-skills#998):** la presencia de la etiqueta no basta cuando el consumer declara la lista `approvers` en su `.github/host-contract.json`: el gate toma el **último** evento `labeled` de `status:approved` (`GET /repos/<repo>/issues/<n>/events`, paginado hasta una página corta y con techo fail-closed) y exige que su `actor.login` esté declarado —el mismo patrón que `SIZE_EXCEPTION_APPROVER` en el gate de pr-size, con la identidad leída de la plataforma en vez de por una variable de entorno—. Actor no declarado, evento ausente y error de API son hallazgos, y una issue «aprobada» por un actor no declarado tampoco cuenta como la aprobación que un PR de solo `Refs` necesita. Sin `approvers` el gate conserva el comportamiento anterior, avisa en una línea por `stderr` y no añade ninguna lectura remota; el eslabón `chain:partial` sigue exento. El gate `preflight` conserva su espejo propio de la regla 3 y no comprueba QUIÉN aprobó: informa de la forma del cuerpo, la aprobación la verifica el gate remoto. La regla 7 —secciones obligatorias declaradas por el consumer en un fichero de configuración— se publica en el mismo gate (DysTelefonica/team-skills#644): opt-in con `--required-sections <path>` en los modos `local` y `pr-event`; sin configuración, el comportamiento del asset no cambia. Las secciones obligatorias son títulos Markdown (H1..H6) y no cuentan dentro de un span de código o de un bloque cercado, igual que las closing keywords; en `pr-event` la regla 7 se aplica al cuerpo de la issue consultada, no al cuerpo del PR. El presupuesto de revisión limita **cómo se corta** el trabajo, nunca el código: queda prohibido quitar comentarios, líneas en blanco, documentación o tests, y comprimir código, para caber; si ninguna pasada honesta de corte cabe, se entrega el mejor corte y el mantenedor decide si aplica la etiqueta `size:exception` (HR-8 retirada: el campo `size-exception-reason:` del cuerpo ya no existe), y el borrado íntegro de un fichero es un caso válido de esa excepción. Cada commit es una unidad entregable —comportamiento con sus tests y su documentación— convertible en un PR de la cadena, y el PR declara su frontera de reversión (qué desaparece al revertirlo). Las ramas publicadas se sincronizan con `git merge origin/main`, **nunca** con rebase; un PR solo está listo con el CI en verde sobre su último commit, y si el consumer no ejecuta CI en PRs cuya base no es main la receta documenta cómo forzarlo (push, no retarget); una cadena en conflicto con main no permite declarar lista su punta. Los checks obligatorios se leen de la política real del host (`required_checks` y su clase, #303), no de la costumbre: si su obligatoriedad se desconoce, el PR no está listo para mergear. (gate: la sección Chain Context, el `base` contra `baseRefName`, el marcador único y el enlace a otro repositorio, en `assets/pr-contract/check_pr_contract.py`; **también es gate la regla 7 cuando el contrato la declara**: con `tracker_branch` en el contrato del host, el detective post-push (`assets / runner-controls / check_push_compliance.py` / HR-49) exige que el PR mergeado en una rama protegida tenga esa rama como cabeza —lo que llega a `main` viene del PR del tracker— y un `tracker_branch` vacío falla cerrado; documented-only, sin gate (HR-34): la elección entre los dos modelos de cadena y sus compromisos —**apilada hacia main** (cada PR con su base en el anterior; no exige contrato y mergea PR a PR, a cambio de que el orden y las bases solo se lean del cuerpo) o **rama de feature con PR tracker en borrador** (concentra la revisión en un PR y exige declarar su rama en el contrato del host, a cambio de un paso más de gobierno)—, la honestidad del corte, la unidad de commit con su frontera de reversión, la sincronía con main y la lectura de los checks obligatorios son juicio verificable en revisión, no en binario.) (decisión del operador, 2026-10-06; DysTelefonica/team-skills#333; gate: `assets/pr-contract/check_pr_contract.py`)
+- **HR-54 — La cadena de PRs se declara como dato y el enlace de la issue no admite mezclas.** Cada requisito es una entrada: el gate va entre paréntesis y lo que no tiene gate ejecutable es juicio en revisión (HR-34). Decisión del operador, 2026-10-06 (DysTelefonica/team-skills#333).
+  - **HR-54.1 — Chain Context como dato.** Los PR que llevan `chain:partial` o cuya base es la rama por defecto (punta de cadena o PR suelto) `SHOULD` declarar la sección **Chain Context**; un PR suelto declara `position: 1/1`, `depends-on: none` y `follow-up: none`. Desde #1093 (R3) la falta de la sección y sus desvíos son avisos: el gate los imprime y no pone el PR en rojo; la sección sigue en la plantilla como ayuda, sin forma obligatoria. (gate: `assets/pr-contract/check_pr_contract.py`, aviso #1093 R3)
+  - **HR-54.2 — Campos y marcador.** La sección lleva `chain`, `position` (N/M), `base`, `depends-on`, `follow-up`, `starts-at`, `ends-with` y `review-budget` (líneas añadidas + borradas / 400), y un diagrama con exactamente un `📍`. (gate: `check_pr_contract.py`, forma N/M y marcador único: avisa, #1093 R3)
+  - **HR-54.3 — Base declarada.** `base` `SHOULD` coincidir con el `baseRefName` del PR. (gate: `check_pr_contract.py`, aviso #1093 R3)
+  - **HR-54.4 — Sin issues de otro repositorio.** El cuerpo `MUST NOT` enlazar una issue de otro repositorio: el enlace apunta al repositorio del PR. (gate: `check_pr_contract.py`, bloquea)
+  - **HR-54.5 — Issue aprobada enlazada.** El PR `MUST` enlazar al menos una issue del propio repositorio con `status:approved` y un `type:*`; si lleva `Closes`, la que cierra `MUST` ser esa aprobada. El eslabón `chain:partial` queda exento (#787 S6). (gate: `assets/issue-spec/check_issue_spec.py`; #913)
+  - **HR-54.6 — Refs informativas.** Las demás `Refs` no exigen aprobación, pero `MUST` resolver a una issue y no a una PR, y siguen aplicando el tipo y las secciones obligatorias. Un PR con solo `Refs` a issues no aprobadas sigue en rojo. (gate: `check_issue_spec.py`)
+  - **HR-54.7 — Closes y Refs a la misma issue.** Cerrar y referenciar la MISMA issue a la vez (`Closes` junto a `Refs`) es válido; `issue-spec` no lo marca (#787 retiró el aviso). (gate: `check_issue_spec.py`)
+  - **HR-54.8 — Quién aprobó.** Con `approvers` en el `host-contract.json` del consumer, el gate toma el último evento `labeled` de `status:approved` (`GET /repos/<repo>/issues/<n>/events`, con techo fail-closed) y exige que su actor esté declarado. Actor no declarado, evento ausente y error de API son hallazgos. Sin `approvers` conserva el comportamiento anterior: avisa por `stderr` y no añade lectura remota. `chain:partial` queda exento; `preflight` no comprueba quién aprobó. (gate: `check_issue_spec.py`; #998)
+  - **HR-54.9 — Referencias al mismo repositorio.** `Refs` y `Closes` apuntan solo a issues del mismo repositorio, nunca a PRs; la PR de la que se depende va en `depends-on` de Chain Context. Las referencias dentro de spans de código o bloques no cuentan como closing keywords. (gate: `check_issue_spec.py`; #633)
+  - **HR-54.10 — Secciones obligatorias del consumer (regla 7).** El consumer declara sus secciones en un fichero, opt-in con `--required-sections` en los modos `local` y `pr-event`. Son títulos Markdown H1..H6 fuera de spans y bloques; en `pr-event` se aplican al cuerpo de la issue, no al del PR. Sin configuración, el asset no cambia. (gate: `check_issue_spec.py`; #644)
+  - **HR-54.11 — Presupuesto de revisión.** El presupuesto limita cómo se corta el trabajo, nunca el código: prohibido quitar comentarios, líneas en blanco, documentación o tests, o comprimir código para caber. Si ningún corte honesto cabe, se entrega el mejor y el mantenedor decide la etiqueta `size:exception` (el campo `size-exception-reason:` ya no existe); borrar un fichero íntegro es caso válido de esa excepción. (gate: `assets/pr-size/check_pr_size.py`, 400 líneas; la honestidad del corte es juicio en revisión)
+  - **HR-54.12 — Unidad de commit.** Cada commit es una unidad entregable (comportamiento con sus tests y su documentación), convertible en un PR de la cadena. El PR declara su frontera de reversión: qué desaparece al revertirlo. (juicio en revisión, sin gate)
+  - **HR-54.13 — Sincronía con main.** Las ramas publicadas se sincronizan con `git merge origin/main`, nunca con rebase. Un PR solo está listo con CI verde sobre su último commit; si el consumer no ejecuta CI en PRs cuya base no es main, la receta documenta cómo forzarlo (push, no retarget). Una cadena en conflicto con main no declara lista su punta. (juicio en revisión, sin gate; regla 1 de `governed-delivery`)
+  - **HR-54.14 — Checks obligatorios reales.** Los checks obligatorios se leen de la política real del host (`required_checks` y su clase, #303), no de la costumbre. Si su obligatoriedad se desconoce, el PR no está listo para mergear. (juicio en revisión, sin gate)
+  - **HR-54.15 — Rama tracker.** Con `tracker_branch` en el contrato del host, el detective post-push exige que el PR mergeado en una rama protegida tenga esa rama como cabeza; un `tracker_branch` vacío falla cerrado. (gate: `assets/runner-controls/check_push_compliance.py`; #333, regla 7)
+  - **HR-54.16 — Modelo de cadena.** Hay dos caminos: apilada hacia main (cada PR con su base en el anterior; no exige contrato, y el orden y las bases solo se leen del cuerpo) o rama de feature con PR tracker en borrador (concentra la revisión y exige declarar su rama en el contrato del host). La elección es documented-only, sin gate (HR-34): se juzga en revisión.
 - **HR-55 — El `AGENTS.md` de un consumer propagado es título + bloque propagado + como máximo una sección local.** Tras la adopción (#341), el fichero `MUST` constar de: una línea de título, el bloque entre marcas `personal-skills:slice:<consumer> @ v…` cuyo cuerpo, byte a byte, tiene el sha256 `slice_block_sha256` declarado en `.team-skills.yaml`, y —como mucho— UNA sección local `## ` después del cierre. Cualquier texto antes del bloque (que no sea el título), entre el cierre y la sección, o una segunda sección `MUST` moverse a `docs/` o a esa única sección local; los enlaces de la sección local `MUST` existir en el repo (incluidos los skills del tier en `.agents/skills/`). La activación NO es autoselección: depende de la declaración explícita `agents_md: "propagated"` en el contrato de adopción. Sin declaración, el gate informa en `stderr` que la estructura todavía no se exige y sale 0 (la adopción previa no se rompe); con declaración aplica completo, aunque el AGENTS no lleve el bloque. El fail-open de que ningún consumer se declare lo cierra por fuera el doctor de flota, que exige el bloque a todo consumer con `governance: ci-pattern` en el registro, aunque no lo declare. (decisión del operador, 2026-10-06; DysTelefonica/team-skills#341; gate: `assets/bin/ci-pattern` (`_check_agents_structure`, `adoption check --phase 3` / `--phase 5`) con fixtures en `assets/adoption/tests/test_adoption_check.py`)
 - **HR-56 — Lo que compone la propagación no lleva nombres propios, rutas personales ni texto de mantenimiento.** Partials, fragmentos y bloques generados nombran roles («cualquier mantenedor», «el autor del PR»), nunca logins ni personas, y citan rutas instaladas (`.agents/skills/<skill>/…`), nunca `personal/<usuario>/…` ni rutas de usuario como `C:\Users\…` o `/home/…`. Las instrucciones de mantenimiento del catálogo viven entre `<!-- maintenance:begin -->` y `<!-- maintenance:end -->` y el compositor las excluye: lo que no se propaga no está sujeto al control. El gate `MUST` fallar nombrando `fichero:línea` ante cualquier login de `maintainers` en `fleet/registry.json`, ruta `personal/<x>/` o ruta de usuario en la región propagable; sin esa lista declarada el control falla también, porque sin dato no hay medición (HR-3). (decisión del usuario, 2026-10-07; DysTelefonica/team-skills#358; gate: `assets/bin/ci-pattern` (`_check_slice_content`), exclusión en `scripts/lib/compose-slice.ps1`, fixtures en `assets/adoption/tests/test_adoption_check.py`)
 - **HR-57 — Una migración versionada ya en la rama base no se renombra, borra ni edita.** En consumers con migraciones SQL versionadas el runner registra las aplicadas por nombre de fichero: renombrar, mover, borrar o editar una migración ya aplicada hace que el próximo deploy re-ejecute su DDL o la pierda (#431). El gate compara el árbol de migraciones de HEAD contra la rama base (`--base`, `origin/main` por defecto) sobre `--migrations-dir` y `--pattern` declarados: **rename**, **delete** y **edit** son rojos; las migraciones nuevas requieren prefijo numérico **estrictamente mayor** al máximo de la base; los prefijos ya duplicados en la base se toleran, los nuevos duplicados se rechazan. Exit codes: 0 limpio · 1 hallazgos · 2 fail-closed (no es git, dir ausente, patrón sin matches, base no resuelta). El gate se distribuye como asset copiado y `MUST NOT` invocar la CLI del patrón como subproceso (lección fork-bomb #342); el recursado se cierra por identidad con `CI_PATTERN_SMOKE_TESTS` (HR-45 / 46 / 48). (decisión del usuario, 2026-10-12; DysTelefonica/team-skills#431; gate: `assets/migrations-immutable/check_migrations_immutable.py`, fixtures en `assets/migrations-immutable/tests/test_migrations_immutable.py` y `test_migrations_immutable_new.py`)
@@ -553,7 +532,7 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La clave opci
 | El rojo exige un push de corrección | Empuje y deje que la CI se dispare sola; `rerun --failed` solo para transitorios; `workflow_dispatch` solo cuando el workflow cambió: si publica checks requeridos, resuelva el PR desde el SHA y evalúelo completo. |
 | Va a disparar un evento manual o programado sobre la rama de un PR | Solo si el job evalúa el PR completo; si no, publique bajo otro nombre de contexto o falle — nunca un check requerido en verde sin evaluación (HR-30). |
 | El cuerpo del PR, sus etiquetas o la issue enlazada cambian después del verde | Reejecute el gate si el host dispara algún evento para ese dato; si no lo dispara (cambio en la issue enlazada), reevalúe en el momento del merge antes de dar el verde por válido (HR-31). |
-| El read-back7 muestra `allow_auto_merge` descartado (plan gratuito) y el verde del PR depende de un gate requerido | Auto-merge no disponible: aplique la jerarquía sin él —required checks bloquean, workflow programado recuerda, script versionado con deadline como último recurso— y haga el merge cuando el CI esté verde; un verde por auto-merge sin verificación no existe (HR-39). |
+| El read-back de los ajustes del repo muestra `allow_auto_merge` descartado (plan gratuito) y el verde del PR depende de un gate requerido | Auto-merge no disponible: aplique la jerarquía sin él —required checks bloquean, workflow programado recuerda, script versionado con deadline como último recurso— y haga el merge cuando el CI esté verde; un verde por auto-merge sin verificación no existe (HR-39). |
 | Un rojo de avisos de dependencias aparece en un PR que no toca los manifiestos (parámetro 22) | Clasifíquelo como rojo externo: abra una issue con la evidencia (IDs de ejecución) y no lo corrija en ese PR; el gate corre programado sobre la rama por defecto y en los PRs que tocan los manifiestos (HR-39). |
 | Un gate rojo cuya causa posible es un prerrequisito del runbook (fila, usuario, flag, secreto) | Verifique el prerrequisito con el comando del runbook antes de diagnosticar código; una premisa sin comando detrás es un defecto del runbook (HR-42). |
 | Va a declarar un control —gate, auditoría, workflow programado o compensatorio | Primero el fixture violador: sin test de comportamiento que observe su veredicto de fallo no se declara como control; se clasifica `documented-only` hasta tenerlo (HR-32). |
@@ -649,10 +628,10 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La clave opci
    la excepción en el cuerpo y cierre a mano tras el merge (HR-7).
 6. CI en vuelta: clasifique rojos solo tras identificar el paso que falla vía
    API; empuje los fixes; rerun solo para transitorios (gates del §3).
-7. Merge con auto-merge —si el read-back7 confirma
+7. Merge con auto-merge —si el read-back de los ajustes del repo confirma
    `allow_auto_merge`; si no, merge manual tras el verde por la fila de §3— y
    commit de fusión, sin borrar la rama remota; con `strict`, actualice la
-   rama con la secuencia determinista de HR-17.
+   rama y espere el verde sobre el SHA nuevo.
 8. Deploy: registre el veredicto de la batería sobre la URL de salud del
    parámetro 6 de la revisión desplegada (HR-10); apague cualquier flag de
    prueba al terminar, también si la batería falla.
@@ -847,7 +826,7 @@ no vacías.
 | PR de reversión de la plataforma bloqueado por el gate de nombre en el momento de más prisa | El botón Revert genera su propia rama: admítala por identidad verificable según el parámetro 16, con el PR revertido como trazabilidad; exigirle el patrón canónico bloquea el revert sin proteger nada (HR-33). |
 | Control compensatorio documentado y nunca visto fallar | Mismo baremo que un gate: fixture violador y veredicto de fallo observado; sin eso es `documented-only`, no control (HR-32). |
 | Etiqueta documentada que no existe en el host: la doc ordena aplicarla y ningún gate la encontrará jamás | Contraste con la API del host mediante el drift check de solo lectura (`assets/host-readback/`); la etiqueta que el host no tiene se crea o se borra de la doc en la misma sesión (HR-34). |
-| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back7—; donde no hay mecanismo, script versionado con deadline y fallback; sin procesos vivos de sondeo, ni siquiera como vigía que sobrevive a la sesión. |
+| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back de los ajustes del repo—; donde no hay mecanismo, script versionado con deadline y fallback; sin procesos vivos de sondeo, ni siquiera como vigía que sobrevive a la sesión. |
 | Variable global que aprueba o bloquea deploys para siempre | Estado de commit por SHA; la evidencia viaja con la revisión (HR-10). |
 | Fix de fricción aplicado a mano sin registrar | El rojo vuelve con la próxima sesión; registre con evidencia y destile en regla. |
 | Registro acumulativo guardado con upsert por clave | Una observación nueva por entrada; el upsert sustituye el contenido. |
@@ -859,7 +838,7 @@ no vacías.
 | Fix de incidente viviendo solo en una rama paralela esperando el release regular | Hotfix aterriza en main, deploy inmediato y release PATCH (HR-20). |
 | Post-mortem que nombra personas como causa | Blameless: causas de sistema; falló el proceso, no la persona (HR-21). |
 | Deploy sin imagen de rollback capturada | Capture la imagen de rollback en el playbook antes de aplicar. |
-| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back7—; donde no hay mecanismo, script versionado con deadline y fallback. |
+| Bucle `--watch`, watcher de sesión o vigía IA esperando CI | Mecanismo primero: auto-merge armado más `allow_update_branch` —con disponibilidad verificada por el read-back de los ajustes del repo—; donde no hay mecanismo, script versionado con deadline y fallback. |
 | Dos workers sobre el mismo working tree | Un worktree por actor concurrente; el síntoma es el commit sobre la rama ajena a mitad de vuelo. |
 | Prescripción del orquestador ejecutada sin verificarla | El snapshot puede ser stale: verifique SHA, conteos y rutas en vivo y reutilice lo existente. |
 | Encargo que nombra repo, superficies o SHAs sin comando de verificación | Use `references/delegation-template.md`: cada dato con comando y salida en vivo; el worker reporta el desajuste en vez de adaptarse. |
@@ -899,7 +878,8 @@ exclusiones por lockfiles o ficheros generados.
   nombre completo y exime la rama por defecto, `archive/*`, `skill-fleet/*` y las
   ramas de Dependabot solo si `--actor` es el bot; lo anterior a la convención se
   lista con `--allow`. Salida 2 ante regex ilegible o rama vacía. Es el control
-  compensatorio de un host sin rulesets (#806).
+  compensatorio de un host sin rulesets (#806). Desde R10 de #1093 solo avisa: el
+  nombre no conforme imprime `AVISO` y sale 0; el exit 2 se mantiene ante entrada inválida.
 - `assets/release-gate/` — gates de release sobre el tag que dispara el release
   (HR-19 y HR-20): `check_release_tag.py` exige tag semver estricto
   (`vMAJOR.MINOR.PATCH`, sin ceros a la izquierda ni sufijo), anotado, con versión
@@ -935,12 +915,6 @@ exclusiones por lockfiles o ficheros generados.
   declarada como dato — `relaxation`, `exemption` — lleve una identidad
   verificable: `actor` no vacío o `issue` positivo; una exención sin
   responsable auditable no es gobierno.
-- `assets/hr-gate-matrix/` — directorio con el gate HR-1
-  (`check_structured_inputs.py`) y su suite; el nombre del directorio es
-  histórico y se conserva hasta una eventual reubicación del gate HR-1
-  (la matriz HR→gate y su meta-gate se retiraron por #513/#540; el bloque 2
-  de `assets/audit-issue-to-merge.md` registra la nueva forma de la matriz
-  de enforcement).
 - `assets/required-jobs/` — primer asset ejecutable de la skill: agregador
   fail-closed de jobs requeridos con política externa (sin nombres de jobs,
   eventos ni skips en el código), política de ejemplo y suite con test de

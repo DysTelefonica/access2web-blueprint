@@ -614,14 +614,17 @@ class ChainContextGateTests(unittest.TestCase):
         proc = self.run_case("Refs #333\n\n" + chain_ok() + "\n" + AI_OK)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_missing_chain_context_fails_naming_the_section(self):
+    def test_missing_chain_context_is_advisory_not_red(self):
+        # #1093 R3: Chain Context como dato deja de bloquear; el gate avisa y pasa.
         proc = self.run_case("Refs #333\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Chain Context", proc.stdout)
 
-    def test_missing_field_fails_naming_it(self):
+    def test_missing_field_is_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok().replace("- follow-up: —\n", ""))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("follow-up", proc.stdout)
 
     def test_standalone_pr_declares_chain_context_1_1(self):
@@ -638,33 +641,38 @@ class ChainContextGateTests(unittest.TestCase):
             labels=("type:chore",), base="main")
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_standalone_pr_without_chain_context_fails(self):
+    def test_standalone_pr_without_chain_context_is_advisory_not_red(self):
         proc = self.run_case("Closes #333\n\n## " + CLOSURE_HEADING
                              + "\n\n- `tests/test_gate.py`\n",
                              labels=("type:chore",), base="main")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Chain Context", proc.stdout)
 
-    def test_base_mismatch_fails_naming_the_field(self):
+    def test_base_mismatch_is_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok("otra-rama"))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("base", proc.stdout)
 
-    def test_no_marker_fails(self):
+    def test_no_marker_is_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n"
                              + chain_ok().replace("📍 este PR (1/1)", "el PR actual (1/1)"))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("📍", proc.stdout)
 
-    def test_two_markers_fail(self):
+    def test_two_markers_are_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok() + "\n📍 y otro 📍\n")
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("📍", proc.stdout)
 
-    def test_malformed_position_and_budget_fail(self):
+    def test_malformed_position_and_budget_are_advisory_not_red(self):
         proc = self.run_case("Refs #333\n\n" + chain_ok().replace("position: 1/1", "position: uno")
                              .replace("review-budget: 280/400", "review-budget: mucho"))
-        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("position", proc.stdout)
         self.assertIn("review-budget", proc.stdout)
 
@@ -985,31 +993,37 @@ class AiDisclosureGateTests(unittest.TestCase):
                            base_sha=base_sha, head_sha=head_sha)
         return run_gate(event, make_policy(tmp), repo=repo)
 
-    def test_missing_section_fails_naming_it(self):
+    # #1093 R9: la asistencia de IA deja de bloquear; sin ella el gate avisa y pasa.
+    def test_missing_section_is_advisory_not_red(self):
         proc = self.run_case("Refs #876\n")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_missing_body_fails_naming_it(self):
+    def test_missing_body_is_advisory_not_red(self):
         proc = self.run_case(None)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_empty_section_fails(self):
+    def test_empty_section_is_advisory_not_red(self):
         proc = self.run_case("Refs #876\n\n## Asistencia de IA\n\n")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_section_with_only_template_comment_fails(self):
+    def test_section_with_only_template_comment_is_advisory_not_red(self):
         body = ("Refs #876\n\n## Asistencia de IA\n\n"
                 "<!-- Escriba «ninguna» o la herramienta y la parte ayudada. -->\n")
         proc = self.run_case(body)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
-    def test_declaration_as_prose_without_heading_fails(self):
+    def test_declaration_as_prose_without_heading_is_advisory_not_red(self):
         proc = self.run_case("Refs #876\n\nAsistencia de IA: ninguna.\n")
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertIn("AVISO", proc.stdout)
         self.assertIn("Asistencia de IA", proc.stdout)
 
     def test_ninguna_passes(self):

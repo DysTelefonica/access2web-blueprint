@@ -20,6 +20,10 @@ Tres medidas:
    publica su nombre de check solo desde `pull_request` (HR-30) y no usa
    `|| true`, que dejaría el gate en verde sin haber medido.
 
+Y una cuarta medida, la de #1062: el fragmento no declara el commit del catálogo
+por escrito. El sello `catalog @ <sha40>` de `.team-skills.yaml` es la fuente
+única, y el detector que lo vigila se demuestra con un caso negativo real.
+
 Ejecuta sin red y sin consumer.
 """
 import importlib
@@ -61,6 +65,11 @@ def _load_cli():
 CLI = _load_cli()
 
 JOB = "governance-seals"
+SHA40 = re.compile(r"(?<![0-9a-fA-F])[0-9a-f]{40}(?![0-9a-fA-F])")
+USES_REF = re.compile(r"\buses:\s*[A-Za-z0-9._/-]+@[0-9a-f]{40}")
+#: El pin que el fragmento publicaba escrito a mano, reutilizado como fixture del
+#: caso negativo: si el detector no lo ve, no está mirando lo que dice mirar.
+LITERAL_PIN = "bc915526af7920e459afd2532e93e96e0479c0e6"
 # Esqueleto mínimo de un `ci.yml` de consumer con el agregador `required`: el
 # fragmento del porting-guide se inyecta como job más, con su entrada en el
 # `needs` del agregador, que es como lo cablea un adopter.
@@ -105,6 +114,13 @@ def canonical_job() -> str:
         f"el porting-guide ya no publica el fragmento del job `{JOB}`: "
         f"la forma canónica de HR-72 desapareció de {PORTING_GUIDE}"
     )
+
+
+def hand_written_shas(text: str) -> list[str]:
+    """Los sha de 40 hex escritos a mano, fuera del ref de una action (`uses:`)."""
+    return [f"linea {n}: {m.group(0)}"
+            for n, line in enumerate(text.splitlines(), 1)
+            for m in SHA40.finditer(USES_REF.sub("", line))]
 
 
 def consumer_workflow() -> str:
@@ -181,6 +197,30 @@ class CanonicalJobTests(unittest.TestCase):
             str(step.get("run") or "") for step in tree["jobs"][JOB]["steps"])
         self.assertNotIn("|| true", commands)
         self.assertNotIn("continue-on-error", str(tree["jobs"][JOB]))
+
+    # --- #1062: el commit del catálogo se lee del sello, no se escribe ---
+
+    def test_fragment_does_not_declare_the_catalog_commit(self):
+        """El fragmento no lleva el sha del catálogo escrito a mano."""
+        self.assertEqual(hand_written_shas(canonical_job()), [])
+
+    def test_the_detector_sees_a_written_pin(self):
+        """Caso negativo: el mismo detector sobre un `pin:` literal."""
+        found = hand_written_shas(f"           with:\n             pin: {LITERAL_PIN}\n")
+        self.assertEqual(len(found), 1, found)
+        self.assertTrue(found[0].endswith(LITERAL_PIN), found)
+
+    def test_fragment_reads_the_commit_from_the_manifest_seal(self):
+        """El `ref:` del checkout del catálogo es el output del paso que lee el sello."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        steps = [s for s in tree["jobs"][JOB]["steps"] if "GITHUB_OUTPUT" in str(s.get("run") or "")]
+        self.assertEqual(len(steps), 1, "el job no resuelve el sello del manifiesto a ningun output")
+        step_id = steps[0].get("id")
+        self.assertTrue(step_id, "el paso que resuelve el sello necesita `id:`")
+        refs = [str((s.get("with") or {}).get("ref") or "")
+                for s in tree["jobs"][JOB]["steps"]
+                if isinstance(s.get("with"), dict) and (s.get("with") or {}).get("ref")]
+        self.assertEqual(refs, [f"${{{{ steps.{step_id}.outputs.commit }}}}"], refs)
 
 
 if __name__ == "__main__":

@@ -32,3 +32,23 @@ activo del patrón y sí como plantillas:
 
 Ambas pasan el gate `assets/workflow-policy/` del propio canon, que corre sobre
 `tests/test_release_workflow_template.py`.
+
+Segunda excepción, la del commit del catálogo (#1062):
+
+- `.github/workflows/operating-doc-drift.yml.tmpl` — el workflow de deriva del
+  documento operativo. Se dispara en `schedule` y `workflow_dispatch` y no
+  publica check requerido (HR-30). **No lleva el commit del catálogo escrito**:
+  lo resuelve en runtime del sello `catalog @ <sha40>` de `.team-skills.yaml` y
+  exporta a `$GITHUB_OUTPUT` para el `ref:` del checkout, y falla en voz alta
+  nombrando el dato que falta. Cinco valores a cambiar, todos en su bloque
+  `env`: repositorio del catálogo, credencial de lectura, manifiesto, ruta de la
+  CLI dentro del checkout y fichero de parámetros.
+
+La vigila `tests/test_operating_doc_drift_template.py`: diez casos, incluido el
+negativo que mete un `ref:` literal en una copia y comprueba que el detector lo
+ve, y la ejecución real del paso con `bash` sobre un consumer de mentira.
+
+El mismo detector, aplicado al fragmento de `governance-seals` que publica
+`references/porting-guide.md`, vive en `tests/test_governance_seals_job.py`
+(#1062): el fragmento resuelve el sello de `.team-skills.yaml` en vez de llevar
+`pin: <sha literal>`, y el paso final recibe su directorio por `env`.

@@ -6,6 +6,13 @@ Las rutas de :data:`VENDORED_ROOTS` quedan fuera del presupuesto de revisión,
 pero un fichero renombrado desde una ruta de autoría hacia una vendorizada
 sigue contando, aunque el renombrado ocurra en otro commit del mismo PR.
 
+Desde #1088 la lista tiene una sola entrada: ``.agents/skills/``, el árbol
+vendorizado que los consumers reciben del canon. ``skills/`` **no** se
+excluye: en el canon es el catálogo de autoría (64 skills escritas aquí) y en
+un consumer es su catálogo propio, así que sus líneas son trabajo que alguien
+tiene que revisar. Excluirlo hacía que el gate midiera ``changed_lines: 0``
+en PRs que reescribían una skill entera de 569 líneas.
+
 El módulo no ejecuta ``git`` ni importa ``subprocess``: el activo se copia
 byte a byte en consumers con ratchet de ruff extendido (S603/S607) y quien
 llama ya tiene su runner, así que lo inyecta (#753). El contrato es
@@ -28,7 +35,12 @@ from collections.abc import Callable
 RunGit = Callable[..., str]
 
 #: Única definición de las rutas excluidas del presupuesto de revisión.
-VENDORED_ROOTS = (".agents/skills/", "skills/")
+#:
+#: Solo ``.agents/skills/``: el árbol vendorizado de los consumers, cuyo
+#: código no escribió quien abre la PR. ``skills/`` no está aquí (#1088):
+#: en el canon es el catálogo de autoría y en un consumer es su catálogo
+#: propio, y en los dos casos sus líneas cuentan para el presupuesto.
+VENDORED_ROOTS = (".agents/skills/",)
 
 #: Campos de una línea de ``--name-status``: estado y ruta; renombrado: estado, origen y destino.
 _ADDED_FIELDS = 2

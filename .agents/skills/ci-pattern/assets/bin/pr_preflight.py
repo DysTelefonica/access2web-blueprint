@@ -72,9 +72,10 @@ def _gate_branch(branch, pattern, actor, gate):
         ok, note = gate.evaluate(branch, rx, frozenset(), actor)
     except gate.EmptyRefError:
         return [("branch-name", "empty", "the head ref is empty: there is nothing to measure")]
-    text = (f"OK    {note or branch + ' matches the pattern'}" if ok
-            else f"FAIL  {note}")
-    return [("branch-name", "ok" if ok else "fail", text)]
+    if ok:
+        return [("branch-name", "ok", f"OK    {note or branch + ' matches the pattern'}")]
+    # R10 (team-skills#1093): la convención es aviso, no bloquea.
+    return [("branch-name", "advisory", f"AVISO {note} (no bloquea: team-skills#1093, R10)")]
 
 
 def _gate_issue_spec_local(body, repository, gate):

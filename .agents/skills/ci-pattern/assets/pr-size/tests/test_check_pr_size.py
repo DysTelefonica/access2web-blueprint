@@ -2,9 +2,13 @@
 """Suite RED/GREEN del gate portátil de presupuesto de revisión (#623).
 
 Cubre la regla de BP portada como activo de ci-pattern:
-``VENDORED_ROOTS = (".agents/skills/", "skills/")`` queda fuera del
-presupuesto de 400 líneas, pero un renombrado desde una ruta de autoría
-hacia una vendorizada sí cuenta, porque el trabajo fue authored.
+``VENDORED_ROOTS = (".agents/skills/",)`` queda fuera del presupuesto de
+400 líneas, pero un renombrado desde una ruta de autoría hacia una
+vendorizada sí cuenta, porque el trabajo fue authored.
+
+``skills/`` **no** está en la lista desde #1088: en el canon es el catálogo
+de autoría (64 skills escritas aquí), no contenido vendorizado. Excluirlo
+medía 0 líneas donde el revisor tenía 569 delante.
 
 Convenciones: stdlib exclusivamente, ``unittest``, fixtures con
 ``subprocess`` real sobre repos ``git init`` en ``tmp_path``. Sin
@@ -100,9 +104,14 @@ class TestVendoredRootsRule(unittest.TestCase):
     def test_vendored_path_under_agents_skills_is_recognised(self) -> None:
         gate = _load_gate()
         self.assertTrue(gate.is_under_vendored(".agents/skills/foo/auth.py"))
-        self.assertTrue(gate.is_under_vendored("skills/legacy/skill/SKILL.md"))
-        # Igual con prefijos relativos al repo
-        self.assertTrue(gate.is_under_vendored("skills/x.py"))
+        # Con prefijos relativos al repo
+        self.assertTrue(gate.is_under_vendored(".agents/skills/x.py"))
+
+    def test_the_catalog_is_not_vendored(self) -> None:
+        """RED (#1088): ``skills/`` es el catálogo de autoría del canon, cuenta."""
+        gate = _load_gate()
+        self.assertFalse(gate.is_under_vendored("skills/legacy/skill/SKILL.md"))
+        self.assertFalse(gate.is_under_vendored("skills/x.py"))
 
     def test_non_vendored_path_is_not_vendored(self) -> None:
         gate = _load_gate()
@@ -115,8 +124,9 @@ class TestVendoredRootsRule(unittest.TestCase):
 
     def test_vendored_constant_matches_issue(self) -> None:
         gate = _load_gate()
-        # El issue #623 fija explícitamente estos dos prefijos
-        self.assertEqual(gate.VENDORED_ROOTS, (".agents/skills/", "skills/"))
+        # #1088: el canon no excluye su propio catálogo. Solo queda fuera el
+        # árbol vendorizado de los consumers (.agents/skills/).
+        self.assertEqual(gate.VENDORED_ROOTS, (".agents/skills/",))
 
 
 class TestCountsToBudgetRule(unittest.TestCase):
@@ -135,9 +145,13 @@ class TestCountsToBudgetRule(unittest.TestCase):
             gate.counts_to_budget(".agents/skills/foo/x.py", ".agents/skills/foo/x.py"),
             "un fichero vendorizado nuevo NO debe contar",
         )
-        self.assertFalse(
+
+    def test_catalog_path_counts_as_authored(self) -> None:
+        """RED (#1088): bajo ``skills/`` es autoría y cuenta para el presupuesto."""
+        gate = _load_gate()
+        self.assertTrue(
             gate.counts_to_budget("skills/legacy/x.py", "skills/legacy/x.py"),
-            "skills/<x> sin renombrar NO debe contar",
+            "skills/<x> sin renombrar DEBE contar: es el catálogo de autoría",
         )
 
     def test_rename_from_authored_to_vendored_still_counts(self) -> None:
@@ -160,12 +174,6 @@ class TestCountsToBudgetRule(unittest.TestCase):
                 ".agents/skills/old/x.py", ".agents/skills/new/x.py",
             ),
             "renombrar dentro de vendored NO debe contar",
-        )
-        self.assertFalse(
-            gate.counts_to_budget(
-                "skills/old/x.py", "skills/new/x.py",
-            ),
-            "renombrar dentro de skills/ NO debe contar",
         )
 
 
@@ -211,6 +219,46 @@ class TestChangedLinesIntegration(unittest.TestCase):
             f"stderr: {result.stderr}",
         )
         self.assertIn("0 changed line(s)", result.stdout)
+
+    def test_catalog_change_counts_toward_the_budget(self) -> None:
+        """RED (#1088): N líneas añadidas bajo ``skills/`` cuentan como N.
+
+        El catálogo del canon es el producto del repo: excluirlo del
+        presupuesto medía 0 líneas donde el revisor tenía 569 delante.
+        """
+        body = "\n".join(f"# line {i}" for i in range(569)) + "\n"
+        _commit_file(
+            self.repo, "skills/acme/SKILL.md", body,
+            "feat: write a 569-line skill",
+        )
+        result = self._run_gate("--base-ref", "HEAD~1")
+        self.assertIn("569 changed line(s)", result.stdout)
+        self.assertEqual(
+            result.returncode, 1,
+            f"569 líneas de catálogo superan el techo de 400: el gate debe "
+            f"fallar.\nstdout: {result.stdout}\nstderr: {result.stderr}",
+        )
+
+    def test_catalog_and_vendored_are_counted_apart(self) -> None:
+        """RED (#1088): el catálogo cuenta; lo vendorizado sigue fuera."""
+        _commit_file(
+            self.repo, "skills/acme/SKILL.md",
+            "\n".join(f"# s {i}" for i in range(300)) + "\n",
+            "feat: write a skill",
+        )
+        _commit_file(
+            self.repo, ".agents/skills/foo/x.py",
+            "\n".join(f"# v {i}" for i in range(1000)) + "\n",
+            "feat: vendor a thousand lines",
+        )
+        result = self._run_gate("--base-ref", "HEAD~2")
+        self.assertIn("300 changed line(s)", result.stdout)
+        self.assertIn("1000 vendored line(s) excluded", result.stdout)
+        self.assertEqual(
+            result.returncode, 0,
+            f"300 líneas de catálogo están bajo el techo: el gate debe pasar.\n"
+            f"stdout: {result.stdout}\nstderr: {result.stderr}",
+        )
 
     def test_authored_change_over_budget_fails(self) -> None:
         """RED: 500 líneas authored en app/ → FAIL (500 > 400)."""
@@ -581,6 +629,13 @@ class TestApiMode(unittest.TestCase):
         result, _ = self.run_api([_file(".agents/skills/x/a.py", 1000), _file("app/a.py", 50)])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("1000 vendored line(s) excluded", result.stdout)
+
+    def test_catalog_file_counts_and_is_not_reported_as_vendored(self) -> None:
+        """RED (#1088): en modo API el catálogo cuenta como autoría."""
+        result, _ = self.run_api([_file("skills/acme/SKILL.md", 500)])
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("500 changed line(s)", result.stdout)
+        self.assertNotIn("vendored", result.stdout)
 
     def test_rename_from_authored_into_vendored_still_counts(self) -> None:
         result, _ = self.run_api([_file(".agents/skills/x/a.py", 500, previous="app/a.py")])

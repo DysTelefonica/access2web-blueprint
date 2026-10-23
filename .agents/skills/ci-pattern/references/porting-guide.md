@@ -272,15 +272,59 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
            with:
              persist-credentials: false
 
-         - name: Check out the pattern at the adoption pin
-           uses: ./.github/actions/pattern-at-pin
+         - name: El commit del patrón se lee del sello de `.team-skills.yaml` (#1062)
+           id: pattern-pin
+           run: |
+             set -euo pipefail
+             if [ ! -f .team-skills.yaml ]; then
+               echo "no existe .team-skills.yaml: sin su sello 'catalog @ <sha40>' no hay commit del patrón que medir (HR-3)." >&2
+               exit 1
+             fi
+             seal=$(head -n 1 .team-skills.yaml)
+             case "$seal" in
+               *"catalog @ "*) ;;
+               *)
+                 echo "la primera línea de .team-skills.yaml no trae el sello 'catalog @ <sha40>' (HR-3)." >&2
+                 exit 1
+                 ;;
+             esac
+             commit=${seal#*catalog @ }
+             commit=${commit%%)*}
+             case "$commit" in
+               "" | *[!0-9a-f]*)
+                 echo "el sello no trae un sha en hexadecimal: '$commit' (HR-3)." >&2
+                 exit 1
+                 ;;
+             esac
+             if [ "${#commit}" -ne 40 ]; then
+               echo "el sello trae un commit de ${#commit} caracteres, no de 40: '$commit' (HR-3)." >&2
+               exit 1
+             fi
+             echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+         - name: Check out the pattern at the commit of that seal
+           uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
            with:
-             pin: bc915526af7920e459afd2532e93e96e0479c0e6
+             repository: DysTelefonica/team-skills
+             # Del output del paso anterior, nunca escrito a mano (#1062).
+             ref: ${{ steps.pattern-pin.outputs.commit }}
+             path: pattern
              token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+             persist-credentials: false
 
          - name: Governance identity (HR-46, HR-72)
+           env:
+             PATTERN_DIR: pattern
            run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 .
    ```
+
+   El commit del patrón **no se escribe**: se lee del sello `catalog @ <sha40>`
+   de la primera línea de `.team-skills.yaml`, que el propagador reescribe en
+   cada corrida, y se exporta a `$GITHUB_OUTPUT` (#1062). Un `pin:` literal
+   queda viejo en la siguiente propagación y el `diff` que produce no dice
+   nada. Si su catálogo no vive en `DysTelefonica/team-skills`, cambie el
+   `repository:` del segundo checkout; `PATTERN_DIR` es el directorio donde ese
+   checkout deja el patrón.
 
    Tres cosas que el gate no perdona:
 

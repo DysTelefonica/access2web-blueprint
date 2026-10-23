@@ -673,10 +673,11 @@ def structured_test_findings(repo, tracked, entries, heading):
             + "; ".join(problems) + "."]
 
 
-# #333: la sección Chain Context es obligatoria en un PR con `chain:partial` y
-# en la punta de una cadena (base == rama por defecto). Sus campos son DATO y
-# el gate los verifica: base contra baseRefName, posición y presupuesto con
-# forma N/M, y exactamente un 📍 marcando el PR actual.
+# #333: la sección Chain Context describe un PR con `chain:partial` y la punta de
+# una cadena (base == rama por defecto). Sus campos son DATO y el gate los
+# verifica: base contra baseRefName, posición y presupuesto con forma N/M, y
+# exactamente un 📍 marcando el PR actual. #1093 R3: los hallazgos son AVISOS,
+# no bloquean; la sección sigue en la plantilla como ayuda, sin forma obligatoria.
 CHAIN_CONTEXT_HEADING = "Chain Context"
 CHAIN_FIELDS = ("chain", "position", "base", "depends-on", "follow-up",
                 "starts-at", "ends-with", "review-budget")
@@ -696,8 +697,9 @@ def chain_fields(text):
     return {m.group(1): m.group(2).strip() for m in CHAIN_FIELD_RX.finditer(text)}
 
 
-def check_chain_context(pr, base, default_branch, policy, findings):
-    """#333: la cadena se declara como dato, no se reconstruye a mano."""
+def check_chain_context(pr, base, default_branch, policy, advisories):
+    """#333: la cadena se declara como dato, no se reconstruye a mano. #1093 R3:
+    cada desvío es un aviso (`advisories`), no un hallazgo que tumbe el PR."""
     body = pr.get("body") or ""
     labels = {item["name"] for item in pr.get("labels", [])}
     chain_label = policy.get("chain_partial_label", "chain:partial")
@@ -706,30 +708,30 @@ def check_chain_context(pr, base, default_branch, policy, findings):
     heading = policy.get("chain_context_heading", CHAIN_CONTEXT_HEADING)
     text = section_body(body, heading)
     if not text:
-        findings.append(
+        advisories.append(
             f"HR-54: falta la sección '{heading}': un PR con '{chain_label}' y la punta "
-            "de una cadena declaran posición, base, dependencias y presupuesto como "
-            "datos, y marcan el PR actual con un 📍.")
+            "de una cadena suelen declarar posición, base, dependencias y presupuesto, "
+            "y marcar el PR actual con un 📍 (aviso, no bloquea).")
         return
     fields = chain_fields(text)
     missing = [name for name in CHAIN_FIELDS if not fields.get(name)]
     if missing:
-        findings.append(
+        advisories.append(
             f"HR-54: la sección '{heading}' no declara: {', '.join(missing)} "
-            f"(campos obligatorios: {', '.join(CHAIN_FIELDS)}).")
+            f"(campos sugeridos: {', '.join(CHAIN_FIELDS)}).")
     declared_base = fields.get("base", "")
     if declared_base and declared_base != base:
-        findings.append(
+        advisories.append(
             f"HR-54: 'base' declara {declared_base!r} y el PR se abre contra {base!r}: "
-            "la base de la cadena se verifica contra baseRefName.")
+            "conviene alinearlo con baseRefName.")
     for name in ("position", "review-budget"):
         value = fields.get(name, "")
         if value and not PAIR_RX.match(value):
-            findings.append(
-                f"HR-54: '{name}' debe tener la forma N/M (p. ej. 2/4) y declara {value!r}.")
+            advisories.append(
+                f"HR-54: '{name}' debería tener la forma N/M (p. ej. 2/4) y declara {value!r}.")
     markers = text.count(CHAIN_MARKER)
     if markers != 1:
-        findings.append(
+        advisories.append(
             f"HR-54: el diagrama de '{heading}' marca el PR actual con exactamente un "
             f"📍 y tiene {markers}.")
 
@@ -740,13 +742,14 @@ AI_DISCLOSURE_HEADING = "Asistencia de IA"
 AI_DISCLOSURE_TEXT_RX = re.compile(r"[^\W\d_]")  # al menos una letra
 
 
-def check_ai_disclosure(pr, findings):
+def check_ai_disclosure(pr, advisories):
     """#876: el cuerpo del PR declara la asistencia de IA en su sección. Ausente,
-    vacía o solo con comentarios HTML falla; «ninguna» o una descripción pasan."""
+    vacía o solo con comentarios HTML avisa; «ninguna» o una descripción pasan.
+    #1093 R9: es un aviso, no un bloqueo: la sección la sigue poniendo el agente."""
     text = re.sub(r"<!--.*?-->", "", section_body(pr.get("body"), AI_DISCLOSURE_HEADING),
                   flags=re.S).strip()
     if not AI_DISCLOSURE_TEXT_RX.search(text):
-        findings.append(
+        advisories.append(
             f"HR-14: falta la sección '{AI_DISCLOSURE_HEADING}' en el cuerpo del PR, o está "
             "vacía: escriba «ninguna» o la herramienta de IA y la parte que ayudó. La "
             "declaración va en el PR, no en los commits.")
@@ -824,20 +827,23 @@ def _load_range_data(args, active):
 
 
 def _pr_level_checks(active, data, pr, ctx, findings):
-    repo, policy = ctx
+    """Devuelve los avisos (#1093): no cambian el veredicto."""
+    _repo, policy = ctx
+    advisories = []
     base_ref = pr.get("base", {}).get("ref", "main")
     default_branch = data.get("repository", {}).get("default_branch", "main")
     if "labels" in active:
         check_labels(pr, policy, findings)
     if "closes" in active:
         check_closes(pr, base_ref, default_branch, policy, findings)
+    # #1093 R3/R9: Chain Context y Asistencia de IA avisan; no bloquean.
     if "chain_context" in active:
-        check_chain_context(pr, base_ref, default_branch, policy, findings)
+        check_chain_context(pr, base_ref, default_branch, policy, advisories)
     if "issue_links" in active:
         check_issue_links(pr, data, findings)
     if "ai_disclosure" in active:
-        check_ai_disclosure(pr, findings)
-    return repo
+        check_ai_disclosure(pr, advisories)
+    return advisories
 
 
 def closure_data(repo, texts, policy):
@@ -920,7 +926,7 @@ def main(argv=None):
 
     ctx = (Path(args.repo), policy)
     findings = []
-    _pr_level_checks(active, data, pr_with_live, ctx, findings)
+    advisories = _pr_level_checks(active, data, pr_with_live, ctx, findings)
     try:
         _range_checks(active, pr_with_live, ctx, texts, findings)
     except DocsEvidenceConfigError as exc:
@@ -928,11 +934,14 @@ def main(argv=None):
         return 2
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
-    return _verdict(findings, pr, action_text=data.get("action", "opened"))
+    return _verdict(findings, pr, action_text=data.get("action", "opened"), advisories=advisories)
 
 
-def _verdict(findings, pr, *, action_text):
-    """Imprime el veredicto y devuelve 0 (OK) o 1 (hallazgos)."""
+def _verdict(findings, pr, *, action_text, advisories=()):
+    """Imprime los avisos (#1093: no cambian el veredicto) y el veredicto:
+    0 (OK) o 1 (hallazgos)."""
+    for advisory in advisories:
+        print(f"AVISO (no bloquea): {advisory}")
     if findings:
         print(f"FAIL: contrato de PR con {len(findings)} hallazgo(s):")
         for f in findings:
