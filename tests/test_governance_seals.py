@@ -89,13 +89,11 @@ def test_the_declared_job_is_the_one_the_canon_names() -> None:
         f"(convención del canon, `references/porting-guide.md`); "
         f"encontrado: {contract.get('governance_seals')!r}"
     )
-    assert JOB in _jobs(), (
-        f"el job `{JOB}` que el contrato declara no existe en {WORKFLOW.name}"
-    )
+    assert JOB in _jobs(), f"el job `{JOB}` que el contrato declara no existe en {WORKFLOW.name}"
 
 
 def test_the_job_is_required_and_aggregated() -> None:
-    """Sin entrada en `required_jobs` y en el `needs` del agregador, el job corre y nadie lo exige."""
+    """Sin `required_jobs` ni `needs:` del agregador, el job corre y nadie lo exige."""
     policy = json.loads(POLICY.read_text(encoding="utf-8"))
     required = _jobs()["required"]
 
@@ -106,9 +104,7 @@ def test_the_job_is_required_and_aggregated() -> None:
     )
     needs = required["needs"]
     needs = [needs] if isinstance(needs, str) else list(needs)
-    assert JOB in needs, (
-        f"`{JOB}` no está en el `needs:` del agregador `required`: {needs}"
-    )
+    assert JOB in needs, f"`{JOB}` no está en el `needs:` del agregador `required`: {needs}"
 
 
 def test_the_job_publishes_its_check_only_from_pull_request() -> None:
@@ -120,13 +116,9 @@ def test_the_job_publishes_its_check_only_from_pull_request() -> None:
     """
     condition = str(_job().get("if") or "")
 
-    assert "pull_request" in condition, (
-        f"el job no corre en pull_request: {condition!r}"
-    )
+    assert "pull_request" in condition, f"el job no corre en pull_request: {condition!r}"
     for event in ("push", "schedule", "workflow_dispatch"):
-        assert event not in condition, (
-            f"el job no debe correr en `{event}` (HR-30): {condition!r}"
-        )
+        assert event not in condition, f"el job no debe correr en `{event}` (HR-30): {condition!r}"
 
 
 def test_the_job_invokes_the_cli_as_a_top_level_command() -> None:
