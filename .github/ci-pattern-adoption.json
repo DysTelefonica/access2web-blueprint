@@ -236,6 +236,9 @@
     "spokes": "docs/codebase",
     "job": "docs-links"
   },
+  "governance_seals": {
+    "job": "governance-seals"
+  },
   "docs_decisions": {
     "dir": "docs/decisions",
     "job": "docs-decisions"

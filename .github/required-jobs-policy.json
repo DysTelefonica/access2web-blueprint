@@ -6,26 +6,29 @@
     "push": {
       "accepted_skips": [
         "pr-gate",
-        "e2e-smoke"
+        "e2e-smoke",
+        "governance-seals"
       ]
     },
     "schedule": {
       "accepted_skips": [
         "pr-gate",
-        "e2e-smoke"
+        "e2e-smoke",
+        "governance-seals"
       ]
     },
     "workflow_dispatch": {
       "accepted_skips": [
         "pr-gate",
-        "e2e-smoke"
+        "e2e-smoke",
+        "governance-seals"
       ]
     }
   },
   "relaxation": {
-    "reason": "El job e2e-smoke (humo E2E de la imagen de la PR) solo corre en pull_request: en push, schedule y workflow_dispatch se salta por su propio if, igual que pr-gate. La politica pasa a aceptar ese unico salto adicional en esos tres eventos; en pull_request no se acepta ningun salto, asi que un e2e-smoke saltado alli sigue dejando required en rojo. pr-gate conserva su salto aceptado.",
-    "reference": "DysTelefonica/access2web-blueprint#876",
-    "issue": 876
+    "reason": "El job governance-seals mide la fase 3 de la adopcion del patron (HR-72: los sellos sha256 de .governance-manifest.json y el cableado de P23_required_jobs) y solo puede correr en pull_request: publicar su nombre de check desde push, schedule o workflow_dispatch daria un check verde sin haber medido una PR, porque en esos eventos no hay PR que evaluar (HR-30). Sin entrada en accepted_skips, ese salto dejaria el agregador required en rojo en cada push a main. La politica acepta ese unico salto adicional en esos tres eventos. Se mantiene el salto ya aceptado de pr-gate y e2e-smoke, justificado en #876 por las mismas razones. En pull_request no se acepta ningun salto: un governance-seals saltado alli sigue dejando required en rojo.",
+    "reference": "DysTelefonica/access2web-blueprint#1355",
+    "issue": 1355
   },
   "required_jobs": [
     "pr-gate",
@@ -38,6 +41,7 @@
     "docs-links",
     "docs-decisions",
     "docs-architecture",
+    "governance-seals",
     "docs-commands"
   ]
 }

@@ -605,6 +605,7 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
         "docs-links",
         "docs-decisions",
         "docs-architecture",
+        "governance-seals",
         "docs-commands",
     ]
 
