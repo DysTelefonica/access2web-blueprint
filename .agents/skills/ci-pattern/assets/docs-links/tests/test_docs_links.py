@@ -7,12 +7,17 @@ import contextlib
 import importlib.machinery
 import importlib.util
 import io
+import json
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 ASSET = Path(__file__).resolve().parent.parent
 CLI_PATH = ASSET.parent / "bin" / "ci-pattern"
+JOB = ASSET / "run_docs_links.py"
+CONTRACT = ".github/ci-pattern-adoption.json"
 
 
 def _load(name, path, loader=None):
@@ -41,6 +46,26 @@ def _findings(files=None, config=None):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
         return GATE.check(Path(d), {**CONFIG, **(config or {})})
+
+
+def _job_repo(decl=None, files=None):
+    """Repo temporal con el contrato de adopción y `decl` en `docs_links`."""
+    tmp = tempfile.TemporaryDirectory()
+    repo = Path(tmp.name)
+    for rel, text in {**FILES, **(files or {})}.items():
+        path = repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    (repo / CONTRACT).parent.mkdir(parents=True, exist_ok=True)
+    (repo / CONTRACT).write_text(json.dumps(
+        {"docs_links": dict(CONFIG, job="docs-links", **(decl or {}))}), encoding="utf-8")
+    return tmp, repo
+
+
+def _job(repo, *args):
+    proc = subprocess.run([sys.executable, str(JOB), str(repo), *args],
+                          capture_output=True, text=True, timeout=60, check=False)
+    return proc.returncode, proc.stdout, proc.stderr
 
 
 class DocsLinksTests(unittest.TestCase):
@@ -101,6 +126,72 @@ class DocsLinksTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d, contextlib.redirect_stderr(buf):
             self.assertEqual(CLI._check_docs_links(Path(d), {}), [])
         self.assertIn("HR-66: docs_links no declarado", buf.getvalue())
+
+    def test_el_job_lee_el_contrato_de_adopcion_sin_fichero_en_la_raiz(self):
+        tmp, repo = _job_repo()
+        with tmp:
+            code, out, _ = _job(repo)
+        self.assertEqual(code, 0, out)
+        self.assertIn("docs-links: OK", out)
+
+    def test_el_contrato_manda_y_no_el_fichero_de_la_raiz(self):
+        # El fichero de raiz declara otro hub: si el job lo leyera, seria rojo.
+        tmp, repo = _job_repo(files={"docs-links.json": json.dumps({"hub": "docs/ghost.md",
+                                                                    "spokes": "docs/codebase"})})
+        with tmp:
+            code, out, _ = _job(repo)
+        self.assertEqual(code, 0, out)
+        self.assertIn("docs-links: OK", out)
+
+    def test_config_obsoleto_aun_funciona_y_avisa_por_stderr(self):
+        tmp, repo = _job_repo(files={"viejo.json": json.dumps(CONFIG)})
+        with tmp:
+            code, out, err = _job(repo, "--config", "viejo.json")
+        self.assertEqual(code, 0, out)
+        self.assertIn("docs-links: OK", out)
+        self.assertIn("obsoleto", err)
+
+    def test_config_obsoleto_inexistente_o_malformado_sale_2(self):
+        tmp, repo = _job_repo(files={"roto.json": "{no es json"})
+        with tmp:
+            self.assertEqual(_job(repo, "--config", "ghost.json")[0], 2)
+            self.assertEqual(_job(repo, "--config", "roto.json")[0], 2)
+
+    def test_contrato_inexistente_sale_2(self):
+        tmp, repo = _job_repo()
+        with tmp:
+            code, _, err = _job(repo, "--contract", ".github/no-existe.json")
+        self.assertEqual(code, 2)
+        self.assertIn("no-existe.json", err)
+
+    def test_declaracion_que_no_es_objeto_sale_2_y_no_revienta(self):
+        tmp, repo = _job_repo()
+        with tmp:
+            (repo / CONTRACT).write_text(json.dumps({"docs_links": None}), encoding="utf-8")
+            code, _, err = _job(repo)
+        self.assertEqual(code, 2)
+        self.assertIn("no es un objeto", err)
+        self.assertNotIn("Traceback", err)
+
+    def test_sin_declaracion_en_el_contrato_el_job_no_inventa_configuracion(self):
+        tmp, repo = _job_repo()
+        with tmp:
+            (repo / CONTRACT).write_text(json.dumps({}), encoding="utf-8")
+            code, _, err = _job(repo)
+        self.assertEqual(code, 2)
+        self.assertIn("docs_links", err)
+
+    def test_fichero_de_raiz_residual_se_nombra_como_segunda_fuente(self):
+        tmp, repo = _job_repo(files={"docs-links.json": json.dumps(CONFIG)})
+        with tmp:
+            found = CLI._check_docs_links(repo, {"docs_links": dict(CONFIG, job="docs-links")})
+        self.assertTrue(any("docs-links.json" in f for f in found), found)
+
+    def test_sin_fichero_de_raiz_no_hay_hallazgo_de_segunda_fuente(self):
+        tmp, repo = _job_repo()
+        with tmp:
+            found = CLI._check_docs_links(repo, {"docs_links": dict(CONFIG, job="docs-links")})
+        self.assertFalse(any("segunda fuente" in f for f in found), found)
 
 
 if __name__ == "__main__":

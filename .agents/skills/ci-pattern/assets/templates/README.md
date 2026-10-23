@@ -1,4 +1,4 @@
-# assets/templates — plantillas canónicas de issue y PR
+# assets/templates — plantillas canónicas de issue, PR, docs y release
 
 Las plantillas que el gate de contrato de PR lee **como dato** son las del propio
 patrón, en su repositorio. La IA que adopta el patrón en un consumer las deriva
@@ -17,3 +17,18 @@ esos activos como plantillas parametrizadas; esa extracción no ha aterrizado y
 no se inventa aquí. `ci-pattern adopt` y `ci-pattern update` están **retirados**
 (exit 2): la adopción la gobierna `ci-pattern adoption check` sobre el contrato
 del consumer.
+
+Excepción ya aterrizada: el camino de release (#1015), que no existía como
+activo del patrón y sí como plantillas:
+
+- `.github/workflows/release.yml.tmpl` — el workflow de release del consumer.
+  Se dispara con un tag estable; `preflight` corre los dos gates de
+  `assets/release-gate/`, `release` publica en el entorno protegido `release`
+  y `verify` comprueba la salida. Tres valores a cambiar, todos en su bloque
+  `env`: la raíz donde el propagador materializó la skill, el basename del
+  workflow de CI y la ruta del script de verificación.
+- `scripts/verify-release-output.sh.tmpl` — la comprobación de salida: la
+  revisión que sirve el endpoint de salud del consumer debe ser el SHA del tag.
+
+Ambas pasan el gate `assets/workflow-policy/` del propio canon, que corre sobre
+`tests/test_release_workflow_template.py`.

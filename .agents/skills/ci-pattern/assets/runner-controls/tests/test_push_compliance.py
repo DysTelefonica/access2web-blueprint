@@ -87,12 +87,81 @@ def merge_state(*, author: str, merged_by: str, message: str) -> dict:
     return state
 
 
-def run_gate(root: Path, event: dict, contract_data: dict, state: dict) -> subprocess.CompletedProcess:
+def run_gate(root: Path, event: dict, contract_data: dict, state: dict,
+             *extra: str) -> subprocess.CompletedProcess:
     write_fixture(root, event, contract_data)
     with github_stub(root / "state.json", state) as base:
         return subprocess.run([sys.executable, str(ASSET), "--event", str(root / "event.json"),
-                               "--contract", str(root / "contract.json")],
+                               "--contract", str(root / "contract.json"), *extra],
                               capture_output=True, text=True, env=stub_env(base), timeout=60)
+
+
+def settle(*extra: str) -> tuple:
+    """Flags de la ventana de settle, en segundos de test (los reales son minutos).
+
+    El poll va siempre: en tests reales es de minutos y sin el se bloquearia.
+    """
+    flags = list(extra) or ["--wait-seconds", "0.3"]
+    if "--poll-seconds" not in flags:
+        flags += ["--poll-seconds", "0.05"]
+    return tuple(flags)
+
+
+class MeasuredRaceTests(unittest.TestCase):
+    """#1019: los cinco pushes que produjeron incidente medidos en APAP_WEB.
+
+    Datos grabados de ardelperal/APAP_WEB (incidentes #2243, #2247, #2249,
+    #2251 y #2280; 2026-10-21/22). Se fijan aqui como datos: ningun test lee
+    historia de git ni consulta la API. Cuatro de los cinco mergearon segundos
+    despues del push del head y el rollup quedo verde minutos mas tarde; el
+    quinto lo mergearon con el rollup ya cancelado, que es un hecho consumado.
+    """
+
+    # (incidente, PR, head, conclusion del rollup despues del merge, veredicto esperado)
+    CASES = [
+        (2243, 2224, "619a8d57606e53ff796f45259c999a9246fc1955", "success", 0),
+        (2247, 2234, "529968ba9f8870a4d1a247f2918e356cca241ca5", "success", 0),
+        (2251, 2248, "9bd7091d64a0a0c4de25f4fed85dc89cd7e5204d", "success", 0),
+        (2280, 2264, "9e05bd7065ca63b4d29e63d717e1b7de7583eb05", "success", 0),
+        (2249, 2246, "06daebd01a0a25324b8e66c3bc565d7b53e07d9f", "cancelled", 1),
+    ]
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_measured_pushes_keep_their_measured_verdict(self) -> None:
+        for incident, pr, head, conclusion, expected in self.CASES:
+            with self.subTest(incident=f"#{incident} PR#{pr}"):
+                state = base_state()
+                sha = head
+                state["pulls"][sha] = [{"number": pr, "merged": True,
+                                        "merged_at": "2026-10-22T14:52:01Z",
+                                        "user": {"login": "ardelperal"}, "base": {"ref": "main"}}]
+                state["pr_details"][str(pr)] = {"number": pr, "merged": True,
+                                                "user": {"login": "ardelperal"},
+                                                "merged_by": {"login": "ardelperal"},
+                                                "head": {"sha": sha}, "merge_commit_sha": sha}
+                run = {"id": 7, "name": CHECK, "conclusion": conclusion, "status": "completed",
+                       "html_url": f"https://github.com/{REPO}/actions/runs/{incident}"}
+                published = [] if conclusion == "success" else [run]
+                state["commits"][sha] = commit_obj(sha, TREE_PR)
+                state["check_runs_script"] = {sha: [published, published, [run]]}
+                state["compare"] = {"total_commits": 1,
+                                    "commits": [{"sha": sha, "commit": {"author": {"name": "ardelperal"}}}]}
+                event = push_event()
+                event["before"], event["after"] = BASE, sha
+                proc = run_gate(self.root, event, contract(), state, *settle("--wait-seconds", "30"))
+                self.assertEqual(proc.returncode, expected, proc.stdout + proc.stderr)
+                issues = json.loads((self.root / "state.json").read_text(
+                    encoding="utf-8"))["created_issues"]
+                if expected == 0:
+                    self.assertEqual(issues, [], f"#{incident} no debe abrir incidente")
+                else:
+                    self.assertEqual(len(issues), 1)
+                    self.assertIn(conclusion, issues[0]["body"])
+                    self.assertIn(f"runs/{incident}", issues[0]["body"])
 
 
 class DetectiveTests(unittest.TestCase):
@@ -192,14 +261,49 @@ class DetectiveTests(unittest.TestCase):
         self.assertIn("failure", issue["body"])
         self.assertIn(SHA, issue["body"])
 
-    def test_merged_pr_missing_required_check_is_a_violation(self) -> None:
+    def test_required_check_that_appears_later_is_waited_for(self) -> None:
+        # #1019: el merge se lanzo antes de que el CI publicara el check; esperar, no acusar.
+        state = base_state()
+        green = [{"id": 7, "name": CHECK, "conclusion": "success", "status": "completed"}]
+        pending = [{"id": 7, "name": CHECK, "conclusion": None, "status": "in_progress"}]
+        state["check_runs_script"] = {SHA: [[], pending, green]}
+        proc = run_gate(self.root, push_event(), contract(), state, *settle("--wait-seconds", "30"))
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+        self.assertGreater(sum("/check-runs" in call for call in state["calls"]), 1)
+
+    def test_required_check_never_published_fails_closed_without_accusing(self) -> None:
+        # #1019: el techo agotado con el check sin publicar es duda (HR-3), no una
+        # infraccion: exit 2, sin issue de incidente y sin acusar a nadie.
         state = base_state()
         state["check_runs"][SHA] = []
-        proc = run_gate(self.root, push_event(), contract(), state)
+        proc = run_gate(self.root, push_event(), contract(), state, *settle())
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("fail-closed", proc.stderr)
+        self.assertIn(CHECK, proc.stderr)
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+
+    def test_red_check_does_not_wait_and_is_reported_with_its_run(self) -> None:
+        # #1019: una conclusion terminal se juzga de una vez y con su evidencia.
+        state = base_state()
+        state["check_runs"][SHA] = [{"id": 7, "name": CHECK, "conclusion": "failure",
+                                     "status": "completed",
+                                     "html_url": "https://github.com/DysTelefonica/team-skills/runs/42"}]
+        proc = run_gate(self.root, push_event(), contract(), state, *settle("--wait-seconds", "30"))
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         issue = self.created_issue()
-        self.assertIn(CHECK, issue["body"])
-        self.assertIn("missing", issue["body"])
+        self.assertIn("failure", issue["body"])
+        self.assertIn("runs/42", issue["body"])
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(sum("/check-runs" in call for call in state["calls"]), 1)
+
+    def test_negative_wait_is_rejected(self) -> None:
+        proc = run_gate(self.root, push_event(), contract(), base_state(),
+                        "--wait-seconds", "-1", "--poll-seconds", "0.05")
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("fail-closed", proc.stderr)
 
     def test_pr_merged_into_another_branch_is_a_violation(self) -> None:
         # #326 bypass: un PR mergeado en OTRA rama no protege un push directo.

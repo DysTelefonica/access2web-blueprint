@@ -1074,6 +1074,60 @@ class Phase3SubstitutionTests(unittest.TestCase):
             self.assertIn("name", err)
 
 
+class Phase3WiringTests(unittest.TestCase):
+    """#1027 (HR-72): la fase 3 se mide en un pull request.
+
+    El control que vigila el cableado de los gates era el unico sin cablear:
+    la fase 3 comprueba que cada job de `P23_required_jobs` este en los
+    workflows, y ningun PR la ejecutaba. Con `governance_seals` declarado, el
+    propio `adoption check --phase 3` —invocado como comando de primer nivel
+    desde el job de PR— exige que ese job exista y figure en `required_jobs`.
+    """
+
+    def _repo(self, tmp, wired):
+        contract = complete_contract(upto=3)
+        contract["governance_seals"] = {"job": "governance-seals"}
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        if wired:
+            # Antes de sellar: ci.yml y la politica son artefactos del manifiesto
+            # (#277), asi que escribirlos despues los dejaria fuera de su sello.
+            ci = repo / ".github/workflows/ci.yml"
+            ci.write_text(ci.read_text(encoding="utf-8")
+                          + "  governance-seals:\n    runs-on: ubuntu-latest\n",
+                          encoding="utf-8")
+            policy = repo / ".github/required-jobs-policy.json"
+            data = json.loads(policy.read_text(encoding="utf-8"))
+            data["required_jobs"].append("governance-seals")
+            policy.write_text(json.dumps(data), encoding="utf-8")
+        seed_phase3(repo)
+        return repo
+
+    def test_job_declarado_y_sin_cablear_rojo_en_el_pr_que_lo_declara(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp, wired=False)
+            code, _, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("HR-72", err)
+            self.assertIn("governance-seals", err)
+
+    def test_job_cableado_y_exigido_da_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp, wired=True)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_sin_declarar_el_job_la_fase_3_sigue_en_verde(self):
+        # Fail-open: la adopcion previa de un consumer que no declara no se
+        # rompe por la aparicion de esta HR.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = make_contract_repo(tmp, contract=complete_contract(upto=3))
+            seed_evidence(repo, 3)
+            seed_phase3(repo)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+
 class LaterPhasesTests(unittest.TestCase):
     def test_phase_6_sha_must_exist_in_history(self):
         # auditoría de contenido: un sha declarado que no existe en el

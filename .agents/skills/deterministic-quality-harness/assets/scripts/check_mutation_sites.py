@@ -85,12 +85,45 @@ class Measurement:
     sites: int
 
 
+def _docstring_node_ids(tree: ast.AST) -> set[int]:
+    """Return the ``id()`` of every ``ast.Constant`` ``str`` that is a docstring.
+
+    A docstring is, by CPython's grammar, the first statement of a ``Module``, ``FunctionDef``,
+    ``AsyncFunctionDef`` or ``ClassDef`` when that statement is ``Expr(value=Constant(str))``. Any
+    other string literal is ordinary code and counts.
+
+    Node ids rather than nodes, so ``_count_sites`` tests membership without walking the tree twice.
+    """
+    doc_ids: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        if not node.body:
+            continue
+        first = node.body[0]
+        if (
+            isinstance(first, ast.Expr)
+            and isinstance(first.value, ast.Constant)
+            and isinstance(first.value.value, str)
+        ):
+            doc_ids.add(id(first.value))
+    return doc_ids
+
+
 def _count_sites(tree: ast.AST) -> int:
+    # A docstring is an `ast.Constant`, so without this exclusion the counter charges a file for its
+    # documentation: a BASELINE entry could then be lowered by deleting docstrings, with no change in
+    # behaviour. Every other string literal still counts.
+    doc_ids = _docstring_node_ids(tree)
     total = 0
     for node in ast.walk(tree):
         if isinstance(node, _MUTABLE_NODES):
             total += 1
-        elif isinstance(node, ast.Constant) and isinstance(node.value, (int, float, str, bool)):
+        elif (
+            isinstance(node, ast.Constant)
+            and isinstance(node.value, (int, float, str, bool))
+            and not (isinstance(node.value, str) and id(node) in doc_ids)
+        ):
             total += 1
         elif isinstance(node, ast.Call):
             total += len(node.args) + len(node.keywords)

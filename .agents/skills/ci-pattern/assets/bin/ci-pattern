@@ -3458,6 +3458,46 @@ def _workflow_job_findings(repo, job, hr="HR-63"):
     return [f"{hr}: ningun workflow define el job {job}"]
 
 
+GOVERNANCE_SEALS_KEYS = ("job",)
+
+
+def _check_governance_seals(repo, contract):
+    """#1027 (HR-72): la fase 3 se mide en un pull request.
+
+    Activacion por DECLARACION explicita `governance_seals` (como HR-55 y
+    HR-63): sin ella avisa por stderr y sale 0 y la adopcion previa no se
+    rompe. Con ella el consumer declara el job de PR que ejecuta
+    `adoption check --phase 3`, y el gate comprueba que ese job existe en un
+    workflow y figura en `required_jobs` de la politica: la unica via de
+    enforcement que queda en un repo privado con plan Free, donde el host no
+    ofrece ni proteccion de rama ni required checks y el unico.required es el
+    agregador `required` del propio CI del consumer. El job invoca la CLI como
+    comando de primer nivel, nunca encadenada a otro gate (HR-46, #342).
+    """
+    declared = contract.get("governance_seals") if isinstance(contract, dict) else None
+    if declared is None:
+        print("HR-72: governance_seals no declarado en el contrato de adopcion; "
+              "la fase 3 todavia no se exige medirse en un PR "
+              "(se activa con governance_seals).", file=sys.stderr)
+        return []
+    if not isinstance(declared, dict):
+        return ["HR-72: governance_seals debe ser un objeto"]
+    findings = []
+    unknown = sorted(set(declared) - set(GOVERNANCE_SEALS_KEYS))
+    if unknown:
+        findings.append("HR-72: governance_seals con claves desconocidas: "
+                        + ", ".join(unknown))
+    missing = [k for k in GOVERNANCE_SEALS_KEYS
+               if not isinstance(declared.get(k), str) or not declared[k].strip()]
+    if missing:
+        findings.append("HR-72: governance_seals incompleto, faltan: "
+                        + ", ".join(missing))
+    if findings:
+        return findings
+    return (_workflow_job_findings(repo, declared["job"], "HR-72")
+            + _required_job_findings(repo, declared["job"], "HR-72"))
+
+
 def _docs_map_roots(decl):
     """#727: raíces de código de `docs_map` como lista de pares (raíz, glob).
 
@@ -3676,6 +3716,23 @@ def _check_docs_manifest(repo, contract):
         raise UsageError(f"HR-70: {exc}") from exc
 
 
+_ADOPTION_CONTRACT = ".github/ci-pattern-adoption.json"
+# Segunda fuente retirada en #1020: el job leia estos ficheros de la raiz mientras
+# la fase 5 validaba el contrato. El job ya lee el contrato; el fichero, si
+# sobrevive a la propagacion, es una declaracion muerta que hay que borrar.
+LEGACY_DOCS_CONFIGS = {"docs_commands": "docs-commands.json",
+                       "docs_links": "docs-links.json"}
+
+
+def _legacy_source_findings(repo, key, hr):
+    """Nombra el fichero de raiz mientras exista: dos fuentes derivan (#1020)."""
+    name = LEGACY_DOCS_CONFIGS[key]
+    if not (repo / name).is_file():
+        return []
+    return [f"{hr}: segunda fuente obsoleta: {name} en la raiz; la declaracion vive en "
+            f"{_ADOPTION_CONTRACT} ({key}), que es lo que el job ya lee"]
+
+
 def _check_docs_links(repo, contract):
     """#712 (HR-66): enlaces locales de README, AGENTS.md y docs/. Activacion por
     DECLARACION `docs_links`: sin ella avisa por stderr y sale 0; con ella la
@@ -3695,6 +3752,7 @@ def _check_docs_links(repo, contract):
     spec.loader.exec_module(gate)
     unknown = sorted(set(decl) - set(gate.CONFIG_KEYS))
     findings = [f"HR-66: clave desconocida en docs_links: {k}" for k in unknown]
+    findings += _legacy_source_findings(repo, "docs_links", "HR-66")
     findings += gate.check(repo, decl)
     job = decl.get("job")
     if job:
@@ -3718,13 +3776,21 @@ def _check_docs_commands(repo, contract):
               "comandos documentados todavia no se prueban (se activa con docs_commands).",
               file=sys.stderr)
         return []
+    if not isinstance(decl, dict):
+        return ["HR-65: docs_commands debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_docs_commands", skill_dir() / "assets" / "docs-commands" / "check_docs_commands.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
     keys = ("cli_name", "cli_command", "job")
-    missing = [k for k in keys if not isinstance(decl, dict) or not decl.get(k)]
+    findings = [f"HR-65: clave desconocida en docs_commands: {k}"
+                for k in sorted(set(decl) - set(gate.CONFIG_KEYS))]
+    findings += _legacy_source_findings(repo, "docs_commands", "HR-65")
+    missing = [k for k in keys if not decl.get(k)]
     if missing:
-        return ["HR-65: docs_commands incompleto, faltan: " + ", ".join(missing)]
+        return findings + ["HR-65: docs_commands incompleto, faltan: " + ", ".join(missing)]
     job_re = re.compile(r"^\s+" + re.escape(decl["job"]) + r":\s*$", re.M)
     workflows = (repo / ".github" / "workflows").glob("*.y*ml")
-    findings = []
     if not any(job_re.search(w.read_text(encoding="utf-8")) for w in workflows):
         findings.append(f"HR-65: ningun workflow define el job {decl['job']}")
     return findings + _required_job_findings(repo, decl["job"], "HR-65")
@@ -3773,7 +3839,8 @@ def _phase_findings(repo, n, decl, contract):
     if n == 3:
         return _check_phase_three(repo, decl, contract) + \
             _check_evidence_phase(repo, n, decl) + \
-            _check_agents_structure(repo, contract)
+            _check_agents_structure(repo, contract) + \
+            _check_governance_seals(repo, contract)
     if n == 4:
         return _check_gates_phase(repo, decl, contract)
     if n == 5:

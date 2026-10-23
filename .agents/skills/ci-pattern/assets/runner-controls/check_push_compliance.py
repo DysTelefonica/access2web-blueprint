@@ -12,11 +12,26 @@ de incidente con la evidencia (SHA, autor, checks) y sale con 1; un push
 conforme sale con 0. Entorno insalvable falla cerrado con 2 (HR-3): nunca
 verde sin medición. Runner-enforced (HR-34): sin protección de rama este
 detective es el control que actúa y deja evidencia.
+
+Ventana de settle (#1019): un push llega segundos después del merge y el check
+requerido suele ser el rollup final de un DAG, así que la API todavía no lo ha
+publicado. `missing` y `pending` son el CI en marcha, no un incumplimiento: se
+espera `--poll-seconds` hasta `--wait-seconds` (por defecto 900 s). El workflow
+del consumer debe declarar `timeout-minutes` mayor que `--wait-seconds`; si el
+techo se agota sin veredicto, el estado es indeterminado y falla cerrado sin
+abrir incidente.
 """
+# #1019: las anotaciones se difieren. `settled_verdict` anota `push: PushAudit`
+# y se define antes que la clase: con evaluacion eager (Python < 3.14, el que
+# corre el CI) eso es un NameError al importar, y como check_governed_merge
+# importa este modulo, tumbaba tambien la suite del gate pre-merge.
+from __future__ import annotations
+
 import argparse
 import json
 import re
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NoReturn
@@ -24,6 +39,15 @@ from typing import NoReturn
 from github_rest import GitHubApiError, call, get_json
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+
+# #1019: un check que la API aun no ha publicado, o que aun no ha terminado, no
+# es un incumplimiento: es el CI en marcha. Son los mismos dos veredictos que el
+# gate pre-merge marca como esperables (`check_governed_merge.WAITABLE`).
+WAITABLE = (": missing", ": pending")
+# El check requerido suele ser el rollup final de un DAG: en APAP_WEB tardo hasta
+# 13 min desde el merge (#1019). El techo cubre esa observacion; el workflow del
+# consumer debe declarar `timeout-minutes` mayor que el (ver SKILL.md).
+DEFAULT_WAIT, DEFAULT_POLL = 900.0, 30.0
 
 
 class FailClosedError(Exception):
@@ -308,11 +332,55 @@ def check_verdict(repo: str, pr_number: object, head_sha: str, required: list[st
         run = latest.get(name)
         if run is None:
             verdicts.append(f'required check "{name}": missing')
-        else:
-            conclusion = run.get("conclusion")
-            if run.get("status") != "completed" or conclusion != "success":
-                verdicts.append(f'required check "{name}": {conclusion or "pending"}')
+            continue
+        conclusion = run.get("conclusion")
+        if run.get("status") == "completed" and conclusion == "success":
+            continue
+        verdict = f'required check "{name}": {conclusion or "pending"}'
+        # #1019: una conclusion terminal es un hecho consumado y es la evidencia:
+        # citarla para que la incidencia nombre el run y el job, no solo la palabra.
+        url = run.get("html_url")
+        if run.get("status") == "completed" and isinstance(url, str) and url:
+            verdict = f"{verdict} [{url}]"
+        verdicts.append(verdict)
     return verdicts
+
+
+def _is_waitable(finding: str) -> bool:
+    """El hallazgo dice que el CI aun no publico o no termino el check (#1019)."""
+    return finding.endswith(WAITABLE)
+
+
+def settled_verdict(push: PushAudit, repo: str, pr_number: object,
+                    head_sha: str, required: list[str]) -> list[str]:
+    """Veredicto de los checks requeridos, esperando (acotado) a los aun no publicados.
+
+    Un push a una rama protegida llega segundos despues del merge, y el check
+    requerido es el rollup final de un DAG: a esa altura la API todavia no lo ha
+    publicado. Juzgarlo `missing` acusa un incumplimiento que solo esta en marcha,
+    y el falso positivo es deterministico, no una carrera (#1019; medido en
+    ardelperal/APAP_WEB#2280, donde el rollup quedo verde 13 min despues). Se
+    reintenta cada `--poll-seconds` hasta `--wait-seconds` mientras TODOS los
+    hallazgos sean esperables; una conclusion terminal no se espera.
+
+    Agotado el techo con el check sin publicar, el estado es duda (HR-3), no una
+    infraccion: falla cerrado y NO abre incidente, porque acusar seria repetir el
+    defecto que este gate corrige.
+    """
+    deadline = time.monotonic() + push.wait_seconds
+    while True:
+        findings = check_verdict(repo, pr_number, head_sha, required)
+        pending = [item for item in findings if _is_waitable(item)]
+        if not pending or len(pending) != len(findings) or time.monotonic() >= deadline:
+            break
+        print(f"waiting for required checks: {'; '.join(pending)}", file=sys.stderr)
+        time.sleep(min(push.poll_seconds, max(0.0, deadline - time.monotonic())))
+    if findings and all(_is_waitable(item) for item in findings):
+        fail(f"PR #{pr_number} (head {head_sha}): tras {push.wait_seconds:.0f}s el CI no publico "
+             f"ni termino {'; '.join(findings)} — estado INDETERMINADO, no incumplimiento: el "
+             f"techo no cubrio el rollup. Sube --wait-seconds y el `timeout-minutes` del "
+             f"workflow por encima del (ver SKILL.md)")
+    return findings
 
 
 def compare_commits(event: dict, repo: str) -> list[dict]:
@@ -357,6 +425,8 @@ class PushAudit:
     required: list[str]
     governed: dict | None
     seen_prs: set
+    wait_seconds: float
+    poll_seconds: float
 
 
 def commit_findings(push: PushAudit, commit: dict) -> list[str]:
@@ -406,7 +476,7 @@ def commit_findings(push: PushAudit, commit: dict) -> list[str]:
         merged_by = detail.get("merged_by")
         login = merged_by.get("login") if isinstance(merged_by, dict) else None
         author_login = (pull.get("user") or {}).get("login") or "unknown"
-        verdicts = check_verdict(repo, number, detail["head"]["sha"], required) if first else []
+        verdicts = settled_verdict(push, repo, number, detail["head"]["sha"], required) if first else []
         # Verificacion del arbol: solo para el commit de merge (ver check_tree_integrity).
         verdicts += check_tree_integrity(repo, detail, commit["id"])
         if governed is not None and first:
@@ -452,7 +522,8 @@ def audit(args: argparse.Namespace) -> int:
     tracker = tracker_branch(contract)
     governed = governed_path_config(contract)
     findings: list[str] = []
-    push = PushAudit(repo, branch, event, tracker, required, governed, set())
+    push = PushAudit(repo, branch, event, tracker, required, governed, set(),
+                     args.wait_seconds, args.poll_seconds)
     for commit in commits:
         findings += commit_findings(push, commit)
     if not findings:
@@ -479,8 +550,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="post-push detective vs the host contract")
     parser.add_argument("--event", required=True)
     parser.add_argument("--contract", required=True)
+    parser.add_argument("--wait-seconds", type=float, default=DEFAULT_WAIT,
+                        help="how long to wait for a required check the CI has not published yet")
+    parser.add_argument("--poll-seconds", type=float, default=DEFAULT_POLL,
+                        help="seconds between re-reads of the required checks")
     args = parser.parse_args()
     try:
+        if args.wait_seconds < 0:
+            fail("--wait-seconds must be zero or more")
+        if args.poll_seconds <= 0:
+            fail("--poll-seconds must be positive")
         code = audit(args)
     except FailClosedError as exc:
         print(f"fail-closed: {exc}", file=sys.stderr)

@@ -805,8 +805,8 @@ def main(argv=None):
     parser.add_argument("--event-file", required=True, help="Payload del evento de PR.")
     parser.add_argument("--policy-file", required=True, help="Política del gate.")
     parser.add_argument("--repo", default=".", help="Raíz del repo, para leer ficheros (no ejecuta git).")
-    parser.add_argument("--changed-files", help="`git diff --name-only BASE..HEAD`.")
-    parser.add_argument("--numstat-file", help="`git diff --numstat BASE..HEAD`.")
+    parser.add_argument("--changed-files", help="`git diff --name-only BASE...HEAD` (merge-base: los cambios de la PR, no los de main).")
+    parser.add_argument("--numstat-file", help="`git diff --numstat BASE...HEAD`.")
     parser.add_argument("--commits-file",
                         help="`git log --format='%%P%%n%%B%%n---COMMIT-END---' BASE..HEAD`.")
     parser.add_argument("--tracked-files", help="`git ls-files`.")

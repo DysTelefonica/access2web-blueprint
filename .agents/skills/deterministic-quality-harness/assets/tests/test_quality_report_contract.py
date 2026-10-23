@@ -199,7 +199,16 @@ def _git(root: Path, *args: str) -> None:
     assert result.returncode == 0, result.stderr
 
 
-def test_include_pr_gates_executes_with_valid_inputs(monkeypatch, tmp_path) -> None:
+def test_retired_pr_gates_are_not_reintroduced_here(monkeypatch, tmp_path) -> None:
+    """#1011 (D1 de #809): `branch_name` y `pr_size` ya no son de DQH.
+
+    Su canon es `ci-pattern`, que ya ejecuta cada consumer. Este test era la
+    prueba de que los dos gates se ejecutaban con entradas válidas; ese objeto
+    desapareció con las copias, así que ahora fija el otro extremo: que
+    `--include-pr-gates` ya no añade gates y que el registro no vuelve a
+    listarlos. Si alguien reintroduce una copia local, el informe los
+    ejecutaría y este test falla.
+    """
     module = _load_quality_report()
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -212,6 +221,11 @@ def test_include_pr_gates_executes_with_valid_inputs(monkeypatch, tmp_path) -> N
     monkeypatch.setenv("BRANCH_NAME", "fix/15-aggregator-contract")
     monkeypatch.setenv("BASE_REF", "main")
     monkeypatch.setattr(module, "GATES", ())
+
+    assert module.PR_GATES == (), (
+        "PR_GATES volvio a listar gates: el canon de pr-size y branch-name es "
+        "ci-pattern, no DQH"
+    )
 
     result = module.main(
         [
@@ -229,8 +243,10 @@ def test_include_pr_gates_executes_with_valid_inputs(monkeypatch, tmp_path) -> N
 
     assert result == 0
     report = json.loads((repo / "quality-report.json").read_text(encoding="utf-8"))
-    assert [gate["gate"] for gate in report["gates"]] == ["branch_name", "pr_size"]
-    assert all(gate["status"] == "pass" for gate in report["gates"])
+    assert [gate["gate"] for gate in report["gates"]] == [], (
+        "el informe incluyo gates de PR: las copias de DQH estan retiradas, "
+        "asi que este indicador tiene que salir vacio"
+    )
 
 
 def _subset_policy(tmp_path: Path, *names: str) -> Path:

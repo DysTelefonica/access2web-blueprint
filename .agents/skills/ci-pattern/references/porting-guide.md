@@ -246,6 +246,73 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
 4. Registre la evidencia del PR de sustitución en
    `docs/adoption/governance-replacement-pr.md` y declárela en `evidence.path`
    de la fase: el gate también la comprueba.
+5. **Cablee la fase 3 dentro del PR (HR-72).** Sin este paso la fase 3 se mide
+   fuera del pull request y un fichero gobernado puede llegar a `main` sin
+   re-sellarse. Declare en el contrato de adopción:
+
+   ```json
+   "governance_seals": { "job": "governance-seals" }
+   ```
+
+   y añada el job al `ci.yml` del consumer, con esta forma:
+
+   ```yaml
+     governance-seals:
+       name: governance-seals
+       # HR-72 (#1027). Único evento que publica este nombre de check (HR-30):
+       # en push, schedule y workflow_dispatch no hay PR que evaluar, así que
+       # ahí corre el gate bajo otro contexto o falla —nunca verde sin medir.
+       if: github.event_name == 'pull_request'
+       runs-on: [self-hosted, Linux, mi-consumer]
+       timeout-minutes: 15
+       permissions:
+         contents: read
+       steps:
+         - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+           with:
+             persist-credentials: false
+
+         - name: Check out the pattern at the adoption pin
+           uses: ./.github/actions/pattern-at-pin
+           with:
+             pin: bc915526af7920e459afd2532e93e96e0479c0e6
+             token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+
+         - name: Governance identity (HR-46, HR-72)
+           run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 .
+   ```
+
+   Tres cosas que el gate no perdona:
+
+   - El job va en el `needs:` del agregador `required` **y** en `required_jobs`
+     de `.github/required-jobs-policy.json`. En un repositorio privado con plan
+     Free es la única vía de enforcement: `host_capabilities` deja ahí
+     `branch_protection`, `rulesets` y `required_checks` en `unavailable` y el
+     único check exigido es el agregador del propio CI
+     (`required_checks: [{"name": "required", "class": "runner-enforced"}]`).
+     Sin esa entrada el job corre y nadie lo exige.
+   - La CLI se invoca como **comando de primer nivel** del paso, nunca a través
+     de otro gate. `verify` ejecutaba `adoption check` en proceso y el ciclo
+     superó 1.300 procesos de python y tumbó el VPS por OOM el 2026-10-05
+     (HR-46). La marca `CI_PATTERN_NESTED=1` hace fallar el anidamiento con
+     exit 2, pero es una red, no un permiso para encadenar.
+   - Sin declaración `governance_seals` la fase 3 avisa a `stderr` y sale 0: la
+     adopción previa no se rompe. En cuanto la declara, el rojo aparece en el PR
+     que declara, que es justo lo que se busca.
+
+**Dónde se mide cada fase.** La tabla nombra el destino de la 0 a la 6 y por
+qué; las que dependen de credenciales del host o de un merge ya ocurrido no son
+gates de PR por construcción, y no se fuerzan:
+
+| Fase | Qué mide | Dónde se mide | Por qué |
+| --- | --- | --- | --- |
+| 0 | Inventario exhaustivo y etiquetas del host | Fuera del PR (`operating-doc-drift`, host-readback) | Lee el host, no el árbol: necesita credencial y, en plan Free, el 403 que #330 solo acepta si el contrato declara el área `unavailable` |
+| 1 | Evidencia de propagación | Fuera del PR por ahora | Solo existencia de ficheros; medible en un PR, pero cablearla es trabajo de un PR propio, no de la adopción de la 3 |
+| 2 | Aislamiento | Job propio `env-isolation` (HR-28) | Ya cableado en los consumers que lo declararon; el job invoca el asset, no la fase |
+| 3 | Sellos del manifiesto y cableado de `P23_required_jobs` | **Job de PR `governance-seals` (HR-72)** | Lee el árbol y el contrato; es la única cuya rojo puede invertir un PR antes del merge |
+| 4 | Los cinco gates del patrón en verde | Fuera del PR | Mide nombres de job y checks ya publicados: no hay PR que evaluar |
+| 5 | Deriva del documento operativo | Job programado o `docs-gates` en el PR | Medirlo en cada PR «gastaría minutos sin valor de revisión» (#858) |
+| 6 | Cadena de aceptación | Fuera del PR | Necesita el PR fusionado: número, SHA de 40 hex y `conclusion: success` |
 
 Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
 

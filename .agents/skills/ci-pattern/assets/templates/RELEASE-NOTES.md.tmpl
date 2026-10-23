@@ -1,0 +1,45 @@
+# Release vX.Y.Z — <título en una línea>
+
+<!-- Plantilla canónica de notas de release (HR-19 y HR-21; canon #1015).
+     Materialícela como `RELEASE-<TAG>.md` en el commit que se va a etiquetar:
+     el workflow de release la lee de ahí (`--notes-file`) y no la genera. -->
+
+## Resumen
+
+<qué cambia para quien usa la aplicación, en dos o tres frases. Si es un
+hotfix, empiece por «Hotfix: …» y diga qué se estaba rompiendo.>
+
+## Procedencia
+
+| | Versión | SHA | Ejecución |
+|---|---|---|---|
+| Anterior | vX.Y.(Z-1) | `<sha corto del commit etiquetado antes>` | <enlace al run de CI> |
+| Nueva | vX.Y.Z | `<sha corto del commit etiquetado ahora>` | <enlace al run de CI> |
+
+## Qué cambia
+
+- <novedad o cambio observable, una línea por cambio>
+- <otro cambio observable>
+
+## Cambios incompatibles
+
+<!-- «Ninguno» si no los hay. Si los hay: qué se rompe, desde qué versión y qué
+     tiene que hacer quien actualiza. No esconda aquí un cambio incompatible
+     detrás de «varias correcciones». -->
+
+Ninguno.
+
+## Cómo actualizar
+
+<!-- El camino concreto para quien opera: qué comando, qué configuración, qué
+     migración. Si no hay nada que hacer, dilo en una línea. -->
+
+<comando o pasos de actualización, con la versión desde la que aplica>
+
+## Qué se arregla
+
+<!-- Solo en un hotfix (HR-21): la causa en una frase y el enlace al post-mortem
+     o a la issue. La causa raíz completa vive en su documento; aquí solo el
+     enlace. Un hotfix sin post-mortem no cierra (HR-21). -->
+
+- <causa en una frase> — <enlace al post-mortem o a la issue>
