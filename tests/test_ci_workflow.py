@@ -17,6 +17,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import sys
 import tomllib
 from pathlib import Path
 
@@ -141,7 +142,7 @@ def test_gate_is_wired(run_blocks: list[str], command: str) -> None:
     assert any(command in block for block in run_blocks), f"no CI step runs '{command}'"
 
 
-def test_gate_order_is_pinned_in_code() -> None:
+def test_gate_order_is_pinned_in_code(monkeypatch) -> None:
     """Hard Rule 13: the order lives in quality_report.GATES, and this is what pins it.
 
     Keeping the four code gates inside one script rather than four YAML steps is deliberate: a
@@ -149,9 +150,15 @@ def test_gate_order_is_pinned_in_code() -> None:
     on the order in which someone happened to fix things.
     """
     scripts = Path(__file__).resolve().parent.parent / "scripts" / "quality_report.py"
+    # DQH 2.2: the gates import their siblings by module name, so `scripts/` has to be
+    # importable for this file to run on its own. `syspath_prepend` and `setitem` both
+    # restore what they touched, so this test stops depending on some other test having
+    # polluted the interpreter first (BP#1353).
+    monkeypatch.syspath_prepend(str(scripts.parent))
     spec = importlib.util.spec_from_file_location("quality_report", scripts)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, "quality_report", module)
     spec.loader.exec_module(module)
     assert tuple(name for name, _, _ in module.GATES) == REQUIRED_GATE_ORDER
 
