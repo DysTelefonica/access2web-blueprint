@@ -622,6 +622,41 @@ jobs:
             --code-root app/src/modules/expedientes --code-glob "*.py" \
             --stack python --linter-config .importlinter
 
+  governance-seals:
+    # HR-72 (canon DysTelefonica/team-skills#1027): la identidad del gobierno se
+    # mide dentro del pull request. La fase 3 comprueba los sellos sha256 de
+    # .governance-manifest.json y el cableado de P23_required_jobs; hasta ahora
+    # solo corria programada (operating-doc-drift.yml), asi que un fichero
+    # gobernado podia llegar a main sin re-sellarse y el rojo aparecia ya
+    # integrado (ardelperal/APAP_WEB#2327, corregido a mano en #2328).
+    #
+    # La CLI se invoca como comando de primer nivel (HR-46): encadenarla a otro
+    # gate ejecutaba el ciclo verify->adoption, que supero 1.300 procesos de
+    # python y tumbo el host por OOM el 2026-10-05.
+    #
+    # Solo pull_request (HR-30): en push, schedule y workflow_dispatch no hay PR
+    # que evaluar, asi que el nombre del check no se publica desde ahi. Esos
+    # tres eventos aceptan su salto en .github/required-jobs-policy.json.
+    #
+    # Repositorio publico: entrada no confiable y runner hospedado. El job no
+    # pide ningun secreto —los PR de fork no lo recibirian y el gate se saltaria
+    # justo donde tiene que ser mas duro—, asi que mide con el catalogo
+    # vendorizado en .agents/skills/ci-pattern/, la ruta del resto de gates.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-governance-seals-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    # Lee sellos y contrato sobre el arbol local, sin red: mas de 5 minutos es un cuelgue.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Governance identity (HR-46, HR-72)
+        run: python3 .agents/skills/ci-pattern/assets/bin/ci-pattern adoption check --phase 3 .
+
   docs-codeguide:
     # HR-63: mapa del codigo <-> codigo, en los dos sentidos. Mismo script que en
     # local (canon vendorizado). Check requerido por PR (HR-29, `required_jobs`).
@@ -906,7 +941,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, docs-commands]
+    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}
