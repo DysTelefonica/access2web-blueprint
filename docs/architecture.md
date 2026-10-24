@@ -90,7 +90,7 @@ access2web-blueprint/
 │   └── prompts/                 ← reportes a mantenedor dysflow
 ├── app/                         ← hexagonal Python (renombrado desde platform/)
 │   ├── README.md                ← naming deviation justificada
-│   ├── pyproject.toml           ← ruff==0.15.21, mypy==1.13.0, argon2-cffi==25.1.0
+│   ├── pyproject.toml           ← ruff==0.17.1, mypy==1.13.0, argon2-cffi==25.1.0
 │   ├── Dockerfile               ← python:3.12-slim-bookworm
 │   ├── src/
 │   │   ├── main.py              ← FastAPI composition root
