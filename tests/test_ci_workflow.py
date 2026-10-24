@@ -1241,6 +1241,23 @@ def test_the_heavy_workflow_calls_the_light_pr_gate_workflow(workflow: dict) -> 
     assert "pr-gate" in workflow["jobs"]["required"]["needs"]
 
 
+def test_the_pr_gate_queue_separates_the_two_instances(pr_gate_workflow: dict) -> None:
+    """BP#1372: the same gate runs in two instances — its own workflow and the call from `ci.yml`.
+
+    A concurrency group holds one pending request: GitHub cancels the pending one when
+    another arrives, so the instance called from `ci.yml` was cancelled at 0 s and the
+    `required` aggregator read the cancellation as a failure (run `ci` 40084048493,
+    attempt 1: "Canceling since a higher priority waiting request for gate-pr-gate-1371
+    exists"). The group must name the instance: inside a reusable workflow
+    `github.workflow` is the caller's name, so the two instances land in different queues
+    and neither cancels the other.
+    """
+    group = pr_gate_workflow["jobs"]["pr-gate"]["concurrency"]["group"]
+    assert "github.workflow" in group, (
+        f"the pr-gate concurrency group must separate the instance, got {group!r}"
+    )
+
+
 def test_the_heavy_jobs_skip_the_docs_only_lane(workflow: dict) -> None:
     """Issue #1368: a diff entirely under `docs/` skips the heavy suite.
 
