@@ -3,7 +3,8 @@ from pathlib import Path
 import yaml
 
 WORKFLOW = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "codeql.yml"
-CODEQL_ACTION_SHA = "24c54180a607b1449ed407dd24f251e4e9147c8d"
+DEPENDABOT = Path(__file__).resolve().parent.parent / ".github" / "dependabot.yml"
+CODEQL_ACTION_SHA = "6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee"
 
 
 def _load_workflow() -> dict:
@@ -46,3 +47,17 @@ def test_codeql_scans_python_via_reusable_workflow_call() -> None:
     assert init["uses"] == f"github/codeql-action/init@{CODEQL_ACTION_SHA}"
     assert init["with"] == {"languages": "python", "build-mode": "none"}
     assert analyze["uses"] == f"github/codeql-action/analyze@{CODEQL_ACTION_SHA}"
+
+
+def test_dependabot_updates_codeql_action_as_one_group() -> None:
+    """Issue #1389: init and analyze must always move to the same version."""
+    dependabot = yaml.safe_load(DEPENDABOT.read_text(encoding="utf-8"))
+    update = next(
+        item
+        for item in dependabot["updates"]
+        if (item["package-ecosystem"], item["directory"]) == ("github-actions", "/")
+    )
+
+    assert update["groups"] == {
+        "codeql-action": {"patterns": ["github/codeql-action/*"]},
+    }
