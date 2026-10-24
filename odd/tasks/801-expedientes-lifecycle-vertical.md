@@ -21,15 +21,15 @@ S11. PR ≤ 400 líneas por unidad; sin `size:exception`; commits convencionales
 
 ## Tasks
 
-- T1 (S10) test(expedientes): add the shared PostgreSQL harness for the Expedientes migration tests — `tests/expedientes/migrations/_pg.py` + `conftest.py` + este tracker. Eslabón 1/3 de la cadena. Ruta: inline (sin autor de escritura independiente). Commit: pending.
-- T2 (S2, S3, S4, S5, S8) feat(expedientes): create the Expedientes header table — migración `0009_expedientes_header.py` (`TbExpedientes`) + `test_migration_0009.py`. Eslabón 2/3. Ruta: inline. Commit: pending.
+- T1 (S10) test(expedientes): add the shared PostgreSQL harness for the Expedientes migration tests — `tests/expedientes/migrations/_pg.py` + `conftest.py` + este tracker. Eslabón 1/3 de la cadena, PR #1383, commit `fada00a1`. Ruta: inline (sin autor de escritura independiente).
+- T2 (S2, S3, S4, S5, S8) feat(expedientes): create the Expedientes header table — migración `0009_expedientes_header.py` (`TbExpedientes`) + `test_migration_0009.py`. Eslabón 2/3, PR #1385, commit `d4e86583`. Ruta: inline.
 - T3 (S2, S6, S7, S8) feat(expedientes): create the Expedientes audit tables — migración `0010_expedientes_audit.py` (`TbCambios`, `TbUltimoCambio`) + test. Eslabón 3/3. Ruta: inline. Commit: pending.
 - T4 (S1, #804) feat(expedientes): implement `ExpedienteRepositoryPg` sobre el schema. Ruta: pendiente de issue aprobada propia.
 - T5 (S1, #801) feat(expedientes): delivery HTTP del ciclo de vida (201/400/403/409 en una transacción). Ruta: pendiente.
 - T6 (#810) feat(expedientes): montar el módulo en el composition root con adapters reales y readiness. Ruta: pendiente.
 - T7 (#803) feat(expedientes): verticales restantes (related-data, idempotencia/autosave, E2E). Ruta: pendiente.
 
-Estado: T1 y T2 en curso en este turno; T3 preparado como eslabón 3.
+Estado: T1 y T2 publicados (PR #1383 y PR #1385, cadena `expedientes-lifecycle-801`); T3 preparado como eslabón 3.
 
 ## Log
 
