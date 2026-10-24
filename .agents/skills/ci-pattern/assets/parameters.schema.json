@@ -63,7 +63,7 @@
       "default": "size:exception",
       "required": false,
       "consumed_by": ["scripts/check_pr_size.py:39"],
-      "deprecated": "El campo 'size-exception-reason:' del cuerpo del PR está retirado (A1, #518); la excepción es solo la etiqueta 'size:exception' aplicada por el mantenedor cuando partir la PR rompería main, sin lockfiles ni generados en el cómputo del presupuesto."
+      "deprecated": "El campo 'size-exception-reason:' del cuerpo del PR está retirado (A1, #518); la excepción es solo la etiqueta 'size:exception' aplicada por el mantenedor cuando partir la PR rompería main. Los lockfiles generados no entran en el cómputo del presupuesto (#1177)."
     },
     {
       "id": "P08",
@@ -73,7 +73,7 @@
       "default": [],
       "required": false,
       "consumed_by": [".github/workflows/pr-size.yml"],
-      "deprecated": "Las exclusiones de lockfiles están retiradas (A1, #518); el presupuesto se computa sobre adiciones + eliminaciones del PR tal como las da GitHub, sin exclusiones."
+      "deprecated": "Las exclusiones de lockfiles no son un parámetro: desde #1177 el canon excluye del presupuesto los lockfiles generados (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock`, `requirements*.lock`) por ruta, y el resto de ficheros generados sí cuenta."
     },
     {
       "id": "P09",

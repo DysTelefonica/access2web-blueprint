@@ -78,6 +78,57 @@ class TestCountsToBudget(unittest.TestCase):
         self.assertFalse(budget.counts_to_budget(".agents/skills/a.py", ".agents/skills/b.py"))
 
 
+class TestGeneratedLockfiles(unittest.TestCase):
+    """#1177: los lockfiles generados no son trabajo de revision."""
+
+    def test_the_patterns_are_the_documented_ones(self) -> None:
+        self.assertEqual(
+            budget.LOCKFILE_PATTERNS,
+            ("uv.lock", "package-lock.json", "pnpm-lock.yaml", "poetry.lock",
+             "requirements*.lock"),
+        )
+
+    def test_a_lockfile_is_recognised_by_name_in_any_directory(self) -> None:
+        for path in ("uv.lock", "app/uv.lock", "package-lock.json",
+                     "frontend/package-lock.json", "pnpm-lock.yaml", "poetry.lock",
+                     "requirements.lock", "requirements-dev.lock",
+                     "app/requirements-dev.lock"):
+            self.assertTrue(budget.is_generated_lockfile(path), path)
+
+    def test_requirements_without_the_lock_suffix_is_not_a_lockfile(self) -> None:
+        self.assertFalse(budget.is_generated_lockfile("requirements.txt"))
+        self.assertFalse(budget.is_generated_lockfile("app/requirements.in"))
+        self.assertFalse(budget.is_generated_lockfile("app/requirements"))
+
+    def test_a_file_that_only_mentions_a_lockfile_is_not_one(self) -> None:
+        self.assertFalse(budget.is_generated_lockfile("app/lockfiles.md"))
+        self.assertFalse(budget.is_generated_lockfile("docs/uv.lock.md"))
+
+    def test_the_match_is_case_sensitive(self) -> None:
+        """El gate no puede depender del sistema de ficheros: el nombre va exacto."""
+        self.assertFalse(budget.is_generated_lockfile("UV.LOCK"))
+
+
+class TestLockfilesDoNotCount(unittest.TestCase):
+    """#1177: el lockfile generado queda fuera del presupuesto."""
+
+    def test_a_modified_lockfile_does_not_count(self) -> None:
+        self.assertFalse(budget.counts_to_budget("uv.lock", "uv.lock"))
+        self.assertFalse(budget.counts_to_budget("app/requirements-dev.lock",
+                                                  "app/requirements-dev.lock"))
+
+    def test_a_rename_from_authored_into_a_lockfile_counts(self) -> None:
+        """El trabajo fue de autoria: renombrar a un lockfile no lo esconde."""
+        self.assertTrue(budget.counts_to_budget("app/auth.py", "uv.lock"))
+
+    def test_a_rename_between_lockfiles_does_not_count(self) -> None:
+        self.assertFalse(budget.counts_to_budget("uv.lock", "app/uv.lock"))
+
+    def test_budget_lines_leaves_the_lockfile_out(self) -> None:
+        numstat = "10\t2\tapp/a.py\n222\t222\tuv.lock\n"
+        self.assertEqual(budget.budget_lines(numstat), 12)
+
+
 class TestParseNumstat(unittest.TestCase):
     def test_plain_path(self) -> None:
         self.assertEqual(budget.parse_numstat("app/a.py"), ("app/a.py", "app/a.py"))

@@ -6,6 +6,10 @@ Las rutas de :data:`VENDORED_ROOTS` quedan fuera del presupuesto de revisión,
 pero un fichero renombrado desde una ruta de autoría hacia una vendorizada
 sigue contando, aunque el renombrado ocurra en otro commit del mismo PR.
 
+Los lockfiles generados (los patrones de :data:`LOCKFILE_PATTERNS`) quedan
+fuera también: los escribe la herramienta, no quien abre la PR. Un fichero
+renombrado desde una ruta de autoría hacia un lockfile sí cuenta (#1177).
+
 Desde #1088 la lista tiene una sola entrada: ``.agents/skills/``, el árbol
 vendorizado que los consumers reciben del canon. ``skills/`` **no** se
 excluye: en el canon es el catálogo de autoría (64 skills escritas aquí) y en
@@ -30,6 +34,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from fnmatch import fnmatchcase
 
 #: Runner de git inyectado: recibe los argumentos, devuelve stdout, lanza ``RuntimeError`` si falla.
 RunGit = Callable[..., str]
@@ -41,6 +46,30 @@ RunGit = Callable[..., str]
 #: en el canon es el catálogo de autoría y en un consumer es su catálogo
 #: propio, y en los dos casos sus líneas cuentan para el presupuesto.
 VENDORED_ROOTS = (".agents/skills/",)
+
+#: Lockfiles generados: quedan fuera del presupuesto de revisión (#1177).
+#:
+#: El lockfile lo escribe el gestor de paquetes a partir del manifiesto, así que
+#: sus líneas no son trabajo de quien abre la PR: un bump que mueve el árbol de
+#: dependencias se comía el presupuesto entero sin que nadie pueda partirlo
+#: (``ardelperal/APAP_WEB#2424``: 444 de las 448 líneas del diff eran
+#: ``uv.lock``, y la PR solo pudo entrar con la etiqueta ``size:exception``).
+#:
+#: Se reconocen por el nombre del fichero, en cualquier directorio del repo. Un
+#: ``requirements.txt`` (sin la extensión ``.lock``) se mantiene dentro del
+#: presupuesto: ese se escribe a mano.
+LOCKFILE_PATTERNS = ("uv.lock", "package-lock.json", "pnpm-lock.yaml",
+                     "poetry.lock", "requirements*.lock")
+
+
+def is_generated_lockfile(path: str) -> bool:
+    """True cuando ``path`` es el nombre de un lockfile generado (#1177).
+
+    La comparación es exacta (``fnmatchcase``): el gate no puede depender de
+    cómo normaliza los nombres el sistema de ficheros donde corra.
+    """
+    name = path.rsplit("/", 1)[-1]
+    return any(fnmatchcase(name, pattern) for pattern in LOCKFILE_PATTERNS)
 
 #: Campos de una línea de ``--name-status``: estado y ruta; renombrado: estado, origen y destino.
 _ADDED_FIELDS = 2
@@ -58,10 +87,14 @@ def is_under_vendored(path: str) -> bool:
 def counts_to_budget(old_path: str, new_path: str) -> bool:
     """Decide si los cambios de un fichero cuentan para el presupuesto.
 
-    1. Destino fuera de las rutas vendorizadas: cuenta.
-    2. Destino vendorizado y sin renombrado desde autoría: no cuenta.
-    3. Renombrado desde una ruta de autoría hacia una vendorizada: cuenta.
+    1. Destino que es un lockfile generado: no cuenta, salvo que el fichero
+       venga de una ruta de autoría (el trabajo fue de autoría) (#1177).
+    2. Destino fuera de las rutas vendorizadas: cuenta.
+    3. Destino vendorizado y sin renombrado desde autoría: no cuenta.
+    4. Renombrado desde una ruta de autoría hacia una vendorizada: cuenta.
     """
+    if is_generated_lockfile(new_path):
+        return old_path != new_path and not is_generated_lockfile(old_path)
     if not is_under_vendored(new_path):
         return True
     return old_path != new_path and not is_under_vendored(old_path)
@@ -165,6 +198,8 @@ def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> 
     """
     total = 0
     for old_path, new_path, lines in _iter_numstat(numstat):
+        if is_generated_lockfile(new_path) and not counts_to_budget(old_path, new_path):
+            continue  # lockfile generado: no cuenta para el presupuesto (#1177)
         if not is_under_vendored(new_path) or origins is None or new_path not in origins:
             total += lines
             continue

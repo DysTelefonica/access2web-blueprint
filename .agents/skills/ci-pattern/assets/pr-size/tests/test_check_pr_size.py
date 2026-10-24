@@ -84,6 +84,16 @@ def _commit_file(repo: Path, path: str, content: str, msg: str) -> None:
     _git("commit", "-qm", msg, cwd=repo)
 
 
+def _commit_files(repo: Path, files: dict[str, str], msg: str) -> None:
+    """Varios ficheros en el MISMO commit: un bump mueve el lockfile y el manifiesto."""
+    for path, content in files.items():
+        target = repo / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    _git("add", "-A", cwd=repo)
+    _git("commit", "-qm", msg, cwd=repo)
+
+
 def _rename_and_modify(repo: Path, src: str, dst: str, new_content: str, msg: str) -> None:
     dst_p = repo / dst
     dst_p.parent.mkdir(parents=True, exist_ok=True)
@@ -180,6 +190,24 @@ class TestCountsToBudgetRule(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # Tests de integración sobre un repo git real
 # ---------------------------------------------------------------------------
+
+
+class TestGeneratedLockfileRule(unittest.TestCase):
+    """RED (#1177): el gate publica la regla de lockfile generado."""
+
+    def test_the_gate_exposes_the_lockfile_rule(self) -> None:
+        gate = _load_gate()
+        self.assertTrue(gate.is_generated_lockfile("uv.lock"))
+        self.assertTrue(gate.is_generated_lockfile("app/requirements-dev.lock"))
+        self.assertFalse(gate.is_generated_lockfile("app/requirements.txt"))
+
+    def test_the_documented_patterns_are_the_ones_in_the_gate(self) -> None:
+        gate = _load_gate()
+        self.assertEqual(
+            gate.LOCKFILE_PATTERNS,
+            ("uv.lock", "package-lock.json", "pnpm-lock.yaml", "poetry.lock",
+             "requirements*.lock"),
+        )
 
 
 class TestChangedLinesIntegration(unittest.TestCase):
@@ -487,14 +515,108 @@ class TestLabelOverride(unittest.TestCase):
         self.assertEqual(envelope["status"], "pass")
 
 
-class TestNothingElseIsExcluded(unittest.TestCase):
-    def test_a_lockfile_counts_toward_the_budget(self) -> None:
+class TestGeneratedLockfilesAreExcluded(unittest.TestCase):
+    """RED (#1177): un lockfile generado no es trabajo de revision y no cuenta.
+
+    El lockfile lo escribe el gestor de paquetes a partir del manifiesto
+    (``ardelperal/APAP_WEB#2424``: 444 de las 448 lineas del diff eran
+    ``uv.lock`` y la PR solo pudo entrar con la etiqueta ``size:exception``).
+    """
+
+    def test_a_lockfile_does_not_count_toward_the_budget(self) -> None:
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             repo = _over_budget_repo(Path(tmp), "uv.lock")
             result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_lockfile_is_reported_apart_from_the_vendored_lines(self) -> None:
+        """La cifra excluida se dice por separado: no es arbol vendorizado."""
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "uv.lock")
+            result = _run_cli(repo, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            env = json.loads(result.stdout)
+            self.assertEqual(env["status"], "pass")
+            self.assertEqual(env["indicators"]["changed_lines"], 0)
+            self.assertEqual(env["indicators"]["generated_lines"], 500)
+            self.assertEqual(env["indicators"]["vendored_lines"], 0)
+
+    def test_the_lockfile_is_named_in_the_text_output(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "uv.lock")
+            result = _run_cli(repo)
+            self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_authored_code_still_fails(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/x.py")
+            result = _run_cli(repo)
             self.assertEqual(result.returncode, 1, result.stdout)
-            self.assertIn("uv.lock", result.stdout)
+            self.assertIn("maintainer", result.stdout)
+
+    def test_requirements_txt_still_counts(self) -> None:
+        """Solo la extension ``.lock`` queda fuera: ``requirements.txt`` es de autoria."""
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/requirements.txt")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_requirements_lock_is_excluded(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _over_budget_repo(Path(tmp), "app/requirements-dev.lock")
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class TestLockfileBumpRealCase(unittest.TestCase):
+    """El caso real de APAP_WEB#2424: un bump que mueve 444 líneas de ``uv.lock``
+    y 4 de ``pyproject.toml`` (448 en crudo). El presupuesto cuenta 4, no 448
+    (#1177): el lockfile lo escribió el gestor de paquetes, no quien abre la PR.
+    """
+
+    def _bump_repo(self, tmp: Path) -> Path:
+        repo = _make_repo(tmp)
+        lock = "\n".join(f"# lock {i}" for i in range(222)) + "\n"
+        manifest = "\n".join(f"# dep {i}" for i in range(2)) + "\n"
+        _commit_files(repo, {"uv.lock": lock, "pyproject.toml": manifest},
+                      "chore: bump")
+        # El bump: el lockfile se reescribe entero (222 altas + 222 bajas) y el
+        # manifiesto cambia dos líneas (2 altas + 2 bajas). Los dos ficheros
+        # entran en el MISMO commit: es un commit, no dos.
+        _commit_files(repo,
+                      {"uv.lock": "\n".join(f"# lock {i} v2" for i in range(222)) + "\n",
+                       "pyproject.toml": "\n".join(f"# dep {i} v2" for i in range(2)) + "\n"},
+                      "chore: bump v2")
+        return repo
+
+    def test_the_budget_counts_the_manifest_and_not_the_lockfile(self) -> None:
+        import json
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._bump_repo(Path(tmp))
+            result = _run_cli(repo, "--json")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            env = json.loads(result.stdout)
+            self.assertEqual(env["status"], "pass")
+            self.assertEqual(env["indicators"]["changed_lines"], 4)
+            self.assertEqual(env["indicators"]["generated_lines"], 444)
+            self.assertEqual(env["indicators"]["vendored_lines"], 0)
+
+    def test_the_text_output_says_what_it_left_out(self) -> None:
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._bump_repo(Path(tmp))
+            result = _run_cli(repo)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertIn("OK    4 changed line(s)", result.stdout)
+            self.assertIn("444 generated line(s) excluded", result.stdout)
 
 
 def _file(name: str, added: int, deleted: int = 0, previous: str | None = None) -> dict:
@@ -657,9 +779,23 @@ class TestApiMode(unittest.TestCase):
         result, _ = self.run_api([_file(".agents/skills/x/a.py", 500, previous="app/a.py")])
         self.assertEqual(result.returncode, 1, result.stdout)
 
-    def test_lockfile_counts(self) -> None:
+    def test_lockfile_does_not_count(self) -> None:
+        """RED (#1177): en modo API el lockfile generado tampoco cuenta."""
         result, _ = self.run_api([_file("uv.lock", 500)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("500 generated line(s) excluded", result.stdout)
+
+    def test_a_rename_from_authored_into_a_lockfile_still_counts(self) -> None:
+        result, _ = self.run_api([_file("uv.lock", 500, previous="app/a.py")])
         self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_lockfile_bump_counts_only_the_manifest(self) -> None:
+        """APAP_WEB#2424: 444 líneas de ``uv.lock`` y 4 de ``pyproject.toml`` → 4."""
+        result, _ = self.run_api([_file("uv.lock", 222, 222),
+                                  _file("pyproject.toml", 2, 2)])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("4 changed line(s)", result.stdout)
+        self.assertIn("444 generated line(s) excluded", result.stdout)
 
     def test_label_in_the_payload_overrides(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",))

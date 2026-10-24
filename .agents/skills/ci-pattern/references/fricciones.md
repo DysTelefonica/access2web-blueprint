@@ -37,6 +37,7 @@ fricción en una línea y su antídoto, con la regla de la skill que lo codifica
 | F-005 | Reanudar una revisión interrumpida exigía hashes y tokens internos a mano | El arnés de review asume interrupciones; la skill de CI no lo disimula |
 | F-006 | Entornos locales sin el intérprete de python localizado y docs con intérpretes mezclados | El preflight canónico abstrae el intérprete; un solo comando documentado (HR-4) |
 | F-007 | Un worker desatendido no puede commitear: la política pide aprobación interactiva | Contrato de dos fases: worker deja staged + evidencia; el orquestador commitea tras verificar |
+| F-008 | El ratchet compara los hallazgos contra el total del árbol, no contra la base del PR: un PR que no añade violaciones queda rojo por la deuda preexistente (10 job-runs de `lint-estilo` en la auditoría de fricción de gates, team-skills#1093, comentario `6389037313`) | El ratchet mide lo que el PR AÑADE: `--base-findings` con los hallazgos medidos en la base del PR; lo que ya estaba avisa y no bloquea (HR-15, #1172) |
 | — | Tres PR (#1156, #1157, #1159) llegaron a CI con el gate issue-spec en rojo por formato acortado de la issue | Contrato canónico de issue completo y etiqueta de aprobación al crearla (HR-1) |
 | — | En #1145 y #1150 las etiquetas se aplicaron tras crear el PR y el gate no se reevaluó | Etiquetas en el comando de creación (HR-6) |
 | — | Palabra de cierre en el título de #1138 cerró la issue antes de tiempo | Cierre solo en el cuerpo del PR punta (HR-7) |
