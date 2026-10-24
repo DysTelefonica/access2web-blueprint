@@ -933,6 +933,8 @@ generados (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock` y `re
   añadida exige campo `relaxation` con `reason`/`reference`) y trata la fecha
   vencida como hallazgo; sin prueba de vida de la medición sale por 2
   (liveness, HR-3).
+- `assets/gates/` — la línea base de fricción de gates (#1179): `measure_gates.py`
+  mide sobre un export los rojos secundarios, los gates rojos por commit y el tiempo hasta el verde.
 - `assets/exemptions/` — gate de identidad de exenciones (HR-33): escanea
   documentos JSON (baselines, políticas, matrices) y exige que toda exención
   declarada como dato — `relaxation`, `exemption` — lleve una identidad
@@ -965,9 +967,8 @@ generados (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock` y `re
   (`check_host_drift.py`, stdlib, sin red) y suite de tests; clasifica
   cada regla `host-enforced` o `documented-only` (HR-34) contrastando el
   contrato declarado con instantáneas JSON de las respuestas de la API.
-- `assets/parameters.md` — los parámetros que se extraen por repo, con los
-  valores del consumer de origen como ejemplo y la ubicación de los scripts
-  de referencia.
+- `assets/parameters.md` — los parámetros que se extraen por repo, con los valores
+  del consumer de origen como ejemplo y la ubicación de los scripts de referencia.
 - `references/delegation-template.md` — plantilla canónica de encargo de
   delegación: repo verificado en vivo, base y tip, worktree y rama
   generada, superficies editables verificadas, hechos en vivo a confirmar por
@@ -978,8 +979,7 @@ generados (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock` y `re
   lo justifica. Exigido por el GATE DE ADOPCIÓN del §1.
 - `references/gate-verdicts.md` — veredicto de cada gate del inventario con su base.
 - `references/benchmark-gentle-ai.md` — ideas transferibles y rechazadas de otro CI.
-- `references/incidents.md` — ejemplo destilado de hotfix, post-mortem y
-  release sobre un incidente real de pérdida de datos.
+- `references/incidents.md` — ejemplo destilado de hotfix, post-mortem y release sobre un incidente real de pérdida de datos.
 - `references/release-runbook.md` — el camino de release y de hotfix paso a
   paso: quién lanza y con qué comandos, la secuencia del hotfix (rama `fix/` —
   `hotfix/` lo rechaza el gate—, PR suelto con Chain Context 1/1, merge en
