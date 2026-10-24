@@ -80,7 +80,8 @@ Los dos últimos se declaran aquí a propósito: un script sin gate es deuda vis
 | Workflow | Dispara | Jobs | Runner |
 |---|---|---|---|
 | `ci.yml` | `pull_request`, `push` a `main`, `schedule` (lunes 03:00 UTC) y `workflow_dispatch` | `review-budget`, `quality`, `mutation`, `security`, `codeql`, `required` | `ubuntu-24.04` (`mutation`: `ubuntu-24.04-arm`) |
-| `security.yml` | `workflow_call` desde `ci.yml` | `gitleaks`, `trivy-config`, `pip-audit` | `ubuntu-24.04` |
+| `security.yml` | `workflow_call` desde `ci.yml` | `gitleaks`, `trivy-config` | `ubuntu-24.04` |
+| `pip-audit.yml` | `workflow_call` desde `ci.yml` | `dependency-scan` | `ubuntu-24.04` |
 | `codeql.yml` | `workflow_call` desde `ci.yml` | `codeql` | `ubuntu-24.04` |
 | `security-deep.yml` | `schedule` (domingo 03:00 UTC) y manual | `gitleaks-history`, `trivy-image` | `ubuntu-24.04-arm` |
 | `operating-doc-drift.yml` | `push` a `main` y `schedule` (lunes 04:00 UTC) | `operating-doc-drift` | `ubuntu-24.04` |

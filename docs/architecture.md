@@ -384,7 +384,8 @@ Dieciséis `scripts/check_*.py` + `.github/workflows/`:
 | `check_walkthrough_schema.py` | scripts/ | MUST fields del template `walkthrough.json` |
 | `pytest_plugin/coverage_gate.py` | app/ | QC-5 |
 | ci.yml | .github/workflows/ | orquesta todo por PR |
-| security.yml | .github/workflows/ | pip-audit, gitleaks, trivy config |
+| security.yml | .github/workflows/ | gitleaks, trivy config |
+| pip-audit.yml | .github/workflows/ | auditoria del lockfile bloqueado por hashes |
 | security-deep.yml | .github/workflows/ | semanal |
 | codeql.yml | .github/workflows/ | cada PR, push a main y semanal |
 | release.yml | .github/workflows/ | tags + identidad + firma keyless del digest |

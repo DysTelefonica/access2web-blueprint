@@ -565,61 +565,6 @@ def test_release_e2e_generates_its_signing_secret_per_run() -> None:
     assert '-e SECRET_KEY="$E2E_SECRET_KEY"' in release
 
 
-def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
-    workflow: dict,
-) -> None:
-    """Issue #702: `required` is the deterministic replacement for `merge-ready`.
-
-    `needs:` cannot cross workflow files, so `security` and `codeql` are
-    embedded as `uses: ./.github/workflows/*.yml` calls directly inside
-    ci.yml — from GitHub's perspective those are still ordinary job ids the
-    aggregator can depend on and read `needs.<id>.result` from. Issue #857,
-    PR-D: the event set that feeds the aggregator drops `merge_group` (the
-    queue is gone with the gentle-ai model) and gains `push` (the post-merge
-    safety net on `main`).
-    """
-    jobs = workflow["jobs"]
-    assert "merge-ready" not in jobs, "merge-ready was fully superseded by `required`"
-
-    required = jobs["required"]
-    # El `if` conserva la semántica de `always()` —un dependency saltado no
-    # salta este check, que es el requerido de la protección de rama— con la
-    # forma que el gate del patrón puede probar (HR-30): comparaciones de
-    # `event_name` y `!cancelled()`, sin `always()` ni `!=` sueltos.
-    assert required["if"] == (
-        "(github.event_name == 'pull_request' || github.event_name == 'push' "
-        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
-        "&& !cancelled()"
-    )
-    assert required["needs"] == [
-        "pr-gate",
-        "quality",
-        "integration",
-        "security",
-        "codeql",
-        "e2e-smoke",
-        "docs-codeguide",
-        "docs-links",
-        "docs-decisions",
-        "docs-architecture",
-        "governance-seals",
-        "docs-commands",
-    ]
-
-    assert jobs["security"]["uses"] == "./.github/workflows/security.yml"
-    assert jobs["codeql"]["uses"] == "./.github/workflows/codeql.yml"
-    assert jobs["codeql"]["permissions"]["security-events"] == "write"
-
-    step = required["steps"][-1]
-    assert ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py" in step["run"]
-    assert step["env"]["NEEDS_JSON"] == "${{ toJSON(needs) }}"
-    assert step["env"]["EVENT_NAME"] == "${{ github.event_name }}"
-    assert step["env"]["BASE_SHA"] == "${{ github.event.pull_request.base.sha }}"
-    assert "--base-policy" in step["run"], (
-        "the relaxation check against the base policy must stay wired"
-    )
-
-
 def test_integration_job_runs_pytest_m_integration_against_postgres_service() -> None:
     """Issue #882, PR-3: the integration job wires ci.yml to the in-job Postgres service.
 
@@ -771,11 +716,10 @@ def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
     `./` prefix), so it audited a homonym on PyPI and never the project. The lock is audited
     directly and strictly, with hashes required and pip disabled, and an empty lock cannot pass.
     """
-    security = yaml.safe_load(
-        (_find_workflow().parent / "security.yml").read_text(encoding="utf-8")
-    )
+    workflows = _find_workflow().parent
+    audit = yaml.safe_load((workflows / "pip-audit.yml").read_text(encoding="utf-8"))
     steps = [
-        s for s in security["jobs"]["pip-audit"]["steps"] if s.get("name") == "dependency scan"
+        s for s in audit["jobs"]["dependency-scan"]["steps"] if s.get("name") == "dependency scan"
     ]
     assert len(steps) == 1, "pip-audit must have exactly one `dependency scan` step"
     run = steps[0]["run"]
@@ -786,6 +730,21 @@ def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
     )
     assert "pip-audit==2.9.0" in run
     assert "-lt 15" in run, "an empty or truncated lock must fail before the verdict is trusted"
+
+    # Issue #1377: the job is a first-level job of `ci.yml` (its own reusable
+    # workflow), so the `required` aggregator can read its result and declare
+    # its skip by design.
+    workflow = yaml.safe_load(_find_workflow().read_text(encoding="utf-8"))
+    job = workflow["jobs"]["pip-audit"]
+    assert job["uses"] == "./.github/workflows/pip-audit.yml", (
+        "the dependency scan must be a first-level job of ci.yml: `needs:` cannot cross "
+        "workflow files, so an inner job of security.yml could not declare its own skip"
+    )
+    assert job["needs"] == "pr-gate"
+    assert (
+        "pip-audit"
+        not in yaml.safe_load((workflows / "security.yml").read_text(encoding="utf-8"))["jobs"]
+    ), "the dependency scan moved out of security.yml (issue #1377)"
 
 
 def test_issue_spec_is_wired_into_pr_gate(pr_gate_workflow: dict) -> None:

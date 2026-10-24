@@ -7,7 +7,8 @@
       "accepted_skips": [
         "pr-gate",
         "e2e-smoke",
-        "governance-seals"
+        "governance-seals",
+        "pip-audit"
       ]
     },
     "schedule": {
@@ -54,18 +55,28 @@
       "skips": [
         "codeql"
       ]
+    },
+    {
+      "event": "pull_request",
+      "gate_job": "pr-gate",
+      "output": "lockfile_scope_changed",
+      "equals": "false",
+      "skips": [
+        "pip-audit"
+      ]
     }
   ],
   "relaxation": {
-    "reason": "Carriles de superficie (DysTelefonica/access2web-blueprint#1376): e2e-smoke y codeql solo se ejecutan cuando el diff toca la superficie que analizan —e2e-smoke: app/** y e2e/**; codeql: app/** y scripts/**—. El pr-gate publica un marcador por superficie y el agregador required acepta el salto de un job solo cuando su marcador vale exactamente 'false' (marker_lanes). El permiso para saltar no se concede por defecto: si el diff no se puede calcular, el marcador queda en 'true' y el job se ejecuta. El nightly vuelve a ejecutar e2e-smoke —la policy ya no acepta su salto en schedule— porque release.yml solo corre con tags y el repo no tiene ninguno, de modo que el nightly es la unica red de la superficie E2E. El carril docs-only de #1368 se mantiene sin cambios: un diff entero en docs/ salta los jobs pesados y docs-links sigue corriendo en ese carril. Se mantienen los saltos ya aceptados de pr-gate, e2e-smoke y governance-seals en push y workflow_dispatch, y de pr-gate y governance-seals en schedule, justificados en #1355 por las mismas razones: esos eventos no tienen PR que evaluar.",
-    "reference": "DysTelefonica/access2web-blueprint#1376",
-    "issue": 1376
+    "reason": "Carril del lockfile (DysTelefonica/access2web-blueprint#1377): la auditoria de dependencias pasa a ser un job de PRIMER NIVEL de ci.yml (con su propio workflow reutilizable) porque `needs:` no cruza ficheros de workflow —el agregador required solo puede leer el resultado de un job de primer nivel, y sin esa lectura su salto por diseño no se puede declarar—. El job corre en pull request solo cuando el marcador del lockfile que publica el pr-gate vale exactamente 'false', es decir cuando el diff no toca app/requirements-dev.lock ni app/uv.lock, y corre en el nightly (schedule), que es donde un aviso publicado entre medias debe salir. En push a main se salta y ese salto queda declarado: el pull request que cambio el lockfile ya lo audito. Los avisos dependen del tiempo y no del diff: de los 14 SHA rojos de la ventana 22-24 oct, 6 fueron por un aviso de filelock ajeno a la PR. Se mantienen sin cambios los carriles de superficie de #1376 (e2e-smoke y codeql) y el carril docs-only de #1368: un diff entero en docs/ salta los jobs pesados y docs-links sigue corriendo en ese carril.",
+    "reference": "DysTelefonica/access2web-blueprint#1377",
+    "issue": 1377
   },
   "required_jobs": [
     "pr-gate",
     "quality",
     "integration",
     "security",
+    "pip-audit",
     "codeql",
     "e2e-smoke",
     "docs-codeguide",
