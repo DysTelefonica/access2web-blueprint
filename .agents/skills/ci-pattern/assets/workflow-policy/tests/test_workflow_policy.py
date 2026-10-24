@@ -989,5 +989,106 @@ class TestWorkflowCallEmptyInputsDict(GateCase):
             f"el mensaje no reproduce el mapa rechazado para diagnóstico:\n{out}",
         )
 
+class TestInstanceIsolatedGroups(GateCase):
+    """HR-73: un gate que corre en dos instancias (su propio disparador y la llamada
+    `workflow_call` de otro workflow) no puede compartir el grupo de concurrencia: GitHub
+    guarda una sola petición pendiente por grupo y cancela la pendiente cuando llega otra,
+    así que una instancia pierde su veredicto y el PR queda rojo sin defecto
+    (BP#1371, run `ci` 40084048493 intento 1: job `pr-gate / pr-gate` cancelado a los 0 s)."""
+
+    PAIR_POLICY = {"required_jobs": ["pr-gate"], "events": {"pull_request": {"accepted_skips": []}},
+                   "state_dependent_gates": []}
+
+    CALLER = ("name: ci\non:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\n"
+              "jobs:\n  call:\n    uses: ./.github/workflows/callee.yml\n")
+
+    def callee(self, group, direct=True, inputs=""):
+        on = "on:\n  pull_request:\n  workflow_call:\n" if direct else "on:\n  workflow_call:\n"
+        return (on + inputs + "jobs:\n  pr-gate:\n    timeout-minutes: 5\n"
+                "    concurrency:\n      group: " + group + "\n      cancel-in-progress: false\n"
+                "    steps:\n      - " + PINNED + "\n")
+
+    def pair(self, caller, callee, policy=None):
+        with tempfile.TemporaryDirectory() as d:
+            c, w, p = Path(d, "caller.yml"), Path(d, "callee.yml"), Path(d, "policy.json")
+            c.write_text(caller, encoding="utf-8")
+            w.write_text(callee, encoding="utf-8")
+            p.write_text(json.dumps(policy or self.PAIR_POLICY), encoding="utf-8")
+            out = subprocess.run([sys.executable, str(GATE), "--workflow", str(c),
+                                  "--workflow", str(w), "--required-jobs", str(p),
+                                  "--base-branch", "main"], capture_output=True, text=True)
+        return out.returncode, out.stdout + out.stderr
+
+    def test_group_shared_by_the_two_instances_is_a_finding(self):
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ github.event.pull_request.number || github.ref }}"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("pr-gate", out)
+        self.assertIn("gate-pr-gate-", out)
+        self.assertIn("HR-73", out)
+
+    def test_github_workflow_in_the_group_separates_the_instances(self):
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ github.workflow }}-${{ github.event.pull_request.number }}"))
+        self.assertEqual(code, 0, out)
+
+    def test_github_run_id_in_the_group_separates_the_instances(self):
+        code, out = self.pair(self.CALLER, self.callee("gate-pr-gate-${{ github.run_id }}"))
+        self.assertEqual(code, 0, out)
+
+    def test_a_single_instance_is_clean(self):
+        # Sin disparador propio el reusable solo corre como llamada: una sola instancia.
+        # El required job pasa a ser el del caller (el reusable no publica nada de PR).
+        policy = {"required_jobs": ["call"], "events": {"pull_request": {"accepted_skips": []}},
+                  "state_dependent_gates": []}
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ github.event.pull_request.number || github.ref }}",
+                        direct=False),
+            policy=policy)
+        self.assertEqual(code, 0, out)
+
+    def test_a_reusable_workflow_outside_the_analysed_set_is_clean(self):
+        # La segunda instancia no se puede probar si el reusable no está entre los
+        # workflows analizados: el gate no inventa.
+        policy = {"required_jobs": ["call"], "events": {"pull_request": {"accepted_skips": []}},
+                  "state_dependent_gates": []}
+        code, out = self.run_gate(self.CALLER, policy=policy)
+        self.assertEqual(code, 0, out)
+
+    def test_two_calls_from_the_same_caller_are_a_finding(self):
+        # `github.workflow` vale el caller: dos llamadas del mismo caller comparten valor.
+        caller = ("name: ci\non:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\n"
+                  "jobs:\n  call:\n    uses: ./.github/workflows/callee.yml\n"
+                  "  other:\n    uses: ./.github/workflows/callee.yml\n")
+        code, out = self.pair(
+            caller,
+            self.callee("gate-pr-gate-${{ github.workflow }}-${{ github.event.pull_request.number }}"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-73", out)
+
+    def test_an_input_the_caller_fills_separates_the_instances(self):
+        caller = ("name: ci\non:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\n"
+                  "jobs:\n  call:\n    uses: ./.github/workflows/callee.yml\n"
+                  "    with:\n      instance: ci\n")
+        inputs = "    inputs:\n      instance:\n        required: false\n"
+        code, out = self.pair(
+            caller,
+            self.callee("gate-pr-gate-${{ inputs.instance || github.event.pull_request.number }}",
+                        inputs=inputs))
+        self.assertEqual(code, 0, out)
+
+    def test_an_input_the_caller_leaves_empty_is_a_finding(self):
+        inputs = "    inputs:\n      instance:\n        required: false\n"
+        code, out = self.pair(
+            self.CALLER,
+            self.callee("gate-pr-gate-${{ inputs.instance || github.event.pull_request.number }}",
+                        inputs=inputs))
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-73", out)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -68,6 +68,17 @@ In a workflow with a ``pull_request`` trigger, ``cancel-in-progress`` may be ``f
 expression naming ``synchronize``; a literal ``true`` is refused (#978): a run cancelled after
 its jobs exist leaves a cancelled required check on the head SHA, which blocks the merge.
 
+The same job can run in two instances: its own workflow (a ``pull_request`` trigger) and the
+same file called with ``workflow_call`` from another workflow. Two instances sharing one
+concurrency group are a finding (#1145): GitHub keeps a single pending request per group and
+cancels the pending one when another arrives, so an instance loses its verdict and, when an
+aggregator reads it, the pull request goes red with no defect. The group separates the
+instances when it names ``github.run_id``, or ``github.workflow`` when the instances resolve
+to distinct workflow names (inside a reusable workflow ``github.workflow`` is the caller's
+name), or an ``inputs.<x>`` that every caller fills with a distinct non-empty value; the
+other way out is a single instance. The rule reports nothing when the second instance cannot
+be proven (the reusable workflow is not among the analysed files).
+
 A plain scalar that continues on a more indented line (``run: cmd \\`` followed by
 its arguments) is rejected with the line and the fix: YAML folds it and the
 ``\\`` stays literal (#787).
@@ -103,6 +114,16 @@ PIP_VALUE_OPTIONS = frozenset({"-i", "--index-url", "--extra-index-url", "-f", "
 MASK_TOKENS = ("|| true", "|| :", "|| exit 0")
 NORUN_TOKENS = ("set +e", "set +o errexit")
 SETUP_KEYS = {"actions/setup-python": "python-version", "actions/setup-node": "node-version"}
+#: `github.run_id` names the run: every instance lands in its own group (HR-73).
+RUN_ID_TERM = "github.run_id"
+#: `github.workflow` names the workflow; inside a reusable workflow it is the CALLER's name.
+WORKFLOW_TERM = "github.workflow"
+#: An input the caller fills can name the instance.
+INPUTS_TERM = re.compile(r"inputs\.([A-Za-z_][A-Za-z0-9_-]*)")
+#: A local reusable workflow call: `./.github/workflows/<file>.yml`.
+LOCAL_WORKFLOW_USE = re.compile(r"^\./\.github/workflows/([A-Za-z0-9_.\-/]+\.ya?ml)$")
+#: Instancias minimas para que dos ejecuciones del mismo gate compitan por la misma cola (HR-73).
+MIN_COLLIDING_INSTANCES = 2
 
 
 class InvalidInput(Exception):
@@ -868,6 +889,118 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
                        "sin alerta, el rojo programado queda sin abrir issue.")
 
 
+class Instance(NamedTuple):
+    """Una instancia de un gate: la misma job, ejecutada desde otro workflow o disparador."""
+
+    label: str  # "disparador directo" o "<fichero> job '<id>'"
+    workflow: str  # el valor que toma `github.workflow` en esta instancia
+    with_: dict  # el `with:` del caller (vacío en la instancia directa)
+    is_caller: bool
+
+
+def workflow_name(path: str, doc: dict) -> str:
+    """El valor que toma `github.workflow`: el `name:` del workflow o, si no, su ruta."""
+    name = doc.get("name")
+    return name if isinstance(name, str) and name.strip() else str(path)
+
+
+def local_workflow_target(uses: object) -> str | None:
+    """El workflow local al que llama un job, o None (un reusable remoto es de otro repo)."""
+    if not isinstance(uses, str):
+        return None
+    m = LOCAL_WORKFLOW_USE.match(uses.strip())
+    return m.group(1) if m else None
+
+
+def _instances_of(path: str, doc: dict, workflows: list[tuple[str, dict]]) -> list[Instance]:
+    """Las instancias en las que puede correr este workflow: su propio disparador y cada
+    job de otro workflow que lo llame con `uses:` local."""
+    events = workflow_events(doc)
+    instances: list[Instance] = []
+    if any(event != "workflow_call" for event in events):
+        instances.append(Instance("disparador directo", workflow_name(path, doc), {}, False))
+    target = Path(path).name
+    for cpath, cdoc in workflows:
+        if cpath == path:
+            continue
+        for cjid, cjob in (cdoc.get("jobs") or {}).items():
+            if not isinstance(cjob, dict):
+                continue
+            if local_workflow_target(cjob.get("uses")) != target:
+                continue
+            with_ = cjob.get("with")
+            instances.append(Instance(f"{cpath} job '{cjid}'", workflow_name(cpath, cdoc),
+                                      with_ if isinstance(with_, dict) else {}, True))
+    return instances
+
+
+def _group_finding(group: str, instances: list[Instance]) -> str | None:
+    """Por qué el grupo NO separa las instancias, o None si las separa."""
+    if RUN_ID_TERM in group:
+        return None
+    if WORKFLOW_TERM in group:
+        names = [i.workflow for i in instances]
+        if len(set(names)) == len(names):
+            return None
+        return ("`github.workflow` no separa las instancias: dos de ellas toman el mismo "
+                "nombre de workflow")
+    m = INPUTS_TERM.search(group)
+    if m:
+        key = m.group(1)
+        values = []
+        for i in instances:
+            raw = i.with_.get(key) if i.is_caller else None
+            values.append(raw if isinstance(raw, str) else "")
+        callers = [v for i, v in zip(instances, values, strict=True) if i.is_caller]
+        if callers and all(v.strip() for v in callers) and len(set(callers)) == len(callers):
+            return None
+        return (f"`inputs.{key}` no separa las instancias: cada caller debe pasarle un "
+                "valor no vacío y distinto")
+    return "el grupo no nombra la instancia"
+
+
+def check_instance_isolated_groups(workflows: list[tuple[str, dict]], out: list[str]) -> None:
+    """HR-73: un gate que corre en dos instancias no comparte el grupo de concurrencia.
+
+    El mismo job puede ejecutarse en dos instancias: su workflow con disparador propio y
+    el mismo fichero invocado con `workflow_call` desde otro workflow. Si las dos instancias
+    declaran el mismo grupo, GitHub las mete en la misma cola: guarda una sola peticion
+    pendiente por grupo y cancela la pendiente cuando llega otra, asi que una instancia
+    pierde su veredicto y, si el agregador lo lee, el PR queda rojo sin defecto (BP#1371,
+    run `ci` 40084048493 intento 1: job `pr-gate / pr-gate` cancelado a los 0 s).
+
+    El grupo separa las instancias si nombra `github.run_id`, o `github.workflow` cuando las
+    instancias toman nombres distintos (dentro de un reusable, `github.workflow` es el del
+    CALLER), o un `inputs.<x>` que cada caller rellene con un valor distinto. Sin prueba de
+    la segunda instancia no se reporta nada.
+    """
+    for path, doc in workflows:
+        if "workflow_call" not in workflow_events(doc):
+            continue
+        instances = _instances_of(path, doc, workflows)
+        if len(instances) < MIN_COLLIDING_INSTANCES:
+            continue
+        for jid, job in (doc.get("jobs") or {}).items():
+            if not isinstance(job, dict):
+                continue
+            block = job.get("concurrency") or doc.get("concurrency")
+            group = block.get("group") if isinstance(block, dict) else None
+            if not isinstance(group, str) or not group.strip():
+                continue  # la ausencia de grupo la reporta ya la regla #806
+            why = _group_finding(group, instances)
+            if why is None:
+                continue
+            labels = ", ".join(i.label for i in instances)
+            out.append(
+                f"{path} job '{jid}': {why}; el grupo '{group}' mete las {len(instances)} "
+                f"instancias del gate ({labels}) en la misma cola y GitHub guarda una sola "
+                f"peticion pendiente por grupo: la pendiente se cancela cuando llega otra, "
+                f"una instancia pierde su veredicto y el PR queda rojo sin defecto. Separe la "
+                f"instancia en el grupo (`github.workflow` vale el workflow caller dentro de "
+                f"un reusable) o deje una sola instancia; `cancel-in-progress: false` se "
+                f"mantiene (HR-73)")
+
+
 def repo_root(workflow: str, explicit: str | None) -> Path:
     if explicit:
         return Path(explicit)
@@ -922,6 +1055,7 @@ def main(argv):
             findings.append(f"required job '{jid}' is absent from every analyzed workflow")
     try:
         check_state_dependent_gates(docs, data, findings)
+        check_instance_isolated_groups(docs, findings)
     except InvalidInput as exc:
         print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
         return 2
