@@ -12,14 +12,14 @@
 # evalúa un PR, así que este job no publica ningún nombre de check requerido
 # (HR-30) y no necesita el secreto en PRs de fork.
 #
-# El pin es un SHA de 40 hexadecimales, nunca una rama móvil: el documento se
-# compara contra el generador exacto que lo emitió. Cambiarlo es una decisión
-# explícita que exige regenerar el documento en el mismo cambio. El pin actual
-# (4b66008a8ff22144a72e55611724577425bc8914) es el catálogo
-# de team-skills que BP vendoriza desde la repropagación #1108. El CLI
-# vendorizado en .agents/skills/ci-pattern es idéntico byte a byte al de ese pin,
-# y coincide con el doc que este gate compara.
-
+# El commit del catálogo NO se escribe aquí (#1157). El paso `catalog-pin` lo lee
+# del sello `# Auto-generado por propagate-team-skills.ps1 (catalog @ <sha>).` de la
+# primera línea de `.team-skills.yaml`, que el propagador reescribe en cada
+# propagación, y el checkout del catálogo toma ese output como `ref:`. Así el pin no
+# puede quedar atrás del manifiesto: no hay nada que realinear a mano. Es el mismo
+# commit del que se vendorizó el CLI que el repo ejecuta, así que la deriva se mide
+# con el catálogo que el repo vende (#2276).
+#
 name: operating-doc-drift
 
 on:
@@ -81,10 +81,62 @@ jobs:
             exit 1
           fi
 
+      - name: resolver el commit del catálogo desde su sello (#1157)
+        id: catalog-pin
+        env:
+          CATALOG_REPO: DysTelefonica/team-skills
+          CATALOG_TOKEN: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+          CATALOG_API: https://api.github.com
+          CATALOG_MANIFEST: .team-skills.yaml
+        run: |
+          set -euo pipefail
+          if [ ! -f "$CATALOG_MANIFEST" ]; then
+            echo "no existe $CATALOG_MANIFEST: sin ese manifiesto no hay forma de saber qué commit del catálogo se propagó a este repo (HR-3)." >&2
+            exit 1
+          fi
+          seal=$(head -n 1 "$CATALOG_MANIFEST")
+          case "$seal" in
+            *"catalog @ "*) ;;
+            *)
+              echo "la primera línea de $CATALOG_MANIFEST no trae el sello 'catalog @ <sha>': no hay commit del catálogo que medir (HR-3)." >&2
+              exit 1
+              ;;
+          esac
+          commit=${seal#*catalog @ }
+          commit=${commit%%)*}
+          case "$commit" in
+            "" | *[!0-9a-f]*)
+              echo "el sello de $CATALOG_MANIFEST no trae un sha en hexadecimal: '$commit' (HR-3)." >&2
+              exit 1
+              ;;
+          esac
+          if [ "${#commit}" -lt 7 ] || [ "${#commit}" -gt 40 ]; then
+            echo "el sello de $CATALOG_MANIFEST trae un commit de ${#commit} caracteres, no entre 7 y 40: '$commit' (HR-3)." >&2
+            exit 1
+          fi
+          if [ "${#commit}" -lt 40 ]; then
+            # El sello abreviado (`git rev-parse --short`) se expande con la API del catálogo.
+            full=$(curl -fsS -H "Authorization: Bearer ${CATALOG_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "${CATALOG_API}/repos/${CATALOG_REPO}/commits/${commit}" \
+              | python3 -c 'import json, sys; print(json.load(sys.stdin)["sha"])') || {
+              echo "no se pudo resolver el sello abreviado '$commit' contra ${CATALOG_REPO} (HR-3)." >&2
+              exit 1
+            }
+            if [ "${#full}" -ne 40 ] || [ "${full#"$commit"}" = "$full" ]; then
+              echo "la API devolvió '$full' para el sello '$commit': no es el commit completo de ese prefijo (HR-3)." >&2
+              exit 1
+            fi
+            commit=$full
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "commit del catálogo leído del sello de $CATALOG_MANIFEST: $commit"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: DysTelefonica/team-skills
-          ref: 4b66008a8ff22144a72e55611724577425bc8914
+          # Del output del paso anterior, nunca escrito a mano (#1157).
+          ref: ${{ steps.catalog-pin.outputs.commit }}
           token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
           path: .ci-pattern-pin
           persist-credentials: false

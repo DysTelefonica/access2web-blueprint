@@ -1,7 +1,7 @@
 # ci-pattern.yaml — parámetros del patrón de CI para access2web-blueprint.
 # Formato P<NN>_<name>, según
 # personal/ardelperal/ci-pattern/assets/parameters.schema.json del catálogo
-# DysTelefonica/team-skills, pin 4b66008a8ff22144a72e55611724577425bc8914
+# DysTelefonica/team-skills (el commit lo declara el sello catalog @ de .team-skills.yaml, #1157)
 # (catálogo vendorizado en .agents/skills/ci-pattern/ desde la repropagación
 # #1108 de BP; es también el checkout que operating-doc-drift.yml hace
 # para medir la deriva).
