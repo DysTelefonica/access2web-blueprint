@@ -37,13 +37,18 @@ on:
     # on those events. `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
     # pins the exact list — order and contents — so a silent drift
     # cannot pass review.
+    # Issue #1368: this workflow carries the HEAVY suite, so it listens to the
+    # three events that can change the code. `edited`, `labeled` and
+    # `unlabeled` only change the PR body and its labels; they moved to
+    # .github/workflows/pr-gate.yml, which carries the `pr-gate` and listens to
+    # all six. The audit measured those events as 1.411 re-runs of the same SHA
+    # in one week (72 % of 1.956 PR runs) and 846 cancelled runs.
+    # `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
+    # pins both lists — order and contents — so a silent drift cannot pass review.
     types:
       - opened
       - synchronize
       - reopened
-      - edited
-      - labeled
-      - unlabeled
   push:
     # Issue #857, PR-D: after the merge lands on `main`, the safety net runs
     # `ci` on the new commit. The PR's `pr-gate` does NOT run on push (its
@@ -76,9 +81,13 @@ env:
 
 jobs:
   pr-gate:
-    # Public pull requests are untrusted input. Every PR-reachable job runs on
-    # an ephemeral GitHub-hosted runner, never on repository infrastructure.
-    runs-on: ubuntu-24.04
+    # Issue #1368: the `pr-gate` job (body, labels, walkthrough) lives in
+    # .github/workflows/pr-gate.yml, so the `edited`/`labeled`/`unlabeled`
+    # events no longer drag the heavy suite along. ci.yml CALLS that file, so
+    # the aggregator `required` keeps reading its result and its outputs
+    # (`needs:` cannot cross workflow files) and the per-SHA verdict of
+    # `required` does not change.
+    uses: ./.github/workflows/pr-gate.yml
     if: github.event_name == 'pull_request'
     # `issues: read` lets the issue-spec step fetch the issue linked by the PR body.
     # `pull-requests: read` lets the pr-size step read the per-file breakdown (issue #918).
@@ -86,84 +95,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
-    # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
-    # that skips its own check is not a gate). Different gates are not in this group.
-    concurrency:
-      group: gate-pr-gate-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: false
-    # Fail fast: pr-size + walkthrough schema run in seconds; anything beyond 5 min is hung.
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-          # ``sparse-checkout-cone-mode: false
-          # sparse-checkout: disable`` is the real fix for #414: the
-          # default ``sparse-checkout-cone-mode: true`` only materialises
-          # paths touched by the PR diff, so writing to
-          # ``app/pyproject.toml`` (not in the diff) fails with
-          # "Read-only file system" and the worktree guard trips.
-          # (the git-show fallback in the install step remains as a secondary path.)
-          sparse-checkout-cone-mode: false
-
-      - name: disable sparse-checkout cone mode (runtime fallback)
-        # The v7 ``actions/checkout`` ``sparse-checkout: disable`` input
-        # is unreliable on the self-hosted a2w runner (issue #414): the
-        # cached cone config from a previous run sometimes overrides
-        # the step's config. Re-running ``git sparse-checkout disable``
-        # after the checkout guarantees every file in the branch is
-        # materialised in the worktree; the worst case is ``command not
-        # found`` on an older git, which is absorbed by ``|| true``.
-        run: |
-          if ! git sparse-checkout disable 2>/dev/null; then
-            :
-          fi
-
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        id: setup-python
-        with:
-          python-version: "3.12.11"
-
-      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
-      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
-      - name: Preflight del contrato de tooling del job
-        run: |
-          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
-            --binaries .github/tooling/pr-gate.txt \
-            --runner "${{ runner.name }}"
-
-      - name: pr size
-        # Gate del canon (DysTelefonica/team-skills#806, BP#1040): ya no hay copia propia en scripts/.
-        # GITHUB_EVENT_PATH is the GitHub-controlled path of the webhook payload.
-        # The script reads it as data; the body is never interpolated into the shell.
-        # GITHUB_TOKEN reads the per-file breakdown so vendored skills are not counted
-        # as author lines (issue #918). Without it the gate counts the whole PR.
-        env:
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"
-
-      - name: issue spec
-        # Gate del canon (DysTelefonica/team-skills#806, BP#1040): ya no hay copia propia en scripts/.
-        # The PR body is attacker-controlled: the event file is read as data by the
-        # gate, and the token is only used for the read-only issue lookup.
-        # Las flags --required-sections y --host-contract se retiraron con las
-        # reglas que cableaban (la 7 y la parte de QUIÉN): team-skills#1103 dejó
-        # el gate con una sola comprobación, el enlace a una issue del repo. El
-        # gate nuevo acepta las flags viejas como no-ops obsoletas
-        # (team-skills#1121), pero este workflow ya no las pasa.
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"
-
-      - name: walkthrough schema
-        # Cheap contract gate: every docs/03-aplicaciones/*/walkthrough-*.json MUST
-        # contain the documented MUST fields (template at
-        # skills/documentation-alan-style/references/templates/walkthrough.json.tmpl).
-        # Catches drift before merge; SHOULD/MAY fields are conventions, not enforced.
-        # --strict promoted after #375 migrated the 43 walkthroughs to v2.1.
-        run: python scripts/check_walkthrough_schema.py --strict
 
   quality:
     # HR-30 (#857 PR-D + fase 4 de la adopción del patrón de CI, #780):
