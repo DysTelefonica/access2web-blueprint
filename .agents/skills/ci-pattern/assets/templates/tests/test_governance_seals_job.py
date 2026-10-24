@@ -222,6 +222,42 @@ class CanonicalJobTests(unittest.TestCase):
                 if isinstance(s.get("with"), dict) and (s.get("with") or {}).get("ref")]
         self.assertEqual(refs, [f"${{{{ steps.{step_id}.outputs.commit }}}}"], refs)
 
+    # --- #1172: el manifiesto re-sellado como artefacto, sin push ---
+
+    def test_the_fragment_reseals_the_manifest_without_pushing(self):
+        """El job deja el manifiesto re-sellado como artefacto; nada se empuja."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        commands = "\n".join(
+            str(step.get("run") or "") for step in tree["jobs"][JOB]["steps"])
+        self.assertIn("manifest seal", commands)
+        self.assertIn("--out", commands)
+        # Re-sellar es escribir el manifiesto: el job no lo commitea ni lo empuja.
+        for forbidden in ("git commit", "git push", "git add"):
+            self.assertNotIn(forbidden, commands)
+
+    def test_the_reseal_steps_only_run_when_the_gate_failed(self):
+        """`if: failure()`: el artefacto se publica cuando el sello no coincide."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        steps = tree["jobs"][JOB]["steps"]
+        reseal = [s for s in steps if "manifest seal" in str(s.get("run") or "")]
+        self.assertEqual(len(reseal), 1, "el job no re-sella el manifiesto")
+        self.assertIn("failure()", str(reseal[0].get("if") or ""))
+        upload = [s for s in steps
+                  if "upload-artifact" in str(s.get("uses") or "")]
+        self.assertEqual(len(upload), 1, "el job no publica el manifiesto re-sellado")
+        self.assertIn("failure()", str(upload[0].get("if") or ""))
+        # HR-26: la acción va pineada a un sha de 40 hex.
+        self.assertRegex(str(upload[0].get("uses")), r"@[0-9a-f]{40}$")
+
+    def test_the_reseal_steps_do_not_swallow_the_verdict(self):
+        """Ni `|| true` ni `continue-on-error`: el rojo del gate sigue siendo rojo."""
+        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
+        for step in tree["jobs"][JOB]["steps"]:
+            command = str(step.get("run") or "")
+            self.assertNotIn("|| true", command)
+            self.assertNotIn("|| exit 0", command)
+            self.assertNotIn("continue-on-error", str(step.get("continue-on-error") or ""))
+
 
 if __name__ == "__main__":
     unittest.main()

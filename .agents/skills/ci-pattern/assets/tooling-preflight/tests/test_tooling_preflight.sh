@@ -4,19 +4,26 @@
 #
 # Contrato verificado (runner-skill reglas 16/17):
 #   - lista declarada completa y presente en PATH  -> exit 0;
-#   - binario ausente                              -> exit != 0 y NOMBRE al
-#     usuario (todos los ausentes, no solo el primero);
-#   - binario ausente                              -> exit != 0 y stderr
-#     contiene el mensaje exacto
-#     `falta <binario> en el runner <runner>`;
+#   - binario ausente                              -> exit 0 y AVISO por
+#     stderr que NOMBRA al usuario (todos los ausentes, no solo el primero);
+#   - binario ausente                              -> stderr contiene el
+#     mensaje exacto `falta <binario> en el runner <runner>` y la
+#     instrucción de instalación;
 #   - lista declarada vacía (solo comentarios y
-#     líneas en blanco)                            -> exit != 0: un contrato
+#     líneas en blanco)                            -> exit 2: un contrato
 #     no declarado falla, nunca pasa en silencio;
-#   - fichero de lista inexistente o ilegible      -> exit != 0;
-#   - sin --binaries                                -> exit != 0;
+#   - fichero de lista inexistente o ilegible      -> exit 2;
+#   - sin --binaries                                -> exit 2;
 #   - invocación heredada sin --runner (lista
 #     presente)                                     -> exit 0: la ausencia de
 #     `--runner` NO es una invocación inválida.
+#
+# #1172 (decisión del dueño, 2026-10-24; auditoría #1093): el binario ausente
+# en el runner es un AVISO (el fix aterriza en la definición del servicio del
+# runner, no en el PR) y el contrato roto —lista vacía, ilegible o ausente,
+# sin --binaries— sigue bloqueando con exit 2. Antes los dos fallos salían con
+# 1 y 2 respectivamente, y el primero ponía en rojo PRs que no podían
+# arreglarlo.
 #
 # Identidad del runner: la opción `--runner <nombre>` declara en qué runner
 # se ejecuta el job, porque "falta el binario" sin saber dónde no dice
@@ -31,8 +38,9 @@
 # del sistema mínimos para que el propio preflight funcione; los nombres de
 # binario de prueba no colisionan con nada real. Sin red, stdlib.
 #
-# No compara el exit code exacto de las rutas de fallo (1 ausencias /
-# 2 entrada inválida): la issue exige «exit != 0 nombrando al ausente».
+# No compara el exit code exacto de la ruta de contrato roto (2 entrada
+# inválida): la issue exige «exit != 0 nombrando al ausente» y, desde #1172, el
+# binario ausente avisa y sale 0.
 
 set -u
 
@@ -96,12 +104,23 @@ LIST_COMMENTS="$STUB_DIR/list-comments.txt"
 printf '# contrato de tooling del job (dato versionado)\n\npresent-tool-a\n' > "$LIST_COMMENTS"
 run_case "comentarios y líneas en blanco ignorados -> exit 0" 0 "$LIST_COMMENTS"
 
-# --- Caso 3: binario ausente -> != 0 y mensaje EXACTO con el runner.
-# El patrón es el mensaje completo: dice QUÉ falta y EN QUÉ runner falta.
+# --- Caso 3: binario ausente -> AVISO (exit 0, #1172) con mensaje EXACTO
+# con el runner. El patrón es el mensaje completo: dice QUÉ falta y EN QUÉ
+# runner falta.
 LIST_MISSING="$STUB_DIR/list-missing.txt"
 printf 'present-tool-a\nno-existe-tool-xyz\n' > "$LIST_MISSING"
-run_case "binario ausente -> exit != 0 con mensaje exacto del runner" nonzero "$LIST_MISSING" \
+run_case "binario ausente -> exit 0 con aviso y mensaje exacto del runner" 0 "$LIST_MISSING" \
     "falta no-existe-tool-xyz en el runner runner-de-prueba"
+
+# --- Caso 3b: el aviso dice cómo instalarlo (#1172).
+run_case "el aviso dice cómo instalarlo" 0 "$LIST_MISSING" \
+    "instale no-existe-tool-xyz en la definición del servicio del runner runner-de-prueba"
+
+# --- Caso 3c: la lista puede declarar la instrucción de instalación.
+LIST_HINT="$STUB_DIR/list-hint.txt"
+printf 'no-existe-tool-xyz # instalar: pip install tool-xyz==1.2.3\n' > "$LIST_HINT"
+run_case "la instrucción declarada por la entrada sale en el aviso" 0 "$LIST_HINT" \
+    "instalar con: pip install tool-xyz==1.2.3"
 
 # --- Caso 4: varios ausentes -> TODOS nombrados, no solo el primero.
 # Patrón genérico a propósito: aquí se comprueba que se nombran los DOS
@@ -109,37 +128,37 @@ run_case "binario ausente -> exit != 0 con mensaje exacto del runner" nonzero "$
 # runner lo fija el caso 3 (lista con un solo ausente).
 LIST_SEVERAL="$STUB_DIR/list-several.txt"
 printf 'no-existe-tool-xyz\nno-existe-tool-abc\n' > "$LIST_SEVERAL"
-run_case "varios ausentes: primero nombrado" nonzero "$LIST_SEVERAL" "no-existe-tool-xyz"
-run_case "varios ausentes: segundo tambien nombrado" nonzero "$LIST_SEVERAL" "no-existe-tool-abc"
+run_case "varios ausentes: primero nombrado" 0 "$LIST_SEVERAL" "no-existe-tool-xyz"
+run_case "varios ausentes: segundo tambien nombrado" 0 "$LIST_SEVERAL" "no-existe-tool-abc"
 
-# --- Caso 5: lista vacía (solo comentarios/blancos) -> fallo.
+# --- Caso 5: lista vacía (solo comentarios/blancos) -> CONTRATO ROTO: exit 2.
 LIST_EMPTY="$STUB_DIR/list-empty.txt"
 printf '# sin declaracion todavia\n\n' > "$LIST_EMPTY"
-run_case "lista vacia -> exit != 0" nonzero "$LIST_EMPTY"
+run_case "lista vacia -> exit 2 (contrato roto)" nonzero "$LIST_EMPTY"
 
-# --- Caso 6: fichero de lista inexistente -> fallo.
-run_case "lista inexistente -> exit != 0" nonzero "$STUB_DIR/no-such-list.txt"
+# --- Caso 6: fichero de lista inexistente -> CONTRATO ROTO: exit 2.
+run_case "lista inexistente -> exit 2 (contrato roto)" nonzero "$STUB_DIR/no-such-list.txt"
 
-# --- Caso 7: fichero de lista ilegible -> fallo.
+# --- Caso 7: fichero de lista ilegible -> CONTRATO ROTO: exit 2.
 LIST_UNREADABLE="$STUB_DIR/list-unreadable.txt"
 printf 'present-tool-a\n' > "$LIST_UNREADABLE"
 chmod 000 "$LIST_UNREADABLE"
-run_case "lista ilegible -> exit != 0" nonzero "$LIST_UNREADABLE"
+run_case "lista ilegible -> exit 2 (contrato roto)" nonzero "$LIST_UNREADABLE"
 
-# --- Caso 8: sin --binaries -> fallo (contrato no declarado no pasa en silencio).
+# --- Caso 8: sin --binaries -> CONTRATO ROTO: exit 2.
 # Runner declarado, lista no: la invocación es válida en su forma, lo que
 # falta es el contrato.
 if PATH="$ISOLATED_PATH" "$PROG" --runner "$RUNNER_ID" >/dev/null 2>&1; then
-    ko "sin --binaries -> exit != 0 (exit 0)"
+    ko "sin --binaries -> exit 2 (exit 0)"
 else
-    ok "sin --binaries -> exit != 0"
+    ok "sin --binaries -> exit 2 (contrato roto)"
 fi
 
-# --- Caso 8b: invocación sin ninguna opción -> fallo.
+# --- Caso 8b: invocación sin ninguna opción -> CONTRATO ROTO: exit 2.
 if PATH="$ISOLATED_PATH" "$PROG" >/dev/null 2>&1; then
-    ko "sin opciones -> exit != 0 (exit 0)"
+    ko "sin opciones -> exit 2 (exit 0)"
 else
-    ok "sin opciones -> exit != 0"
+    ok "sin opciones -> exit 2 (contrato roto)"
 fi
 
 # --- Caso 9: compatibilidad — invocación heredada SIN --runner.
@@ -153,6 +172,27 @@ if [ "$rc" -eq 0 ]; then
     ok "invocación heredada sin --runner (lista presente) -> exit 0"
 else
     ko "invocación heredada sin --runner (lista presente) -> exit 0 (exit $rc)"
+fi
+
+# --- Caso 9b: la invocación heredada con un binario ausente también avisa
+# y sale 0 (#1172): el aviso no depende de declarar el runner.
+PATH="$ISOLATED_PATH" "$PROG" --binaries "$LIST_MISSING" >/dev/null 2>"$OUT_DIR/stderr"
+rc=$?
+if [ "$rc" -eq 0 ] && grep -qF "no-existe-tool-xyz" "$OUT_DIR/stderr"; then
+    ok "invocación heredada con binario ausente -> exit 0 con aviso"
+else
+    ko "invocación heredada con binario ausente -> exit 0 con aviso (exit $rc)"
+fi
+
+# --- Caso 10: el aviso se anota como warning de GitHub Actions cuando el job
+# corre en Actions: el aviso se ve en el PR sin ponerlo en rojo.
+PATH="$ISOLATED_PATH" GITHUB_ACTIONS=true "$PROG" --binaries "$LIST_MISSING" \
+    --runner "$RUNNER_ID" >/dev/null 2>"$OUT_DIR/stderr"
+rc=$?
+if [ "$rc" -eq 0 ] && grep -qF "::warning::" "$OUT_DIR/stderr"; then
+    ok "el aviso sale anotado como warning de GitHub Actions"
+else
+    ko "el aviso sale anotado como warning de GitHub Actions (exit $rc)"
 fi
 
 echo

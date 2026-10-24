@@ -54,6 +54,10 @@ Comandos:
                              Verifica el cumplimiento dirigido por el manifiesto.
   status <repo> [--json]     Resumen de una línea por clase del repo destino.
   manifest show <repo>       Imprime el manifiesto leído.
+  manifest seal <repo> [--out <ruta>]
+                             Re-sella el manifiesto (sha256 de los ficheros y
+                             de los bloques de slice declarados). Con --out
+                             escribe la copia re-sellada y no toca el árbol.
   pr preflight --pr-body <file> [--issue N] [--branch <ref>] [--repository owner/name]
   pr preflight --draft --pr-body <file> --base <branch> [--label L]...
                              Modo borrador API-free: cuerpo y tamaño local; --base es obligatorio.
@@ -710,9 +714,9 @@ def verify_repo(repo, slice_canonical=None):
                 (
                     "files",
                     "locally-modified",
-                    f"{rel} difiere del hash del manifiesto ({expected[:19]}…). "
-                    "El contenido del repo manda; re-selle el manifiesto "
-                    "(`.governance-manifest.json`) con el sha256 nuevo.",
+                    f"{rel} difiere del hash del manifiesto: esperado {expected}, "
+                    f"encontrado {actual}. El contenido del repo manda; re-selle el "
+                    f"manifiesto con: ci-pattern manifest seal {repo}",
                 )
             )
 
@@ -982,6 +986,101 @@ def cmd_manifest_show(args):
         raise UsageError("manifest show requiere exactamente un argumento: <repo>.")
     manifest = load_manifest(positional[0])
     print(json.dumps(manifest, indent=2, sort_keys=True))
+    return EXIT_OK
+
+
+def cmd_manifest_seal(args):
+    """`manifest seal <repo> [--out <ruta>]`: re-sella el manifiesto (#1172).
+
+    Recalcula el sha256 de cada fichero declarado en `files` y de cada bloque
+    de slice declarado en `slice_blocks`, y escribe el manifiesto re-sellado.
+
+    NO es un auto-firmado: solo cambia el hash de lo que YA está declarado. Un
+    fichero declarado que no existe en el árbol NO se re-sella —sale 1
+    nombrándolo— porque inventar el contenido de un artefacto ausente no es
+    sellarlo (HR-3). El contenido del repo manda; el manifiesto se pone al día.
+
+    Sin `--out` escribe el manifiesto en el repo. Con `--out` escribe la copia
+    re-sellada en esa ruta y NO toca el árbol: es lo que hace el job
+    `governance-seals` para publicar el manifiesto re-sellado como artefacto
+    (sin push automático).
+
+    Salida: 0 sellado · 1 algo declarado no existe en el árbol · 2 uso inválido
+    o manifiesto ausente (3 si el manifiesto no está).
+    """
+    out_path = None
+    positional = []
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--out":
+            if index + 1 >= len(args):
+                raise UsageError("manifest seal: --out requiere una ruta.")
+            out_path = args[index + 1]
+            index += 2
+            continue
+        if arg.startswith("--"):
+            raise UsageError(f"manifest seal: opción no reconocida: {arg}")
+        positional.append(arg)
+        index += 1
+    if len(positional) != 1:
+        raise UsageError(
+            "manifest seal requiere exactamente un argumento: <repo> [--out <ruta>].")
+    repo = Path(positional[0])
+    manifest = load_manifest(repo)
+    files = manifest.get("files")
+    if not isinstance(files, dict) or not files:
+        raise UsageError(
+            f"{MANIFEST_NAME} no declara 'files': no hay nada que re-sellar.")
+    for rel in files:
+        _ensure_safe_manifest_path(rel)
+    missing = [rel for rel in sorted(files) if not (repo / rel).is_file()]
+    if missing:
+        print(
+            "manifest seal: estos ficheros declarados no existen en el árbol y no "
+            "se re-sellan: " + ", ".join(missing), file=sys.stderr)
+        return EXIT_FINDINGS
+    sealed = dict(manifest)
+    sealed_files = dict(files)
+    changed = []
+    for rel in sorted(files):
+        current = sha256_file(repo / rel)
+        if current != files[rel]:
+            changed.append(rel)
+        sealed_files[rel] = current
+    sealed["files"] = sealed_files
+    blocks = manifest.get("slice_blocks")
+    if isinstance(blocks, dict) and blocks:
+        agents = repo / "AGENTS.md"
+        agents_text = agents.read_text(encoding="utf-8") if agents.is_file() else ""
+        sealed_blocks = dict(blocks)
+        absent = []
+        for name in sorted(blocks):
+            block = extract_slice_block(agents_text, name)
+            if block is None:
+                absent.append(name)
+                continue
+            sealed_blocks[name] = "sha256:" + hashlib.sha256(
+                block[1].replace("\r\n", "\n").encode("utf-8")).hexdigest()
+        if absent:
+            print(
+                "manifest seal: estos bloques de slice no están en AGENTS.md y no "
+                "se re-sellan: " + ", ".join(absent), file=sys.stderr)
+            return EXIT_FINDINGS
+        sealed["slice_blocks"] = sealed_blocks
+    if out_path:
+        target = Path(out_path)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(sealed, indent=2, sort_keys=True) + "\n",
+                          encoding="utf-8")
+    else:
+        write_manifest(repo, sealed)
+    destino = out_path or str(repo / MANIFEST_NAME)
+    print(
+        f"manifest seal: {len(sealed_files)} fichero(s) re-sellados, "
+        f"{len(changed)} con el hash cambiado -> {destino}")
+    for rel in changed:
+        print(f"  {rel}: {files[rel]} -> {sealed_files[rel]}")
     return EXIT_OK
 
 
@@ -2664,8 +2763,10 @@ def _manifest_identity_findings(repo, declared_paths):
             continue
         if sha256_file(target) != manifest_files[rel]:
             findings.append(
-                f"fase 3: '{rel}' difiere del sha256 del manifiesto de "
-                "gobierno; la identidad del patrón no es autodeclarada (HR-46)")
+                f"fase 3: '{rel}' difiere del sha256 del manifiesto de gobierno "
+                f"(esperado {manifest_files[rel]}, encontrado {sha256_file(target)}); "
+                "la identidad del patrón no es autodeclarada (HR-46). "
+                f"Re-selle el manifiesto con: ci-pattern manifest seal {repo}")
     # (b) todo artefacto declarado del patrón está cubierto por el manifiesto.
     for rel in sorted(declared_paths):
         if rel not in manifest_files:
@@ -3970,6 +4071,17 @@ def cmd_adoption(args):
     return EXIT_OK
 
 
+def cmd_manifest(args):
+    """`manifest show` (lectura) y `manifest seal` (escritura del sello)."""
+    if args[:1] == ["show"]:
+        return cmd_manifest_show(args[1:])
+    if args[:1] == ["seal"]:
+        return cmd_manifest_seal(args[1:])
+    raise UsageError(
+        "manifest: subcomando desconocido; use 'manifest show <repo>' "
+        "o 'manifest seal <repo> [--out <ruta>]'.")
+
+
 COMMANDS = {
     "params": lambda args: (
         cmd_params_validate(args[1:])
@@ -3978,11 +4090,7 @@ COMMANDS = {
     ),
     "verify": cmd_verify,
     "status": cmd_status,
-    "manifest": lambda args: (
-        cmd_manifest_show(args[1:])
-        if args[:1] == ["show"]
-        else (_ for _ in ()).throw(UsageError("manifest: subcomando desconocido; use 'manifest show <repo>'."))
-    ),
+    "manifest": cmd_manifest,
     "adopt": lambda args: (_ for _ in ()).throw(
         UsageError(
             "`adopt` está retirado: la adopción la gobierna una IA con "

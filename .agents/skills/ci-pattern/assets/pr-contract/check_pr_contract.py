@@ -14,7 +14,7 @@ import json
 import os
 import re
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 # Fuente única del presupuesto (#931): la regla A1 la comparte con pr-size.
@@ -284,17 +284,25 @@ def check_docs_evidence(pr, repo, files, policy, advisories):
 # punta es legitimo, asi que el veredicto NO cambia: lo que se agrega es la lista
 # por `stderr`, para que la segunda issue se vea antes del merge. Con
 # `chain:partial` el hallazgo de HR-7 no se toca: ahi la palabra de cierre ya es
-# el fallo. La lista sale solo si hay MAS DE UNA issue, que es el caso
+# el aviso. La lista sale solo si hay MAS DE UNA issue, que es el caso
 # sorprendente; un PR normal no paga ruido. Las nueve palabras clave son las de
 # GitHub y las mismas que lee el mensaje de los commits (#1056).
-# SAME. La clave `closes` es la del veredicto (HR-7); esta lista es solo
+# SAME. La clave `closes` es la de los avisos (HR-7); esta lista es solo
 # visibilidad por `stderr`, asi que no toca el codigo de salida y ningun
 # consumer se pone rojo por ella.
 GITHUB_CLOSING_RX = re.compile(
     r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s*:?\s+#(\d+)", re.IGNORECASE)
 
 
-def check_closes(pr, base, default_branch, policy, findings):
+def check_closes(pr, base, default_branch, policy, advisories):
+    """HR-7: la palabra de cierre del cuerpo.
+
+    #1172 (decision del dueno, 2026-10-24; auditoria #1093): HR-7 es AVISO, no
+    bloqueo — sus hallazgos van a `advisories` y no cambian el exit code. La
+    regla sigue viva y visible: la punta de cadena lleva `Closes #<issue>`, los
+    intermedios `Refs #<issue>`, y el enlace a una issue del repo lo sigue
+    exigiendo `issue-spec` (regla del dueno).
+    """
     body = pr.get("body") or ""
     pattern = policy.get("closes_pattern", "Closes|Fixes|Resolves")
     requires = policy.get("chain_tip_requires_closes", True)
@@ -310,26 +318,26 @@ def check_closes(pr, base, default_branch, policy, findings):
     if is_partial:
         # Cadena apilada: Refs obligatorio, Closes prohibido.
         if not has_refs:
-            findings.append(
+            advisories.append(
                 "HR-7: el PR con etiqueta chain:partial debe llevar 'Refs #<issue>' "
                 "en el cuerpo (la issue la cierra el PR punta de cadena)."
             )
         if has_closes:
-            findings.append(
+            advisories.append(
                 "HR-7: el PR con etiqueta chain:partial no debe llevar "
                 "'Closes #<issue>'; solo el PR punta de cadena la cierra."
             )
     elif is_tip and requires and not has_closes:
-        findings.append(
+        advisories.append(
             "HR-7: el PR punta de cadena debe llevar 'Closes #<issue>' en el cuerpo."
         )
     elif not is_tip and has_closes:
-        findings.append(
+        advisories.append(
             "HR-7: solo el PR punta de cadena lleva 'Closes #<issue>'; "
             "los PR encadenados intermedios no deben cerrar la issue."
         )
     # HR-7 (#1059): la lista, sin cambiar el veredicto. Con `chain:partial` ya
-    # hay hallazgo por la palabra de cierre, asi que la nota solo aporta en el
+    # hay aviso por la palabra de cierre, asi que la nota solo aporta en el
     # punta, y solo cuando el cuerpo apuna a mas de una issue.
     targets = sorted(set(GITHUB_CLOSING_RX.findall(body)), key=int)
     if len(targets) > 1 and not is_partial:
@@ -470,13 +478,15 @@ def check_commits(messages, policy, findings):
 # misma lista, porque es la misma lista de GitHub.
 
 
-def check_closing_in_commits(messages, pr, policy, findings):
+def check_closing_in_commits(messages, pr, policy, advisories):
     """HR-7 sobre los mensajes de commit: el intermedio no cierra la issue.
 
     Sin la etiqueta de intermedio no hace nada: en el PR punta `Closes #N` en el
-    commit es exactamente lo que HR-7 pide. El hallazgo nombra el commit por su
+    commit es exactamente lo que HR-7 pide. El aviso nombra el commit por su
     subject —el dato del rango es `%P%n%B`, sin SHA— y propone `Refs #N` con el
     número que el propio commit cita.
+    #1172 (decision del dueno, 2026-10-24; auditoria #1093): es AVISO, no
+    bloqueo: sus hallazgos van a `advisories` y no cambian el exit code.
     """
     label = policy.get("chain_partial_label", "chain:partial")
     if label not in {item["name"] for item in pr.get("labels", [])}:
@@ -489,7 +499,7 @@ def check_closing_in_commits(messages, pr, policy, findings):
         if not match:
             continue
         subject = message.split("\n", 1)[0].strip()
-        findings.append(
+        advisories.append(
             f"HR-7: el commit «{subject}» del PR con «{label}» lleva «{match.group(0)}»: "
             f"GitHub cierra la issue con los mensajes de commit, no solo con el cuerpo "
             f"del PR. Escriba `Refs #{match.group(1)}` en el mensaje del commit; el "
@@ -813,6 +823,18 @@ def check_issue_links(pr, data, findings):
                 f"({owner_repo}#{number}): el enlace apunta al repositorio del PR.")
 
 
+@dataclass
+class Verdict:
+    """Lo que el gate acumula: `findings` bloquean, `advisories` avisan.
+
+    #1172: un mismo objeto lleva las dos listas, para que las comprobaciones
+    que assinan a una de ellas no crezcan en argumentos (PLR0913).
+    """
+
+    findings: list = field(default_factory=list)
+    advisories: list = field(default_factory=list)
+
+
 def _pin_output_encoding() -> None:
     """Pin stdout/stderr to UTF-8: la salida no debe depender del locale."""
     if hasattr(sys.stdout, "reconfigure"):
@@ -871,22 +893,26 @@ def _load_range_data(args, active):
     return texts, None
 
 
-def _pr_level_checks(active, data, pr, ctx, findings):
-    """Devuelve los avisos (#1093): no cambian el veredicto."""
+def _pr_level_checks(active, data, pr, ctx, verdict):
+    """Comprueba el nivel de PR: `verdict.findings` bloquean, `verdict.advisories` avisan.
+
+    Los avisos se acumulan en el veredicto que recibe el llamante (#1093,
+    #1172): no cambian el exit code.
+    """
     _repo, policy = ctx
-    advisories = []
     base_ref = pr.get("base", {}).get("ref", "main")
     default_branch = data.get("repository", {}).get("default_branch", "main")
+    # #1172: HR-7 avisa (no bloquea), como HR-53, HR-64, HR-54 y la asistencia
+    # de IA. El enlace a la issue lo sigue exigiendo `issue-spec`.
     if "closes" in active:
-        check_closes(pr, base_ref, default_branch, policy, findings)
+        check_closes(pr, base_ref, default_branch, policy, verdict.advisories)
     # #1093 R3/R9: Chain Context y Asistencia de IA avisan; no bloquean.
     if "chain_context" in active:
-        check_chain_context(pr, base_ref, default_branch, policy, advisories)
+        check_chain_context(pr, base_ref, default_branch, policy, verdict.advisories)
     if "issue_links" in active:
-        check_issue_links(pr, data, findings)
+        check_issue_links(pr, data, verdict.findings)
     if "ai_disclosure" in active:
-        check_ai_disclosure(pr, advisories)
-    return advisories
+        check_ai_disclosure(pr, verdict.advisories)
 
 
 def closure_data(repo, texts, policy):
@@ -902,16 +928,16 @@ def closure_data(repo, texts, policy):
                        changed, paths)
 
 
-def _range_checks(active, pr, ctx, texts, findings):
+def _range_checks(active, pr, ctx, texts, verdict):
     """Comprobaciones sobre el rango git; `DocsEvidenceConfigError` sube a main.
-    #1093 R1: HR-53 y HR-64 avisan; el resto sigue bloqueando. Devuelve los
-    avisos para que el llamante los una a los del nivel de PR."""
+    #1093 R1: HR-53 y HR-64 avisan; #1172: HR-7 también (cuerpo y commits).
+    El resto sigue bloqueando. Los avisos se acumulan en el veredicto que
+    recibe el llamante."""
     repo, policy = ctx
-    advisories = []
     if "closure_tests" in active:
-        check_closure_tests(pr, closure_data(repo, texts, policy), policy, advisories)
+        check_closure_tests(pr, closure_data(repo, texts, policy), policy, verdict.advisories)
     if "docs_evidence" in active:
-        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, advisories)
+        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, verdict.advisories)
     if "budget" in active:
         origins = parse_origins(texts["origins_file"]) if "origins_file" in texts else None
         figure = BudgetFigure(
@@ -919,14 +945,13 @@ def _range_checks(active, pr, ctx, texts, findings):
             vendored=vendored_lines(texts["numstat_file"]),
             origins_supplied=origins is not None,
         )
-        check_budget(pr, figure, policy, findings)
+        check_budget(pr, figure, policy, verdict.findings)
     if "commits" in active:
-        check_commits(texts["commits_file"], policy, findings)
+        check_commits(texts["commits_file"], policy, verdict.findings)
         # HR-7 (#1056) sobre el mismo texto: cuelga de `commits` porque comparte
         # el fichero de datos, así la política lo apaga con la clave que ya usa
-        # para HR-14 y el contrato `checks` no crece.
-        check_closing_in_commits(texts["commits_file"], pr, policy, findings)
-    return advisories
+        # para HR-14 y el contrato `checks` no crece. #1172: avisa.
+        check_closing_in_commits(texts["commits_file"], pr, policy, verdict.advisories)
 
 
 def main(argv=None):
@@ -977,16 +1002,17 @@ def main(argv=None):
         return 2
 
     ctx = (Path(args.repo), policy)
-    findings = []
-    advisories = _pr_level_checks(active, data, pr_with_live, ctx, findings)
+    verdict = Verdict()
+    _pr_level_checks(active, data, pr_with_live, ctx, verdict)
     try:
-        advisories.extend(_range_checks(active, pr_with_live, ctx, texts, findings))
+        _range_checks(active, pr_with_live, ctx, texts, verdict)
     except DocsEvidenceConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
     # HR-31: el gate procesa el estado actual sin importar la acción
     # (opened, edited, labeled, unlabeled, synchronize).
-    return _verdict(findings, pr, action_text=data.get("action", "opened"), advisories=advisories)
+    return _verdict(verdict.findings, pr, action_text=data.get("action", "opened"),
+                    advisories=verdict.advisories)
 
 
 def _verdict(findings, pr, *, action_text, advisories=()):

@@ -55,9 +55,14 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   ausentes —una línea por ausente, `falta <cli> en el runner <nombre>`— y
   falla si la lista no existe, no es legible o está vacía). La identidad del
   runner es la opción opt-in `--runner <nombre>`: sin ella el preflight
-  nombra la lista de ausentes como antes; con ella nombra cada ausente y en
-  qué runner falta. El cableado por job es la sección «Cableado del preflight
-  de tooling por job (G0.5)» de esta misma fase.
+  nombra la lista de ausentes como antes; con ella nombra cada ausente, en
+  qué runner falta y cómo se instala. Desde #1172 el preflight distingue dos
+  fallos que antes compartían salida: **binario ausente en el runner → AVISO**
+  (sale 0: el fix aterriza en la definición del servicio del runner, no en el
+  PR que se está abriendo) y **contrato roto** —lista vacía, ilegible o
+  ausente, sin `--binaries`— → **bloqueo** (sale 2). El cableado por job es
+  la sección «Cableado del preflight de tooling por job (G0.5)» de esta misma
+  fase.
 - **G0.6 — Estado de release.** Qué está sin liberar en el repo. Nunca adoptar
   a mitad de un fix sin liberar: el ruido del cambio de gobernanza se mezcla
   con el fix pendiente y ambos quedan sin dueño claro.
@@ -96,12 +101,16 @@ jobs:
 ```
 
 Y la lista del job, versionada en el repo del consumer: una CLI por línea,
-`#` abre comentario y la línea en blanco se ignora.
+`#` abre comentario y la línea en blanco se ignora. Una entrada puede
+declarar **cómo se instala** con el comentario `# instalar: <comando>` (o
+`# install:`): el aviso del binario ausente lo nombra, y sin esa declaración
+el aviso remite a la definición del servicio del runner (#1172).
 
 ```text
 # .github/tooling/unit.txt — CLI que el RUNNER debe aportar a este job.
 python3
 make
+ruff # instalar: pip install ruff==0.15.21
 ```
 
 Cuatro reglas del cableado:
@@ -128,7 +137,10 @@ Cuatro reglas del cableado:
    ejecutable del job— y la incluye.
 4. **La lista es dato, no script.** Se versiona junto al workflow del job
    (`.github/tooling/<job>.txt`); el preflight la lee con `command -v` y
-   nombra los ausentes por stderr.
+   nombra los ausentes por stderr. Con `--runner` cada ausente sale con su
+   instrucción de instalación (la que declara la entrada con
+   `# instalar: <comando>`, o la definición del servicio del runner): el
+   aviso es accionable sin que quien abre el PR tenga que buscar el fix.
 
 APAP (`ardelperal/APAP_WEB`), BP (`DysTelefonica/access2web-blueprint`) y
 cadete (`DysTelefonica/cadete`) copian este patrón en SUS jobs, con SU lista
@@ -400,6 +412,29 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
            env:
              PATTERN_DIR: pattern
            run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 .
+
+         # #1172 (decisión del dueño, 2026-10-24): cuando el sello no coincide,
+         # el mensaje del gate da el hash esperado y el comando de re-sellar.
+         # El job deja además el manifiesto RE-SELLADO como artefacto, para que
+         # el fix sea un fichero y no una instrucción. Sin push automático: el
+         # manifiesto re-sellado no se commitea ni se empuja desde el job.
+         # `if: failure()` corre solo cuando el gate falló, y el paso no usa
+         # `|| true` ni `continue-on-error`: el veredicto del gate no se traga.
+         - name: Manifiesto re-sellado (sin push)
+           if: failure()
+           env:
+             PATTERN_DIR: pattern
+           run: |
+             python3 "$PATTERN_DIR/assets/bin/ci-pattern" manifest seal . \
+               --out "$RUNNER_TEMP/governance-manifest.resealed.json"
+
+         - name: Publicar el manifiesto re-sellado como artefacto
+           if: failure()
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+             name: governance-manifest-resealed
+             path: ${{ runner.temp }}/governance-manifest.resealed.json
+             if-no-files-found: warn
    ```
 
    El commit del patrón **no se escribe**: se lee del sello `catalog @ <sha40>`
@@ -409,6 +444,11 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    nada. Si su catálogo no vive en `DysTelefonica/team-skills`, cambie el
    `repository:` del segundo checkout; `PATTERN_DIR` es el directorio donde ese
    checkout deja el patrón.
+
+   Cuando el sello no coincide, el gate nombra el hash esperado, el hash
+   encontrado y el comando `ci-pattern manifest seal <repo>` (#1172). El job
+   publica la copia re-sellada como artefacto `governance-manifest-resealed`:
+   descargarla y commitearla es de quien abre el PR; el job no empuja nada.
 
    Tres cosas que el gate no perdona:
 

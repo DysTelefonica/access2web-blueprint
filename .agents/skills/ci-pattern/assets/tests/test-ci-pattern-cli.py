@@ -219,6 +219,95 @@ class ManifestRoundTripTests(unittest.TestCase):
             self.assertEqual(CLI.load_manifest(repo), manifest)
 
 
+class ManifestSealTests(unittest.TestCase):
+    """#1172: el sello desalineado dice el hash esperado y el comando de
+    re-sellar, y el comando existe (`manifest seal`).
+
+    La auditoría de fricción (#1093) medio 13 job-runs rojos del gate
+    `governance-seals` por el mismo motivo: el manifiesto no coincide con el
+    árbol y el mensaje no decía ni el hash esperado ni cómo re-sellar.
+    """
+
+    def _drifted_repo(self, tmp):
+        repo, _ = make_repo(tmp)
+        target = repo / "scripts/check_pr_size.py"
+        target.write_text("# contenido nuevo\n", encoding="utf-8")
+        return repo, target
+
+    def test_seal_updates_the_hash_of_the_declared_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            manifest = json.loads(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["files"]["scripts/check_pr_size.py"], sha(target))
+
+    def test_seal_with_out_does_not_touch_the_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            before = (repo / ".governance-manifest.json").read_text(encoding="utf-8")
+            out_path = Path(tmp) / "sello" / "manifesto.json"
+            code, out, err = run_cli(["manifest", "seal", str(repo), "--out", str(out_path)])
+            self.assertEqual(code, 0, out + err)
+            self.assertEqual(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"), before)
+            sealed = json.loads(out_path.read_text(encoding="utf-8"))
+            self.assertEqual(sealed["files"]["scripts/check_pr_size.py"], sha(target))
+
+    def test_seal_refuses_a_declared_file_that_is_not_in_the_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            (repo / "scripts/check_pr_size.py").unlink()
+            before = (repo / ".governance-manifest.json").read_text(encoding="utf-8")
+            code, _out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("scripts/check_pr_size.py", err)
+            # El manifiesto NO se re-sella a medias: lo declarado y ausente se nombra.
+            self.assertEqual(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"), before)
+
+    def test_seal_is_idempotent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._drifted_repo(tmp)
+            self.assertEqual(run_cli(["manifest", "seal", str(repo)])[0], 0)
+            once = (repo / ".governance-manifest.json").read_text(encoding="utf-8")
+            self.assertEqual(run_cli(["manifest", "seal", str(repo)])[0], 0)
+            self.assertEqual(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"), once)
+
+    def test_the_mismatch_names_the_expected_hash_and_the_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 1)
+            expected = json.loads(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+            self.assertIn(expected["files"]["scripts/check_pr_size.py"], out + err)
+            self.assertIn(sha(target), out + err)
+            self.assertIn("ci-pattern manifest seal", out + err)
+
+    def test_the_phase_three_mismatch_names_the_expected_hash_and_the_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._drifted_repo(tmp)
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            drift = [f for f in findings if "check_pr_size.py" in f]
+            self.assertEqual(len(drift), 1, findings)
+            expected = json.loads(
+                (repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+            self.assertIn(expected["files"]["scripts/check_pr_size.py"], drift[0])
+            self.assertIn(sha(target), drift[0])
+            self.assertIn("ci-pattern manifest seal", drift[0])
+
+    def test_seal_without_a_manifest_is_exit_3(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            empty = Path(tmp) / "vacio"
+            empty.mkdir()
+            code, _out, err = run_cli(["manifest", "seal", str(empty)])
+            self.assertEqual(code, 3)
+            self.assertIn("manifest", err.lower())
+
+
 class VerifyTests(unittest.TestCase):
     def test_clean_repo_exits_zero(self):
         with tempfile.TemporaryDirectory() as tmp:

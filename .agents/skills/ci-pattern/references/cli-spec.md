@@ -25,6 +25,7 @@ agrupada y accionable.
 | `ci-pattern verify <repo>` | **Entregado** | Comprobación de cumplimiento dirigida por el manifiesto (§4). |
 | `ci-pattern status <repo>` | **Entregado** | Resumen de una línea por clase: manifiesto presente, ficheros OK/modificados/ausentes, gates cableados, bloques de slice. Exit: 0 sólo si está limpio, 1 con hallazgos, 3 sin manifiesto (§2). |
 | `ci-pattern manifest show <repo>` | **Entregado** | Imprime el manifiesto leído (lectura; la escritura vive en la librería y la ejercitan los tests). |
+| `ci-pattern manifest seal <repo> [--out <ruta>]` | **Entregado** (#1172) | Re-sella el manifiesto de gobierno: recalcula el sha256 de cada fichero declarado en `files` y de cada bloque de slice declarado en `slice_blocks`. Sin `--out` escribe el manifiesto en el repo; con `--out` escribe la copia re-sellada en esa ruta y NO toca el árbol (es lo que usa el job `governance-seals` para publicar el manifiesto como artefacto, sin push). NO es un auto-firmado: solo cambia el hash de lo que YA está declarado; un fichero declarado que no existe en el árbol no se re-sella y sale 1 nombrándolo. Exit: 0 sellado · 1 algo declarado no existe en el árbol · 2 uso inválido · 3 manifiesto ausente. |
 | `ci-pattern adoption check (--phase N \| --all) <repo>` | **Entregado** | Gate por fase de la adopción (#276): valida el contrato `.github/ci-pattern-adoption.json` del consumer y verifica cada fase del porting-guide contra el árbol real. Fase 0 inventario exhaustivo (adopted/retired sin tercera opción; los targets `adopted` pertenecen al catálogo canónico declarado en `assets/adoption/pattern-catalog.json`, sin exigir existencia —#306/#311—; cobertura ejecutada sobre las rutas gobernadas del catálogo, los scripts descubiertos por REFERENCIA o declarados en `declared_governed_paths` —#311— y las etiquetas del host vía `host_labels` —#312—; `removal_confirmed`); fase 1 evidencia de propagación; fase 2 aislamiento (EJECUTA el gate HR-28); fase 3 sustitución de gobierno e identidad del manifiesto (#277) —con la declaración `governance_seals`, además exige el job de PR que la mide y su entrada en `required_jobs` (HR-72)— —las instantáneas del host aceptan el **403 de plan** («Upgrade to GitHub Pro…») como evidencia de capacidad no disponible solo si el contrato declara esa área `unavailable` en `host_capabilities`; con `available` es drift (exit 1) y sin declaración —o con un valor fuera del vocabulario `available`/`unavailable`— es duda (exit 2), #330— y HR-48 sobre `AGENTS.md` (ninguna instrucción manda la documentación fuera del repo); fase 4 los cinco gates del patrón en verde y el mapa de orígenes de A1 cableado cuando el consumer mide el presupuesto con el gate de contrato de PR: con la comprobación `budget` activa en la política que el gate recibe con `--policy-file`, el workflow que lo invoca `MUST` pasar `--origins-file` y generar ese mapa (#1159, HR-74); fase 5 documento operativo con gate de deriva (#279) que incluye la sección «Dónde vive la documentación» y HR-48 sobre `AGENTS.md`, el documento y los ficheros que estos enlazan o citan (#319); EJECUTA además el gate de HR-21 sobre los post-mortems (parámetro 9) y el registro operativo (`P49_incident_log_dir`, por defecto `docs/incidents/`): bloquea secretos, datos personales y evidencia sin `sha256` ni ubicación, y permite IPs, hostnames y comandos internos: el sujeto son los ficheros de TEXTO del registro (`.md`, `.log`, `.txt`, `.json`, `.yaml`, saltando binarios) y superar el límite de escaneo no da verde parcial —sale exit 2 nombrando el recuento y el límite (#322); fase 6 cadena de aceptación (número, SHA de 40 hex, `conclusion: success`). Ninguna fase pasa si la anterior no pasa. Exit: 0 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2 contrato ilegible, esquema inválido o sujeto vacío. |
 | `ci-pattern adoption generate-doc <repo> --out <ruta>` | **Entregado** | Documento operativo del consumer (#279): flujo issues → ramas → commits → PR → checks → merge → release → fricciones, GENERADO desde sus datos (ci-pattern.yaml, host-contract, required-jobs, formularios de issue). Determinista byte a byte; nunca a stdout; entrada ilegible o ausente → exit 2. La deriva la detecta el gate de la fase de documentación operativa (#279). |
 | `ci-pattern pr contract --body <file> [--base main] [--label L]... [--number N] [--print-payload]` | **Entregado** | Contrato de PR completo en local (#912): construye el evento desde el cuerpo y git (rama actual, `base...HEAD`), escribe los datos del rango en temporales y corre en proceso `assets/pr-contract/check_pr_contract.py`. Mismos veredictos, textos y códigos que el CI. Sin red ni token; el `owner/repo` sale del remoto `origin` (o `--full-name`). Exit: 0 limpio · 1 hallazgos · 2 entrada inválida (cuerpo, política, base o remoto ilegibles). |
@@ -88,6 +89,14 @@ de adopción + `adoption check` (#276).
 - `slice_blocks`: nombre del bloque de slice (`<!-- personal-skills:slice:NAME @ … -->`
   en `AGENTS.md`) → `sha256:<hex>` del contenido entre marcadores (sin las líneas
   de marcador, saltos incluidos tal cual).
+
+**Re-sellar (`manifest seal`, #1172).** Cuando un fichero gobernado cambia, su
+hash del manifiesto deja de coincidir: el gate lo reporta y, desde #1172, el
+mensaje nombra el hash **esperado**, el hash **encontrado** y el comando exacto
+`ci-pattern manifest seal <repo>`. El sello es un dato de gobierno, no una
+firma: lo que manda es el contenido del repo, y el manifiesto se pone al día.
+`manifest seal` solo re-sella lo que ya está declarado (no añade entradas ni
+inventa contenido) y `manifest seal --out <ruta>` deja el árbol intacto.
 
 ## §4 Contrato de `verify`
 
@@ -231,7 +240,9 @@ modificado localmente sin reportarlo como hallazgo `locally-modified`.
 - Nunca borra ficheros que ella misma no escribió; jamás ejecuta `rm` ni
   equivalentes.
 - Nunca sobrescribe un fichero modificado localmente sin reportarlo como
-  hallazgo.
+  hallazgo. La única escritura sobre el repo es el propio manifiesto de
+  gobierno, y solo por `manifest seal` (que re-sella lo ya declarado, con
+  `--out` para no tocar el árbol); ningún fichero de contenido se reescribe.
 - Nunca decide el contenido de los parámetros: los lee, los valida y falla
   fuerte; los valores los elige el operador.
 
