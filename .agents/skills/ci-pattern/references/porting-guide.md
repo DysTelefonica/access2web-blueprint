@@ -63,6 +63,51 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   ausente, sin `--binaries`— → **bloqueo** (sale 2). El cableado por job es
   la sección «Cableado del preflight de tooling por job (G0.5)» de esta misma
   fase.
+- **G0.5b — El job `gates` en sombra (fase 1 de #1179).** Un job que ejecuta
+  los gates declarados del repo una vez y emite un **veredicto único** —cuántos
+  gates están en verde y, para cada uno que falla, su causa— en vez de N checks
+  que se ponen en rojo por el mismo defecto. Va **en sombra**: publica su check
+  y NADIE lo exige; no cambia `required_jobs` ni la protección de rama. Su
+  veredicto se compara con el rollup actual para decidir la fase 2 (criterio C6
+  de #1179). El asset es `assets/gates/run_gates.py` y la lista de gates es un
+  fichero versionado en el repo del consumer (`.github/gates.txt`, una línea por
+  gate: `nombre: comando`).
+
+  ```yaml
+  jobs:
+    gates:
+      name: gates (sombra, no exigido)
+      # Único evento que evalúa el PR (HR-30).
+      if: github.event_name == 'pull_request'
+      runs-on: [self-hosted, Linux, mi-consumer]
+      # El techo del job cubre el gate MÁS LENTO (los gates corren en paralelo).
+      timeout-minutes: 20
+      permissions:
+        contents: read
+      steps:
+        - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+          with:
+            persist-credentials: false
+
+        - name: Veredicto único de los gates (sombra)
+          run: |
+            python3 .agents/skills/ci-pattern/assets/gates/run_gates.py \
+              --gates .github/gates.txt
+  ```
+
+  La lista de gates:
+
+  ```text
+  # .github/gates.txt — los gates del repo, uno por línea: `nombre: comando`.
+  unit: bash testing/run-unit-suites.sh
+  lint: bash scripts/lint.sh
+  ```
+
+  Tres reglas: el job **no** entra en `required_jobs` ni en el `needs:` del
+  agregador (si entró, dejaría de ser sombra); su nombre de check lleva
+  «(sombra)» para que nadie lo confunda con un check exigido; y **duplica el
+  trabajo de los gates**, que es el precio de la sombra y el motivo por el que
+  es temporal.
 - **G0.6 — Estado de release.** Qué está sin liberar en el repo. Nunca adoptar
   a mitad de un fix sin liberar: el ruido del cambio de gobernanza se mezcla
   con el fix pendiente y ambos quedan sin dueño claro.
