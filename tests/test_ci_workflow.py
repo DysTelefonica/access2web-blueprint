@@ -27,6 +27,10 @@ import yaml
 REQUIRED_COMMANDS = (
     "ruff format --check --config app/pyproject.toml",
     "ruff check --config app/pyproject.toml .",
+    # El preflight de tooling del pr-gate: en el workflow el comando ocupa tres
+    # lineas (continuacion con `\`), asi que la firma que se puede comparar es
+    # la del binario que el gate ejecuta.
+    "sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh",
     "mypy --explicit-package-bases app/",
     "python scripts/check_workflows.py",
     'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',

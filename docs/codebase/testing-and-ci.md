@@ -168,7 +168,7 @@ Antes de empujar una PR:
 ./scripts/local-preflight.sh
 ```
 
-El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `ci.yml::quality` (lint, typecheck, suites populated, unit). Si pasa, la PR no debería gastar minutos de runner en el primer filtro.
+El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `ci.yml::quality` (lint, typecheck, suites populated, unit). Incluye el **preflight de tooling** del `pr-gate` (que `git` y `sh` estén presentes, con el contrato declarado en `.github/tooling/pr-gate.txt`): es el primer paso ejecutable de ese job en CI, y en local se invoca con la forma heredada, sin `--runner` (la identidad del runner solo existe en CI; la diferencia queda escrita en `.github/local-ci-parity-policy.json`). Si pasa, la PR no debería gastar minutos de runner en el primer filtro.
 
 ## Fronteras explícitas
 
