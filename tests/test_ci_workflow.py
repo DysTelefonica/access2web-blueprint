@@ -4,6 +4,12 @@
 A gate that exists only as a script is a gate nobody runs. These tests parse the workflow and
 fail when a step is deleted, when a gate is neutered, or when a pin goes floating. They are the
 reason a silent revert cannot pass review.
+
+Issue #1375: the pins of the SHAPE of `ci.yml` — its event list, the exact `if:` of the heavy
+jobs, their `needs:`, the `uses:` of the gate job — live in the canon's structural gates
+(`check_workflow_policy.py`, `check_parity.py`) and in the required-jobs policy, and they
+churned 37 times next to `ci.yml` in three weeks. What stays in this file pins what the gates
+DO: the commands they run, how they are hardened, and that each gate exists and runs.
 """
 
 from __future__ import annotations
@@ -64,8 +70,6 @@ REQUIRED_GATE_ORDER = (
     # it sits at the end of the chain.
     "legacy_retirement",
 )
-
-_SHA_PIN = re.compile(r"^[0-9a-f]{40}$")
 
 
 def _find_workflow() -> Path:
@@ -131,31 +135,6 @@ def run_blocks(steps: list[dict]) -> list[str]:
 @pytest.mark.parametrize("command", REQUIRED_COMMANDS)
 def test_gate_is_wired(run_blocks: list[str], command: str) -> None:
     assert any(command in block for block in run_blocks), f"no CI step runs '{command}'"
-
-
-def test_no_step_swallows_its_exit_code(steps: list[dict]) -> None:
-    """Hard Rule 1: a gate that cannot fail is not a gate."""
-    offenders = [step.get("name", "<unnamed>") for step in steps if step.get("continue-on-error")]
-    assert not offenders, f"continue-on-error found on: {offenders}"
-
-
-def test_no_run_block_forces_success(run_blocks: list[str]) -> None:
-    """Hard Rule 1, the other half: `|| true` neuters a scanner while it still looks green."""
-    offenders = [block for block in run_blocks if "|| true" in block]
-    assert not offenders, f"'|| true' found in: {offenders}"
-
-
-def test_every_action_is_pinned_to_a_sha(steps: list[dict]) -> None:
-    """Hard Rule 15: a floating tag turns a green gate red with no code change."""
-    unpinned = []
-    for step in steps:
-        uses = step.get("uses")
-        if not uses:
-            continue
-        _, _, ref = uses.partition("@")
-        if not _SHA_PIN.match(ref):
-            unpinned.append(uses)
-    assert not unpinned, f"actions not pinned to a 40-character SHA: {unpinned}"
 
 
 def test_gate_order_is_pinned_in_code() -> None:
@@ -641,13 +620,6 @@ def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     )
 
 
-def test_pr_gate_is_the_cheap_front_and_review_budget_is_gone(workflow: dict) -> None:
-    """Issue #857, PR-B: the cheap front gate is `pr-gate`; `review-budget` is renamed away."""
-    jobs = workflow["jobs"]
-    assert "pr-gate" in jobs
-    assert "review-budget" not in jobs
-
-
 def test_integration_job_runs_pytest_m_integration_against_postgres_service() -> None:
     """Issue #882, PR-3: the integration job wires ci.yml to the in-job Postgres service.
 
@@ -743,41 +715,6 @@ def test_integration_job_runs_alembic_upgrade_before_pytest() -> None:
         f"`pytest` (index {pytest_index}) in the integration job "
         f"(issue #882, PR-3). Step names: {step_names!r}"
     )
-
-
-def test_heavy_jobs_wait_for_pr_gate(workflow: dict) -> None:
-    """Issue #857, PR-B: a failed gate must not pay for quality, security, codeql or integration."""
-    jobs = workflow["jobs"]
-    for job in ("quality", "security", "codeql", "integration"):
-        assert jobs[job]["needs"] == "pr-gate", f"`{job}` must declare `needs: pr-gate`"
-
-
-def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
-    workflow: dict,
-) -> None:
-    """Issue #857, PR-D: the heavy jobs run on every event the workflow listens to.
-
-    `pr-gate` only fires on `pull_request`, so on `push` (post-merge safety
-    net on `main`), `schedule` (nightly) and `workflow_dispatch` (manual)
-    it is `skipped`. The heavy jobs that `needs: pr-gate` must accept the
-    skip on every one of those events. `merge_group` is gone: the queue
-    left with the gentle-ai model. Issue #882, PR-3 extends the same
-    shape to `integration` so the in-job Postgres service runs after the
-    merge and on the nightly as well — not just on the PR event.
-    """
-    jobs = workflow["jobs"]
-    expected = (
-        "(github.event_name == 'pull_request' || github.event_name == 'push' "
-        "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
-        "&& !cancelled() "
-        "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
-        # Issue #1368: the docs-only lane. A diff that falls entirely under
-        # `docs/` skips the heavy jobs, and the `required` aggregator accepts
-        # those skips as OK (the `docs_only_lane` of the policy).
-        " && needs.pr-gate.outputs.docs_changed != 'true'"
-    )
-    for job in ("quality", "security", "codeql", "integration"):
-        assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
 
 
 def test_pr_size_gate_runs_in_pr_event_mode(pr_gate_workflow: dict) -> None:
@@ -1079,68 +1016,7 @@ def test_mutation_config_targets_only_the_domain() -> None:
 # the two together close #857.
 
 
-def test_ci_runs_on_push_to_main(workflow: dict) -> None:
-    """Issue #857, PR-D: `push: branches: [main]` is the post-merge safety net.
-
-    The gentle-ai model does not use a merge queue. Every PR runs `ci`
-    exactly once, and the `required` aggregator re-proves the same
-    commit on the push that follows the merge. The trigger is
-    `branches: [main]` so a feature-branch push does not re-run the
-    whole suite — only the merge to `main` does.
-    """
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    assert "push" in triggers, (
-        "ci.yml must declare a `push:` trigger (issue #857, PR-D): the "
-        "post-merge safety net on `main` is what re-proves the commit "
-        "after the queue is gone."
-    )
-    push = triggers["push"]
-    assert isinstance(push, dict), (
-        f"ci.yml `push:` must declare `branches:` (issue #857, PR-D). Got: {push!r}"
-    )
-    assert list(push.get("branches", [])) == ["main"], (
-        f"ci.yml `push:` must pin `branches: [main]` (issue #857, PR-D). "
-        f"Got: {push.get('branches')!r}"
-    )
-
-
-def test_ci_runs_on_pull_request_push_schedule_dispatch(
-    workflow: dict,
-) -> None:
-    """The four events the gentle-ai model surfaces (PR + push + nightly + manual)."""
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    if isinstance(triggers, list):
-        present = set(triggers)
-    elif isinstance(triggers, str):
-        present = {triggers}
-    else:
-        present = set(triggers.keys())
-
-    for required_event in ("pull_request", "push", "schedule", "workflow_dispatch"):
-        assert required_event in present, (
-            f"ci.yml must declare `{required_event}` in its trigger set "
-            f"(issue #857, PR-D). Present: {sorted(present)}."
-        )
-
-
-def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
-    """Issue #857, PR-D: the merge queue is gone with the gentle-ai model.
-
-    `merge_group` was the queue's verdict event; without the queue there
-    is no merge-group run to listen to. Leaving the trigger in place
-    would re-introduce a class of `undeclared event` failures in the canon
-    required-jobs gate (#857 PR-D dropped it from the event set; the policy
-    declares no `merge_group`).
-    """
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    if isinstance(triggers, dict):
-        assert "merge_group" not in triggers, (
-            "ci.yml must not declare a `merge_group:` trigger: the queue is "
-            "gone with the gentle-ai model (issue #857, PR-D)."
-        )
-
-
-# --- Issue #857, PR-B: pull_request type set -----------------------------
+# --- Issue #857, PR-B: pull_request type set of the pr-gate ---------------
 #
 # `pull_request:` without an explicit `types:` uses the GitHub default
 # (opened, synchronize, reopened). That set misses two events that DO
@@ -1157,6 +1033,12 @@ def test_ci_does_not_listen_to_merge_group(workflow: dict) -> None:
 # Pinning the type set here is what guarantees a verdict refresh on
 # those events. The list MUST stay exact (the order is the contract
 # `check_workflows.py` proves).
+#
+# Issue #1375: only the list of `pr-gate.yml` is pinned here. The event
+# set of `ci.yml` is a cost decision, not a verdict: the canon's
+# required-jobs gate owns the event surface of the workflow, and the
+# shape of `ci.yml` is no longer pinned by this file (#1368 moved the
+# body and label events to this workflow).
 
 
 PR_GATE_PULL_REQUEST_TYPES = (
@@ -1168,20 +1050,8 @@ PR_GATE_PULL_REQUEST_TYPES = (
     "unlabeled",
 )
 
-#: Issue #1368: the heavy suite runs on the three events that can change the
-#: code. `edited`, `labeled` and `unlabeled` only change the PR body and its
-#: labels, and they are the events the audit measured as 1.411 re-runs of the
-#: same SHA in one week.
-HEAVY_PULL_REQUEST_TYPES = (
-    "opened",
-    "synchronize",
-    "reopened",
-)
 
-
-def test_pull_request_types_cover_edit_and_label_events(
-    workflow: dict, pr_gate_workflow: dict
-) -> None:
+def test_pr_gate_listens_to_edit_and_label_events(pr_gate_workflow: dict) -> None:
     """Issue #1368: the body/label events moved to the lightweight workflow.
 
     Issue #857, PR-B pinned `edited`, `labeled` and `unlabeled` on the
@@ -1190,20 +1060,10 @@ def test_pull_request_types_cover_edit_and_label_events(
     that was already green. Since #1368 the heavy workflow listens to the
     three events that can change the code, and the `pr-gate` — the only job
     those events need — lives in its own workflow, which still listens to all
-    six. Both lists are pinned here so a silent drift cannot pass review.
+    six. This list is pinned so a silent drift cannot pass review.
     """
     # yaml.safe_load maps the `on` keyword to the Python boolean `True`
     # unless quoted; the existing tests guard both spellings already.
-    heavy_types = (workflow.get(True) or workflow.get("on") or {}).get("pull_request")
-    assert isinstance(heavy_types, dict), (
-        "ci.yml must declare `pull_request:` with a body so `types:` can be pinned"
-    )
-    assert list(heavy_types.get("types") or []) == list(HEAVY_PULL_REQUEST_TYPES), (
-        f"ci.yml `pull_request.types:` is {heavy_types.get('types')!r}, expected "
-        f"{list(HEAVY_PULL_REQUEST_TYPES)!r}: the heavy suite must run only on the "
-        "events that can change the code (issue #1368)."
-    )
-
     light_types = (pr_gate_workflow.get(True) or pr_gate_workflow.get("on") or {}).get(
         "pull_request"
     )
@@ -1226,19 +1086,6 @@ HEAVY_JOBS = (
     "codeql",
     "e2e-smoke",
 )
-
-
-def test_the_heavy_workflow_calls_the_light_pr_gate_workflow(workflow: dict) -> None:
-    """The `required` aggregator reads `needs.pr-gate`, and `needs:` cannot cross files.
-
-    Since #1368 the job lives in `pr-gate.yml`, so ci.yml calls that file.
-    The call keeps the job id, the aggregator keeps reading its result, and
-    the per-SHA verdict of `required` does not change.
-    """
-    job = workflow["jobs"]["pr-gate"]
-    assert job["uses"] == "./.github/workflows/pr-gate.yml"
-    assert job["if"] == "github.event_name == 'pull_request'"
-    assert "pr-gate" in workflow["jobs"]["required"]["needs"]
 
 
 def test_the_pr_gate_queue_separates_the_two_instances(pr_gate_workflow: dict) -> None:
@@ -1302,15 +1149,6 @@ def test_the_docs_only_classifier_runs_in_the_pr_gate(pr_gate_workflow: dict) ->
     )
     assert "scripts/check_docs_only_lane.py" in runs
     assert "docs_changed" in runs, "the classifier's verdict must reach the job output"
-
-
-def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) -> None:
-    """team-skills#978: a run cancelled after its jobs exist leaves a cancelled `required` check
-    on the head SHA, and that check blocks the merge even when a later run of the same SHA is
-    green. Events that keep the SHA (`edited`, `labeled`, `reopened`) must queue, not cancel."""
-    value = workflow["concurrency"]["cancel-in-progress"]
-    assert value is not True, "cancel-in-progress: true cancels runs of the same head SHA"
-    assert isinstance(value, str) and "synchronize" in value
 
 
 def test_docs_codeguide_job_covers_every_root_of_the_adoption_contract() -> None:

@@ -170,7 +170,7 @@ El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `c
 ## Fronteras explícitas
 
 - **No añada un job nuevo a `ci.yml` sin pasar por `scripts/check_workflows.py` y por la política `.github/required-jobs-policy.json`.** Ambos gates validan la matriz y rompen la ratchet si se omite una actualización.
-- **No mueva un step entre jobs sin revisar `tests/test_ci_workflow.py`.** El wiring está pinado por tests (`test_pull_request_types_cover_edit_and_label_events` y similares).
+- **No mueva un step entre jobs sin revisar `tests/test_ci_workflow.py`.** El wiring está pinado por tests (`test_pr_gate_listens_to_edit_and_label_events` y similares). Desde #1375 los pins de la FORMA de `ci.yml` —su lista de eventos, los `if:` exactos de los jobs pesados, sus `needs:`— no viven en ese fichero: los verifica en cada run el gate estructural del canon (`check_workflow_policy.py`, `check_parity.py`) junto con la política `.github/required-jobs-policy.json`. Lo que queda en los tests es lo que ningún otro gate cubre: qué ejecuta cada gate, cómo se blinda y que existe y corre.
 - **No cambie los markers sin actualizar `docs/gates.md` §2 y `scripts/check_suites_populated.py`.** Con `--strict-markers` activo, un marker nuevo no declarado falla la recolección.
 - **No cubra un test que requiere servidor con la suite `unit`.** Use `e2e_smoke` (subproceso real) o `e2e` (release).
 

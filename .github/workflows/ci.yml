@@ -34,17 +34,20 @@ on:
     #                    after the gate went red, the size verdict
     #                    does not re-evaluate.
     # Pinning the set here is what guarantees the verdict refreshes
-    # on those events. `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
-    # pins the exact list — order and contents — so a silent drift
-    # cannot pass review.
+    # on those events.
     # Issue #1368: this workflow carries the HEAVY suite, so it listens to the
     # three events that can change the code. `edited`, `labeled` and
     # `unlabeled` only change the PR body and its labels; they moved to
     # .github/workflows/pr-gate.yml, which carries the `pr-gate` and listens to
     # all six. The audit measured those events as 1.411 re-runs of the same SHA
     # in one week (72 % of 1.956 PR runs) and 846 cancelled runs.
-    # `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
-    # pins both lists — order and contents — so a silent drift cannot pass review.
+    # Issue #1375: this event list is no longer pinned by a test. The event
+    # surface of the workflow belongs to the canon's required-jobs gate —
+    # `tests/test_required_jobs_policy.py::test_every_event_ci_listens_to_is_declared`
+    # proves that every event listened to is declared in the policy — and the
+    # list of `pr-gate.yml`, the one that has to refresh when the body or the
+    # labels change, is still pinned by
+    # `tests/test_ci_workflow.py::test_pr_gate_listens_to_edit_and_label_events`.
     types:
       - opened
       - synchronize
