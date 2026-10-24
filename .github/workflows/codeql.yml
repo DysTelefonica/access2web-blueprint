@@ -29,6 +29,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/analyze.txt \
+            --runner "${{ runner.name }}"
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
         with:
