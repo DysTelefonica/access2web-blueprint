@@ -2,9 +2,7 @@ from pathlib import Path
 
 import yaml
 
-WORKFLOW = (
-    Path(__file__).resolve().parent.parent / ".github" / "workflows" / "codeql.yml"
-)
+WORKFLOW = Path(__file__).resolve().parent.parent / ".github" / "workflows" / "codeql.yml"
 DEPENDABOT = Path(__file__).resolve().parent.parent / ".github" / "dependabot.yml"
 CODEQL_ACTION_SHA = "6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee"
 
@@ -44,12 +42,8 @@ def test_codeql_scans_python_via_reusable_workflow_call() -> None:
     assert job["runs-on"] == "ubuntu-24.04"
     assert job["permissions"]["security-events"] == "write"
 
-    init = next(
-        step for step in job["steps"] if step.get("name") == "Initialize CodeQL"
-    )
-    analyze = next(
-        step for step in job["steps"] if step.get("name") == "Analyze Python"
-    )
+    init = next(step for step in job["steps"] if step.get("name") == "Initialize CodeQL")
+    analyze = next(step for step in job["steps"] if step.get("name") == "Analyze Python")
     assert init["uses"] == f"github/codeql-action/init@{CODEQL_ACTION_SHA}"
     assert init["with"] == {"languages": "python", "build-mode": "none"}
     assert analyze["uses"] == f"github/codeql-action/analyze@{CODEQL_ACTION_SHA}"
