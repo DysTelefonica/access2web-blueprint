@@ -71,9 +71,7 @@ def catalog_checkout(doc: dict) -> dict:
         with_ = step.get("with") if isinstance(step, dict) else None
         if isinstance(with_, dict) and with_.get("repository") == CATALOG_REPO:
             return with_
-    raise AssertionError(
-        f"ningún checkout trae {CATALOG_REPO}: el job no mide la deriva"
-    )
+    raise AssertionError(f"ningún checkout trae {CATALOG_REPO}: el job no mide la deriva")
 
 
 def resolver(doc: dict) -> dict:
@@ -91,14 +89,11 @@ class TestOperatingDocDriftPin:
 
     def test_el_paso_de_sello_corre_antes_que_el_checkout_del_catalogo(self):
         steps = wy.job(wy.load(WORKFLOW), "operating-doc-drift")["steps"]
-        resolve_at = next(
-            i for i, s in enumerate(steps) if s.get("name") == RESOLVER_STEP
-        )
+        resolve_at = next(i for i, s in enumerate(steps) if s.get("name") == RESOLVER_STEP)
         checkout_at = next(
             i
             for i, s in enumerate(steps)
-            if isinstance(s.get("with"), dict)
-            and s["with"].get("repository") == CATALOG_REPO
+            if isinstance(s.get("with"), dict) and s["with"].get("repository") == CATALOG_REPO
         )
         assert resolve_at < checkout_at, (
             "el checkout del catálogo necesita el output del paso de sello"
@@ -113,22 +108,16 @@ class TestOperatingDocDriftPin:
         injected = WORKFLOW.read_text(encoding="utf-8").replace(
             "ref: ${{ steps.catalog-pin.outputs.commit }}", f"ref: {LITERAL_PIN}", 1
         )
-        assert injected != WORKFLOW.read_text(encoding="utf-8"), (
-            "el fixture no sustituyó el ref"
-        )
+        assert injected != WORKFLOW.read_text(encoding="utf-8"), "el fixture no sustituyó el ref"
         assert hand_written_shas(injected), "el detector no ve un pin escrito a mano"
 
     # --- el paso se ejecuta de verdad sobre manifiestos de mentira ---
 
-    def _run(
-        self, tmp_path: Path, manifest: str | None, api: dict[str, str] | None = None
-    ):
+    def _run(self, tmp_path: Path, manifest: str | None, api: dict[str, str] | None = None):
         step = resolver(wy.load(WORKFLOW))
         env = {
             **os.environ,
-            **{
-                k: str(v) for k, v in step.get("env", {}).items() if "${{" not in str(v)
-            },
+            **{k: str(v) for k, v in step.get("env", {}).items() if "${{" not in str(v)},
             "CATALOG_TOKEN": "fixture",
             "GITHUB_OUTPUT": str(tmp_path / "github-output"),
         }
@@ -165,25 +154,19 @@ class TestOperatingDocDriftPin:
         proc, exported = self._run(
             tmp_path,
             f"{SEAL.format(commit=SHORT_SEAL)}\nproject_type: web\n",
-            api={
-                f"repos/{CATALOG_REPO}/commits/{SHORT_SEAL}": f'{{"sha": "{GOOD_COMMIT}"}}'
-            },
+            api={f"repos/{CATALOG_REPO}/commits/{SHORT_SEAL}": f'{{"sha": "{GOOD_COMMIT}"}}'},
         )
         assert proc.returncode == 0, proc.stderr
         assert f"commit={GOOD_COMMIT}" in exported
 
     def test_sin_manifiesto_falla_nombrando_el_fichero(self, tmp_path):
         proc, exported = self._run(tmp_path, None)
-        assert proc.returncode != 0, (
-            "sin .team-skills.yaml el job no puede salir en verde (HR-3)"
-        )
+        assert proc.returncode != 0, "sin .team-skills.yaml el job no puede salir en verde (HR-3)"
         assert ".team-skills.yaml" in proc.stderr
         assert "commit=" not in exported
 
     def test_sin_sello_falla_nombrando_el_sello(self, tmp_path):
-        proc, exported = self._run(
-            tmp_path, "project_type: web\ntiers:\n  - universal\n"
-        )
+        proc, exported = self._run(tmp_path, "project_type: web\ntiers:\n  - universal\n")
         assert proc.returncode != 0
         assert "catalog @" in proc.stderr
         assert "commit=" not in exported
@@ -192,8 +175,6 @@ class TestOperatingDocDriftPin:
         proc, exported = self._run(
             tmp_path, f"{SEAL.format(commit=SHORT_SEAL)}\nproject_type: web\n", api={}
         )
-        assert proc.returncode != 0, (
-            "un sello que el catálogo no resuelve no se puede medir (HR-3)"
-        )
+        assert proc.returncode != 0, "un sello que el catálogo no resuelve no se puede medir (HR-3)"
         assert SHORT_SEAL in proc.stderr
         assert "commit=" not in exported
