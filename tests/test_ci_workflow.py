@@ -565,8 +565,6 @@ def test_release_e2e_generates_its_signing_secret_per_run() -> None:
     assert '-e SECRET_KEY="$E2E_SECRET_KEY"' in release
 
 
-
-
 def test_required_job_replaces_merge_ready_and_aggregates_pr_reachable_jobs(
     workflow: dict,
 ) -> None:
@@ -717,8 +715,6 @@ def test_integration_job_runs_alembic_upgrade_before_pytest() -> None:
         f"`pytest` (index {pytest_index}) in the integration job "
         f"(issue #882, PR-3). Step names: {step_names!r}"
     )
-
-
 
 
 def test_pr_size_gate_runs_in_pr_event_mode(pr_gate_workflow: dict) -> None:
