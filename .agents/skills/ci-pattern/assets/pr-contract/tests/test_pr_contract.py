@@ -1425,5 +1425,80 @@ class Hr53Hr64AdvisoryTests(unittest.TestCase):
             self.assertIn("PR-CONTRACT OK", p.stdout)
 
 
+class A1VendoredOriginsTests(unittest.TestCase):
+    """A1 (#931, #1133): el mapa de origenes es lo que separa el arbol
+    vendorizado (`.agents/skills/`) del trabajo de autoria.
+
+    Sin el mapa, el gate cuenta TODO: una PR de propagacion del catalogo que
+    solo trae `.agents/skills/` falla con «A1: el diff supera el presupuesto»
+    sin decir que esas lineas no son trabajo de quien abre la PR. El hallazgo
+    tiene que nombrar el arbol vendorizado y el remedio.
+    """
+
+    BODY = ("Closes #42\n\n## Tests que prueban el cierre\n\n"
+            "- `tests/test_gate.py` (positivo del gate)\n" + chain_block("main") + "\n" + AI_OK)
+
+    def _run(self, tmp, *, origins=None, budget=3):
+        repo = Path(tmp) / "repo"
+        repo.mkdir()
+        env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+        def run(*args):
+            return subprocess.run(args, cwd=repo, capture_output=True, text=True, check=True,
+                                  env={**env, "GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t",
+                                       "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"})
+
+        run("git", "init", "-q", "-b", "main")
+        (repo / "tests").mkdir()
+        (repo / "tests" / "test_gate.py").write_text("def test_gate() -> None:\n    pass\n",
+                                                     encoding="utf-8")
+        run("git", "add", "-A")
+        run("git", "commit", "-qm", "chore: base")
+        base_sha = run("git", "rev-parse", "HEAD").stdout.strip()
+        run("git", "checkout", "-q", "-b", "feature/x")
+        vendored = repo / ".agents" / "skills" / "prop.md"
+        vendored.parent.mkdir(parents=True)
+        vendored.write_text("\n".join(f"linea {i}" for i in range(10)) + "\n", encoding="utf-8")
+        run("git", "add", "-A")
+        run("git", "commit", "-qm", "chore: propaga el catalogo")
+        head_sha = run("git", "rev-parse", "HEAD").stdout.strip()
+        ev = make_event(tmp, body=self.BODY, labels=["type:feature"], base="main",
+                        base_sha=base_sha, head_sha=head_sha)
+        pol = make_policy(tmp, review_budget_lines=budget)
+        with tempfile.TemporaryDirectory() as dest:
+            flags = write_range_data(ev, repo, dest)
+            if origins is not None:
+                origins_path = Path(dest) / "origins.txt"
+                origins_path.write_text(origins, encoding="utf-8")
+                flags += ["--origins-file", str(origins_path)]
+            return run_gate(ev, pol, repo, data_flags=flags)
+
+    def test_without_the_origins_map_the_finding_names_the_vendored_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp)
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertIn("A1", p.stdout)
+            self.assertIn(".agents/skills/", p.stdout)
+            self.assertIn("--origins-file", p.stdout)
+
+    def test_with_the_origins_map_the_propagation_only_pr_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            p = self._run(tmp, origins=".agents/skills/prop.md\t-\n")
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+
+    def test_the_finding_does_not_blame_the_vendored_tree_when_it_is_not_there(self):
+        """Un PR sin arbol vendorizado no recibe el aviso: el dato manda."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, base_sha, head_sha = make_repo(tmp, commits=["feat: x"])
+            ev = make_event(tmp, body=self.BODY, labels=["type:feature"], base="main",
+                            base_sha=base_sha, head_sha=head_sha)
+            pol = make_policy(tmp, review_budget_lines=0)
+            with tempfile.TemporaryDirectory() as dest:
+                flags = write_range_data(ev, repo, dest)
+                p = run_gate(ev, pol, repo, data_flags=flags)
+            self.assertEqual(p.returncode, 1, p.stdout + p.stderr)
+            self.assertNotIn("--origins-file", p.stdout)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

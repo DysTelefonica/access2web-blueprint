@@ -4,7 +4,7 @@ description: "Trigger: CI pattern, deterministic CI gates, review budget, SHA ev
 license: Apache-2.0
 metadata:
   author: ardelperal
-  version: "1.23.2"
+  version: "1.23.4"
   last_verified: 2026-10-20
   based_on: "auditoría issue→merge de ardelperal/APAP_WEB (épica ardelperal/APAP_WEB#935, 2026-09-29/30)"
   scope: ['universal', 'ops']
@@ -129,6 +129,12 @@ ci-pattern params validate ci-pattern.yaml
 # 3. Adopción: documento operativo generado y gate por fases del contrato
 ci-pattern adoption generate-doc <repo> --out docs/ci-pattern-flow.md
 ci-pattern adoption check --phase 5 <repo>
+
+# 3b. Cuando el canon llega por propagación (#1152), el documento operativo lo
+# regenera el propio propagador con el canon que propaga y lo commitea en el
+# mismo commit: el consumer no recibe un canon nuevo con el documento viejo.
+# El comando de arriba es el que se usa cuando el canon cambia SIN
+# propagación (un consumer que adopta el patrón a mano).
 
 # 4. Verificación de cumplimiento tras cualquier cambio
 ci-pattern verify <repo> --json
@@ -486,8 +492,7 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La etiqueta `
   python y tumbó el VPS por OOM el 2026-10-05). Cualquier subproceso que
   esta CLI lance nace con `CI_PATTERN_NESTED=1`; si la marca ya está
   presente, `verify` y `adoption` fallan cerrados con exit 2.
-  (decisión del operador,
-  2026-10-05; DysTelefonica/team-skills#277; gate:
+  (decisión del operador, 2026-10-05; DysTelefonica/team-skills#277; gate:
   `assets/bin/ci-pattern adoption check --phase 3`)
 - **HR-47 — El ciclo de vida documentado se comprueba con una prueba de recorrido**: una IA que solo dispone del documento operativo generado completa el ciclo issue → CI verde sobre un consumer de fixture con un `gh` simulado de forma real; los objetos creados (issue, rama, PR) pasan los gates del consumer y una receta corrupta (regex, etiqueta inexistente) hace fallar el recorrido. Vive en el repo del patrón (`testing/suites/ci-pattern-docs-walkthrough`), no en la skill: la ejecuta el CI del patrón. (#305)
 - **HR-48 — Toda la documentación de un proyecto `MUST` vivir en su propio repositorio**, bajo `docs/` por materia y con rutas relativas al repo: los post-mortems en la ruta del parámetro 9 (`docs/postmortems/<AAAA-MM-DD>-<slug>.md`). Fuera del repositorio, y sin copia en él, quedan solo los secretos, los backups, los datos en bruto y el material privado. Una instrucción que mande documentación a una ruta absoluta o externa al repo (otra unidad, un recurso de red o un directorio de usuario) `MUST NOT` propagarse ni adoptarse: el gate de las fases 3 y 5 de `adoption check` la rechaza nombrando fichero y línea, y la sección «Dónde vive la documentación» del documento operativo —y del bloque de `AGENTS.md`— la emite el generador. Las convenciones compartidas entre proyectos viven en el catálogo de team-skills y se propagan; la documentación de cada proyecto, no. (decisión del operador, 2026-10-06; `DysTelefonica/cadete` `AGENTS.md` «Documentation location», DysTelefonica/team-skills#319; gate: `assets/bin/ci-pattern adoption check --phase 5` y `--phase 3`)
@@ -527,6 +532,7 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La etiqueta `
 - **HR-71 — Todo consumer `primary_type: web` que active `docs_manifest` `MUST` llevar `CONTRIBUTING.md` con las secciones mínimas del manifiesto canónico.** El catálogo declara el documento en `assets/docs-manifest/required-docs.json` con `activated_by: "project_type:web"`; el gate (`_active`, `_resolve_project_type`) lee `project_type` del `.team-skills.yaml` del repo (lo escribe el propagador en cada corrida) y, según el valor, activa u omite la exigencia. Si el YAML falta, no se puede leer o no declara `project_type`, el gate falla cerrado (HR-3): emite un hallazgo HR-71 y activa el doc, de manera que la ausencia del fichero también se mide. La fase 0 sigue exigiendo que cada consumer con `CONTRIBUTING.md` declare en `phases[0].inventory` la entrada `{artifact: "CONTRIBUTING.md", disposition: "adopted", target: "CONTRIBUTING.md"}` para silenciar el hallazgo de «artefacto de gobierno sin entrada de inventario»; la fase 5 (HR-71) no basta sola. El catálogo **nunca** sobrescribe ni sella `CONTRIBUTING.md` en `.governance-manifest.json`: el contenido es del consumer y el gate solo mide existencia y secciones. Una plantilla canónica en `assets/templates/docs/CONTRIBUTING.md.tmpl` cubre las secciones mínimas; renombrar títulos en el consumer rompe el check. La calidad del texto es juicio de revisión, `documented-only` (HR-34). (decisión del dueño, 2026-11-06; DysTelefonica/team-skills#878, oleada 2 de #873; gate: `assets/bin/ci-pattern` (`_check_docs_manifest`, `adoption check --phase 5`) y `assets/docs-manifest/check_docs_manifest.py` (`_active`, `_resolve_project_type`, `routing_rows`), fixtures en `assets/docs-manifest/tests/test_docs_manifest.py` (`DocsManifestContributingTests`))
 - **HR-72 — La identidad del gobierno `MUST` medirse en un pull request, no solo fuera de él.** La fase 3 comprueba los sellos `sha256` de `.governance-manifest.json` sobre los ficheros gobernados y el cableado de `P23_required_jobs` (HR-46); mientras su único `adoption check` en CI pedía `--phase 5`, nadie la ejecutaba en ningún PR y un fichero gobernado podía llegar a `main` sin re-sellarse, con el rojo apareciendo después y la corrección manual (`ardelperal/APAP_WEB#2327`, re-sellado a mano en `#2328`). Con la declaración `governance_seals` en el contrato de adopción la fase 3 exige un `job` de CI que la ejecute, que ese job exista como clave de `jobs:` en un workflow y que figure en `required_jobs` de `.github/required-jobs-policy.json`: la única vía de enforcement en un repositorio privado con plan Free, donde el host no ofrece ni protección de rama ni required checks y el único check exigido es el agregador `required` del propio CI del consumer. El job invoca la CLI como **comando de primer nivel**, nunca encadenada a otro gate (HR-46: el ciclo `verify`→`adoption` superó 1.300 procesos y tumbó el VPS por OOM el 2026-10-05), y publica su nombre de check solo desde el evento que evalúa el PR (HR-30). La activación es por declaración explícita, como `agents_md` en HR-55 y `docs_map` en HR-63: sin ella avisa a `stderr` y sale 0 para no romper la adopción previa; con declaración incompleta o con una clave que el canon no conoce, rojo nombrando la clave (HR-3). Con esto el control que vigilaba el cableado de los gates queda cableado él mismo: un job declarado y ausente del workflow hace rojo en el PR que lo declara. (decisión del dueño, 2026-10-23; DysTelefonica/team-skills#1027; gate: `assets/bin/ci-pattern` (`_check_governance_seals`, `adoption check --phase 3`) con fixtures en `assets/adoption/tests/test_governance_seals.py`)
 - **HR-73 — Un gate que puede correr en dos instancias `MUST` separar su cola por instancia: el grupo de `concurrency` no puede ser el mismo.** El mismo job puede ejecutarse en dos instancias: su workflow con disparador propio (`pull_request`) y el mismo fichero invocado con `workflow_call` desde otro workflow. GitHub guarda una sola petición pendiente por grupo de concurrencia y cancela la pendiente cuando llega otra, así que las dos instancias metidas en la misma cola compiten y una pierde su veredicto; si la que pierde es la llamada desde `ci.yml`, el agregador `required` lee `needs.pr-gate.result == 'cancelled'` como fallo y el pull request queda rojo sin defecto (DysTelefonica/access2web-blueprint#1371, run `ci` 40084048493 intento 1: job `pr-gate / pr-gate` cancelado a los 0 s, «Canceling since a higher priority waiting request for gate-pr-gate-1371 exists»; la primera ocurrencia ya la había pagado `cadete`, que la aisló con un grupo por run y renunció a la cola FIFO). El grupo separa las instancias cuando nombra `github.run_id`, o `github.workflow` si las instancias toman nombres distintos (dentro de un workflow reusable `github.workflow` es el del **caller**, no el del fichero reusable), o un `inputs.<x>` que cada caller rellene con un valor no vacío y distinto; la otra salida es una sola instancia, un reusable sin disparador directo. `cancel-in-progress: false` se mantiene: la regla no toca la cancelación en curso, solo exige que las instancias no compitan por la misma cola. El gate `assets/workflow-policy/check_workflow_policy.py` lo mide comparando los workflows analizados entre sí: un reusable solo cuenta como segunda instancia si su fichero está entre los `--workflow`, y sin prueba de la segunda instancia no se reporta nada. (decisión del dueño, 2026-10-24; DysTelefonica/team-skills#1145, con la contraparte en DysTelefonica/access2web-blueprint#1372; gate: `assets/workflow-policy/check_workflow_policy.py` (`check_instance_isolated_groups`), fixtures en `assets/workflow-policy/tests/test_workflow_policy.py` (`TestInstanceIsolatedGroups`))
+- **HR-74 — El consumer que mide el presupuesto A1 con el gate de contrato de PR `MUST` cablear el mapa de orígenes, y la fase 4 `MUST` medirlo.** Sin `--origins-file` el gate cuenta el árbol vendorizado (`.agents/skills/`) como líneas de autoría y la primera PR de propagación del catálogo revienta el presupuesto con un A1 que no es trabajo de quien abre la PR (`DysTelefonica/cadete#643`, run `40088680498`; #1133, #1149). La exigencia se deriva del contrato del consumer y no de una declaración nueva: el mapa hace falta cuando algún workflow invoca `check_pr_contract.py` y la política que ese gate recibe con `--policy-file` tiene la comprobación `budget` activa (sin `checks` están todas activas); el gate `pr-size` mide A1 por ruta (`counts_to_budget`) y no lo necesita, así que un consumer que solo lo ejecuta no recibe el hallazgo. Con el mapa exigido y sin cablear, la fase 4 falla nombrando el cableado que falta: el generador `assets/bin/origins_file.py` (`--output <mapa>`) y la bandera `--origins-file <mapa>`, con la plantilla canónica `assets/templates/.github/workflows/pr-contract.yml.tmpl`; una política ilegible no da verde (HR-3). (decisión del dueño, 2026-10-24; DysTelefonica/team-skills#1159; gate: `assets/bin/ci-pattern` (`_check_review_budget`, `adoption check --phase 4`) y `assets/adoption/review_budget.py`, con fixtures en `assets/adoption/tests/test_review_budget.py`)
 
 ## §3 Decision Gates
 
@@ -603,6 +609,13 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). La etiqueta `
    adapte los scripts de referencia (ubicación declarada en `assets/parameters.md`),
    configure la protección de rama (checks requeridos, sin force-push) y el
    preflight canónico que lee los pasos del job de lint del propio workflow.
+   Si el consumer ejecuta el gate de contrato de PR con la comprobación
+   `budget` activa, su workflow de contrato de PR `MUST` generar el mapa de
+   orígenes y pasarlo con `--origins-file` (plantilla canónica:
+   `assets/templates/.github/workflows/pr-contract.yml.tmpl`): sin el mapa, el
+   árbol vendorizado (`.agents/skills/`) cuenta hacia dentro del presupuesto
+   (#931) y cada PR de propagación del catálogo falla con un A1 que no es
+   trabajo de quien abre la PR (#1133).
 5. **Valide en real.** Ejecute de verdad cada gate que toque producción  y
    complete una cadena de PRs encadenados de extremo a extremo con CI en cada
    tramo antes de declarar el patrón adoptado.
@@ -900,6 +913,18 @@ exclusiones por lockfiles o ficheros generados.
   cambiar, todos en el bloque `env` del workflow. Pasa el gate
   `assets/workflow-policy/` del propio canon
   (`assets/templates/tests/test_release_workflow_template.py`).
+- `assets/templates/.github/workflows/pr-contract.yml.tmpl` y
+  `assets/bin/origins_file.py` — el camino de contrato de PR de un consumer
+  (#1133): el gate `assets/pr-contract/check_pr_contract.py` no ejecuta `git`,
+  así que el workflow genera el mapa de orígenes —qué fichero vendorizado llega
+  desde dónde— con `origins_file.py` y se lo pasa con `--origins-file`. Con el
+  mapa, el árbol vendorizado (`.agents/skills/`) no cuenta para el presupuesto
+  A1 y un renombrado desde una ruta de autoría sigue contando (#931); sin él,
+  el gate cuenta todo y una PR de propagación del catálogo falla con un A1 que
+  no es trabajo de quien abre la PR. La plantilla fija el paso que genera los
+  datos del rango y el mapa, y el consumer cambia los tres valores marcados
+  como VALOR: el pin del patrón (el commit del canon que el job ejecuta), la
+  política de contrato de PR y el nombre del checkout del patrón.
 - `assets/ratchet/` — gate de ratchet shrink-only sobre hallazgos normalizados
   (HR-15 y HR-16): identidades estables (`rule`, `path`, `fingerprint`
   independiente del número de línea) contra una baseline versionada con

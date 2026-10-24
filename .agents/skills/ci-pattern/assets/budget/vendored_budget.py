@@ -13,7 +13,7 @@ un consumer es su catálogo propio, así que sus líneas son trabajo que alguien
 tiene que revisar. Excluirlo hacía que el gate midiera ``changed_lines: 0``
 en PRs que reescribían una skill entera de 569 líneas.
 
-El módulo no ejecuta ``git`` ni importa ``subprocess``: el activo se copia
+El módulo no ejecuta ``git`` ni lanza procesos: el activo se copia
 byte a byte en consumers con ratchet de ruff extendido (S603/S607) y quien
 llama ya tiene su runner, así que lo inyecta (#753). El contrato es
 ``run_git(*args) -> str``, ligado a su repositorio, que devuelve stdout y
@@ -137,15 +137,12 @@ def parse_origins(text: str) -> dict[str, str | None]:
     return origins
 
 
-def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> int:
-    """Líneas que cuentan para el presupuesto, desde un ``git diff --numstat``.
+def _iter_numstat(numstat: str):
+    """``(old_path, new_path, lines)`` de cada entrada del numstat contable.
 
-    Sin ``origins`` cuenta todo, como ``pr-contract`` antes de #931. Con
-    ``origins``, un fichero vendorizado solo cuenta si su origen es de
-    autoría o si es un renombrado desde una ruta de autoría. Un fichero
-    vendorizado sin entrada en ``origins`` cuenta (fallo hacia contar).
+    Una sola lectura del ``git diff --numstat`` para toda la regla: el
+    presupuesto y la cifra del árbol vendorizado salen de aquí.
     """
-    total = 0
     for line in numstat.splitlines():
         added, _, rest = line.partition("\t")
         deleted, _, path_field = rest.partition("\t")
@@ -155,7 +152,19 @@ def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> 
         if parsed is None:
             continue
         old_path, new_path = (_strip_diff_prefix(p) for p in parsed)
-        lines = int(added) + int(deleted)
+        yield old_path, new_path, int(added) + int(deleted)
+
+
+def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> int:
+    """Líneas que cuentan para el presupuesto, desde un ``git diff --numstat``.
+
+    Sin ``origins`` cuenta todo, como ``pr-contract`` antes de #931. Con
+    ``origins``, un fichero vendorizado solo cuenta si su origen es de
+    autoría o si es un renombrado desde una ruta de autoría. Un fichero
+    vendorizado sin entrada en ``origins`` cuenta (fallo hacia contar).
+    """
+    total = 0
+    for old_path, new_path, lines in _iter_numstat(numstat):
         if not is_under_vendored(new_path) or origins is None or new_path not in origins:
             total += lines
             continue
@@ -163,3 +172,13 @@ def budget_lines(numstat: str, origins: dict[str, str | None] | None = None) -> 
         if (origin is not None and not is_under_vendored(origin)) or counts_to_budget(old_path, new_path):
             total += lines
     return total
+
+
+def vendored_lines(numstat: str) -> int:
+    """Líneas del numstat cuyo destino cae bajo una raíz vendorizada.
+
+    El gate la usa para nombrar la parte de la cifra que NO es trabajo de
+    quien abre la PR: sin mapa de orígenes esas líneas cuentan hacia dentro
+    del presupuesto (#931) y el hallazgo tiene que decirlo (#1133).
+    """
+    return sum(lines for _, new_path, lines in _iter_numstat(numstat) if is_under_vendored(new_path))

@@ -16,7 +16,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 ASSET = Path(__file__).resolve().parent.parent
@@ -39,8 +39,12 @@ class SourceRules(unittest.TestCase):
     def setUp(self) -> None:
         self.guard = load_guard()
 
-    def check(self, base: str, head: str) -> list[str]:
-        return self.guard.check_sources("scripts/g.py", base, head)
+    def check(
+        self, base: str, head: str, warnings: list[str] | None = None
+    ) -> list[str]:
+        if warnings is None:
+            return self.guard.check_sources("scripts/g.py", base, head)
+        return self.guard.check_sources("scripts/g.py", base, head, warnings=warnings)
 
     def test_raising_without_field_is_rejected(self) -> None:
         violations = self.check(gate(362), gate(426))
@@ -86,6 +90,21 @@ class SourceRules(unittest.TestCase):
         violations = self.check(gate(1), "BASELINE = load_baseline()\n")
         self.assertIn("no longer a readable literal", violations[0])
 
+    def test_non_literal_baselines_are_reported_as_unprotected(self) -> None:
+        forms = {
+            "constructor": "BASELINE = BaselineEntry(complexity=25, path='app/a.py')\n",
+            "policy": 'BASELINE = dict(_POLICY["baseline"])\n',
+            "named reference": "BASELINE = _BASELINE_TESTS_NO_REFERENCE\n",
+        }
+        for form, source in forms.items():
+            with self.subTest(form=form):
+                warnings: list[str] = []
+                violations = self.check(source, source + "OTHER = 1\n", warnings)
+                self.assertEqual(violations, [])
+                self.assertEqual(len(warnings), 1)
+                self.assertIn("BASELINE", warnings[0])
+                self.assertIn("not protected", warnings[0])
+
 
 JUSTIFIED = (
     "BASELINE = {\n"
@@ -114,6 +133,21 @@ class JustificationRules(unittest.TestCase):
         self.assertIn("BASELINE", violations[0])
         self.assertIn("shim kept for the importer", violations[0])
         self.assertIn("RELAXATION", violations[0])
+
+    def test_deleting_one_repeated_justification_is_attributed_to_its_entry(self) -> None:
+        base = (
+            "BASELINE = {\n"
+            "    # shared reason\n"
+            "    'app/a.py': 1,\n"
+            "    # shared reason\n"
+            "    'app/b.py': 1,\n"
+            "}\n"
+        )
+        head = base.replace("    # shared reason\n", "", 1)
+        violations = self.check(base, head)
+        self.assertEqual(len(violations), 1)
+        self.assertIn("lost the justification 'shared reason'", violations[0])
+        self.assertIn("entry 'app/a.py'", violations[0])
 
     def test_removing_an_entry_together_with_its_comment_passes(self) -> None:
         head = JUSTIFIED.replace(
@@ -192,6 +226,13 @@ class CliAgainstGit(unittest.TestCase):
             code = self.guard.main(["--root", str(self.root), *args])
         return code, out.getvalue()
 
+    def run_cli_with_stderr(self, *args: str) -> tuple[int, str, str]:
+        out = io.StringIO()
+        err = io.StringIO()
+        with redirect_stdout(out), redirect_stderr(err):
+            code = self.guard.main(["--root", str(self.root), *args])
+        return code, out.getvalue(), err.getvalue()
+
     def test_branch_that_raises_a_baseline_fails(self) -> None:
         self.repo_with(gate(426))
         code, out = self.run_cli("--base-ref", "main")
@@ -217,6 +258,17 @@ class CliAgainstGit(unittest.TestCase):
         self.repo_with(gate(300))
         code, _ = self.run_cli("--base-ref", "nope")
         self.assertEqual(code, self.guard.EXIT_UNREADABLE)
+
+    def test_non_literal_baseline_warns_on_stderr(self) -> None:
+        self.repo_with(
+            'BASELINE = dict(_POLICY["baseline"])\nOTHER = 1\n',
+            base='BASELINE = dict(_POLICY["baseline"])\n',
+        )
+        code, _, err = self.run_cli_with_stderr("--base-ref", "main")
+        self.assertEqual(code, self.guard.EXIT_OK)
+        self.assertIn("WARNING", err)
+        self.assertIn("BASELINE", err)
+        self.assertIn("not protected", err)
 
     def test_gate_directory_is_configurable(self) -> None:
         self.repo_with(gate(426), directory="ci/gates")
