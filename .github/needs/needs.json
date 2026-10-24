@@ -15,6 +15,10 @@
     "outputs": {},
     "result": "success"
   },
+  "pip-audit": {
+    "outputs": {},
+    "result": "success"
+  },
   "codeql": {
     "outputs": {},
     "result": "success"
