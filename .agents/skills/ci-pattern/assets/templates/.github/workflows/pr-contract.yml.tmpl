@@ -1,0 +1,82 @@
+# Plantilla canonica del workflow de contrato de PR de un consumer (#1133).
+#
+# El paso de pr-contract necesita los datos del rango y el MAPA DE ORIGENES:
+# sin el, el gate cuenta el arbol vendorizado (`.agents/skills/`) para el
+# presupuesto de revision y la PR de propagacion del canon necesita
+# `size:exception` a mano (#931, #1088). Con el, el arbol vendorizado no cuenta
+# y un renombrado desde una ruta de autoria sigue contando.
+#
+# La plantilla deriva de las del patron (`assets/templates/README.md`); el
+# consumer cambia los tres valores marcados como VALOR.
+#
+# VALOR 1: el pin del patron (el commit del canon que el job ejecuta).
+# VALOR 2: la politica de contrato de PR del consumer.
+# VALOR 3: el nombre del checkout del patron (para el paso que lo trae).
+
+name: pr-contract
+
+on:
+  pull_request:
+    types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+  workflow_call:
+    secrets:
+      TEAM_SKILLS_READ_TOKEN:
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-contract:
+    name: pr-contract
+    runs-on: [self-hosted, Linux, consumer]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      # VALOR 3
+      - name: Check out the pattern at the pin
+        uses: ./.github/actions/pattern-at-pin
+        with:
+          pin: VALOR 1
+          token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+
+      # Los datos del rango (merge-base: BASE...HEAD) y el mapa de origenes.
+      # El mapa lo produce `vendored_budget.origins_for`; el gate no ejecuta
+      # git (HR-3), asi que lo genera el workflow (#1133).
+      - name: Compute diff artifacts and the origins file
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-changed
+          git diff --numstat  "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-numstat
+          git log --format='%P%n%B%n---COMMIT-END---' "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-commits
+          git ls-files > .ci-pr-tracked
+          git diff --name-only --find-renames=50% "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-names
+          git log --name-status --pretty=format: "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-log
+          python3 "$PATTERN_DIR/assets/bin/origins_file.py" \
+            --base "${BASE_SHA}" \
+            --head "${HEAD_SHA}" \
+            --names-file .ci-pr-names \
+            --log-file .ci-pr-log \
+            --output .ci-pr-origins
+
+      # VALOR 2
+      - name: PR contract gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I "$PATTERN_DIR/assets/pr-contract/check_pr_contract.py" \
+            --event-file     "$GITHUB_EVENT_PATH" \
+            --policy-file    .github/pr-contract.policy.json \
+            --repo           . \
+            --changed-files  .ci-pr-changed \
+            --numstat-file   .ci-pr-numstat \
+            --commits-file   .ci-pr-commits \
+            --tracked-files  .ci-pr-tracked \
+            --origins-file   .ci-pr-origins

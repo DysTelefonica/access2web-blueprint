@@ -1,0 +1,3 @@
+type: patch
+
+Los workflows de CI no pasaban `--origins-file` a `pr-contract`, asi que el gate contaba el arbol vendorizado (`.agents/skills/`) para el presupuesto de revision y cada PR de propagacion del canon necesitaba `size:exception` a mano (cadete#634, cadete#637, BP#1366, APAP#2360). Se publica `assets/bin/origins_file.py`, que escribe el mapa de origenes del PR con `vendored_budget.origins_for` (el gate no ejecuta `git`, HR-3), y la plantilla canonica `assets/templates/.github/workflows/pr-contract.yml.tmpl`, que lo genera sobre el rango `BASE...HEAD` y lo pasa al gate. Con el mapa, el arbol vendorizado no cuenta y un renombrado desde una ruta de autoria sigue contando (paridad de #931) (#1133).
