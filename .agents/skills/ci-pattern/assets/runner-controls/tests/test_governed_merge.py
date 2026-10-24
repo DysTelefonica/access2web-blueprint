@@ -73,13 +73,14 @@ class GovernedMergeTests(unittest.TestCase):
         self.assert_merged(proc, False)
         self.assertIn(CHECK, proc.stdout + proc.stderr)
 
-    def test_missing_type_label_blocks_the_merge(self) -> None:
+    def test_missing_type_label_does_not_block_the_merge(self) -> None:
+        # R1 (DysTelefonica/team-skills#1093): la etiqueta `type:*` del PR ya no
+        # es un gate; la llevan los agentes por costumbre.
         state = base_state()
         state["pr_details"]["7"]["labels"] = [{"name": "chain:partial"}]
         proc = run_gate(self.root, contract(), state)
-        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
-        self.assert_merged(proc, False)
-        self.assertIn("type", proc.stdout + proc.stderr)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assert_merged(proc, True)
 
     def test_oversized_pr_is_not_re_evaluated(self) -> None:
         # #787: el tamano lo mide pr-size (que excluye lo vendorizado y exige la etiqueta);

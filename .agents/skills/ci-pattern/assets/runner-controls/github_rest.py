@@ -155,7 +155,7 @@ def call(method: str, path: str, body: dict | None = None) -> tuple[str, str]:
 def get_json(path: str) -> object:
     """GET de un documento. Un listado se pagina siguiendo `Link` y se fusiona."""
     text, link = call("GET", path)
-    if not path.endswith("/pulls"):
+    if not urllib.parse.urlsplit(path).path.endswith("/pulls"):
         return _parse(text, path)
     merged: list = []
     target = path

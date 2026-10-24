@@ -4,8 +4,8 @@
 
 El workflow que corre en el runner propio invoca este asset con el numero
 de PR; verifica el contrato antes de fusionar: los ``required_checks`` del
-contrato en verde sobre la cabeza del PR, exactamente una etiqueta
-``type:*`` y ``Closes #N`` solo en el punta de cadena (un PR
+contrato en verde sobre la cabeza del PR y ``Closes #N`` solo en el punta de
+cadena (un PR
 ``chain:partial`` lo lleva en la violacion). Un check requerido que aun no
 existe o no ha terminado se espera hasta ``--wait-seconds`` (#787). El tamano
 no se repite aqui: lo mide ``pr-size`` (excluye lo vendorizado), y ``required``
@@ -575,9 +575,6 @@ def gate_findings(args: argparse.Namespace, pull: dict, contract: dict,
     if pull.get("draft") is True:
         findings.append(f"PR #{args.pr} is a draft: the governed path merges ready PRs only")
     findings += verdict_findings(args, pull["head"]["sha"], required)
-    type_labels = sorted(name for name in labels if name.startswith("type:"))
-    if len(type_labels) != 1:
-        findings.append(f"expected exactly one type:* label, found {type_labels or 'none'}")
     if "chain:partial" in labels and CLOSING.search(body):
         findings.append("Closes in an intermediate PR: only the chain tip may carry closing words")
     base_ref = pull["base"]["ref"]

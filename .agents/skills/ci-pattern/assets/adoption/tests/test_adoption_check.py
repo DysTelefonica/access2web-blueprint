@@ -1964,7 +1964,7 @@ class DocFidelityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = self.consumer_with_contract_types(tmp)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(item for item in doc.splitlines() if "etiqueta `type:*` por PR" in item)
+            line = next(item for item in doc.splitlines() if "Etiquetas `type:*` orientativas" in item)
             for label in ("type:bug", "type:chore", "type:docs", "type:feature"):
                 self.assertIn(label, line)
 
@@ -1977,7 +1977,7 @@ class DocFidelityTests(unittest.TestCase):
             seed_evidence(repo, 3)
             seed_operating_doc(repo)
             doc = (repo / "docs" / "ci-pattern-flow.md").read_text(encoding="utf-8")
-            line = next(item for item in doc.splitlines() if "etiqueta `type:*` por PR" in item)
+            line = next(item for item in doc.splitlines() if "Etiquetas `type:*` orientativas" in item)
             self.assertIn("type:bug", line)
             self.assertIn("type:feature", line)
 
@@ -2717,24 +2717,26 @@ class LifecycleRecipeTests(unittest.TestCase):
         self.assertEqual(body.count("Hecho:"), 10,
                          "cada etapa exige su condición de «hecho»")
 
-    def test_approval_stage_stops_and_never_self_approves(self):
-        # #916: el agente crea la issue y para; la aprueba un mantenedor;
-        # si la orden del mantenedor incluye la aprobación, se declara en
-        # el cuerpo del PR. El texto lo dice con las mismas palabras que
-        # cadete #540.
+    def test_approval_stage_is_a_convention_not_a_gate(self):
+        # R1 (#1093): `status:approved` la puede poner cualquiera, agentes
+        # incluidos, y ningún gate la exige. La etapa 2 no puede mandar a
+        # parar ni a negar la rama o el PR por la etiqueta.
         body = self.doc_of(tempfile.mkdtemp())
-        stage = body[body.index("**2. Aprobación.**"):body.index("**3. Worktree.**")]
+        stage = body[body.index("**2. Aprobación"):body.index("**3. Worktree.**")]
         for fragment in (
-            "crea la issue y para",
-            "la aprueba un mantenedor",
-            "se auto-aprueba",
-            "cuerpo del PR",
-            "Hecho: la lista contiene `status:approved`",
-            "pare y pregunte",
+            "la puede poner cualquiera, agentes incluidos",
+            "ningún gate la exige",
+            "el enlace a la issue, el tamaño y los commits convencionales",
+            "Hecho: la etiqueta `status:approved` es opcional",
         ):
             self.assertIn(fragment, stage, f"la etapa 2 no dice: {fragment}")
-        self.assertNotIn("aplique la etiqueta", stage)
-        self.assertNotIn("aplicar la etiqueta", stage)
+        for retired in (
+            "Nunca se auto-aprueba",
+            "no cree rama ni PR",
+            "pare y pregunte",
+            "la aprueba un mantenedor",
+        ):
+            self.assertNotIn(retired, stage, f"la etapa 2 aún dice: {retired}")
 
     def test_commands_are_literal_and_complete(self):
         body = self.doc_of(tempfile.mkdtemp())
@@ -3435,7 +3437,7 @@ class PhaseZeroWorkflowCommentsTests(unittest.TestCase):
             f"(regresión negativa del fix #607); salida del CLI:\n{joined}")
 
 
-HR44_LINE = "Toda edición material de una skill añade un fragmento válido en `changelog.d/`"
+HR44_LINE = "Los fragmentos de `changelog.d/` se consolidan en el PR de release"
 GATE_WORKFLOW = (
     "on:\n  pull_request:\njobs:\n  changelog:\n    steps:\n"
     "      - run: python3 personal/ardelperal/ci-pattern/assets/changelog-fragment/"

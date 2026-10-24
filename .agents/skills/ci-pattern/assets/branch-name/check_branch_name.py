@@ -22,11 +22,14 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from pathlib import Path
+
+# Detección compartida con check_issue_spec.py (#1113).
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "dependabot"))
+from dependabot import is_dependabot_pr  # noqa: E402
 
 DEFAULT_PATTERN = "^(feat|fix|chore|docs|style|refactor|perf|test|build|ci|revert)/[a-z0-9._-]+$"
 ALWAYS_EXEMPT = re.compile(r"main|archive/.+|skill-fleet/[A-Za-z0-9._-]+")
-DEPENDABOT = re.compile(r"dependabot/(?:pip|uv|npm_and_yarn|github_actions)/[A-Za-z0-9._/-]+")
-DEPENDABOT_ACTOR = "dependabot[bot]"
 EXIT_INVALID = 2
 
 
@@ -55,7 +58,7 @@ def evaluate(ref: str, pattern: re.Pattern[str], allow: frozenset[str], actor: s
     """``(ok, note)``: the verdict for ``ref`` and why it passed or failed."""
     if not ref:
         raise EmptyRefError
-    if actor == DEPENDABOT_ACTOR and DEPENDABOT.fullmatch(ref):
+    if is_dependabot_pr(actor, ref):
         return True, f"{ref}: trusted Dependabot branch"
     if ALWAYS_EXEMPT.fullmatch(ref):
         return True, f"{ref}: exempt (default branch, archive/ or skill-fleet/)"

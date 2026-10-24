@@ -5,10 +5,10 @@ patrón, en su repositorio. La IA que adopta el patrón en un consumer las deriv
 de ahí (fase 3 del porting-guide, G3.2), nunca de memoria:
 
 - `.github/PULL_REQUEST_TEMPLATE.md` — cuerpo del PR: secciones **Chain Context**
-  (HR-54) y «Tests que prueban el cierre» (HR-53), presupuesto de revisión y la
-  excepción de tamaño como campo de datos.
-- `.github/ISSUE_TEMPLATE/` — formularios de issue (el contrato canónico de
-  issue: sus seis secciones obligatorias).
+  (HR-54) y «Tests que prueban el cierre» (HR-53, aviso), presupuesto de revisión
+  y la excepción de tamaño como etiqueta `size:exception` (no como campo de datos).
+- `.github/ISSUE_TEMPLATE/` — formularios de issue (la plantilla canónica de
+  issue: sus seis secciones recomendadas; ningún gate las exige, team-skills#1093 R2).
 - `assets/pr-contract/check_pr_contract.py` — el gate que los lee: sus
   constantes nombran los campos exactos que tienen que aparecer.
 

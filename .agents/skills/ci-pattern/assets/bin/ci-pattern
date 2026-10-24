@@ -55,6 +55,8 @@ Comandos:
   status <repo> [--json]     Resumen de una línea por clase del repo destino.
   manifest show <repo>       Imprime el manifiesto leído.
   pr preflight --pr-body <file> [--issue N] [--branch <ref>] [--repository owner/name]
+  pr preflight --draft --pr-body <file> --base <branch> [--label L]...
+                             Modo borrador API-free: cuerpo y tamaño local; --base es obligatorio.
   pr contract --body <file> [--base main] [--label L]... [--print-payload]
                              [--token <token>] [--actor <user>] [--with-adoption]
                              [--policy <path> --changed-files <file>] [--json]
@@ -1525,9 +1527,9 @@ CHECK_RECOVERY = {
     "pr-size": ("presupuesto de revisión (líneas añadidas + borradas)",
                 "reduzca el diff o divida el cambio en cadena "
                 "(`chain:partial` + `Refs #N`; `Closes #N` solo en la punta)"),
-    "issue-spec": ("enlace y estado de la issue (aprobada, forma canónica)",
-                   "corrija el cuerpo del PR: enlace a la issue aprobada con "
-                   "la forma canónica; nunca invente el cierre"),
+    "issue-spec": ("enlace a la issue del repositorio",
+                   "corrija el cuerpo del PR: enlace a la issue con "
+                   "`Closes`/`Refs`; nunca invente el cierre"),
     "security": ("escaneo de seguridad de superficie",
                  "atienda el hallazgo o justifíquelo en el PR; nunca silencie "
                  "el scanner sin causa responsable"),
@@ -1634,8 +1636,8 @@ def _changelog_fragment_gate_wired(repo):
 def _changelog_fragment_lines(repo):
     if not _changelog_fragment_gate_wired(repo):
         return []
-    return ["- Toda edición material de una skill añade un fragmento válido en `changelog.d/` "
-            "(HR-44, #665)."]
+    return ["- Los fragmentos de `changelog.d/` se consolidan en el PR de release: ningún gate "
+            "exige uno por PR (HR-44, #665; team-skills#1093, R4)."]
 
 
 OPERATING_DOC_AGENTS_BLOCK = """<!-- ci-pattern-agents:begin -->
@@ -1792,8 +1794,8 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
     # Backticks pares: el flag va dentro del span de código y la nota fuera.
     issue_type_note = (" Elija exactamente un `type:*` de la sección 4."
                        if type_label_flag else "")
-    pr_type_note = (" Elija exactamente un `type:*` de la sección 4; "
-                    "el merge gobernado rechaza el PR sin él."
+    pr_type_note = (" Elija exactamente un `type:*` de la sección 4 "
+                    "(convención; desde #1093 ningún gate la exige)."
                     if type_label_flag else "")
     return [f"Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. "
             f"Jobs requeridos que debe ver en verde antes del merge: {_or_none(sorted(jobs))}.",
@@ -1802,13 +1804,14 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "  `gh issue list --search \"<términos>\" --json number,title,state --state all --limit 20`\n"
         f"  `gh issue create --title \"<título>\" --body-file <cuerpo-de-la-issue.md>{type_label_flag}`{issue_type_note}\n"
         "  Hecho: la issue existe y lleva su etiqueta de tipo.",
-        f"- **2. Aprobación.** El agente crea la issue y para; la aprueba un mantenedor. "
-        "Nunca se auto-aprueba, ni aunque la orden del mantenedor incluya la "
-        "aprobación: en ese caso lo declara en el cuerpo del PR (quién aprobó "
-        "y con qué instrucción). Consulte la etiqueta:\n"
-        f"  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
-        f"  Hecho: la lista contiene `{params['P10_label_approval']}`. "
-        "Si no está, pare y pregunte; no cree rama ni PR.",
+        f"- **2. Aprobación (convención, no puerta).** `{params['P10_label_approval']}` la "
+        "puede poner cualquiera, agentes incluidos (decisión del dueño del 2026-10-23, "
+        "17:24, en los comentarios de #1093); ningún gate la exige. La PR no se bloquea "
+        "por la aprobación: bloquean el enlace a la issue, el tamaño y los commits "
+        "convencionales. Consulte la etiqueta si la quiere usar:\n"
+        "  `gh issue view <número> --json labels --jq '.labels[].name'`\n"
+        f"  Hecho: la etiqueta `{params['P10_label_approval']}` es opcional; el flujo "
+        "sigue con ella o sin ella.",
         "- **3. Worktree.** Desde la rama base actualizada, con un nombre de rama que "
         "cumpla la regex "
         f"`{params['P01_branch_name_pattern']}`:\n"
@@ -1830,13 +1833,16 @@ def _operating_doc_lifecycle_lines(params, host, jobs, entrypoint, repo=None):
         "  Hecho: exit 0 sobre el árbol integrado.",
         f"- **6. Pull request.** Contra la rama base de la etapa 3; cuerpo con "
         f"`Refs #N` (o `Closes #N` solo en la punta de cadena), exactamente una "
-        f"etiqueta `type:*` (sección 4) y presupuesto de "
+        f"etiqueta `type:*` orientativa (sección 4) y presupuesto de "
         f"{params['P06_review_budget_lines']} líneas; si no cabe, cadena:\n"
         "  Con `chain:partial` o en la punta de cadena (base = rama por "
-        "defecto) el cuerpo lleva ADEMÁS la sección **Chain Context** (HR-54) "
+        "defecto) el cuerpo declara ADEMÁS la sección **Chain Context** (HR-54) "
         "como dato: `chain`, `position` N/M, `base`, `depends-on`, `follow-up`, "
-        "`starts-at`, `ends-with` y `review-budget`, con `base` igual a la base "
-        "del PR y un único marcador del PR actual en el diagrama de la plantilla de PR.\n"
+        "`starts-at`, `ends-with` y `review-budget`. Si falta o no cuadra, el gate "
+        "avisa y no bloquea (team-skills#1093, R3).\n"
+        "  `ci-pattern pr preflight --draft --pr-body <cuerpo-del-pr.md> --base "
+        "<rama-base> --label <etiqueta>` (modo API-free: exit 0 exige cuerpo y "
+        "tamaño en verde)\n"
         "  `gh pr create --base <rama-base> --head <rama-nueva> "
         f"--title \"<tipo>(<ámbito>): <resumen>\" --body-file <cuerpo-del-pr.md>{type_label_flag}`{pr_type_note}\n"
         "  Hecho: `gh pr view <número> --json number,url` devuelve número y URL.",
@@ -2008,7 +2014,9 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
     issues_lines += [
         f"- Formularios disponibles en el destino: {_or_none(available_forms)}.",
         "- Antes de crear la issue, busque duplicados en issues abiertas y cerradas.",
-        f"- La implementación solo arranca con la etiqueta `{params['P10_label_approval']}` en la issue.",
+        f"- `{params['P10_label_approval']}` la puede poner cualquiera, agentes incluidos "
+        "(decisión del dueño del 2026-10-23, 17:24, en los comentarios de #1093); "
+        "ningún gate la exige (team-skills#1093, R1).",
     ]
     numbered = _branch_takes_issue_number(params["P01_branch_name_pattern"])
     return {
@@ -2032,17 +2040,23 @@ def _operating_doc_section_bodies(repo, params, host, jobs, entrypoint):
         "pull-request": "\n".join([
             f"- Presupuesto: {params['P06_review_budget_lines']} líneas (añadidas + borradas, "
             "tests y docs incluidos). Si no cabe, cadena de PRs.",
+            "- El flujo de PR bloquea por tres cosas: el enlace a la issue (`Closes` o "
+            "`Refs` a una issue del repositorio), el presupuesto y los commits "
+            "convencionales; HR-53 y HR-64 avisan. Los gates técnicos (tests, lint, "
+            "tipos, seguridad) no cambian (team-skills#1093).",
             f"- PR que no cierra la issue: etiqueta `{params['P11_label_chain_partial']}` y "
             "`Refs #<issue>` en el cuerpo; sin `Closes|Fixes|Resolves`. HR-7 deduce "
             f"que `{params['P11_label_chain_partial']}` significa «este PR no cierra la "
             "issue»; los propagadores y los eslabones intermedios de una cadena la llevan.",
-            "- Con `chain:partial` o en la punta de cadena, el cuerpo lleva la "
-            "sección Chain Context (HR-54): posición N/M, base igual a la del PR, "
-            "dependencias, presupuesto y un único marcador del PR actual en el diagrama.",
+            "- Con `chain:partial` o en la punta de cadena, el cuerpo declara la "
+            "sección Chain Context (HR-54) como ayuda: posición N/M, base igual a la del PR, "
+            "dependencias, presupuesto y un único marcador del PR actual en el diagrama. "
+            "El gate avisa si falta y no bloquea (team-skills#1093, R3).",
             "- El PR que cierra la issue lleva `Closes #<issue>` sin la etiqueta de cadena.",
-            f"- Exactamente una etiqueta `type:*` por PR: {_or_none(type_labels)}.",
-            "- El cuerpo lleva la sección `## Asistencia de IA` no vacía (HR-14): «ninguna» o la "
-            "herramienta de IA y la parte que ayudó. La declaración vive en el PR; los commits no "
+            f"- Etiquetas `type:*` orientativas, ninguna exigida por un gate: {_or_none(type_labels)}.",
+            "- El cuerpo declara la sección `## Asistencia de IA` (HR-14): «ninguna» o la "
+            "herramienta de IA y la parte que ayudó. El gate avisa si falta y no bloquea "
+            "(team-skills#1093, R9). La declaración vive en el PR; los commits no "
             "llevan atribución de IA.",
             *_changelog_fragment_lines(repo),
         ]),

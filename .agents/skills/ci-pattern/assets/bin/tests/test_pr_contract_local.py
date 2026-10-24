@@ -52,7 +52,6 @@ BODY = """Closes #912
 """
 
 POLICY = {
-    "required_labels": ["type:feature", "type:bug", "type:docs"],
     "chain_tip_requires_closes": True,
     "closes_pattern": "Closes|Fixes|Resolves",
     "review_budget_lines": 400,
@@ -179,7 +178,8 @@ class PrContractLocalTests(unittest.TestCase):
         self.assertIn("PR-CONTRACT OK", out)
 
     def test_same_body_gives_the_same_verdict_and_text_as_the_gate(self):
-        # Sección HR-53 sin test ni «No aplica»: el gate falla y el comando debe decir lo mismo.
+        # Sección HR-53 sin test ni «No aplica»: el gate avisa y el comando debe
+        # decir lo mismo (mismo texto, mismo exit code).
         body = BODY.format(branch=BRANCH, test=TEST_REL, budget=1).replace(
             "- `tests/test_fix.py::test_caso_corregido`", "- la prosa no nombra ningún test")
         local_rc, local_out, local_err = _run_local(self._argv(body))
@@ -187,7 +187,8 @@ class PrContractLocalTests(unittest.TestCase):
         self.assertEqual(local_rc, gate_rc)
         self.assertEqual(local_out, gate_out)
         self.assertEqual(local_err, gate_err)
-        self.assertEqual(local_rc, 1)
+        self.assertEqual(local_rc, 0)
+        self.assertIn("AVISO", local_out)
 
     def test_missing_body_file_exits_2(self):
         rc, _, err = _run_local(["--body", str(self.root / "no-existe.md"),

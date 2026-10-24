@@ -38,13 +38,13 @@ declaración es vinculante: el catálogo no la rellena por usted.
 Las etiquetas del repo viven en `.github/host-contract.json` (HR-34).
 Las que importan al abrir una PR:
 
-- `type:*` — al menos una (`type:feature`, `type:bug`, `type:docs`,
-  `type:refactor`, `type:chore`). Una PR con dos `type:*` falla
-  cerrado.
-- `status:approved` — la aplica solo un mantenedor. El agente crea la
-  issue y para; nunca se auto-aprueba, ni aunque la orden del mantenedor
-  incluya la aprobación (en ese caso lo declara en el cuerpo del PR).
-  Sin ella no hay rama ni PR.
+- `type:*` — una (`type:feature`, `type:bug`, `type:docs`,
+  `type:refactor`, `type:chore`). Es una convención de clasificación:
+  desde #1093 ningún gate la exige, ni en la issue ni en la PR.
+- `status:approved` — la puede poner cualquiera, agentes incluidos
+  (decisión del dueño del 2026-10-23, en #1093). Es la convención que
+  marca qué issue queda aprobada para implementar; ningún gate la exige
+  y una PR puede abrirse y mergearse sin ella.
 - `chain:partial` — cuando la PR es un eslabón de una cadena; lleva
   `Refs #<issue-padre>` y nunca `Closes` (HR-35).
 - `size:exception` — solo el mantenedor, último recurso; vea el

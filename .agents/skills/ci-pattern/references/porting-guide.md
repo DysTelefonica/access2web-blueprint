@@ -52,7 +52,12 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   Preflight canónico:
   `assets/tooling-preflight/tooling-preflight.sh` (lista declarada como dato
   versionado del job, `command -v` de cada binario, nombra TODOS los
-  ausentes y falla si la lista no existe o está vacía).
+  ausentes —una línea por ausente, `falta <cli> en el runner <nombre>`— y
+  falla si la lista no existe, no es legible o está vacía). La identidad del
+  runner es la opción opt-in `--runner <nombre>`: sin ella el preflight
+  nombra la lista de ausentes como antes; con ella nombra cada ausente y en
+  qué runner falta. El cableado por job es la sección «Cableado del preflight
+  de tooling por job (G0.5)» de esta misma fase.
 - **G0.6 — Estado de release.** Qué está sin liberar en el repo. Nunca adoptar
   a mitad de un fix sin liberar: el ruido del cambio de gobernanza se mezcla
   con el fix pendiente y ambos quedan sin dueño claro.
@@ -60,6 +65,76 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   workspaces de CI del repo y declárelos fuera de límites para cualquier
   edición. Previene C5: los workspaces de CI pertenecen al runner; editar en
   ellos compite con el runner sobre el mismo working tree.
+
+### Cableado del preflight de tooling por job (G0.5)
+
+El censo de la fase 0 no se queda en un inventario: se cablea. TODO job
+migrado —TODOS, no solo el primero— lleva el preflight como primer paso
+ejecutable después del checkout, con la lista de CLI del job versionada en el
+repo del consumer y la identidad del runner que lo ejecuta:
+
+```yaml
+jobs:
+  unit:
+    runs-on: [self-hosted, Linux, ARM64, apap, oracle, coolify, noble, deploy]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+        with:
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (regla 16 del runner-skill), no en el
+      # runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/unit.txt \
+            --runner "${{ runner.name }}"
+
+      - name: Suite del job
+        run: make test
+```
+
+Y la lista del job, versionada en el repo del consumer: una CLI por línea,
+`#` abre comentario y la línea en blanco se ignora.
+
+```text
+# .github/tooling/unit.txt — CLI que el RUNNER debe aportar a este job.
+python3
+make
+```
+
+Cuatro reglas del cableado:
+
+1. **La ruta es la del consumer propagado**:
+   `.agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh`.
+   Es la copia que la propagación deja en el repo del consumer; el asset del
+   catálogo (`personal/ardelperal/ci-pattern/assets/tooling-preflight/`) no
+   se cablea en un workflow.
+2. **El cableado canónico pasa siempre `--runner "${{ runner.name }}"`.** Sin
+   la identidad del runner, «falta <cli>» no dice dónde mirar: el fix aterriza
+   en la definición del servicio del runner concreto, nunca en una
+   instalación manual del host. Con identidad, el preflight nombra cada
+   ausente, uno por línea: `falta <cli> en el runner <nombre>`. La opción es
+   opt-in (una invocación heredada `--binaries FICHERO` a secas sigue siendo
+   válida y conserva su texto anterior), pero el cableado nuevo la declara
+   siempre: es lo que cierra el hueco.
+3. **La lista declara lo que el runner aporta, no lo que instala el job.** La
+   lista son las CLI que el host del runner debe tener por definición de
+   servicio. Una CLI que el job instala con un `setup-*` (node, python) la
+   aporta el propio job y falla sola si el `setup-*` no la deja; no va en la
+   lista. Si un consumer quiere verificarla también, pone el paso del
+   preflight justo después del `setup-*` —sigue siendo el primer paso
+   ejecutable del job— y la incluye.
+4. **La lista es dato, no script.** Se versiona junto al workflow del job
+   (`.github/tooling/<job>.txt`); el preflight la lee con `command -v` y
+   nombra los ausentes por stderr.
+
+APAP (`ardelperal/APAP_WEB`), BP (`DysTelefonica/access2web-blueprint`) y
+cadete (`DysTelefonica/cadete`) copian este patrón en SUS jobs, con SU lista
+versionada: este catálogo publica el patrón y no edita ningún
+`.github/workflows` —el workflow de cada consumer es de su propietario—, así
+que cada consumer abre su propio PR con su cableado.
 
 Cierre determinista de fase 0: cada artefacto de gobierno del destino queda en
 el inventario del contrato de adopción (`.github/ci-pattern-adoption.json`,

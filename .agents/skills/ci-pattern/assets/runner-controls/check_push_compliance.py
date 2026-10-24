@@ -35,6 +35,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NoReturn
+from urllib.parse import urlencode
 
 from github_rest import GitHubApiError, call, get_json
 
@@ -383,9 +384,8 @@ def settled_verdict(push: PushAudit, repo: str, pr_number: object,
     return findings
 
 
-def compare_commits(event: dict, repo: str) -> list[dict]:
-    """Rango completo del push según el compare (la API devuelve hasta 250; #326)."""
-    before, after = push_range(event)
+def compare_range(repo: str, before: str, after: str) -> list[dict]:
+    """Rango completo según el compare (la API devuelve hasta 250; #326)."""
     compare = gh_json(f"repos/{repo}/compare/{before}...{after}")
     if not isinstance(compare, dict) or not isinstance(compare.get("total_commits"), int):
         fail(f"compare for {before}...{after} is not the API compare shape")
@@ -414,6 +414,92 @@ def compare_commits(event: dict, repo: str) -> list[dict]:
     return commits
 
 
+def compare_commits(event: dict, repo: str) -> list[dict]:
+    """Rango completo del push según el compare (la API devuelve hasta 250; #326)."""
+    before, after = push_range(event)
+    return compare_range(repo, before, after)
+
+
+def associated_pulls(repo: str, sha: str) -> list[dict]:
+    """PRs asociadas a un commit; la API devuelve una lista JSON."""
+    prs = gh_json(f"repos/{repo}/commits/{sha}/pulls")
+    if not isinstance(prs, list):
+        fail(f"pulls for commit {sha} is not a JSON array")
+    return [pull for pull in prs if isinstance(pull, dict)]
+
+
+def pull_detail(repo: str, number: object) -> dict:
+    """Detalle de una PR con la forma que exige el detective."""
+    detail = gh_json(f"repos/{repo}/pulls/{number}")
+    if not isinstance(detail, dict) or not isinstance(detail.get("head"), dict) \
+            or not isinstance(detail["head"].get("sha"), str):
+        fail(f"PR #{number} detail is not the API pull shape")
+    return detail
+
+
+def listed_pulls(repo: str, branch: str) -> list[dict]:
+    """PRs cerradas con la rama como base; la API devuelve una lista JSON."""
+    query = urlencode({"state": "closed", "base": branch, "per_page": 100,
+                       "sort": "updated", "direction": "desc"})
+    pulls = gh_json(f"repos/{repo}/pulls?{query}")
+    if not isinstance(pulls, list):
+        fail(f"pulls listing for {repo} is not a JSON array")
+    return [pull for pull in pulls if isinstance(pull, dict)]
+
+
+def pull_covers_push(pull: dict, branch: str, after: str) -> bool:
+    """La PR esta fusionada en la rama y su merge commit o head es la punta."""
+    if not (pull.get("merged") or pull.get("merged_at")):
+        return False
+    base = pull.get("base")
+    head = pull.get("head")
+    head_sha = head.get("sha") if isinstance(head, dict) else None
+    if not isinstance(base, dict) or base.get("ref") != branch:
+        return False
+    return pull.get("merge_commit_sha") == after or head_sha == after
+
+
+def merged_push_pulls(repo: str, branch: str, after: str) -> list[dict]:
+    """PRs fusionadas en la rama cuyo merge commit o head es la punta del push."""
+    candidates = [pull for pull in associated_pulls(repo, after)
+                  if pull_covers_push(pull, branch, after)]
+    if candidates:
+        return candidates
+    return [pull for pull in listed_pulls(repo, branch)
+            if pull_covers_push(pull, branch, after)]
+
+
+def merge_coverage(repo: str, branch: str, after: str) -> tuple[set[str], list[dict]]:
+    """Commits de base..merge cubiertos por la PR que fusionó la punta del push."""
+    covered = set()
+    covering = []
+    for pull in merged_push_pulls(repo, branch, after):
+        number = pull.get("number")
+        detail = pull_detail(repo, number)
+        base = detail.get("base")
+        head = detail.get("head")
+        base_sha = base.get("sha") if isinstance(base, dict) else None
+        head_sha = head.get("sha") if isinstance(head, dict) else None
+        merge_commit_sha = detail.get("merge_commit_sha")
+        merge_sha = merge_commit_sha
+        if not isinstance(merge_sha, str) or not SHA_RE.match(merge_sha):
+            merge_sha = head_sha
+        if not isinstance(merge_sha, str) or not SHA_RE.match(merge_sha):
+            fail(f"PR #{number} does not expose a valid base..merge range")
+        if not isinstance(base_sha, str) or not SHA_RE.match(base_sha):
+            # El primer padre del commit de merge es la base efectiva; sirve
+            # cuando el detalle de la PR no trae `base.sha`.
+            if isinstance(merge_commit_sha, str) and SHA_RE.match(merge_commit_sha):
+                base_sha = _first_parent(gh_json(f"repos/{repo}/commits/{merge_commit_sha}"))
+            if not isinstance(base_sha, str) or not SHA_RE.match(base_sha):
+                fail(f"PR #{number} does not expose a valid base..merge range")
+        if detail.get("merge_commit_sha") != after and head_sha != after:
+            fail(f"PR #{number} does not match the pushed commit")
+        covered.update(commit["id"] for commit in compare_range(repo, base_sha, merge_sha))
+        covering.append(pull)
+    return covered, covering
+
+
 @dataclass(frozen=True)
 class PushAudit:
     """Contexto fijo de la auditoría de un push: lo que no cambia de un commit a otro."""
@@ -421,10 +507,13 @@ class PushAudit:
     repo: str
     branch: str
     event: dict
+    after: str
     tracker: str | None
     required: list[str]
     governed: dict | None
     seen_prs: set
+    covered: set[str]
+    covering_pulls: tuple[dict, ...]
     wait_seconds: float
     poll_seconds: float
 
@@ -435,10 +524,12 @@ def commit_findings(push: PushAudit, commit: dict) -> list[str]:
         push.governed, push.seen_prs)
     author = commit.get("author") if isinstance(commit.get("author"), dict) else {}
     author_name = author.get("name") or event.get("pusher", {}).get("name") or "unknown author"
-    prs = gh_json(f"repos/{repo}/commits/{commit['id']}/pulls")
-    if not isinstance(prs, list):
-        fail(f"pulls for commit {commit['id']} is not a JSON array")
-    merged = [p for p in prs if isinstance(p, dict) and (p.get("merged") or p.get("merged_at"))]
+    if commit["id"] in push.covered and commit["id"] != push.after:
+        return []
+    prs = associated_pulls(repo, commit["id"])
+    known = {pull.get("number") for pull in prs}
+    prs += [pull for pull in push.covering_pulls if pull.get("number") not in known]
+    merged = [p for p in prs if p.get("merged") or p.get("merged_at")]
     into_branch = [p for p in merged
                    if isinstance(p.get("base"), dict) and p["base"].get("ref") == branch]
     if not into_branch:
@@ -467,10 +558,7 @@ def commit_findings(push: PushAudit, commit: dict) -> list[str]:
             continue
         first = number not in seen_prs
         seen_prs.add(number)
-        detail = gh_json(f"repos/{repo}/pulls/{number}")
-        if not isinstance(detail, dict) or not isinstance(detail.get("head"), dict) \
-                or not isinstance(detail["head"].get("sha"), str):
-            fail(f"PR #{number} detail is not the API pull shape")
+        detail = pull_detail(repo, number)
         # El fusionador sale del DETALLE del PR: `pull["user"]["login"]` (la
         # lista de PRs de un commit) es el AUTOR del PR, no quien lo fusionó.
         merged_by = detail.get("merged_by")
@@ -522,8 +610,10 @@ def audit(args: argparse.Namespace) -> int:
     tracker = tracker_branch(contract)
     governed = governed_path_config(contract)
     findings: list[str] = []
-    push = PushAudit(repo, branch, event, tracker, required, governed, set(),
-                     args.wait_seconds, args.poll_seconds)
+    _, after = push_range(event)
+    covered, covering = merge_coverage(repo, branch, after)
+    push = PushAudit(repo, branch, event, after, tracker, required, governed, set(),
+                     covered, tuple(covering), args.wait_seconds, args.poll_seconds)
     for commit in commits:
         findings += commit_findings(push, commit)
     if not findings:

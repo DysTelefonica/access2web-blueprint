@@ -505,28 +505,40 @@ def _file(name: str, added: int, deleted: int = 0, previous: str | None = None) 
     return item
 
 
-class _Api:
-    """Servidor HTTP minimo en loopback que sirve ``/pulls/N/files`` paginado.
+class _Seq:
+    """Respuestas en orden: cada llamada toma la siguiente; la última se repite."""
 
-    Aislamiento por instancia: cada ``_Api`` levanta su propio ``ThreadingHTTPServer``
-    en puerto efímero (``bind 0``) y captura su estado (``files``, ``status``, ``auth``)
-    en el cierre del Handler que devuelve ``_make_handler``. Asi, dos ``_Api`` viven
-    en procesos o clases distintas sin compartir estado de clase ni de modulo (#941,
-    #511, #585). El Handler enruta por path: si la URL no es el endpoint paginado,
-    responde 404 explicito sin lanzar ``KeyError`` ante una query distinta a la esperada.
+    def __init__(self, items: list) -> None:
+        self.items, self.i = items, 0
+
+    def take(self):
+        value = self.items[min(self.i, len(self.items) - 1)]
+        self.i += 1
+        return value
+
+
+class _Api:
+    """Servidor HTTP minimo en loopback para ``/repos/o/r/pulls/N`` y ``.../files``.
+
+    Aislamiento por instancia: cada ``_Api`` levanta su propio ``HTTPServer`` en puerto
+    efímero (``bind 0``) y guarda su estado en la propia instancia (#941, #511, #585).
+
+    - ``pulls``: secuencia de cuerpos de ``GET pulls/N`` (``head.sha``, ``changed_files``).
+    - ``listings``: secuencia de listados de ficheros; cada primera página toma el
+      siguiente listado y las siguientes páginas siguen el mismo.
+    - ``paths``: cada petición de la API, en orden (la sonda ajena no cuenta).
     """
 
-    def __init__(self, files: list[dict], status: int = 200) -> None:
+    def __init__(self, files: list[dict], status: int = 200, pulls: list | None = None,
+                 listings: list | None = None) -> None:
         import threading
         from http.server import HTTPServer
-        self.files, self.status, self.auth = files, status, []
-        # ``HTTPServer`` (single-thread) y no ``ThreadingHTTPServer`` (multi-thread):
-        # mantener el comportamiento serie que el stub tenia antes del fix garantiza
-        # que el gate (cliente secuencial con ``urllib``) recibe cada respuesta antes
-        # de enviar el siguiente request, igual que el stub original (#941). El
-        # paralelismo intra-suite no es objeto de esta fix.
-        self.server = HTTPServer(
-            ("127.0.0.1", 0), _make_handler(self.files, self.status, self.auth))
+        self.files, self.status, self.auth, self.paths = files, status, [], []
+        self.pulls = _Seq(pulls if pulls is not None
+                          else [{"head": {"sha": "HEAD1"}, "changed_files": len(files)}])
+        self.listings = _Seq(listings if listings is not None else [files])
+        self.current: list[dict] = files
+        self.server = HTTPServer(("127.0.0.1", 0), _make_handler(self))
         self.url = f"http://127.0.0.1:{self.server.server_address[1]}"
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
 
@@ -535,45 +547,47 @@ class _Api:
         self.server.server_close()
 
 
-def _make_handler(files: list[dict], status: int, auth: list):
-    """Fabrica una clase Handler con estado capturado en cierre.
+def _make_handler(api: _Api):
+    """Clase Handler ligada a una ``_Api``: enruta ``pulls/N`` y ``pulls/N/files``.
 
-    Una clase nueva por llamada garantiza que dos ``_Api`` no compartan Handler
-    (y por tanto no compartan listas de auth). El Handler enruta por path: solo
-    ``/pulls/<N>/files?page=...&per_page=...`` pagina; cualquier otra URL
-    devuelve 404 explicito para no depender de que el gate use exactamente esa
-    forma (#941, smoke en ``run-unit-suites.sh UNIT_PARALLEL>1``)."""
+    Cualquier otra URL devuelve 404 explicito (#941)."""
     import json as _json
+    import re as _re
     import urllib.parse as _urlparse
     from http.server import BaseHTTPRequestHandler
 
     class Handler(BaseHTTPRequestHandler):
-        def do_GET(self) -> None:  # noqa: N802
-            # Un sondeo ajeno (`GET /` sin Authorization, #941) recibe el 404 de abajo
-            # sin entrar en `auth`; el resto de peticiones, tengan o no token, cuentan.
-            probe = _urlparse.urlsplit(self.path).path == "/" and self.headers.get("Authorization") is None
-            if not probe:
-                auth.append(self.headers.get("Authorization"))
-            url = _urlparse.urlsplit(self.path)
-            query = _urlparse.parse_qs(url.query)
-            page = query.get("page")
-            per = query.get("per_page")
-            if not url.path.endswith("/files") or not page or not per:
-                payload = _json.dumps({"message": "Not Found"}).encode("utf-8")
-                self.send_response(404)
-                self.send_header("Content-Type", "application/json")
-                self.send_header("Content-Length", str(len(payload)))
-                self.end_headers()
-                self.wfile.write(payload)
-                return
-            page_i = int(page[0])
-            per_i = int(per[0])
-            body = _json.dumps(files[(page_i - 1) * per_i:page_i * per_i]).encode("utf-8")
+        def _send(self, status: int, payload: object) -> None:
+            body = _json.dumps(payload).encode("utf-8")
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+
+        def do_GET(self) -> None:  # noqa: N802
+            # Un sondeo ajeno (`GET /` sin Authorization, #941) recibe el 404 de abajo
+            # sin entrar en `auth`; el resto de peticiones, tengan o no token, cuentan.
+            probe = _urlparse.urlsplit(self.path).path == "/" and self.headers.get("Authorization") is None
+            if not probe:
+                api.auth.append(self.headers.get("Authorization"))
+                api.paths.append(self.path)
+            url = _urlparse.urlsplit(self.path)
+            query = _urlparse.parse_qs(url.query)
+            if api.status != 200:
+                self._send(api.status, {"message": "error"})
+                return
+            if _re.search(r"/pulls/\d+$", url.path):
+                self._send(200, api.pulls.take())
+                return
+            page, per = query.get("page"), query.get("per_page")
+            if not url.path.endswith("/files") or not page or not per:
+                self._send(404, {"message": "Not Found"})
+                return
+            page_i, per_i = int(page[0]), int(per[0])
+            if page_i == 1:
+                api.current = api.listings.take()
+            self._send(200, api.current[(page_i - 1) * per_i:page_i * per_i])
 
         def log_message(self, *args: object) -> None:
             return
@@ -595,14 +609,16 @@ class TestApiMode(unittest.TestCase):
             api.close()
         self._tmp.cleanup()
 
-    def run_api(self, files, labels=(), changed=None, token="tok", status=200, url=None, extra=()):
+    def run_api(self, files, labels=(), changed=None, token="tok", status=200, url=None, extra=(),
+                head="HEAD1", pulls=None, listings=None):
         import json
-        api = _Api(files, status)
+        api = _Api(files, status, pulls=pulls, listings=listings)
         self.apis.append(api)
         event = self.tmp / "event.json"
         event.write_text(json.dumps({
             "repository": {"full_name": "o/r"},
             "pull_request": {"number": 7, "labels": [{"name": n} for n in labels],
+                             "head": {"sha": head},
                              "changed_files": len(files) if changed is None else changed},
         }), encoding="utf-8")
         env = _clean_env()
@@ -618,7 +634,7 @@ class TestApiMode(unittest.TestCase):
         result, api = self.run_api([_file("app/a.py", 10, 5)])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("15 changed line(s)", result.stdout)
-        self.assertEqual(api.auth, ["Bearer tok"])
+        self.assertEqual(set(api.auth), {"Bearer tok"})
 
     def test_additions_plus_deletions_over_budget_fails(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 300, 150)])
@@ -674,12 +690,19 @@ class TestApiMode(unittest.TestCase):
         result, api = self.run_api(files)
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("450 changed line(s)", result.stdout)
-        self.assertEqual(len(api.auth), 2)
+        self.assertEqual(len([p for p in api.paths if "/files" in p]), 2)
 
     def test_breakdown_that_does_not_match_changed_files_fails_closed(self) -> None:
-        result, _ = self.run_api([_file("app/a.py", 1)], changed=3)
+        """Un desfase persistente entre el listado y GET pulls, leidos a la vez, falla cerrado."""
+        result, _ = self.run_api([_file("app/a.py", 1)],
+                                 pulls=[{"head": {"sha": "HEAD1"}, "changed_files": 3}])
         self.assertEqual(result.returncode, 1)
         self.assertIn("changed_files", result.stderr)
+
+    def test_stale_changed_files_in_the_payload_alone_does_not_fail(self) -> None:
+        """#1113: el payload del evento es una foto anterior; no decide por si solo."""
+        result, _ = self.run_api([_file("app/a.py", 1)], changed=3)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_api_error_fails_closed(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 1)], status=500)
@@ -695,6 +718,23 @@ class TestApiMode(unittest.TestCase):
         result, _ = self.run_api([_file("app/a.py", 1)], url="http://example.invalid")
         self.assertEqual(result.returncode, 1)
         self.assertIn("https", result.stderr)
+
+    def test_head_moved_after_the_event_is_superseded_not_an_error(self) -> None:
+        """RED (#1113): si el head de la PR ya no es el del evento, sale 0 y lo dice."""
+        result, _ = self.run_api(
+            [_file("app/a.py", 1)], head="HEAD1",
+            pulls=[{"head": {"sha": "HEAD2"}, "changed_files": 1}])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("superado por un push más reciente", result.stdout)
+
+    def test_breakdown_that_settles_on_the_retry_passes(self) -> None:
+        """RED (#1113): un desglose desfasado en el primer intento se reintenta una vez."""
+        result, _ = self.run_api(
+            [_file("app/a.py", 1), _file("app/b.py", 2)],
+            pulls=[{"head": {"sha": "HEAD1"}, "changed_files": 2}],
+            listings=[[_file("app/a.py", 1)], [_file("app/a.py", 1), _file("app/b.py", 2)]])
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("3 changed line(s)", result.stdout)
 
     def test_json_error_envelope_in_api_mode(self) -> None:
         import json

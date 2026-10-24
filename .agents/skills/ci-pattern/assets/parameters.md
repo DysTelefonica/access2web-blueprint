@@ -10,7 +10,7 @@ solo como ejemplo verificado.
 | # | Parámetro | Valor en ardelperal/APAP_WEB (consumer de origen; ejemplo verificado) | Dónde vive | Quién lo lee |
 |---|---|---|---|---|
 | 8 | Política de merge | Commit de fusión, rama remota conservada, sin `strict`, sin cola de merge; CI una vez en la PR; `push` a `main` más nightly diario como red de seguridad | Settings del repo | Gate de evidencia del deploy |
-| 3 | Etiquetas canónicas | `chain:partial`, `size:exception`, `type:*`, `status:approved` | Configuración de labels del repo | Gates de issue-spec y de tamaño |
+| 3 | Etiquetas canónicas | `chain:partial`, `size:exception`, `type:*`, `status:approved` | Configuración de labels del repo | `type:*` y `status:approved` son convención (desde #1093 ningún gate las exige); `chain:partial` y `size:exception` los leen los gates de cadena y de tamaño |
 | 4 | Contextos de estado por SHA | `release/smoke-production`, `release/e2e-production` | Lista cerrada de contextos | `scripts/check_release_evidence.py` |
 | 5 | Rutas sensibles | Globs de auth, sesión, CSRF, migraciones y runtime (49 líneas) | `.github/release-e2e-paths.txt` | `scripts/check_release_e2e_required.py` |
 | 6 | URL de salud | `https://<host>/healthz` (expone `.revision` del deploy) | Constante del smoke | `scripts/production_smoke.py` |

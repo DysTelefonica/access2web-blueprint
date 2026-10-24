@@ -26,6 +26,14 @@ WEB_MESSAGE = ("Merge pull request #373 from DysTelefonica/chore/366-adopt-issue
                "ci(issue-spec): require canonical sections and document chain context "
                "(Closes #366, chain 4/4)")
 
+# #1124: los tres commits reales de cadete#599 -> cadete#629. Los shas completos
+# no hacen falta para el contrato; el prefijo publicado permite trazar el caso.
+CHAIN_FIRST_SHA = "4fbba72e" + "0" * 32
+CHAIN_SECOND_SHA = "f99ca724" + "0" * 32
+CHAIN_HEAD_SHA = "55a4cb40" + "0" * 32
+CHAIN_MERGE_SHA = "66a4cb40" + "0" * 32
+DIRECT_SHA = "77a4cb40" + "0" * 32
+
 def write_fixture(root: Path, event: dict, contract: dict) -> None:
     (root / "event.json").write_text(json.dumps(event), encoding="utf-8")
     (root / "contract.json").write_text(json.dumps(contract), encoding="utf-8")
@@ -239,17 +247,27 @@ class DetectiveTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("not auditable", proc.stdout + proc.stderr)
 
-    def test_commit_without_merged_pr_opens_incident(self) -> None:
+    def test_commit_pushed_directly_to_main_still_opens_incident(self) -> None:
         state = base_state()
-        state["pulls"][SHA] = [{"number": 7, "merged": False, "merged_at": None,
-                                "user": {"login": "ardelperal"}}]
-        proc = run_gate(self.root, push_event(), contract(), state)
+        state["pulls"][DIRECT_SHA] = []
+        state["compare"] = {"total_commits": 1,
+                            "commits": [{"sha": DIRECT_SHA,
+                                         "commit": {"author": {"name": "Dev A"}}}]}
+        event = push_event(commits=[{"id": DIRECT_SHA, "message": "feat: direct push",
+                                     "author": {"name": "Dev A"}, "distinct": True}])
+        event["after"] = DIRECT_SHA
+        event["head_commit"] = event["commits"][-1]
+        proc = run_gate(self.root, event, contract(), state)
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertEqual(proc.stdout, (
+            f"  VIOLATION  commit {DIRECT_SHA} — author: Dev A\n"
+            "INCIDENT ISSUE: https://github.com/DysTelefonica/team-skills/issues/42\n"))
+        self.assertEqual(proc.stderr, "")
         issue = self.created_issue()
-        self.assertIn(SHA, issue["body"])
+        self.assertIn(DIRECT_SHA, issue["body"])
         self.assertIn("Dev A", issue["body"])
+        self.assertIn("no merged PR associated", issue["body"])
         self.assertIn("PR", issue["title"] + issue["body"])
-        self.assertIn("INCIDENT ISSUE", proc.stdout + proc.stderr)
 
     def test_merged_pr_with_red_check_opens_incident(self) -> None:
         state = base_state()
@@ -420,6 +438,115 @@ class DetectiveTests(unittest.TestCase):
         proc = run_gate(self.root, push_event(), contract(), state)
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
         self.assertIn("fail", (proc.stdout + proc.stderr).lower())
+
+
+class MergedChainCoverageTests(unittest.TestCase):
+    """#1124: una cadena fusionada en orden cubre todos sus commits en main."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def chain_state(self) -> dict:
+        first_pull = {
+            "number": 599, "merged": True, "merged_at": "2026-10-23T18:00:00Z",
+            "user": {"login": "dys-agentes"},
+            "head": {"ref": "skill-fleet/cadete-vendored", "sha": CHAIN_HEAD_SHA},
+            "base": {"ref": "skill-fleet/cadete", "sha": CHAIN_FIRST_SHA},
+            "merge_commit_sha": CHAIN_SECOND_SHA,
+        }
+        final_pull = {
+            "number": 629, "merged": True, "merged_at": "2026-10-23T19:00:00Z",
+            "user": {"login": "dys-agentes"},
+            "head": {"ref": "skill-fleet/cadete", "sha": CHAIN_HEAD_SHA},
+            "base": {"ref": "main", "sha": BASE},
+            "merge_commit_sha": CHAIN_MERGE_SHA,
+        }
+        state = base_state()
+        state["pulls"] = {
+            CHAIN_FIRST_SHA: [first_pull],
+            CHAIN_SECOND_SHA: [first_pull],
+            CHAIN_HEAD_SHA: [first_pull],
+            CHAIN_MERGE_SHA: [final_pull],
+        }
+        state["pr_details"] = {
+            "599": first_pull,
+            "629": final_pull,
+        }
+        state["check_runs"] = {
+            CHAIN_HEAD_SHA: [{"id": 1, "name": CHECK,
+                               "conclusion": "success", "status": "completed"}],
+        }
+        state["commits"] = {
+            CHAIN_FIRST_SHA: commit_obj(CHAIN_FIRST_SHA, TREE_PR),
+            CHAIN_SECOND_SHA: commit_obj(CHAIN_SECOND_SHA, TREE_PR),
+            CHAIN_HEAD_SHA: commit_obj(CHAIN_HEAD_SHA, TREE_PR),
+            CHAIN_MERGE_SHA: {
+                "sha": CHAIN_MERGE_SHA,
+                "parents": [{"sha": BASE}, {"sha": CHAIN_HEAD_SHA}],
+                "commit": {"tree": {"sha": TREE_PR},
+                           "message": "Merge pull request #629 from skill-fleet/cadete"},
+            },
+        }
+        compare = {
+            "total_commits": 4,
+            "commits": [{"sha": sha, "commit": {"author": {"name": "Dev A"}}}
+                        for sha in (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA,
+                                    CHAIN_HEAD_SHA, CHAIN_MERGE_SHA)],
+        }
+        head_compare = {
+            "status": "ahead", "behind_by": 0, "total_commits": 3,
+            "commits": [{"sha": sha, "commit": {"author": {"name": "Dev A"}}}
+                        for sha in (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA)],
+        }
+        state["compare"] = compare
+        state["compares"] = {
+            f"{BASE}...{CHAIN_HEAD_SHA}": head_compare,
+            f"{BASE}...{CHAIN_MERGE_SHA}": compare,
+        }
+        return state
+
+    def chain_event(self) -> dict:
+        shas = (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA, CHAIN_MERGE_SHA)
+        commits = [{"id": sha, "message": "feat: chain commit",
+                    "author": {"name": "Dev A"}, "distinct": True} for sha in shas]
+        event = push_event(commits=commits)
+        event["after"] = CHAIN_MERGE_SHA
+        event["head_commit"] = commits[-1]
+        return event
+
+    def test_two_segment_chain_merged_in_order_does_not_open_incident(self) -> None:
+        proc = run_gate(self.root, self.chain_event(), contract(), self.chain_state())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.stdout,
+                         "OK: 4 pushed commit(s) on 'main' carry a merged PR and green checks\n")
+        self.assertEqual(proc.stderr, "")
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
+        self.assertEqual(state["merges"], [])
+
+    def test_merged_pr_head_covers_its_chain_range(self) -> None:
+        state = self.chain_state()
+        state["compare"] = {
+            "total_commits": 3,
+            "commits": [{"sha": sha, "commit": {"author": {"name": "Dev A"}}}
+                        for sha in (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA)],
+        }
+        state["merged_pulls"] = [state["pr_details"]["629"]]
+        shas = (CHAIN_FIRST_SHA, CHAIN_SECOND_SHA, CHAIN_HEAD_SHA)
+        commits = [{"id": sha, "message": "feat: chain commit",
+                    "author": {"name": "Dev A"}, "distinct": True} for sha in shas]
+        event = push_event(commits=commits)
+        event["after"] = CHAIN_HEAD_SHA
+        event["head_commit"] = commits[-1]
+        proc = run_gate(self.root, event, contract(), state)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertEqual(proc.stdout,
+                         "OK: 3 pushed commit(s) on 'main' carry a merged PR and green checks\n")
+        self.assertEqual(proc.stderr, "")
+        state = json.loads((self.root / "state.json").read_text(encoding="utf-8"))
+        self.assertEqual(state["created_issues"], [])
 
 
 # #928 Fase 2: invariante de integridad de arbol. Solo el commit de merge
