@@ -834,7 +834,9 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
 
     It needs `issues: read` (the job-level grant) and the runner token, so the
     step gets both explicitly rather than inheriting a broader default. Issue #1330:
-    `--host-contract` makes the gate check who applied `status:approved`.
+    `--host-contract` made the gate check who applied `status:approved`; that rule
+    was retired (team-skills#1103), so the flag went with it and the gate no longer
+    takes it (team-skills#1121 keeps accepting it as an obsolete no-op).
     """
     job = workflow["jobs"]["pr-gate"]
     assert job["permissions"] == {"contents": "read", "issues": "read", "pull-requests": "read"}
@@ -842,8 +844,7 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
     step = steps[0]
     assert step["run"] == (
-        'python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH" '
-        "--required-sections scripts/required-sections.json --host-contract .github/host-contract.json"
+        'python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"'
     )
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 
