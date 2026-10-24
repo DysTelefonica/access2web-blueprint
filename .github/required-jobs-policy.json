@@ -25,10 +25,22 @@
       ]
     }
   },
+  "docs_only_lane": {
+    "event": "pull_request",
+    "gate_job": "pr-gate",
+    "output": "docs_changed",
+    "skips": [
+      "quality",
+      "integration",
+      "security",
+      "codeql",
+      "e2e-smoke"
+    ]
+  },
   "relaxation": {
-    "reason": "El job governance-seals mide la fase 3 de la adopcion del patron (HR-72: los sellos sha256 de .governance-manifest.json y el cableado de P23_required_jobs) y solo puede correr en pull_request: publicar su nombre de check desde push, schedule o workflow_dispatch daria un check verde sin haber medido una PR, porque en esos eventos no hay PR que evaluar (HR-30). Sin entrada en accepted_skips, ese salto dejaria el agregador required en rojo en cada push a main. La politica acepta ese unico salto adicional en esos tres eventos. Se mantiene el salto ya aceptado de pr-gate y e2e-smoke, justificado en #876 por las mismas razones. En pull_request no se acepta ningun salto: un governance-seals saltado alli sigue dejando required en rojo.",
-    "reference": "DysTelefonica/access2web-blueprint#1355",
-    "issue": 1355
+    "reason": "Carril docs-only (DysTelefonica/access2web-blueprint#1368): un pull request cuyo diff cae ENTERO en docs/ salta los jobs pesados (quality, integration, security, codeql, e2e-smoke) y el agregador required acepta esos saltos como OK cuando el marcador docs_changed publicado por el pr-gate vale exactamente 'true'. El lane es condicional y fail-closed: sin el marcador, o con un valor distinto, esos saltos quedan sin declarar y required queda en rojo. docs-links sigue corriendo en ese carril, porque es el gate que caza los enlaces rotos del PRD. Se mantienen los saltos ya aceptados de pr-gate, e2e-smoke y governance-seals en push, schedule y workflow_dispatch, justificados en #1355 por las mismas razones: esos eventos no tienen PR que evaluar.",
+    "reference": "DysTelefonica/access2web-blueprint#1368",
+    "issue": 1368
   },
   "required_jobs": [
     "pr-gate",
