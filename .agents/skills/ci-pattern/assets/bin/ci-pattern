@@ -69,6 +69,9 @@ Comandos:
   adoption check (--phase N | --all) <repo>
                              Gate por fase del contrato de adopción: fases del
                              porting-guide verificadas sobre el árbol real.
+  dependabot render <repo>  Imprime el `.github/dependabot.yml` que el canon
+                             genera desde la declaración `dependabot` del contrato.
+  dependabot check <repo>   Dice si el del consumer coincide con ese.
 
 `adopt` y `update` están retirados; ver references/cli-spec.md.
 
@@ -3964,6 +3967,52 @@ def _check_docs_decisions(repo, contract):
     return findings
 
 
+def _load_dependabot_config():
+    """Importa el activo de configuracion de Dependabot en proceso (nunca subproceso)."""
+    path = skill_dir() / "assets" / "dependabot" / "config.py"
+    spec = importlib.util.spec_from_file_location("dependabot_config", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _check_dependabot_config(repo, contract):
+    """#1182 (HR-75): el `.github/dependabot.yml` del consumer es el que genera el
+    canon desde la declaracion `dependabot` (un ecosystem por manifiesto, con el
+    `directory` de cada uno donde vive su manifiesto). Activacion por
+    DECLARACION `dependabot`: sin ella avisa por stderr y sale 0."""
+    declared = contract.get("dependabot") if isinstance(contract, dict) else None
+    if declared is None:
+        print("HR-75: dependabot no declarado en el contrato de adopcion; la direccion "
+              "de Dependabot todavia no se mide (se activa con dependabot).", file=sys.stderr)
+        return []
+    return _load_dependabot_config().findings(Path(repo), declared)
+
+
+def cmd_dependabot(args):
+    """#1182: el `.github/dependabot.yml` del consumer sale de la declaracion
+    `dependabot` del contrato de adopcion. `render` imprime el fichero; `check`
+    dice si el del consumer coincide."""
+    if not args or args[0] not in ("render", "check"):
+        raise UsageError("dependabot: use 'dependabot render <repo>' o 'dependabot check <repo>'.")
+    action, rest = args[0], args[1:]
+    if len(rest) != 1:
+        raise UsageError(f"dependabot {action}: se espera el repositorio del consumer.")
+    repo = Path(rest[0])
+    gate = _load_dependabot_config()
+    declaration = load_adoption_contract(repo).get(gate.DECLARATION_KEY)
+    if declaration is None:
+        raise UsageError(f"el contrato de adopcion de {repo} no declara '{gate.DECLARATION_KEY}': "
+                         "sin esa declaracion no hay direccion que generar (#1182)")
+    if action == "render":
+        print(gate.render(declaration), end="")
+        return EXIT_OK
+    findings = gate.findings(repo, declaration)
+    for item in findings:
+        print(item, file=sys.stderr)
+    return EXIT_FINDINGS if findings else EXIT_OK
+
+
 def _phase_findings(repo, n, decl, contract):
     """Hallazgos de la fase n contra el árbol real; [] si cumple."""
     if not isinstance(decl, dict):
@@ -3988,6 +4037,7 @@ def _phase_findings(repo, n, decl, contract):
                 + _check_docs_links(repo, contract)
                 + _check_docs_commands(repo, contract)
                 + _check_docs_decisions(repo, contract)
+                + _check_dependabot_config(repo, contract)
                 + _incident_contract_findings(_operating_doc_params(repo)))
     if n == 6:
         return _check_acceptance_phase(repo, decl)
@@ -4091,6 +4141,7 @@ COMMANDS = {
     "verify": cmd_verify,
     "status": cmd_status,
     "manifest": cmd_manifest,
+    "dependabot": cmd_dependabot,
     "adopt": lambda args: (_ for _ in ()).throw(
         UsageError(
             "`adopt` está retirado: la adopción la gobierna una IA con "

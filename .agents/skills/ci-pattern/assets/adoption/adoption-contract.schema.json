@@ -108,6 +108,19 @@
       "additionalProperties": false,
       "description": "Declaracion explicita (HR-72, #1027): sin ella adoption check avisa por stderr y sale 0; con ella la fase 3 exige que el job exista en un workflow y figure en `required_jobs` de `.github/required-jobs-policy.json`, que es la via de enforcement en repos privados con plan Free (sin proteccion de rama ni required checks del host). El job invoca la CLI como comando de primer nivel, nunca encadenada a otro gate (HR-46)."
     },
+    "dependabot": {
+      "type": "object",
+      "properties": {
+        "ecosystems": {
+          "type": "object",
+          "description": "Ecosistema -> directorio del manifiesto (p. ej. {\"pip\": \"app\"}).",
+          "additionalProperties": {"type": "string", "minLength": 1}
+        }
+      },
+      "required": ["ecosystems"],
+      "additionalProperties": false,
+      "description": "Direccion de Dependabot (HR-75, #1182): un ecosystem por manifiesto; el `directory` de cada ecosystem es el directorio donde vive su manifiesto. El canon genera el `.github/dependabot.yml` del consumer desde esta declaracion (`ci-pattern dependabot render <repo>`) y la fase 5 lo compara con el fichero real. Sin ella adoption check avisa y sale 0."
+    },
     "docs_map": {
       "type": "object",
       "required": ["hub", "docs_path", "job"],

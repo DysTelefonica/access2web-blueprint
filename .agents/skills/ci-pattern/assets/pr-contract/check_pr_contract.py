@@ -791,6 +791,77 @@ def check_chain_context(pr, base, default_branch, policy, advisories):
             f"📍 y tiene {markers}.")
 
 
+# #1190: cadena nueva. La punta declara `- chain: <id>` en su Chain Context y
+# lista en `Closes` cada issue que sus eslabones (mismo id) referencian con `Refs`.
+# Solo avisa (HR-7, #1172): el autor escribe la lista; el gate solo señala lo que falta.
+CHAIN_ID_FIELD = "chain"
+CHAIN_PULLS_PATH = "/repos/{repo}/pulls?state=all&per_page=100"
+CHAIN_LISTING_MSG = "listado de PR no es una lista"
+REFS_NUMBER_RX = re.compile(r"\bRefs\s+#(\d+)", re.IGNORECASE)
+
+
+def _chain_id(body, heading):
+    return chain_fields(section_body(body or "", heading)).get(CHAIN_ID_FIELD, "")
+
+
+def chain_closes_findings(tip_body, siblings, policy):
+    """Avisos de la punta de una cadena nueva: `Refs` de sus eslabones que no lleva en `Closes`.
+
+    `siblings` son PR de la misma cadena (mismo `chain:`); los que no coinciden se ignoran.
+    Una cadena sin `chain:` en la punta no es nueva y no se mide.
+    """
+    heading = policy.get("chain_context_heading", CHAIN_CONTEXT_HEADING)
+    chain_id = _chain_id(tip_body, heading)
+    if not chain_id:
+        return []
+    refs = set()
+    for sibling in siblings:
+        if _chain_id(sibling.get("body"), heading) == chain_id:
+            refs.update(REFS_NUMBER_RX.findall(sibling.get("body") or ""))
+    closes = set(GITHUB_CLOSING_RX.findall(tip_body or ""))
+    missing = sorted(refs - closes, key=int)
+    if not missing:
+        return []
+    return [
+        f"HR-7: los eslabones de la cadena '{chain_id}' referencian "
+        f"{', '.join('#' + num for num in missing)} y la punta no lo cierra con Closes; "
+        "añádalo a la lista de Closes del cuerpo o quítelo del alcance de la cadena."]
+
+
+def check_chain_closes(pr, data, policy, advisories, fetch=None):
+    """#1190: lee las PR de la cadena por API y añade los avisos de `chain_closes_findings`.
+
+    Sin token no hay API y el chequeo se omite. Un fallo de la API es un aviso, no un
+    bloqueo. Lee las 100 PR más recientes: una cadena más antigua no se mide completa.
+    """
+    heading = policy.get("chain_context_heading", CHAIN_CONTEXT_HEADING)
+    body = pr.get("body") or ""
+    chain_id = _chain_id(body, heading)
+    if not chain_id:
+        return
+    if not (os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")):
+        return
+    repo = (data.get("repository") or {}).get("full_name") or ""
+    number = pr.get("number")
+    fetch = fetch or fetch_chain_siblings
+    try:
+        siblings = fetch(repo, number)
+    except _GITHUB_REST.GitHubApiError:
+        # El texto de la excepción lleva un id de petición que cambia en cada llamada: no va al aviso.
+        advisories.append(
+            f"HR-7: no se pudo leer la cadena '{chain_id}' por API; aviso, no bloquea.")
+        return
+    advisories.extend(chain_closes_findings(body, siblings, policy))
+
+
+def fetch_chain_siblings(repo, number):
+    """PR del mismo repo sin la punta (`number`), leídas por API; el cliente pagina el listado."""
+    listing = _GITHUB_REST.get_json(CHAIN_PULLS_PATH.format(repo=repo))
+    if not isinstance(listing, list):
+        raise _GITHUB_REST.GitHubApiError(CHAIN_LISTING_MSG)
+    return [p for p in listing if isinstance(p, dict) and p.get("number") != number]
+
+
 # #876: la asistencia de IA se declara en el CUERPO del PR; los commits no llevan
 # atribución (HR-14). Vacía o solo con el comentario de la plantilla no cuenta.
 AI_DISCLOSURE_HEADING = "Asistencia de IA"
@@ -909,6 +980,8 @@ def _pr_level_checks(active, data, pr, ctx, verdict):
     # #1093 R3/R9: Chain Context y Asistencia de IA avisan; no bloquean.
     if "chain_context" in active:
         check_chain_context(pr, base_ref, default_branch, policy, verdict.advisories)
+    if "closes" in active:
+        check_chain_closes(pr, data, policy, verdict.advisories)
     if "issue_links" in active:
         check_issue_links(pr, data, verdict.findings)
     if "ai_disclosure" in active:
