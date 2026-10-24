@@ -1167,3 +1167,21 @@ def test_e2e_smoke_job_runs_on_pull_request_and_is_required(workflow: dict) -> N
 
     release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
     assert "e2e" in release["jobs"], "the release E2E job stays as it is"
+
+
+def test_nightly_pip_audit_failure_opens_an_issue(workflow: dict) -> None:
+    # HR-39 (#1414): a red scheduled pip-audit must leave an issue with the run link,
+    # and only a scheduled failure may open one.
+    job = workflow["jobs"]["pip-audit-alert"]
+    assert job["needs"] == "pip-audit"
+    assert job["if"] == "failure() && github.event_name == 'schedule'"
+    assert "gh issue create" in "\n".join(step.get("run", "") for step in job["steps"])
+
+
+def test_only_the_pip_audit_alert_job_may_write_issues(workflow: dict) -> None:
+    # HR-39 (#1414): `issues: write` is granted to the alert job alone.
+    writers = sorted(
+        name for name, job in workflow["jobs"].items()
+        if (job.get("permissions") or {}).get("issues") == "write"
+    )
+    assert writers == ["pip-audit-alert"]

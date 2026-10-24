@@ -1,27 +1,32 @@
 {
   "events": {
     "pull_request": {
-      "accepted_skips": []
+      "accepted_skips": [
+        "pip-audit-alert"
+      ]
     },
     "push": {
       "accepted_skips": [
         "pr-gate",
         "e2e-smoke",
         "governance-seals",
-        "pip-audit"
+        "pip-audit",
+        "pip-audit-alert"
       ]
     },
     "schedule": {
       "accepted_skips": [
         "pr-gate",
-        "governance-seals"
+        "governance-seals",
+        "pip-audit-alert"
       ]
     },
     "workflow_dispatch": {
       "accepted_skips": [
         "pr-gate",
         "e2e-smoke",
-        "governance-seals"
+        "governance-seals",
+        "pip-audit-alert"
       ]
     }
   },
@@ -84,6 +89,7 @@
     "docs-decisions",
     "docs-architecture",
     "governance-seals",
-    "docs-commands"
+    "docs-commands",
+    "pip-audit-alert"
   ]
 }

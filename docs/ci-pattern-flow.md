@@ -50,7 +50,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 <!-- ci-pattern-doc:begin required-checks -->
 ## 5. Checks requeridos
 
-- Jobs requeridos del agregador: codeql, docs-architecture, docs-codeguide, docs-commands, docs-decisions, docs-links, e2e-smoke, governance-seals, integration, pip-audit, pr-gate, quality, security. Tabla generada 1:1 desde ellos: ningún check puede fallar por una regla que no esté aquí.
+- Jobs requeridos del agregador: codeql, docs-architecture, docs-codeguide, docs-commands, docs-decisions, docs-links, e2e-smoke, governance-seals, integration, pip-audit, pip-audit-alert, pr-gate, quality, security. Tabla generada 1:1 desde ellos: ningún check puede fallar por una regla que no esté aquí.
 - Contextos requeridos declarados: required.
 - Checks del contrato de host: required.
 
@@ -64,6 +64,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 | `governance-seals` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `integration` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `pip-audit` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
+| `pip-audit-alert` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `pr-gate` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `quality` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `security` | escaneo de seguridad de superficie | `bash scripts/local-preflight.sh` | → atienda el hallazgo o justifíquelo en el PR; nunca silencie el scanner sin causa responsable |
@@ -111,7 +112,7 @@ Un incidente de producción deja cuatro niveles, enlazados por identificadores (
 <!-- ci-pattern-doc:begin lifecycle -->
 ## 10. Ciclo de vida de un cambio
 
-Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs requeridos que debe ver en verde antes del merge: codeql, docs-architecture, docs-codeguide, docs-commands, docs-decisions, docs-links, e2e-smoke, governance-seals, integration, pip-audit, pr-gate, quality, security.
+Cada etapa dice qué hacer, con qué comando y cómo saber que está hecha. Jobs requeridos que debe ver en verde antes del merge: codeql, docs-architecture, docs-codeguide, docs-commands, docs-decisions, docs-links, e2e-smoke, governance-seals, integration, pip-audit, pip-audit-alert, pr-gate, quality, security.
 - **1. Issue.** Con el formulario del consumer (sección 1), busque duplicados y cree la issue:
   `gh issue list --search "<términos>" --json number,title,state --state all --limit 20`
   `gh issue create --title "<título>" --body-file <cuerpo-de-la-issue.md> --label type:<tipo>` Elija exactamente un `type:*` de la sección 4.
