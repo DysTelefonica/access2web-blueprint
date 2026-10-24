@@ -13,7 +13,6 @@
     "schedule": {
       "accepted_skips": [
         "pr-gate",
-        "e2e-smoke",
         "governance-seals"
       ]
     },
@@ -37,10 +36,30 @@
       "e2e-smoke"
     ]
   },
+  "marker_lanes": [
+    {
+      "event": "pull_request",
+      "gate_job": "pr-gate",
+      "output": "e2e_scope_changed",
+      "equals": "false",
+      "skips": [
+        "e2e-smoke"
+      ]
+    },
+    {
+      "event": "pull_request",
+      "gate_job": "pr-gate",
+      "output": "codeql_scope_changed",
+      "equals": "false",
+      "skips": [
+        "codeql"
+      ]
+    }
+  ],
   "relaxation": {
-    "reason": "Carril docs-only (DysTelefonica/access2web-blueprint#1368): un pull request cuyo diff cae ENTERO en docs/ salta los jobs pesados (quality, integration, security, codeql, e2e-smoke) y el agregador required acepta esos saltos como OK cuando el marcador docs_changed publicado por el pr-gate vale exactamente 'true'. El lane es condicional y fail-closed: sin el marcador, o con un valor distinto, esos saltos quedan sin declarar y required queda en rojo. docs-links sigue corriendo en ese carril, porque es el gate que caza los enlaces rotos del PRD. Se mantienen los saltos ya aceptados de pr-gate, e2e-smoke y governance-seals en push, schedule y workflow_dispatch, justificados en #1355 por las mismas razones: esos eventos no tienen PR que evaluar.",
-    "reference": "DysTelefonica/access2web-blueprint#1368",
-    "issue": 1368
+    "reason": "Carriles de superficie (DysTelefonica/access2web-blueprint#1376): e2e-smoke y codeql solo se ejecutan cuando el diff toca la superficie que analizan —e2e-smoke: app/** y e2e/**; codeql: app/** y scripts/**—. El pr-gate publica un marcador por superficie y el agregador required acepta el salto de un job solo cuando su marcador vale exactamente 'false' (marker_lanes). El permiso para saltar no se concede por defecto: si el diff no se puede calcular, el marcador queda en 'true' y el job se ejecuta. El nightly vuelve a ejecutar e2e-smoke —la policy ya no acepta su salto en schedule— porque release.yml solo corre con tags y el repo no tiene ninguno, de modo que el nightly es la unica red de la superficie E2E. El carril docs-only de #1368 se mantiene sin cambios: un diff entero en docs/ salta los jobs pesados y docs-links sigue corriendo en ese carril. Se mantienen los saltos ya aceptados de pr-gate, e2e-smoke y governance-seals en push y workflow_dispatch, y de pr-gate y governance-seals en schedule, justificados en #1355 por las mismas razones: esos eventos no tienen PR que evaluar.",
+    "reference": "DysTelefonica/access2web-blueprint#1376",
+    "issue": 1376
   },
   "required_jobs": [
     "pr-gate",

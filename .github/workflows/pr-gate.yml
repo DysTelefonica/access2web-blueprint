@@ -36,6 +36,18 @@ on:
           Anything else — an empty diff, a path outside `docs/`, a diff that
           could not be computed — is "false", and the heavy jobs run.
         value: ${{ jobs.pr-gate.outputs.docs_changed }}
+      e2e_scope_changed:
+        description: >-
+          "false" when the diff of the pull request does not touch the surface
+          the `e2e-smoke` job analyzes (`app/**`, `e2e/**`). Anything else is
+          "true", and the job runs.
+        value: ${{ jobs.pr-gate.outputs.e2e_scope_changed }}
+      codeql_scope_changed:
+        description: >-
+          "false" when the diff of the pull request does not touch the surface
+          the `codeql` job analyzes (`app/**`, `scripts/**`). Anything else is
+          "true", and the job runs.
+        value: ${{ jobs.pr-gate.outputs.codeql_scope_changed }}
 
 permissions:
   contents: read
@@ -55,7 +67,13 @@ jobs:
     outputs:
       # Issue #1368: the docs-only marker. The heavy jobs skip a
       # documentation-only pull request only when this is exactly 'true'.
-      docs_changed: ${{ steps.docs-lane.outputs.docs_changed }}
+      docs_changed: ${{ steps.diff-lanes.outputs.docs_changed }}
+      # Issue #1376: one marker per surface. A job skips a pull request only
+      # when its marker is exactly 'false' — the diff does not touch the code
+      # that job analyzes. 'true' means "run": the permission to skip is not
+      # granted by default.
+      e2e_scope_changed: ${{ steps.diff-lanes.outputs.e2e_scope_changed }}
+      codeql_scope_changed: ${{ steps.diff-lanes.outputs.codeql_scope_changed }}
     # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
@@ -145,26 +163,40 @@ jobs:
         # --strict promoted after #375 migrated the 43 walkthroughs to v2.1.
         run: python scripts/check_walkthrough_schema.py --strict
 
-      - name: classify the diff (docs-only lane)
-        # Issue #1368: the marker that lets the heavy jobs skip a
-        # documentation-only pull request. Fail-closed: any doubt (no base ref,
-        # no merge-base, an empty diff, a path outside `docs/`) answers `false`
-        # and the heavy suite runs. The anti-self-exemption toll is implicit:
-        # this script, this workflow and the policy live outside `docs/`.
-        id: docs-lane
+      - name: classify the diff (docs-only and surface lanes)
+        # Issue #1368: the docs-only marker. Fail-closed: any doubt (no base
+        # ref, no merge-base, an empty diff, a path outside `docs/`) answers
+        # `false` and the heavy suite runs. The anti-self-exemption toll is
+        # implicit: this script, this workflow and the policy live outside
+        # `docs/`.
+        # Issue #1376: the same diff answers the surface markers. A marker is
+        # the PERMISSION to skip a job, so it starts at `true` (run the job)
+        # and is only lowered to `false` with the complete list of paths.
+        id: diff-lanes
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
           set -euo pipefail
           docs_changed=false
+          e2e_scope_changed=true
+          codeql_scope_changed=true
           if [ -n "$BASE_REF" ] && git rev-parse --verify --quiet "origin/${BASE_REF}" >/dev/null; then
             if BASE="$(git merge-base "origin/${BASE_REF}" HEAD)"; then
-              if CHANGED="$(git diff --name-only "${BASE}...HEAD")"; then
+              # `--no-renames`: a rename touches BOTH paths. With rename
+              # detection on, `git diff --name-only` reports only the
+              # destination, so moving `app/moved.py` out of `app/` made the
+              # app surface look untouched and the heavy jobs skipped a pull
+              # request that had just removed application code.
+              if CHANGED="$(git diff --name-only --no-renames "${BASE}...HEAD")"; then
                 if [ -n "$CHANGED" ]; then
                   docs_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_docs_only_lane.py)"
+                  e2e_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py e2e)"
+                  codeql_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py codeql)"
                 fi
               fi
             fi
           fi
           echo "docs_changed=${docs_changed}" >> "$GITHUB_OUTPUT"
-          echo "::notice::pr-gate: docs_changed=${docs_changed}"
+          echo "e2e_scope_changed=${e2e_scope_changed}" >> "$GITHUB_OUTPUT"
+          echo "codeql_scope_changed=${codeql_scope_changed}" >> "$GITHUB_OUTPUT"
+          echo "::notice::pr-gate: docs_changed=${docs_changed} e2e_scope_changed=${e2e_scope_changed} codeql_scope_changed=${codeql_scope_changed}"

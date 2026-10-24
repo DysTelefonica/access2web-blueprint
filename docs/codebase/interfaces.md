@@ -118,6 +118,7 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/check_complexity.py` | Gate | `ci.yml::quality` | Complejidad ciclomática. |
 | `scripts/check_dry.py` | Gate | `ci.yml::quality` | DRY. |
 | `scripts/check_deadcode.py` | Gate | `ci.yml::quality` | Código muerto. |
+| `scripts/check_change_scope.py` | Gate | `pr-gate.yml::pr-gate` | Superficie del diff: `e2e` (`app/`, `e2e/`) y `codeql` (`app/`, `scripts/`); el pr-gate publica un marcador por superficie y el job pesado se salta cuando vale `false` (issue #1376). |
 | `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | Gate | `pr-gate.yml::pr-gate` | ≤400 líneas. |
 | `scripts/check_workflows.py` | Gate | `ci.yml::quality` | Valida `.github/workflows/*.yml`. |
 | `.github/required-jobs-policy.json` | Política del gate del canon | `ci.yml::required` | Declara la matriz `required` y los saltos aceptados por evento. |

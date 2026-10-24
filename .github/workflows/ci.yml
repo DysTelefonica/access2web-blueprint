@@ -532,7 +532,13 @@ jobs:
     needs: pr-gate
     uses: ./.github/workflows/codeql.yml
     # Mismo criterio que `quality` y `security` (HR-30, #857 PR-D).
-    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true'
+    # Issue #1376: CodeQL escanea el Python del repo, asi que se pagaba en
+    # pull requests que no tocan una linea de Python. El `pr-gate` publica el
+    # marcador de su superficie (`app/**`, `scripts/**`) y el job corre cuando
+    # el marcador no vale exactamente 'false'. En `push`, `schedule` y
+    # `workflow_dispatch` el marcador no existe y el job corre como antes: el
+    # nightly es la red de una superficie que ninguna pull request paga.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true' && (github.event_name != 'pull_request' || needs.pr-gate.outputs.codeql_scope_changed != 'false')
     permissions:
       contents: read
       security-events: write
@@ -791,10 +797,17 @@ jobs:
     name: e2e-smoke (${{ github.event_name }})
     # Issue #876: humo E2E en cada PR. Imagen de la PR, /health y 2 specs
     # de Playwright (smoke + login). La suite completa va en release.yml.
-    # Solo PR. Mismo patron que los heavy jobs: acepta `pr-gate` saltado y no
-    # usa `always()`; en push/schedule/workflow_dispatch el job se salta y la
+    # Mismo patron que los heavy jobs: acepta `pr-gate` saltado y no
+    # usa `always()`; en push/workflow_dispatch el job se salta y la
     # politica lo acepta (#876).
-    if: github.event_name == 'pull_request' && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true'
+    #
+    # Issue #1376: el job solo se paga cuando el diff toca la superficie que
+    # analiza (la imagen de la app y las specs de `e2e/`): el `pr-gate`
+    # publica el marcador de esa superficie y el job corre cuando el marcador
+    # no vale exactamente 'false'. El nightly lo vuelve a ejecutar —`release.yml`
+    # solo corre con tags y el repo no tiene ninguno, asi que el nightly es la
+    # unica red de la superficie E2E.
+    if: (github.event_name == 'pull_request' || github.event_name == 'schedule') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && needs.pr-gate.outputs.docs_changed != 'true' && (github.event_name != 'pull_request' || needs.pr-gate.outputs.e2e_scope_changed != 'false')
     needs: pr-gate
     runs-on: ubuntu-24.04
     # Cada PR tiene su propio run; no lo cancela el workflow.
