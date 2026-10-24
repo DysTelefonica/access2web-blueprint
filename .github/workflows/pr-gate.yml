@@ -59,8 +59,18 @@ jobs:
     # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
+    #
+    # The group also names the INSTANCE (#1372): this job runs twice — as this workflow
+    # and as the call from `ci.yml` — and a concurrency group holds one pending request:
+    # GitHub cancels the pending one when another arrives, so the instance called from
+    # `ci.yml` was cancelled at 0 s and `required` read that cancellation as a failure
+    # (run `ci` 40084048493, attempt 1: "Canceling since a higher priority waiting
+    # request for gate-pr-gate-1371 exists"). Inside a reusable workflow
+    # `github.workflow` is the CALLER's name, so the two instances land in different
+    # queues and neither cancels the other. `cancel-in-progress: false` stays: nothing
+    # in flight is cut.
     concurrency:
-      group: gate-pr-gate-${{ github.event.pull_request.number || github.ref }}
+      group: gate-pr-gate-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
     # Fail fast: pr-size + walkthrough schema run in seconds; anything beyond 5 min is hung.
     timeout-minutes: 5
