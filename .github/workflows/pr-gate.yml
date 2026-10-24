@@ -19,6 +19,14 @@ on:
     # Los seis eventos: los tres que pueden cambiar el código y los tres que
     # cambian el cuerpo o las etiquetas. Los pesados viven en `ci.yml`, que solo
     # escucha los tres primeros.
+    #
+    # Issue #857, PR-B: `edited` y `labeled`/`unlabeled` no cambian el código,
+    # pero sí invalidan un veredicto de pr-gate ya publicado: el cuerpo puede
+    # traer `Closes #N` o una etiqueta puede alterar el veredicto de tamaño.
+    # Fijar aquí los seis eventos es lo que garantiza que ese veredicto se
+    # refresque. `tests/test_ci_workflow.py::test_pull_request_types_cover_edit_and_label_events`
+    # fija las dos listas — orden y contenido — para que una deriva silenciosa
+    # no pase la revisión.
     types:
       - opened
       - synchronize
