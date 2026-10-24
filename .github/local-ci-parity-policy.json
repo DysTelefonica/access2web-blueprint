@@ -1,6 +1,6 @@
 {
   "ci": {
-    "workflow": ".github/workflows/ci.yml",
+    "workflow": ".github/workflows/pr-gate.yml",
     "job": "pr-gate"
   },
   "local": {

@@ -98,10 +98,27 @@ def workflow() -> dict:
 
 
 @pytest.fixture(scope="module")
-def steps(workflow: dict) -> list[dict]:
+def pr_gate_workflow() -> dict:
+    """The lightweight workflow that owns the `pr-gate` job (issue #1368).
+
+    Since #1368 the `pr-gate` (body, labels, walkthrough) lives in its own
+    workflow: the body/label events must not drag the heavy suite along. The
+    heavy workflow calls this file, so `required` keeps aggregating the verdict.
+    """
+    path = _find_workflow().parent / "pr-gate.yml"
+    assert path.is_file(), (
+        "the pr-gate job lives in .github/workflows/pr-gate.yml since #1368: the "
+        "edited/labeled/unlabeled events must not run the heavy suite"
+    )
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def steps(workflow: dict, pr_gate_workflow: dict) -> list[dict]:
     collected: list[dict] = []
-    for job in workflow["jobs"].values():
-        collected.extend(job.get("steps", []))
+    for doc in (workflow, pr_gate_workflow):
+        for job in doc["jobs"].values():
+            collected.extend(job.get("steps", []))
     return collected
 
 
@@ -758,14 +775,14 @@ def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
         assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
 
 
-def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
+def test_pr_size_gate_runs_in_pr_event_mode(pr_gate_workflow: dict) -> None:
     """Issue #857, PR-C: the size gate reads the PR event, not the runner state.
 
     The local mode depends on a `git diff` against `origin/main`, which is only
     present on a checked-out runner. Switching to `pr-event` lets the gate
     answer the same question from `$GITHUB_EVENT_PATH` alone.
     """
-    steps = [s for s in workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
+    steps = [s for s in pr_gate_workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
     assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
     step = steps[0]
     assert step["run"] == (
@@ -776,13 +793,13 @@ def test_pr_size_gate_runs_in_pr_event_mode(workflow: dict) -> None:
     assert "PR_BODY" not in env
 
 
-def test_pr_size_gate_gets_the_token_for_the_files_breakdown(workflow: dict) -> None:
+def test_pr_size_gate_gets_the_token_for_the_files_breakdown(pr_gate_workflow: dict) -> None:
     """Issue #918: the size gate reads the per-file breakdown from the PR Files API.
 
     It needs `pull-requests: read` (the job-level grant) and the runner token, so the
     step gets the token explicitly; without it the gate counts the whole PR.
     """
-    job = workflow["jobs"]["pr-gate"]
+    job = pr_gate_workflow["jobs"]["pr-gate"]
     assert job["permissions"]["pull-requests"] == "read"
     step = [s for s in job["steps"] if s.get("name") == "pr size"][0]
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
@@ -829,7 +846,7 @@ def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
     assert "-lt 15" in run, "an empty or truncated lock must fail before the verdict is trusted"
 
 
-def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
+def test_issue_spec_is_wired_into_pr_gate(pr_gate_workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
     It needs `issues: read` (the job-level grant) and the runner token, so the
@@ -838,7 +855,7 @@ def test_issue_spec_is_wired_into_pr_gate(workflow: dict) -> None:
     was retired (team-skills#1103), so the flag went with it and the gate no longer
     takes it (team-skills#1121 keeps accepting it as an obsolete no-op).
     """
-    job = workflow["jobs"]["pr-gate"]
+    job = pr_gate_workflow["jobs"]["pr-gate"]
     assert job["permissions"] == {"contents": "read", "issues": "read", "pull-requests": "read"}
     steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
     assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
@@ -1146,38 +1163,67 @@ PR_GATE_PULL_REQUEST_TYPES = (
     "unlabeled",
 )
 
+#: Issue #1368: the heavy suite runs on the three events that can change the
+#: code. `edited`, `labeled` and `unlabeled` only change the PR body and its
+#: labels, and they are the events the audit measured as 1.411 re-runs of the
+#: same SHA in one week.
+HEAVY_PULL_REQUEST_TYPES = (
+    "opened",
+    "synchronize",
+    "reopened",
+)
 
-def test_pull_request_types_cover_edit_and_label_events(workflow: dict) -> None:
-    """Issue #857, PR-B: pr-gate must re-run when body edits or labels change.
 
-    The default ``pull_request`` trigger only fires on opened,
-    synchronize, reopened. Editing the PR body or applying/removing
-    ``size:exception`` after opening does NOT re-run the pr-gate, so a
-    stale verdict sticks until the next synchronize. Pinning the type
-    list here is what closes that drift.
+def test_pull_request_types_cover_edit_and_label_events(
+    workflow: dict, pr_gate_workflow: dict
+) -> None:
+    """Issue #1368: the body/label events moved to the lightweight workflow.
+
+    Issue #857, PR-B pinned `edited`, `labeled` and `unlabeled` on the
+    workflow that also runs the heavy suite, so a body edit re-ran
+    `quality`, `integration`, `security`, `codeql` and `e2e-smoke` over a SHA
+    that was already green. Since #1368 the heavy workflow listens to the
+    three events that can change the code, and the `pr-gate` — the only job
+    those events need — lives in its own workflow, which still listens to all
+    six. Both lists are pinned here so a silent drift cannot pass review.
     """
     # yaml.safe_load maps the `on` keyword to the Python boolean `True`
     # unless quoted; the existing tests guard both spellings already.
-    triggers = workflow.get(True) or workflow.get("on") or {}
-    pull_request = triggers.get("pull_request")
-    assert isinstance(pull_request, dict), (
-        "ci.yml must declare `pull_request:` with a body so `types:` "
-        "can be pinned (issue #857, PR-B). A bare `pull_request:` falls "
-        "back to the GitHub default type set and misses `edited`, "
-        "`labeled` and `unlabeled`."
+    heavy_types = (workflow.get(True) or workflow.get("on") or {}).get("pull_request")
+    assert isinstance(heavy_types, dict), (
+        "ci.yml must declare `pull_request:` with a body so `types:` can be pinned"
     )
-    types = pull_request.get("types")
-    assert types is not None, (
-        "ci.yml must declare `pull_request.types:` — relying on the "
-        "default leaves edit and label events out of the pr-gate "
-        "(issue #857, PR-B)."
+    assert list(heavy_types.get("types") or []) == list(HEAVY_PULL_REQUEST_TYPES), (
+        f"ci.yml `pull_request.types:` is {heavy_types.get('types')!r}, expected "
+        f"{list(HEAVY_PULL_REQUEST_TYPES)!r}: the heavy suite must run only on the "
+        "events that can change the code (issue #1368)."
     )
-    assert list(types) == list(PR_GATE_PULL_REQUEST_TYPES), (
-        f"ci.yml `pull_request.types:` is {list(types)!r}, expected "
-        f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include "
-        "`edited`, `labeled` and `unlabeled` so the pr-gate re-runs "
-        "when the body or labels change after opening (issue #857, PR-B)."
+
+    light_types = (pr_gate_workflow.get(True) or pr_gate_workflow.get("on") or {}).get(
+        "pull_request"
     )
+    assert isinstance(light_types, dict), (
+        "pr-gate.yml must declare `pull_request:` with a body so `types:` can be pinned"
+    )
+    assert list(light_types.get("types") or []) == list(PR_GATE_PULL_REQUEST_TYPES), (
+        f"pr-gate.yml `pull_request.types:` is {light_types.get('types')!r}, expected "
+        f"{list(PR_GATE_PULL_REQUEST_TYPES)!r}. The set MUST include `edited`, "
+        "`labeled` and `unlabeled` so the pr-gate re-runs when the body or labels "
+        "change after opening (issue #857, PR-B; moved by #1368)."
+    )
+
+
+def test_the_heavy_workflow_calls_the_light_pr_gate_workflow(workflow: dict) -> None:
+    """The `required` aggregator reads `needs.pr-gate`, and `needs:` cannot cross files.
+
+    Since #1368 the job lives in `pr-gate.yml`, so ci.yml calls that file.
+    The call keeps the job id, the aggregator keeps reading its result, and
+    the per-SHA verdict of `required` does not change.
+    """
+    job = workflow["jobs"]["pr-gate"]
+    assert job["uses"] == "./.github/workflows/pr-gate.yml"
+    assert job["if"] == "github.event_name == 'pull_request'"
+    assert "pr-gate" in workflow["jobs"]["required"]["needs"]
 
 
 def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) -> None:

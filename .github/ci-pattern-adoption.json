@@ -16,6 +16,7 @@
     "0": {
       "inventory": [
         {"artifact": ".github/workflows/ci.yml", "disposition": "adopted", "target": ".github/workflows/ci.yml"},
+        {"artifact": ".github/workflows/pr-gate.yml (issue #1368: el pr-gate en su propio workflow, para que los eventos de cuerpo y etiquetas no arrastren la suite pesada)", "disposition": "adopted", "target": ".github/workflows/pr-gate.yml"},
         {"artifact": ".github/workflows/codeql.yml", "disposition": "adopted", "target": ".github/workflows/codeql.yml"},
         {"artifact": ".github/workflows/dysflow-erd.yml (#1074: extracción manual y de solo lectura del ERD de un backend Access, en el runner propio del dueño; el gate check_workflows admite ese runner solo por ser un fichero workflow_dispatch-only)", "disposition": "adopted", "target": ".github/workflows/dysflow-erd.yml"},
         {"artifact": ".github/workflows/release.yml", "disposition": "adopted", "target": ".github/workflows/release.yml"},
