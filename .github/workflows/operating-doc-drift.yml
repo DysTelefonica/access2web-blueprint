@@ -61,6 +61,14 @@ jobs:
         with:
           python-version: "3.12.11"
 
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/operating-doc-drift.txt \
+            --runner "${{ runner.name }}"
+
       - name: comprobar el secreto del catálogo
         # Sin el secreto no se puede leer el pin: se falla en voz alta y se nombra
         # el dato que falta, en vez de salir en verde sin haber medido (HR-3).
