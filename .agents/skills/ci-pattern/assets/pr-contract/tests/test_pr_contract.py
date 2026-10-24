@@ -1123,8 +1123,9 @@ LIVE_PR = 7
 
 
 class _MockApiServer:
-    """HTTP server local (stdlib) sirviendo los dos endpoints del API que
-    consume el gate (`/repos/{r}/issues/{n}/labels` y `/repos/{r}/pulls/{n}`)."""
+    """HTTP server local (stdlib) sirviendo los endpoints del API que consume el
+    gate (`/repos/{r}/issues/{n}/labels`, `/repos/{r}/pulls/{n}` y, #1190, el listado
+    `/repos/{r}/pulls` de la cadena, vacío aquí: estos casos no tienen eslabones)."""
 
     def __init__(self, pull_body, labels):
         import threading
@@ -1134,6 +1135,7 @@ class _MockApiServer:
         routes = {
             f"/repos/{LIVE_REPO}/issues/{LIVE_PR}/labels": state["labels"],
             f"/repos/{LIVE_REPO}/pulls/{LIVE_PR}": state["pull"],
+            f"/repos/{LIVE_REPO}/pulls": [],
         }
 
         class _Handler(BaseHTTPRequestHandler):
