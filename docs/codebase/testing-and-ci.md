@@ -25,7 +25,7 @@ Un pull request cuyo diff cae entero en `docs/` no necesita la suite pesada. El 
 
 ## Nivel PR (`.github/workflows/ci.yml`)
 
-Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.ref }}`, que solo cancela en `synchronize` (un commit nuevo deja obsoleto el run anterior; los eventos que mantienen el SHA no pueden cancelarlo, o quedarían un check cancelado que bloquea el merge). El `pr-gate` tiene además su propio grupo FIFO por PR (`gate-pr-gate-…`, `cancel-in-progress: false`), porque su gate no puede saltarse a sí mismo. Los jobs no son independientes: `quality`, `integration`, `security` y `codeql` declaran `needs: pr-gate`, y el agregador `required` necesita los cuatro.
+Todos los jobs comparten `concurrency.group: ${{ github.workflow }}-${{ github.ref }}`, que solo cancela en `synchronize` (un commit nuevo deja obsoleto el run anterior; los eventos que mantienen el SHA no pueden cancelarlo, o quedarían un check cancelado que bloquea el merge). El `pr-gate` tiene además su propio grupo FIFO por PR (`gate-pr-gate-${{ github.workflow }}-…`, `cancel-in-progress: false`), porque su gate no puede saltarse a sí mismo: el job corre en dos instancias —su propio disparador `pull_request` y la llamada de `ci.yml`— y el grupo nombra la instancia (`github.workflow` vale el workflow *caller* dentro de un workflow reutilizable); si compartieran cola, la instancia pendiente se cancelaría y `required` leería la cancelación como fallo (#1372). Los jobs no son independientes: `quality`, `integration`, `security` y `codeql` declaran `needs: pr-gate`, y el agregador `required` necesita los cuatro.
 
 | Job | Runs-on | Steps principales | Comando / coste |
 |---|---|---|---|
