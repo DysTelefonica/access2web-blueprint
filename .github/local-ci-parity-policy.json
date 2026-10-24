@@ -33,6 +33,11 @@
       "reason": "el pr-gate del workflow invoca el gate del canon con '--event $GITHUB_EVENT_PATH' y el token para leer el desglose por fichero (issue #918); el preflight local lo invoca sin args, sobre el merge-base de la rama de feature. La lógica de presupuesto es la misma; la diferencia de firma no es una divergencia de gates sino de payload."
     },
     {
+      "command": "sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh*",
+      "side": "any",
+      "reason": "el preflight de tooling declara la identidad del runner en la que se ejecuta ('--runner ${{ runner.name }}'), que solo existe en CI; en local se invoca con la forma heredada, sin ese flag, y hace la MISMA comprobacion: que los binarios declarados en .github/tooling/pr-gate.txt esten presentes. La diferencia es el dato de accion del fallo, no el gate."
+    },
+    {
       "command": "git sparse-checkout*",
       "side": "ci",
       "reason": "mecánica del step 'disable sparse-checkout cone mode (runtime fallback)' de pr-gate: el sparse-checkout-cone-mode del actions/checkout v7 deja inaccesibles paths fuera del diff y rompe el worktree del job (#414); el fallback garantiza la materialización. Es infraestructura del runner, no un gate que una estación pueda correr."
