@@ -1,6 +1,6 @@
 # access2web-blueprint
 
-<!-- personal-skills:slice:access2web-blueprint @ v14446be -->
+<!-- personal-skills:slice:access2web-blueprint @ va23573b -->
 # slices/partials/web.md
 
 ## Manera de trabajar en proyectos web
@@ -33,7 +33,7 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
 ### Forma del ciclo
 
 - Toda issue es **atómica**: la cambia una persona, la cierra un PR (o varias si encadenadas vía `chained-pr` cuando la diff supera el presupuesto).
-- **Toda issue nace con 6 secciones canónicas en el cuerpo** (#432). El contrato de `issue-spec` se compone de los seis encabezados H3, exactos, en este orden:
+- **Toda issue nace con 6 secciones canónicas en el cuerpo** (#432), que son la plantilla canónica del repo: los seis encabezados H3, exactos, en este orden:
   1. `### Problema y contexto`
   2. `### Evidencia verificable`
   3. `### Alcance y no objetivos`
@@ -41,28 +41,32 @@ La tabla de skills del `AGENTS.md` del consumer es un subconjunto curado; el reg
   5. `### Plan de validación`
   6. `### Dependencias y riesgos`
 
-  El contrato se aplica en el momento de crear la issue: la receta canónica es
+  Las seis secciones son **convención, no puerta**: desde #1093 (R2) ningún
+  gate valida el cuerpo de la issue. El flujo de PR bloquea por tres cosas:
+  que la PR enlace una issue, el tamaño (~400 líneas, `size:exception`) y
+  que los commits sean convencionales; HR-53 («Tests que prueban el
+  cierre») y HR-64 avisan. Escribirlas bien sigue siendo trabajo del
+  agente: una issue sin contexto ni criterios pierde la trazabilidad
+  aunque ningún gate la cobre.
+  La receta canónica es
   `gh issue create --title "<título>" --body-file <cuerpo-de-la-issue.md> --label type:<tipo>`
   (donde `type:<tipo>` sale del host-contract del consumer), o el formulario
   de GitHub `.github/ISSUE_TEMPLATE/<feature>.yml` que ya lleva los seis
   campos como controles. El doc operativo generado por `ci-pattern adoption
-  generate-doc` enuncia el comando exacto para el consumer; la rama de
-  aprobación por CLI queda cubierta por esa receta. El validador server-side
-  que existía en `.github/workflows/issue-spec-open.yml` se retiró en #508
-  porque había fallado 6/6 por facturación de runners hospedados (#380); el
-  control sigue siendo fail-loud: una issue sin las 6 secciones no se crea
-  vía CLI, y un agente que la escriba a mano verá la PR que la cite abrirse
-  con el cuerpo incompleto y deberá cerrarla o completarla antes del merge.
+  generate-doc` enuncia el comando exacto para el consumer. El validador
+  server-side que existía en `.github/workflows/issue-spec-open.yml` se retiró
+  en #508 porque había fallado 6/6 por facturación de runners hospedados
+  (#380).
 - Toda issue aprobada tiene una **rama propia** con el nombre `<tipo>/<nº issue>-<kebab-slug>`, validado por el **ruleset del host** que aplica la regex de `P01_branch_name_pattern`, o por el gate `assets/branch-name/check_branch_name.py` del patrón cuando el host no declara rulesets (mecánica del HR-29 y HR-31).
 - Toda rama se desarrolla en un **worktree dedicado** bajo el layout canónico de `worktree-reorg-per-project` v2.0 (sibling-container `<project>-worktrees/<nº issue>-<tema>/`); el comando literal es `git worktree add ../<repo>-worktrees/<nº>-<tema> -b <rama-nueva>` y la limpieza usa la misma ruta.
 - Toda PR apunta a `main`. Los repos web no tienen rama de integración: `staging`, `develop` o `release/*` no reciben PR ni se mergean a `main`; lo reutilizable se recupera con `git cherry-pick` en una rama nueva desde `main`. Preproducción y UAT son entornos que despliegan desde `main`, no ramas.
 
 ### Presupuesto de revisión
 
-- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por el gate `assets/pr-size/check_pr_size.py` del patrón (HR-33, `SIZE_EXCEPTION_APPROVER`).
+- Toda PR se mantiene bajo el **presupuesto de revisión de 400 líneas** (`additions + deletions`), comprobado por el gate `assets/pr-size/check_pr_size.py` del patrón (HR-33), que lee la etiqueta `size:exception` (`--labels` o `$PR_LABELS`).
 - 400 líneas es **techo de revisión, no techo de tamaño**: a partir de esa cifra la revisión pasa de atenta a vistazo. La justificación completa vive en el `CONTRIBUTING.md` de cada consumer; este partial la enuncia sin duplicar.
 - **Lectura obligatoria antes de abrir una PR:** el `CONTRIBUTING.md` del consumer (HR-71). Recoge cómo se aplica aquí el flujo del catálogo: issue primero, asistencia de IA declarada en el cuerpo, etiquetas, presupuesto, commits por unidad, comprobaciones previas y automáticas, enlace a la issue. Sin `CONTRIBUTING.md` el gate `docs_manifest` falla cerrado en fase 5.
-- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**; la identidad del aprobador llega al gate en la variable de entorno `SIZE_EXCEPTION_APPROVER` y `check_pr_size.py` (`override_has_separate_approver`, HR-33) falla cerrado si el aprobador coincide con el autor.
+- La única excepción al presupuesto es la **etiqueta `size:exception`** (decisión del dueño del repo, 2026-10-15). El campo `size-exception-reason:` del cuerpo del PR **no existe**, y `SIZE_EXCEPTION_APPROVER` tampoco: `check_pr_size.py` lee la etiqueta (`--labels` o `$PR_LABELS`) y no comprueba quién la puso.
 - La etiqueta `size:exception` la aplica **solo el mantenedor**, nunca el agente, y solo cuando partir el PR rompería `main` (no por tests, refactor o cambio menor). Antes de aplicarla, el agente responde las cuatro preguntas de `## Excepción de tamaño` en el cuerpo de la PR; sin las cuatro respuestas la etiqueta no se pide. El merge sigue siendo una decisión humana.
 - **Borrar siempre es divisible.** Retirar tests, código muerto o configuración nunca justifica `size:exception`: se borra por trozos de ≤400 líneas, aunque sea dentro del mismo fichero, dejando `main` en verde entre trozos; lo que comparten los trozos (helpers, fixtures) se borra en el último.
 - Cuando la diff supera el presupuesto, el orden de escape es: (1) partir por unidad de trabajo, (2) encadenar PRs vía `chained-pr`, (3) `size:exception` (la pone el mantenedor) como último recurso. Si la excepción se vuelve habitual, el problema está en el troceado del issue, no en el presupuesto.
