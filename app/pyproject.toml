@@ -52,7 +52,7 @@ dependencies = [
 # Dev pins — exact, per Hard Rule 2. Drift graduates rules; the gate enforces
 # the version it was designed against.
 dev = [
-    "ruff==0.15.21",               # QC-3 lint.
+    "ruff==0.17.1",               # QC-3 lint.
     "mypy==2.4.0",                # QC-4 typecheck (platform/src/ only).
     "pytest==9.0.*",               # Strict-TDD runner. Sobre 8.4.2 por PYSEC-2026-1845.
     "pytest-asyncio==1.4.0",       # Async test runner (DR2 reset-flow fixtures in tests/lanzadera/auth/ use async; pytest-asyncio honours asyncio_mode = \"auto\").
