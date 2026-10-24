@@ -1181,7 +1181,8 @@ def test_nightly_pip_audit_failure_opens_an_issue(workflow: dict) -> None:
 def test_only_the_pip_audit_alert_job_may_write_issues(workflow: dict) -> None:
     # HR-39 (#1414): `issues: write` is granted to the alert job alone.
     writers = sorted(
-        name for name, job in workflow["jobs"].items()
+        name
+        for name, job in workflow["jobs"].items()
         if (job.get("permissions") or {}).get("issues") == "write"
     )
     assert writers == ["pip-audit-alert"]
