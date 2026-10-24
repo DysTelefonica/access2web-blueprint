@@ -9,6 +9,7 @@ reason a silent revert cannot pass review.
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -770,6 +771,10 @@ def test_heavy_jobs_run_on_every_event_after_pr_gate_passed_or_skipped(
         "|| github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') "
         "&& !cancelled() "
         "&& (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped')"
+        # Issue #1368: the docs-only lane. A diff that falls entirely under
+        # `docs/` skips the heavy jobs, and the `required` aggregator accepts
+        # those skips as OK (the `docs_only_lane` of the policy).
+        " && needs.pr-gate.outputs.docs_changed != 'true'"
     )
     for job in ("quality", "security", "codeql", "integration"):
         assert jobs[job]["if"] == expected, f"`{job}` if: {jobs[job].get('if')!r}"
@@ -1213,6 +1218,16 @@ def test_pull_request_types_cover_edit_and_label_events(
     )
 
 
+#: The jobs the docs-only lane skips: the heavy suite of the PR rollup.
+HEAVY_JOBS = (
+    "quality",
+    "integration",
+    "security",
+    "codeql",
+    "e2e-smoke",
+)
+
+
 def test_the_heavy_workflow_calls_the_light_pr_gate_workflow(workflow: dict) -> None:
     """The `required` aggregator reads `needs.pr-gate`, and `needs:` cannot cross files.
 
@@ -1224,6 +1239,52 @@ def test_the_heavy_workflow_calls_the_light_pr_gate_workflow(workflow: dict) -> 
     assert job["uses"] == "./.github/workflows/pr-gate.yml"
     assert job["if"] == "github.event_name == 'pull_request'"
     assert "pr-gate" in workflow["jobs"]["required"]["needs"]
+
+
+def test_the_heavy_jobs_skip_the_docs_only_lane(workflow: dict) -> None:
+    """Issue #1368: a diff entirely under `docs/` skips the heavy suite.
+
+    The marker is the `docs_changed` output of the pr-gate. Every heavy job
+    must read it, or the lane would skip some jobs and not others, and the
+    `required` aggregator would see a half-skipped run.
+    """
+    for job in HEAVY_JOBS:
+        condition = workflow["jobs"][job]["if"]
+        assert "needs.pr-gate.outputs.docs_changed != 'true'" in condition, (
+            f"`{job}` must skip the docs-only lane: {condition!r}"
+        )
+    # `docs-links` is the gate that catches broken links in the PRD; it stays
+    # in the run when the diff is documentation.
+    assert "docs_changed" not in workflow["jobs"]["docs-links"]["if"]
+
+
+def test_the_policy_declares_the_docs_only_lane(workflow: dict) -> None:
+    """The lane is declared in the policy, and it covers exactly the heavy jobs.
+
+    A skip the policy does not declare leaves `required` in red, and a skip
+    the policy declares for a job that never skips is a promise the gate
+    cannot keep.
+    """
+    policy = json.loads(
+        (_find_workflow().parent.parent / "required-jobs-policy.json").read_text(encoding="utf-8")
+    )
+    lane = policy["docs_only_lane"]
+    assert lane["event"] == "pull_request"
+    assert lane["gate_job"] == "pr-gate"
+    assert lane["output"] == "docs_changed"
+    assert sorted(lane["skips"]) == sorted(HEAVY_JOBS)
+    for job in lane["skips"]:
+        assert job in policy["required_jobs"], f"{job} is skipped but not a required job"
+    assert "relaxation" in policy, "a new lane is a relaxation against the base policy"
+
+
+def test_the_docs_only_classifier_runs_in_the_pr_gate(pr_gate_workflow: dict) -> None:
+    """A gate that exists only as a script is a gate nobody runs (Hard Rule 4)."""
+    runs = "\n".join(
+        step.get("run", "") for step in pr_gate_workflow["jobs"]["pr-gate"].get("steps", [])
+    )
+    assert "scripts/check_docs_only_lane.py" in runs
+    assert "docs_changed" in runs, "the classifier's verdict must reach the job output"
 
 
 def test_pull_request_runs_are_cancelled_only_by_a_new_commit(workflow: dict) -> None:
