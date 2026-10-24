@@ -1,7 +1,4 @@
 # CLI que el RUNNER debe aportar al job docs-architecture (G0.5 del canon).
 # Una CLI por linea; "#" abre comentario; la linea en blanco se ignora.
 git
-pip
-pip3
-python
-python3
+sh

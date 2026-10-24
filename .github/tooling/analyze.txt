@@ -1,3 +1,4 @@
 # CLI que el RUNNER debe aportar al job analyze (G0.5 del canon).
 # Una CLI por linea; "#" abre comentario; la linea en blanco se ignora.
 git
+sh

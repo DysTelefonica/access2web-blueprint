@@ -2,3 +2,4 @@
 # Una CLI por linea; "#" abre comentario; la linea en blanco se ignora.
 docker
 git
+sh
