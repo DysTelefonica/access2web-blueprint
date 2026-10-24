@@ -30,7 +30,7 @@
       "items": {"type": "string", "minLength": 1},
       "minItems": 1,
       "uniqueItems": true,
-      "description": "Optional (DysTelefonica/team-skills#998). Logins that may put `status:approved` on an issue. The issue-spec gate reads this list when invoked with `--host-contract`. Without the key it keeps checking only that the label is present, and warns in one line, so consumers that have not adopted it are unaffected."
+      "description": "Deprecated (DysTelefonica/team-skills#1093, R1). Logins that may put `status:approved` on an issue. Since R1 the issue-spec gate does not read this list: `status:approved` is a convention that anyone (agents included) may apply and that no gate requires. The key is kept so the consumer contracts that declare it stay valid."
     },
     "required_checks": {
       "type": "array",

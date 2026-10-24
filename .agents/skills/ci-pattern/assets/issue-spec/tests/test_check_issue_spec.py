@@ -2,7 +2,13 @@
 """Suite del gate issue-spec (DysTelefonica/team-skills#633). stdlib exclusivamente.
 
 Cada regla: caso positivo, negativo y degenerado. El modo local se ejecuta como
-lo ejecuta preflight: sin payload, sin token y sin red.
+lo ejecuta preflight: sin payload, sin token ni red.
+
+Retirado con la regla (DysTelefonica/team-skills#1093, R1 y R2): la etiqueta
+`status:approved` de la issue, su comprobación de quién la puso (la lista
+`approvers`), la etiqueta `type:*` de la issue y del PR, y las seis secciones
+obligatorias del cuerpo de la issue. El gate comprueba que la PR enlace una
+issue del repositorio.
 """
 
 import importlib.machinery
@@ -41,8 +47,6 @@ sys.modules["check_issue_spec"] = check_issue_spec
 _spec.loader.exec_module(check_issue_spec)
 validate_body = check_issue_spec.validate_body
 validate_remote = check_issue_spec.validate_remote
-is_chain_partial = check_issue_spec.is_chain_partial
-PrContext = check_issue_spec.PrContext
 references = check_issue_spec.references
 GitHubApiError = check_issue_spec.GitHubApiError
 
@@ -63,7 +67,8 @@ def run_local(body, *extra, stdin=False):
         return subprocess.run(cmd, capture_output=True, text=True, check=False, env=env)
 
 
-def approved_issue(*labels):
+def plain_issue(*labels):
+    """Issue sin etiquetas: el gate ya no mira las etiquetas (R1)."""
     return {"number": 1, "labels": [{"name": n} for n in labels]}
 
 
@@ -164,78 +169,27 @@ class ReferenceFormTests(unittest.TestCase):
 
 
 class RemoteRuleTests(unittest.TestCase):
-    """Reglas 2 y 3 con la API simulada: PR, aprobación, tipo, fallo de API (S3)."""
+    """Regla 2 con la API simulada: la referencia resuelve a una issue, no a una PR."""
 
     def test_reference_to_pull_request_points_to_depends_on(self):
         def fetch(number):
-            return {"number": number, "pull_request": {"url": "x"},
-                    "labels": [{"name": "status:approved"}, {"name": "type:feature"}]}
+            return {"number": number, "pull_request": {"url": "x"}}
         violations = validate_remote("Closes #634\n", "team/skills", fetch)
         self.assertEqual(len(violations), 1)
         self.assertIn("pull request", violations[0])
         self.assertIn("depends-on", violations[0])
 
-    def test_pull_request_reference_is_a_warning_when_a_valid_issue_is_also_linked(self):
-        # #787 S6: con otra issue valida enlazada, la referencia a una PR no bloquea.
-        def fetch(number):
-            if number == 634:
-                return {"number": number, "pull_request": {"url": "x"}, "labels": []}
-            return approved_issue("status:approved", "type:feature")
-        context = PrContext()
-        violations = validate_remote("Closes #12\nRefs #634\n", "team/skills", fetch,
-                                     context=context)
-        self.assertEqual(violations, [])
-        self.assertEqual(len(context.warnings), 1)
-        self.assertIn("pull request", context.warnings[0])
-
-    def test_pull_request_reference_stays_a_violation_without_a_context(self):
-        # Sin contexto nadie lee los avisos: la referencia a una PR no se oculta.
-        def fetch(number):
-            if number == 634:
-                return {"number": number, "pull_request": {"url": "x"}, "labels": []}
-            return approved_issue("status:approved", "type:feature")
-        violations = validate_remote("Closes #12\nRefs #634\n", "team/skills", fetch)
-        self.assertEqual(len(violations), 1)
-        self.assertIn("pull request", violations[0])
-
-    def test_chain_intermediate_does_not_need_the_issue_approved(self):
-        # #787 S6: status:approved se exige en la punta de cadena, no en los eslabones.
-        def fetch(number):
-            return approved_issue("type:bug")
-        self.assertEqual(
-            validate_remote("Refs #12\n", "team/skills", fetch, context=PrContext(chain_partial=True)), [])
-        self.assertEqual(
-            validate_remote("Closes #12\n", "team/skills", fetch),
-            ["#12: requiere status:approved"])
-
-    def test_chain_intermediate_still_needs_a_type_label(self):
+    def test_issue_reference_passes(self):
         violations = validate_remote(
-            "Refs #12\n", "team/skills", lambda n: approved_issue(),
-            context=PrContext(chain_partial=True))
-        self.assertEqual(len(violations), 1)
-        self.assertIn("type:*", violations[0])
-
-    def test_chain_partial_is_read_from_the_pull_request_labels(self):
-        self.assertTrue(is_chain_partial({"pull_request": {"labels": [{"name": "chain:partial"}]}}))
-        self.assertFalse(is_chain_partial({"pull_request": {"labels": [{"name": "type:bug"}]}}))
-        self.assertFalse(is_chain_partial({"pull_request": {}}))
-
-    def test_approved_typed_issue_passes(self):
-        violations = validate_remote(
-            "Closes #12\n", "team/skills",
-            lambda n: approved_issue("status:approved", "type:feature"))
+            "Closes #12\n", "team/skills", lambda n: plain_issue())
         self.assertEqual(violations, [])
 
-    def test_missing_approval_fails(self):
+    def test_issue_without_approval_passes(self):
+        # R1 (DysTelefonica/team-skills#1093): la etiqueta de aprobación ya no
+        # bloquea; el gate no mira las etiquetas de la issue.
         violations = validate_remote(
-            "Closes #12\n", "team/skills", lambda n: approved_issue("type:bug"))
-        self.assertEqual(violations, ["#12: requiere status:approved"])
-
-    def test_missing_type_label_fails(self):
-        violations = validate_remote(
-            "Closes #12\n", "team/skills", lambda n: approved_issue("status:approved"))
-        self.assertEqual(len(violations), 1)
-        self.assertIn("type:*", violations[0])
+            "Closes #12\n", "team/skills", lambda n: plain_issue())
+        self.assertEqual(violations, [])
 
     def test_api_error_fails_closed(self):
         def fetch(number):
@@ -249,7 +203,7 @@ class RemoteRuleTests(unittest.TestCase):
 
         def fetch(number):
             fetched.append(number)
-            return approved_issue("status:approved", "type:bug")
+            return plain_issue()
         validate_remote("`Refs #7`\n\nCloses #8\n", "team/skills", fetch)
         self.assertEqual(fetched, [8])
 
@@ -258,7 +212,7 @@ class RemoteRuleTests(unittest.TestCase):
 
         def fetch(number):
             fetched.append(number)
-            return approved_issue("status:approved", "type:bug")
+            return plain_issue()
         violations = validate_remote("Closes other/repo#9\n", "team/skills", fetch)
         self.assertEqual(fetched, [])
         self.assertTrue(any("otro repositorio" in v for v in violations))
@@ -269,200 +223,6 @@ class RemoteRuleTests(unittest.TestCase):
         violations = validate_remote("sin enlace\n", "team/skills", fetch)
         self.assertEqual(len(violations), 1)
         self.assertIn("depends-on", violations[0])
-
-
-# --------------------------------------------------------------------------------------------
-# Regla 7 — secciones obligatorias (DysTelefonica/team-skills#644).
-
-SECTIONS = (
-    "Problema y contexto",
-    "Evidencia verificable",
-    "Alcance y no objetivos",
-)
-
-
-def _write_sections_config(tmp, payload):
-    """Escribe un JSON de configuración de secciones en ``tmp`` y devuelve la ruta."""
-    path = tmp / "required-sections.json"
-    path.write_text(json.dumps(payload), encoding="utf-8")
-    return path
-
-
-class InformativeRefsTests(unittest.TestCase):
-    """#913: las Refs son informativas; el PR debe enlazar al menos una issue aprobada."""
-
-    @staticmethod
-    def _issues(**by_number):
-        # by_number: {"12": [labels...]}; el nombre de la clave es el número de issue.
-        def fetch(number):
-            return {"number": number,
-                    "labels": [{"name": n} for n in by_number[str(number)]]}
-        return fetch
-
-    def test_closes_approved_with_non_approved_refs_passes(self):
-        # (a) el cierre aprobado basta; la Refs no aprobada es informativa.
-        fetch = self._issues(**{"12": ["status:approved", "type:bug"], "13": ["type:bug"]})
-        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch)
-        self.assertEqual(violations, [])
-
-    def test_only_refs_to_non_approved_issue_fails(self):
-        # (b) sin ninguna issue aprobada el PR sigue en rojo.
-        fetch = self._issues(**{"12": ["type:bug"]})
-        violations = validate_remote("Refs #12\n", "team/skills", fetch)
-        self.assertEqual(len(violations), 1)
-        self.assertIn("aprobada", violations[0])
-
-    def test_only_refs_to_approved_issue_still_passes(self):
-        # no regresión: hoy pasa y debe seguir pasando (la Refs aprobada es la aprobación).
-        fetch = self._issues(**{"12": ["status:approved", "type:bug"]})
-        violations = validate_remote("Refs #12\n", "team/skills", fetch)
-        self.assertEqual(violations, [])
-
-    def test_closes_non_approved_with_approved_refs_fails(self):
-        # (c) el issue que el PR cierra debe ser el aprobado: no basta una Refs aprobada.
-        fetch = self._issues(**{"12": ["type:bug"], "13": ["status:approved", "type:bug"]})
-        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch)
-        self.assertEqual(violations, ["#12: requiere status:approved"])
-
-    def test_chain_partial_with_refs_to_canonical_approved_passes(self):
-        # (d) eslabón intermedio: la aprobación vive en la punta, como hoy.
-        fetch = self._issues(**{"12": ["status:approved", "type:bug"]})
-        context = PrContext(chain_partial=True)
-        violations = validate_remote("Refs #12\n", "team/skills", fetch, context=context)
-        self.assertEqual(violations, [])
-
-    def test_chain_partial_with_refs_to_non_approved_still_passes(self):
-        # no regresión de #787 S6: en un eslabón intermedio no se exige aprobación.
-        fetch = self._issues(**{"12": ["type:bug"]})
-        context = PrContext(chain_partial=True)
-        violations = validate_remote("Refs #12\n", "team/skills", fetch, context=context)
-        self.assertEqual(violations, [])
-
-    def test_informative_refs_keep_the_required_sections_rule(self):
-        # no regresión (regla 7): las secciones obligatorias siguen aplicando a toda
-        # issue enlazada, también a las Refs; solo cambia la exigencia de aprobación.
-        def fetch(number):
-            labels = [{"name": "status:approved"}, {"name": "type:bug"}] if number == 12 \
-                else [{"name": "type:bug"}]
-            return {"number": number, "labels": labels, "body": "sin secciones"}
-        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch,
-                                     required_sections=("### Problema y contexto",))
-        self.assertEqual(len(violations), 2)
-        self.assertIn("#12:", violations[0])
-        self.assertIn("#13:", violations[1])
-
-    def test_api_error_on_informative_ref_fails_closed(self):
-        # no regresión (regla 6): un error al leer una Refs sigue siendo hallazgo.
-        def fetch(number):
-            if number == 13:
-                raise _ApiDownError()
-            return approved_issue("status:approved", "type:bug")
-        violations = validate_remote("Closes #12\nRefs #13\n", "team/skills", fetch)
-        self.assertEqual(len(violations), 1)
-        self.assertIn("cannot read", violations[0])
-
-
-class RequiredSectionsLocalTests(unittest.TestCase):
-
-    def test_disabled_unchanged_without_flag(self):
-        # Sin --required-sections, la regla 7 no existe (backward compat).
-        body = "Closes #42\n\n## Cualquier cosa\n\nTexto.\n"
-        self.assertEqual(run_local(body).returncode, 0, run_local(body).stderr)
-
-    def test_all_present_passes(self):
-        body = (
-            "Closes #42\n\n"
-            f"## {SECTIONS[0]}\n\nTexto.\n\n"
-            f"## {SECTIONS[1]}\n\nTexto.\n\n"
-            f"## {SECTIONS[2]}\n\nTexto.\n"
-        )
-        with tempfile.TemporaryDirectory() as tmp:
-            cfg = _write_sections_config(Path(tmp), {"required_sections": list(SECTIONS)})
-            p = run_local(body, "--required-sections", str(cfg))
-        self.assertEqual(p.returncode, 0, p.stderr)
-
-    def test_one_missing_fails_with_section_name(self):
-        body = (
-            "Closes #42\n\n"
-            f"## {SECTIONS[0]}\n\nTexto.\n\n"
-            f"## {SECTIONS[1]}\n\nTexto.\n"
-        )
-        with tempfile.TemporaryDirectory() as tmp:
-            cfg = _write_sections_config(Path(tmp), {"required_sections": list(SECTIONS)})
-            p = run_local(body, "--required-sections", str(cfg))
-        self.assertEqual(p.returncode, 1, p.stderr)
-        self.assertIn(f"«{SECTIONS[2]}»", p.stderr)
-        self.assertIn("obligatoria", p.stderr)
-
-    def test_empty_section_fails(self):
-        # Heading sin contenido bajo él: la regla exige heading + contenido
-        # (mismo contrato del formulario: una textarea no se queda vacía).
-        body = (
-            "Closes #42\n\n"
-            f"## {SECTIONS[0]}\n\nTexto.\n\n"
-            f"## {SECTIONS[1]}\n\nTexto.\n\n"
-            f"## {SECTIONS[2]}\n\n"
-        )
-        with tempfile.TemporaryDirectory() as tmp:
-            cfg = _write_sections_config(Path(tmp), {"required_sections": list(SECTIONS)})
-            p = run_local(body, "--required-sections", str(cfg))
-        self.assertEqual(p.returncode, 1, p.stderr)
-        self.assertIn(f"«{SECTIONS[2]}»", p.stderr)
-
-    def test_all_missing_fails_with_one_violation_per_section(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            cfg = _write_sections_config(Path(tmp), {"required_sections": list(SECTIONS)})
-            p = run_local("Closes #42\n", "--required-sections", str(cfg))
-        self.assertEqual(p.returncode, 1, p.stderr)
-        for name in SECTIONS:
-            self.assertIn(f"«{name}»", p.stderr)
-
-    def test_issue_form_body_passes(self):
-        # Cuerpo que sale de un issue form real (las 6 secciones de BP/CADETE).
-        body = (
-            "Closes #42\n\n"
-            "## Problema y contexto\n\nEl formulario falla porque la rama está stale.\n\n"
-            "## Evidencia verificable\n\n`gh run watch` muestra el job en rojo.\n\n"
-            "## Alcance y no objetivos\n\nArreglar la invocación; nada más.\n\n"
-            "## Criterios de aceptación\n\nLa suite canónica corre en verde.\n\n"
-            "## Plan de validación\n\n`make verify` y la suite del asset.\n\n"
-            "## Dependencias y riesgos\n\nNinguna externa; riesgo bajo.\n"
-        )
-        sections = [
-            "Problema y contexto", "Evidencia verificable", "Alcance y no objetivos",
-            "Criterios de aceptación", "Plan de validación", "Dependencias y riesgos",
-        ]
-        with tempfile.TemporaryDirectory() as tmp:
-            cfg = _write_sections_config(Path(tmp), {"required_sections": sections})
-            p = run_local(body, "--required-sections", str(cfg))
-        self.assertEqual(p.returncode, 0, p.stderr)
-
-class RequiredSectionsRemoteTests(unittest.TestCase):
-
-    def _issue(self, body):
-        return {
-            "number": 7,
-            "labels": [{"name": "status:approved"}, {"name": "type:feature"}],
-            "body": body,
-        }
-
-    def test_remote_issue_with_all_sections_passes(self):
-        body = (
-            f"## {SECTIONS[0]}\nTexto.\n\n"
-            f"## {SECTIONS[1]}\nTexto.\n\n"
-            f"## {SECTIONS[2]}\nTexto.\n"
-        )
-        violations = validate_remote(
-            "Closes #7\n", "team/skills", lambda n: self._issue(body), tuple(SECTIONS))
-        self.assertEqual(violations, [])
-
-    def test_remote_issue_missing_section_fails_with_number(self):
-        body = f"## {SECTIONS[0]}\nTexto.\n\n## {SECTIONS[1]}\nTexto.\n"
-        violations = validate_remote(
-            "Closes #7\n", "team/skills", lambda n: self._issue(body), tuple(SECTIONS))
-        self.assertEqual(len(violations), 1)
-        self.assertIn("#7:", violations[0])
-        self.assertIn(f"«{SECTIONS[2]}»", violations[0])
 
 
 class PrEventInvalidInputTests(unittest.TestCase):
@@ -487,9 +247,8 @@ class PrEventInvalidInputTests(unittest.TestCase):
 # --------------------------------------------------------------------------------------------
 
 
-def _approved_issue(number: int) -> dict:
-    return {"number": number, "body": "",
-            "labels": [{"name": "status:approved"}, {"name": "type:bug"}]}
+def _plain_issue(number: int) -> dict:
+    return {"number": number, "body": "", "labels": []}
 
 
 def _pr_payload(body: str, *, pr_number: int = 7, repo: str = "team/skills",
@@ -519,7 +278,7 @@ class PrEventBodyFromApiTests(unittest.TestCase):
             return {"number": number, "body": "Closes #12\n"}
 
         rc = check_issue_spec.pr_event(
-            payload, body_fetcher=body_fetcher, issue_fetcher=_approved_issue)
+            payload, body_fetcher=body_fetcher, issue_fetcher=_plain_issue)
         self.assertEqual(rc, 0)
         self.assertEqual(calls, [("team/skills", 7)])
 
@@ -533,7 +292,7 @@ class PrEventBodyFromApiTests(unittest.TestCase):
             return {"number": number, "body": "Editar el cuerpo sin enlace a issue."}
 
         rc = check_issue_spec.pr_event(
-            payload, body_fetcher=body_fetcher, issue_fetcher=_approved_issue)
+            payload, body_fetcher=body_fetcher, issue_fetcher=_plain_issue)
         self.assertEqual(rc, 1)
 
 
@@ -593,304 +352,123 @@ class GatePathResolutionTests(unittest.TestCase):
         self.assertEqual(resolve_gate({GATE_ENV: ""}), resolve_gate({}))
 
 
-# --------------------------------------------------------------------------------------------
-# Regla 3 (quién) — la contramarca de quién puede aprobar (DysTelefonica/team-skills#998).
-#
-# La lista sale de la clave opcional `approvers` del `.github/host-contract.json` del
-# consumer. Aquí se fija de dónde se lee, que una declaración inservible sale 2 (HR-3) y
-# que la puerta dice en una línea si el contrato declara aprobadores o si todavía no los
-# declara (punto 3). El juicio de QUIÉN pone la etiqueta llega en el eslabón siguiente de
-# la cadena, con la lectura de la línea de tiempo de la issue.
-# --------------------------------------------------------------------------------------------
+class ObsoleteFlagsCompatibilityTests(unittest.TestCase):
+    """#1113 — las flags retiradas en #1103 se aceptan y se ignoran."""
 
-APPROVERS = ("ardelperal", "dys-orquestador[bot]")
-
-
-def _write_host_contract(tmp, payload):
-    """Escribe un `host-contract.json` en ``tmp`` y devuelve la ruta."""
-    path = tmp / "host-contract.json"
-    path.write_text(json.dumps(payload), encoding="utf-8")
-    return path
-
-
-def _run_pr_event_without_api(tmp, *extra):
-    """Ejecuta `pr-event` con un payload que no llega a tocar la API.
-
-    Un payload sin `repository.full_name` hace que el gate salga 2 como entrada inválida
-    antes de cualquier llamada, así que lo observable aquí es exactamente lo que la puerta
-    anuncia al leer el contrato: sin token, sin red y sin depender del veredicto.
-    """
-    event = Path(tmp) / "event.json"
-    event.write_text('{"pull_request": {"number": 7}}', encoding="utf-8")
-    env = {k: v for k, v in os.environ.items() if k != "GITHUB_TOKEN"}
-    env["GITHUB_API_URL"] = "http://127.0.0.1:9"  # puerto cerrado
-    return subprocess.run(
-        [sys.executable, str(GATE), "pr-event", str(event), *extra],
-        capture_output=True, text=True, check=False, env=env, timeout=60)
-
-
-class LoadApproversTests(unittest.TestCase):
-    """Punto 1: `approvers` es una clave opcional de `.github/host-contract.json`."""
-
-    def test_absent_key_declares_nothing(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = _write_host_contract(Path(tmp), {"contract_version": 1})
-            self.assertEqual(check_issue_spec.load_approvers(str(path)), ())
-
-    def test_declared_list_is_read(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = _write_host_contract(
-                Path(tmp), {"contract_version": 1, "approvers": list(APPROVERS)})
-            self.assertEqual(check_issue_spec.load_approvers(str(path)), APPROVERS)
-
-    def test_invalid_declarations_fail_closed(self):
-        # Un contrato ilegible o inservible no puede dejar la puerta en verde (HR-3).
-        cases = {
-            "ilegible": None,
-            "no json": "{",
-            "no objeto": '["ardelperal"]',
-            "no lista": '{"approvers": "ardelperal"}',
-            "vacia": '{"approvers": []}',
-            "entrada no textual": '{"approvers": ["ardelperal", 7]}',
-            "entrada vacia": '{"approvers": [""]}',
-        }
-        for name, payload in cases.items():
-            with self.subTest(name), tempfile.TemporaryDirectory() as tmp:
-                path = Path(tmp) / "host-contract.json"
-                path.write_text("{broken" if payload is None else payload, encoding="utf-8")
-                with self.assertRaises(check_issue_spec.HostContractError):
-                    check_issue_spec.load_approvers(str(path))
-
-    def test_pr_event_exits_2_on_an_unserviceable_contract(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            contract = _write_host_contract(Path(tmp), {"approvers": []})
-            p = _run_pr_event_without_api(tmp, "--host-contract", str(contract))
-        # 2 por el contrato inservible, antes incluso de leer el evento.
-        self.assertEqual(p.returncode, 2, p.stderr)
-        self.assertIn("approvers", p.stderr)
-        self.assertNotIn("repository.full_name", p.stderr)
-
-
-class ApproversReportedTests(unittest.TestCase):
-    """Punto 3: la salida dice en una línea si el contrato declara aprobadores o no."""
-
-    def test_declared_approvers_are_announced_and_not_warned_about(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            contract = _write_host_contract(
-                Path(tmp), {"contract_version": 1, "approvers": list(APPROVERS)})
-            p = _run_pr_event_without_api(tmp, "--host-contract", str(contract))
-        self.assertEqual(p.returncode, 2, p.stderr)  # el evento no identifica el repo
-        self.assertIn("repository.full_name", p.stderr)
-        self.assertIn("aprobadores declarados", p.stdout)
-        self.assertNotIn("aviso", p.stderr)
-
-    def test_contract_without_the_key_warns_once(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            contract = _write_host_contract(Path(tmp), {"contract_version": 1})
-            p = _run_pr_event_without_api(tmp, "--host-contract", str(contract))
-        self.assertEqual(p.stderr.count("approvers"), 1, p.stderr)
-        self.assertIn("no declara", p.stderr)
-
-    def test_no_contract_flag_warns_too(self):
-        # El consumer que aún no adopta la opción tampoco declara aprobadores: se dice
-        # igual, porque su puerta sigue aceptando cualquier actor.
-        with tempfile.TemporaryDirectory() as tmp:
-            p = _run_pr_event_without_api(tmp)
-        self.assertEqual(p.stderr.count("approvers"), 1, p.stderr)
-        self.assertIn("no declara", p.stderr)
-
-
-# --------------------------------------------------------------------------------------------
-# Regla 3 (quién) — quién puso `status:approved` (DysTelefonica/team-skills#998).
-#
-# La etiqueta puesta ya no basta: con `approvers` declarado, el último evento `labeled` de
-# la aprobación tiene que llevar un `actor.login` de la lista. Es el mismo patrón que
-# `SIZE_EXCEPTION_APPROVER` en el gate de pr-size, con la identidad leída de la plataforma
-# en vez de por una variable de entorno. El eslabón anterior deja la lista a punto; aquí se
-# juzga.
-# --------------------------------------------------------------------------------------------
-
-APPROVERS = ("ardelperal", "dys-orquestador[bot]")
-
-
-def _labeled(login, label="status:approved", at="2026-10-22T10:00:00Z"):
-    """Evento `labeled` de la API de issues."""
-    return {"event": "labeled", "label": {"name": label},
-            "actor": {"login": login}, "created_at": at}
-
-
-def _unlabeled(login, label="status:approved", at="2026-10-22T11:00:00Z"):
-    return {"event": "unlabeled", "label": {"name": label},
-            "actor": {"login": login}, "created_at": at}
-
-
-def _remote(body, *, approvers=APPROVERS, events=(), issue=None, events_get=None):
-    """`validate_remote` con la lista declarada y un doble de la línea de tiempo."""
-    def by_number(number):
-        return list(events)
-    context = PrContext(approvers=approvers,
-                        events_fetcher=events_get if events_get is not None else by_number)
-    fetch = issue or (lambda n: approved_issue("status:approved", "type:feature"))
-    return validate_remote(body, "team/skills", fetch, context=context)
-
-
-class ApproverRuleTests(unittest.TestCase):
-    """Puntos 2 y 6: el actor del último `labeled` tiene que ser aprobador declarado."""
-
-    def test_declared_approver_passes(self):
-        self.assertEqual(
-            _remote("Closes #12\n", events=[_labeled("dys-orquestador[bot]")]), [])
-
-    def test_actor_outside_the_list_fails_naming_actor_and_list(self):
-        violations = _remote("Closes #12\n", events=[_labeled("dys-agentes[bot]")])
-        self.assertEqual(len(violations), 1)
-        self.assertIn("dys-agentes[bot]", violations[0])
-        for approver in APPROVERS:
-            self.assertIn(approver, violations[0])
-
-    def test_label_without_the_event_fails_closed(self):
-        # La etiqueta está puesta pero no consta el evento que la puso: no se puede probar
-        # quién aprobó, y la puerta falla cerrada.
-        violations = _remote("Closes #12\n", events=[])
-        self.assertEqual(len(violations), 1)
-        self.assertIn("no consta", violations[0])
-
-    def test_last_labeled_event_after_a_removal_decides(self):
-        # Un aprobador la puso, alguien la retiró y un actor no declarado la repuso: manda
-        # el ÚLTIMO `labeled`, no el primero (punto 6, caso 5).
-        violations = _remote("Closes #12\n", events=[
-            _labeled("ardelperal"), _unlabeled("ardelperal"), _labeled("dys-agentes[bot]")])
-        self.assertEqual(len(violations), 1)
-        self.assertIn("dys-agentes[bot]", violations[0])
-
-    def test_events_of_other_labels_are_not_the_approval(self):
-        self.assertEqual(_remote("Closes #12\n", events=[
-            _labeled("dys-agentes[bot]", label="type:bug"), _labeled("ardelperal")]), [])
-
-    def test_login_comparison_is_case_insensitive(self):
-        # GitHub no distingue mayúsculas en el login; el gate tampoco.
-        self.assertEqual(_remote("Closes #12\n", events=[_labeled("Ardelperal")]), [])
-
-    def test_api_error_reading_events_fails_closed(self):
-        # Punto 5: error de API al leer los eventos = fallo cerrado, como el resto.
-        def down(number):
-            raise _ApiDownError()
-        violations = _remote("Closes #12\n", events_get=down)
-        self.assertEqual(len(violations), 1)
-        self.assertIn("cannot read", violations[0])
-
-    def test_missing_events_reader_fails_closed(self):
-        # Sin cliente de eventos no se puede probar la separación: hallazgo, no verde.
-        context = PrContext(approvers=APPROVERS)
-        violations = validate_remote(
-            "Closes #12\n", "team/skills",
-            lambda n: approved_issue("status:approved", "type:feature"), context=context)
-        self.assertEqual(len(violations), 1)
-        self.assertIn("cannot read", violations[0])
-
-    def test_declared_approvers_do_not_read_events_without_the_label(self):
-        # Sin la etiqueta puesta la regla 3 ya falla por su ausencia; no se consulta la API.
-        def never(number):
-            raise _UnexpectedFetchError()
-        violations = _remote(
-            "Closes #12\n", events_get=never,
-            issue=lambda n: {"number": n, "labels": [{"name": "type:feature"}]})
-        self.assertEqual(violations, ["#12: requiere status:approved"])
-
-
-class ApproverExemptionsTests(unittest.TestCase):
-    """Punto 4 y #913: `chain:partial` exime, y las `Refs` no aceptan una aprobación ajena."""
+    FIXTURE = Path(__file__).resolve().parent / "fixtures" / "pr_event_dependabot.json"
 
     @staticmethod
-    def _events_by_number(number):
-        """Línea de tiempo por issue: #12 la aprobó el orquestador, #13 alguien sin autoridad."""
-        actor = "dys-orquestador[bot]" if number == 12 else "dys-agentes[bot]"
-        return [_labeled(actor)]
+    def _run(event: Path, *extra: str) -> subprocess.CompletedProcess:
+        env = {k: v for k, v in os.environ.items()
+               if k not in ("GITHUB_TOKEN", "GITHUB_EVENT_PATH")}
+        env["GITHUB_API_URL"] = "http://127.0.0.1:9"
+        return subprocess.run(
+            [sys.executable, str(GATE), "pr-event", str(event), *extra],
+            capture_output=True, text=True, check=False, env=env, timeout=60)
 
-    def test_chain_partial_is_exempt_and_does_not_read_events(self):
-        def never(number):
-            raise _UnexpectedFetchError()
-        context = PrContext(chain_partial=True, approvers=APPROVERS, events_fetcher=never)
-        self.assertEqual(
-            validate_remote("Refs #12\n", "team/skills",
-                            lambda n: approved_issue("status:approved", "type:feature"),
-                            context=context),
-            [])
+    @staticmethod
+    def _warning(flag: str) -> str:
+        return (f"issue-spec: flag obsoleta --{flag}: se ignora; "
+                "retirela del workflow")
 
-    def test_informative_ref_does_not_count_an_approval_from_a_non_approver(self):
-        # Una `Refs` a una issue «aprobada» por un actor no declarado no da por buena la
-        # aprobación del PR: sigue faltando la issue aprobada (mensaje de #913). Como una
-        # `Refs` es informativa, el motivo va como aviso y no como hallazgo.
-        context = PrContext(approvers=APPROVERS,
-                            events_fetcher=lambda n: [_labeled("dys-agentes[bot]")])
-        violations = validate_remote(
-            "Refs #12\n", "team/skills",
-            lambda n: approved_issue("status:approved", "type:feature"), context=context)
-        self.assertEqual(len(violations), 1)
-        self.assertIn("aprobada", violations[0])
-        self.assertEqual(len(context.warnings), 1)
-        self.assertIn("dys-agentes[bot]", context.warnings[0])
+    def test_required_sections_is_accepted_and_ignored(self):
+        baseline = self._run(self.FIXTURE)
+        self.assertEqual(baseline.returncode, 0, baseline.stderr)
+        result = self._run(
+            self.FIXTURE, "--required-sections", "required-sections.json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, baseline.stdout)
+        self.assertIn(self._warning("required-sections"), result.stderr)
 
-    def test_informative_ref_by_a_non_approver_warns_even_when_another_approves(self):
-        # El aviso no bloquea: con otra issue aprobada de verdad, el PR pasa y aun asi se
-        # dice que una de las enlazadas la aprobó alguien sin autoridad.
-        context = PrContext(approvers=APPROVERS,
-                            events_fetcher=self._events_by_number)
-        violations = validate_remote(
-            "Closes #12\nRefs #13\n", "team/skills",
-            lambda n: approved_issue("status:approved", "type:feature"), context=context)
-        self.assertEqual(violations, [])
-        self.assertEqual(len(context.warnings), 1)
-        self.assertIn("dys-agentes[bot]", context.warnings[0])
+    def test_host_contract_is_accepted_and_ignored(self):
+        baseline = self._run(self.FIXTURE)
+        self.assertEqual(baseline.returncode, 0, baseline.stderr)
+        result = self._run(
+            self.FIXTURE, "--host-contract", "host-contract.json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, baseline.stdout)
+        self.assertIn(self._warning("host-contract"), result.stderr)
 
-    def test_informative_ref_approved_by_a_declared_approver_passes(self):
-        self.assertEqual(_remote("Refs #12\n", events=[_labeled("ardelperal")]), [])
+    def test_both_obsolete_flags_are_accepted_and_ignored(self):
+        baseline = self._run(self.FIXTURE)
+        self.assertEqual(baseline.returncode, 0, baseline.stderr)
+        result = self._run(
+            self.FIXTURE,
+            "--required-sections", "required-sections.json",
+            "--host-contract", "host-contract.json")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, baseline.stdout)
+        self.assertIn(self._warning("required-sections"), result.stderr)
+        self.assertIn(self._warning("host-contract"), result.stderr)
 
-    def test_without_the_declaration_the_verdict_is_unchanged(self):
-        # Punto 3: sin `approvers` no se lee la API de eventos y el veredicto no cambia.
-        def never(number):
-            raise _UnexpectedFetchError()
-        self.assertEqual(_remote("Closes #12\n", approvers=(), events_get=never), [])
+    def test_local_accepts_the_obsolete_required_sections_flag(self):
+        """El preflight local de un consumer pasa la flag a `local`: tambien se acepta."""
+        baseline = run_local("Closes #1")
+        result = run_local("Closes #1", "--required-sections", "required-sections.json")
+        self.assertEqual(baseline.returncode, 0, baseline.stderr)
+        self.assertEqual(result.returncode, baseline.returncode, result.stderr)
+        self.assertEqual(result.stdout, baseline.stdout)
+        self.assertIn(self._warning("required-sections"), result.stderr)
 
-
-class IssueEventsPaginationTests(unittest.TestCase):
-    """El último evento `labeled` solo es fiable si se lee toda la línea de tiempo."""
-
-    class _Client(check_issue_spec.GitHubClient):
-        def __init__(self, pages):
-            super().__init__()
-            self.pages = pages
-            self.requested = []
-
-        def _events_page(self, repository, number, page):
-            self.requested.append(page)
-            return list(self.pages.get(page, []))
-
-    def test_pages_are_walked_until_a_short_page(self):
-        # La API devuelve 30 por defecto: una página llena no dice que sea la última, así
-        # que el gate pide la siguiente hasta recibir una corta.
-        full = [_labeled(f"a{i}") for i in range(100)]
-        client = self._Client({1: full, 2: [_labeled("b")]})
-        events = client.issue_events("team/skills", 12)
-        self.assertEqual(len(events), 101)
-        self.assertEqual(events[-1], _labeled("b"))
-        self.assertEqual(client.requested, [1, 2])
-
-    def test_a_short_first_page_ends_the_walk(self):
-        # Con una página corta ya no hay nada más que leer: no se pide la siguiente.
-        client = self._Client({1: [_labeled("a")]})
-        self.assertEqual(client.issue_events("team/skills", 12), [_labeled("a")])
-        self.assertEqual(client.requested, [1])
-
-    def test_a_timeline_longer_than_the_cap_fails_closed(self):
-        # Sin este techo una issue con miles de eventos devolvería un veredicto sobre un
-        # fragmento del historial: falso verde. Ante la duda, hallazgo (HR-3).
-        full = [_labeled("a")] * 100
-        client = self._Client({page: full for page in range(1, 20)})
-        with self.assertRaises(check_issue_spec.GitHubApiError):
-            client.issue_events("team/skills", 12)
-        self.assertEqual(client.requested, list(range(1, 11)))
+    def test_obsolete_flag_warning_precedes_invalid_payload_verdict(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            event = Path(tmp) / "invalid-event.json"
+            event.write_text(
+                '{"pull_request": {"number": 1}}', encoding="utf-8")
+            baseline = self._run(event)
+            result = self._run(
+                event, "--host-contract", "host-contract.json")
+        self.assertEqual(baseline.returncode, 2, baseline.stderr)
+        self.assertEqual(result.returncode, baseline.returncode, result.stderr)
+        self.assertEqual(result.stdout, baseline.stdout)
+        self.assertIn(self._warning("host-contract"), result.stderr)
 
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+DEPENDABOT_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "pr_event_dependabot.json"
+
+
+class PrEventDependabotTests(unittest.TestCase):
+    """#1113 E — un PR de Dependabot no enlaza issue y no es un fallo del gate.
+
+    El actor y la rama tienen que coincidir: el nombre de la rama por sí solo no
+    prueba quién la empujó (mismo criterio que check_branch_name).
+    """
+
+    @staticmethod
+    def _fixture() -> dict:
+        return json.loads(DEPENDABOT_FIXTURE.read_text(encoding="utf-8"))
+
+    @staticmethod
+    def _body_without_issue(repo: str, number: int) -> dict:
+        return {"number": number, "body": "Bumps lodash from 4.17.20 to 4.17.21."}
+
+    @staticmethod
+    def _no_issue_lookup(number: int) -> dict:
+        raise _UnexpectedFetchError("un PR de Dependabot exento no consulta issues")
+
+    def test_dependabot_pr_without_issue_link_is_exempt(self):
+        rc = check_issue_spec.pr_event(
+            self._fixture(), body_fetcher=self._body_without_issue,
+            issue_fetcher=self._no_issue_lookup)
+        self.assertEqual(rc, 0)
+
+    def test_same_body_from_a_human_pr_still_fails(self):
+        payload = self._fixture()
+        payload["pull_request"]["user"] = {"login": "ardelperal", "type": "User"}
+        payload["pull_request"]["head"]["ref"] = "fix/lodash"
+        rc = check_issue_spec.pr_event(
+            payload, body_fetcher=self._body_without_issue,
+            issue_fetcher=lambda n: plain_issue())
+        self.assertEqual(rc, 1)
+
+    def test_dependabot_actor_on_a_human_branch_is_not_exempt(self):
+        payload = self._fixture()
+        payload["pull_request"]["head"]["ref"] = "feat/lodash"
+        rc = check_issue_spec.pr_event(
+            payload, body_fetcher=self._body_without_issue,
+            issue_fetcher=lambda n: plain_issue())
+        self.assertEqual(rc, 1)

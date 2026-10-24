@@ -3,13 +3,19 @@
 """Preflight local con la misma verificación que la CI del patrón (#865).
 
 Corre antes de ``git push`` o ``gh pr create`` y emite los mismos veredictos
-que la CI aplicaría sobre el PR abierto (rama, cuerpo, ``status:approved``
-de la issue enlazada, HR-64 cuando hay política, deriva del doc operativo).
+que la CI aplicaría sobre el PR abierto (rama, cuerpo —el enlace a la issue—,
+HR-64 cuando hay política, deriva del doc operativo). Desde #1093 (R1) ningún
+gate lee la etiqueta ``status:approved`` ni la lista ``approvers``: esa
+etiqueta es una convención que cualquiera puede poner.
 
 Reusa los gatees en proceso vía ``importlib`` (HR-46): cero reglas nuevas,
 cero copia de lógica; el texto del hallazgo es el que cada gate emite,
-prefidado por ``[<gate>]``. Códigos de salida: 0 verde · 1 hallazgos ·
-2 uso o entrada inválida.
+prefidado por ``[<gate>]``. Con ``--draft`` valida cuerpo y tamaño contra sus
+gates canónicos sin API, ``gh`` ni red. Códigos de salida: 0 verde · 1
+hallazgos · 2 uso o entrada inválida.
+
+#1093 R1 (decisión del dueño, 2026-10-23): HR-64 es AVISO en el gate, así que
+aquí también lo es: el preflight lo imprime con ``AVISO:`` y sale 0.
 """
 
 from __future__ import annotations
@@ -17,17 +23,21 @@ from __future__ import annotations
 import argparse
 import importlib.machinery
 import importlib.util
+import io
 import json
 import os
 import subprocess
 import sys
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 BIN = Path(__file__).resolve().parent
 SKILL_ROOT = BIN.parent.parent
 ISSUE_SPEC_GATE = SKILL_ROOT / "assets" / "issue-spec" / "check_issue_spec.py"
+PR_SIZE_GATE = SKILL_ROOT / "assets" / "pr-size" / "check_pr_size.py"
 BRANCH_NAME_GATE = SKILL_ROOT / "assets" / "branch-name" / "check_branch_name.py"
 PR_CONTRACT_GATE = SKILL_ROOT / "assets" / "pr-contract" / "check_pr_contract.py"
+PR_CONTRACT_LOCAL = BIN / "pr_contract_local.py"
 CLI_BIN = BIN / "ci-pattern"
 
 DEFAULT_BRANCH_PATTERN = (
@@ -80,7 +90,7 @@ def _gate_branch(branch, pattern, actor, gate):
 
 def _gate_issue_spec_local(body, repository, gate):
     findings = []
-    for v in gate.validate_body(body, repository, ()):
+    for v in gate.validate_body(body, repository):
         findings.append(("issue-spec", "fail", f"issue-spec: {v}"))
     if not findings:
         findings.append(("issue-spec", "ok",
@@ -89,15 +99,14 @@ def _gate_issue_spec_local(body, repository, gate):
 
 
 def _gate_issue_spec_remote(body, repository, fetcher, gate):
+    # Espejo de ``validate_remote``: la PR enlaza una issue del repositorio y
+    # cada referencia resuelve a una issue, no a una pull request. Las etiquetas
+    # de la issue ya no se miran (DysTelefonica/team-skills#1093, R1).
     refs = gate.references(body)
     same = [r for r in refs if not r.repo or r.repo.lower() == repository.lower()]
     if not same:
         return []
-    # Espejo de ``validate_remote`` (#913): la aprobación se exige a los ``Closes``;
-    # las ``Refs`` solo llevan el tipo. Sin ningún ``Closes`` debe haber una aprobada.
-    closing = {r.number for r in same if r.kind == "close"}
     findings = []
-    approved_linked = False
     for number in sorted({r.number for r in same}):
         try:
             issue = fetcher(number)
@@ -109,24 +118,6 @@ def _gate_issue_spec_remote(body, repository, fetcher, gate):
                              f"issue-spec: #{number}: la referencia resuelve a "
                              "una pull request, no a una issue; muévala a "
                              "depends-on de Chain Context"))
-            continue
-        labels = {
-            lbl["name"] if isinstance(lbl, dict) else str(lbl)
-            for lbl in issue.get("labels", [])
-        }
-        has_approval = gate.APPROVAL_LABEL in labels
-        has_type = any(name.startswith(gate.TYPE_PREFIX) for name in labels)
-        if number in closing and not has_approval:
-            findings.append(("issue-spec", "missing-approval",
-                             f"issue-spec: #{number}: requiere {gate.APPROVAL_LABEL}"))
-        if not has_type:
-            findings.append(("issue-spec", "missing-type",
-                             f"issue-spec: #{number}: requiere una etiqueta "
-                             f"{gate.TYPE_PREFIX}*"))
-        approved_linked = approved_linked or (has_approval and has_type)
-    if not closing and not approved_linked:
-        findings.append(("issue-spec", "no-approved-linked",
-                         f"issue-spec: {gate.NO_APPROVED_LINKED_MESSAGE}"))
     return findings
 
 
@@ -136,15 +127,16 @@ def _gate_docs_evidence(body, repository, policy_path, files, gate):
     except FileNotFoundError as exc:
         return [("docs-evidence", "missing-policy", f"HR-64: {exc}")]
     pr = {"body": body, "labels": []}
-    findings = []
+    # #1093 R1: HR-64 es aviso en el gate; el preflight dice lo mismo y sale 0.
+    advisories = []
     try:
-        gate.check_docs_evidence(pr, repository or ".", files, policy, findings)
+        gate.check_docs_evidence(pr, repository or ".", files, policy, advisories)
     except gate.DocsEvidenceConfigError as exc:
         return [("docs-evidence", "config-error", f"HR-64: {exc}")]
-    if not findings:
+    if not advisories:
         return [("docs-evidence", "not-declared",
                  "HR-64: docs_evidence no declarado en la politica.")]
-    return [("docs-evidence", "fail", line) for line in findings]
+    return [("docs-evidence", "advisory", line) for line in advisories]
 
 
 def _gate_adoption_phase_five(repo):
@@ -195,6 +187,44 @@ def _collect_issue_spec_local(findings, body, repository, issue_spec_gate):
     findings.extend(_gate_issue_spec_local(body, repository, issue_spec_gate))
 
 
+def _resolve_draft_base(base):
+    """Resuelve la base con el helper canónico del contrato local.
+
+    ``pr_contract_local.resolve_base`` prefiere ``origin/<base>`` y cae a
+    ``<base>``. Solo consulta git: este camino no puede llamar a ``gh`` ni a la
+    API.
+    """
+    helper = _load_gate("ci_pattern_pr_contract_local", PR_CONTRACT_LOCAL)
+    try:
+        return helper.resolve_base(Path.cwd(), base)
+    except helper.UsageError as exc:
+        raise _PreflightInputError(str(exc)) from exc
+
+
+def _gate_size_local(base, labels, gate):
+    """Veredicto de ``pr-size`` en local, reusando su CLI canónica."""
+    base_ref = _resolve_draft_base(base)
+    # La coma es un valor no vacío que ``split_labels`` reduce a vacío; así el
+    # entorno no introduce etiquetas que el comando no recibió.
+    label_arg = ",".join(labels) or ","
+    stdout, stderr = io.StringIO(), io.StringIO()
+    with redirect_stdout(stdout), redirect_stderr(stderr):
+        code = gate.main(["--base-ref", base_ref, "--labels", label_arg])
+    detail = "\n".join(
+        part.strip() for part in (stdout.getvalue(), stderr.getvalue()) if part.strip())
+    return [("pr-size", "ok" if code == 0 else "fail", detail)]
+
+
+def _run_draft_preflight(body, base, labels, as_json):
+    """Ejecuta cuerpo y tamaño sin API, gh ni red."""
+    issue_spec = _load_gate("check_issue_spec", ISSUE_SPEC_GATE)
+    findings = []
+    _collect_issue_spec_local(findings, body, "", issue_spec)
+    findings.extend(_gate_size_local(
+        base, labels, _load_gate("check_pr_size", PR_SIZE_GATE)))
+    return _emit(findings, as_json)
+
+
 def _collect_issue_spec_remote(findings, body, repository, fetcher, issue_spec_gate):
     if not (fetcher and repository):
         return
@@ -226,8 +256,7 @@ def _emit(findings, as_json):
     codes = {code for _, code, _ in findings}
     has_usage = bool(codes & {"api-error", "bad-pattern", "empty",
                               "config-error", "missing-policy"})
-    has_findings = bool(codes & {"fail", "missing-approval", "missing-type",
-                                 "ref-is-pr", "no-approved-linked"})
+    has_findings = bool(codes & {"fail", "ref-is-pr"})
     if as_json:
         print(json.dumps({
             "clean": not has_findings,
@@ -235,10 +264,12 @@ def _emit(findings, as_json):
                          for g, c, d in findings],
         }, indent=2, ensure_ascii=False))
     else:
-        for gate, _code, detail in findings:
+        for gate, code, detail in findings:
             # Prefijo ``[<gate>]`` siempre, también en el caso OK (HR-46:
             # el autor distingue al vuelo qué gate juzgó, sin mirar el código).
-            print(f"[{gate}] {detail}", file=sys.stderr)
+            # Los avisos llevan su marca: no bloquean (#1093 R1).
+            marker = "AVISO: " if code == "advisory" else ""
+            print(f"[{gate}] {marker}{detail}", file=sys.stderr)
     if has_usage:
         return EXIT_USAGE
     if has_findings:
@@ -250,7 +281,7 @@ def run_preflight(  # noqa: PLR0913 — orquestador de gates; kwargs 1:1 con la 
     *, body_file, repository="", branch=None,
     branch_pattern=DEFAULT_BRANCH_PATTERN, actor="", policy="",
     changed_files_file=None, with_adoption=False, repo="",
-    fetch_issue=None, as_json=False,
+    fetch_issue=None, as_json=False, draft=False, base=None, labels=(),
 ):
     """Ejecuta el preflight; devuelve el código de salida (0/1/2)."""
     try:
@@ -258,6 +289,15 @@ def run_preflight(  # noqa: PLR0913 — orquestador de gates; kwargs 1:1 con la 
     except _PreflightInputError as exc:
         print(f"pr preflight: {exc}", file=sys.stderr)
         return EXIT_USAGE
+    if draft:
+        if not base:
+            print("pr preflight: --draft exige --base", file=sys.stderr)
+            return EXIT_USAGE
+        try:
+            return _run_draft_preflight(body, base, labels, as_json)
+        except _PreflightInputError as exc:
+            print(f"pr preflight: {exc}", file=sys.stderr)
+            return EXIT_USAGE
     issue_spec = _load_gate("check_issue_spec", ISSUE_SPEC_GATE)
     findings = []
     try:
@@ -275,6 +315,12 @@ def run_preflight(  # noqa: PLR0913 — orquestador de gates; kwargs 1:1 con la 
 def _build_parser():
     p = argparse.ArgumentParser(prog="ci-pattern pr preflight", description=__doc__)
     p.add_argument("--pr-body", required=True)
+    p.add_argument("--draft", action="store_true",
+                   help="Modo API-free de cuerpo y tamaño; exige --base.")
+    p.add_argument("--base", default=None,
+                   help="Rama base del borrador; obligatoria con --draft.")
+    p.add_argument("--label", action="append", default=[],
+                   help="Etiqueta del PR en borrador; repetible.")
     p.add_argument("--issue", type=int, default=None)
     p.add_argument("--repository", default="")
     p.add_argument("--branch", default=None)
@@ -288,6 +334,39 @@ def _build_parser():
     p.add_argument("--api-url", dest="api_url", default="")
     p.add_argument("--json", dest="as_json", action="store_true")
     return p
+
+
+def _draft_incompatible_options(args):
+    """Opciones del preflight general que no pertenecen al modo borrador."""
+    options = (
+        ("--issue", args.issue is not None),
+        ("--repository", bool(args.repository)),
+        ("--branch", args.branch is not None),
+        ("--branch-pattern", args.branch_pattern != DEFAULT_BRANCH_PATTERN),
+        ("--actor", bool(args.actor)),
+        ("--token", bool(args.token)),
+        ("--policy", bool(args.policy)),
+        ("--changed-files", bool(args.changed_files_file)),
+        ("--with-adoption", args.with_adoption),
+        ("--repo", bool(args.repo)),
+        ("--api-url", bool(args.api_url)),
+    )
+    return [name for name, present in options if present]
+
+
+def _validate_mode_args(parser, args):
+    """Valida el contrato explícito del modo borrador."""
+    if args.draft:
+        if not args.base:
+            parser.error("--draft exige --base")
+        incompatible = _draft_incompatible_options(args)
+        if incompatible:
+            parser.error(
+                "--draft no admite " + ", ".join(incompatible)
+                + "; el modo borrador solo usa --pr-body, --base y --label")
+        return
+    if args.base or args.label:
+        parser.error("--base y --label requieren --draft")
 
 
 def _resolve_defaults(args):
@@ -314,7 +393,14 @@ def _make_fetcher(args, issue_spec):
 
 def main(argv=None):
     _pin_output_encoding()
-    args = _resolve_defaults(_build_parser().parse_args(argv))
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    _validate_mode_args(parser, args)
+    if args.draft:
+        return run_preflight(
+            body_file=args.pr_body, draft=True, base=args.base,
+            labels=args.label, as_json=args.as_json)
+    args = _resolve_defaults(args)
     issue_spec = _load_gate("check_issue_spec_main", ISSUE_SPEC_GATE)
     fetch_issue = _make_fetcher(args, issue_spec)
     if args.issue is not None and fetch_issue and args.repository:

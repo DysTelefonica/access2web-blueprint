@@ -186,23 +186,41 @@ def read_data_file(path):
     return Path(path).read_text(encoding="utf-8")
 
 
-CHECK_NAMES = ("labels", "closes", "chain_context", "issue_links", "closure_tests",
+CHECK_NAMES = ("closes", "chain_context", "issue_links", "closure_tests",
                "docs_evidence", "budget", "commits", "ai_disclosure")
+
+# #1113: comprobaciones que #1093 (R1/R2) retiraron del gate. `labels` estuvo
+# en CHECK_NAMES hasta 938754363; `required_labels` era su campo de politica
+# (nunca una clave de `checks`, pero una politica puede anidarla ahi). Una
+# politica de consumer que las siga declarando (APAP_WEB, cadete) no puede
+# romper el gate: se ignoran como no-op y avisan de una linea. Una clave que
+# NUNCA existio sigue siendo un error de configuracion (exit 2): la deteccion
+# de erratas no se pierde.
+RETIRED_CHECK_NAMES = ("labels", "required_labels")
 
 
 def active_checks(policy):
     """#735: comprobaciones activas. Sin `checks` lo están todas; con `checks`,
     una ausente está activa y `false` la apaga. Valor inválido o ninguna
-    activa: ChecksConfigError (HR-3, un gate sin nada que comprobar no da OK)."""
+    activa: ChecksConfigError (HR-3, un gate sin nada que comprobar no da OK).
+
+    #1113: una clave retirada se ignora como no-op y avisa en stderr; una clave
+    que nunca existió sigue errorizando (exit 2)."""
     config = policy.get("checks")
     if config is None:
         return set(CHECK_NAMES)
     if not isinstance(config, dict):
         raise ChecksNotObjectError
     unknown = sorted(set(config) - set(CHECK_NAMES))
-    if unknown:
-        raise UnknownChecksError(unknown, CHECK_NAMES)
-    bad = sorted(name for name, value in config.items() if not isinstance(value, bool))
+    retired = [name for name in unknown if name in RETIRED_CHECK_NAMES]
+    if retired:
+        print("PR-CONTRACT: comprobación retirada, se ignora; "
+              f"quítala de la política: {', '.join(retired)}", file=sys.stderr)
+    typos = [name for name in unknown if name not in RETIRED_CHECK_NAMES]
+    if typos:
+        raise UnknownChecksError(typos, CHECK_NAMES)
+    bad = sorted(name for name, value in config.items()
+                 if name not in RETIRED_CHECK_NAMES and not isinstance(value, bool))
     if bad:
         raise NonBooleanChecksError(bad)
     active = {name for name in CHECK_NAMES if config.get(name, True)}
@@ -217,12 +235,14 @@ def _anchor_exists(text, anchor):
     return anchor.lower() in slugs
 
 
-def check_docs_evidence(pr, repo, files, policy, findings):
+def check_docs_evidence(pr, repo, files, policy, advisories):
     """#710 (HR-64): un PR que toca codigo cubierto por una pagina del mapa toca
     la pagina o lleva la seccion «Documentacion» no vacia (`files`: ficheros del
     rango, uno por elemento); las checklists por
     tipo de cambio existen y el cuerpo enlaza la de su tipo. Activacion por
-    DECLARACION `docs_evidence` en la politica: sin ella avisa y no falla."""
+    DECLARACION `docs_evidence` en la politica: sin ella avisa y no falla.
+    #1093 R1 (decision del dueno, 2026-10-23): HR-64 es AVISO, no bloqueo: sus
+    hallazgos van a `advisories` y no cambian el exit code."""
     config = policy.get("docs_evidence")
     if config is None:
         print("HR-64: docs_evidence no declarado en la politica; la evidencia de "
@@ -237,7 +257,7 @@ def check_docs_evidence(pr, repo, files, policy, findings):
     for entry in pages:
         touched = [f for f in files if any(fnmatch.fnmatch(f, g) for g in entry["covers"])]
         if touched and entry["page"] not in files and not reason:
-            findings.append(
+            advisories.append(
                 f"HR-64: el PR toca {', '.join(touched)}, cubierto por {entry['page']}, y ni "
                 "cambia la pagina ni lleva la seccion «Documentación» con el motivo.")
     body = pr.get("body") or ""
@@ -246,25 +266,10 @@ def check_docs_evidence(pr, repo, files, policy, findings):
         path, _, anchor = link.partition("#")
         target = Path(repo) / path
         if not target.is_file() or (anchor and not _anchor_exists(target.read_text(encoding="utf-8"), anchor)):
-            findings.append(f"HR-64: la checklist de {label} apunta a {link} y no existe.")
+            advisories.append(f"HR-64: la checklist de {label} apunta a {link} y no existe.")
         elif label in types and link not in body:
-            findings.append(f"HR-64: el cuerpo del PR ({label}) no enlaza su checklist {link}.")
+            advisories.append(f"HR-64: el cuerpo del PR ({label}) no enlaza su checklist {link}.")
 
-
-def check_labels(pr, policy, findings):
-    required = policy.get("required_labels", [])
-    labels = {item["name"] for item in pr.get("labels", [])}
-    if not required:
-        return
-    if not labels:
-        findings.append("HR-6: el PR no tiene etiquetas; se requiere al menos una de " + str(required) + ".")
-        return
-    matching = labels & set(required)
-    if not matching:
-        findings.append(
-            f"HR-6: falta etiqueta obligatoria; se requiere una de {required}, "
-            f"el PR tiene {sorted(labels)}."
-        )
 
 # HR-7 (#1059): el gate decia «tiene o no tiene una palabra de cierre», no
 # «cuáles». Un PR punta que declara `Closes #1056` y que ademas nombra
@@ -619,12 +624,14 @@ def missing_section_finding(body, heading, marker):
             "comportamiento, no el merge.")
 
 
-def check_closure_tests(pr, data, policy, findings):
+def check_closure_tests(pr, data, policy, advisories):
     """#334 (HR-53): un PR que cierra una issue nombra el test que demuestra
     el comportamiento corregido, en formato estructurado y con el test
     existiendo de verdad (`tracked`: rutas de `git ls-files`). Un «debería estar arreglado» no cierra nada.
     #911: si el cierre no tiene test, la sección declara «No aplica» y nombra la
-    evidencia del cierre (una ruta versionada); la etiqueta no exonera nada."""
+    evidencia del cierre (una ruta versionada); la etiqueta no exonera nada.
+    #1093 R1 (decision del dueno, 2026-10-23): HR-53 es AVISO, no bloqueo: sus
+    hallazgos van a `advisories` y no cambian el exit code."""
     body = pr.get("body") or ""
     if not CLOSES_RX.search(body):
         return
@@ -634,24 +641,24 @@ def check_closure_tests(pr, data, policy, findings):
     text = section_body(body, heading)
     marker_text = section_body(text, marker) if text else ""
     if not text:
-        findings.append(missing_section_finding(body, heading, marker))
+        advisories.append(missing_section_finding(body, heading, marker))
         return
     if marker_text:
-        findings.extend(not_applicable_findings(data, heading, marker, marker_text))
+        advisories.extend(not_applicable_findings(data, heading, marker, marker_text))
         return
     if section_body(body, marker):
-        findings.append(
+        advisories.append(
             f"HR-53: la declaración '{marker}' debe ir dentro de la sección "
             f"'{heading}'.")
         return
     entries = closure_entries(text)
     if not entries:
-        findings.append(
+        advisories.append(
             f"HR-53: la sección '{heading}' no tiene ninguna entrada en el "
             "formato `ruta/al/fichero_de_test.ext` o `ruta::nombre_de_caso`: "
             "la prosa no nombra un test.")
         return
-    findings.extend(structured_test_findings(data.repo, data.tracked, entries, heading))
+    advisories.extend(structured_test_findings(data.repo, data.tracked, entries, heading))
 
 
 def structured_test_findings(repo, tracked, entries, heading):
@@ -758,7 +765,7 @@ def check_ai_disclosure(pr, advisories):
 def check_issue_links(pr, data, findings):
     """#333: el enlace de la issue no enlaza una issue de otro repositorio; una
     mención informativa del cuerpo no es un enlace. Cerrar y referenciar el
-    mismo número no es un fallo aquí ni en issue-spec (#787 retiró el aviso)."""
+    mismo número no es un fallo aquí ni en issue-spec: el aviso que añadió #787 lo retiró `47f74411` (Refs #840)."""
     body = pr.get("body") or ""
     current = (data.get("repository") or {}).get("full_name") or ""
     for owner_repo, number in sorted(set(FOREIGN_LINK_RX.findall(body))):
@@ -832,8 +839,6 @@ def _pr_level_checks(active, data, pr, ctx, findings):
     advisories = []
     base_ref = pr.get("base", {}).get("ref", "main")
     default_branch = data.get("repository", {}).get("default_branch", "main")
-    if "labels" in active:
-        check_labels(pr, policy, findings)
     if "closes" in active:
         check_closes(pr, base_ref, default_branch, policy, findings)
     # #1093 R3/R9: Chain Context y Asistencia de IA avisan; no bloquean.
@@ -860,12 +865,15 @@ def closure_data(repo, texts, policy):
 
 
 def _range_checks(active, pr, ctx, texts, findings):
-    """Comprobaciones sobre el rango git; `DocsEvidenceConfigError` sube a main."""
+    """Comprobaciones sobre el rango git; `DocsEvidenceConfigError` sube a main.
+    #1093 R1: HR-53 y HR-64 avisan; el resto sigue bloqueando. Devuelve los
+    avisos para que el llamante los una a los del nivel de PR."""
     repo, policy = ctx
+    advisories = []
     if "closure_tests" in active:
-        check_closure_tests(pr, closure_data(repo, texts, policy), policy, findings)
+        check_closure_tests(pr, closure_data(repo, texts, policy), policy, advisories)
     if "docs_evidence" in active:
-        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, findings)
+        check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, advisories)
     if "budget" in active:
         origins = parse_origins(texts["origins_file"]) if "origins_file" in texts else None
         check_budget(pr, budget_lines(texts["numstat_file"], origins), policy, findings)
@@ -875,6 +883,7 @@ def _range_checks(active, pr, ctx, texts, findings):
         # el fichero de datos, así la política lo apaga con la clave que ya usa
         # para HR-14 y el contrato `checks` no crece.
         check_closing_in_commits(texts["commits_file"], pr, policy, findings)
+    return advisories
 
 
 def main(argv=None):
@@ -928,7 +937,7 @@ def main(argv=None):
     findings = []
     advisories = _pr_level_checks(active, data, pr_with_live, ctx, findings)
     try:
-        _range_checks(active, pr_with_live, ctx, texts, findings)
+        advisories.extend(_range_checks(active, pr_with_live, ctx, texts, findings))
     except DocsEvidenceConfigError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2

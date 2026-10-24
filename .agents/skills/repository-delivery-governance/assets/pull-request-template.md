@@ -6,7 +6,7 @@ Closes #
 
 ## Change type
 
-<!-- Select EXACTLY ONE type. The selected type must match the linked issue and PR label. -->
+<!-- Select one type. It is advisory: no gate blocks on it (team-skills#1093, R1). Keep it consistent with the linked issue. -->
 
 - [ ] `type:bug`
 - [ ] `type:feature`
@@ -63,7 +63,7 @@ Closes #
 
 <!-- Write "None" when no privileged or post-merge action is required. -->
 
-- [ ] Apply the one matching `type:*` label and any protected lifecycle labels.
+- [ ] Apply the matching `type:*` label (advisory) and any protected lifecycle labels.
 - [ ] Confirm the closing reference targets the approved issue.
 - [ ] Review required checks, expected skips, and merge eligibility.
 - [ ] Perform or schedule any migration, deployment, smoke check, or follow-up.

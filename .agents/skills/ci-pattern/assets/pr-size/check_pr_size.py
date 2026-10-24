@@ -22,8 +22,10 @@ Two ways to measure. Locally and in a full checkout the diff against the
 base comes from ``git``. With ``--event <pull_request event json>`` the
 per-file counts come from the GitHub API (``GITHUB_TOKEN``, optional
 ``GITHUB_API_URL``: https, or http on loopback only), so the runner needs no
-history; any API failure, or a breakdown that does not match the PR's
-``changed_files``, fails closed.
+history; any API failure, or a breakdown that still does not match the PR's
+``changed_files`` after one re-read, fails closed. If the PR's head moved after
+the event (a newer push), the event is superseded: it exits 0, because the newer
+event measures the new head (#1113).
 
 The only override is the ``size:exception`` label, applied by the
 maintainer (never by the author, never read from the PR body). It comes from
@@ -72,6 +74,8 @@ OVERRIDE_LABEL = "size:exception"
 FILES_PER_PAGE = 100
 #: GitHub lists at most 3000 files of a PR.
 MAX_FILE_PAGES = 30
+#: Reads of the PR's breakdown before the gate gives up (#1113: one retry).
+MEASURE_ATTEMPTS = 2
 DEFAULT_API_URL = "https://api.github.com"
 
 # --------------------------------------------------------------------------------------------
@@ -227,6 +231,17 @@ class BreakdownMismatchError(MeasureError):
         super().__init__(f"the file breakdown ({got}) does not match the PR's changed_files ({want})")
 
 
+class SupersededError(Exception):
+    """The PR got a newer push after this event: its own event measures the new head (#1113).
+
+    Not a MeasureError: it is not a failure of the gate, so it exits 0.
+    """
+
+    def __init__(self, event_head: str, head: str) -> None:
+        super().__init__(f"superado por un push más reciente (head del evento {event_head[:12]}, "
+                         f"head actual {head[:12]})")
+
+
 def is_int(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool)
 
@@ -307,17 +322,62 @@ def count_api_files(files: list[dict]) -> tuple[int, int, list[tuple[str, int]]]
     return counted, vendored, per_file
 
 
+def event_head(event_path: str) -> str | None:
+    """``pull_request.head.sha`` from the event payload, when the payload carries it."""
+    try:
+        payload = json.loads(Path(event_path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    pull = payload.get("pull_request") if isinstance(payload, dict) else None
+    head = pull.get("head") if isinstance(pull, dict) else None
+    sha = head.get("sha") if isinstance(head, dict) else None
+    return sha if isinstance(sha, str) and sha else None
+
+
+def api_pull(api_url: str, token: str, repo: str, number: int) -> tuple[str | None, int | None]:
+    """``(head sha, changed_files)`` of the PR right now (``GET pulls/N``)."""
+    path = f"/repos/{repo}/pulls/{number}"
+    try:
+        with _open(api_url, path, token) as response:
+            body = json.loads(response.read().decode("utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ApiFailedError(path, exc) from exc
+    if not isinstance(body, dict):
+        raise ApiShapeError(path)
+    head = body.get("head")
+    sha = head.get("sha") if isinstance(head, dict) else None
+    changed = body.get("changed_files")
+    return (sha if isinstance(sha, str) else None), (changed if is_int(changed) else None)
+
+
 def api_changed_lines(event_path: str) -> tuple[int, int, list[tuple[str, int]], set[str]]:
-    """``changed_lines`` for a pull_request event, plus the PR's labels."""
-    repo, number, labels, declared = read_event(event_path)
+    """``changed_lines`` for a pull_request event, plus the PR's labels.
+
+    The PR's head and its breakdown are read around the file listing, so a push or a
+    moved base between the reads shows up as a mismatch instead of a false failure
+    (#1113): a moved head means a newer event measures it (superseded, exit 0); a
+    mismatch with the head unchanged is retried once, then fails closed.
+    """
+    repo, number, labels, _declared = read_event(event_path)
     token = os.environ.get("GITHUB_TOKEN", "")
     if not token:
         raise MissingCredentialError
-    files = api_files(os.environ.get("GITHUB_API_URL") or DEFAULT_API_URL, token, repo, number)
-    if declared is not None and len(files) != declared:
-        raise BreakdownMismatchError(len(files), declared)
-    counted, vendored, per_file = count_api_files(files)
-    return counted, vendored, per_file, labels
+    api_url = os.environ.get("GITHUB_API_URL") or DEFAULT_API_URL
+    expected_head = event_head(event_path)
+    got = want = None
+    for _ in range(MEASURE_ATTEMPTS):
+        head, want = api_pull(api_url, token, repo, number)
+        if expected_head and head and head != expected_head:
+            raise SupersededError(expected_head, head)
+        files = api_files(api_url, token, repo, number)
+        head_after, want = api_pull(api_url, token, repo, number)
+        if expected_head and head_after and head_after != expected_head:
+            raise SupersededError(expected_head, head_after)
+        if want is None or len(files) == want:
+            counted, vendored, per_file = count_api_files(files)
+            return counted, vendored, per_file, labels
+        got = len(files)
+    raise BreakdownMismatchError(got, want)
 
 
 def _pin_output_encoding() -> None:
@@ -380,6 +440,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         counted, vendored, per_file, labels, source = measure(args)
+    except SupersededError as exc:
+        if args.json:
+            print(json.dumps({"gate": "pr_size", "status": "superseded", "detail": str(exc)}))
+        else:
+            print(f"OK    PR {exc}; mide el evento más reciente, no este")
+        return 0
     except RuntimeError as exc:
         if args.json:
             print(json.dumps({"gate": "pr_size", "status": "error", "detail": str(exc)}))
