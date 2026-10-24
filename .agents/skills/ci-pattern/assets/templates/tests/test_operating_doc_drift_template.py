@@ -174,14 +174,23 @@ class TestOperatingDocDriftTemplate(unittest.TestCase):
 
     # --- punto 4: el paso se ejecuta, y falla en voz alta cuando falta el dato ---
 
-    def run_resolver(self, manifest: str | None) -> tuple[int, str, str, str]:
-        """Ejecuta el paso de la plantilla con bash sobre un consumer de mentira."""
+    def run_resolver(self, manifest: str | None, api: dict[str, str] | None = None) -> tuple[int, str, str, str]:
+        """Ejecuta el paso de la plantilla con bash sobre un consumer de mentira.
+
+        `api` simula la API del catálogo: ruta relativa bajo `CATALOG_API` -> cuerpo.
+        Con `file://` curl la lee del disco, así que el caso no necesita red.
+        """
         script = str(resolve_step(self.tree())["run"])
         env_values = {k: ("" if "${{" in v else v) for k, v in self.declared_env().items()}
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
             if manifest is not None:
                 (repo / MANIFEST).write_text(manifest, encoding="utf-8")
+            if api is not None:
+                for rel, body in api.items():
+                    (repo / "api" / rel).parent.mkdir(parents=True, exist_ok=True)
+                    (repo / "api" / rel).write_text(body, encoding="utf-8")
+                env_values["CATALOG_API"] = f"file://{repo / 'api'}"
             (repo / "resolve.sh").write_text(script, encoding="utf-8")
             outputs = repo / "github-output"
             outputs.touch()
@@ -208,11 +217,28 @@ class TestOperatingDocDriftTemplate(unittest.TestCase):
         self.assertIn("catalog @", err)
         self.assertNotIn(GOOD_COMMIT, exported)
 
-    def test_con_un_sha_que_no_es_de_40_hex_falla_nombrando_el_sha(self):
+    def test_con_un_sha_demasiado_corto_falla_nombrando_el_sha(self):
         rc, _, err, exported = self.run_resolver(
-            "# Auto-generado por propagate-team-skills.ps1 (catalog @ 1234567).\nproject_type: web\n")
-        self.assertNotEqual(rc, 0, "un sha que no es de 40 hex no se puede usar como `ref:` (HR-3)")
-        self.assertIn("40", err)
+            "# Auto-generado por propagate-team-skills.ps1 (catalog @ 123456).\nproject_type: web\n")
+        self.assertNotEqual(rc, 0, "un prefijo de menos de 7 hex no identifica un commit (HR-3)")
+        self.assertIn("123456", err)
+        self.assertNotIn(GOOD_COMMIT, exported)
+
+    def test_sello_abreviado_se_expande_con_la_api_del_catalogo(self):
+        # #1157: el sello que ya está en el campo es `git rev-parse --short`.
+        # La API resuelve el prefijo al oid completo y el paso exporta ese oid.
+        rc, out, err, exported = self.run_resolver(
+            "# Auto-generado por propagate-team-skills.ps1 (catalog @ 1234567).\nproject_type: web\n",
+            api={"repos/DysTelefonica/team-skills/commits/1234567": f'{{"sha": "{GOOD_COMMIT}"}}'})
+        self.assertEqual(rc, 0, err)
+        self.assertIn(GOOD_COMMIT, exported)
+
+    def test_sello_abreviado_que_la_api_no_conoce_falla_nombrando_el_sha(self):
+        rc, _, err, exported = self.run_resolver(
+            "# Auto-generado por propagate-team-skills.ps1 (catalog @ 1234567).\nproject_type: web\n",
+            api={})
+        self.assertNotEqual(rc, 0, "un sello que el catálogo no resuelve no puede medirse (HR-3)")
+        self.assertIn("1234567", err)
         self.assertNotIn(GOOD_COMMIT, exported)
 
     # --- punto 5: disparo, check requerido y los dos gates con la CLI del checkout ---

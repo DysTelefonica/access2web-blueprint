@@ -166,7 +166,7 @@ del code-root (módulos carpeta).
 
 ### Varias raíces (#727)
 
-Repita `--code-root` y `--code-glob` por pares, en el mismo orden:
+No hay raíces por defecto (#1166): el gate no asume el árbol de ningún repo. Sin `--code-root` y su `--code-glob` sale con código 2 y nombra el flag. Repita `--code-root` y `--code-glob` por pares, en el mismo orden:
 
 ```bash
 python3 check_docs_codeguide.py . \

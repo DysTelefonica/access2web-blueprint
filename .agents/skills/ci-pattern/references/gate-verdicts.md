@@ -50,7 +50,7 @@ Las citas `(evidencia: R<N>)` de §2 resuelven aquí (auditoría issue→merge d
 | `check_alantyle` | Se duerme (R15) | Sin verificar | Bloqueante de estilo de docs; falló por una palabra en mayúsculas (ardelperal/APAP_WEB#1133); informativo #1151 |
 | Docstrings (balance/cobertura) | Se duerme (R15) | Sin verificar | Informativos, sin defecto real cazado |
 | `test_ci_workflow.py` | Se simplifica | Subcadenas del fuente: no cuenta como test (HR-32) | El fichero más editado del repo por cambios de workflow |
-| `actionlint` en `lint` | Falta | — | Cazó `services.minio.command`, clave inexistente en Actions (`ci.yml:1251`) |
+| `actionlint` en `lint` | Falta | — | Cazó `services.<almacenamiento>.command`, clave inexistente en Actions (`ci.yml:1251`, caso de APAP_WEB) |
 | Job de preflight en CI | Falta | — | El preflight existe (#1145); falta el paso que lo reproduce en el job |
 
 ## Nota sobre R15 (dormir, no retirar)

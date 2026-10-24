@@ -43,8 +43,13 @@ BACKTICK_RE = re.compile(r"`([^`]+)`")
 _MARKER_RE = re.compile(r"<[^<>/]+>")
 _GLOB_RE = re.compile(r"[*?\[]")
 
-DEFAULT_CODE_ROOT = "internal/components"
-DEFAULT_CODE_GLOB = "*.go"
+# Sin defaults de ruta ni de glob (#1166): el checker no asume el árbol de ningún
+# repo. Cada consumer declara sus raíces de código; si no lo hace, falla cerrado.
+NO_ROOTS_MSG = (
+    "FAIL input: falta --code-root (y su --code-glob): el checker no asume rutas de "
+    "ningún repo. Declare las raíces de código del consumer, por ejemplo "
+    "--code-root app --code-glob '*.py', una pareja por raíz."
+)
 
 # Prefijos que NO se tratan como rutas de repo aunque vivan entre
 # comillas invertidas: cualquier URL, dirección de correo o ruta de
@@ -250,8 +255,8 @@ def _list_modules(code_abs: Path, code_glob: str) -> list[str]:
 def check_docs_codeguide(
     repo: Path,
     docs_path: str = "docs/codebase",
-    code_root: str = "internal/components",
-    code_glob: str = "*.go",
+    code_root: str | None = None,
+    code_glob: str | None = None,
 ) -> dict[str, list[str]]:
     """Falla cerrada: devuelve el dict de ausentes; dos listas vacías = OK.
 
@@ -271,6 +276,9 @@ def check_docs_codeguide(
     sentido atrás, «nombrado» es la regla de :func:`_backward_findings`:
     nombre completo y en contexto de código o como segmento de ruta.
     """
+    if code_root is None or code_glob is None:
+        raise ValueError(NO_ROOTS_MSG)
+
     return check_docs_codeguide_roots(repo, [(code_root, code_glob)], docs_path)
 
 
@@ -403,8 +411,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=None,
         help=(
-            "Ruta relativa al repo con los módulos de primer nivel a enumerar "
-            f"(default: {DEFAULT_CODE_ROOT}). Repetible: un --code-glob por raíz."
+            "Ruta relativa al repo con los módulos de primer nivel a enumerar. "
+            "Obligatoria (#1166). Repetible: un --code-glob por raíz."
         ),
     )
     parser.add_argument(
@@ -412,8 +420,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=None,
         help=(
-            "Glob que un módulo de primer nivel debe contener para contar "
-            f"(default: {DEFAULT_CODE_GLOB}). Repetible, emparejado con --code-root."
+            "Glob que un módulo de primer nivel debe contener para contar. "
+            "Obligatorio, emparejado con cada --code-root."
         ),
     )
     return parser
@@ -425,8 +433,11 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv[1:])
 
     repo = Path(args.repo)
-    roots_arg = args.code_root or [DEFAULT_CODE_ROOT]
-    globs_arg = args.code_glob or [DEFAULT_CODE_GLOB] * len(roots_arg)
+    if not args.code_root or not args.code_glob:
+        print(NO_ROOTS_MSG, file=sys.stderr)
+        return 2
+    roots_arg = args.code_root
+    globs_arg = args.code_glob
     if len(roots_arg) != len(globs_arg):
         print(
             f"FAIL input: --code-root ({len(roots_arg)}) and --code-glob "
