@@ -19,6 +19,7 @@
         {"artifact": ".github/workflows/pr-gate.yml (issue #1368: el pr-gate en su propio workflow, para que los eventos de cuerpo y etiquetas no arrastren la suite pesada)", "disposition": "adopted", "target": ".github/workflows/pr-gate.yml"},
         {"artifact": ".github/workflows/codeql.yml", "disposition": "adopted", "target": ".github/workflows/codeql.yml"},
         {"artifact": ".github/workflows/dysflow-erd.yml (#1074: extracción manual y de solo lectura del ERD de un backend Access, en el runner propio del dueño; el gate check_workflows admite ese runner solo por ser un fichero workflow_dispatch-only)", "disposition": "adopted", "target": ".github/workflows/dysflow-erd.yml"},
+        {"artifact": ".github/workflows/pip-audit.yml (issue #1377: la auditoría del lockfile como job de primer nivel de ci.yml, para que su salto por superficie sea declarable en la política de required-jobs)", "disposition": "adopted", "target": ".github/workflows/pip-audit.yml"},
         {"artifact": ".github/workflows/release.yml", "disposition": "adopted", "target": ".github/workflows/release.yml"},
         {"artifact": ".github/workflows/security.yml", "disposition": "adopted", "target": ".github/workflows/security.yml"},
         {"artifact": ".github/workflows/security-deep.yml", "disposition": "adopted", "target": ".github/workflows/security-deep.yml"},

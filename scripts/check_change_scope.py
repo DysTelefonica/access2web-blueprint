@@ -30,6 +30,9 @@ SURFACES: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     "e2e": (("app/", "e2e/"), ()),
     # `codeql` scans the Python of the repository: the app and the scripts.
     "codeql": (("app/", "scripts/"), ()),
+    # `pip-audit` audits the hash-locked set CI installs and ships, and the
+    # lock that produces it.
+    "lockfile": ((), ("app/requirements-dev.lock", "app/uv.lock")),
 }
 
 

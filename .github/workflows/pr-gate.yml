@@ -48,6 +48,12 @@ on:
           the `codeql` job analyzes (`app/**`, `scripts/**`). Anything else is
           "true", and the job runs.
         value: ${{ jobs.pr-gate.outputs.codeql_scope_changed }}
+      lockfile_scope_changed:
+        description: >-
+          "false" when the diff of the pull request does not touch the lock
+          files the `pip-audit` job audits (`app/requirements-dev.lock`,
+          `app/uv.lock`). Anything else is "true", and the job runs.
+        value: ${{ jobs.pr-gate.outputs.lockfile_scope_changed }}
 
 permissions:
   contents: read
@@ -74,6 +80,9 @@ jobs:
       # granted by default.
       e2e_scope_changed: ${{ steps.diff-lanes.outputs.e2e_scope_changed }}
       codeql_scope_changed: ${{ steps.diff-lanes.outputs.codeql_scope_changed }}
+      # Issue #1377: the marker of the dependency audit. The advisories depend
+      # on the time, not on the diff, so the job only runs when the lock moves.
+      lockfile_scope_changed: ${{ steps.diff-lanes.outputs.lockfile_scope_changed }}
     # Per-gate FIFO: if a `pr-gate` is already in flight on the runner, the next
     # call waits in submission order rather than racing the runner (Hard Rule 1: a gate
     # that skips its own check is not a gate). Different gates are not in this group.
@@ -180,6 +189,7 @@ jobs:
           docs_changed=false
           e2e_scope_changed=true
           codeql_scope_changed=true
+          lockfile_scope_changed=true
           if [ -n "$BASE_REF" ] && git rev-parse --verify --quiet "origin/${BASE_REF}" >/dev/null; then
             if BASE="$(git merge-base "origin/${BASE_REF}" HEAD)"; then
               # `--no-renames`: a rename touches BOTH paths. With rename
@@ -192,6 +202,7 @@ jobs:
                   docs_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_docs_only_lane.py)"
                   e2e_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py e2e)"
                   codeql_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py codeql)"
+                  lockfile_scope_changed="$(printf '%s\n' "$CHANGED" | python scripts/check_change_scope.py lockfile)"
                 fi
               fi
             fi
@@ -199,4 +210,5 @@ jobs:
           echo "docs_changed=${docs_changed}" >> "$GITHUB_OUTPUT"
           echo "e2e_scope_changed=${e2e_scope_changed}" >> "$GITHUB_OUTPUT"
           echo "codeql_scope_changed=${codeql_scope_changed}" >> "$GITHUB_OUTPUT"
-          echo "::notice::pr-gate: docs_changed=${docs_changed} e2e_scope_changed=${e2e_scope_changed} codeql_scope_changed=${codeql_scope_changed}"
+          echo "lockfile_scope_changed=${lockfile_scope_changed}" >> "$GITHUB_OUTPUT"
+          echo "::notice::pr-gate: docs_changed=${docs_changed} e2e_scope_changed=${e2e_scope_changed} codeql_scope_changed=${codeql_scope_changed} lockfile_scope_changed=${lockfile_scope_changed}"

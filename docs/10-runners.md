@@ -71,7 +71,8 @@ consultar GitHub y el runbook de infraestructura autorizado.
 |---|---|---|
 | `ci.yml` | `review-budget`, `quality`, `required` | `ubuntu-24.04` |
 | `ci.yml` | `mutation` | `ubuntu-24.04-arm` |
-| `security.yml` | `gitleaks`, `trivy-config`, `pip-audit` | `ubuntu-24.04` |
+| `security.yml` | `gitleaks`, `trivy-config` | `ubuntu-24.04` |
+| `pip-audit.yml` | `dependency-scan` | `ubuntu-24.04` |
 | `security-deep.yml` | `gitleaks-history`, `trivy-image` | `ubuntu-24.04-arm` |
 | `codeql.yml` | `codeql` | `ubuntu-24.04` |
 | `release.yml` | `preflight`, `verify` | `ubuntu-24.04` |

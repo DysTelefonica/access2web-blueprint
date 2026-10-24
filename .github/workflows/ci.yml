@@ -507,7 +507,7 @@ jobs:
     name: security (${{ github.event_name }})
     # Issue #702: security.yml is now `on: workflow_call` only (no
     # independent triggers). Invoking it here as a job — rather than
-    # requiring its three inner checks (pip-audit, gitleaks, trivy-config)
+    # requiring its two inner checks (gitleaks, trivy-config)
     # separately in branch protection — is what lets `required` below
     # `needs:` it: `needs:` cannot cross workflow files, but a job invoked
     # via `uses: ./...` still has an ordinary job id and result.
@@ -521,6 +521,28 @@ jobs:
       contents: read
     concurrency:
       group: gate-security-call-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+
+  pip-audit:
+    # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
+    name: pip-audit (${{ github.event_name }})
+    # Issue #1377: la auditoria de dependencias es un job de PRIMER NIVEL y no
+    # uno interno de security.yml: `needs:` no cruza ficheros de workflow, asi
+    # que el agregador `required` solo puede leer el resultado de un job de
+    # primer nivel, y sin esa lectura su salto por diseño no se puede
+    # DECLARAR en la politica.
+    needs: pr-gate
+    uses: ./.github/workflows/pip-audit.yml
+    # El marcador del lockfile es el permiso para saltarse el job: lo publica
+    # el pr-gate y vale 'false' solo cuando el diff no toca ningun lockfile.
+    # En `schedule` (nightly) corre siempre —un aviso publicado entre medias
+    # sale ahi, no en un PR ajeno— y en `push` a main se salta: el PR que
+    # cambio el lockfile ya lo audito.
+    if: (github.event_name == 'pull_request' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled() && (needs.pr-gate.result == 'success' || needs.pr-gate.result == 'skipped') && (github.event_name != 'pull_request' || needs.pr-gate.outputs.lockfile_scope_changed != 'false')
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-pip-audit-call-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
 
   codeql:
@@ -962,7 +984,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands]
+    needs: [pr-gate, quality, integration, security, pip-audit, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

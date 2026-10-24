@@ -35,6 +35,7 @@ PR_GATE = ROOT / ".github" / "workflows" / "pr-gate.yml"
 SURFACE_JOBS = {
     "e2e_scope_changed": "e2e-smoke",
     "codeql_scope_changed": "codeql",
+    "lockfile_scope_changed": "pip-audit",
 }
 
 
@@ -101,6 +102,14 @@ def test_an_unknown_surface_is_refused() -> None:
     )
     assert result.returncode == 2
     assert "usage" in result.stderr
+
+
+def test_the_lockfile_surface_covers_the_lock_files() -> None:
+    """The dependency audit reads the hash-locked set; only its lock files are its surface."""
+    assert _classify("lockfile", "app/requirements-dev.lock") == "true"
+    assert _classify("lockfile", "app/uv.lock") == "true"
+    assert _classify("lockfile", "app/pyproject.toml") == "false"
+    assert _classify("lockfile", "app/src/modules/lanzadera/cli.py") == "false"
 
 
 def test_a_rename_out_of_the_surface_keeps_the_markers_true(tmp_path: Path) -> None:
