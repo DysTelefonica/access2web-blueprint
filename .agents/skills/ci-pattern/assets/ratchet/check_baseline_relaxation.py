@@ -21,7 +21,12 @@ comment that justifies an entry. A justification is a ``#`` comment inside the
 span of a ``*BASELINE*`` constant, tied to the entry that follows it (or
 written on its line); a comment with no entry after it belongs to the
 constant. Dropping or rewording one is rejected unless its entry went away
-with it. Moving it, or re-spacing it, is free.
+with it. Moving it, or re-spacing it, is free. Justifications are compared
+as ``(entry, text)`` pairs, so the same text on another entry cannot hide a
+deleted justification.
+
+A ``*BASELINE*`` whose value is not a literal is reported on stderr as not
+protected by this guard. Such a baseline is never silently skipped.
 
 Usage::
 
@@ -44,6 +49,7 @@ import re
 import subprocess
 import sys
 import tokenize
+from collections import Counter
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -97,6 +103,19 @@ def read_baselines(source: str) -> dict[str, object]:
         except (ValueError, TypeError):
             continue
     return found
+
+
+def read_unreadable_baselines(source: str) -> list[str]:
+    """Names of module-level ``*BASELINE*`` constants that are not literals."""
+    unreadable: list[str] = []
+    for name, value in _assigned(source):
+        if not BASELINE_NAME.match(name):
+            continue
+        try:
+            ast.literal_eval(_unwrap(value))
+        except (ValueError, TypeError):
+            unreadable.append(name)
+    return unreadable
 
 
 def _entry_key(node: ast.expr) -> str:
@@ -159,12 +178,14 @@ def deleted_justifications(base_source: str, head_source: str) -> list[str]:
         if name not in head:
             continue
         head_keys, head_pairs = head[name]
-        head_texts = {text for _, text in head_pairs}
-        deleted += [
-            f"{name} lost the justification {text!r}"
-            for owner, text in pairs
-            if text not in head_texts and (owner is None or owner in head_keys)
-        ]
+        missing = Counter(pairs) - Counter(head_pairs)
+        for (owner, text), count in missing.items():
+            if owner is not None and owner not in head_keys:
+                continue
+            owner_text = "" if owner is None else f" for entry {owner}"
+            deleted += [
+                f"{name} lost the justification {text!r}{owner_text}" for _ in range(count)
+            ]
     return deleted
 
 
@@ -220,11 +241,25 @@ def relaxation_problem(head: object, base: object) -> str | None:
     return None
 
 
-def check_sources(path: str, base_source: str, head_source: str) -> list[str]:
-    """Violations of one script: relaxations of its baselines without a field."""
+def check_sources(
+    path: str,
+    base_source: str,
+    head_source: str,
+    warnings: list[str] | None = None,
+) -> list[str]:
+    """Violations of one script and warnings for baselines the guard cannot read."""
     base, head = read_baselines(base_source), read_baselines(head_source)
     violations: list[str] = []
     relaxed: list[str] = []
+    if warnings is not None:
+        unreadable = sorted(
+            set(read_unreadable_baselines(base_source))
+            | set(read_unreadable_baselines(head_source))
+        )
+        warnings.extend(
+            f"{path}: {name} is not a literal and is not protected by this guard (HR-15)"
+            for name in unreadable
+        )
     for name, base_value in base.items():
         if name not in head:
             violations.append(f"{path}: {name} is no longer a readable literal")
@@ -257,7 +292,12 @@ def _git(*args: str, root: Path) -> str:
     return done.stdout
 
 
-def check_against_base(root: Path, base_ref: str, gate_glob: str) -> list[str]:
+def check_against_base(
+    root: Path,
+    base_ref: str,
+    gate_glob: str,
+    warnings: list[str] | None = None,
+) -> list[str]:
     merge_base = _git("merge-base", base_ref, "HEAD", root=root).strip()
     changed = _git(
         "diff",
@@ -273,7 +313,7 @@ def check_against_base(root: Path, base_ref: str, gate_glob: str) -> list[str]:
     for rel in changed:
         base_source = _git("show", f"{merge_base}:{rel}", root=root)
         head_source = (root / rel).read_text(encoding="utf-8")
-        violations += check_sources(rel, base_source, head_source)
+        violations += check_sources(rel, base_source, head_source, warnings=warnings)
     return violations
 
 
@@ -296,11 +336,16 @@ def main(argv: list[str] | None = None) -> int:
     if not base_ref:
         print("check_baseline_relaxation: base comparison NOT performed (no base ref).")
         return EXIT_OK
+    warnings: list[str] = []
     try:
-        violations = check_against_base(args.root, base_ref, args.gate_glob)
+        violations = check_against_base(
+            args.root, base_ref, args.gate_glob, warnings=warnings
+        )
     except BaseUnreadableError as exc:
         print(f"FAIL check_baseline_relaxation: cannot read base {base_ref}: {exc}")
         return EXIT_UNREADABLE
+    for warning in warnings:
+        print(f"WARNING: {warning}", file=sys.stderr)
     for violation in violations:
         print(f"FAIL: {violation}")
     if violations:

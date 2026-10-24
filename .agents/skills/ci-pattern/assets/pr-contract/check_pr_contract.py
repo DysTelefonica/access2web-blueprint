@@ -19,7 +19,12 @@ from pathlib import Path
 
 # Fuente única del presupuesto (#931): la regla A1 la comparte con pr-size.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "budget"))
-from vendored_budget import budget_lines, parse_origins  # noqa: E402
+from vendored_budget import (  # noqa: E402
+    VENDORED_ROOTS,
+    budget_lines,
+    parse_origins,
+    vendored_lines,
+)
 
 MIN_MERGE_PARENTS = 2
 
@@ -349,22 +354,55 @@ def size_exception_applied(pr, policy):
     return label_name in labels
 
 
-def check_budget(pr, diff_lines, policy, findings):
+@dataclass(frozen=True)
+class BudgetFigure:
+    """La cifra que A1 mide y de qué parte es árbol vendorizado (#1133).
+
+    `lines` son las líneas que cuentan para el presupuesto; `vendored` son las
+    que caen bajo una raíz vendorizada (las que el mapa de origenes excluye) y
+    `origins_supplied` dice si el gate recibió ese mapa. Los tres van juntos
+    porque el hallazgo necesita los dos datos a la vez: sin el mapa, el árbol
+    vendorizado cuenta hacia dentro del presupuesto (#931).
+    """
+    lines: int
+    vendored: int = 0
+    origins_supplied: bool = False
+
+
+def check_budget(pr, figure, policy, findings):
     """A1: el presupuesto es 400 (adiciones + eliminaciones del PR, sin
     exclusiones). Si el diff lo supera, la única vía válida es la
     etiqueta `size:exception` aplicada por el mantenedor; el campo
-    `size-exception-reason:` del cuerpo está retirado."""
+    `size-exception-reason:` del cuerpo está retirado.
+
+    Sin el mapa de orígenes (--origins-file) el árbol vendorizado cuenta
+    hacia dentro del presupuesto (#931). Entonces el hallazgo nombra cuántas de
+    esas líneas son vendorizadas y cómo pasar el mapa: sin ese dato, quien lee
+    el fallo ve «527 > 400» y no sabe que sus 527 líneas son el catálogo que
+    le trajo el canon (#1133).
+    """
     budget = policy.get("review_budget_lines", 400)
     label_name = policy.get("size_exception_label", "size:exception")
-    if diff_lines <= budget:
+    if figure.lines <= budget:
         return
     if not size_exception_applied(pr, policy):
-        findings.append(
-            f"A1: el diff supera el presupuesto ({diff_lines} > {budget}) y "
+        message = (
+            f"A1: el diff supera el presupuesto ({figure.lines} > {budget}) y "
             f"no lleva la etiqueta '{label_name}' aplicada por el mantenedor. "
             "Encadene PRs o pida al mantenedor la etiqueta tras responder las "
             "4 preguntas de '## Excepción de tamaño' en el cuerpo."
         )
+        if figure.vendored and not figure.origins_supplied:
+            roots = ", ".join(VENDORED_ROOTS)
+            message += (
+                f" Ojo: {figure.vendored} de esas líneas son del árbol vendorizado "
+                f"({roots}), que NO cuenta para el presupuesto (#931): "
+                "este gate no recibió el mapa de orígenes (--origins-file) y por "
+                "eso las cuenta todas. Genere el mapa con "
+                "assets/bin/origins_file.py y páselo con --origins-file (plantilla "
+                "canónica: assets/templates/.github/workflows/pr-contract.yml.tmpl)."
+            )
+        findings.append(message)
 
 # #944: los patrones de atribución de IA se aplicaban con `re.search(pat, msg,
 # re.IGNORECASE)`, sin límite de palabra ni ancla, así que una palabra que
@@ -876,7 +914,12 @@ def _range_checks(active, pr, ctx, texts, findings):
         check_docs_evidence(pr, repo, texts["changed_files"].split(), policy, advisories)
     if "budget" in active:
         origins = parse_origins(texts["origins_file"]) if "origins_file" in texts else None
-        check_budget(pr, budget_lines(texts["numstat_file"], origins), policy, findings)
+        figure = BudgetFigure(
+            lines=budget_lines(texts["numstat_file"], origins),
+            vendored=vendored_lines(texts["numstat_file"]),
+            origins_supplied=origins is not None,
+        )
+        check_budget(pr, figure, policy, findings)
     if "commits" in active:
         check_commits(texts["commits_file"], policy, findings)
         # HR-7 (#1056) sobre el mismo texto: cuelga de `commits` porque comparte

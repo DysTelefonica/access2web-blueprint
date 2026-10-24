@@ -129,6 +129,30 @@ class TestBudgetLines(unittest.TestCase):
         self.assertEqual(budget.budget_lines(self.NUMSTAT, origins), 10 + 2 + 5 + 5 + 300)
 
 
+class TestVendoredLines(unittest.TestCase):
+    """#1133: la cifra del árbol vendorizado, para que el gate diga qué parte
+    de la cuenta no es trabajo de quien abre la PR."""
+
+    NUMSTAT = (
+        "10\t2\tapp/a.py\n"
+        "300\t0\t.agents/skills/prop.md\n"
+        "5\t5\tsrc/{old => .agents/skills/new}/x.py\n"
+        "-\t-\tlogo.png\n"
+    )
+
+    def test_it_sums_the_lines_whose_destination_is_vendored(self) -> None:
+        # El renombrado del fixture apunta a `src/.agents/skills/new/x.py`: no cae
+        # bajo la raíz vendorizada, así que no cuenta como vendorizado.
+        self.assertEqual(budget.vendored_lines(self.NUMSTAT), 300)
+
+    def test_a_numstat_without_vendored_paths_is_zero(self) -> None:
+        self.assertEqual(budget.vendored_lines("10\t2\tapp/a.py\n"), 0)
+
+    def test_the_authored_catalog_is_not_vendored(self) -> None:
+        """#1088: `skills/` es el catálogo de autoría del canon."""
+        self.assertEqual(budget.vendored_lines("7\t0\tskills/acme/SKILL.md\n"), 0)
+
+
 class TestParseOrigins(unittest.TestCase):
     def test_dash_means_unknown_origin(self) -> None:
         self.assertEqual(

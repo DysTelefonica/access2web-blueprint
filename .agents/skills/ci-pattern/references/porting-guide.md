@@ -443,7 +443,13 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   PR, 400). La única excepción es la etiqueta `size:exception`, aplicada solo
   por el mantenedor cuando partir la PR rompería `main`; el campo
   `size-exception-reason:` del cuerpo está retirado. Encadenar PRs es el camino
-  normal cuando el trabajo no cabe.
+  normal cuando el trabajo no cabe. Si el consumer mide A1 con el gate de
+  contrato de PR (`pr-contract`), su workflow `MUST` generar el mapa de
+  orígenes y pasarlo con `--origins-file` (plantilla:
+  `assets/templates/.github/workflows/pr-contract.yml.tmpl`; generador:
+  `assets/bin/origins_file.py`): sin el mapa el árbol vendorizado cuenta como
+  líneas de autoría y la primera PR de propagación revienta el presupuesto
+  (#1133, #1149). La fase 4 lo mide (#1159, HR-74).
 - **G4.3 — Preflight ejecutable** en local con un solo comando, paridad con el
   job de lint (HR-4). La política de paridad declara lo que cada comprobación
   necesita del entorno: `requires` en cada exclusión y `local.capabilities` con

@@ -2165,6 +2165,11 @@ RUNNER_BINDING_GATES = {
     "runner-binding": "assets/runner-controls/check_runner_binding.py",
 }
 
+# #1149 (R3): el detector del cableado de A1 vive en un módulo aparte y se
+# importa EN PROCESO: un gate de adopción jamás invoca otro gate como
+# subproceso (HR-46, la lección del ciclo de 1.300 procesos).
+REVIEW_BUDGET_MODULE = "assets/adoption/review_budget.py"
+
 
 def _tail(text, lines=3, width=240):
     chunks = [l for l in (text or "").splitlines() if l.strip()]
@@ -2229,6 +2234,24 @@ def _check_env_isolation_phase(repo, decl):
         f"fase 2: env-isolation (HR-28) no está en verde sobre el consumer "
         f"(rc={proc.returncode}): {_tail(proc.stdout + proc.stderr)}"
     ]
+
+
+def _check_review_budget(repo):
+    """Fase 4 (#1149, R3): el presupuesto A1 con el mapa de orígenes cableado.
+
+    El mapa de orígenes (`--origins-file`) es lo que hace que el árbol
+    vendorizado (`.agents/skills/`) no cuente para el presupuesto. Un consumer
+    con la comprobación `budget` activa y sin el mapa revienta A1 en la
+    primera PR de propagación del catálogo (#1133, cadete#643): la fase 4 lo
+    dice antes y nombra el cableado que falta. El detector se importa EN
+    PROCESO desde la skill vigente: un gate de adopción jamás invoca otro gate
+    como subproceso (HR-46).
+    """
+    path = skill_dir() / REVIEW_BUDGET_MODULE
+    spec = importlib.util.spec_from_file_location("ci_pattern_review_budget", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return ["fase 4: " + finding for finding in module.findings(Path(repo))]
 
 
 def _check_gates_phase(repo, decl, contract):
@@ -3856,7 +3879,7 @@ def _phase_findings(repo, n, decl, contract):
             _check_agents_structure(repo, contract) + \
             _check_governance_seals(repo, contract)
     if n == 4:
-        return _check_gates_phase(repo, decl, contract)
+        return _check_gates_phase(repo, decl, contract) + _check_review_budget(repo)
     if n == 5:
         return (_check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
                 + _check_docs_map(repo, contract) + _check_architecture(repo, contract)
