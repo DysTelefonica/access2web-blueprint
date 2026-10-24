@@ -44,6 +44,9 @@ from pathlib import Path
 
 ASSET = Path(__file__).resolve().parent.parent
 GATE = ASSET / "check_docs_codeguide.py"
+# Raíces explícitas de los fixtures de Go (#1166): el gate ya no asume ninguna.
+GO_ROOT = {"code_root": "internal/components", "code_glob": "*.go"}
+GO_ARGS = ["--code-root", "internal/components", "--code-glob", "*.go"]
 spec = importlib.util.spec_from_file_location("check_docs_codeguide", GATE)
 assert spec and spec.loader, (
     f"el gate {GATE.name} no existe todavía; el estado RED previo a la "
@@ -187,7 +190,7 @@ class TestFencedBlocksAreNotCitations(unittest.TestCase):
             _add_codeguide_page(
                 repo, "after.md", "# After\n\n```text\nx\n```\n\nVea `internal/ghost/gone.go`.\n"
             )
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], ["internal/ghost/gone.go"])
 
     def test_inline_paths_around_a_fence_are_both_extracted(self) -> None:
@@ -223,7 +226,7 @@ class TestForwardDocsToRepo(unittest.TestCase):
         """Todas las rutas citadas existen: el veredicto es OK (lista vacía)."""
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], [])
             self.assertEqual(result["missing_in_codeguide"], [])
 
@@ -236,7 +239,7 @@ class TestForwardDocsToRepo(unittest.TestCase):
                 "# Repo map\n\n| Path | Owns |\n|---|---|\n"
                 "| `internal/ghost/foo.go` | Inventado |\n",
             )
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertIn("internal/ghost/foo.go", result["missing_in_repo"])
 
     def test_multiple_missing_paths_all_reported(self) -> None:
@@ -248,7 +251,7 @@ class TestForwardDocsToRepo(unittest.TestCase):
                 "| `internal/ghost-a/` | x |\n"
                 "| `internal/ghost-b/` | x |\n",
             )
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             missing = result["missing_in_repo"]
             self.assertIn("internal/ghost-a/", missing)
             self.assertIn("internal/ghost-b/", missing)
@@ -263,7 +266,7 @@ class TestGlobsMarkersAndBraces(unittest.TestCase):
             for rel, body in (extra or {}).items():
                 _write(repo / rel, body)
             _add_codeguide_page(repo, "cites.md", f"Vea `{cite}`.\n")
-            return gate.check_docs_codeguide(repo)["missing_in_repo"]
+            return gate.check_docs_codeguide(repo, **GO_ROOT)["missing_in_repo"]
 
     def test_glob_matching_a_file_is_valid(self) -> None:
         self.assertEqual(self._missing("internal/components/app/*.go"), [])
@@ -312,7 +315,7 @@ class TestGlobsMarkersAndBraces(unittest.TestCase):
             repo = _make_repo(Path(tmp))
             _add_codeguide_page(repo, "cites.md", "Vea `internal/components/app/*.rs`.\n")
             result = subprocess.run(
-                [sys.executable, str(GATE), str(repo)],
+                [sys.executable, str(GATE), str(repo), *GO_ARGS],
                 capture_output=True, text=True, check=False)
             self.assertEqual(result.returncode, 1)
             self.assertIn("glob sin coincidencias", result.stderr)
@@ -334,7 +337,7 @@ class TestBackwardRepoToDocs(unittest.TestCase):
             # `` `internal/components/app/main.go` ``; ``billing``,
             # por la cita `` `internal/components/billing/core.go` ``.
             # Ambos están cubiertos.
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_codeguide"], [])
 
     def test_orphan_module_fails_closed(self) -> None:
@@ -342,7 +345,7 @@ class TestBackwardRepoToDocs(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
             _add_orphan_module(repo, "ghost")
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertIn("ghost", result["missing_in_codeguide"])
 
 
@@ -360,7 +363,7 @@ class TestFailClosed(unittest.TestCase):
             repo = Path(tmp) / "repo"
             repo.mkdir()
             # Sin directorio docs/codebase siquiera.
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], ["<empty docs/codebase/>"])
 
     def test_empty_code_root_fails(self) -> None:
@@ -378,7 +381,7 @@ class TestFailClosed(unittest.TestCase):
     def test_empty_repo_path_returns_invalid(self) -> None:
         """El path no es un directorio: la API lanza el error explícito."""
         with self.assertRaises(FileNotFoundError):
-            gate.check_docs_codeguide(Path("/path/that/does/not/exist/xyzzy"))
+            gate.check_docs_codeguide(Path("/path/that/does/not/exist/xyzzy"), **GO_ROOT)
 
 
 # --------------------------------------------------------------------- #
@@ -398,7 +401,7 @@ class TestConfigurableRoots(unittest.TestCase):
             _write(repo / "docs" / "codeguide" / "page.md",
                    "# Page\n\nCita `internal/app/main.go`.\n")
             _write(repo / "internal" / "app" / "main.go", "// entry\n")
-            result = gate.check_docs_codeguide(repo, docs_path="docs/codeguide")
+            result = gate.check_docs_codeguide(repo, docs_path="docs/codeguide", **GO_ROOT)
             self.assertEqual(result["missing_in_repo"], [])
 
     def test_custom_code_root_and_glob_are_used(self) -> None:
@@ -572,7 +575,7 @@ class TestCliExitCodes(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
             proc = subprocess.run(
-                [sys.executable, str(GATE), str(repo)],
+                [sys.executable, str(GATE), str(repo), *GO_ARGS],
                 capture_output=True, text=True, check=False, encoding="utf-8",
             )
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
@@ -584,7 +587,7 @@ class TestCliExitCodes(unittest.TestCase):
             repo = _make_repo(Path(tmp))
             _add_missing_path(repo, "internal/ghost/foo.go")
             proc = subprocess.run(
-                [sys.executable, str(GATE), str(repo)],
+                [sys.executable, str(GATE), str(repo), *GO_ARGS],
                 capture_output=True, text=True, check=False, encoding="utf-8",
             )
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
@@ -593,7 +596,7 @@ class TestCliExitCodes(unittest.TestCase):
     def test_cli_exits_two_on_missing_repo_path(self) -> None:
         """Input inválido (path que no existe): exit 2 y mensaje en stderr."""
         proc = subprocess.run(
-            [sys.executable, str(GATE), "/path/that/does/not/exist/xyzzy"],
+            [sys.executable, str(GATE), "/path/that/does/not/exist/xyzzy", *GO_ARGS],
             capture_output=True, text=True, check=False, encoding="utf-8",
         )
         self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
@@ -604,6 +607,29 @@ class TestCliExitCodes(unittest.TestCase):
 # Cobertura: contrato del resultado (forma del dict, claves, JSON estable)
 # --------------------------------------------------------------------- #
 
+    def test_cli_without_code_root_exits_two_naming_the_flag(self) -> None:
+        """#1166: sin raíces declaradas no hay default que asumir: exit 2 y el flag nombrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo)],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+            self.assertIn("--code-root", proc.stderr)
+            self.assertNotIn("OK", proc.stdout)
+
+    def test_cli_code_root_without_glob_exits_two(self) -> None:
+        """Una raíz sin su glob no se puede contar: exit 2, sin default de `*.go`."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo), "--code-root", "app"],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+            self.assertIn("--code-glob", proc.stderr)
+
 
 class TestResultContract(unittest.TestCase):
     """El dict ``result`` es el contrato con la API programática."""
@@ -612,7 +638,7 @@ class TestResultContract(unittest.TestCase):
         """``missing_in_repo`` y ``missing_in_codeguide`` siempre presentes."""
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             self.assertIn("missing_in_repo", result)
             self.assertIn("missing_in_codeguide", result)
             self.assertIsInstance(result["missing_in_repo"], list)
@@ -623,7 +649,7 @@ class TestResultContract(unittest.TestCase):
         externos lo consumen sin sorpresas."""
         with tempfile.TemporaryDirectory() as tmp:
             repo = _make_repo(Path(tmp))
-            result = gate.check_docs_codeguide(repo)
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
             json.dumps(result)  # no lanza
 
 
@@ -733,6 +759,17 @@ class TestModuleNameIsNotAProseSubstring(unittest.TestCase):
         )
         with tempfile.TemporaryDirectory() as tmp:
             self.assertEqual(self._verdict(tmp, "index", page), [])
+
+
+
+class TestNoDefaultRoots(unittest.TestCase):
+    """#1166: la función no asume el árbol de ningún repo."""
+
+    def test_function_without_roots_raises_naming_them(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            with self.assertRaisesRegex(ValueError, "--code-root"):
+                gate.check_docs_codeguide(repo)
 
 
 if __name__ == "__main__":

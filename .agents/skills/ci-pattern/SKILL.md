@@ -873,7 +873,7 @@ no vacías.
 | `chained-pr` | Encadenado de PRs cuando el diff supera el presupuesto | El diff supera el presupuesto y va a encadenar PRs. |
 | `work-unit-commits` | Partición de commits por unidad de trabajo | Vaya a planificar los commits del PR por unidad de trabajo. |
 | `documentation-alan-style` | Documentación que refleja el código real | Vaya a actualizar la documentación del CI para que refleje el código. |
-| `oracle-vps-github-runners` | Provisión y operación de runners self-hosted en VPS Oracle: restricciones de arquitectura y sistema del pool (la réplica minio es amd64-only, no arranca en arm64; los jobs Windows nunca son movibles — su HR-15) y receta de siete pasos de migración de repo | Vaya a mover jobs del patrón a runners self-hosted o a auditar por qué un job no es movible entre runners del pool (ardelperal/APAP_WEB#1204, #1214). |
+| `oracle-vps-github-runners` | Provisión y operación de runners self-hosted en VPS Oracle: restricciones de arquitectura y sistema del pool (una réplica de imagen amd64-only no arranca en arm64; los jobs Windows nunca son movibles — su HR-15) y receta de siete pasos de migración de repo | Vaya a mover jobs del patrón a runners self-hosted o a auditar por qué un job no es movible entre runners del pool (ardelperal/APAP_WEB#1204, #1214). |
 
 Frontera con `deterministic-quality-harness`: su asset `check_pr_size.py` y el de
 este patrón (`assets/pr-size/`) aplican la misma regla: la única excepción al

@@ -349,6 +349,8 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
 
          - name: El commit del patrón se lee del sello de `.team-skills.yaml` (#1062)
            id: pattern-pin
+           env:
+             GH_TOKEN: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
            run: |
              set -euo pipefail
              if [ ! -f .team-skills.yaml ]; then
@@ -371,9 +373,16 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
                  exit 1
                  ;;
              esac
-             if [ "${#commit}" -ne 40 ]; then
-               echo "el sello trae un commit de ${#commit} caracteres, no de 40: '$commit' (HR-3)." >&2
+             if [ "${#commit}" -lt 7 ] || [ "${#commit}" -gt 40 ]; then
+               echo "el sello trae un commit de ${#commit} caracteres, no entre 7 y 40: '$commit' (HR-3)." >&2
                exit 1
+             fi
+             if [ "${#commit}" -lt 40 ]; then
+               # #1157: el sello abreviado (`git rev-parse --short`) se expande con la API del catálogo.
+               commit=$(gh api "repos/DysTelefonica/team-skills/commits/$commit" --jq .sha) || {
+                 echo "no se pudo resolver el sello abreviado '$commit' (HR-3)." >&2
+                 exit 1
+               }
              fi
              echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
