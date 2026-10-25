@@ -811,7 +811,7 @@ def test_release_mutation_job_needs_preflight() -> None:
     )
 
 
-def test_release_publish_needs_e2e_and_mutation() -> None:
+def test_release_publish_depends_on_e2e_mutation_stage_and_preflight() -> None:
     """Issue #857, PR-C1d: publish depends on both e2e and mutation.
 
     A green e2e is necessary (the published image must pass the Playwright
@@ -823,6 +823,11 @@ def test_release_publish_needs_e2e_and_mutation() -> None:
     Issue #1441 adds `stage`: the job that pushes the image and resolves
     its digest. `publish` promotes that exact digest, so it cannot promote
     bytes it did not receive.
+
+    Issue #1443 adds `preflight`: `publish` reads the release channel from
+    `needs.preflight.outputs.kind`, and the `needs` context only exposes the
+    outputs of the DIRECT dependencies. Without this dependency the channel
+    arrived empty and an RC published as a stable release.
     """
     release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
     jobs = release["jobs"]
@@ -831,9 +836,35 @@ def test_release_publish_needs_e2e_and_mutation() -> None:
     # GitHub Actions serialises a list-typed `needs` as a list of strings;
     # the older scalar form is a bare string. Accept both.
     needed = {needs} if isinstance(needs, str) else set(needs)
-    assert needed == {"e2e", "mutation", "stage"}, (
-        f"`publish` must depend on `e2e`, `mutation` and `stage` (issue #857, "
-        f"PR-C1d; #1441). Got: {sorted(needed)!r}"
+    assert needed == {"e2e", "mutation", "stage", "preflight"}, (
+        f"`publish` must depend on `e2e`, `mutation`, `stage` and `preflight` "
+        f"(issue #857, PR-C1d; #1441; #1443). Got: {sorted(needed)!r}"
+    )
+
+
+def test_every_needs_output_read_resolves_to_a_direct_dependency() -> None:
+    """`needs.<job>.outputs` only exposes the DIRECT dependencies (#1443).
+
+    `publish` read `needs.preflight.outputs.kind` while `preflight` was only a
+    transitive dependency of it: the value arrived empty, so the release step
+    took the stable branch and an RC published as a stable release. The rule is
+    generic — every `needs.<job>.outputs` a job uses has to name one of its
+    direct dependencies.
+    """
+    pattern = re.compile(r"\$\{\{[^}]*needs\.([A-Za-z0-9_-]+)\.outputs\.")
+    offenders = []
+    for path in sorted((_find_workflow().parent).glob("*.yml")):
+        doc = yaml.safe_load(path.read_text(encoding="utf-8"))
+        for job_name, job in (doc.get("jobs") or {}).items():
+            needs = job.get("needs") or []
+            if isinstance(needs, str):
+                needs = [needs]
+            direct = set(needs)
+            used = {m.group(1) for m in pattern.finditer(yaml.safe_dump(job))}
+            for name in sorted(used - direct):
+                offenders.append(f"{path.name}:{job_name} reads needs.{name}.outputs")
+    assert not offenders, (
+        "a job reads the outputs of a job it does not depend on directly: " + "; ".join(offenders)
     )
 
 
