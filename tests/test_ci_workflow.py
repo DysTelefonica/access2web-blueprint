@@ -1451,3 +1451,64 @@ def test_health_failure_dumps_container_state_before_failing(workflow: dict) -> 
     assert failure.index("docker logs test-app") < failure.index("exit 1"), (
         "the logs must be printed before the job exits"
     )
+
+
+# --- BP #1459: /health must answer 200 from the app, and integration must agree with the image ---
+
+
+def _pins_from_lock(path: Path) -> dict[str, str]:
+    text = path.read_text(encoding="utf-8").replace("\\\n", " ")
+    pins: dict[str, str] = {}
+    for line in text.splitlines():
+        match = re.match(r"^([A-Za-z0-9_.-]+)==(\S+)", line.split("#", 1)[0].strip())
+        if match:
+            pins[_normalize(match.group(1))] = match.group(2)
+    return pins
+
+
+def test_runtime_lock_agrees_with_the_dev_lock_it_is_tested_with() -> None:
+    """BP #1459: `integration` runs on the dev lock; every runtime pin must match it.
+
+    The integration job keeps the dev lock because pytest lives there. This guard
+    fails the moment a runtime version drifts from the set the tests exercise.
+    """
+    root = _repo_root()
+    runtime = _pins_from_lock(root / RUNTIME_LOCK)
+    dev = _pins_from_lock(root / "app" / "requirements-dev.lock")
+
+    assert runtime, f"{RUNTIME_LOCK} has no pins"
+    missing = sorted(set(runtime) - set(dev))
+    drifted = {n: (v, dev.get(n)) for n, v in runtime.items() if n in dev and dev[n] != v}
+    assert not missing, f"runtime pins absent from requirements-dev.lock: {missing}"
+    assert not drifted, f"runtime pins whose version differs from requirements-dev.lock: {drifted}"
+
+
+def test_health_wait_requires_http_200_from_the_app(workflow: dict) -> None:
+    """BP #1459: `curl -s` without a status check accepts a 302 from any other service.
+
+    The wait must read the HTTP status and accept only 200.
+    """
+    job = workflow["jobs"]["e2e-smoke"]
+    step = next(
+        s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check"
+    )
+    run = str(step["run"])
+
+    assert "curl -s http://localhost:8000/health > /dev/null" not in run, (
+        "the wait must not treat any HTTP response as a healthy app"
+    )
+    assert "%{http_code}" in run and '"200"' in run, "the wait must accept only HTTP 200"
+
+
+def test_health_wait_stops_early_when_the_container_is_not_running(workflow: dict) -> None:
+    """BP #1459: if the app container exits, waiting 60 s proves nothing; stop and diagnose."""
+    job = workflow["jobs"]["e2e-smoke"]
+    step = next(
+        s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check"
+    )
+    run = str(step["run"])
+
+    assert "docker inspect" in run and ".State.Running" in run, (
+        "the wait loop must check that test-app is still running"
+    )
+    assert "seq 1 60" in run, "the 60 s wait must stay unchanged"
