@@ -966,11 +966,18 @@ jobs:
             -e SECRET_KEY="$E2E_SECRET_KEY" \
             -e PLATFORM_SECRET_KEY="$PLATFORM_SECRET_KEY" \
             test-app:pr
-          # Espera a /health hasta 60 s (criterio 1 de #876).
+          # Espera a /health hasta 60 s (criterio 1 de #876). Solo cuenta un 200 de la app:
+          # otra respuesta HTTP (por ejemplo un 302 de otro servicio en el puerto) no lo es.
+          # Si el contenedor deja de correr, no tiene sentido seguir esperando (BP #1459).
           ready=0
           for i in $(seq 1 60); do
-            if curl -s http://localhost:8000/health > /dev/null 2>&1; then
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/health 2>/dev/null) || code=000
+            if [ "$code" = "200" ]; then
               ready=1
+              break
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' test-app 2>/dev/null)" != "true" ]; then
+              echo "::error::test-app is not running; it exited before answering /health."
               break
             fi
             sleep 1
