@@ -1,3 +1,13 @@
+# Plantilla canónica del `.github/dependabot.yml` de un consumer (#1182).
+#
+# Un ecosystem por manifiesto: el `directory` de cada uno es el directorio donde
+# vive el manifiesto de ese ecosystem. El consumer lo declara en su contrato
+# (`dependabot.ecosystems`) y el canon genera este fichero; si el del consumer
+# no coincide, el gate de la fase 5 lo dice (#1182).
+#
+# VALOR: el bloque `updates`, un ecosystem por manifiesto declarado. Dependabot
+# actualiza el MANIFIESTO, no el lock: el lock lo regenera el PR que cambia el
+# manifiesto (#1181).
 version: 2
 
 updates:
