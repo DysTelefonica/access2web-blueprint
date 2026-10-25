@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "agents_md": "propagated",
+  "docs_where_to_work": {"mode": "exigido"},
   "docs_manifest": {},
   "architecture": {
     "doc": "docs/architecture.md",
