@@ -91,5 +91,20 @@
     "governance-seals",
     "docs-commands",
     "pip-audit-alert"
+  ],
+  "state_dependent_gates": [
+    {
+      "name": "pip-audit",
+      "command": "pip-audit",
+      "pr_workflow": ".github/workflows/ci.yml",
+      "pr_job": "pip-audit",
+      "manifests": [
+        "app/uv.lock",
+        "app/requirements-dev.lock",
+        "app/pyproject.toml"
+      ],
+      "scheduled_workflow": ".github/workflows/ci.yml",
+      "alert_command": "gh issue create"
+    }
   ]
 }
