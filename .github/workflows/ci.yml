@@ -724,6 +724,12 @@ jobs:
             --code-root app/migrations \
             --code-glob "*.py"
 
+      # TS#1201 (HR-77): la pagina donde trabajo es exigida por el contrato
+      # (docs_where_to_work.mode = exigido). Fallo cerrado: sin pagina o con una
+      # ruta citada muerta, este job falla.
+      - name: Check the where-to-work page (HR-77)
+        run: python3 .agents/skills/ci-pattern/assets/where-to-work/check_where_to_work.py .
+
   docs-links:
     # HR-66: enlaces locales de README.md, AGENTS.md y docs/. Check requerido por PR.
     name: docs-links (${{ github.event_name }})
