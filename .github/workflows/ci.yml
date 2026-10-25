@@ -926,12 +926,14 @@ jobs:
           fi
           echo "E2E_DATABASE_URL=postgresql+asyncpg://lanzadera:lanzadera-dev-only@127.0.0.1:${POSTGRES_HOST_PORT}/lanzadera" >> "$GITHUB_ENV"
 
-      - name: Install the lockfile and apply the real migrations
-        # Igual que `integration`: 0003 lee data/fixtures/, fuera de la imagen.
+      - name: Install the runtime lock and apply the real migrations
+        # Mismo conjunto que instala la imagen (app/Dockerfile): el lock runtime exportado
+        # de app/uv.lock (BP #1456). Así el esquema y la app usan las mismas versiones.
+        # 0003 lee data/fixtures/, fuera de la imagen.
         run: |
           set -euo pipefail
           if [ -f app/pyproject.toml ]; then
-            python -m pip install --require-hashes --requirement app/requirements-dev.lock
+            python -m pip install --require-hashes --requirement app/requirements.lock
           elif [ -f pyproject.fragment.toml ]; then
             echo "::error::pyproject.fragment.toml is present at the repo root, but app/pyproject.toml is missing."
             echo "::error::This is a chain hole — the fragment must be consolidated into app/pyproject.toml before the install step can succeed."
@@ -975,6 +977,9 @@ jobs:
           done
           if [ "$ready" -ne 1 ]; then
             echo "::error::app did not respond on /health within 60s"
+            # Diagnóstico (BP #1456): sin esto el rojo no dice por qué no arrancó la app.
+            docker ps -a
+            docker logs test-app 2>&1 | tail -n 300
             exit 1
           fi
           echo "App is ready"
