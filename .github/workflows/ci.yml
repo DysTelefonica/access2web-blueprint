@@ -984,6 +984,9 @@ jobs:
         run: npm ci
 
       - name: Install Chromium browser
+        # From e2e/: the Playwright that npx resolves there is the one locked in
+        # e2e/package-lock.json. From the root, npx downloads the latest release.
+        working-directory: e2e
         run: npx playwright install chromium
 
       - name: Run the E2E smoke specs
