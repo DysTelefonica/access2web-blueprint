@@ -321,6 +321,33 @@ class NeedsShapeTests(unittest.TestCase):
                 self.assertNotIn("Traceback", proc.stderr)
 
 
+class StateDependentGatesDeclarationTests(unittest.TestCase):
+    """HR-39: la declaracion vive en el MISMO policy file que este gate valida.
+
+    El gate de politica de workflows (HR-39) lee `state_dependent_gates` del
+    fichero que recibe por `--required-jobs`. Si este gate lo rechazara por
+    clave desconocida, ningun consumer podria declarar HR-39 sin romperse el
+    job `required` en rojo.
+    """
+
+    def test_a_policy_that_declares_state_dependent_gates_is_accepted(self) -> None:
+        policy = {**base_policy(), "state_dependent_gates": [{
+            "name": "pip-audit",
+            "command": "pip-audit",
+            "pr_workflow": "ci.yml",
+            "pr_job": "pip-audit",
+            "manifests": ["uv.lock"],
+            "scheduled_workflow": "ci.yml",
+            "alert_command": "gh issue create",
+        }]}
+        proc = run_gate(policy, all_success())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+    def test_an_empty_declaration_is_also_accepted(self) -> None:
+        proc = run_gate({**base_policy(), "state_dependent_gates": []}, all_success())
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
 class PolicyValidationTests(unittest.TestCase):
     """A malformed policy is a fail-closed message, never a traceback."""
 

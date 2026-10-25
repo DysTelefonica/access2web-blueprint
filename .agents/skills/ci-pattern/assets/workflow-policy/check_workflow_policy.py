@@ -788,6 +788,14 @@ def _job_runs_command(job: dict, command: str) -> bool:
     return False
 
 
+def _local_reusable_call(job: dict) -> str | None:
+    """#1196: ruta del workflow reutilizable local (`uses: ./...`) que llama el job."""
+    uses = job.get("uses")
+    if isinstance(uses, str) and uses.startswith("./"):
+        return uses
+    return None
+
+
 def _any_job_runs_command(doc: dict, command: str) -> bool:
     jobs = doc.get("jobs") or {}
     for job in jobs.values():
@@ -848,6 +856,51 @@ def _marker_gate(pr_job, jobs: dict, workflows: list[tuple[str, dict]]):
     return None
 
 
+def _pr_trigger_findings(entry: dict, pr_path: str, pr_doc: dict,
+                         workflows: list[tuple[str, dict]]) -> list[str]:
+    """HR-39: el disparador de PR filtra por los manifiestos (`paths:`) o, en su
+    defecto, el pr_job lo hace por un marcador (#1192)."""
+    name, manifests = entry["name"], entry["manifests"]
+    jobs = pr_doc.get("jobs") or {}
+    pr_job = jobs.get(entry["pr_job"])
+    pr_paths = workflow_events(pr_doc).get("pull_request", {}).get("paths")
+    if not isinstance(pr_paths, list) or not pr_paths:
+        if _marker_gate(pr_job, jobs, workflows) is None:
+            return [f"HR-39: el gate '{name}' corre en pull_request sin `paths:` "
+                    f"en {pr_path}, ni un `if:` con el marcador de un job que lo "
+                    "publica; bloquea PRs que no tocan los manifiestos."]
+        return []
+    return [f"HR-39: el gate '{name}' no cubre el manifiesto '{m}' "
+            f"en paths: {pr_paths} ({pr_path})."
+            for m in _paths_cover(manifests, pr_paths)]
+
+
+def _pr_command_findings(entry: dict, pr_path: str, pr_doc: dict,
+                         workflows: list[tuple[str, dict]]) -> list[str]:
+    """HR-39: el pr_job ejecuta el comando, directamente o en el workflow
+    reutilizable local que llama (#1196)."""
+    name, command, pr_job_id = entry["name"], entry["command"], entry["pr_job"]
+    pr_job = (pr_doc.get("jobs") or {}).get(pr_job_id)
+    if not isinstance(pr_job, dict):
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                f"ese job no existe en {pr_path}."]
+    if _job_runs_command(pr_job, command):
+        return []
+    called = _local_reusable_call(pr_job)
+    if called is None:
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                f"ese job no ejecuta '{command}' en {pr_path}."]
+    called_path, called_doc = _find_workflow(workflows, called)
+    if called_doc is None:
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' que "
+                f"llama a '{called}', pero ese workflow no esta entre los inputs."]
+    if not any(isinstance(j, dict) and _job_runs_command(j, command)
+               for j in (called_doc.get("jobs") or {}).values()):
+        return [f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
+                f"ni ese job ni '{called_path}' ejecutan '{command}'."]
+    return []
+
+
 def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
                                 out: list[str]) -> None:
     """HR-39: un gate cuyo veredicto depende de estado externo mutable va
@@ -873,8 +926,6 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
         name = entry["name"]
         command = entry["command"]
         pr_wf_path = entry["pr_workflow"]
-        pr_job_id = entry["pr_job"]
-        manifests = entry["manifests"]
         sched_path = entry["scheduled_workflow"]
         alert = entry["alert_command"]
         pr_path, pr_doc = _find_workflow(workflows, pr_wf_path)
@@ -892,24 +943,8 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
             out.append(f"HR-39: el gate '{name}' no se ejecuta en pull_request en "
                        f"{pr_path}; sin disparador de PR no puede gatear el PR.")
             continue
-        jobs = pr_doc.get("jobs") or {}
-        pr_job = jobs.get(pr_job_id)
-        pr_paths = pr_events["pull_request"].get("paths")
-        if not isinstance(pr_paths, list) or not pr_paths:
-            if _marker_gate(pr_job, jobs, workflows) is None:
-                out.append(f"HR-39: el gate '{name}' corre en pull_request sin `paths:` "
-                           f"en {pr_path}, ni un `if:` con el marcador de un job que lo "
-                           "publica; bloquea PRs que no tocan los manifiestos.")
-        else:
-            for m in _paths_cover(manifests, pr_paths):
-                out.append(f"HR-39: el gate '{name}' no cubre el manifiesto '{m}' "
-                           f"en paths: {pr_paths} ({pr_path}).")
-        if not isinstance(pr_job, dict):
-            out.append(f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
-                       f"ese job no existe en {pr_path}.")
-        elif not _job_runs_command(pr_job, command):
-            out.append(f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
-                       f"ese job no ejecuta '{command}' en {pr_path}.")
+        out.extend(_pr_trigger_findings(entry, pr_path, pr_doc, workflows))
+        out.extend(_pr_command_findings(entry, pr_path, pr_doc, workflows))
         sched_events = workflow_events(sched_doc)
         if "schedule" not in sched_events:
             out.append(f"HR-39: el gate '{name}' declara scheduled_workflow='{sched_real_path}' "
