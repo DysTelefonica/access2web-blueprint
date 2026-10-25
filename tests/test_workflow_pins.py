@@ -34,11 +34,26 @@ DOCKER_CMD_RE = re.compile(r"\bdocker\s+(?:run|pull|build)\b")
 TAG_VALUE_RE = re.compile(r"--tag[=\s]+(?P<tag>\S+)")
 # Flags whose value is a path, a name or an env pair, never an image reference.
 NON_IMAGE_FLAGS = {
-    "--file", "-f", "--tag", "-t", "--name", "--workdir", "-w", "--volume", "-v",
-    "--publish", "-p", "--env", "-e", "--network", "--mount",
+    "--file",
+    "-f",
+    "--tag",
+    "-t",
+    "--name",
+    "--workdir",
+    "-w",
+    "--volume",
+    "-v",
+    "--publish",
+    "-p",
+    "--env",
+    "-e",
+    "--network",
+    "--mount",
 }
 # A literal reference names a registry or namespace, or carries a tag or digest.
-LITERAL_REF_RE = re.compile(r"^[a-z0-9][a-z0-9._/-]*(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9a-f]{64})?$")
+LITERAL_REF_RE = re.compile(
+    r"^[a-z0-9][a-z0-9._/-]*(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9a-f]{64})?$"
+)
 PLAYWRIGHT_RE = re.compile(r"playwright\s+(?:test|install)\b")
 
 
@@ -75,7 +90,7 @@ def _docker_image_refs(run: str, local_builds: set[str]) -> list[str]:
         if not DOCKER_CMD_RE.search(line):
             continue
         tokens = [t.strip("\"'") for t in line.split()]
-        for previous, token in zip([""] + tokens, tokens):
+        for previous, token in zip([""] + tokens[:-1], tokens, strict=True):
             if previous in NON_IMAGE_FLAGS or token in local_builds:
                 continue
             if "$" in token or not LITERAL_REF_RE.match(token):

@@ -187,7 +187,14 @@ Para refrescar un digest:
 docker buildx imagetools inspect moby/buildkit:v0.18.0 --format '{{json .Manifest.Digest}}'
 ```
 
-Sustituye el digest en el workflow, deja la etiqueta en el comentario y corre `pytest tests/test_workflow_pins.py`. Para Playwright: `cd e2e && npm install -D @playwright/test@<versión>` y commitea `package-lock.json`.
+Sustituye el digest en el workflow, deja la etiqueta en el comentario y corre el test de pines. Para Playwright, actualiza el lock de `e2e/` y commitea `e2e/package-lock.json`:
+
+```bash
+# Test de pines de CI (imágenes por digest)
+pytest tests/test_workflow_pins.py
+# Actualización del lock de Playwright
+cd e2e && npm install -D @playwright/test@<versión>
+```
 
 `tests/test_workflow_pins.py` impide que vuelva a entrar un tag sin digest o un `npx` fuera de `e2e/`. No impide que un digest quede viejo: eso es decisión de mantenimiento.
 
