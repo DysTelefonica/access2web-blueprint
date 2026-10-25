@@ -258,5 +258,12 @@
     ],
     "dry_run_flag": "--help",
     "job": "docs-commands"
+  },
+  "dependabot": {
+    "ecosystems": {
+      "pip": {"directory": "app"},
+      "github-actions": {"directory": ".", "groups": {"codeql-action": {"patterns": ["github/codeql-action/*"]}}},
+      "npm": {"directory": "e2e"}
+    }
   }
 }
