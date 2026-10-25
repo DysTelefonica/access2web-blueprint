@@ -69,6 +69,15 @@ jobs:
             --binaries .github/tooling/operating-doc-drift.txt \
             --runner "${{ runner.name }}"
 
+      - name: Install import-linter
+        # El gate de arquitectura de la fase 5 ejecuta `lint-imports --config
+        # .importlinter` y falla cerrado (HR-68) si el binario no esta: sin
+        # ejecucion no hay medicion, y el nightly llevaba desde el 2026-10-19
+        # midiendo nada. El job docs-architecture de ci.yml ya lo instala con el
+        # mismo pin; este mide la misma arquitectura (#1446).
+        # Version exacta, igual que los demas pines de herramientas (Hard Rule 2).
+        run: python3 -m pip install "import-linter==2.15"
+
       - name: comprobar el secreto del catálogo
         # Sin el secreto no se puede leer el pin: se falla en voz alta y se nombra
         # el dato que falta, en vez de salir en verde sin haber medido (HR-3).

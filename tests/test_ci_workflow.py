@@ -1263,3 +1263,48 @@ def test_only_the_pip_audit_alert_job_may_write_issues(workflow: dict) -> None:
         if (job.get("permissions") or {}).get("issues") == "write"
     )
     assert writers == ["pip-audit-alert"]
+
+
+def test_operating_doc_drift_installs_the_import_linter_before_it_measures() -> None:
+    # #1446: the nightly measures the architecture, so it has to provide the linter.
+    # HR-68 fails closed when the binary is missing — without execution there is no
+    # measurement — so the nightly measured nothing: it runs the phase-5 gate, whose
+    # architecture check runs `lint-imports --config .importlinter`, and its runner
+    # had no such binary. The `docs-architecture` job of ci.yml installs it; the
+    # nightly did not, and has been red since 2026-10-19.
+    workflows = _find_workflow().parent
+    drift = yaml.safe_load((workflows / "operating-doc-drift.yml").read_text(encoding="utf-8"))
+    steps = drift["jobs"]["operating-doc-drift"]["steps"]
+
+    installs = [i for i, s in enumerate(steps) if "import-linter" in str(s.get("run", ""))]
+    assert len(installs) == 1, "the nightly must install the import linter exactly once"
+    assert "import-linter==2.15" in steps[installs[0]]["run"], (
+        "the linter is pinned to an exact version, like every other tool of the repo (Hard Rule 2)"
+    )
+
+    gates = [i for i, s in enumerate(steps) if "adoption check --phase 5" in str(s.get("run", ""))]
+    assert len(gates) == 1, "the nightly must run the phase-5 gate exactly once"
+    assert installs[0] < gates[0], (
+        "the linter has to be installed before the gate runs it: HR-68 fails closed "
+        "when the binary is missing, so a gate that runs first measures nothing"
+    )
+
+
+def test_operating_doc_drift_declares_the_binaries_it_invokes() -> None:
+    # G0.5: the tooling contract of a job lists the binaries the runner must
+    # provide. The nightly runs `python3` to invoke the canon's CLI, so the
+    # contract has to declare it; an undeclared binary is a hole the preflight
+    # cannot see.
+    workflows = _find_workflow().parent
+    contract = (workflows.parent / "tooling" / "operating-doc-drift.txt").read_text(
+        encoding="utf-8"
+    )
+    declared = {
+        line.strip() for line in contract.splitlines() if line.strip() and not line.startswith("#")
+    }
+    drift = yaml.safe_load((workflows / "operating-doc-drift.yml").read_text(encoding="utf-8"))
+    invoked = " ".join(str(s.get("run", "")) for s in drift["jobs"]["operating-doc-drift"]["steps"])
+    assert "python3" in invoked, "the nightly invokes the canon CLI with python3"
+    assert "python3" in declared, (
+        "python3 is invoked by the nightly, so the contract must declare it"
+    )
