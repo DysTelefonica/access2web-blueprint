@@ -1092,3 +1092,112 @@ class TestInstanceIsolatedGroups(GateCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+GATE_OUTPUTS = ("    outputs:\n"
+                "      lockfile_scope_changed: ${{ steps.lanes.outputs.lockfile_scope_changed }}\n")
+
+
+def marker_pr_wf(if_expr, gate_outputs=GATE_OUTPUTS, gate_uses=None):
+    """PR sin paths: un gate de primer nivel que publica el marcador y un pr_job
+    `security` cuyo `if:` lo referencia (#1192)."""
+    gate = "  gate:\n    name: gate\n    timeout-minutes: 5\n    concurrency: g\n"
+    if gate_uses:
+        gate += f"    uses: {gate_uses}\n"
+    else:
+        gate += gate_outputs + "    steps:\n      - uses: " + SCHED_PINNED + "\n        id: lanes\n"
+    sec = ("  security:\n    name: security\n    timeout-minutes: 5\n    concurrency: j\n"
+           + (f"    if: {if_expr}\n" if if_expr is not None else "")
+           + "    steps:\n      - uses: " + SCHED_PINNED + "\n      - run: pip-audit\n")
+    return "on:\n  pull_request:\njobs:\n" + GOOD_BUILD + gate + sec
+
+
+PR_GATE_CALLED = """on:
+  workflow_call:
+    outputs:
+      lockfile_scope_changed:
+        value: ${{ jobs.pr-gate.outputs.lockfile_scope_changed }}
+jobs:
+  pr-gate:
+    name: pr-gate
+    timeout-minutes: 5
+    concurrency: g
+    steps:
+      - uses: """ + SCHED_PINNED + """
+"""
+
+MARKER_IF = "needs.gate.outputs.lockfile_scope_changed != 'false'"
+
+
+class TestHR39MarkerIfEquivalentToPaths(unittest.TestCase):
+    """#1192: un pr_job cuyo `if:` referencia el marcador de un job de primer
+    nivel que lo publica cuenta como filtro de ruta. Sin marcador, sigue el hallazgo."""
+
+    def run_files(self, files):
+        pol = dict(REQUIRED_POLICY)
+        pol["state_dependent_gates"] = [GOOD_STATE_ENTRY]
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            (d_path / "policy.json").write_text(json.dumps(pol), encoding="utf-8")
+            args = []
+            for name, text in files.items():
+                (d_path / name).parent.mkdir(parents=True, exist_ok=True)
+                (d_path / name).write_text(text, encoding="utf-8")
+                args += ["--workflow", name]
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", "policy.json", "--base-branch", "main"],
+                                 capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout + out.stderr
+
+    def sched(self):
+        return sched_wf()
+
+    def test_marker_if_on_first_level_gate_replaces_paths(self):
+        """(f) if: con marcador de un gate que lo publica: sin hallazgo de paths."""
+        code, out = self.run_files({"wf_pr.yml": marker_pr_wf(MARKER_IF),
+                                    "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("HR-39", out)
+
+    def test_marker_if_on_reusable_gate_replaces_paths(self):
+        """(g) el gate es un workflow reutilizable local que declara el marcador
+        en workflow_call.outputs: vale igual."""
+        pr = marker_pr_wf(MARKER_IF, gate_outputs=None,
+                          gate_uses="./.github/workflows/pr-gate.yml")
+        code, out = self.run_files({"wf_pr.yml": pr, "wf_sched.yml": self.sched(),
+                                    ".github/workflows/pr-gate.yml": PR_GATE_CALLED})
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("HR-39", out)
+
+    def test_marker_if_on_unknown_gate_is_finding(self):
+        """(h) el marcador apunta a un job que no existe: sigue sin paths."""
+        code, out = self.run_files({
+            "wf_pr.yml": marker_pr_wf("needs.nope.outputs.lockfile_scope_changed != 'false'"),
+            "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn("paths", out)
+
+    def test_pr_job_without_if_is_finding(self):
+        """(i) pr_job sin if: ni paths: sigue siendo hallazgo."""
+        code, out = self.run_files({"wf_pr.yml": marker_pr_wf(None),
+                                    "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn("paths", out)
+
+    def test_if_without_marker_comparison_is_finding(self):
+        """(j) un if: que no compara un marcador de salida (solo el evento) no cuenta."""
+        code, out = self.run_files({
+            "wf_pr.yml": marker_pr_wf("github.event_name == 'pull_request'"),
+            "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+
+    def test_marker_not_published_by_gate_is_finding(self):
+        """(k) el gate existe pero no publica el marcador que el if: referencia."""
+        code, out = self.run_files({
+            "wf_pr.yml": marker_pr_wf(MARKER_IF, gate_outputs="    outputs:\n      otro: x\n"),
+            "wf_sched.yml": self.sched()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
