@@ -33,11 +33,12 @@ required:
       env:
         NEEDS_JSON: ${{ toJSON(needs) }}
         EVENT_NAME: ${{ github.event_name }}
+        RUN_ATTEMPT: ${{ github.run_attempt }}
         BASE_REF: ${{ github.base_ref }}
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
       run: |
         policy=scripts/required-jobs/required-jobs.policy.json
-        set -- --policy "$policy" --event "$EVENT_NAME"
+        set -- --policy "$policy" --event "$EVENT_NAME" --run-attempt "$RUN_ATTEMPT"
         if [ "$EVENT_NAME" = "pull_request" ]; then
           # La comparación es contra el SHA base fijo del PR (el que
           # GitHub registró al abrir/sincronizar el PR), no contra la
@@ -53,17 +54,36 @@ required:
         printf '%s' "$NEEDS_JSON" | python3 scripts/required-jobs/check_required_jobs.py "$@"
 ```
 
-El objeto `needs`, el nombre del evento y la rama base llegan al script por
-variables de entorno (`env:`), nunca interpolados dentro de `run:`. Una
-expresión `${{ ... }}` escrita en el script se sustituye antes de que el shell
-lo lea: una comilla en una salida de job rompería el paso o inyectaría órdenes.
-
+El objeto `needs`, el nombre del evento, el intento de ejecución y la rama base
+llegan al script por variables de entorno (`env:`), nunca interpolados dentro
+de `run:`. Una expresión `${{ ... }}` escrita en el script se sustituye antes
+de que el shell lo lea: una comilla en una salida de job rompería el paso.
 `toJSON(needs)` entrega, por cada job, un objeto `{"result": ..., "outputs": ...}`.
 El gate lee la conclusión del campo `result`; también admite la forma plana
 `{"job": "success"}`. Cualquier otra forma sale por exit 1. La entrada llega
 por stdin o por `--needs-file`.
 
 Marque `required` como check requerido en la protección de rama.
+
+## El intento juzgado y la causa del check rojo (#1208)
+
+Dos entradas opcionales amplían el veredicto; ninguna cambia qué se considera
+verde.
+
+`--run-attempt N` declara qué intento de la ejecución juzga el gate
+(`github.run_attempt`) y el veredicto lo dice (`judged attempt 2`): un re-run
+que pasa de rojo a verde —o al revés— nunca se lee como el estado del intento
+anterior. Sin la opción esa línea no se imprime y el veredicto queda igual que
+antes. El número debe ser un entero positivo; otro valor es una duda y sale
+por exit 1.
+
+`--annotations FICHERO` nombra el check rojo de verdad: su nombre, su
+conclusión y su primera anotación de error cuando existe. El fichero es un
+objeto JSON de `job -> mensaje` (por ejemplo
+`{"test": "pytest: 3 failed"}`); el gate no llama a ninguna API, quien lo usa
+produce el fichero y se lo pasa. Sin fichero, la causa dice `no annotation` en
+lugar de callarse (`test (failure): no annotation`); un fichero ilegible o
+mal formado es una duda y el gate sale por exit 1.
 
 ## Contrato de la política
 
@@ -221,16 +241,17 @@ admite todavía jobs excluidos a propósito del agregado.
 
 El veredicto es fail-closed. Salen por exit 1: entrada ilegible, política mal
 formada, evento no declarado, job conocido ausente de `needs`, clave de
-`needs` no cubierta por la política, skip no declarado, conclusión `failure`
-o `cancelled` y relajación sin amparo frente a la copia base. La salida separa
-las causas raíz (`failure`, `cancelled`) de los skips en cascada: un skip
-descendente nunca se lee como la causa.
+`needs` no cubierta por la política, skip no declarado, conclusión `failure`,
+`cancelled`, `timed_out` o `startup_failure` y relajación sin amparo frente a
+la copia base. La salida separa las causas raíz de los skips en cascada: un
+skip descendiente nunca se lee como la causa.
 
 ## Tests
 
 | Fichero | Qué observa |
 |---|---|
 | `tests/test_required_jobs.py` | Veredictos del gate, formas de `needs` y validación de la política |
+| `tests/test_aggregator_edges.py` | Bordes del agregador: AND exacto sobre los 12 jobs requeridos, `timed_out` y `startup_failure` como causa raíz, re-run en ambos sentidos y causa a nivel de check (#1208) |
 | `tests/test_base_comparison.py` | `--base-policy`: relajaciones, endurecimientos y campo `relaxation` |
 | `tests/test_docs_only_lane.py` | Lane docs-only: skips aceptados solo con el marcador `"true"` en el evento declarado, combinado con `dependencies` y su relajación contra la base (#857) |
 | `tests/test_marker_lane.py` | `marker_lanes`: lanes simultáneos, `equals` y su relajación contra la base (#863) |
