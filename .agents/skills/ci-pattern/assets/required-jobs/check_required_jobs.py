@@ -67,7 +67,11 @@ SKIPPED = "skipped"
 ROOT_CAUSE_CONCLUSIONS = ("failure", "cancelled")
 
 POLICY_KEYS = frozenset({"required_jobs", "events"})
-OPTIONAL_POLICY_KEYS = frozenset({"relaxation", "dependencies", "docs_only_lane", "marker_lanes"})
+#: ``state_dependent_gates`` lo lee el gate de politica de workflows (HR-39) del MISMO
+#: fichero: declararlo aqui es lo que permite a un consumer exigir HR-39 sin que el
+#: gate de required jobs rechace la politica por clave desconocida (fail-closed, HR-3).
+OPTIONAL_POLICY_KEYS = frozenset({"relaxation", "dependencies", "docs_only_lane",
+                                 "marker_lanes", "state_dependent_gates"})
 EVENT_KEYS = frozenset({"accepted_skips"})
 RELAXATION_KEYS = frozenset({"reason", "reference", "actor", "issue"})
 RELAXATION_REQUIRED = frozenset({"reason", "reference"})

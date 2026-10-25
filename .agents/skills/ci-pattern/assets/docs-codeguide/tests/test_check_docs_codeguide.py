@@ -481,7 +481,8 @@ class TestMultipleRoots(unittest.TestCase):
             )
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
-    def test_cli_repeated_pairs_exit_one_when_a_root_has_an_undescribed_module(self) -> None:
+    def test_cli_undescribed_module_warns_and_exits_zero(self) -> None:
+        # #1093 lote 2: un módulo sin documentar es AVISO, no bloqueo.
         with tempfile.TemporaryDirectory() as tmp:
             repo = self._repo_with_two_roots(Path(tmp), "`app/users.py`\n")
             proc = subprocess.run(
@@ -489,8 +490,23 @@ class TestMultipleRoots(unittest.TestCase):
                  "--code-glob", "*.py", "--code-root", "templates", "--code-glob", "*.html"],
                 capture_output=True, text=True, check=False, encoding="utf-8",
             )
-            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertIn("AVISO", proc.stderr)
             self.assertIn("home (templates)", proc.stderr)
+
+    def test_cli_dead_link_still_exits_one_next_to_an_undescribed_module(self) -> None:
+        # Un enlace muerto bloquea aunque además haya un módulo sin documentar.
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo_with_two_roots(
+                Path(tmp), "`app/users.py`\n`app/borrado.py`\n")
+            proc = subprocess.run(
+                [sys.executable, str(GATE), str(repo), "--code-root", "app",
+                 "--code-glob", "*.py", "--code-root", "templates", "--code-glob", "*.html"],
+                capture_output=True, text=True, check=False, encoding="utf-8",
+            )
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertIn("FAIL docs -> repo: missing app/borrado.py", proc.stderr)
+            self.assertIn("AVISO", proc.stderr)
 
     def test_cli_unpaired_roots_and_globs_exit_two(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

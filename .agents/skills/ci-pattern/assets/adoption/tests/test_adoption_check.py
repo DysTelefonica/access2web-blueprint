@@ -366,16 +366,16 @@ PATTERN_MANIFEST_FILES = (
 
 
 def seed_manifest(repo, paths=PATTERN_MANIFEST_FILES):
-    """Manifiesto de gobierno con el sha256 (LF normalizado) de cada artefacto
+    """Manifiesto de gobierno con el sha256 gobernado de cada artefacto
     del patrón: la identidad del patrón la fija el manifiesto verificado con
-    `ci-pattern verify`, nunca el contrato de adopción (#277)."""
-    import hashlib
+    `ci-pattern verify`, nunca el contrato de adopción (#277). Los workflows se
+    sellan normalizados (#1199), así que el hash es el del contenido con los pins
+    a un marcador fijo."""
     files = {}
     for rel in paths:
-        data = (repo / rel).read_bytes().replace(b"\r\n", b"\n")
-        files[rel] = "sha256:" + hashlib.sha256(data).hexdigest()
+        files[rel] = CLI.sha256_governed(repo / rel, rel)
     touch(repo, ".governance-manifest.json",
-          json.dumps({"schema_version": 1, "files": files}, indent=2))
+          json.dumps({"schema_version": CLI.SCHEMA_VERSION, "files": files}, indent=2))
 
 
 def seed_phase3(repo, snapshot_rulesets=None):

@@ -1201,3 +1201,82 @@ class TestHR39MarkerIfEquivalentToPaths(unittest.TestCase):
             "wf_sched.yml": self.sched()})
         self.assertEqual(code, 1, out)
         self.assertIn("HR-39", out)
+
+
+CALLED_AUDIT = """on:
+  workflow_call:
+jobs:
+  audit:
+    name: audit
+    timeout-minutes: 5
+    concurrency: a
+    steps:
+      - uses: """ + SCHED_PINNED + """
+      - run: pip-audit --strict
+"""
+
+CALLED_NO_COMMAND = CALLED_AUDIT.replace("pip-audit --strict", "echo nada")
+
+
+def pr_uses_wf(uses):
+    """PR con paths y un pr_job `security` que llama a un workflow reutilizable (#1196)."""
+    return ("on:\n  pull_request:\n    paths: [uv.lock, requirements*.txt]\njobs:\n"
+            + GOOD_BUILD
+            + f"  security:\n    uses: {uses}\n    concurrency: s\n")
+
+
+class TestHR39ReusableCommand(unittest.TestCase):
+    """#1196: la comprobacion de comando sigue un `uses:` local hacia el workflow
+    reutilizable llamado; un `uses:` externo sigue sin resolverse."""
+
+    def run_files(self, files):
+        pol = dict(REQUIRED_POLICY)
+        pol["state_dependent_gates"] = [GOOD_STATE_ENTRY]
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            (d_path / "policy.json").write_text(json.dumps(pol), encoding="utf-8")
+            args = []
+            for name, text in files.items():
+                (d_path / name).parent.mkdir(parents=True, exist_ok=True)
+                (d_path / name).write_text(text, encoding="utf-8")
+                args += ["--workflow", name]
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", "policy.json", "--base-branch", "main"],
+                                 capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout + out.stderr
+
+    def test_reusable_call_that_runs_the_command_is_clean(self):
+        """(a) el workflow llamado ejecuta el comando: sin hallazgo HR-39."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("./.github/workflows/audit.yml"),
+            ".github/workflows/audit.yml": CALLED_AUDIT,
+            "wf_sched.yml": sched_wf()})
+        self.assertNotIn("HR-39", out)
+
+    def test_reusable_call_without_the_command_names_the_called_workflow(self):
+        """(b) el workflow llamado no ejecuta el comando: el hallazgo nombra ese workflow."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("./.github/workflows/audit.yml"),
+            ".github/workflows/audit.yml": CALLED_NO_COMMAND,
+            "wf_sched.yml": sched_wf()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn(".github/workflows/audit.yml", out)
+
+    def test_reusable_call_to_an_unlisted_workflow_names_the_path(self):
+        """(c) el workflow llamado no está entre los --workflow de entrada: hallazgo que lo nombra."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("./.github/workflows/audit.yml"),
+            "wf_sched.yml": sched_wf()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn(".github/workflows/audit.yml", out)
+
+    def test_external_reusable_call_stays_a_finding(self):
+        """(d) un `uses:` externo no se resuelve: hallazgo (sin cambio de comportamiento)."""
+        code, out = self.run_files({
+            "wf_pr.yml": pr_uses_wf("otro/repo/.github/workflows/audit.yml@" + "a" * 40),
+            "wf_sched.yml": sched_wf()})
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-39", out)
+        self.assertIn("ejecuta", out)
