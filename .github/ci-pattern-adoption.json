@@ -197,6 +197,10 @@
           "args": [
             "--workflow",
             "@.github/workflows/ci.yml",
+            "--workflow",
+            "@.github/workflows/pr-gate.yml",
+            "--workflow",
+            "@.github/workflows/pip-audit.yml",
             "--base-branch",
             "main",
             "--required-jobs",
