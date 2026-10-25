@@ -343,7 +343,11 @@ jobs:
         run: docker stop test-app || true
 
   publish:
-    needs: [stage, e2e, mutation]
+    # `preflight` is a DIRECT dependency on purpose: the release step reads the
+    # channel from `needs.preflight.outputs.kind`, and the `needs` context only
+    # exposes the outputs of the direct dependencies (#1443). Without it the
+    # channel arrived empty and an RC published as a stable release.
+    needs: [preflight, stage, e2e, mutation]
     # La imagen ya la construyó y empujó `stage`; aquí solo se promueve su
     # digest (la arquitectura ARM64 se conserva, la misma que consume `e2e`,
     # #800).
