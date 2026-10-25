@@ -173,20 +173,77 @@ jobs:
         # reloj, y el sobre registra esa fecha (BP #1324).
         run: python scripts/check_mutation.py shard-session-*.sqlite --shards 10 --policy-date "$(date -u +%F)"
 
-  e2e:
-    # Blocking Playwright smoke against the just-published image.
-    # Runs between preflight (provenance + CI verdict on the tip) and
-    # publish; publish depends on this job (`needs: e2e`), so a red smoke
-    # holds the release and the tag is not promoted to the registry until
-    # the image passes end-to-end on the published artifact. By the time
-    # this job runs the image exists in ghcr.io (preflight is green).
-    #
-    # Image-pull path: preflight validated tag provenance, so the tag is
-    # well-formed; this job only re-runs that on the publishing runner to
-    # catch a regional mirror mismatch. It uses the GITHUB token because
-    # ghcr.io treats PAT and `GITHUB_TOKEN` access as distinct grants on
-    # a public package.
+  stage:
+    # #1441: the release image is pushed BEFORE the smoke, but WITHOUT the
+    # release tag. This job resolves its digest and hands it to `e2e`, which
+    # runs `name@sha256`. `publish` promotes that same digest under the
+    # release tag once the smoke is green. The tag is an alias of the digest,
+    # never the identity (`docs/11-releases.md`).
     needs: preflight
+    # ARM64 hospedado: la imagen que este job construye es la que consumen
+    # `e2e` y `publish`, así que la arquitectura se conserva (#800).
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    concurrency:
+      group: release-stage-${{ github.ref }}
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/stage.txt \
+            --runner "${{ runner.name }}"
+
+      - name: Recheck tag provenance on the staging runner
+        run: ./scripts/release-preflight.sh "${GITHUB_REF_NAME}"
+
+      - name: Build and push the release image without the release tag
+        id: push
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          set -euo pipefail
+          image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
+          printf '%s' '${{ github.token }}' |
+            docker login ghcr.io -u '${{ github.actor }}' --password-stdin
+          # The staging tag is transport, not identity: nothing consumes it and
+          # it never carries the release name. The identity is the digest,
+          # resolved right after the push.
+          staging="${image}:staged-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          docker build --file app/Dockerfile --tag "$staging" app
+          docker push "$staging"
+          reference=$(docker inspect --format='{{index .RepoDigests 0}}' "$staging")
+          printf 'image=%s\n' "${reference%@*}" >>"$GITHUB_OUTPUT"
+          printf 'digest=%s\n' "${reference##*@}" >>"$GITHUB_OUTPUT"
+
+  e2e:
+    # Blocking Playwright smoke against the staged image, by digest (#1441).
+    # `stage` pushed the image and resolved its digest; this job pulls and
+    # runs `name@sha256`, the exact bytes `publish` later promotes under the
+    # release tag. `publish` depends on this job (`needs: e2e`), so a red
+    # smoke holds the release and the tag is not created until the image
+    # passes end-to-end.
+    #
+    # Image-pull path: the digest comes from the job that pushed the image, so
+    # there is no tag to move; this job only re-runs the pull on the E2E
+    # runner to catch a regional mirror mismatch. It uses the GITHUB token
+    # because ghcr.io treats PAT and `GITHUB_TOKEN` access as distinct grants
+    # on a public package.
+    needs: stage
     # ARM64 hospedado: la imagen que este job consume la publica `publish`, que
     # corre en la misma etiqueta, así que la arquitectura se conserva (#800).
     runs-on: ubuntu-24.04-arm
@@ -211,15 +268,15 @@ jobs:
             --binaries .github/tooling/e2e.txt \
             --runner "${{ runner.name }}"
 
-      - name: Pull the published image
+      - name: Pull the staged image by digest
         env:
-          IMAGE: ghcr.io/${{ github.repository }}
+          IMAGE: ${{ needs.stage.outputs.image }}
+          DIGEST: ${{ needs.stage.outputs.digest }}
         run: |
           set -euo pipefail
-          image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
           printf '%s' '${{ github.token }}' |
           docker login ghcr.io -u '${{ github.actor }}' --password-stdin
-          docker pull "${image}:${GITHUB_REF_NAME}"
+          docker pull "${IMAGE}@${DIGEST}"
 
       - name: Generate the E2E signing secret
         run: |
@@ -230,7 +287,8 @@ jobs:
 
       - name: Start the app container
         env:
-          IMAGE: ghcr.io/${{ github.repository }}
+          IMAGE: ${{ needs.stage.outputs.image }}
+          DIGEST: ${{ needs.stage.outputs.digest }}
         run: |
           set -euo pipefail
           # Docker preflight (scripts/check_workflows.py rule 5): a wedged
@@ -242,11 +300,10 @@ jobs:
             echo "A hung daemon turns this job into a 20-minute silent timeout; fail fast instead."
             exit 1
           fi
-          image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
           docker run -d --name test-app -p 8000:8000 \
             -e DATABASE_URL="sqlite+aiosqlite:///./test.db" \
             -e SECRET_KEY="$E2E_SECRET_KEY" \
-            "${image}:${GITHUB_REF_NAME}"
+            "${IMAGE}@${DIGEST}"
           # Wait for the app to be ready. Up to 30s — uvicorn is a slow-start
           # service on a cold sqlite+aiosqlite bootstrap.
           for i in $(seq 1 30); do
@@ -286,9 +343,10 @@ jobs:
         run: docker stop test-app || true
 
   publish:
-    needs: [e2e, mutation]
-    # La arquitectura de la imagen es la del runner: se conserva ARM64 en la
-    # etiqueta hospedada, la misma que consume `e2e` (#800).
+    needs: [stage, e2e, mutation]
+    # La imagen ya la construyó y empujó `stage`; aquí solo se promueve su
+    # digest (la arquitectura ARM64 se conserva, la misma que consume `e2e`,
+    # #800).
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 45
     concurrency:
@@ -331,27 +389,33 @@ jobs:
           printf '%s' '${{ github.token }}' |
             docker login ghcr.io -u '${{ github.actor }}' --password-stdin
 
-      - name: Build the release image
-        id: build
-        env:
-          IMAGE: ghcr.io/${{ github.repository }}
-        run: |
-          set -euo pipefail
-          image=$(printf '%s' "$IMAGE" | tr '[:upper:]' '[:lower:]')
-          docker build --file app/Dockerfile --tag "${image}:${GITHUB_REF_NAME}" app
-          printf 'image=%s\n' "$image" >>"$GITHUB_OUTPUT"
-
-      - name: Push the image and record its digest
+      - name: Promote the staged digest to the release tag
         id: push
         env:
-          IMAGE: ${{ steps.build.outputs.image }}
+          IMAGE: ${{ needs.stage.outputs.image }}
+          DIGEST: ${{ needs.stage.outputs.digest }}
         run: |
           set -euo pipefail
+          # The digest is the artifact identity. The promotion re-tags this
+          # exact digest; it never rebuilds, because a rebuild is a different
+          # digest. The bytes are the ones the E2E smoke already ran.
+          docker pull "${IMAGE}@${DIGEST}"
+          docker tag "${IMAGE}@${DIGEST}" "${IMAGE}:${GITHUB_REF_NAME}"
           docker push "${IMAGE}:${GITHUB_REF_NAME}"
-          digest=$(docker inspect --format='{{index .RepoDigests 0}}' "${IMAGE}:${GITHUB_REF_NAME}")
+          pushed=""
+          while IFS= read -r line; do
+            case "$line" in
+              Digest:*) pushed=$(printf '%s' "${line#Digest:}" | tr -d '[:space:]') ;;
+            esac
+          done <<EOF
+          $(docker buildx imagetools inspect "${IMAGE}:${GITHUB_REF_NAME}")
+          EOF
+          if [ "$pushed" != "$DIGEST" ]; then
+            echo "::error::el tag publica ${pushed:-<sin digest>} y el smoke probó ${DIGEST}"
+            exit 1
+          fi
+          digest="${IMAGE}@${DIGEST}"
           printf 'digest=%s\n' "$digest" >>"$GITHUB_OUTPUT"
-          # The digest is the artifact identity. Promotion re-tags this exact
-          # digest; it never rebuilds, because a rebuild is a different digest.
           {
             printf '### Release artifact\n\n'
             printf '| Field | Value |\n|---|---|\n'

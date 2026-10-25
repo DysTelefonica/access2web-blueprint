@@ -174,7 +174,8 @@ El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `c
 
 CI solo descarga lo que tiene una identidad fija:
 
-- **Imágenes de contenedor** (`services.image`, `driver-opts: image=…` de buildx, `docker run|pull|build`): por digest `@sha256:…`. La etiqueta va en un comentario junto al digest, para que un humano sepa a qué versión corresponde.
+- **Imágenes de contenedor** (`services.image`, `driver-opts: image=…` de buildx, `docker run|pull|build`): por digest `@sha256:…`. La etiqueta va en un comentario junto al digest, para que un humano sepa a qué versión corresponde. Una referencia con etiqueta plantillada (`${imagen}:${TAG}`) tampoco vale: es mutable por construcción.
+- **La imagen propia de release**: el job `stage` la empuja sin la etiqueta de release y resuelve su digest; el smoke `e2e` y la promoción `publish` la consumen por `nombre@sha256`, y la etiqueta de release es un alias del digest (#1441).
 - **Herramientas**: la versión exacta en un lock (`app/requirements-dev.lock` con hashes para Python, `e2e/package-lock.json` para Playwright). `npx playwright` se ejecuta siempre dentro de `e2e/`, donde el lock manda; desde la raíz `npx` descarga la última release.
 - **Actions**: SHA completo con el tag como comentario (`# v7.1.0`).
 
