@@ -75,6 +75,7 @@ Marque `required` como check requerido en la protección de rama.
 | `dependencies` | No | Grafo `{downstream: [upstream, ...]}` para aceptar skips en cascada cuando algún upstream está en `accepted_skips` (#853) |
 | `docs_only_lane` | No | Lane condicional: `event`, `gate_job`, `output` y `skips`. El job `gate_job` debe publicar `output` = `"true"` en `event`; si no, esos skips no se aceptan (#857) |
 | `marker_lanes` | No | Lista de lanes condicionales con la misma forma que `docs_only_lane` más `equals` opcional: el lane acepta sus `skips` solo si el marker de `gate_job.output` vale exactamente `equals` en `event` (#863) |
+| `state_dependent_gates` | No | Lista de gates cuyo veredicto depende de estado externo (HR-39). La lee el gate de política de workflows del **mismo** fichero: cada entrada declara `name`, `command`, `pr_workflow`, `pr_job`, `manifests`, `scheduled_workflow` y `alert_command` |
 | `relaxation` | Solo al relajar | Objeto con `reason` y `reference`, ambos cadenas no vacías |
 
 `accepted_skips` es obligatoria en cada evento declarado. Un evento que la

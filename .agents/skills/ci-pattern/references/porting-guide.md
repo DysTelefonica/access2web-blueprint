@@ -116,6 +116,21 @@ Fase de lectura pura: ningún cambio de código, workflow ni gobernanza.
   edición. Previene C5: los workspaces de CI pertenecen al runner; editar en
   ellos compite con el runner sobre el mismo working tree.
 
+- **G0.6 — La página «dónde trabajo» (#1201).** El consumer escribe
+  `docs/codebase/where-to-work.md` con una fila por tarea canónica en la forma
+  «lee → toca → prueba» y una fila `local` con su índice y sus skills
+  obligatorias. El asset `assets/where-to-work/check_where_to_work.py` mide
+  **presencia y deriva**: que la página exista, que tenga las filas `form`,
+  `ci`, `schema` y `local`, que cada fila declare las tres columnas y que cada
+  ruta citada exista en el repo. No juzga la prosa. La plantilla está en
+  `assets/where-to-work/templates/where-to-work.md`.
+
+  ```yaml
+  - name: La página dice dónde trabajar (#1201)
+    run: >
+      python3 .agents/skills/ci-pattern/assets/where-to-work/check_where_to_work.py .
+  ```
+
 ### Cableado del preflight de tooling por job (G0.5)
 
 El censo de la fase 0 no se queda en un inventario: se cablea. TODO job
@@ -369,12 +384,15 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    el contrato de adopción (la identidad del patrón no es autodeclarada).
 3. Declare en `pattern_paths` los artefactos que el patrón instala. El gate
    verifica EN PROCESO el manifiesto de gobierno `.governance-manifest.json`
-   (existencia y sha256 de cada fichero, con las mismas funciones de
+   (existencia y sha256 gobernado de cada fichero, con las mismas funciones de
    `ci-pattern verify`): todo `pattern_path` debe estar cubierto por el
    manifiesto y todo artefacto de gobernanza del árbol o de las
    instantáneas — workflows, CODEOWNERS, dependabot, `.pre-commit-config.yaml`,
    `.husky/`, `lefthook.yml`, `.github/*.json` — que no esté en el manifiesto
-   o inventariado es residual y el gate lo nombra uno a uno.
+   o inventariado es residual y el gate lo nombra uno a uno. Los workflows se
+   sellan NORMALIZADOS (`schema_version: 2`, #1199): el hash es el del
+   contenido con cada pin de `uses:` a un marcador fijo, de modo que un bump de
+   Dependabot no los desalinea y un cambio de lógica sí.
 4. Registre la evidencia del PR de sustitución en
    `docs/adoption/governance-replacement-pr.md` y declárela en `evidence.path`
    de la fase: el gate también la comprueba.

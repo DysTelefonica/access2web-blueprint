@@ -35,7 +35,30 @@ MANIFEST_NAME = ".governance-manifest.json"
 ADOPTION_CONTRACT_NAME = ".github/ci-pattern-adoption.json"
 ADOPTION_SCHEMA_VERSION = 1
 ADOPTION_PHASES = 7  # fases 0..6 del porting-guide (5 = docs, #279)
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+#: Versiones del manifiesto que `manifest seal` sabe migrar (#1199). El sello
+#: cambia de formato porque los workflows se sellan normalizados.
+LEGACY_SCHEMA_VERSIONS = (1,)
+
+#: Los workflows se sellan sobre su contenido NORMALIZADO (#1199): la
+#: referencia pineada de cada `uses:` (y su comentario de versión) es un dato
+#: que Dependabot cambia por diseño; la lógica del workflow no lo es.
+WORKFLOW_DIR = ".github/workflows/"
+#: Una clave YAML cuyo valor es un bloque escalar (`run: |`, `if: >`, ...): lo
+#: que va dentro NO es YAML, es el texto que el runner ejecuta. Normalizar una
+#: línea de ahí sería tragarse carga útil y dejaría de sellar la lógica.
+BLOCK_SCALAR_RX = re.compile(
+    r"^(?P<indent>[ \t]*)(?:-[ \t]+)?[^\s#][^:]*:[ \t]*[|>][-+0-9]*[ \t]*(?:#.*)?$"
+)
+#: La clave `uses:` con su pin. El comentario exige un espacio delante de `#` y
+#: no admite nada detrás: solo la forma `v1.2.3` de una versión. Un comentario
+#: con otra forma no se normaliza, y entonces el sha sigue dentro del sello.
+WORKFLOW_USES_RX = re.compile(
+    r"^(?P<indent>[ \t]*)(?P<dash>-[ \t]+)?uses:[ \t]+"
+    r"(?P<action>[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+)@(?P<sha>[0-9a-f]{40})"
+    r"(?P<comment>[ \t]+#[ \t]*v?[\w.\-]*[ \t]*)?$"
+)
+PIN_MARKER = "@<PIN>"
 
 EXIT_OK = 0
 EXIT_FINDINGS = 1
@@ -143,7 +166,14 @@ class ParamsFileError(Exception):
 # ---------------------------------------------------------------------------
 
 
-def load_manifest(repo):
+def load_manifest(repo, allow_legacy=False):
+    """El manifiesto de gobierno, leído y validado.
+
+    Solo se acepta el formato vigente. `allow_legacy=True` lo usa `manifest
+    seal`, que es la vía de migración: un manifiesto de formato viejo se puede
+    re-sellar al nuevo, pero ningun gate lo mide (HR-3: un formato que el gate
+    no entiende no puede pasar por conforme).
+    """
     path = Path(repo) / MANIFEST_NAME
     if not path.is_file():
         raise MissingResourceError(
@@ -156,9 +186,13 @@ def load_manifest(repo):
         manifest = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise MissingResourceError(f"manifest: {path} ilegible o corrupto ({exc}).") from exc
-    if not isinstance(manifest, dict) or manifest.get("schema_version") != SCHEMA_VERSION:
+    version = manifest.get("schema_version") if isinstance(manifest, dict) else None
+    accepted = (SCHEMA_VERSION,) if not allow_legacy else (SCHEMA_VERSION, *LEGACY_SCHEMA_VERSIONS)
+    if version not in accepted:
         raise MissingResourceError(
-            f"manifest: schema_version debe ser {SCHEMA_VERSION}; revise {path}."
+            f"manifest: schema_version debe ser {SCHEMA_VERSION}; revise {path}. "
+            "El formato del sello cambió (#1199): los workflows se sellan "
+            f"normalizados. Re-selle el manifiesto con: ci-pattern manifest seal {repo}"
         )
     return manifest
 
@@ -177,6 +211,65 @@ def sha256_file(path):
     """
     digest = hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
     return f"sha256:{digest}"
+
+
+def _indent_of(line):
+    """Los espacios iniciales de una línea."""
+    return len(line) - len(line.lstrip(" \t"))
+
+
+def normalize_workflow_content(text):
+    """El contenido de un workflow con cada pin de `uses:` a un marcador fijo (#1199).
+
+    Solo se normaliza una clave YAML `uses:`: la referencia `owner/repo@<sha de 40
+    hex>` y un comentario final de versión (` # v1.2.3`, con espacio delante del
+    `#` y nada detrás). El NOMBRE de la action se conserva: cambiar que action se
+    usa sigue cambiando el sello, que es lo que el guardián tiene que ver.
+
+    Dos cosas NO se normalizan, y por eso el sello sigue viendo la lógica:
+
+    - lo que va dentro de un bloque escalar (`run: |`): es shell, no YAML, y
+      tragar sus lineas dejaria una carga util fuera del sello;
+    - un `uses:` con otra forma de pin: una etiqueta en vez de un sha (el
+      patron exige pins de 40 hex, HR-26), un `uses:` local
+      (`./.github/actions/...`, cuya ruta es logica) o un comentario que no es
+      una version (`@<sha>#algo` sin espacio, o `# lo que sea`).
+    """
+    def swap(match):
+        dash = match.group("dash") or ""
+        return f"{match.group('indent')}{dash}uses: {match.group('action')}{PIN_MARKER}"
+
+    out = []
+    block_indent = None
+    for line in text.split("\n"):
+        if block_indent is not None:
+            # Dentro del bloque escalar: el contenido no es YAML.
+            if line.strip() == "" or _indent_of(line) > block_indent:
+                out.append(line)
+                continue
+            block_indent = None
+        block = BLOCK_SCALAR_RX.match(line)
+        if block:
+            block_indent = len(block.group("indent"))
+        out.append(WORKFLOW_USES_RX.sub(swap, line))
+    return "\n".join(out)
+
+
+def sha256_governed(path, rel):
+    """sha256 del contenido GOBERNADO: los workflows se sellan normalizados (#1199).
+
+    Un bump de Dependabot cambia el sha y el comentario de version de un
+    `uses:`; con el contenido normalizado el sello no se mueve y el gate no
+    bloquea un PR sin defecto. Cualquier otro cambio del workflow (steps, run,
+    permissions, if, needs) sigue cambiando el hash y sigue rompiendo el sello.
+    """
+    if not str(rel).replace("\\", "/").startswith(WORKFLOW_DIR):
+        return sha256_file(path)
+    raw = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    raw = normalize_workflow_content(
+        raw.decode("utf-8", "surrogateescape")
+    ).encode("utf-8", "surrogateescape")
+    return "sha256:" + hashlib.sha256(raw).hexdigest()
 
 
 # ---------------------------------------------------------------------------
@@ -711,7 +804,7 @@ def verify_repo(repo, slice_canonical=None):
         if not target.is_file():
             findings.append(("files", "missing", f"{rel} está en el manifiesto pero no existe en el repo."))
             continue
-        actual = sha256_file(target)
+        actual = sha256_governed(target, rel)
         if actual != expected:
             findings.append(
                 (
@@ -993,7 +1086,7 @@ def cmd_manifest_show(args):
 
 
 def cmd_manifest_seal(args):
-    """`manifest seal <repo> [--out <ruta>]`: re-sella el manifiesto (#1172).
+    """`manifest seal <repo> [--out <ruta>] [--reeseal <ruta>...]`: re-sella el manifiesto (#1172).
 
     Recalcula el sha256 de cada fichero declarado en `files` y de cada bloque
     de slice declarado en `slice_blocks`, y escribe el manifiesto re-sellado.
@@ -1008,10 +1101,17 @@ def cmd_manifest_seal(args):
     `governance-seals` para publicar el manifiesto re-sellado como artefacto
     (sin push automático).
 
-    Salida: 0 sellado · 1 algo declarado no existe en el árbol · 2 uso inválido
-    o manifiesto ausente (3 si el manifiesto no está).
+    `--reeseal <ruta>` declara que esta operación cambia ese fichero, así que
+    su hash viejo no se verifica. Sin eso, al MIGRAR de un formato de sello a
+    otro (#1199) se comprobarían los hashes del formato viejo y un fichero
+    cuya deriva se quiso esconder no podria pasar como re-sellado.
+
+    Salida: 0 sellado · 1 algo declarado no existe en el árbol, o una migración
+    con deriva sin declarar · 2 uso inválido o manifiesto ausente (3 si el
+    manifiesto no está).
     """
     out_path = None
+    reseal = []
     positional = []
     index = 0
     while index < len(args):
@@ -1022,6 +1122,12 @@ def cmd_manifest_seal(args):
             out_path = args[index + 1]
             index += 2
             continue
+        if arg == "--reeseal":
+            if index + 1 >= len(args):
+                raise UsageError("manifest seal: --reeseal requiere una ruta.")
+            reseal.append(args[index + 1])
+            index += 2
+            continue
         if arg.startswith("--"):
             raise UsageError(f"manifest seal: opción no reconocida: {arg}")
         positional.append(arg)
@@ -1030,7 +1136,7 @@ def cmd_manifest_seal(args):
         raise UsageError(
             "manifest seal requiere exactamente un argumento: <repo> [--out <ruta>].")
     repo = Path(positional[0])
-    manifest = load_manifest(repo)
+    manifest = load_manifest(repo, allow_legacy=True)
     files = manifest.get("files")
     if not isinstance(files, dict) or not files:
         raise UsageError(
@@ -1043,11 +1149,30 @@ def cmd_manifest_seal(args):
             "manifest seal: estos ficheros declarados no existen en el árbol y no "
             "se re-sellan: " + ", ".join(missing), file=sys.stderr)
         return EXIT_FINDINGS
+    if manifest.get("schema_version") != SCHEMA_VERSION:
+        # Migrar de formato cambia la manera de hashear (#1199): antes de
+        # re-sellar, los hashes del formato viejo (en crudo) tienen que cuadrar
+        # con el árbol. Si no cuadran, el manifiesto describe un contenido que no
+        # es el del repo, y firmarlo en el formato nuevo escondería esa deriva.
+        # Los ficheros que esta operación declara que cambia (--reeseal) quedan
+        # fuera de la comprobación: de eso responde quien los declara.
+        drifted = [rel for rel in sorted(files)
+                   if rel not in reseal and sha256_file(repo / rel) != files[rel]]
+        if drifted:
+            print(
+                "manifest seal: no se migra un manifiesto desalineado: "
+                + ", ".join(drifted)
+                + " difieren del hash del manifiesto. El contenido del repo manda; "
+                "revisa el cambio antes de re-sellar (o declara el fichero con "
+                "--reeseal si el cambio es de esta operación).",
+                file=sys.stderr)
+            return EXIT_FINDINGS
     sealed = dict(manifest)
+    sealed["schema_version"] = SCHEMA_VERSION
     sealed_files = dict(files)
     changed = []
     for rel in sorted(files):
-        current = sha256_file(repo / rel)
+        current = sha256_governed(repo / rel, rel)
         if current != files[rel]:
             changed.append(rel)
         sealed_files[rel] = current
@@ -2729,7 +2854,7 @@ def _load_host_snapshot(repo, kind, rel):
 def _manifest_identity_findings(repo, declared_paths):
     """Identidad del patrón EN PROCESO (#277): la única fuente es el
     manifiesto de gobierno `.governance-manifest.json`, leído con
-    `load_manifest` y verificado con `sha256_file`, las mismas funciones que
+    `load_manifest` y verificado con `sha256_governed`, las mismas funciones que
     usa `verify`. Devuelve (hallazgos, files del manifiesto). Un gate de
     adopción NUNCA lanza `verify` ni `adoption check` como subproceso: verify
     ejecuta `adoption check` en proceso y el ciclo recursivo tumbo el VPS
@@ -2764,10 +2889,11 @@ def _manifest_identity_findings(repo, declared_paths):
                 f"fase 3: '{rel}' figura en el manifiesto de gobierno pero no "
                 "existe en el árbol (HR-46)")
             continue
-        if sha256_file(target) != manifest_files[rel]:
+        actual = sha256_governed(target, rel)
+        if actual != manifest_files[rel]:
             findings.append(
                 f"fase 3: '{rel}' difiere del sha256 del manifiesto de gobierno "
-                f"(esperado {manifest_files[rel]}, encontrado {sha256_file(target)}); "
+                f"(esperado {manifest_files[rel]}, encontrado {actual}); "
                 "la identidad del patrón no es autodeclarada (HR-46). "
                 f"Re-selle el manifiesto con: ci-pattern manifest seal {repo}")
     # (b) todo artefacto declarado del patrón está cubierto por el manifiesto.
@@ -3098,7 +3224,7 @@ def _check_phase_three(repo, decl, contract):
                 inventory[e["artifact"]] = e
     declared_paths = {r for r in pattern_paths if isinstance(r, str)}
     # Identidad del patrón: el manifiesto de gobierno verificado EN PROCESO
-    # con load_manifest + sha256_file (las mismas funciones de `verify`),
+    # con load_manifest + sha256_governed (las mismas funciones de `verify`),
     # nunca la autodeclaración del contrato de adopción (#277; hallazgo del
     # auditor: listar el workflow legado como pattern_path no puede bastar).
     # NUNCA como subproceso: verify ejecuta adoption check y el ciclo
@@ -3905,6 +4031,36 @@ def _check_docs_links(repo, contract):
     return findings
 
 
+def _check_where_to_work(repo, contract):
+    """HR-77 (#1201): la pagina «donde trabajar», con el modo declarado en el
+    contrato. Sin `docs_where_to_work` el gate NO se mide: la clave es opcional
+    y el comportamiento de cada consumer no cambia por propagar. Con ella,
+    `mode` decide si la pagina se exige (`exigido`, falla la fase 5) o solo se
+    avisa (`aviso`). El modo es dato del contrato, no cableado del consumer."""
+    decl = contract.get("docs_where_to_work") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-77: docs_where_to_work no declarado en el contrato de adopcion; "
+              "la pagina «donde trabajar» no se exige todavia (se activa con "
+              "docs_where_to_work).", file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-77: docs_where_to_work debe ser un objeto con 'mode'"]
+    mode = decl.get("mode")
+    if mode not in ("exigido", "aviso"):
+        return ["HR-77: docs_where_to_work.mode debe ser 'exigido' o 'aviso'"]
+    spec = importlib.util.spec_from_file_location(
+        "check_where_to_work",
+        skill_dir() / "assets" / "where-to-work" / "check_where_to_work.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    findings = gate.check(repo)
+    if mode == "aviso":
+        for finding in findings:
+            print(f"HR-77 AVISO: {finding}", file=sys.stderr)
+        return []
+    return [f"HR-77: {finding}" for finding in findings]
+
+
 def _check_docs_commands(repo, contract):
     """#711 (HR-65): comandos documentados probados. Activacion por DECLARACION
     `docs_commands`: sin ella avisa por stderr y sale 0. La fase 5 solo valida
@@ -4036,6 +4192,7 @@ def _phase_findings(repo, n, decl, contract):
                 + _check_docs_manifest(repo, contract)
                 + _check_docs_links(repo, contract)
                 + _check_docs_commands(repo, contract)
+                + _check_where_to_work(repo, contract)
                 + _check_docs_decisions(repo, contract)
                 + _check_dependabot_config(repo, contract)
                 + _incident_contract_findings(_operating_doc_params(repo)))

