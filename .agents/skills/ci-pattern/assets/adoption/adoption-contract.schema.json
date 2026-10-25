@@ -51,6 +51,15 @@
       "additionalProperties": false,
       "description": "Declaracion explicita (HR-67, #713): sin ella adoption check avisa por stderr y sale 0; con ella la fase 5 exige el formato de cada decision, la sustitucion enlazada, las citas que existen y el indice alineado."
     },
+    "docs_where_to_work": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "$comment": "HR-77 (#1201): modo de la pagina «donde trabajar». 'exigido' hace que la fase 5 falle si la pagina no cuadra; 'aviso' solo avisa. La clave es opcional: sin ella el gate no se mide y el consumer no cambia de modo por propagar.",
+      "properties": {
+        "mode": {"type": "string", "enum": ["exigido", "aviso"], "description": "Si la pagina «donde trabajar» se exige o solo avisa."}
+      }
+    },
     "docs_commands": {
       "type": "object",
       "required": ["cli_name", "cli_command", "job"],

@@ -20,9 +20,11 @@
   gate por casualidad, que es lo que este gate existe para evitar.
 
 Visibilidad: idéntico en público y en privado Free — el script es
-local, no usa la API de GitHub, ni secretos, ni red. Sale 0 si ambos
-sentidos pasan, 1 ante cualquier ausente (y nombra cuáles), 2 si el
-directorio del repo no existe o el input es inválido.
+local, no usa la API de GitHub, ni secretos, ni red. Sale 1 si un doc
+cita una ruta que no existe (enlace muerto, sentido docs -> repo). Un
+módulo sin documentar (sentido repo -> docs) es AVISO y no bloquea:
+sale 0 (#1093, lote 2). Sale 2 si el directorio del repo no existe o
+el input es inválido.
 
 Veredicto fail-closed: una entrada vacía en cualquier lado
 (codeguide sin páginas, code-root sin módulos) es un FAIL — el
@@ -455,11 +457,13 @@ def main(argv: list[str]) -> int:
     missing_in_repo = result["missing_in_repo"]
     missing_in_codeguide = result["missing_in_codeguide"]
 
-    if missing_in_repo or missing_in_codeguide:
+    # #1093 lote 2: un módulo sin documentar es AVISO (no bloquea); una ruta
+    # citada que no existe es un enlace muerto y sigue bloqueando.
+    for module in missing_in_codeguide:
+        print(f"AVISO: repo -> docs: missing {module} (no bloquea)", file=sys.stderr)
+    if missing_in_repo:
         for path in missing_in_repo:
             print(f"FAIL docs -> repo: missing {path}", file=sys.stderr)
-        for module in missing_in_codeguide:
-            print(f"FAIL repo -> docs: missing {module}", file=sys.stderr)
         return 1
 
     pages = sum(1 for _ in (repo / args.docs_path).rglob("*.md"))
