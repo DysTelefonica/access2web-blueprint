@@ -464,7 +464,8 @@ def _install_blocks(run_blocks: list[str]) -> list[str]:
     return [
         block
         for block in run_blocks
-        if "pip install" in block and ("app/requirements-dev.lock" in block or RUNTIME_LOCK in block)
+        if "pip install" in block
+        and ("app/requirements-dev.lock" in block or RUNTIME_LOCK in block)
     ]
 
 
@@ -1335,11 +1336,14 @@ def _runtime_closure(uv: dict) -> set[str]:
     """
     packages = {_normalize(p["name"]): p for p in uv["package"]}
     root = next(
-        p for p in uv["package"]
+        p
+        for p in uv["package"]
         if p.get("source", {}).get("editable") == "." or p.get("source", {}).get("virtual") == "."
     )
     seen: set[str] = set()
-    todo = [(_normalize(d["name"]), tuple(d.get("extra", []))) for d in root.get("dependencies", [])]
+    todo = [
+        (_normalize(d["name"]), tuple(d.get("extra", []))) for d in root.get("dependencies", [])
+    ]
     while todo:
         name, extras = todo.pop()
         if name not in packages:
@@ -1368,7 +1372,9 @@ def test_e2e_smoke_migrates_with_the_runtime_lock_the_image_ships(workflow: dict
     """
     job = workflow["jobs"]["e2e-smoke"]
     runs = [str(step.get("run", "")) for step in job["steps"]]
-    migrate_run = next((run for run in runs if "alembic -c app/migrations/alembic.ini upgrade head" in run), None)
+    migrate_run = next(
+        (run for run in runs if "alembic -c app/migrations/alembic.ini upgrade head" in run), None
+    )
 
     assert migrate_run is not None, "e2e-smoke must run the migrations"
     assert f"pip install --require-hashes --requirement {RUNTIME_LOCK}" in migrate_run, (
@@ -1433,11 +1439,13 @@ def test_health_failure_dumps_container_state_before_failing(workflow: dict) -> 
     `docker ps -a` and `docker logs test-app` must run before the job exits non-zero.
     """
     job = workflow["jobs"]["e2e-smoke"]
-    step = next(s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check")
+    step = next(
+        s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check"
+    )
     run = str(step["run"])
 
     assert "seq 1 60" in run and "sleep 1" in run, "the 60 s /health wait must stay unchanged"
-    failure = run[run.index('if [ "$ready" -ne 1 ]'):]
+    failure = run[run.index('if [ "$ready" -ne 1 ]') :]
     assert "docker ps -a" in failure, "the failure branch must print `docker ps -a`"
     assert "docker logs test-app" in failure, "the failure branch must print the app's logs"
     assert failure.index("docker logs test-app") < failure.index("exit 1"), (
