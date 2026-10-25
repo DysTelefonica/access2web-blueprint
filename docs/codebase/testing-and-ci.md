@@ -13,7 +13,7 @@ Este repo separa el veredicto en **cinco niveles de disparo** sobre tres workflo
 | **PR (pesada)** | `.github/workflows/ci.yml` | `pull_request` con `types: [opened, synchronize, reopened]` (cualquier rama) | `pr-gate`, `quality`, `integration`, `security`, `codeql`, `e2e-smoke`, `required` | Branch protection exige `required` verde. `e2e-smoke` solo corre aquí (issue #876). Los eventos que solo cambian el cuerpo o las etiquetas (`edited`, `labeled`, `unlabeled`) ya no llegan aquí (issue #1368). |
 | **PR (ligera)** | `.github/workflows/pr-gate.yml` | `pull_request` con los seis tipos | `pr-gate` | El gate de cuerpo, etiquetas y walkthrough. `ci.yml` lo invoca (`workflow_call`), así que `required` sigue leyendo su veredicto. |
 | **Post-merge** | `.github/workflows/ci.yml` | `push` a `branches: [main]` (red de seguridad tras el merge) | `quality`, `integration`, `security`, `codeql`, `required` | Misma matriz que la PR, sin `pr-gate` (su `if: github.event_name == 'pull_request'` lo excluye; el `if:` de los heavy jobs acepta `skipped` de `pr-gate`). Issue #857, PR-D. |
-| **Nightly** | `.github/workflows/ci.yml` | `schedule` (`cron: "0 3 * * *"`) | `quality`, `integration`, `security`, `codeql`, `required` | Sin rama; alimenta el snapshot del quality report. |
+| **Nightly** | `.github/workflows/ci.yml` | `schedule` (`cron: "0 3 * * *"`) | `quality`, `integration`, `security`, `codeql`, `e2e-smoke`, `pip-audit`, `required` | Sin rama; alimenta el snapshot del quality report. Ejecuta `e2e-smoke` y `codeql` siempre, sin mirar la superficie del diff (issue #1376). |
 | **Manual** | `.github/workflows/ci.yml` | `workflow_dispatch` | `quality`, `integration`, `security`, `codeql`, `required` | El mismo set de jobs que el push a `main`; útil para reproducir el veredicto sin abrir una PR. |
 | **Release** | `.github/workflows/release.yml` | `push tags: "v*"` | `preflight`, `mutation`, `e2e`, `publish`, `verify` | `verify` cierra la ratchet de provenance. |
 
@@ -71,7 +71,7 @@ El job arranca Postgres como service y aplica el esquema con `alembic upgrade he
 
 ## Level nightly
 
-El trigger `schedule` en `ci.yml` corre los mismos jobs `quality`, `integration`, `security`, `codeql` y `required`. La diferencia operacional es:
+El trigger `schedule` en `ci.yml` corre los mismos jobs `quality`, `integration`, `security`, `codeql`, `e2e-smoke`, `pip-audit` y `required`; `e2e-smoke` y `codeql` corren aquí siempre, aunque la PR no toque su superficie (issue #1376). La diferencia operacional es:
 
 - Sin `pr-gate` (su `if: github.event_name == 'pull_request'` lo excluye): las verificaciones baratas se duplican en `quality`/`workflow gate` así que no hay regresión de cobertura.
 - Snapshots de `scripts/quality_report.py` se acumulan para auditoría de tendencia (no se exponen en este repo; ver `docs/gates.md` §3).
