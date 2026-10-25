@@ -121,5 +121,44 @@ class TestFindings(unittest.TestCase):
             self.assertIn("dependabot", found[0])
 
 
+class TestExtras(unittest.TestCase):
+    """#1193: la declaracion admite groups, ignore, directories y target-branch por ecosystem."""
+
+    CODEQL = {"github-actions": {"directory": ".",
+                                 "groups": {"codeql-action": {"patterns": ["github/codeql-action/*"]}}}}
+
+    def test_a_group_is_emitted_as_the_consumer_writes_it(self) -> None:
+        """Caso de prueba: el grupo codeql-action/* de BP, con el mismo formato que su fichero."""
+        text = render({"ecosystems": self.CODEQL})
+        self.assertIn('    groups:\n      codeql-action:\n        patterns:\n          - "github/codeql-action/*"\n', text)
+
+    def test_ignore_is_emitted(self) -> None:
+        text = render({"ecosystems": {"pip": {"directory": "/", "ignore": [{"dependency-name": "ruff"}, {"dependency-name": "cosmic-ray"}]}}})
+        self.assertIn('    ignore:\n      - dependency-name: "ruff"\n      - dependency-name: "cosmic-ray"\n', text)
+
+    def test_directories_replace_the_single_directory(self) -> None:
+        text = render({"ecosystems": {"github-actions": {"directories": ["/", "/.github/actions/*"]}}})
+        self.assertIn('    directories:\n      - "/"\n      - "/.github/actions/*"\n', text)
+        self.assertNotIn("    directory: ", text)
+
+    def test_target_branch_is_emitted(self) -> None:
+        text = render({"ecosystems": {"npm": {"directory": "/tailwindcss", "target-branch": "main"}}})
+        self.assertIn('    target-branch: "main"\n', text)
+
+    def test_an_unknown_key_is_a_finding_not_a_silent_drop(self) -> None:
+        """HR-3: una clave que el canon no conoce no se descarta en silencio."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), _bp_files())
+            found = findings(repo, {"ecosystems": {"pip": {"directory": "app", "bogus": 1}}})
+            self.assertTrue(any("bogus" in item for item in found), found)
+
+    def test_a_consumer_that_drops_a_declared_group_is_a_finding(self) -> None:
+        """HR-75: el fichero del consumer sin el grupo declarado no coincide."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {CONSUMER_PATH: render({"ecosystems": {"github-actions": {"directory": "."}}})})
+            found = findings(repo, {"ecosystems": self.CODEQL})
+            self.assertTrue(found, found)
+
+
 if __name__ == "__main__":
     unittest.main()

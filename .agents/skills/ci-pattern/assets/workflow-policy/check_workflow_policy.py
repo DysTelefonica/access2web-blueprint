@@ -816,6 +816,38 @@ def _paths_cover(manifests: list[str], patterns: list[str]) -> list[str]:
     return uncovered
 
 
+_MARKER_IF = re.compile(
+    r"needs\.([A-Za-z0-9_-]+)\.outputs\.([A-Za-z0-9_]+)\s*(?:!=\s*'false'|==\s*'true')")
+
+
+def _marker_gate(pr_job, jobs: dict, workflows: list[tuple[str, dict]]):
+    """#1192: el `if:` del pr_job compara un marcador de salida de un job de
+    primer nivel que lo publica (en `outputs:` del job, o en
+    `workflow_call.outputs` del workflow reutilizable local que llama).
+    Equivale a `paths:`: el marcador es funcion del diff, y el `schedule` del
+    gate sigue corriendo sin filtro. Devuelve (gate, marcador) o None."""
+    cond = pr_job.get("if") if isinstance(pr_job, dict) else None
+    if not isinstance(cond, str):
+        return None
+    m = _MARKER_IF.search(cond)
+    if m is None:
+        return None
+    gate_id, marker = m.groups()
+    gate = jobs.get(gate_id)
+    if not isinstance(gate, dict):
+        return None
+    if marker in (gate.get("outputs") or {}):
+        return gate_id, marker
+    uses = gate.get("uses")
+    if isinstance(uses, str) and uses.startswith("./"):
+        _, called = _find_workflow(workflows, uses)
+        if called is not None:
+            published = (workflow_events(called).get("workflow_call") or {}).get("outputs") or {}
+            if marker in published:
+                return gate_id, marker
+    return None
+
+
 def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
                                 out: list[str]) -> None:
     """HR-39: un gate cuyo veredicto depende de estado externo mutable va
@@ -860,16 +892,18 @@ def check_state_dependent_gates(workflows: list[tuple[str, dict]], data: dict,
             out.append(f"HR-39: el gate '{name}' no se ejecuta en pull_request en "
                        f"{pr_path}; sin disparador de PR no puede gatear el PR.")
             continue
+        jobs = pr_doc.get("jobs") or {}
+        pr_job = jobs.get(pr_job_id)
         pr_paths = pr_events["pull_request"].get("paths")
         if not isinstance(pr_paths, list) or not pr_paths:
-            out.append(f"HR-39: el gate '{name}' corre en pull_request sin `paths:` "
-                       f"en {pr_path}; bloquea PRs que no tocan los manifiestos.")
+            if _marker_gate(pr_job, jobs, workflows) is None:
+                out.append(f"HR-39: el gate '{name}' corre en pull_request sin `paths:` "
+                           f"en {pr_path}, ni un `if:` con el marcador de un job que lo "
+                           "publica; bloquea PRs que no tocan los manifiestos.")
         else:
             for m in _paths_cover(manifests, pr_paths):
                 out.append(f"HR-39: el gate '{name}' no cubre el manifiesto '{m}' "
                            f"en paths: {pr_paths} ({pr_path}).")
-        jobs = pr_doc.get("jobs") or {}
-        pr_job = jobs.get(pr_job_id)
         if not isinstance(pr_job, dict):
             out.append(f"HR-39: el gate '{name}' declara pr_job='{pr_job_id}' pero "
                        f"ese job no existe en {pr_path}.")
