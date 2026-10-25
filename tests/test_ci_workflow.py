@@ -1279,8 +1279,7 @@ def test_operating_doc_drift_installs_the_import_linter_before_it_measures() -> 
     installs = [i for i, s in enumerate(steps) if "import-linter" in str(s.get("run", ""))]
     assert len(installs) == 1, "the nightly must install the import linter exactly once"
     assert "import-linter==2.15" in steps[installs[0]]["run"], (
-        "the linter is pinned to an exact version, like every other tool of the repo "
-        "(Hard Rule 2)"
+        "the linter is pinned to an exact version, like every other tool of the repo (Hard Rule 2)"
     )
 
     gates = [i for i, s in enumerate(steps) if "adoption check --phase 5" in str(s.get("run", ""))]
@@ -1297,9 +1296,15 @@ def test_operating_doc_drift_declares_the_binaries_it_invokes() -> None:
     # contract has to declare it; an undeclared binary is a hole the preflight
     # cannot see.
     workflows = _find_workflow().parent
-    contract = (workflows.parent / "tooling" / "operating-doc-drift.txt").read_text(encoding="utf-8")
-    declared = {line.strip() for line in contract.splitlines() if line.strip() and not line.startswith("#")}
+    contract = (workflows.parent / "tooling" / "operating-doc-drift.txt").read_text(
+        encoding="utf-8"
+    )
+    declared = {
+        line.strip() for line in contract.splitlines() if line.strip() and not line.startswith("#")
+    }
     drift = yaml.safe_load((workflows / "operating-doc-drift.yml").read_text(encoding="utf-8"))
     invoked = " ".join(str(s.get("run", "")) for s in drift["jobs"]["operating-doc-drift"]["steps"])
     assert "python3" in invoked, "the nightly invokes the canon CLI with python3"
-    assert "python3" in declared, "python3 is invoked by the nightly, so the contract must declare it"
+    assert "python3" in declared, (
+        "python3 is invoked by the nightly, so the contract must declare it"
+    )
