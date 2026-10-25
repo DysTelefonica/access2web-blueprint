@@ -170,6 +170,34 @@ Antes de empujar una PR:
 
 El script es la versión resumida de los steps baratos de `ci.yml::pr-gate` + `ci.yml::quality` (lint, typecheck, suites populated, unit). Incluye el **preflight de tooling** del `pr-gate` (que `git` y `sh` estén presentes, con el contrato declarado en `.github/tooling/pr-gate.txt`): es el primer paso ejecutable de ese job en CI, y en local se invoca con la forma heredada, sin `--runner` (la identidad del runner solo existe en CI; la diferencia queda escrita en `.github/local-ci-parity-policy.json`). Si pasa, la PR no debería gastar minutos de runner en el primer filtro.
 
+## Pines de imágenes y herramientas
+
+CI solo descarga lo que tiene una identidad fija:
+
+- **Imágenes de contenedor** (`services.image`, `driver-opts: image=…` de buildx, `docker run|pull|build`): por digest `@sha256:…`. La etiqueta va en un comentario junto al digest, para que un humano sepa a qué versión corresponde.
+- **Herramientas**: la versión exacta en un lock (`app/requirements-dev.lock` con hashes para Python, `e2e/package-lock.json` para Playwright). `npx playwright` se ejecuta siempre dentro de `e2e/`, donde el lock manda; desde la raíz `npx` descarga la última release.
+- **Actions**: SHA completo con el tag como comentario (`# v7.1.0`).
+
+Dependabot cubre las Actions (`github-actions`), los manifiestos Python de `/app` y el lock de `/e2e` (`npm`). **No cubre los digests de imágenes en los workflows**: esos bumps son manuales, igual que en cadete.
+
+Para refrescar un digest:
+
+```bash
+# Digest del índice multiplataforma que sirve hoy una etiqueta
+docker buildx imagetools inspect moby/buildkit:v0.18.0 --format '{{json .Manifest.Digest}}'
+```
+
+Sustituye el digest en el workflow, deja la etiqueta en el comentario y corre el test de pines. Para Playwright, actualiza el lock de `e2e/` y commitea `e2e/package-lock.json`:
+
+```bash
+# Test de pines de CI (imágenes por digest)
+pytest tests/test_workflow_pins.py
+# Actualización del lock de Playwright
+cd e2e && npm install -D @playwright/test@<versión>
+```
+
+`tests/test_workflow_pins.py` impide que vuelva a entrar un tag sin digest o un `npx` fuera de `e2e/`. No impide que un digest quede viejo: eso es decisión de mantenimiento.
+
 ## Fronteras explícitas
 
 - **No añada un job nuevo a `ci.yml` sin pasar por `scripts/check_workflows.py` y por la política `.github/required-jobs-policy.json`.** Ambos gates validan la matriz y rompen la ratchet si se omite una actualización.

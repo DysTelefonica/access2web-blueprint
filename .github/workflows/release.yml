@@ -264,6 +264,9 @@ jobs:
           npm ci
 
       - name: Install Chromium browser
+        # From e2e/: the Playwright that npx resolves there is the one locked in
+        # e2e/package-lock.json. From the root, npx downloads the latest release.
+        working-directory: e2e
         run: |
           set -euo pipefail
           npx playwright install chromium
@@ -274,7 +277,9 @@ jobs:
           TEST_CONTAINER_NAME: test-app
         run: |
           set -euo pipefail
-          npx playwright test e2e/ \
+          # Locked CLI from e2e/node_modules (installed above), run from the root so the
+          # paths below stay the same. A bare `npx` here would fetch the latest release.
+          ./e2e/node_modules/.bin/playwright test e2e/ \
             --config=e2e/playwright.config.ts
 
       - name: Stop container
