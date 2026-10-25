@@ -145,6 +145,7 @@ class DocumentedStepCase(unittest.TestCase):
             git(origin, "commit", "-m", "tip moved")
 
         shutil.copy(ASSET / "check_required_jobs.py", work / INSTALL_DIR)
+        shutil.copy(ASSET / "build_annotations.py", work / INSTALL_DIR)
         (work / INSTALL_DIR / POLICY_NAME).write_text(
             json.dumps(example_policy() if candidate is None else candidate), encoding="utf-8")
         git(work, "init")
@@ -152,6 +153,8 @@ class DocumentedStepCase(unittest.TestCase):
 
         values = {"NEEDS_JSON": needs_json, "EVENT_NAME": event,
                   "RUN_ATTEMPT": str(run_attempt),
+                  "REPO": "DysTelefonica/consumer", "HEAD_SHA": "0" * 40,
+                  "GH_TOKEN": "test-token",
                   "BASE_REF": base_ref if event == "pull_request" else "",
                   "BASE_SHA": base_sha if event == "pull_request" else ""}
         # Every variable the step declares must be one this suite knows how
@@ -160,7 +163,10 @@ class DocumentedStepCase(unittest.TestCase):
         proc = subprocess.run(
             # The default shell of a GitHub-hosted run step: bash -e.
             ["bash", "-e", "-c", self.script],
-            cwd=work, env={**os.environ, **values, "RUNNER_TEMP": str(runner_temp)},
+            cwd=work, env={**os.environ, **values, "RUNNER_TEMP": str(runner_temp),
+                           # The annotations generator never reaches the network in
+                           # this suite: the API is a closed port, so it degrades.
+                           "GITHUB_API_URL": "http://127.0.0.1:9"},
             capture_output=True, text=True,
         )
         return proc, work
@@ -308,6 +314,45 @@ class ReadmeParityStepTests(DocumentedStepCase):
         proc = self.run_parity_step(grown)
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         self.assertIn("workflow job 'e2e' is not in the policy", proc.stdout)
+
+
+class HeadShaWiringTests(unittest.TestCase):
+    """The annotations must be read for the PR head, not the merge commit."""
+
+    def test_head_sha_reads_the_pull_request_head_with_a_push_fallback(self) -> None:
+        readme = README.read_text(encoding="utf-8")
+
+        self.assertIn(
+            "HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}", readme)
+
+
+class WorkflowTokenAndPermissionsTests(unittest.TestCase):
+    """The token and the permission the generator needs are declared, not assumed.
+
+    Reading the check runs of the PR needs ``checks: read`` and the token of the
+    workflow itself. No PAT and no new secret: the consumer copies the step and
+    it has to work with the permissions the step declares (#1219).
+    """
+
+    def _step_block(self) -> str:
+        """The YAML block of the documented step that runs the gate."""
+        readme = README.read_text(encoding="utf-8")
+        for fence in readme.split("```yaml")[1:]:
+            block = fence.split("```", 1)[0]
+            if "check_required_jobs.py" in block:
+                return block
+        raise AssertionError("the README has no YAML step invoking check_required_jobs.py")
+
+    def test_the_documented_job_declares_the_permission_to_read_checks(self) -> None:
+        block = self._step_block()
+        self.assertIn("permissions:", block)
+        permissions = block.split("permissions:", 1)[1].split("steps:", 1)[0]
+        self.assertIn("checks: read", permissions)
+
+    def test_the_token_is_the_one_of_the_workflow_and_not_a_new_secret(self) -> None:
+        block = self._step_block()
+        self.assertIn("GH_TOKEN: ${{ github.token }}", block)
+        self.assertNotIn("secrets.", block)
 
 
 if __name__ == "__main__":

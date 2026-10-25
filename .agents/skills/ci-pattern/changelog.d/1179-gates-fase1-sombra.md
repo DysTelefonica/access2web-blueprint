@@ -1,4 +1,4 @@
-type: feature
+type: minor
 
 Fase 1 de la propuesta de un job de gates por repo con un veredicto unico (#1179, aprobado por el dueno el 2026-10-24): el job en sombra.
 

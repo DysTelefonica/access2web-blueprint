@@ -9,6 +9,7 @@ compara contra el texto literal que el gate emite.
 
 from __future__ import annotations
 
+import http.client
 import importlib.machinery
 import importlib.util
 import io
@@ -19,6 +20,7 @@ import sys
 import tempfile
 import threading
 import unittest
+import uuid
 from contextlib import redirect_stderr, redirect_stdout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -421,10 +423,16 @@ class DraftPreflightParityTests(unittest.TestCase):
 
     def test_valid_small_draft_passes_both_gates_without_api_or_gh(self):
         api_calls = []
+        ambient_seen = []
+        api_prefix = f"/draft-preflight-{uuid.uuid4().hex}/"
+        ambient_path = f"/ambient-{uuid.uuid4().hex}"
 
         class TrapHandler(BaseHTTPRequestHandler):
             def do_GET(self):  # noqa: N802 — nombre fijado por http.server.
-                api_calls.append(self.path)
+                if self.path == ambient_path:
+                    ambient_seen.append(self.path)
+                if self.path.startswith(api_prefix):
+                    api_calls.append(self.path)
                 self.send_response(500)
                 self.send_header("Content-Length", "0")
                 self.end_headers()
@@ -452,12 +460,32 @@ class DraftPreflightParityTests(unittest.TestCase):
                     "raise SystemExit(99)\n",
                     encoding="utf-8")
                 gh.chmod(0o755)
-                env = dict(os.environ)
+                excluded = {
+                    "BASE_REF", "GH_TOKEN", "GITHUB_API_URL", "GITHUB_EVENT_PATH",
+                    "GITHUB_TOKEN", "GIT_CONFIG_COUNT", "PR_LABELS",
+                }
+                env = {
+                    key: value for key, value in os.environ.items()
+                    if key not in excluded
+                    and not key.startswith("GIT_CONFIG_KEY_")
+                    and not key.startswith("GIT_CONFIG_VALUE_")
+                }
+                git_config = Path(tmp) / "gitconfig"
+                git_config.write_text("", encoding="utf-8")
+                env["GIT_CONFIG_GLOBAL"] = str(git_config)
+                env["GIT_CONFIG_NOSYSTEM"] = "1"
                 env["GITHUB_TOKEN"] = "present-but-unused"
                 env["GITHUB_API_URL"] = (
-                    f"http://127.0.0.1:{server.server_address[1]}")
-                env["PATH"] = f"{gh_bin}{os.pathsep}{env['PATH']}"
-                env.pop("PR_LABELS", None)
+                    f"http://127.0.0.1:{server.server_address[1]}{api_prefix}")
+                env["PATH"] = f"{gh_bin}{os.pathsep}{env.get('PATH', os.defpath)}"
+
+                ambient = http.client.HTTPConnection(
+                    "127.0.0.1", server.server_address[1], timeout=5)
+                try:
+                    ambient.request("GET", ambient_path)
+                    ambient.getresponse().read()
+                finally:
+                    ambient.close()
 
                 canonical_issue = _canonical_issue(body)
                 canonical_size = _canonical_size(repo, labels)
@@ -470,6 +498,7 @@ class DraftPreflightParityTests(unittest.TestCase):
                 self.assertEqual(draft.returncode, 0, draft.stderr)
                 payload = json.loads(draft.stdout)
                 self.assertTrue(payload["clean"])
+                self.assertEqual(ambient_seen, [ambient_path])
                 self.assertEqual(api_calls, [])
                 self.assertFalse(gh_marker.exists())
         finally:

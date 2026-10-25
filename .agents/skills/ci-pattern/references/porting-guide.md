@@ -587,6 +587,11 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   (HR-41) — nunca por heurísticas de listas de runs ni por exención ad-hoc
   de un solo contexto.
 
+- **G4.6 — Imágenes de CI fijadas por digest (opt-in).** Declare
+  `P56_ci_images_gate: on` en `ci-pattern.yaml` y ejecute el gate
+  `assets/ci-images/check_ci_images_pinned.py` en un job de CI; las excepciones
+  van en `P57_ci_image_exceptions` (referencia → motivo). Sin declaración, inerte (HR-78).
+
 Previene C3 en G4.1-G4.3: la receta de trabajo mencionaba una ruta de tests
 inexistente (`tests/test_required_jobs.py`) y el repo equivocado para la wave
 de #1160 (dijo cadete, los ficheros eran de APAP_WEB). Verifique en vivo cada

@@ -2153,5 +2153,69 @@ class WaveSiguienteFreeTests(unittest.TestCase):
         self.assertNotIn("wave futura", skill)
 
 
+class CiImagesGatePhaseTests(unittest.TestCase):
+    """#1264: la fase 4 mide el gate de imágenes solo con P56_ci_images_gate: on."""
+
+    PINNED = "node:20@sha256:" + "a" * 64
+
+    def make_consumer(self, tmp, p56, image="node:20", gate_job=True, required=True):
+        repo = Path(tmp) / "consumer"
+        wf = repo / ".github" / "workflows"
+        wf.mkdir(parents=True)
+        yml = f"jobs:\n  build:\n    runs-on: ubuntu-24.04\n    container: {image}\n    steps:\n      - run: echo ok\n"
+        if gate_job:
+            yml += "  imagenes:\n    runs-on: ubuntu-24.04\n    steps:\n      - run: python3 assets/ci-images/check_ci_images_pinned.py .\n"
+        (wf / "ci.yml").write_text(yml, encoding="utf-8")
+        jobs = ["build"] + (["imagenes"] if required else [])
+        policy = repo / ".github" / "required-jobs-policy.json"
+        policy.write_text(json.dumps({"required_jobs": jobs}), encoding="utf-8")
+        if p56 is not None:
+            (repo / "ci-pattern.yaml").write_text(f"P56_ci_images_gate: {p56}\n", encoding="utf-8")
+        return repo
+
+    def hr78_findings(self, repo):
+        decl = {"gates": [{"gate": name} for name in CLI.ADOPTION_GATES]}
+        return [f for f in CLI._check_gates_phase(repo, decl, {}) if "HR-78" in f]
+
+    def test_absent_or_off_declaration_adds_no_finding(self):
+        self.assertNotIn(CLI.CI_IMAGES_GATE, CLI.ADOPTION_GATES.values())
+        for p56 in (None, "off"):
+            with tempfile.TemporaryDirectory() as tmp:
+                repo = self.make_consumer(tmp, p56, gate_job=False)
+                self.assertEqual(self.hr78_findings(repo), [], p56)
+
+    def test_declared_on_measures_the_consumer(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            found = self.hr78_findings(self.make_consumer(tmp, "on"))
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("check_ci_images_pinned.py", found[0])
+        self.assertIn("rc=1", found[0])
+        self.assertIn("IMAGEN-SIN-DIGEST", found[0])
+
+    def test_on_without_any_job_running_the_gate_is_a_finding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.make_consumer(tmp, "on", image=self.PINNED, gate_job=False)
+            found = self.hr78_findings(repo)
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("ningún job ejecuta el gate", found[0])
+
+    def test_gate_job_missing_from_required_jobs_is_a_finding(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.make_consumer(tmp, "on", image=self.PINNED, required=False)
+            found = self.hr78_findings(repo)
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("el job imagenes no figura en required_jobs", found[0])
+
+    def test_wired_gate_with_pinned_images_is_clean(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self.make_consumer(tmp, "on", image=self.PINNED)
+            self.assertEqual(self.hr78_findings(repo), [])
+
+    def test_invalid_declaration_is_a_usage_error(self):
+        with tempfile.TemporaryDirectory() as tmp, self.assertRaises(CLI.UsageError) as ctx:
+            self.hr78_findings(self.make_consumer(tmp, "maybe"))
+        self.assertIn("P56_ci_images_gate", str(ctx.exception))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

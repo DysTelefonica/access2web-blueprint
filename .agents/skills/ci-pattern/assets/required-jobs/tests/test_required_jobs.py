@@ -26,7 +26,8 @@ POLICY_JOBS = ["lint", "compile", "smoke", "unit", "full"]
 def run_gate(policy: dict, needs: dict | None = None, event: str = "pull_request",
              stdin_text: str | None = None, needs_file: str | None = None,
              policy_bytes: bytes | None = None,
-             stdin_bytes: bytes | None = None) -> subprocess.CompletedProcess:
+             stdin_bytes: bytes | None = None,
+             extra_args: list[str] | None = None) -> subprocess.CompletedProcess:
     """Run the gate as CI does. ``policy_bytes`` and ``stdin_bytes`` feed raw
     bytes, for the inputs that no JSON or text value can express."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -35,6 +36,8 @@ def run_gate(policy: dict, needs: dict | None = None, event: str = "pull_request
             policy_bytes = json.dumps(policy).encode("utf-8")
         policy_path.write_bytes(policy_bytes)
         argv = [sys.executable, str(SCRIPT), "--policy", str(policy_path), "--event", event]
+        if extra_args:
+            argv += extra_args
         if needs_file is not None:
             argv += ["--needs-file", needs_file]
         elif stdin_bytes is None:
@@ -481,6 +484,28 @@ class RelaxationIdentityTests(unittest.TestCase):
              "relaxation": {"reason": "dropped", "reference": "doc"}},
             needs=real_shape(all_success()))
         self.assertNotEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+class ExitCodeContractTests(unittest.TestCase):
+    """#1219 (aviso 2): los codigos de salida que el gate produce son los que
+    el README declara. Un ``--run-attempt`` no numerico es un error de uso
+    (argparse, exit 2); un entero no positivo es una duda (exit 1)."""
+
+    def test_non_numeric_run_attempt_is_a_usage_error(self) -> None:
+        proc = run_gate(base_policy(), all_success(), extra_args=["--run-attempt", "abc"])
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("--run-attempt", proc.stderr)
+
+    def test_non_positive_run_attempt_is_a_doubt(self) -> None:
+        proc = run_gate(base_policy(), all_success(), extra_args=["--run-attempt", "0"])
+        self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+        self.assertIn("run attempt must be a positive integer", proc.stderr)
+
+    def test_readme_documents_the_three_exit_codes(self) -> None:
+        readme = (ASSET / "README.md").read_text(encoding="utf-8")
+        self.assertIn("exit 0", readme)
+        self.assertIn("exit 1", readme)
+        self.assertIn("exit 2", readme)
 
 
 if __name__ == "__main__":

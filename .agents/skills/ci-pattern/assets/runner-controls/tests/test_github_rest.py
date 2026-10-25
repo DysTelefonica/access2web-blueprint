@@ -145,7 +145,9 @@ class RestTests(unittest.TestCase):
         self.server.routes["/repos/o/r"] = (502, "<html>bad gateway</html>")
         with self.assertRaises(GitHubApiError) as ctx:
             github_rest.get_json("repos/o/r")
-        self.assertEqual(str(ctx.exception), "HTTP 502 on GET repos/o/r")
+        message = str(ctx.exception)
+        self.assertTrue(message.startswith("HTTP 502 on GET repos/o/r"), message)
+        self.assertTrue(message.endswith("(falló tras 3 intentos)"), message)
 
     def test_unreachable_api_fails_closed(self) -> None:
         with socket.socket() as probe:

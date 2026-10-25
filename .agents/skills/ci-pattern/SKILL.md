@@ -93,6 +93,7 @@ Fuentes normativas:
 - `references/porting-guide.md` — checklist de pre-vuelo de la adopción, fase
   por fase; su cumplimiento es lo que el GATE DE ADOPCIÓN exige.
 - `references/gate-verdicts.md` — veredicto por gate con evidencia.
+- `references/integrated-tree-evidence.md` — evidencia de que el árbol integrado es el árbol probado.
 - `references/benchmark-gentle-ai.md` — ideas contrastadas de otro CI.
 - `assets/parameters.md` — los parámetros que se extraen por repo.
 - `references/incidents.md` — ejemplo destilado de hotfix y
@@ -103,58 +104,10 @@ Fuentes normativas:
 El adoptador/verificador determinista del patrón vive en `assets/bin/ci-pattern`
 (relativo a la raíz de la skill; se resuelve igual en el catálogo canónico
 `DysTelefonica/team-skills` y en cualquier mirror). Su contrato normativo es
-`references/cli-spec.md`; su salida está diseñada para ser leída por un agente
-(terse, estructurada, accionable). Frases de disparo del usuario: «actualizá el
-sistema de gobernanza», «adoptá el patrón en este repo», «verificá el
-cumplimiento».
-
-Flujo de comandos (la adopción la gobierna `adoption check` sobre el contrato
-del consumer; `adopt` y `update` están retirados):
-
-```bash
-# Forma portable (el binario lleva shebang y modo 100755):
-python3 <skill>/assets/bin/ci-pattern status <repo>
-
-# 1. Estado del repo destino: ¿hay manifiesto? ¿está limpio?
-ci-pattern status <repo>
-
-# 2. Validar los parámetros ANTES de escribir nada (cierra el hueco G3)
-ci-pattern params validate ci-pattern.yaml
-
-# 3. Adopción: documento operativo generado y gate por fases del contrato
-ci-pattern adoption generate-doc <repo> --out docs/ci-pattern-flow.md
-ci-pattern adoption check --phase 5 <repo>
-
-# 3b. Cuando el canon llega por propagación (#1152), el documento operativo lo
-# regenera el propio propagador con el canon que propaga y lo commitea en el
-# mismo commit: el consumer no recibe un canon nuevo con el documento viejo.
-# El comando de arriba es el que se usa cuando el canon cambia SIN
-# propagación (un consumer que adopta el patrón a mano).
-
-# 4. Verificación de cumplimiento tras cualquier cambio
-ci-pattern verify <repo> --json
-
-# 5. Preflight del autor antes de `git push` o `gh pr create` (#865): corre
-# los mismos veredictos que la CI sobre el PR abierto (rama, cuerpo,
-# enlace a la issue, HR-64 si hay política y la fase 5
-# de docs), reusando los gates en proceso. Sin red cuando se omite
-# ``--issue`` y ``--with-adoption``. Salida: texto del gate prefijado por
-# ``[<gate>]``; ``--json`` para máquinas. Exit 1 con el mismo texto que el
-# gate emite si hay hallazgos.
-ci-pattern pr preflight --pr-body body.md --branch $(git rev-parse --abbrev-ref HEAD)
-ci-pattern pr preflight --pr-body body.md --issue 865 --repository DysTelefonica/team-skills --token "$GITHUB_TOKEN"
-
-# 5b. Modo borrador API-free (#1113): exige --base y admite --label repetible.
-# Reusa los gates locales de cuerpo y tamaño; no llama a la API, a gh ni a la red,
-# aunque GITHUB_TOKEN esté presente. Exit 0 exige que ambos gates pasen.
-ci-pattern pr preflight --draft --pr-body body.md --base main --label type:feature
-ci-pattern pr contract --body body.md --label type:feature --number 912   # contrato de PR completo (#912)
-```
-
-Códigos de salida: 0 limpio · 1 hallazgos · 2 uso · 3 recurso ausente. La CLI nunca hace merge, push, ni toca producción, ni borra ficheros,
-ni sobrescribe un fichero modificado localmente sin reportarlo como hallazgo;
-los valores de los parámetros, los conflictos de contenido y la disposición de
-los veredictos siguen siendo juicio humano/IA (§8 de `references/cli-spec.md`).
+`references/cli-spec.md`: §1 lista cada comando con su contrato y sus códigos
+de salida, y §9 da la receta completa de uso (el flujo de comandos, sus
+variantes y las frases de disparo). Su salida está diseñada para ser leída por
+un agente (terse, estructurada, accionable).
 
 ## §2 Hard Rules
 
@@ -509,7 +462,7 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). HR-7 avisa y 
   - **HR-54.10 — retirada (2026-10-23, #1093 R2).** Las secciones obligatorias del consumer (regla 7, `--required-sections`) ya no son gate.
   - **HR-54.11 — Presupuesto de revisión.** El presupuesto limita cómo se corta el trabajo, nunca el código: prohibido quitar comentarios, líneas en blanco, documentación o tests, o comprimir código para caber. Si ningún corte honesto cabe, se entrega el mejor y el mantenedor decide la etiqueta `size:exception` (el campo `size-exception-reason:` ya no existe); borrar un fichero íntegro es caso válido de esa excepción. Los lockfiles generados (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `poetry.lock`, `requirements*.lock`) no cuentan para el presupuesto: los escribe el gestor de paquetes, no quien abre la PR, y no se pueden partir (#1177); ningún otro fichero generado queda fuera. (gate: `assets/pr-size/check_pr_size.py`, 400 líneas; la honestidad del corte es juicio en revisión)
   - **HR-54.12 — Unidad de commit.** Cada commit es una unidad entregable (comportamiento con sus tests y su documentación), convertible en un PR de la cadena. El PR declara su frontera de reversión: qué desaparece al revertirlo. (juicio en revisión, sin gate)
-  - **HR-54.13 — Sincronía con main.** Las ramas publicadas se sincronizan con `git merge origin/main`, nunca con rebase. Un PR solo está listo con CI verde sobre su último commit; si el consumer no ejecuta CI en PRs cuya base no es main, la receta documenta cómo forzarlo (push, no retarget). Una cadena en conflicto con main no declara lista su punta. (juicio en revisión, sin gate; regla 1 de `governed-delivery`)
+  - **HR-54.13 — Sincronía con main.** Las ramas publicadas se sincronizan con `git merge origin/main`, nunca con rebase. Un PR solo está listo con CI verde sobre su último commit; si el consumer no ejecuta CI en PRs cuya base no es main, la receta documenta cómo forzarlo (push, no retarget). Una cadena en conflicto con main no declara lista su punta. (juicio en revisión, sin gate; regla 1 de `governed-delivery`) El propagador de la flota aplica esta regla de forma determinista: tras detectar el retarget del tramo 2 publica un commit normal que conserva el árbol y bloquea la cadena si los `required_checks` del contrato del consumer no están verdes sobre esa cabeza.
   - **HR-54.14 — Checks obligatorios reales.** Los checks obligatorios se leen de la política real del host (`required_checks` y su clase, #303), no de la costumbre. Si su obligatoriedad se desconoce, el PR no está listo para mergear. (juicio en revisión, sin gate)
   - **HR-54.15 — Rama tracker.** Con `tracker_branch` en el contrato del host, el detective post-push exige que el PR mergeado en una rama protegida tenga esa rama como cabeza; un `tracker_branch` vacío falla cerrado. (gate: `assets/runner-controls/check_push_compliance.py`; #333, regla 7)
   - **HR-54.16 — Modelo de cadena.** Hay dos caminos: apilada hacia main (cada PR con su base en el anterior; no exige contrato, y el orden y las bases solo se leen del cuerpo) o rama de feature con PR tracker en borrador (concentra la revisión y exige declarar su rama en el contrato del host). La elección es documented-only, sin gate (HR-34): se juzga en revisión.
@@ -534,6 +487,8 @@ sin atribución de IA, re-ejecución en edited/labeled/unlabeled). HR-7 avisa y 
 - **HR-75 — El consumer `MUST` tener el `.github/dependabot.yml` que genera el canon desde su declaración `dependabot`, un ecosystem por manifiesto.** Dependabot actualiza el **manifiesto**, no el lock (`uv.lock`, `requirements*.lock`): el lock lo regenera el PR que cambia el manifiesto, y un lock atrás hace que el bump no se aplique (el CI instala el lock) y que la imagen del PR lleve una versión distinta de la que instala el CI (`DysTelefonica/access2web-blueprint#1058`: al subir SQLAlchemy a 2.1.6, que dejó de traer `greenlet`, la imagen murió al arrancar y `e2e-smoke` dio rojo). La dirección —el `directory` de cada ecosystem— es dato del canon y no una copia por consumer: el consumer la declara en su contrato de adopción (`dependabot.ecosystems`) y el canon genera el `.github/dependabot.yml` (`ci-pattern dependabot render <repo>`); la fase 5 compara el fichero con el generado y nombra el ecosystem y el directorio cuando no coinciden. Activación por declaración explícita: sin ella avisa por `stderr` y sale 0, para no romper la adopción previa; con ella, un directorio declarado sin manifiesto, un `directory` que no apunta al manifiesto o un ecosystem que nadie declaró es rojo (HR-3). (decisión del dueño, 2026-10-24; DysTelefonica/team-skills#1182; gate: `assets/dependabot/config.py` (`findings`), `assets/bin/ci-pattern` (`_check_dependabot_config`, `adoption check --phase 5`) y la plantilla `assets/templates/.github/dependabot.yml.tmpl`, con fixtures en `assets/dependabot/tests/test_dependabot_config.py`)
 - **HR-76 — Todo PR que cambie un manifiesto de dependencias `MUST` cambiar su lock.** El manifiesto que declara `[project].dependencies`, `[project].optional-dependencies` o `dependency-groups` y el lock que fija esa resolución (`uv.lock`, `requirements*.lock`, `poetry.lock`) son la misma cadena: el CI instala el lock y la imagen del PR se construye desde el manifiesto, así que un lock atrás hace que el bump no se aplique y que la imagen lleve otra versión (`DysTelefonica/access2web-blueprint#1058`: al subir SQLAlchemy a 2.1.6, que dejó de traer `greenlet`, la imagen murió al arrancar y `e2e-smoke` dio rojo). El gate `assets/deps-chain/check_deps_chain.py` mide la cadena y nombra el manifiesto, el lock que falta y el comando que lo regenera; un manifiesto sin lock a su lado no se mide (avisa y sale 0) y uno ilegible es rojo (fail-closed, HR-3). (decisión del dueño, 2026-10-24; DysTelefonica/team-skills#1181; gate: `assets/deps-chain/check_deps_chain.py`, con fixtures en `assets/deps-chain/tests/test_deps_chain.py`)
 - **HR-77 — El modo de la página «dónde trabajo» `MUST` declararlo el contrato de adopción, no cablearlo en el consumer.** Con la declaración `docs_where_to_work` (`mode`: `exigido` o `aviso`) la fase 5 mide `docs/codebase/where-to-work.md`: que exista, que declare las filas canónicas `form`, `ci`, `schema` y `local`, que cada fila diga lee/toca/prueba y que cada ruta citada exista en el repo. La clave es **opcional**: sin ella el gate no se mide y ningún consumer cambia de comportamiento por propagar (#1201).
+- **HR-78 — Toda imagen que el CI descarga `MUST` ir fijada por digest, y el consumer `MUST` declararlo en su contrato.** El gate `assets/ci-images/check_ci_images_pinned.py` mide `container.image`, `services.<id>.image`, `driver-opts: image=…` de buildx, `docker run|pull|build` dentro de `run:` y `uses: docker://`: toda referencia literal lleva `@sha256:<64 hex>`; una etiqueta que el propio workflow construye es local, así que no se exime en `docker pull`. Activación por declaración explícita en el contrato del consumer: `P56_ci_images_gate` (`off` por defecto) y `P57_ci_image_exceptions` (mapa referencia→motivo, con motivo no vacío). Sin `P56=on` el gate es inerte y ningún consumer cambia de veredicto por propagar; con él, la excepción sin motivo y la excepción que no casa con ninguna referencia son rojas (HR-3), y una referencia no literal (plantilla o variable) se reporta como no verificada, nunca en silencio. (decisión del dueño, 2026-10-25; DysTelefonica/team-skills#1264; gate: `assets/ci-images/check_ci_images_pinned.py`, con tests en `assets/ci-images/tests/test_ci_images_pinned.py`)
+- **HR-79 — Un output de `needs.<job>.outputs` solo existe si `<job>` es dependencia directa de ese job.** El contexto `needs` expone los outputs de las dependencias **directas**: leer el de una transitiva devuelve vacío, sin error, y el workflow queda en verde con el valor equivocado (en `DysTelefonica/access2web-blueprint`, `publish` leía el canal de `preflight` y una RC salía como release estable). El gate `assets/workflow-policy/check_workflow_policy.py` lo mide por job y nombra el workflow, el job que lee, el job leído y sus dependencias reales; la excepción es el marcador de #1192 (un `if:` que compara con `'true'`/`'false'` para filtrar, que lee un job de primer nivel a propósito). (decisión del dueño, 2026-10-25; DysTelefonica/team-skills#1277; gate: `assets/workflow-policy/check_workflow_policy.py`, con tests en `assets/workflow-policy/tests/test_workflow_policy.py`)
 
 ## §3 Decision Gates
 
