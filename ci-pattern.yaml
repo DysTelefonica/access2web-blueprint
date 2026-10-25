@@ -33,3 +33,11 @@ P45_deploy_image: "no aplica: el repositorio no despliega en producción"
 P49_incident_log_dir: docs/incidents
 P50_secrets_manager: GitHub Actions repository secrets
 P51_runners_profile: hosted
+
+# P56: gate de imágenes de CI fijadas por digest (HR-78, canon team-skills#1264).
+# `off` es inerte; con `on` el gate mide los workflows del repositorio y su job
+# tiene que figurar en required_jobs.
+P56_ci_images_gate: on
+# P57: excepciones al gate, referencia -> motivo. Vacío: todas las imágenes
+# literales del repositorio ya van fijadas por digest.
+P57_ci_image_exceptions: {}
