@@ -11,9 +11,10 @@ unversioned downloads out of `.github/workflows/`:
 - the Playwright CLI is invoked only through that lock, never a bare or `npx` copy
   resolved elsewhere.
 
-Out of scope: `app/Dockerfile` (pinned by `test_base_image_pin.py`) and templated
-references such as `${image}:${GITHUB_REF_NAME}`, which are not literal and whose
-pinning is a release decision.
+Out of scope: `app/Dockerfile` (pinned by `test_base_image_pin.py`). A templated
+reference is not literal, so it is not pinned here — but a templated *tag* is a
+mutable reference and is a finding: the release image is consumed by digest
+(`nombre@sha256`, #1441), never by `${image}:${GITHUB_REF_NAME}`.
 """
 
 from __future__ import annotations
@@ -55,6 +56,8 @@ LITERAL_REF_RE = re.compile(
     r"^[a-z0-9][a-z0-9._/-]*(?::[A-Za-z0-9._-]+)?(?:@sha256:[0-9a-f]{64})?$"
 )
 PLAYWRIGHT_RE = re.compile(r"playwright\s+(?:test|install)\b")
+# A templated tag: `${image}:${GITHUB_REF_NAME}` or `$IMAGE:tag`.
+TEMPLATED_TAG_RE = re.compile(r":\$\{|\$[A-Z_][A-Z0-9_]*:")
 
 
 def _workflows() -> list[tuple[str, dict]]:
@@ -131,6 +134,41 @@ def test_every_docker_run_pull_or_build_image_is_pinned_by_digest() -> None:
                 if not DIGEST_RE.search(ref):
                     unpinned.append(f"{name}:{job_name} -> {ref}")
     assert not unpinned, "docker commands with a mutable image tag: " + "; ".join(unpinned)
+
+
+def _docker_templated_refs(run: str, local_builds: set[str]) -> list[str]:
+    """Image references handed to `docker run|pull` that carry a templated tag.
+
+    A templated tag (`name:${TAG}`) is a mutable reference: the tag can move, and
+    the release image was consumed that way before the smoke had published it.
+    """
+    refs = []
+    for line in _logical_lines(run):
+        if not DOCKER_CMD_RE.search(line):
+            continue
+        tokens = [t.strip("\"'") for t in line.split()]
+        for previous, token in zip([""] + tokens[:-1], tokens, strict=True):
+            if previous in NON_IMAGE_FLAGS or token in local_builds:
+                continue
+            if "$" in token and TEMPLATED_TAG_RE.search(token):
+                refs.append(token)
+    return refs
+
+
+def test_no_workflow_consumes_an_image_by_a_templated_tag() -> None:
+    """An image consumed by a templated tag is consumed by a mutable reference (#1441).
+
+    `release.yml` pulled and ran `${image}:${GITHUB_REF_NAME}`: a tag can move, and
+    the E2E smoke ran before `publish` pushed it, so it could certify a stale
+    artifact. The release contract is the digest (`docs/11-releases.md`).
+    """
+    offenders = []
+    for name, doc in _workflows():
+        builds = _local_builds(doc)
+        for job_name, step in _steps(doc):
+            for ref in _docker_templated_refs(str(step.get("run", "")), builds):
+                offenders.append(f"{name}:{job_name} -> {ref}")
+    assert not offenders, "images consumed by a templated tag: " + "; ".join(offenders)
 
 
 def test_npx_runs_only_inside_the_locked_e2e_project() -> None:

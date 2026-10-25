@@ -819,6 +819,10 @@ def test_release_publish_needs_e2e_and_mutation() -> None:
     being shipped is exactly the class of release-time failure the
     `mutation` job exists to catch. `publish` must wait for both, in
     either order, so a red mutation holds the tag.
+
+    Issue #1441 adds `stage`: the job that pushes the image and resolves
+    its digest. `publish` promotes that exact digest, so it cannot promote
+    bytes it did not receive.
     """
     release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
     jobs = release["jobs"]
@@ -827,9 +831,41 @@ def test_release_publish_needs_e2e_and_mutation() -> None:
     # GitHub Actions serialises a list-typed `needs` as a list of strings;
     # the older scalar form is a bare string. Accept both.
     needed = {needs} if isinstance(needs, str) else set(needs)
-    assert needed == {"e2e", "mutation"}, (
-        f"`publish` must depend on `e2e` and `mutation` (issue #857, PR-C1d). "
-        f"Got: {sorted(needed)!r}"
+    assert needed == {"e2e", "mutation", "stage"}, (
+        f"`publish` must depend on `e2e`, `mutation` and `stage` (issue #857, "
+        f"PR-C1d; #1441). Got: {sorted(needed)!r}"
+    )
+
+
+def test_release_e2e_consumes_the_digest_that_the_stage_job_published() -> None:
+    """Issue #1441: the smoke consumes the digest, not the mutable release tag.
+
+    `stage` pushes the image and resolves its digest; `e2e` pulls and runs
+    `name@sha256`, the very bytes `publish` later promotes. A tag can move,
+    and the tag did not exist yet when the smoke ran.
+    """
+    release = yaml.safe_load((_find_workflow().parent / "release.yml").read_text(encoding="utf-8"))
+    jobs = release["jobs"]
+    assert "stage" in jobs, "release.yml must declare a `stage` job (#1441)"
+    e2e_needs = jobs["e2e"]["needs"]
+    needed = {e2e_needs} if isinstance(e2e_needs, str) else set(e2e_needs)
+    assert "stage" in needed, (
+        f"`e2e` must depend on `stage` to read its digest (#1441). Got: {sorted(needed)!r}"
+    )
+    stage = jobs["stage"]
+    assert stage["outputs"]["image"] == "${{ steps.push.outputs.image }}"
+    assert stage["outputs"]["digest"] == "${{ steps.push.outputs.digest }}"
+    e2e_run = "\n".join(str(step.get("run", "")) for step in jobs["e2e"]["steps"])
+    assert 'docker pull "${IMAGE}@${DIGEST}"' in e2e_run, (
+        "`e2e` must pull the release image by digest (#1441)"
+    )
+    assert '"${IMAGE}@${DIGEST}"' in e2e_run, "`e2e` must run the release image by digest (#1441)"
+    publish_run = "\n".join(str(step.get("run", "")) for step in jobs["publish"]["steps"])
+    assert "docker build " not in publish_run, (
+        "`publish` must not rebuild: a rebuild is a different digest (#1441)"
+    )
+    assert 'docker tag "${IMAGE}@${DIGEST}" "${IMAGE}:${GITHUB_REF_NAME}"' in publish_run, (
+        "`publish` must promote the staged digest under the release tag (#1441)"
     )
 
 
