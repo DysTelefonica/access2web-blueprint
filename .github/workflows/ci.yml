@@ -1000,6 +1000,50 @@ jobs:
           set -euo pipefail
           npx playwright test smoke.spec.ts auth.spec.ts
 
+  ci-images:
+    # Gate HR-78 (canon DysTelefonica/team-skills#1264): toda imagen LITERAL que
+    # el CI descarga (container.image, services.<id>.image, driver-opts image=
+    # de buildx, docker run|pull|build y uses: docker://) lleva @sha256:<64 hex>.
+    #
+    # Con P56_ci_images_gate: on la fase 4 exige que el job que ejecuta el gate
+    # figure en required_jobs: la única vía de enforcement en un repositorio
+    # privado con plan Free (HR-72).
+    #
+    # HR-30 (#857 PR-D): el nombre lleva el evento, así el nombre resuelto por
+    # evento es `ci-images (pull_request)`, `ci-images (push)`, etc. — schedule
+    # y workflow_dispatch siguen ejecutando el job (la red de seguridad), pero
+    # el nombre de check que publican ya no es estático.
+    name: ci-images (${{ github.event_name }})
+    # El job corre en los cuatro eventos que la red de seguridad del repo
+    # evalúa: la PR, el post-merge (push a main), el nightly (schedule) y el
+    # manual (workflow_dispatch).
+    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    # Repositorio público: entrada no confiable y runner hospedado. El job no
+    # pide ningún secreto —los PR de fork no lo recibirían y el gate se saltaría
+    # justo donde tiene que ser más duro—, así que mide con el catálogo
+    # vendorizado en .agents/skills/ci-pattern/, la ruta del resto de gates.
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    concurrency:
+      group: gate-ci-images-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    # Lee el árbol local sin red: más de 5 minutos es un cuelgue.
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
+      # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
+      - name: Preflight del contrato de tooling del job
+        run: |
+          sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh \
+            --binaries .github/tooling/ci-images.txt \
+            --runner "${{ runner.name }}"
+
+      - name: Gate de imágenes de CI fijadas por digest (HR-78)
+        run: python3 .agents/skills/ci-pattern/assets/ci-images/check_ci_images_pinned.py .
+
   required:
     # Issue #702: deterministic replacement for the six hand-configured
     # branch-protection checks (quality, pr-gate, pip-audit,
@@ -1025,7 +1069,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, pip-audit, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands, pip-audit-alert]
+    needs: [pr-gate, quality, integration, security, pip-audit, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands, pip-audit-alert, ci-images]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

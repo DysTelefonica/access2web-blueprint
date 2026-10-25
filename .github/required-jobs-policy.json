@@ -90,7 +90,8 @@
     "docs-architecture",
     "governance-seals",
     "docs-commands",
-    "pip-audit-alert"
+    "pip-audit-alert",
+    "ci-images"
   ],
   "state_dependent_gates": [
     {
