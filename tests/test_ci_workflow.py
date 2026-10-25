@@ -447,6 +447,9 @@ KNOWN_PENDING_GATES: tuple[str, ...] = (
 )
 
 
+RUNTIME_LOCK = "app/requirements.lock"
+
+
 def _install_blocks(run_blocks: list[str]) -> list[str]:
     """Run blocks that install the pinned toolchain for `pip install`.
 
@@ -461,7 +464,7 @@ def _install_blocks(run_blocks: list[str]) -> list[str]:
     return [
         block
         for block in run_blocks
-        if "pip install" in block and "app/requirements-dev.lock" in block
+        if "pip install" in block and ("app/requirements-dev.lock" in block or RUNTIME_LOCK in block)
     ]
 
 
@@ -1307,4 +1310,136 @@ def test_operating_doc_drift_declares_the_binaries_it_invokes() -> None:
     assert "python3" in invoked, "the nightly invokes the canon CLI with python3"
     assert "python3" in declared, (
         "python3 is invoked by the nightly, so the contract must declare it"
+    )
+
+
+# --- BP #1456: one dependency set for the app image and the migrations -----------------
+#
+# `app/requirements.lock` is the runtime export of `app/uv.lock`. The image and the
+# e2e-smoke runner install it with --require-hashes; nothing resolves version ranges.
+
+
+def _repo_root() -> Path:
+    return _find_workflow().parents[2]
+
+
+def _normalize(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _runtime_closure(uv: dict) -> set[str]:
+    """Names reachable from the project's runtime dependencies, dev groups excluded.
+
+    Walks `dependencies` and the requested `extra` groups from the editable root
+    package, the same set `uv export --no-dev` emits for this project.
+    """
+    packages = {_normalize(p["name"]): p for p in uv["package"]}
+    root = next(
+        p for p in uv["package"]
+        if p.get("source", {}).get("editable") == "." or p.get("source", {}).get("virtual") == "."
+    )
+    seen: set[str] = set()
+    todo = [(_normalize(d["name"]), tuple(d.get("extra", []))) for d in root.get("dependencies", [])]
+    while todo:
+        name, extras = todo.pop()
+        if name not in packages:
+            continue
+        pkg = packages[name]
+        deps = list(pkg.get("dependencies", []))
+        for extra in extras:
+            deps += pkg.get("optional-dependencies", {}).get(extra, [])
+        if name in seen and not extras:
+            continue
+        seen.add(name)
+        todo.extend((_normalize(d["name"]), tuple(d.get("extra", []))) for d in deps)
+    return seen
+
+
+@pytest.fixture(scope="module")
+def app_dockerfile() -> str:
+    return (_repo_root() / "app" / "Dockerfile").read_text(encoding="utf-8")
+
+
+def test_e2e_smoke_migrates_with_the_runtime_lock_the_image_ships(workflow: dict) -> None:
+    """BP #1456: the runner installs the same hash-pinned runtime lock the image uses.
+
+    The install must come before `alembic upgrade head`. The dev lock must not appear
+    in e2e-smoke at all: the image never sees it, so the job would test another set.
+    """
+    job = workflow["jobs"]["e2e-smoke"]
+    runs = [str(step.get("run", "")) for step in job["steps"]]
+    migrate_run = next((run for run in runs if "alembic -c app/migrations/alembic.ini upgrade head" in run), None)
+
+    assert migrate_run is not None, "e2e-smoke must run the migrations"
+    assert f"pip install --require-hashes --requirement {RUNTIME_LOCK}" in migrate_run, (
+        f"the migrations must run after a hash-verified install of {RUNTIME_LOCK} in the same step"
+    )
+    install_at = migrate_run.index(f"--requirement {RUNTIME_LOCK}")
+    assert install_at < migrate_run.index("alembic -c"), (
+        "the runtime lock must be installed before the migrations run"
+    )
+    assert all("requirements-dev.lock" not in run for run in runs), (
+        "e2e-smoke must not install app/requirements-dev.lock: the image never installs it"
+    )
+
+
+def test_dockerfile_installs_the_same_runtime_lock(app_dockerfile: str) -> None:
+    """BP #1456: the image installs the lock the job validates, not a range resolution."""
+    assert "COPY requirements.lock" in app_dockerfile, "the Dockerfile must copy the runtime lock"
+    assert "pip install --require-hashes --requirement requirements.lock" in app_dockerfile, (
+        "the image must install the runtime lock with --require-hashes"
+    )
+    assert "pip install --no-cache-dir ." not in app_dockerfile, (
+        "the image must not resolve the ranges of pyproject.toml"
+    )
+    assert "app/uv.lock" in app_dockerfile, (
+        "the Dockerfile must name the source of truth for the versions (app/uv.lock)"
+    )
+
+
+def test_runtime_lock_is_the_closure_of_the_declared_uv_lock() -> None:
+    """Drift guard: every pin is the uv.lock version and the set is the runtime closure."""
+    root = _repo_root()
+    uv = tomllib.loads((root / "app" / "uv.lock").read_text(encoding="utf-8"))
+    declared = {_normalize(p["name"]): p["version"] for p in uv["package"]}
+
+    pins: dict[str, str] = {}
+    unhashed: list[str] = []
+    text = (root / RUNTIME_LOCK).read_text(encoding="utf-8").replace("\\\n", " ")
+    for line in text.splitlines():
+        match = re.match(r"^([A-Za-z0-9_.-]+)==(\S+)", line.split("#", 1)[0].strip())
+        if not match:
+            continue
+        name = _normalize(match.group(1))
+        pins[name] = match.group(2)
+        if "--hash=sha256:" not in line:
+            unhashed.append(name)
+
+    assert pins, f"{RUNTIME_LOCK} has no pins"
+    assert not unhashed, f"pins without hashes: {unhashed}"
+    stale = {n: (v, declared.get(n)) for n, v in pins.items() if declared.get(n) != v}
+    assert not stale, f"pins that differ from app/uv.lock (regenerate the lock): {stale}"
+    closure = _runtime_closure(uv)
+    assert set(pins) == closure, (
+        f"runtime lock differs from the uv.lock closure: missing={sorted(closure - set(pins))} "
+        f"extra={sorted(set(pins) - closure)}"
+    )
+
+
+def test_health_failure_dumps_container_state_before_failing(workflow: dict) -> None:
+    """BP #1456: a red /health must leave the container's state in the log.
+
+    The 60 s wait stays as it is (criterion of #876). Only the failure branch changes:
+    `docker ps -a` and `docker logs test-app` must run before the job exits non-zero.
+    """
+    job = workflow["jobs"]["e2e-smoke"]
+    step = next(s for s in job["steps"] if s.get("name") == "Start the app and wait for the health check")
+    run = str(step["run"])
+
+    assert "seq 1 60" in run and "sleep 1" in run, "the 60 s /health wait must stay unchanged"
+    failure = run[run.index('if [ "$ready" -ne 1 ]'):]
+    assert "docker ps -a" in failure, "the failure branch must print `docker ps -a`"
+    assert "docker logs test-app" in failure, "the failure branch must print the app's logs"
+    assert failure.index("docker logs test-app") < failure.index("exit 1"), (
+        "the logs must be printed before the job exits"
     )

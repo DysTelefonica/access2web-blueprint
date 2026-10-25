@@ -24,6 +24,7 @@
 | `app/migrations/env.py` | Runtime Alembic: lee `DATABASE_URL` y aplica `target_metadata`. | Modelos de dominio. |
 | `app/pyproject.toml` | Pins exactos de ruff==0.17.1, mypy==1.13.0, argon2-cffi==25.1.0 y del resto del toolchain (Hard Rule 2). | Configuración de runtime. |
 | `app/requirements-dev.lock` | Lockfile con hashes de la transitiva (Hard Rule 15). | — |
+| `app/requirements.lock` | Lock runtime con hashes, export de `app/uv.lock` sin grupos de desarrollo. Lo instalan la imagen y las migraciones de `e2e-smoke` (BP #1456). | Editarlo a mano: se regenera desde `app/uv.lock`. |
 | `tests/lanzadera/`, `tests/expedientes/` | Suites TDD por módulo. | Generadores de legacy. |
 | `e2e/` | Suite Playwright (F1-F5, 5 fases merged). | Tests unitarios. |
 | `scripts/check_*.py` | Quality gates deterministas (ver `docs/gates.md` §2). | Lógica de aplicación. |
