@@ -516,6 +516,26 @@
     "required": false,
     "consumed_by": ["assets/bin/ci-pattern (gate HR-21 y receta de incidentes)"],
     "description": "Si el registro operativo de incidentes (P49) se versiona en el repo (versioned, por defecto) o es local y no versionado (local-unversioned). Con local-unversioned el gate de fase 5 no lo escanea ni lo exige, y el documento operativo lo describe con esa frase, sin ruta. El post-mortem (parametro 9) se versiona siempre."
+  },
+  {
+    "id": "P56",
+    "name": "ci_images_gate",
+    "type": "enum",
+    "choices": ["off", "on"],
+    "default": "off",
+    "required": false,
+    "consumed_by": ["assets/ci-images/check_ci_images_pinned.py"],
+    "description": "Gate de imagenes de CI fijadas por digest. Con on, toda referencia literal de imagen en los workflows (container, services, buildx image=, docker run/pull/build, docker://) debe llevar @sha256:<64 hex>. Ausente u off es gate inerte (retrocompatibilidad)."
+  },
+  {
+    "id": "P57",
+    "name": "ci_image_exceptions",
+    "type": "map",
+    "value_type": "string",
+    "default": {},
+    "required": false,
+    "consumed_by": ["assets/ci-images/check_ci_images_pinned.py"],
+    "description": "Excepciones al gate de imagenes por digest (solo con P56=on), mapa referencia→motivo. La referencia va tal cual aparece en el workflow, sin digest. Motivo vacio, o excepcion que no casa con ninguna referencia, es hallazgo del gate."
   }
   ]
 }

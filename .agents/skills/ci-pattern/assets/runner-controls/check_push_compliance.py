@@ -287,8 +287,8 @@ def check_tree_integrity(repo: str, detail: dict, commit_sha: str) -> list[str]:
     comparison = gh_json(f"repos/{repo}/compare/{base}...{head_sha}")
     if not isinstance(comparison, dict) or comparison.get("status") not in ("ahead", "identical"):
         return []
-    merge_tree = _commit_tree(merge)
-    head_tree = _commit_tree(gh_json(f"repos/{repo}/commits/{head_sha}"))
+    merge_tree = commit_tree_sha(merge)
+    head_tree = commit_tree_sha(gh_json(f"repos/{repo}/commits/{head_sha}"))
     if merge_tree is None or head_tree is None or merge_tree == head_tree:
         return []
     return [
@@ -307,8 +307,16 @@ def _first_parent(commit: object) -> str | None:
     return sha if isinstance(sha, str) and SHA_RE.match(sha) else None
 
 
-def _commit_tree(commit: object) -> str | None:
-    """Arbol de un commit de la API: la forma real es commit.tree.sha (#928)."""
+def commit_tree_sha(commit: object) -> str | None:
+    """Arbol de un commit de la API: la forma real es commit.tree.sha (#928).
+
+    Lector COMPARTIDO (#1265): lo usan el detective post-push
+    (``check_tree_integrity``) y el merge gobernado
+    (``check_governed_merge``), para que no haya dos implementaciones de «el
+    arbol de un commit». ``None`` cuando la forma no vale: el que llama decide
+    si eso es duda (el detective falla abierto) o fallo cerrado (el veredicto
+    del merge, que nunca informa de una coincidencia que no ha medido).
+    """
     tree = ((commit.get("commit") or {}).get("tree") or {}).get("sha") if isinstance(commit, dict) else None
     return tree if isinstance(tree, str) and SHA_RE.match(tree) else None
 

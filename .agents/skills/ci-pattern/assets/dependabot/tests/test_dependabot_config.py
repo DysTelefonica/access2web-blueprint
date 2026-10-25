@@ -272,5 +272,100 @@ class TestCoverage(unittest.TestCase):
             self.assertTrue(any("docker" in item for item in found), found)
 
 
+class TestHardening(unittest.TestCase):
+    """#1221: el endurecimiento de HR-75, un test por criterio de aceptacion."""
+
+    def test_dotdot_in_a_consumer_directory_is_a_finding(self) -> None:
+        """Criterio 1: `..` en `directory` sale del consumer aunque el manifiesto exista fuera."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            (base / "outside").mkdir()
+            (base / "outside" / "pyproject.toml").write_text("x\n", encoding="utf-8")
+            repo = _repo(base, {CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: \"/../outside\"\n")})
+            found = findings(repo, {"ecosystems": {"pip": "/../outside"}})
+            self.assertTrue(any("`..`" in item for item in found), found)
+
+    def test_dotdot_in_the_middle_of_a_path_is_a_finding(self) -> None:
+        """Criterio 1: el traversal cuenta aunque no empiece la ruta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: /app/../../etc\n")})
+            found = findings(repo, {"ecosystems": {"pip": "/app/../../etc"}})
+            self.assertTrue(any("`..`" in item for item in found), found)
+
+    def test_a_dotted_name_without_traversal_is_not_rejected(self) -> None:
+        """Criterio 1 (negativo): `/app/..data` es un directorio DENTRO del repo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/..data/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: /app/..data\n")})
+            found = findings(repo, {"ecosystems": {"pip": "/app/..data"}})
+            self.assertFalse(any("`..`" in item for item in found), found)
+            self.assertEqual(found, [])
+
+    def test_a_comment_after_the_directory_value_is_read(self) -> None:
+        """Criterio 2: `directory: "/app"  # comentario` cubre /app."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: \"/app\"  # el manifiesto del pip\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": "/app"}}), [])
+
+    def test_a_comment_inside_the_directories_list_is_read(self) -> None:
+        """Criterio 2: un item de `directories:` con comentario detras cubre su directorio."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directories:\n      - \"/app\"  # el pip\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": {"directories": ["/app"]}}}), [])
+
+    def test_a_hash_inside_a_quoted_value_is_not_a_comment(self) -> None:
+        """Criterio 2 (negativo): un `#` entre comillas no trunca el valor."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app#1/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directory: \"/app#1\"\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": "/app#1"}}), [])
+
+    def test_a_flow_directories_list_covers_each_directory(self) -> None:
+        """Criterio 3: `directories: ["/app", "/other"]` cubre los dos."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", "other/pyproject.toml": "x\n",
+                                     CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directories: [\"/app\", \"/other\"]\n")})
+            decl = {"ecosystems": {"pip": {"directories": ["/app", "/other"]}}}
+            self.assertEqual(findings(repo, decl), [])
+
+    def test_a_flow_list_with_one_item_is_read(self) -> None:
+        """Criterio 3: una lista flow de un solo elemento tambien se lee."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n"
+                "    directories: [\"/app\"]\n")})
+            self.assertEqual(findings(repo, {"ecosystems": {"pip": {"directories": ["/app"]}}}), [])
+
+    def test_a_group_named_like_another_key_is_not_covered_by_it(self) -> None:
+        """Criterio 4: un grupo `labels` no se da por cubierto por la clave `labels:` del bloque."""
+        decl = {"ecosystems": {"pip": {"directory": "/app", "groups": {"labels": {"patterns": ["github/x/*"]}}}}}
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {"app/pyproject.toml": "x\n", CONSUMER_PATH: (
+                "version: 2\nupdates:\n  - package-ecosystem: pip\n    directory: /app\n"
+                "    labels:\n      - dependencies\n"
+                "    schedule:\n      interval: weekly\n")})
+            found = findings(repo, decl)
+            self.assertTrue(any("grupo 'labels'" in item for item in found), found)
+
+    def test_a_declared_group_present_in_its_groups_block_passes(self) -> None:
+        """Criterio 4 (positivo): el grupo declarado dentro de `groups:` si cubre."""
+        decl = {"ecosystems": {"github-actions": {"directory": "/", "groups": {"codeql-action": {"patterns": ["github/codeql-action/*"]}}}}}
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _repo(Path(tmp), {".github/workflows/ci.yml": "name: ci\n", CONSUMER_PATH: render(decl)})
+            self.assertEqual(findings(repo, decl), [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -87,10 +87,16 @@ Es una regla del patrón, no una preferencia:
 
 Se materializan como `RELEASE-<TAG>.md` en el commit etiquetado, desde
 `assets/templates/RELEASE-NOTES.md.tmpl`, y el workflow las publica tal cual.
-Las secciones son fijas: resumen (diciendo si es hotfix), Procedencia (versión
-y SHA anterior y nuevo, y el enlace al run), Qué cambia, Cambios
-incompatibles, Cómo actualizar y Qué se arregla (causa en una frase y enlace al
-post-mortem o a la issue).
+Las secciones son fijas y en este orden, las del informe de Cadete v1.0.1
+(#1148): Resumen (diciendo si es hotfix), Procedencia (tabla con la versión y el
+SHA anterior y nuevo, el run de CI de `main`, la salida del gate
+`check_release_tag.py` con el tag real y las PR incluidas), Qué se corrige (una
+subsección por PR o issue con las líneas Qué fallaba, Qué cambia y Qué lo
+prueba; en un hotfix, la causa y el enlace al post-mortem), Cambios incompatibles,
+Cómo actualizar / desplegar (con el rollback), Cifras (tests,
+cobertura y duración antes y después) y Registro de cierres (cinco categorías:
+Cerradas con evidencia, Corregidas sin test que lo fije, No cerradas por esta
+versión, Diferido y No abordado).
 
 La causa raíz **no** vive en las notas: vive en su documento dedicado y las
 notas solo la enlazan (HR-21).

@@ -1,26 +1,30 @@
 #!/usr/bin/env bash
-# Suite gh-api-retry: el reintento de la llamada a la API (#1210, #1214).
+# Suite gh-api-retry: la tabla de casos es el contrato (#1210, #1220).
 #
-# El helper reintenta SOLO un fallo de la llamada (gh sale distinto de 0).
-# Una respuesta válida se devuelve tal cual: una lista vacía puede
-# significar «sin PR» y reintentarla rompería el fail-closed del gate
-# que la usa. Agotados los intentos, sale con 1 y el último error por
-# stderr.
+# Esta suite recorre `casos.tsv`, la MISMA tabla que recorre la suite del
+# cliente Python (`runner-controls/tests/test_github_rest_retry.py`). Las dos
+# implementaciones del reintento se prueban contra las mismas filas: si una
+# diverge de la tabla, su suite falla.
+#
+# La regla: se reintenta un fallo de llamada y un JSON malformado; una
+# respuesta válida vacía NO se reintenta; agotados los intentos, se falla
+# cerrado.
 set -uo pipefail
 
-SCRIPT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/gh-api-retry.sh"
+ASSET="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT="$ASSET/gh-api-retry.sh"
+TABLA="$ASSET/casos.tsv"
 PASS=0
 FAIL=0
 FAILURES=()
 TMP=""
 
-assert_exit() {
-  local desc="$1" expected="$2" actual="$3"
-  if [[ "$expected" == "$actual" ]]; then
+assert_eq() {
+  if [[ "$2" == "$3" ]]; then
     PASS=$((PASS + 1))
   else
     FAIL=$((FAIL + 1))
-    FAILURES+=("$desc: esperaba exit $expected, obtuvo $actual")
+    FAILURES+=("$1: esperaba '$2', obtuvo '$3'")
   fi
 }
 
@@ -42,86 +46,102 @@ assert_not_contains() {
   fi
 }
 
-assert_eq() {
-  if [[ "$2" == "$3" ]]; then
-    PASS=$((PASS + 1))
-  else
-    FAIL=$((FAIL + 1))
-    FAILURES+=("$1: esperaba '$2', obtuvo '$3'")
-  fi
-}
-
 cleanup() { [[ -n "$TMP" ]] && rm -rf "$TMP"; }
 trap cleanup EXIT
 
-# gh falso: falla las primeras <fails> llamadas y después responde <json>.
-# Cada invocación se registra en calls para poder contarlas.
+# gh falso: falla las primeras <fallos> llamadas segun el modo de fallo y,
+# despues, responde segun el modo de respuesta. Cada invocacion se registra
+# en calls para poder contar las consultas.
 make_gh() {
-  local fails="$1" body="$2"
   cat > "$TMP/gh" <<'GH'
 #!/usr/bin/env bash
 set -u
 printf 'x\n' >> "$FAKE_GH_CALLS"
 n="$(wc -l < "$FAKE_GH_CALLS" | tr -d ' ')"
 if [[ "$n" -le "$FAKE_GH_FAILS" ]]; then
-  echo "unexpected end of JSON input"
-  exit 1
+  case "$FAKE_GH_FAIL_MODE" in
+    error) echo "unexpected end of JSON input"; exit 1 ;;
+    json_malformado) printf '<html>502 Bad Gateway</html>\n'; exit 0 ;;
+  esac
 fi
-printf '%s\n' "$FAKE_GH_BODY"
+case "$FAKE_GH_RESPONSE" in
+  vacia) printf '[]\n' ;;
+  *) printf '[{"number": 1, "merged": true, "merged_at": "2026-01-01T00:00:00Z"}]\n' ;;
+esac
 GH
   chmod +x "$TMP/gh"
-  export FAKE_GH_FAILS="$fails" FAKE_GH_BODY="$body"
-  : > "$TMP/calls"
-  export FAKE_GH_CALLS="$TMP/calls"
-}
-
-run_helper() {
-  # Variables globales a proposito: el harness las lee despues.
-  out="$(env PATH="$TMP:$PATH" bash "$SCRIPT" api "repos/acme/repo/pulls" 2>"$TMP/err")" && rc=0 || rc=$?
-  err="$(cat "$TMP/err")"
-  CALLS="$(wc -l < "$TMP/calls" | tr -d ' ')"
 }
 
 TMP="$(mktemp -d)"
 
-# 1. La llamada funciona a la primera: la salida pasa intacta y no se
-# reintenta.
-make_gh 0 '[{"number": 1}]'
-run_helper
-assert_exit "llamada correcta sale 0" 0 "$rc"
-assert_eq "la salida pasa intacta" '[{"number": 1}]' "$out"
-assert_eq "una llamada correcta no se reintenta" 1 "$CALLS"
+# --- La tabla, fila por fila ---------------------------------------------
+while IFS=$'\t' read -r caso falla fallos intentos respuesta resultado; do
+  [[ -z "${caso:-}" || "$caso" == \#* ]] && continue
+  : > "$TMP/calls"
+  export FAKE_GH_CALLS="$TMP/calls"
+  export FAKE_GH_FAILS="$fallos"
+  export FAKE_GH_FAIL_MODE="$falla"
+  export FAKE_GH_RESPONSE="$respuesta"
+  make_gh
 
-# 2. Fallo transitorio: la segunda llamada responde y la salida es la del
-# exito, no la del fallo.
-make_gh 1 '[{"number": 2}]'
-run_helper
-assert_exit "fallo transitorio sale 0" 0 "$rc"
-assert_eq "la salida es la del intento correcto" '[{"number": 2}]' "$out"
-assert_eq "el fallo transitorio consume un reintento" 2 "$CALLS"
-assert_contains "avisa del reintento" "AVISO" "$err"
+  # stdin a /dev/null: el command substitution no puede comerse la tabla.
+  out="$(env PATH="$TMP:$PATH" GH_API_RETRY_ESPERA_S=0 bash "$SCRIPT" api "repos/o/r/commits/sha/pulls" 2>"$TMP/err" </dev/null)" && rc=0 || rc=$?
+  calls="$(wc -l < "$TMP/calls" | tr -d ' ')"
+  err="$(cat "$TMP/err")"
 
-# 3. Todos los intentos fallan: fail closed con el ultimo error.
-make_gh 5 'nunca'
-run_helper
-assert_exit "todos los intentos fallando salen 1" 1 "$rc"
-assert_eq "se agotan los intentos" 3 "$CALLS"
-assert_contains "el ultimo error queda dicho" "unexpected end of JSON input" "$err"
+  assert_eq "$caso: numero de llamadas" "$intentos" "$calls"
+  case "$resultado" in
+    ok)
+      assert_eq "$caso: sale 0" 0 "$rc"
+      assert_eq "$caso: devuelve la respuesta valida" '[{"number": 1, "merged": true, "merged_at": "2026-01-01T00:00:00Z"}]' "$out"
+      ;;
+    vacia)
+      assert_eq "$caso: sale 0" 0 "$rc"
+      assert_eq "$caso: devuelve la respuesta vacia tal cual" "[]" "$out"
+      assert_eq "$caso: no avisa de reintento" 0 "$(printf '%s' "$err" | grep -c "AVISO" || true)"
+      ;;
+    falla_cerrado)
+      assert_eq "$caso: sale 1 (fallo cerrado)" 1 "$rc"
+      assert_eq "$caso: dice cuantos intentos hizo" 1 "$(printf '%s' "$err" | grep -c "3 intentos" || true)"
+      ;;
+  esac
+done < "$TABLA"
 
-# 4. Una respuesta VALIDA vacia no se reintenta: puede significar «sin PR».
-make_gh 0 ''
-run_helper
-assert_exit "respuesta vacia sale 0" 0 "$rc"
-assert_eq "la respuesta vacia se devuelve tal cual" "" "$out"
-assert_eq "la respuesta vacia no se reintenta" 1 "$CALLS"
-assert_not_contains "la respuesta vacia no avisa de reintento" "AVISO" "$err"
-
-# 5. Con un solo intento, un fallo no se reintenta.
-make_gh 3 'nunca'
-OUT="$(env PATH="$TMP:$PATH" GH_API_RETRY_INTENTOS=1 bash "$SCRIPT" api "repos/acme/repo/pulls" 2>"$TMP/err")" && RC=0 || RC=$?
-assert_exit "un solo intento sale 1" 1 "$RC"
+# --- Casos concretos del helper (no covered por la tabla) ------------------
+# Un intento y nada mas: un fallo no se reintenta.
+: > "$TMP/calls"
+export FAKE_GH_CALLS="$TMP/calls" FAKE_GH_FAILS=3 FAKE_GH_FAIL_MODE=error FAKE_GH_RESPONSE=ok
+make_gh
+out="$(env PATH="$TMP:$PATH" GH_API_RETRY_INTENTOS=1 GH_API_RETRY_ESPERA_S=0 bash "$SCRIPT" api "repos/o/r/commits/sha/pulls" 2>"$TMP/err" </dev/null)" && rc=0 || rc=$?
+assert_eq "un solo intento sale 1" 1 "$rc"
 assert_eq "un solo intento no reintenta" 1 "$(wc -l < "$TMP/calls" | tr -d ' ')"
-assert_not_contains "un solo intento no deja el error en stdout" "unexpected end" "$OUT"
+assert_not_contains "un solo intento no deja el error en stdout" "unexpected end" "$out"
+
+# Agotados los intentos, el ultimo error queda dicho en el mensaje final.
+: > "$TMP/calls"
+export FAKE_GH_CALLS="$TMP/calls" FAKE_GH_FAILS=3 FAKE_GH_FAIL_MODE=error FAKE_GH_RESPONSE=ok
+make_gh
+out="$(env PATH="$TMP:$PATH" GH_API_RETRY_ESPERA_S=0 bash "$SCRIPT" api "repos/o/r/commits/sha/pulls" 2>"$TMP/err" </dev/null)" && rc=0 || rc=$?
+assert_eq "todos los intentos fallando salen 1" 1 "$rc"
+assert_contains "el ultimo error queda dicho" "unexpected end of JSON input" "$(cat "$TMP/err")"
+
+# Un 404 de gh: su cuerpo JSON (stdout) tambien llega al mensaje final.
+mkdir -p "$TMP/nf"
+cat > "$TMP/nf/gh" <<'GH'
+#!/usr/bin/env bash
+echo '{"message":"Not Found"}'
+echo 'gh: Not Found (HTTP 404)' >&2
+exit 1
+GH
+chmod +x "$TMP/nf/gh"
+out="$(env PATH="$TMP/nf:$PATH" GH_API_RETRY_INTENTOS=1 GH_API_RETRY_ESPERA_S=0 bash "$SCRIPT" api "repos/o/r" 2>"$TMP/err" </dev/null)" && rc=0 || rc=$?
+assert_eq "un 404 sale 1" 1 "$rc"
+assert_contains "un 404 conserva el cuerpo de gh" '{"message":"Not Found"}' "$(cat "$TMP/err")"
+
+# Un valor de intentos invalido se rechaza con codigo 2 (no se reintenta a
+# la infinita, ni se acepta un cero que haria fallar la primera llamada).
+out="$(env PATH="$TMP:$PATH" GH_API_RETRY_INTENTOS=0 bash "$SCRIPT" api "repos/o/r" 2>&1 </dev/null)" && rc=0 || rc=$?
+assert_eq "intentos invalidos salen 2" 2 "$rc"
 
 echo ""
 if [[ "$FAIL" -gt 0 ]]; then

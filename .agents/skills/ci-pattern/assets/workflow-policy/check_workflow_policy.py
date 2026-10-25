@@ -619,6 +619,60 @@ def cancel_in_progress_findings(wf: str, doc: dict) -> list[str]:
     return found
 
 
+_NEEDS_OUTPUT_RE = re.compile(r"needs\.([A-Za-z0-9_-]+)\.outputs\.")
+
+
+def _marker_spans(value) -> list[tuple[int, int]]:
+    """Spans of the marker filter of #1192: a read used as a filter, not as a value."""
+    if not isinstance(value, str):
+        return []
+    return [(m.start(), m.end()) for m in _MARKER_IF.finditer(value)]
+
+
+def _needs_output_refs(job: dict) -> set[str]:
+    """The jobs whose outputs this job reads, wherever the expression lives.
+
+    The `needs` context only exposes the outputs of the DIRECT dependencies:
+    reading a transitive one arrives empty, without an error (HR-79). The marker
+    filter of #1192 is the exception: it reads a first-level job on purpose, as
+    a filter (`!= 'false'` / `== 'true'`), not as a value.
+    """
+    refs: set[str] = set()
+
+    def scan(value, skip=()):
+        if isinstance(value, str):
+            for m in _NEEDS_OUTPUT_RE.finditer(value):
+                if not any(start <= m.start() < end for start, end in skip):
+                    refs.add(m.group(1))
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                scan(item, _marker_spans(item) if key == "if" else ())
+        elif isinstance(value, list):
+            for item in value:
+                scan(item)
+
+    scan(job)
+    return refs
+
+
+def _needs_output_findings(wf: str, jid: str, job: dict) -> list[str]:
+    """HR-79: `needs.<job>.outputs` exists only for a DIRECT dependency.
+
+    The `needs` graph is transitive for the ORDER, but the `needs` CONTEXT is
+    not: a job that reads the outputs of a job it does not depend on directly
+    gets an empty value and the workflow stays green with the wrong branch
+    taken (#1277).
+    """
+    needs = job.get("needs")
+    direct = {needs} if isinstance(needs, str) else {str(n) for n in (needs or [])}
+    return [
+        f"{wf} job '{jid}': reads `needs.{ref}.outputs`, but '{ref}' is not a direct "
+        f"dependency (needs: {', '.join(sorted(direct)) or 'none'}): the value arrives "
+        f"empty (HR-79)"
+        for ref in sorted(_needs_output_refs(job) - direct)
+    ]
+
+
 def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list,
               root: Path = Path("."), declared: list[str] | None = None):
     def finding(msg):
@@ -1115,6 +1169,7 @@ def main(argv):
                 published.add(declared_name(jid, job, declared))
             check_job(w, jid, job, doc, jid in required, args.base_branch, findings,
                       repo_root(w, args.repo_root), declared)
+            findings.extend(_needs_output_findings(w, jid, job))
     for name in (declared or []):
         if name not in published:
             findings.append(f"host contract requires check '{name}' but no analyzed workflow job "

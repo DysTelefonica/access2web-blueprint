@@ -284,7 +284,7 @@ Estos puntos quedan fuera del determinismo, con procedimiento acotado:
 - **La completitud de una spec, la causa raíz de un rojo, si una edición es
   material**: según `references/porting-guide.md` y el playbook del origen.
 
-## §9 Receta de uso para una IA (flujo de 5 comandos)
+## §9 Receta de uso para una IA (adopción + preflight)
 
 Diseñada para que la salida de cada paso alimenta el siguiente, sin prosa
 intermedia:
@@ -306,7 +306,32 @@ ci-pattern adoption check --all <repo>
 
 # 4. Verificación de cumplimiento tras cualquier cambio
 ci-pattern verify <repo> --json
+
+# 5. Preflight del autor antes de `git push` o `gh pr create` (#865): corre
+#    los mismos veredictos que la CI sobre el PR abierto (rama, cuerpo,
+#    enlace a la issue, HR-64 si hay política y la fase 5 de docs), reusando
+#    los gates en proceso. Sin red cuando se omite `--issue` y
+#    `--with-adoption`. Salida: texto del gate prefijado por ``[<gate>]``;
+#    ``--json`` para máquinas. Exit 1 con el mismo texto que el gate emite si
+#    hay hallazgos.
+ci-pattern pr preflight --pr-body body.md --branch $(git rev-parse --abbrev-ref HEAD)
+ci-pattern pr preflight --pr-body body.md --issue 865 --repository DysTelefonica/team-skills --token "$GITHUB_TOKEN"
+
+# 5b. Modo borrador API-free (#1113): exige --base y admite --label repetible.
+# Reusa los gates locales de cuerpo y tamaño; no llama a la API, a gh ni a la red,
+# aunque GITHUB_TOKEN esté presente. Exit 0 exige que ambos gates pasen.
+ci-pattern pr preflight --draft --pr-body body.md --base main --label type:feature
+ci-pattern pr contract --body body.md --label type:feature --number 912   # contrato de PR completo (#912)
 ```
+
+El documento operativo del consumer se genera con `ci-pattern adoption
+generate-doc <repo> --out docs/ci-pattern-flow.md`, y el gate por fases se
+puede pedir con `--phase N` en lugar de `--all`. Cuando el canon llega por
+propagación (#1152), el documento operativo lo regenera el propio propagador
+con el canon que propaga y lo commitea en el mismo commit: el consumer no
+recibe un canon nuevo con el documento viejo. El comando de `generate-doc` es
+el que se usa cuando el canon cambia SIN propagación (un consumer que adopta
+el patrón a mano).
 
 Frases de disparo del usuario: «actualizá el sistema de gobernanza»,
 «adoptá el patrón en este repo», «verificá el cumplimiento del patrón de CI».

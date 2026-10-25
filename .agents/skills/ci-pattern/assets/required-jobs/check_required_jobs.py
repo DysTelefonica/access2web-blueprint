@@ -61,6 +61,8 @@ Exit codes:
        relaxation against the base policy went uncovered
     1  fail-closed: root-cause failure, policy violation, uncovered
        relaxation, or doubt
+    2  command-line usage error (for example a --run-attempt that is not an
+       integer): argparse stops before the gate judges
 """
 
 from __future__ import annotations
@@ -82,7 +84,7 @@ POLICY_KEYS = frozenset({"required_jobs", "events"})
 #: fichero: declararlo aqui es lo que permite a un consumer exigir HR-39 sin que el
 #: gate de required jobs rechace la politica por clave desconocida (fail-closed, HR-3).
 OPTIONAL_POLICY_KEYS = frozenset({"relaxation", "dependencies", "docs_only_lane",
-                                 "marker_lanes", "state_dependent_gates"})
+                                 "marker_lanes", "state_dependent_gates", "check_names"})
 EVENT_KEYS = frozenset({"accepted_skips"})
 RELAXATION_KEYS = frozenset({"reason", "reference", "actor", "issue"})
 RELAXATION_REQUIRED = frozenset({"reason", "reference"})
@@ -135,6 +137,28 @@ def validate_events(events: object, jobs: list, label: str) -> None:
             raise GateError(
                 f"{label}: event '{event}': accepted skips outside required_jobs: {sorted(unknown)}"
             )
+
+
+def validate_check_names(field: object, jobs: list, label: str) -> None:
+    """``check_names``: el nombre con el que el runner publica cada check (#1219).
+
+    El nombre lo decide el workflow del consumer, no el gate: por eso es DATO
+    declarado en la politica y no codigo aqui. Solo se declaran las divergencias
+    (si el nombre publicado es el id del job, no hace falta declararlo) y el
+    marcador ``{event}`` se sustituye por el evento en curso, para los nombres
+    que lo llevan (``name: lint (${{ github.event_name }})``).
+    """
+    if not isinstance(field, dict):
+        raise GateError(  # noqa: TRY003
+            f"{label}: check_names must be an object of job -> published name")
+    known = set(jobs)
+    for job, name in field.items():
+        if job not in known:
+            raise GateError(  # noqa: TRY003
+                f"{label}: check_names names unknown job '{job}' (not in required_jobs)")
+        if not isinstance(name, str) or not name.strip():
+            raise GateError(  # noqa: TRY003
+                f"{label}: check_names['{job}'] must be a non-empty string")
 
 
 def validate_relaxation(field: object, label: str) -> None:
@@ -278,7 +302,7 @@ def validate_marker_lanes(field: object, jobs: list, events: dict,
         seen_signatures.add(signature)
 
 
-def _reject_cross_source_duplicate(legacy_lane: dict, marker_lanes: list,
+def _reject_cross_source_duplicate(legacy_lane: dict | None, marker_lanes: list,
                                      label: str) -> None:
     """Reject a ``marker_lanes`` entry that duplicates the legacy ``docs_only_lane`` source.
 
@@ -286,8 +310,11 @@ def _reject_cross_source_duplicate(legacy_lane: dict, marker_lanes: list,
     not see the legacy lane, so a separate cross-source check runs at
     the policy level when both fields are present. The check fires when
     any entry of ``marker_lanes`` shares the same
-    ``(event, gate_job, output)`` triple as the legacy lane (#863).
+    ``(event, gate_job, output)`` triple as the legacy lane (#863). Without
+    the legacy lane there is nothing to duplicate, and the check does nothing.
     """
+    if legacy_lane is None:
+        return
     legacy_signature = (legacy_lane["event"], legacy_lane["gate_job"],
                           legacy_lane["output"])
     for index, lane in enumerate(marker_lanes):
@@ -445,7 +472,6 @@ def load_policy(path: str, label: str = "policy file") -> dict:
         # (#863). The per-entry validator is the same helper the legacy
         # ``docs_only_lane`` form delegates to.
         validate_marker_lanes(data["marker_lanes"], jobs, events, label)
-    if "docs_only_lane" in data and "marker_lanes" in data:
         # Cross-source duplicate check (#863): a lane in ``marker_lanes``
         # cannot share the same ``(event, gate_job, output)`` triple as
         # the legacy ``docs_only_lane`` (their markers would race for the
@@ -454,7 +480,7 @@ def load_policy(path: str, label: str = "policy file") -> dict:
         # :func:`validate_marker_lanes` does not see the legacy lane, so
         # the cross-source check lives here at the policy level.
         _reject_cross_source_duplicate(
-            data["docs_only_lane"], data["marker_lanes"], label)
+            data.get("docs_only_lane"), data["marker_lanes"], label)
     if "relaxation" in data:
         # Validated whenever present, base copy or not: a malformed field must
         # not sit in the policy waiting to "cover" a later relaxation.
@@ -464,6 +490,11 @@ def load_policy(path: str, label: str = "policy file") -> dict:
         # sits in the policy waiting to "cover" a later cascade (#853).
         data["dependencies"] = validate_dependencies(
             data["dependencies"], jobs, label)
+    if "check_names" in data:
+        # The published check name is consumer data (#1219). Validated whenever
+        # present: a malformed declaration never sits in the policy waiting to
+        # cover a later rename.
+        validate_check_names(data["check_names"], jobs, label)
     return data
 
 
@@ -749,6 +780,20 @@ def _cascade_is_accepted(job: str, accepted: set[str],
     return False
 
 
+def published_label(job: str, conclusion: str, check_names: dict, event: str) -> str:
+    """The label of a cause: the published check name, and the job id (#1219).
+
+    Without a declaration, or with a published name equal to the job id, the
+    label is the one it always was: ``job (conclusion)``. With a different
+    published name the label says both, because the reader has to match the
+    cause with the check the UI shows: ``published [job] (conclusion)``.
+    """
+    declared = check_names.get(job)
+    published = declared.replace("{event}", event) if isinstance(declared, str) else job
+    name = f"{published} [{job}]" if published != job else job
+    return f"{name} ({conclusion})"
+
+
 def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None,  # noqa: PLR0913 — veredicto: needs, politica, evento y las cuatro entradas del llamante.
              outputs: dict | None = None, annotations: dict | None = None,
              run_attempt: int | None = None) -> dict:
@@ -779,13 +824,18 @@ def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None,  #
             "required job is not a pass (HR-15)")
     comparison = None if base is None else compare_with_base(policy, base)
     refused = comparison is not None and comparison["refusal"] is not None
-    root_causes = conclusions["root_causes"]
+    check_names = policy.get("check_names") or {}
+    # #1219 (aviso 3): the cause names the check as it is published, and keeps
+    # the job id. Without a declaration the label is the one it always was.
+    labels = [(published_label(job, needs[job], check_names, event), job)
+              for job in conclusions["root_cause_jobs"]]
+    root_causes = [label for label, _ in labels]
     undeclared_skips = conclusions["undeclared_skips"]
     notes = annotations or {}
     # #1208 (c): la causa nombra el check rojo y cita su primera anotacion.
     root_details = [
-        f"{job} ({needs[job]}): {notes.get(job) or 'no annotation'}"
-        for job in conclusions["root_cause_jobs"]
+        f"{label}: {notes.get(job) or 'no annotation'}"
+        for label, job in labels
     ]
     return {
         "event": event,

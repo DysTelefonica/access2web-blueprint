@@ -1280,3 +1280,76 @@ class TestHR39ReusableCommand(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("HR-39", out)
         self.assertIn("ejecuta", out)
+
+
+class TestHR79NeedsOutputsFromDirectDependencies(GateCase):
+    """HR-79: `needs.<job>.outputs` solo existe si el job es dependencia DIRECTA.
+
+    El contexto `needs` de un job expone los outputs de sus dependencias
+    directas: leer el de una transitiva devuelve vacío, sin error, y el
+    workflow queda en verde con el valor equivocado (#1277). El caso real es
+    el de access2web-blueprint: `publish` leía el canal de `preflight`, que
+    solo era dependencia transitiva, y una RC salía como release estable.
+    """
+
+    def workflow(self, read, where="env", needs="[e2e]"):
+        """Workflow de cuatro jobs: `build` (requerido), `preflight`, `e2e` y `publish`."""
+        head = f"    if: needs.{read}.outputs.kind == 'rc'\n" if where == "if" else ""
+        step = {
+            "env": f"      - run: echo ok\n        env:\n          KIND: ${{{{ needs.{read}.outputs.kind }}}}\n",
+            "with": f"      - uses: {PINNED}\n        with:\n          kind: ${{{{ needs.{read}.outputs.kind }}}}\n",
+            "if": "      - run: echo ok\n",
+        }[where]
+        return (
+            "on:\n  pull_request:\n"
+            "concurrency:\n  group: wf-${{ github.ref }}\n"
+            "jobs:\n"
+            "  build:\n"
+            "    name: build (${{ github.event_name }})\n"
+            "    timeout-minutes: 5\n"
+            "    steps:\n"
+            f"      - {PINNED}\n"
+            "  preflight:\n"
+            "    name: preflight\n"
+            "    timeout-minutes: 5\n"
+            "    outputs:\n"
+            "      kind: ${{ steps.id.outputs.kind }}\n"
+            "    steps:\n"
+            f"      - {PINNED}\n"
+            "  e2e:\n"
+            "    name: e2e\n"
+            "    needs: preflight\n"
+            "    timeout-minutes: 5\n"
+            "    steps:\n"
+            f"      - {PINNED}\n"
+            "  publish:\n"
+            "    name: publish\n"
+            f"{head}"
+            f"    needs: {needs}\n"
+            "    timeout-minutes: 5\n"
+            "    steps:\n"
+            f"{step}"
+        )
+
+    def test_output_of_a_direct_dependency_is_clean(self):
+        """`e2e` es dependencia directa de `publish`: su output llega."""
+        code, out = self.run_gate(self.workflow("e2e"))
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("HR-79", out)
+
+    def test_output_of_a_transitive_dependency_is_a_finding(self):
+        """`preflight` solo es transitiva para `publish`: el valor llega vacío."""
+        code, out = self.run_gate(self.workflow("preflight"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("HR-79", out)
+        self.assertIn("preflight", out)
+        self.assertIn("publish", out)
+
+    def test_the_rule_does_not_depend_on_where_the_job_reads_it(self):
+        """`if:`, `env:` y `with:`: la regla no depende de dónde se lea."""
+        for where in ("if", "env", "with"):
+            with self.subTest(where=where):
+                code, out = self.run_gate(self.workflow("preflight", where=where))
+                self.assertEqual(code, 1, out)
+                self.assertIn("HR-79", out)
+

@@ -2385,6 +2385,8 @@ ADOPTION_GATES = {
     "workflow-policy": "assets/workflow-policy/check_workflow_policy.py",
 }
 ENV_ISOLATION_GATE = "assets/env-isolation/check_env_isolation.py"
+# #1264: opt-in (P56); fuera de ADOPTION_GATES, sin declaración no cambia el veredicto.
+CI_IMAGES_GATE = "assets/ci-images/check_ci_images_pinned.py"
 
 RUNNER_BINDING_GATES = {
     # #303: binding ejecutable exigido SOLO cuando el host declara el camino
@@ -2481,6 +2483,77 @@ def _check_review_budget(repo):
     return ["fase 4: " + finding for finding in module.findings(Path(repo))]
 
 
+def _ci_images_mode(repo):
+    """#1264: 'on' si P56_ci_images_gate: on; None sin declaración (ausente, off o sin clave).
+    Fail-closed: fichero ilegible o valor fuera de {off, on} es UsageError (exit 2)."""
+    path = repo / "ci-pattern.yaml"
+    if not path.is_file():
+        return None
+    try:
+        params = parse_params_yaml(path.read_text(encoding="utf-8"))
+    except (ParamsFileError, OSError, UnicodeDecodeError) as exc:
+        raise UsageError(f"fase 4: ci-pattern.yaml ilegible ({path}): {exc}") from exc
+    if "P56_ci_images_gate" not in params:
+        return None
+    param = next(p for p in load_schema()[0]["parameters"] if p["id"] == "P56")
+    err = validate_value(param, params["P56_ci_images_gate"])
+    if err:
+        raise UsageError(f"fase 4: ci-pattern.yaml ilegible: {err}")
+    return "on" if params["P56_ci_images_gate"] == "on" else None
+
+
+def _ci_images_jobs(repo):
+    """Jobs cuyo step `run` ejecuta el gate (un workflow ilegible lo reporta la medición)."""
+    wp_path = skill_dir() / "assets" / "workflow-policy" / "check_workflow_policy.py"
+    spec = importlib.util.spec_from_file_location("ci_pattern_workflow_policy", wp_path)
+    wp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(wp)
+    files = sorted((repo / ".github" / "workflows").glob("*.y*ml"))
+    script = Path(CI_IMAGES_GATE).name
+    jobs = []
+    for path in files:
+        try:
+            doc = wp.parse_workflow(path.read_text(encoding="utf-8"), str(path))
+        except (wp.InvalidInput, OSError, UnicodeDecodeError):
+            continue
+        for job_id, job in doc["jobs"].items():
+            steps = job.get("steps") if isinstance(job, dict) else None
+            runs_gate = any(
+                isinstance(s, dict) and script in str(s.get("run", ""))
+                for s in (steps if isinstance(steps, list) else [])
+            )
+            if runs_gate and job_id not in jobs:
+                jobs.append(job_id)
+    return jobs
+
+
+def _ci_images_findings(repo):
+    """#1264 (HR-78): con P56=on, el gate mide el consumer y su job va en required_jobs."""
+    if _ci_images_mode(repo) is None:
+        return []
+    script = Path(CI_IMAGES_GATE).name
+    proc = _run_gate_binary(repo, skill_dir() / CI_IMAGES_GATE, [str(repo)])
+    findings = []
+    if proc.returncode != 0:
+        findings.append(
+            f"fase 4: el gate {script} (HR-78) no está en verde sobre el consumer "
+            f"(rc={proc.returncode}): {_tail(proc.stdout + proc.stderr)}"
+        )
+    jobs = _ci_images_jobs(repo)
+    if not jobs:
+        return findings + [
+            f"fase 4: ningún job ejecuta el gate de imágenes de CI ({script}, HR-78); "
+            "con P56_ci_images_gate: on el gate debe cablearse en un job requerido"
+        ]
+    for job in jobs:
+        findings += [
+            "fase 4: " + f
+            for f in _workflow_job_findings(repo, job, hr="HR-78")
+            + _required_job_findings(repo, job, hr="HR-78")
+        ]
+    return findings
+
+
 def _check_gates_phase(repo, decl, contract):
     runner = _runner_label(repo)
     gate_map = {**ADOPTION_GATES, **RUNNER_BINDING_GATES} if runner else ADOPTION_GATES
@@ -2525,6 +2598,7 @@ def _check_gates_phase(repo, decl, contract):
             )
     if runner:
         findings.extend(_runner_online_findings(repo, contract, runner))
+    findings.extend(_ci_images_findings(repo))
     return findings
 
 

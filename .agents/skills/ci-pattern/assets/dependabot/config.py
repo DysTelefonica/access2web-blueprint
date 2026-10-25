@@ -52,9 +52,10 @@ MANIFEST_CANDIDATES = {
 }
 
 _ECOSYSTEM_RE = re.compile(r"(?m)^\s*-?\s*package-ecosystem:\s*[\"']?(?P<ecosystem>[A-Za-z0-9_-]+)[\"']?\s*$")
-_DIRECTORY_RE = re.compile(r"(?m)^\s*directory:\s*(?P<directory>[^\s#]+)\s*$")
+_DIRECTORY_RE = re.compile(r"(?m)^\s*directory:\s*(?P<value>\S.*?)\s*$")
 _DIRECTORIES_RE = re.compile(r"(?m)^\s*directories:\s*$")
-_LIST_ITEM_RE = re.compile(r"^\s*-\s*[\"']?(?P<item>[^\"'\s]+)[\"']?\s*$")
+_DIRECTORIES_FLOW_RE = re.compile(r"(?m)^\s*directories:\s*\[(?P<items>[^\]]*)\]\s*(?:#.*)?$")
+_LIST_ITEM_RE = re.compile(r"^\s*-\s*(?P<value>\S.*?)\s*$")
 
 
 def _entries(declaration: object) -> dict[str, object]:
@@ -117,6 +118,55 @@ def _unquote(value: str) -> str:
     if len(value) >= MIN_QUOTED_LENGTH and value[0] == value[-1] and value[0] in "\"'":
         return value[1:-1]
     return value
+
+
+def _strip_comment(raw: str) -> str:
+    """El valor de una linea de Dependabot, sin el comentario que lo cierra.
+
+    Un `#` dentro de un valor entrecomillado NO abre comentario: `"/app#1"` es el
+    directorio `/app#1` (#1221).
+    """
+    value = raw.strip()
+    if value[:1] in ("'", '"'):
+        quote = value[0]
+        end = value.find(quote, 1)
+        return value[: end + 1] if end != -1 else value
+    index = value.find("#")
+    return value[:index].strip() if index != -1 else value
+
+
+def _flow_items(raw: str) -> list[str]:
+    """Los items de una lista en forma flow: `[a, b]` -> `["a", "b"]`."""
+    items: list[str] = []
+    current = ""
+    quote = ""
+    for char in raw:
+        if quote:
+            current += char
+            if char == quote:
+                quote = ""
+            continue
+        if char in ("'", '"'):
+            quote = char
+            current += char
+            continue
+        if char == ",":
+            items.append(current)
+            current = ""
+            continue
+        current += char
+    if current.strip():
+        items.append(current)
+    return [_strip_comment(item) for item in items if item.strip()]
+
+
+def escapes_root(directory: str) -> bool:
+    """True si el directorio sale del arbol del consumer.
+
+    Un `..` en algun segmento es traversal: `/app/../..` sale del repo. Un punto en
+    el nombre no lo es: `/app/..data` es un directorio DENTRO del repo (#1221).
+    """
+    return any(segment == ".." for segment in directory.replace("\\", "/").split("/"))
 
 
 def directory_value(directory: str) -> str:
@@ -204,27 +254,10 @@ def render(declaration: object) -> str:
 def directories_in(text: str) -> dict[str, str]:
     """Ecosystem → directorio principal de un fichero de Dependabot, sin parser YAML."""
     found: dict[str, str] = {}
-    current = ""
-    lines = text.splitlines()
-    for index, line in enumerate(lines):
-        match = _ECOSYSTEM_RE.search(line)
-        if match:
-            current = match.group("ecosystem")
-            continue
-        if not current:
-            continue
-        match = _DIRECTORY_RE.search(line)
-        if match:
-            found[current] = _unquote(match.group("directory"))
-            current = ""
-            continue
-        if _DIRECTORIES_RE.search(line):
-            for follow in lines[index + 1:]:
-                item = _LIST_ITEM_RE.search(follow)
-                if not item:
-                    break
-                found.setdefault(current, item.group("item"))
-            current = ""
+    for ecosystem, block in _block_lines(text).items():
+        values = _block_directories(block)
+        if values:
+            found[ecosystem] = _unquote(values[0])
     return found
 
 
@@ -261,6 +294,33 @@ def _block_lines(text: str) -> dict[str, list[str]]:
     return blocks
 
 
+def _block_directories(lines: list[str]) -> list[str]:
+    """Los directorios declarados en un bloque de ecosystem, en orden de aparicion.
+
+    Lee `directory:` y `directories:`, en forma de bloque o en forma flow
+    (`directories: [a, b]`), y quita el comentario que cierra cada valor (#1221).
+    """
+    found: list[str] = []
+    for index, line in enumerate(lines):
+        match = _DIRECTORY_RE.search(line)
+        if match:
+            found.append(_strip_comment(match.group("value")))
+            continue
+        flow = _DIRECTORIES_FLOW_RE.search(line)
+        if flow:
+            found += _flow_items(flow.group("items"))
+            continue
+        if _DIRECTORIES_RE.search(line):
+            for follow in lines[index + 1:]:
+                if follow.strip().startswith("#"):
+                    continue  # un comentario dentro de la lista no es un item
+                item = _LIST_ITEM_RE.search(follow)
+                if not item:
+                    break
+                found.append(_strip_comment(item.group("value")))
+    return found
+
+
 def coverage_in(text: str) -> dict[str, list[str]]:
     """Ecosystem -> todos sus directorios (`directory` o `directories`), sin comillas.
 
@@ -268,20 +328,29 @@ def coverage_in(text: str) -> dict[str, list[str]]:
     """
     found: dict[str, list[str]] = {}
     for ecosystem, block in _block_lines(text).items():
-        dirs: list[str] = []
-        lines = block
-        for index, line in enumerate(lines):
-            match = _DIRECTORY_RE.search(line)
-            if match:
-                dirs.append(directory_value(_unquote(match.group("directory"))))
-            elif _DIRECTORIES_RE.search(line):
-                for follow in lines[index + 1:]:
-                    item = _LIST_ITEM_RE.search(follow)
-                    if not item:
-                        break
-                    dirs.append(directory_value(_unquote(item.group("item"))))
-        found[ecosystem] = dirs
+        found[ecosystem] = [directory_value(_unquote(value)) for value in _block_directories(block)]
     return found
+
+
+def _groups_block(lines: list[str]) -> list[str]:
+    """El sub-bloque `groups:` de un ecosystem (hasta la siguiente clave del bloque).
+
+    El grupo se busca DENTRO de ese bloque: una clave con el mismo nombre en otro
+    sitio del ecosystem (el `labels:` que escribe el render) no es el grupo
+    declarado (#1221).
+    """
+    for index, line in enumerate(lines):
+        match = re.match(r"^(?P<indent>\s*)groups:\s*$", line)
+        if not match:
+            continue
+        indent = len(match.group("indent"))
+        block: list[str] = []
+        for follow in lines[index + 1:]:
+            if follow.strip() and (len(follow) - len(follow.lstrip())) <= indent:
+                break
+            block.append(follow)
+        return block
+    return []
 
 
 def _extra_findings(text: str, specs: dict[str, dict]) -> list[str]:
@@ -290,8 +359,9 @@ def _extra_findings(text: str, specs: dict[str, dict]) -> list[str]:
     blocks = _block_lines(text)
     for ecosystem, spec in specs.items():
         block = "\n".join(blocks.get(ecosystem, []))
+        groups = "\n".join(_groups_block(blocks.get(ecosystem, [])))
         for group in spec.get("groups", {}):
-            if not re.search(rf"^\s*{re.escape(group)}:\s*$", block, re.M):
+            if not re.search(rf"^\s*{re.escape(group)}:\s*$", groups, re.M):
                 out.append(f"HR-75: {CONSUMER_PATH} no declara el grupo '{group}' del ecosystem '{ecosystem}' que la declaración exige")
         for item in spec.get("ignore", []):
             name = str(item.get("dependency-name", ""))
@@ -310,6 +380,9 @@ def _declared_directories(repo: Path, specs: dict[str, dict]) -> tuple[dict[str,
     for ecosystem, spec in specs.items():
         declared[ecosystem] = []
         for directory in spec["directories"]:
+            if escapes_root(directory):
+                out.append(f"HR-75: el ecosystem '{ecosystem}' declara el directorio '{directory}' que sale del árbol del consumer (`..`): un `directory` de Dependabot apunta dentro del repo, no a su padre")
+                continue
             expanded = expand_directories(repo, directory)
             if not expanded:
                 out.append(f"HR-75: el ecosystem '{ecosystem}' declara el directorio '{directory}' y el glob no expande a ningún directorio del repo")
@@ -324,6 +397,10 @@ def _coverage_findings(repo: Path, specs: dict[str, dict], declared: dict[str, l
     """Ecosystems y directorios declarados que el fichero del consumer no cubre."""
     out: list[str] = []
     covered_raw = coverage_in(text)
+    for ecosystem, raw_dirs in covered_raw.items():
+        for raw in raw_dirs:
+            if escapes_root(raw):
+                out.append(f"HR-75: {CONSUMER_PATH} apunta el ecosystem '{ecosystem}' al directorio '{raw}' que sale del árbol del consumer (`..`)")
     for ecosystem in covered_raw:
         if ecosystem not in specs:
             out.append(f"HR-75: {CONSUMER_PATH} declara el ecosystem '{ecosystem}' y la declaración no lo pide; la dirección de Dependabot es dato del canon, no del consumer")

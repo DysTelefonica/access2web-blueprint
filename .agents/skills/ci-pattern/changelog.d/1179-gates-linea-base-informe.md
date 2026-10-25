@@ -1,4 +1,4 @@
-type: docs
+type: patch
 
 El informe de la linea base de fricción de gates que decide el flip de la fase 2 (#1179, fase 0).
 

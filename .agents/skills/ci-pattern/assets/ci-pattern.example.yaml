@@ -30,3 +30,7 @@ P51_runners_profile: self-hosted
 P52_runners_pool_labels: [self-hosted, Linux, ARM64, apap, oracle, coolify, noble, deploy]
 P53_hosted_exceptions:
   deploy: accion de terceros sin build ARM64 (causa de indivisibilidad, HR-15)
+
+# Imagenes de CI fijadas por digest (P56-P57): off es inerte; con on, toda imagen literal lleva @sha256:<64 hex> o excepcion con motivo.
+P56_ci_images_gate: off
+P57_ci_image_exceptions: {}

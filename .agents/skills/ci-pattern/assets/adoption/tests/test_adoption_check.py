@@ -3490,5 +3490,32 @@ class ChangelogFragmentLineTests(unittest.TestCase):
             self.assertEqual(doc.count(HR44_LINE), 1)
 
 
+APAP_DEPENDABOT_FIXTURE = SKILL_ROOT / "assets" / "dependabot" / "tests" / "fixtures" / "apap-dependabot.yml"
+APAP_DEPENDABOT_DECLARATION = {"ecosystems": {"pip": "/", "npm": "/tailwindcss",
+                                              "github-actions": {"directories": ["/", "/.github/actions/*"]}}}
+
+
+class TestDependabotPhaseFiveWithApapFixture(unittest.TestCase):
+    """#1221 criterio 5: la fase 5 mide el dependabot.yml REAL de APAP y lo da por bueno."""
+
+    def test_the_real_apap_dependabot_file_passes_the_phase_five_hook(self):
+        """El hook de fase 5 (el que corre `adoption check --phase 5`) sobre el yml de APAP: sin hallazgos."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp)
+            (repo / ".github").mkdir()
+            (repo / ".github" / "dependabot.yml").write_text(
+                APAP_DEPENDABOT_FIXTURE.read_text(encoding="utf-8"), encoding="utf-8")
+            for rel, content in {
+                "pyproject.toml": "[project]\nname='x'\n",
+                "tailwindcss/package.json": "{}\n",
+                ".github/workflows/ci.yml": "name: ci\n",
+                ".github/actions/setup-python/action.yml": "name: setup\n",
+            }.items():
+                (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+                (repo / rel).write_text(content, encoding="utf-8")
+            found = CLI._check_dependabot_config(repo, {"dependabot": APAP_DEPENDABOT_DECLARATION})
+            self.assertEqual(found, [], found)
+
+
 if __name__ == "__main__":
     unittest.main()

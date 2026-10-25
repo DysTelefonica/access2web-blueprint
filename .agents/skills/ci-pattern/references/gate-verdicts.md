@@ -19,6 +19,8 @@ verificado se marca. Las fricciones citadas se detallan en
 | `pr-size` | Se queda, reforzado | Sin verificar | Excepción como campo de datos del cuerpo, no etiqueta (ardelperal/APAP_WEB#1141; R2) |
 | `branch-name` | Aviso, no bloquea (R10 de team-skills#1093) | — | El ruleset del repo aplica `^(feat\|fix\|chore\|docs\|refactor\|test)/[a-z0-9._-]+$` cuando existe. En un host sin rulesets el gate mide y avisa con `AVISO`, sin fallar el PR. |
 | `issue-spec` | Se queda, mensaje a mejorar | Sin verificar | Trazabilidad determinista rama + etiquetas + cierre (B4, B11) |
+| `ci-images` | Se queda, opt-in | `assets/ci-images/tests/test_ci_images_pinned.py` | Sin `P56_ci_images_gate: on` el gate es inerte; con él mide las imágenes de los workflows del consumer y las excepciones sin motivo o obsoletas son hallazgos (#1264) |
+| `workflow-policy` (HR-79) | Se queda, reforzado | `assets/workflow-policy/tests/test_workflow_policy.py` | `needs.<job>.outputs` solo existe para una dependencia DIRECTA: leerla de una transitiva llega vacía y el workflow queda verde con el valor equivocado; el marcador `if:` de #1192 es la excepción (#1277) |
 | `integration` (Postgres real) | Se queda | Sin verificar | Verifica comportamiento que el mock no cubre |
 | `security` (pip-audit, gitleaks, trivy config) | Se queda, re-agendado | Sin verificar | El resultado de pip-audit es función de la base de avisos del momento, no del diff — siete fallos en cuatro ramas sin relación dentro de 80 minutos (2026-09-29/10-01) —: corre programado sobre la rama por defecto y en los PRs que tocan manifiestos (HR-39, parámetro 22); gitleaks y trivy config sí son función del diff y permanecen por PR |
 

@@ -18,6 +18,18 @@ el cierre es explicito, exige ``issues: write`` y, si falla con el merge ya hech
 devuelve 3 («fusionado, issue sin cerrar»), nunca el 2. Un PR atrasado respecto de su base se bloquea antes (1): el arbol a fusionar
 no seria el que reviso el CI (#787) y, si ambos lados cambiaron el mismo fichero
 de ``.github/workflows/``, ``GITHUB_TOKEN`` no tiene el permiso ``workflows`` (#783).
+Tras el merge, el job mide el arbol integrado y publica el veredicto (#1265):
+compara el arbol del commit de merge con el del head verificado (leidos de
+``commit.tree.sha``, con el lector compartido del detective post-push) y lo
+escribe en stdout y en ``$GITHUB_STEP_SUMMARY``. Arboles iguales: 0. Arboles
+distintos: 5 (el merge no se deshace; el rojo dice que el arbol integrado no es
+el que reviso el CI). Si la medicion no se puede hacer, falla cerrado con 2
+nombrando la causa: un commit ilegible nunca se reporta como coincidencia.
+Esa medicion no interrumpe el trabajo posterior al merge (#1279): si falla, el
+resumen dice ``not measured: <causa>``, el cierre de las issues enlazadas y el
+dispatch post-merge se ejecutan igual, y el 2 sale al final con la causa.
+La operacion completa, con los codigos de salida y que hacer con el rojo, esta
+en ``references/integrated-tree-evidence.md`` (raiz del skill).
 Runner-enforced (HR-34); lo que no pase
 por aqui lo detecta el detective post-push (HR-49). Solo stdlib; cada
 llamada a ``gh api`` lleva timeout.
@@ -25,15 +37,18 @@ llamada a ``gh api`` lleva timeout.
 import argparse
 import base64
 import json
+import os
 import re
 import sys
 import time
+from pathlib import Path
 from typing import NamedTuple
 
 from check_push_compliance import (
     SHA_RE,
     FailClosedError,
     check_verdict,
+    commit_tree_sha,
     fail,
     gh_json,
     load_json,
@@ -49,6 +64,15 @@ RACE_CLOSED = 422  # PATCH devolvio 422 = carrera con el cierre auto por `Closes
 WAITABLE = (": missing", ": pending")  # el CI aun no publico o no termino; un fallo no se espera
 DEFAULT_WAIT, DEFAULT_POLL = 300.0, 10.0
 POST_DISPATCH_FAILED = 4  # merged, post-dispatch failed (no rollback, #817)
+# #1265: merged, the integrated tree is NOT the tree CI reviewed (no rollback).
+INTEGRATED_TREE_DRIFT = 5
+# #1265: el texto del veredicto. Va al resumen del job y al log; el drift se
+# dice con un NOT explicito para que nadie lo lea como un match.
+VERDICT_MATCH = "the integrated tree is the tree CI reviewed"
+VERDICT_DRIFT = "the integrated tree is NOT the tree CI reviewed"
+# #1279: como se dice que la medicion no se pudo hacer. Va al resumen del job
+# con la causa al lado: el resumen no afirma una coincidencia que no se midio.
+NOT_MEASURED = "not measured"
 WORKFLOWS_HINT = ("the token lacks the 'workflows' permission, which GITHUB_TOKEN cannot "
                   "have: GitHub refuses a merge that creates new workflow-file content; "
                   "update the PR branch onto its base or merge it as the maintainer")
@@ -637,14 +661,147 @@ def _resolve_post_merge_dispatch_names(contract: dict) -> list[str]:
 
 
 
+def read_commit_tree(repo: str, sha: str) -> str:
+    """Arbol de un commit por la API; falla cerrado si la forma no vale (#1265).
+
+    Lee ``commit.tree.sha`` (la forma real de la API, #928) con el lector
+    compartido de ``check_push_compliance``: una sola implementacion de «el
+    arbol de un commit». Si la API falla, ``gh_json`` ya falla cerrado; si la
+    forma no trae el arbol, tambien: un commit ilegible nunca se reporta como
+    coincidencia.
+    """
+    commit = gh_json(f"repos/{repo}/commits/{sha}")
+    tree = commit_tree_sha(commit)
+    if tree is None:
+        fail(f"the commit {sha} does not expose 'commit.tree.sha': the integrated tree "
+             "cannot be measured (fail closed)")
+    return tree
+
+
+def _verdict_summary(merge_sha: str, merge_tree: str, head_sha: str, head_tree: str,
+                     drift: bool) -> str:
+    """El veredicto en markdown para el resumen del job (#1265)."""
+    verdict = VERDICT_DRIFT if drift else VERDICT_MATCH
+    return ("## Integrated tree evidence\n"
+            "\n"
+            f"- merge commit: `{merge_sha}`\n"
+            f"- merge tree: `{merge_tree}`\n"
+            f"- verified head: `{head_sha}`\n"
+            f"- head tree: `{head_tree}`\n"
+            f"- verdict: {verdict}\n")
+
+
+def _not_measured_summary(cause: str) -> str:
+    """El resumen del job cuando la medicion no se pudo hacer (#1279).
+
+    Publica la causa en vez de callarse: el resumen no afirma que el arbol
+    coincide —no se ha medido— pero dice por que no se pudo medir.
+    """
+    return ("## Integrated tree evidence\n"
+            "\n"
+            f"- verdict: {NOT_MEASURED}: {cause}\n")
+
+
+def _write_step_summary(text: str) -> None:
+    """Publica el veredicto en ``$GITHUB_STEP_SUMMARY`` (#1265).
+
+    Sin la variable (corridas locales, tests) el veredicto queda solo en
+    stdout: no es un fallo. Con la variable definida, si la escritura falla el
+    job falla cerrado (2): no se puede afirmar que se publico la evidencia.
+    """
+    path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not path:
+        return
+    try:
+        with Path(path).open("a", encoding="utf-8") as handle:
+            handle.write(text)
+    except OSError as exc:
+        fail(f"the integrated-tree verdict could not be written to GITHUB_STEP_SUMMARY: {exc}",
+             exc)
+
+
+def _publish_not_measured(cause: str) -> None:
+    """Publica la causa de una medicion fallida (#1279).
+
+    Si ni esta escritura puede, no hay mas que hacer: la causa queda en
+    stdout y el job sale en rojo al final. Esto nunca interrumpe el trabajo
+    post-merge.
+    """
+    try:
+        _write_step_summary(_not_measured_summary(cause))
+    except FailClosedError as exc:
+        print(f"INTEGRATED TREE: the cause could not be published to the job summary: {exc}",
+              file=sys.stderr)
+
+
+def integrated_tree_verdict(repo: str, merge_sha: str, head_sha: str) -> tuple[bool, str | None]:
+    """Mide el arbol integrado y publica lo que pueda; devuelve (drift, causa).
+
+    La causa no es None cuando la medicion no se pudo hacer o su veredicto no
+    se pudo publicar. Esta funcion NO falla cerrado: el merge ya esta hecho
+    (#1265) y un fallo de medicion no puede impedir cerrar las issues ni
+    despachar los workflows post-merge (#1279). El job sale en rojo al final,
+    con 2, nombrando la causa.
+
+    Se mide INMEDIATAMENTE despues del merge: la evidencia se publica aunque
+    un paso posterior (cerrar la issue, despachar) falle. Compara ARBOLES y no
+    commits: con la base contenida en el head, merge, squash y rebase dan el
+    mismo arbol, asi que el control no depende del metodo de merge por defecto
+    del host.
+
+    El veredicto nombra los dos commits y los dos arboles: lo que se lee en el
+    log es la misma evidencia que queda en el resumen del job. No se crea ni
+    muta ningun check-run: nada en la cabeza del PR parece una segunda
+    evaluacion del mismo trabajo.
+    """
+    try:
+        merge_tree = read_commit_tree(repo, merge_sha)
+        head_tree = read_commit_tree(repo, head_sha)
+    except FailClosedError as exc:
+        cause = str(exc)
+        print(f"INTEGRATED TREE: {NOT_MEASURED}: {cause}")
+        _publish_not_measured(cause)
+        return False, cause
+    drift = merge_tree != head_tree
+    verdict = VERDICT_DRIFT if drift else VERDICT_MATCH
+    print(f"INTEGRATED TREE: merge commit {merge_sha} tree {merge_tree} | "
+          f"verified head {head_sha} tree {head_tree} | verdict: {verdict}")
+    try:
+        _write_step_summary(_verdict_summary(merge_sha, merge_tree, head_sha, head_tree, drift))
+    except FailClosedError as exc:
+        return drift, str(exc)
+    return drift, None
+
+
+def _verdict_code(drift: bool, measure_error: str | None) -> int:
+    """El codigo final tras el cierre y el dispatch: 2, 5 o 0 (#1279).
+
+    La precedencia es 3 (cierre fallido) y 4 (dispatch fallido), que se
+    devuelven antes de llegar aqui; despues 2 por medicion no hecha y
+    despues 5 por drift. Un fallo de medicion no puede esconder un drift
+    que ya se midio: el veredicto queda en la linea de stdout.
+    """
+    if measure_error is not None:
+        print(f"MERGED but the integrated tree was not measured: {measure_error}", file=sys.stderr)
+        return 2
+    if drift:
+        print("MERGED but not the tested tree: the integrated tree is NOT the tree CI reviewed",
+              file=sys.stderr)
+        return INTEGRATED_TREE_DRIFT
+    return 0
+
+
 def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: dict,
                               required: list[str], dispatch_names: list[str]) -> int:
-    """Gate -> merge -> close linked issues -> post-merge dispatch (#817).
+    """Gate -> merge -> evidencia del arbol -> close -> post-merge dispatch.
 
-    Devuelve el código de salida: 1 (gate bloquea), 2 (fail closed), 3
-    (close failed), 4 (dispatch failed) o 0 (success). El merge ya
-    hecho no se deshace en ninguno de los caminos 3 y 4 (idempotencia
-    hacia atrás, HR-34).
+    Devuelve el código de salida: 1 (gate bloquea), 2 (fail closed o
+    medición no hecha, #1279), 3
+    (close failed), 4 (dispatch failed), 5 (el arbol integrado no es el del
+    head verificado, #1265) o 0 (success). El merge ya
+    hecho no se deshace en ninguno de los caminos 2, 3, 4 y 5 (idempotencia
+    hacia atrás, HR-34). Un fallo de la medición del arbol no salta el cierre
+    ni el dispatch: la causa se guarda y se devuelve al final (#1279).
     """
     findings = gate_findings(args, pull, contract, required)
     resolved: dict[str, DispatchTarget] = {}
@@ -663,6 +820,12 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
               if any(target.with_range for target in resolved.values()) else None)
     sha = gh_merge(args.repo, args.pr, pull["head"]["sha"])
     print(f"MERGED: PR #{args.pr} merged by the governed path as {sha}")
+    # #1265: el veredicto del arbol integrado se mide y se publica INMEDIATAMENTE
+    # despues del merge, antes de cerrar y antes del dispatch: la evidencia sale
+    # aunque un paso posterior falle.
+    # #1279: un fallo de la medicion no interrumpe ese trabajo: la causa se
+    # guarda y se devuelve al final, con 2. El merge ya esta hecho.
+    drift, measure_error = integrated_tree_verdict(args.repo, sha, pull["head"]["sha"])
     try:
         close_linked_issues(args.repo, pull, args.pr, sha)
     except (MergedNotClosedError, FailClosedError) as exc:
@@ -677,7 +840,7 @@ def _merge_close_and_dispatch(args: argparse.Namespace, pull: dict, contract: di
         except PostDispatchFailedError as exc:
             print(f"MERGED but not dispatched: {exc}", file=sys.stderr)
             return POST_DISPATCH_FAILED
-    return 0
+    return _verdict_code(drift, measure_error)
 
 
 def run(args: argparse.Namespace) -> int:

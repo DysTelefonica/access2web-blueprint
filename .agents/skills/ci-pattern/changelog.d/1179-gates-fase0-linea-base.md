@@ -1,4 +1,4 @@
-type: feature
+type: minor
 
 Fase 0 de la propuesta de un job de gates por repo con un veredicto unico (#1179, aprobado por el dueno el 2026-10-24): el canon mide la linea base de friccion y la publica, para que el flip de la fase 2 sea una comparacion y no una opinion.
 
