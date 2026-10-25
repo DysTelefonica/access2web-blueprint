@@ -25,6 +25,15 @@ import pytest
 import yaml
 
 #: Every gate that must be wired, identified by the command it runs.
+#: La cadena de dependencias (HR-76, DysTelefonica/team-skills#1181): una sola
+#: linea, la misma en el job pr-gate y en scripts/local-preflight.sh.
+DEPS_CHAIN_COMMAND = (
+    "git diff --name-only origin/${GITHUB_BASE_REF:-main}...HEAD"
+    ' > "${RUNNER_TEMP:-/tmp}/changed-files.txt"'
+    " && python3 .agents/skills/ci-pattern/assets/deps-chain/check_deps_chain.py"
+    ' --repo . --changed-files "${RUNNER_TEMP:-/tmp}/changed-files.txt"'
+)
+
 REQUIRED_COMMANDS = (
     "ruff format --check --config app/pyproject.toml",
     "ruff check --config app/pyproject.toml .",
@@ -37,6 +46,7 @@ REQUIRED_COMMANDS = (
     'pytest -c app/pyproject.toml --rootdir=app -m "not integration"',
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
+    DEPS_CHAIN_COMMAND,
     ".agents/skills/ci-pattern/assets/pr-size/check_pr_size.py",
     ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
     "python scripts/check_walkthrough_schema.py --strict",

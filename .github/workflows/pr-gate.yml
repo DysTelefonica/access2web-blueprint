@@ -140,36 +140,11 @@ jobs:
             --binaries .github/tooling/pr-gate.txt \
             --runner "${{ runner.name }}"
 
-      # Cadena de dependencias (HR-76, DysTelefonica/team-skills#1181): un PR que cambia
-      # el manifiesto de dependencias y no su lock es rojo. La lista de ficheros cambiados
-      # sale de la API de GitHub (no depende de la profundidad del clon).
+      # Cadena de dependencias (HR-76, DysTelefonica/team-skills#1181): un PR que cambia el
+      # manifiesto de dependencias y no su lock es rojo. Una sola línea, la misma que
+      # scripts/local-preflight.sh (paridad local/CI).
       - name: Dependency chain (HR-76)
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          GITHUB_API_URL: ${{ github.api_url }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: |
-          set -euo pipefail
-          changed="$(mktemp)"
-          python3 - "$changed" <<'PY'
-          import json, os, sys, urllib.request
-          url = f"{os.environ['GITHUB_API_URL']}/repos/{os.environ['GITHUB_REPOSITORY']}/pulls/{os.environ['PR_NUMBER']}/files?per_page=100&page={{page}}"
-          names = []
-          page = 1
-          while True:
-              req = urllib.request.Request(url.format(page=page), headers={
-                  "Authorization": f"Bearer {os.environ['GITHUB_TOKEN']}",
-                  "Accept": "application/vnd.github+json"})
-              with urllib.request.urlopen(req, timeout=30) as resp:
-                  chunk = json.loads(resp.read().decode("utf-8"))
-              names += [item["filename"] for item in chunk]
-              if len(chunk) < 100:
-                  break
-              page += 1
-          with open(sys.argv[1], "w", encoding="utf-8") as fh:
-              fh.write("\n".join(names) + "\n")
-          PY
-          python3 .agents/skills/ci-pattern/assets/deps-chain/check_deps_chain.py --repo . --changed-files "$changed"
+        run: git diff --name-only origin/${GITHUB_BASE_REF:-main}...HEAD > "${RUNNER_TEMP:-/tmp}/changed-files.txt" && python3 .agents/skills/ci-pattern/assets/deps-chain/check_deps_chain.py --repo . --changed-files "${RUNNER_TEMP:-/tmp}/changed-files.txt"
 
       - name: pr size
         # Gate del canon (DysTelefonica/team-skills#806, BP#1040): ya no hay copia propia en scripts/.

@@ -11,6 +11,7 @@ set -euo pipefail
 ruff format --check --config app/pyproject.toml .
 ruff check --config app/pyproject.toml .
 sh .agents/skills/ci-pattern/assets/tooling-preflight/tooling-preflight.sh --binaries .github/tooling/pr-gate.txt
+git diff --name-only origin/${GITHUB_BASE_REF:-main}...HEAD > "${RUNNER_TEMP:-/tmp}/changed-files.txt" && python3 .agents/skills/ci-pattern/assets/deps-chain/check_deps_chain.py --repo . --changed-files "${RUNNER_TEMP:-/tmp}/changed-files.txt"
 python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py
 python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py local --body-file tests/fixtures/issue-spec-preflight-body.md
 python scripts/check_walkthrough_schema.py --strict
