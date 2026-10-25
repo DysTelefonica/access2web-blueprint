@@ -14,9 +14,17 @@ malformed input, an undeclared event, a policy job absent from ``needs``, a
 not), an undeclared skip, and any conclusion that is not ``success`` or a
 declared skip.
 
-Output separates root-cause failures (``failure``/``cancelled``) from skips,
-so a downstream cascade skip is never mistaken for the cause: the cause leads
-the verdict (``blocked by:``) and the cascade is a single line (#787).
+Output separates root-cause failures (``failure``/``cancelled``/``timed_out``/
+``startup_failure``) from skips, so a downstream cascade skip is never mistaken
+for the cause: the cause leads the verdict (``blocked by:``) and the cascade is
+a single line (#787).
+
+A root cause names the check that is actually red: its job name, its
+conclusion, and its first error annotation when the caller supplies one
+(``--annotations``); without one, it says so instead of dropping it (#1208).
+The caller may also declare which run attempt it is judging (``--run-attempt``,
+``github.run_attempt``): the verdict then states the attempt it judged, so a
+re-run is never read as the state of the previous attempt (#1208).
 
 The policy may carry an optional ``relaxation`` field (``reason`` and
 ``reference``, both non-empty strings). It is validated whenever present:
@@ -64,7 +72,10 @@ from pathlib import Path
 
 SUCCESS = "success"
 SKIPPED = "skipped"
-ROOT_CAUSE_CONCLUSIONS = ("failure", "cancelled")
+#: Conclusions that name a cause, not a consequence (#1208). ``timed_out`` and
+#: ``startup_failure`` join ``failure`` and ``cancelled``: the runner can end a
+#: job that way, and a job that never started is as red as one that failed.
+ROOT_CAUSE_CONCLUSIONS = ("failure", "cancelled", "timed_out", "startup_failure")
 
 POLICY_KEYS = frozenset({"required_jobs", "events"})
 #: ``state_dependent_gates`` lo lee el gate de politica de workflows (HR-39) del MISMO
@@ -496,6 +507,24 @@ def load_needs(path: str | None) -> tuple[dict, dict]:
     return {job: job_conclusion(job, value) for job, value in data.items()}, outputs
 
 
+def load_annotations(path: str | None) -> dict:
+    """Load the first error annotation per job; an unreadable file fails closed.
+
+    The file is a JSON object of ``job -> message``. The aggregator never calls
+    the API itself; the caller (the workflow step) passes what it read (#1208).
+    """
+    if path is None:
+        return {}
+    try:
+        raw = Path(path).read_bytes()
+    except OSError as exc:
+        raise GateError(f"unreadable annotations file: {exc}") from exc  # noqa: TRY003
+    data = parse_json(raw, "annotations file")
+    if not isinstance(data, dict) or not all(isinstance(v, str) for v in data.values()):
+        raise GateError("annotations file must be a JSON object of job -> message")  # noqa: TRY003
+    return data
+
+
 def same_file(first: str, second: str) -> bool:
     """True when both paths name one file; an unanswerable question raises."""
     try:
@@ -679,7 +708,8 @@ def classify_conclusions(needs: dict, accepted: set[str],
     cascade.
     """
     deps = dependencies or {}
-    sorted_out: dict[str, list[str]] = {"root_causes": [], "undeclared_skips": [],
+    sorted_out: dict[str, list[str]] = {"root_causes": [], "root_cause_jobs": [],
+                                        "undeclared_skips": [],
                                         "declared_skips": [], "unknown": []}
     for job, conclusion in sorted(needs.items()):
         if conclusion == SUCCESS:
@@ -691,6 +721,9 @@ def classify_conclusions(needs: dict, accepted: set[str],
                 sorted_out["undeclared_skips"].append(job)
         elif conclusion in ROOT_CAUSE_CONCLUSIONS:
             sorted_out["root_causes"].append(f"{job} ({conclusion})")
+            # The same cause as a job name: the verdict looks up its annotation
+            # with it. Both lists are built here, so they never differ (#1208).
+            sorted_out["root_cause_jobs"].append(job)
         else:
             sorted_out["unknown"].append(f"job '{job}' has unknown conclusion '{conclusion}'")
     return sorted_out
@@ -716,8 +749,9 @@ def _cascade_is_accepted(job: str, accepted: set[str],
     return False
 
 
-def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None,
-             outputs: dict | None = None) -> dict:
+def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None,  # noqa: PLR0913 — veredicto: needs, politica, evento y las cuatro entradas del llamante.
+             outputs: dict | None = None, annotations: dict | None = None,
+             run_attempt: int | None = None) -> dict:
     """Compare the needs object against the policy and return the verdict.
 
     ``base`` is the base-branch copy of the policy; None means the comparison
@@ -725,7 +759,12 @@ def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None,
     ``outputs`` carries the per-job ``outputs`` map the runner publishes; the
     docs-only lane reads its marker from there (#857). When absent, the lane
     contributes no skips.
+    ``annotations`` carries the first error annotation per job (#1208): the
+    cause names the red check and quotes it. ``run_attempt`` is the attempt the
+    caller judged; the verdict states it (#1208).
     """
+    if run_attempt is not None and run_attempt < 1:
+        raise GateError(f"run attempt must be a positive integer, got {run_attempt}")  # noqa: TRY003
     required = policy["required_jobs"]
     violations, accepted = policy_violations(needs, policy, event)
     dependencies = policy.get("dependencies") or {}
@@ -742,9 +781,17 @@ def evaluate(needs: dict, policy: dict, event: str, base: dict | None = None,
     refused = comparison is not None and comparison["refusal"] is not None
     root_causes = conclusions["root_causes"]
     undeclared_skips = conclusions["undeclared_skips"]
+    notes = annotations or {}
+    # #1208 (c): la causa nombra el check rojo y cita su primera anotacion.
+    root_details = [
+        f"{job} ({needs[job]}): {notes.get(job) or 'no annotation'}"
+        for job in conclusions["root_cause_jobs"]
+    ]
     return {
         "event": event,
+        "run_attempt": run_attempt,
         "root_causes": root_causes,
+        "root_details": root_details,
         "undeclared_skips": undeclared_skips,
         "declared_skips": conclusions["declared_skips"],
         "violations": violations,
@@ -779,12 +826,17 @@ def render_base_comparison(comparison: dict | None) -> list[str]:
 def render(report: dict) -> str:
     """Human-readable verdict; root causes first, cascade skips after."""
     lines = [f"VERDICT: {'PASS' if report['passed'] else 'FAIL'} (event: {report['event']})"]
+    # #1208 (b): con el intento declarado, el veredicto dice cuál juzgó; sin él,
+    # la linea no se imprime y el veredicto de los llamantes anteriores no cambia.
+    attempt = report.get("run_attempt")
+    if attempt is not None:
+        lines.append(f"judged attempt {attempt}")
     if report["root_causes"]:
         lines.append(f"blocked by: {', '.join(report['root_causes'])}")
     lines += render_base_comparison(report["base_comparison"])
     if report["root_causes"]:
         lines.append("root-cause failures (fix these first):")
-        lines += [f"  {item}" for item in report["root_causes"]]
+        lines += [f"  {item}" for item in report.get("root_details") or report["root_causes"]]
     if report["undeclared_skips"]:
         lines.append("skips in cascade, not declared for this event (consequences, not causes):")
         lines.append(f"  {', '.join(report['undeclared_skips'])} (skipped)")
@@ -819,6 +871,10 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="path to the base-branch copy of the policy; enables the relaxation check",
     )
+    parser.add_argument("--annotations", default=None,
+                        help="path to a JSON object job -> first error annotation of its check (#1208)")
+    parser.add_argument("--run-attempt", type=int, default=None,
+                        help="run attempt whose needs are judged (github.run_attempt); the verdict states it (#1208)")
     args = parser.parse_args(argv)
     # A job or event name may hold characters the stream cannot encode (a lone
     # surrogate is valid JSON); escape them instead of dying mid-verdict.
@@ -828,7 +884,9 @@ def main(argv: list[str] | None = None) -> int:
         policy = load_policy(args.policy)
         base = load_base_policy(args.base_policy, args.policy)
         needs, outputs = load_needs(args.needs_file)
-        report = evaluate(needs, policy, args.event, base, outputs)
+        annotations = load_annotations(args.annotations)
+        report = evaluate(needs, policy, args.event, base, outputs,
+                          annotations=annotations, run_attempt=args.run_attempt)
     except GateError as exc:
         print(f"FAIL fail-closed: {exc}", file=sys.stderr)
         return 1

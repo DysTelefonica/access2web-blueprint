@@ -112,7 +112,7 @@ class DocumentedStepCase(unittest.TestCase):
 
     def run_step(self, needs_json: str, event: str = "push", candidate: dict | None = None,
                  base: object = None, base_ref: str = BASE_BRANCH,
-                 base_tip: dict | None = None,
+                 base_tip: dict | None = None, run_attempt: int = 1,
                  ) -> tuple[subprocess.CompletedProcess, Path]:
         """Run the documented script inside a consumer-shaped checkout.
 
@@ -151,6 +151,7 @@ class DocumentedStepCase(unittest.TestCase):
         git(work, "remote", "add", "origin", origin.as_uri())
 
         values = {"NEEDS_JSON": needs_json, "EVENT_NAME": event,
+                  "RUN_ATTEMPT": str(run_attempt),
                   "BASE_REF": base_ref if event == "pull_request" else "",
                   "BASE_SHA": base_sha if event == "pull_request" else ""}
         # Every variable the step declares must be one this suite knows how
@@ -200,6 +201,17 @@ class ReadmeWiringTests(DocumentedStepCase):
         self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
         self.assertIn("is not declared in the policy", proc.stdout)
         self.assertFalse((tmp / "pwned").exists(), "the event name was executed by the step")
+
+    def test_documented_step_states_the_attempt_it_judged(self) -> None:
+        # #1208: el paso documentado pasa el intento de ejecución; el veredicto dice
+        # cuál juzgó, para que un re-run no se lea como el intento anterior.
+        green, _ = self.run_step(needs_object(), run_attempt=2)
+        self.assertEqual(green.returncode, 0, green.stdout + green.stderr)
+        self.assertIn("judged attempt 2", green.stdout)
+        red, _ = self.run_step(needs_object({"unit": "failure"}), run_attempt=3)
+        self.assertEqual(red.returncode, 1, red.stdout + red.stderr)
+        self.assertIn("judged attempt 3", red.stdout)
+        self.assertIn("blocked by: unit (failure)", red.stdout)
 
 
 class ReadmeBaseComparisonTests(DocumentedStepCase):

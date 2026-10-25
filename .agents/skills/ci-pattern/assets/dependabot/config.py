@@ -48,11 +48,11 @@ DEFAULT_DEFAULTS = {"day": "monday", "time": "06:00", "prefix": "chore(platform)
 MANIFEST_CANDIDATES = {
     "pip": ("pyproject.toml", "requirements*.txt"),
     "npm": ("package.json",),
-    "github-actions": (".github/workflows",),
+    "github-actions": (".github/workflows", "action.yml"),
 }
 
 _ECOSYSTEM_RE = re.compile(r"(?m)^\s*-?\s*package-ecosystem:\s*[\"']?(?P<ecosystem>[A-Za-z0-9_-]+)[\"']?\s*$")
-_DIRECTORY_RE = re.compile(r"(?m)^\s*directory:\s*(?P<directory>\S+)\s*$")
+_DIRECTORY_RE = re.compile(r"(?m)^\s*directory:\s*(?P<directory>[^\s#]+)\s*$")
 _DIRECTORIES_RE = re.compile(r"(?m)^\s*directories:\s*$")
 _LIST_ITEM_RE = re.compile(r"^\s*-\s*[\"']?(?P<item>[^\"'\s]+)[\"']?\s*$")
 
@@ -105,6 +105,18 @@ def unknown_keys(declaration: object) -> list[tuple[str, str]]:
 def declared_ecosystems(declaration: object) -> dict[str, str]:
     """Ecosystems declarados → directorio principal (el primero), en orden de declaración."""
     return {name: spec["directories"][0] for name, spec in ecosystem_specs(declaration).items()}
+
+
+#: Longitud mínima de un valor entre comillas: la pareja de comillas.
+MIN_QUOTED_LENGTH = 2
+
+
+def _unquote(value: str) -> str:
+    """Quita las comillas simples o dobles que Dependabot admite alrededor de un valor."""
+    value = value.strip()
+    if len(value) >= MIN_QUOTED_LENGTH and value[0] == value[-1] and value[0] in "\"'":
+        return value[1:-1]
+    return value
 
 
 def directory_value(directory: str) -> str:
@@ -203,7 +215,7 @@ def directories_in(text: str) -> dict[str, str]:
             continue
         match = _DIRECTORY_RE.search(line)
         if match:
-            found[current] = match.group("directory")
+            found[current] = _unquote(match.group("directory"))
             current = ""
             continue
         if _DIRECTORIES_RE.search(line):
@@ -216,43 +228,137 @@ def directories_in(text: str) -> dict[str, str]:
     return found
 
 
-def _directory_findings(found_dirs: dict[str, str], declared_dirs: dict[str, str]) -> list[str]:
-    """Los ecosystems cuya dirección no es la declarada, y los que nadie declaró."""
+def expand_directories(repo: Path, directory: str) -> list[str]:
+    """Los directorios que cubre un `directory` declarado, con sus globs expandidos.
+
+    Un directorio sin glob es una ruta literal. Un glob (`*`, `?`) se expande contra
+    el arbol del consumer: solo cuentan los directorios que existen (fail closed: un
+    glob sin ningun directorio devuelve lista vacia y el gate lo nombra).
+    """
+    value = directory_value(directory)
+    if not any(char in value for char in "*?"):
+        return [value]
+    pattern = value.strip("/")
+    expanded = []
+    for match in sorted(Path(repo).glob(pattern)):
+        if match.is_dir():
+            expanded.append(directory_value(match.relative_to(repo).as_posix()))
+    return expanded
+
+
+def _block_lines(text: str) -> dict[str, list[str]]:
+    """Las lineas de cada bloque `package-ecosystem:` del fichero, sin parser YAML."""
+    blocks: dict[str, list[str]] = {}
+    current = ""
+    for line in text.splitlines():
+        match = _ECOSYSTEM_RE.search(line)
+        if match:
+            current = match.group("ecosystem")
+            blocks.setdefault(current, [])
+            continue
+        if current:
+            blocks[current].append(line)
+    return blocks
+
+
+def coverage_in(text: str) -> dict[str, list[str]]:
+    """Ecosystem -> todos sus directorios (`directory` o `directories`), sin comillas.
+
+    Los globs se devuelven tal cual: :func:`findings` los expande contra el arbol.
+    """
+    found: dict[str, list[str]] = {}
+    for ecosystem, block in _block_lines(text).items():
+        dirs: list[str] = []
+        lines = block
+        for index, line in enumerate(lines):
+            match = _DIRECTORY_RE.search(line)
+            if match:
+                dirs.append(directory_value(_unquote(match.group("directory"))))
+            elif _DIRECTORIES_RE.search(line):
+                for follow in lines[index + 1:]:
+                    item = _LIST_ITEM_RE.search(follow)
+                    if not item:
+                        break
+                    dirs.append(directory_value(_unquote(item.group("item"))))
+        found[ecosystem] = dirs
+    return found
+
+
+def _extra_findings(text: str, specs: dict[str, dict]) -> list[str]:
+    """Cada extra declarada (grupo, `ignore`, `target-branch`) aparece en el bloque de su ecosystem."""
     out: list[str] = []
-    for ecosystem, expected in declared_dirs.items():
-        got = found_dirs.get(ecosystem)
-        if got is None:
-            out.append(f"HR-75: {CONSUMER_PATH} no declara el ecosystem '{ecosystem}' que la declaración exige con el directorio '{expected}'")
-        elif got != expected:
-            out.append(f"HR-75: {CONSUMER_PATH} apunta el ecosystem '{ecosystem}' al directorio '{got}' y la declaración exige '{expected}' (el manifiesto de ese ecosystem vive en '{expected}')")
-    for ecosystem in found_dirs:
-        if ecosystem not in declared_dirs:
+    blocks = _block_lines(text)
+    for ecosystem, spec in specs.items():
+        block = "\n".join(blocks.get(ecosystem, []))
+        for group in spec.get("groups", {}):
+            if not re.search(rf"^\s*{re.escape(group)}:\s*$", block, re.M):
+                out.append(f"HR-75: {CONSUMER_PATH} no declara el grupo '{group}' del ecosystem '{ecosystem}' que la declaración exige")
+        for item in spec.get("ignore", []):
+            name = str(item.get("dependency-name", ""))
+            if name and not re.search(rf"dependency-name:\s*[\"']?{re.escape(name)}[\"']?\s*$", block, re.M):
+                out.append(f"HR-75: {CONSUMER_PATH} no ignora '{name}' en el ecosystem '{ecosystem}' que la declaración exige")
+        if "target-branch" in spec and not re.search(
+                rf"target-branch:\s*[\"']?{re.escape(str(spec['target-branch']))}[\"']?\s*$", block, re.M):
+            out.append(f"HR-75: {CONSUMER_PATH} no fija target-branch '{spec['target-branch']}' en el ecosystem '{ecosystem}' que la declaración exige")
+    return out
+
+
+def _declared_directories(repo: Path, specs: dict[str, dict]) -> tuple[dict[str, list[str]], list[str]]:
+    """Directorios declarados por ecosystem (globs expandidos) y los hallazgos de declararlos."""
+    declared: dict[str, list[str]] = {}
+    out: list[str] = []
+    for ecosystem, spec in specs.items():
+        declared[ecosystem] = []
+        for directory in spec["directories"]:
+            expanded = expand_directories(repo, directory)
+            if not expanded:
+                out.append(f"HR-75: el ecosystem '{ecosystem}' declara el directorio '{directory}' y el glob no expande a ningún directorio del repo")
+            for item in expanded:
+                declared[ecosystem].append(item)
+                if not manifest_exists(repo, ecosystem, item):
+                    out.append(f"HR-75: el ecosystem '{ecosystem}' declara el directorio '{item}' y ahí no hay manifiesto ({', '.join(MANIFEST_CANDIDATES.get(ecosystem, ()))})")
+    return declared, out
+
+
+def _coverage_findings(repo: Path, specs: dict[str, dict], declared: dict[str, list[str]], text: str) -> list[str]:
+    """Ecosystems y directorios declarados que el fichero del consumer no cubre."""
+    out: list[str] = []
+    covered_raw = coverage_in(text)
+    for ecosystem in covered_raw:
+        if ecosystem not in specs:
             out.append(f"HR-75: {CONSUMER_PATH} declara el ecosystem '{ecosystem}' y la declaración no lo pide; la dirección de Dependabot es dato del canon, no del consumer")
+    for ecosystem, wanted in declared.items():
+        if ecosystem not in covered_raw:
+            out.append(f"HR-75: {CONSUMER_PATH} no declara el ecosystem '{ecosystem}' que la declaración exige")
+            continue
+        covered: set[str] = set()
+        for raw in covered_raw[ecosystem]:
+            covered.update(expand_directories(repo, raw) if any(c in raw for c in "*?") else [raw])
+        out += [f"HR-75: {CONSUMER_PATH} no cubre el directorio '{directory}' del ecosystem '{ecosystem}' que la declaración exige"
+                for directory in wanted if directory not in covered]
     return out
 
 
 def findings(repo: Path, declaration: object) -> list[str]:
-    """Hallazgos del fichero de Dependabot del consumer frente a la declaración."""
+    """Hallazgos del fichero de Dependabot del consumer frente a la declaración.
+
+    Cobertura, no igualdad (TS#1207): cada ecosystem y cada directorio declarados
+    (globs expandidos) deben estar cubiertos por el fichero del consumer, con sus
+    extras declaradas. Un ecosystem que nadie declaró sigue siendo un hallazgo.
+    Lo que el fichero añade (labels, schedule, commit-message...) no se mide.
+    """
     specs = ecosystem_specs(declaration)
     if not specs:
         return ["HR-75: la declaración 'dependabot' del contrato de adopción no declara ningún ecosystem con su directorio; declare al menos uno (ecosistema: directorio del manifiesto)"]
     out: list[str] = [f"HR-75: la declaración 'dependabot' tiene la clave '{key}' en el ecosystem '{name}', que el canon no admite (admitidas: {', '.join(sorted(ALLOWED_KEYS))})"
                       for name, key in unknown_keys(declaration)]
-    for ecosystem, spec in specs.items():
-        for directory in spec["directories"]:
-            if not manifest_exists(repo, ecosystem, directory):
-                out.append(f"HR-75: el ecosystem '{ecosystem}' declara el directorio '{directory}' y ahí no hay manifiesto ({', '.join(MANIFEST_CANDIDATES.get(ecosystem, ()))})")
+    declared, declared_out = _declared_directories(repo, specs)
+    out += declared_out
     consumer_file = Path(repo) / CONSUMER_PATH
     if not consumer_file.is_file():
         out.append(f"HR-75: falta {CONSUMER_PATH} en el consumer; genérelo con el canon (plantilla {TEMPLATE_RELATIVE.as_posix()}) desde la declaración 'dependabot' del contrato")
         return out
-    current = consumer_file.read_text(encoding="utf-8")
-    out += _directory_findings(directories_in(current), declared_dirs_of(specs))
-    if not out and current != render(declaration):
-        out.append(f"HR-75: {CONSUMER_PATH} no coincide con el que genera el canon desde la declaración; regenérelo (los ecosystems y sus directorios son correctos: difiere el resto del fichero)")
+    text = consumer_file.read_text(encoding="utf-8")
+    out += _coverage_findings(repo, specs, declared, text)
+    out += _extra_findings(text, specs)
     return out
-
-
-def declared_dirs_of(specs: dict[str, dict]) -> dict[str, str]:
-    """Directorio principal por ecosystem, normalizado como lo escribe Dependabot."""
-    return {name: directory_value(spec["directories"][0]) for name, spec in specs.items()}
