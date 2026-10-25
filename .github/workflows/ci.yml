@@ -545,6 +545,38 @@ jobs:
       group: gate-pip-audit-call-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
 
+  pip-audit-alert:
+    # HR-39 (#1414): un pip-audit programado en rojo deja una issue con el enlace al run,
+    # y comenta la issue abierta si ya existe (un nightly roto no abre una issue cada noche).
+    # Es el unico job del workflow con `issues: write`; no es requerido por PR.
+    name: pip-audit-alert (${{ github.event_name }})
+    needs: pip-audit
+    if: failure() && github.event_name == 'schedule'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: gate-pip-audit-alert-${{ github.run_id }}
+      cancel-in-progress: false
+    timeout-minutes: 5
+    steps:
+      - name: Abrir o comentar la issue del nightly de pip-audit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          title="ci(ci): pip-audit nightly en rojo"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "pip-audit nightly en rojo in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "Nightly en rojo: $RUN_URL"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" \
+              --label type:ci --label status:needs-triage \
+              --body "El nightly de pip-audit ha fallado. Run: $RUN_URL"
+          fi
   codeql:
     # HR-30: nombre event-qualified, mismo criterio que `quality` (#780).
     name: codeql (${{ github.event_name }})
@@ -984,7 +1016,7 @@ jobs:
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
     # does.
-    needs: [pr-gate, quality, integration, security, pip-audit, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands]
+    needs: [pr-gate, quality, integration, security, pip-audit, codeql, e2e-smoke, docs-codeguide, docs-links, docs-decisions, docs-architecture, governance-seals, docs-commands, pip-audit-alert]
     runs-on: ubuntu-24.04
     concurrency:
       group: gate-required-${{ github.event.pull_request.number || github.ref }}

@@ -50,5 +50,9 @@
   "docs-commands": {
     "outputs": {},
     "result": "success"
+  },
+  "pip-audit-alert": {
+    "outputs": {},
+    "result": "skipped"
   }
 }
