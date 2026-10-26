@@ -130,6 +130,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
           # ``sparse-checkout-cone-mode: false
           # 
@@ -405,6 +406,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
           sparse-checkout-cone-mode: false
 
@@ -617,6 +619,8 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -673,6 +677,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
@@ -699,6 +705,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
@@ -743,6 +751,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
@@ -772,6 +782,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
@@ -831,6 +843,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
@@ -892,6 +906,8 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
@@ -1044,6 +1060,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
@@ -1089,6 +1107,8 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Primer paso EJECUTABLE del job: el contrato de tooling se prueba en el
       # runner que ejecuta este job (G0.5 del canon), no en el runner histórico.
