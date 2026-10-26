@@ -296,10 +296,13 @@ jobs:
         # duplicadas, `timeout-minutes`, puertos fijos, pines por SHA, preflight de docker y grupo de
         # `concurrency` (HR-3, HR-26, HR-30). El `workflow gate` local conserva solo lo que el canon no
         # comprueba: permisos, PYTHON_VERSION, unicidad del grupo y runners alcanzables por PR.
+        # #1464: `--host-contract` es lo que le dice al gate qué nombres exige el host
+        # (`required`); sin él, la regla HR-30 no tiene sobre que aplicar y el defecto
+        # queda invisible en CI.
         run: |
           args=()
           for f in .github/workflows/*.yml; do args+=(--workflow "$f"); done
-          python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json
+          python .agents/skills/ci-pattern/assets/workflow-policy/check_workflow_policy.py "${args[@]}" --base-branch main --required-jobs .github/required-jobs-policy.json --host-contract .github/host-contract.json
 
       - name: suites populated
         # Issue #882 (PR-1): a green CI with zero tests in a suite is a false
@@ -1094,7 +1097,17 @@ jobs:
     # el requerido de la proteccion de rama—. Issue #857, PR-D: el conjunto de
     # eventos pasa a `pull_request || push || schedule || workflow_dispatch`;
     # `merge_group` desaparece con la cola de merge.
-    if: (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && !cancelled()
+    #
+    # #1464 (HR-30): `required` es el nombre que exige el contrato del host
+    # (.github/host-contract.json, required_checks), asi que solo puede
+    # publicarse desde un evento que evalua el pull request. En `schedule` y
+    # `workflow_dispatch` no lo evalua: un verde ahi es un falso verde
+    # indistinguible del bueno, y un dispatch manual sobre la rama de un PR
+    # publicaba `required` en verde sin que `pr-gate` —el gate del enlace a la
+    # issue y del presupuesto de revision— hubiera corrido nunca. El `push` a
+    # la base se mantiene: su run reporta sobre la base, no sobre la cabeza de
+    # un PR, y es el que satisface la proteccion de rama de `main`.
+    if: (github.event_name == 'pull_request' || github.event_name == 'push') && !cancelled()
     # Issue #882, PR-3: `integration` joins the required aggregator. The
     # job runs the full integration suite against the in-job Postgres
     # service; a red integration gate holds the PR the same way `quality`
