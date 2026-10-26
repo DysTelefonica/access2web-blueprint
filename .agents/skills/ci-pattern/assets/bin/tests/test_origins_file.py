@@ -90,8 +90,9 @@ class TemplateTest(unittest.TestCase):
     def test_the_template_runs_git_and_hands_the_output_to_the_script(self) -> None:
         """El git lo ejecuta el workflow: el asset no ejecuta git (ratchet)."""
         text = TEMPLATE.read_text(encoding="utf-8")
-        self.assertIn("git diff --name-only", text)
-        self.assertIn("git log --name-status", text)
+        # La cabeza del PR se checkoutea aparte (pr-head): el git corre ahí.
+        self.assertIn("git -C pr-head diff --name-only", text)
+        self.assertIn("git -C pr-head log --name-status", text)
         self.assertIn("--names-file", text)
         self.assertIn("--log-file", text)
         script = SCRIPT.read_text(encoding="utf-8")

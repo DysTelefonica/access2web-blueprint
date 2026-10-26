@@ -4321,6 +4321,7 @@ def cmd_adoption(args):
     phase_raw = None
     all_phases = False
     repo = None
+    config_from = None
     i = 0
     while i < len(rest):
         arg = rest[i]
@@ -4332,6 +4333,11 @@ def cmd_adoption(args):
         elif arg == "--all":
             all_phases = True
             i += 1
+        elif arg == "--config-from":
+            if i + 1 >= len(rest):
+                raise UsageError("--config-from requiere un directorio")
+            config_from = rest[i + 1]
+            i += 2
         elif arg.startswith("-"):
             raise UsageError(f"adoption check: opción no reconocida: {arg}")
         else:
@@ -4352,7 +4358,9 @@ def cmd_adoption(args):
             raise UsageError(f"--phase debe ser un número 0..{ADOPTION_PHASES - 1}; se recibió {phase_raw!r}")
         last = int(phase_raw)
 
-    contract = load_adoption_contract(repo)
+    # #1270: la configuracion que gobierna el gate puede venir de la BASE
+    # (--config-from); el estado que se mide sigue siendo el del repo.
+    contract = load_adoption_contract(config_from or repo)
     blocked_at = None
     findings = []
     for n in range(last + 1):

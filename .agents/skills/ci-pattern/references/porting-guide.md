@@ -407,74 +407,120 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    y añada el job al `ci.yml` del consumer, con esta forma:
 
    ```yaml
+   name: pr-gates
+
+   on:
+     pull_request_target:
+       types: [opened, edited, labeled, unlabeled, synchronize, reopened]
+
+   permissions:
+     contents: read
+     pull-requests: read
+     checks: write
+
+   concurrency:
+     group: pr-gates-${{ github.event.pull_request.number }}
+     # Solo un commit nuevo cancela una corrida (#978).
+     cancel-in-progress: ${{ github.event.action == 'synchronize' }}
+
+   jobs:
+     canon:
+       name: canon
+       # El UNICO job que puede leer el token del catalogo (#1270). No ejecuta
+       # codigo del PR: el checkout es de la BASE, de donde salen la accion y el
+       # sello, asi que el PR no puede tocar la una ni elegir el commit que se
+       # mide. El patron se publica como artefacto para los jobs del gate.
+       runs-on: [self-hosted, Linux, mi-consumer]
+       timeout-minutes: 10
+       steps:
+         - name: Check out the base (trusted action and seal)
+           uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+           with:
+             ref: ${{ github.event.pull_request.base.sha || github.sha }}
+             persist-credentials: false
+
+         # La accion y el sello son los de la base. El token vive SOLO en este paso.
+         - name: Resolve the canon at the seal
+           uses: ./.github/actions/pattern-at-pin
+           with:
+             token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+
+         # El canon viaja como tarball: un artifact no conserva el bit de
+         # ejecucion, y el canon lo necesita (`assets/bin/ci-pattern`).
+         - name: Pack the canon
+           run: |
+             set -euo pipefail
+             tar -czf "$RUNNER_TEMP/canon.tar.gz" -C "$PATTERN_DIR" .
+
+         - name: Publish the canon
+           uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+           with:
+             name: canon
+             path: ${{ runner.temp }}/canon.tar.gz
+             if-no-files-found: error
+
      governance-seals:
        name: governance-seals
-       # HR-72 (#1027). Único evento que publica este nombre de check (HR-30):
-       # en push, schedule y workflow_dispatch no hay PR que evaluar, así que
-       # ahí corre el gate bajo otro contexto o falla —nunca verde sin medir.
-       if: github.event_name == 'pull_request'
+       # HR-72 (#1027). El gate evalua el PR, asi que corre en `pull_request_target`,
+       # que ejecuta el workflow de la base (#1270).
+       needs: canon
        runs-on: [self-hosted, Linux, mi-consumer]
        timeout-minutes: 15
        permissions:
          contents: read
+         checks: write
+       env:
+         # El canon publicado por el job `canon`.
+         PATTERN_DIR: .canon
        steps:
          - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
            with:
+             ref: ${{ github.event.pull_request.head.sha || github.sha }}
+             path: pr-head
+             fetch-depth: 0
              persist-credentials: false
 
-         - name: El commit del patrón se lee del sello de `.team-skills.yaml` (#1062)
-           id: pattern-pin
-           env:
-             GH_TOKEN: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+         # La CONFIGURACION que gobierna el gate sale de la BASE (#1270): el
+         # contrato de adopcion, el `ci-pattern.yaml` y el host-contract se
+         # leen de ahi, sin credenciales. Un PR no puede reescribir el
+         # contrato que lo mide. El estado (el manifiesto de gobernanza y los
+         # ficheros gobernados) sigue siendo el del PR.
+         - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+           with:
+             ref: ${{ github.event.pull_request.base.sha }}
+             path: base
+             persist-credentials: false
+
+         - name: Get the canon
+           uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+           with:
+             name: canon
+             path: .canon
+
+         - name: Unpack the canon
            run: |
              set -euo pipefail
-             if [ ! -f .team-skills.yaml ]; then
-               echo "no existe .team-skills.yaml: sin su sello 'catalog @ <sha40>' no hay commit del patrón que medir (HR-3)." >&2
-               exit 1
-             fi
-             seal=$(head -n 1 .team-skills.yaml)
-             case "$seal" in
-               *"catalog @ "*) ;;
-               *)
-                 echo "la primera línea de .team-skills.yaml no trae el sello 'catalog @ <sha40>' (HR-3)." >&2
-                 exit 1
-                 ;;
-             esac
-             commit=${seal#*catalog @ }
-             commit=${commit%%)*}
-             case "$commit" in
-               "" | *[!0-9a-f]*)
-                 echo "el sello no trae un sha en hexadecimal: '$commit' (HR-3)." >&2
-                 exit 1
-                 ;;
-             esac
-             if [ "${#commit}" -lt 7 ] || [ "${#commit}" -gt 40 ]; then
-               echo "el sello trae un commit de ${#commit} caracteres, no entre 7 y 40: '$commit' (HR-3)." >&2
-               exit 1
-             fi
-             if [ "${#commit}" -lt 40 ]; then
-               # #1157: el sello abreviado (`git rev-parse --short`) se expande con la API del catálogo.
-               commit=$(gh api "repos/DysTelefonica/team-skills/commits/$commit" --jq .sha) || {
-                 echo "no se pudo resolver el sello abreviado '$commit' (HR-3)." >&2
-                 exit 1
-               }
-             fi
-             echo "commit=$commit" >> "$GITHUB_OUTPUT"
-
-         - name: Check out the pattern at the commit of that seal
-           uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
-           with:
-             repository: DysTelefonica/team-skills
-             # Del output del paso anterior, nunca escrito a mano (#1062).
-             ref: ${{ steps.pattern-pin.outputs.commit }}
-             path: pattern
-             token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
-             persist-credentials: false
+             tar -xzf .canon/canon.tar.gz -C .canon
 
          - name: Governance identity (HR-46, HR-72)
+           run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 pr-head --config-from base
+
+         # Un run de `pull_request_target` se atribuye a la BASE: su check run no
+         # aparece en el PR ni satisface un check requerido. El veredicto se publica
+         # como CHECK RUN sobre la CABEZA del PR, que es lo que bloquea el merge
+         # (`checks: write`).
+         - name: Publish the verdict as a check run on the PR head
+           if: always()
            env:
-             PATTERN_DIR: pattern
-           run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 .
+             HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+             GH_TOKEN: ${{ github.token }}
+             CONTEXT: governance-seals
+           run: |
+             set -euo pipefail
+             if [ "${{ job.status }}" = "success" ]; then conclusion=success; else conclusion=failure; fi
+             printf '{"head_sha": "%s", "name": "%s", "status": "completed", "conclusion": "%s"}' \
+               "$HEAD_SHA" "$CONTEXT" "$conclusion" > "$RUNNER_TEMP/check-run.json"
+             gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input "$RUNNER_TEMP/check-run.json"
 
          # #1172 (decisión del dueño, 2026-10-24): cuando el sello no coincide,
          # el mensaje del gate da el hash esperado y el comando de re-sellar.
@@ -488,7 +534,7 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
            env:
              PATTERN_DIR: pattern
            run: |
-             python3 "$PATTERN_DIR/assets/bin/ci-pattern" manifest seal . \
+             python3 "$PATTERN_DIR/assets/bin/ci-pattern" manifest seal base \
                --out "$RUNNER_TEMP/governance-manifest.resealed.json"
 
          - name: Publicar el manifiesto re-sellado como artefacto
@@ -498,15 +544,37 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
              name: governance-manifest-resealed
              path: ${{ runner.temp }}/governance-manifest.resealed.json
              if-no-files-found: warn
-   ```
+```
 
-   El commit del patrón **no se escribe**: se lee del sello `catalog @ <sha40>`
+   El commit del patrón **no se写在**: se lee del sello `catalog @ <sha40>`
    de la primera línea de `.team-skills.yaml`, que el propagador reescribe en
-   cada corrida, y se exporta a `$GITHUB_OUTPUT` (#1062). Un `pin:` literal
-   queda viejo en la siguiente propagación y el `diff` que produce no dice
-   nada. Si su catálogo no vive en `DysTelefonica/team-skills`, cambie el
-   `repository:` del segundo checkout; `PATTERN_DIR` es el directorio donde ese
-   checkout deja el patrón.
+   cada corrida (#1062). Un `pin:` literal queda viejo en la siguiente
+   propagación y el `diff` que produce no dice nada.
+
+   El fragmento es un **workflow completo** en `pull_request_target` (#1270): el
+   job `canon` resuelve el patrón y lo publica como artefacto, y los jobs del
+   gate lo consumen sin ningún secreto. El checkout del job `canon` es de la
+   BASE, así que la acción y el sello son los de la base: el PR no puede tocar
+   la una ni apuntar el sello a un commit más antiguo del catálogo. El patrón
+   viaja como tarball porque un artefacto no conserva el bit de ejecución.
+
+   El veredicto se publica como check run sobre la cabeza del PR: un run
+   de `pull_request_target` se atribuye a la base y su check run no bloquea el
+   merge.
+
+   La CONFIGURACION que gobierna el gate sale de la base (`--config-from base`):
+   el contrato de adopción, el `ci-pattern.yaml` y el host-contract se leen del
+   checkout de la base, sin credenciales. El estado —el manifiesto de
+   gobernanza y los ficheros gobernados— sigue siendo el del PR. Un PR no puede
+   reescribir el contrato que lo mide: si lo cambia, el gate sigue midiendo con
+   el de la base, y el cambio solo surte efecto al llegar a `main`.
+
+   El sello entra del PR como **dato**: el job hace checkout de un solo fichero
+   (`.team-skills.yaml`) y lo copia al workspace, porque la acción lo lee de ahí.
+   Del PR no entra nada más, y nada de lo que entra se ejecuta. Es lo que
+   mantiene verdes las PRs de propagación, que cambian el sello y re-sellan el
+   manifiesto. El residuo de esta forma es que un PR puede apuntar el sello a un
+   commit más antiguo del catálogo: degrada el gate, no roba el token.
 
    Cuando el sello no coincide, el gate nombra el hash esperado, el hash
    encontrado y el comando `ci-pattern manifest seal <repo>` (#1172). El job

@@ -1,4 +1,4 @@
-# Plantilla canonica del workflow de contrato de PR de un consumer (#1133).
+# Plantilla canonica del workflow de contrato de PR de un consumer (#1133, #1270).
 #
 # El paso de pr-contract necesita los datos del rango y el MAPA DE ORIGENES:
 # sin el, el gate cuenta el arbol vendorizado (`.agents/skills/`) para el
@@ -6,43 +6,110 @@
 # `size:exception` a mano (#931, #1088). Con el, el arbol vendorizado no cuenta
 # y un renombrado desde una ruta de autoria sigue contando.
 #
-# La plantilla deriva de las del patron (`assets/templates/README.md`); el
-# consumer cambia los tres valores marcados como VALOR.
+# Modelo de dos jobs, en `pull_request_target` (#1270). En `pull_request` el
+# workflow que corre es el de la cabeza del PR, asi que el secret del catalogo
+# no puede estar en un job de PR: lo resuelve el job `canon`, que hace checkout
+# de la BASE (de donde salen la accion y el sello) y publica el patron como
+# artefacto. El job del gate consume ese artefacto, no tiene ningun secreto y
+# lee la cabeza del PR como datos.
 #
-# VALOR 1: el pin del patron (el commit del canon que el job ejecuta).
-# VALOR 2: la politica de contrato de PR del consumer.
-# VALOR 3: el nombre del checkout del patron (para el paso que lo trae).
+# El veredicto se publica como check run sobre la cabeza del PR: un run
+# de `pull_request_target` se atribuye a la base y su check run no bloquea el
+# merge.
+#
+# La plantilla deriva de las del patron (`assets/templates/README.md`); el
+# consumer cambia la politica de contrato de PR (`.github/pr-contract.policy.json`).
 
 name: pr-contract
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, edited, labeled, unlabeled, synchronize, reopened]
-  workflow_call:
-    secrets:
-      TEAM_SKILLS_READ_TOKEN:
-        required: true
 
 permissions:
   contents: read
   pull-requests: read
+  checks: write
+
+concurrency:
+  group: pr-gates-${{ github.event.pull_request.number }}
+  # Solo un commit nuevo cancela una corrida (#978): `labeled` y `edited` disparan
+  # sobre la misma cabeza y dejarian un check cancelado que bloquea el merge.
+  cancel-in-progress: ${{ github.event.action == 'synchronize' }}
 
 jobs:
-  pr-contract:
-    name: pr-contract
-    runs-on: [self-hosted, Linux, consumer]
-    timeout-minutes: 5
+  canon:
+    name: canon
+    # El UNICO job que puede leer el token del catalogo (#1270). No ejecuta
+    # codigo del PR: el checkout es de la BASE, de donde salen la accion y el
+    # sello, asi que el PR no puede tocar la una ni elegir el commit que se
+    # mide. El patron se publica como artefacto para los jobs del gate.
+    runs-on: [self-hosted, Linux, mi-consumer]
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11bd5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Check out the base (trusted action and seal)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
 
-      # VALOR 3
-      - name: Check out the pattern at the pin
+      # La accion y el sello son los de la base. El token vive SOLO en este paso.
+      - name: Resolve the canon at the seal
         uses: ./.github/actions/pattern-at-pin
         with:
-          pin: VALOR 1
           token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}
+
+      # El canon viaja como tarball: un artifact no conserva el bit de
+      # ejecucion, y el canon lo necesita (`assets/bin/ci-pattern`).
+      - name: Pack the canon
+        run: |
+          set -euo pipefail
+          tar -czf "$RUNNER_TEMP/canon.tar.gz" -C "$PATTERN_DIR" .
+
+      - name: Publish the canon
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: canon
+          path: ${{ runner.temp }}/canon.tar.gz
+          if-no-files-found: error
+
+  pr-contract:
+    name: pr-contract
+    needs: canon
+    runs-on: [self-hosted, Linux, consumer]
+    timeout-minutes: 5
+    env:
+      # El canon publicado por el job `canon`.
+      PATTERN_DIR: .canon
+    steps:
+      # La cabeza del PR entra como DATOS: el gate la lee, no la ejecuta.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: pr-head
+          fetch-depth: 0
+          persist-credentials: false
+
+      # La CONFIGURACION que gobierna el gate sale de la BASE (#1270): sin esto
+      # un PR podria reescribir su propia politica y debilitar el gate. Checkout
+      # sin credenciales: la base no necesita ninguna.
+      - name: Check out the base (trusted configuration)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+          persist-credentials: false
+
+      - name: Get the canon
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: canon
+          path: .canon
+
+      - name: Unpack the canon
+        run: |
+          set -euo pipefail
+          tar -xzf .canon/canon.tar.gz -C .canon
 
       # Los datos del rango (merge-base: BASE...HEAD) y el mapa de origenes.
       # El mapa lo produce `vendored_budget.origins_for`; el gate no ejecuta
@@ -53,12 +120,12 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          git diff --name-only "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-changed
-          git diff --numstat  "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-numstat
-          git log --format='%P%n%B%n---COMMIT-END---' "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-commits
-          git ls-files > .ci-pr-tracked
-          git diff --name-only --find-renames=50% "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-names
-          git log --name-status --pretty=format: "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-log
+          git -C pr-head diff --name-only "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-changed
+          git -C pr-head diff --numstat  "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-numstat
+          git -C pr-head log --format='%P%n%B%n---COMMIT-END---' "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-commits
+          git -C pr-head ls-files > .ci-pr-tracked
+          git -C pr-head diff --name-only --find-renames=50% "${BASE_SHA}...${HEAD_SHA}" > .ci-pr-names
+          git -C pr-head log --name-status --pretty=format: "${BASE_SHA}..${HEAD_SHA}" > .ci-pr-log
           python3 "$PATTERN_DIR/assets/bin/origins_file.py" \
             --base "${BASE_SHA}" \
             --head "${HEAD_SHA}" \
@@ -66,17 +133,37 @@ jobs:
             --log-file .ci-pr-log \
             --output .ci-pr-origins
 
-      # VALOR 2
       - name: PR contract gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           python3 -I "$PATTERN_DIR/assets/pr-contract/check_pr_contract.py" \
             --event-file     "$GITHUB_EVENT_PATH" \
-            --policy-file    .github/pr-contract.policy.json \
-            --repo           . \
+            --policy-file    base/.github/pr-contract.policy.json \
+            --repo           pr-head \
             --changed-files  .ci-pr-changed \
             --numstat-file   .ci-pr-numstat \
             --commits-file   .ci-pr-commits \
             --tracked-files  .ci-pr-tracked \
             --origins-file   .ci-pr-origins
+
+      # Un run de `pull_request_target` se atribuye a la BASE: su check run no
+      # aparece en el PR ni satisface un check requerido. El veredicto se publica
+      # como CHECK RUN sobre la CABEZA del PR, que es lo que bloquea el merge
+      # (`checks: write`).
+      # El NOMBRE del check run es el que exige el contrato del consumer
+      # (`pr-contract / pr-contract`, P28): es el nombre que GitHub da al job.
+      # Con otro nombre, el check requerido no aparece en la cabeza del PR y el
+      # gate no bloquea el merge.
+      - name: Publish the verdict as a check run on the PR head
+        if: always()
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
+          CONTEXT: "pr-contract / pr-contract"
+        run: |
+          set -euo pipefail
+          if [ "${{ job.status }}" = "success" ]; then conclusion=success; else conclusion=failure; fi
+          printf '{"head_sha": "%s", "name": "%s", "status": "completed", "conclusion": "%s"}' \
+            "$HEAD_SHA" "$CONTEXT" "$conclusion" > "$RUNNER_TEMP/check-run.json"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" --input "$RUNNER_TEMP/check-run.json"

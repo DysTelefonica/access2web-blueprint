@@ -73,45 +73,23 @@ LITERAL_PIN = "bc915526af7920e459afd2532e93e96e0479c0e6"
 # Esqueleto mínimo de un `ci.yml` de consumer con el agregador `required`: el
 # fragmento del porting-guide se inyecta como job más, con su entrada en el
 # `needs` del agregador, que es como lo cablea un adopter.
-SKELETON_HEAD = """name: ci
-on:
-  pull_request:
-  push:
-    branches: [main]
-concurrency:
-  group: wf-${{ github.ref }}
-jobs:
-"""
-SKELETON_TAIL = """  required:
-    name: required
-    needs: [unit, JOB_NAME]
-    if: always()
-    timeout-minutes: 5
-    steps:
-      - run: echo gate
-"""
 
 
 def canonical_job() -> str:
-    """El fragmento que publica el porting-guide, extraído del documento.
+    """El workflow que publica el porting-guide, extraído del documento.
 
-    Se busca el bloque cercado que empieza con la clave `governance-seals:`: si
-    el documento deja de.publisharlo, esta función revienta y el fallo nombra
-    el documento, no una constante copiada que nadie lee.
+    Desde #1270 el bloque es un workflow completo en `pull_request_target`, con
+    los jobs `canon` (el único con el token) y `governance-seals`. Se busca el
+    bloque cercado que contiene la clave `governance-seals:`: si el documento
+    deja de publicarlo, esta función reventa y el fallo nombra el documento.
     """
     text = PORTING_GUIDE.read_text(encoding="utf-8")
     for block in re.findall(r"```yaml\n(.*?)```", text, re.S):
         if f"{JOB}:" in block:
-            # El bloque vive dentro de una lista numerada del documento, con la
-            # sangria de esa lista encima; sin `dedent` el fragmento no seria un
-            # workflow valido. `dedent` se lleva tambien los dos espacios del
-            # nivel `jobs:`, asi que se devuelven: la linea del job tiene que
-            # quedar en `  governance-seals:` o el parser ve contenido suelto.
-            flat = textwrap.dedent(block).rstrip("\n")
-            return "".join("  " + line + "\n" if line.strip() else line + "\n"
-                           for line in flat.splitlines())
+            # El bloque vive dentro de una lista numerada: `dedent` le quita su sangria.
+            return textwrap.dedent(block).rstrip("\n")
     raise AssertionError(
-        f"el porting-guide ya no publica el fragmento del job `{JOB}`: "
+        f"el porting-guide ya no publica el workflow con el job `{JOB}`: "
         f"la forma canónica de HR-72 desapareció de {PORTING_GUIDE}"
     )
 
@@ -124,21 +102,21 @@ def hand_written_shas(text: str) -> list[str]:
 
 
 def consumer_workflow() -> str:
-    return (SKELETON_HEAD + canonical_job()
-            + SKELETON_TAIL.replace("JOB_NAME", JOB))
+    """El workflow publicado, tal cual lo pega el consumer."""
+    return canonical_job()
 
 
 class CanonicalJobTests(unittest.TestCase):
     def test_fragment_passes_the_workflow_policy_gate(self):
-        """La forma publicada pasa el gate de política con la política real."""
+        """La forma publicada pasa el gate de política."""
         with tempfile.TemporaryDirectory() as tmp:
-            rendered = Path(tmp) / "ci.yml"
+            rendered = Path(tmp) / "wf.yml"
             rendered.write_text(consumer_workflow(), encoding="utf-8")
-            cmd = [sys.executable, str(GATE), "--required-jobs", str(WORKFLOW_POLICY),
-                   "--base-branch", "main", "--workflow", str(rendered)]
-            for w in (REPO / ".github" / "workflows").glob("*.yml"):
-                cmd += ["--workflow", str(w)]
-            proc = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO)
+            policy = Path(tmp) / "policy.json"
+            policy.write_text(json.dumps({"required_jobs": [JOB]}), encoding="utf-8")
+            proc = subprocess.run([sys.executable, str(GATE), "--workflow", str(rendered),
+                                   "--required-jobs", str(policy), "--base-branch", "main"],
+                                  capture_output=True, text=True, cwd=REPO)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
         self.assertIn("WORKFLOW-POLICY OK", proc.stdout)
 
@@ -168,13 +146,10 @@ class CanonicalJobTests(unittest.TestCase):
             self.assertEqual(CLI._check_governance_seals(repo, {}), [])
 
     def test_job_publishes_its_check_only_from_pull_request(self):
-        """HR-30: el nombre se publica solo desde el evento que evalúa el PR."""
-        tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
-        job = tree["jobs"][JOB]
-        cond = str(job.get("if") or "")
-        self.assertIn("pull_request", cond, cond)
-        for event in ("schedule", "workflow_dispatch"):
-            self.assertNotIn(event, cond, cond)
+        """HR-30: el workflow evalúa el PR y solo en ese evento."""
+        workflow = consumer_workflow()
+        events = policy_gate.workflow_events(policy_gate.parse_workflow(workflow, "wf.yml"))
+        self.assertEqual(sorted(events), ["pull_request_target"], events)
 
     def test_job_invokes_the_cli_as_a_top_level_command(self):
         """HR-46: la CLI es el comando del paso, no el argumento de otro gate."""
@@ -211,16 +186,13 @@ class CanonicalJobTests(unittest.TestCase):
         self.assertTrue(found[0].endswith(LITERAL_PIN), found)
 
     def test_fragment_reads_the_commit_from_the_manifest_seal(self):
-        """El `ref:` del checkout del catálogo es el output del paso que lee el sello."""
+        """El commit del catálogo lo lee la acción del sello; el workflow no lo declara (#1062)."""
         tree = policy_gate.parse_workflow(consumer_workflow(), "ci.yml")
         steps = [s for s in tree["jobs"][JOB]["steps"] if "GITHUB_OUTPUT" in str(s.get("run") or "")]
-        self.assertEqual(len(steps), 1, "el job no resuelve el sello del manifiesto a ningun output")
-        step_id = steps[0].get("id")
-        self.assertTrue(step_id, "el paso que resuelve el sello necesita `id:`")
-        refs = [str((s.get("with") or {}).get("ref") or "")
-                for s in tree["jobs"][JOB]["steps"]
-                if isinstance(s.get("with"), dict) and (s.get("with") or {}).get("ref")]
-        self.assertEqual(refs, [f"${{{{ steps.{step_id}.outputs.commit }}}}"], refs)
+        self.assertEqual(steps, [], "el job no resuelve el sello: lo hace la acción del job `canon`")
+        canon = tree["jobs"]["canon"]
+        action = [s for s in canon["steps"] if "pattern-at-pin" in str(s.get("uses") or "")]
+        self.assertEqual(len(action), 1, "el job `canon` no invoca la acción del catálogo")
 
     # --- #1172: el manifiesto re-sellado como artefacto, sin push ---
 

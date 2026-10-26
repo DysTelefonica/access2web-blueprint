@@ -1353,3 +1353,98 @@ class TestHR79NeedsOutputsFromDirectDependencies(GateCase):
                 self.assertEqual(code, 1, out)
                 self.assertIn("HR-79", out)
 
+
+class PullRequestCatalogSecretTests(GateCase):
+    """#1270: el token del catálogo solo en jobs que no pueden correr en un PR.
+
+    En `pull_request` el workflow, las acciones locales y el sello vienen de la
+    cabeza del PR: un job que puede correr ahí puede leer el token. Solo
+    `pull_request_target` (código de la base), `schedule` y `workflow_dispatch`
+    pueden tenerlo.
+    """
+
+    SECRET = "secrets.TEAM_SKILLS_READ_TOKEN"
+
+    def wf(self, on="on:\n  pull_request:\n", job="build", cond=None, secret=True):
+        s = (f"{on}concurrency:\n  group: wf-${{{{ github.ref }}}}\njobs:\n  {job}:\n"
+             f"    name: {job} (${{{{ github.event_name }}}})\n    timeout-minutes: 5\n")
+        if cond:
+            s += f"    if: {cond}\n"
+        s += "    steps:\n"
+        if secret:
+            s += ("      - name: Resolve the pattern\n"
+                  "        uses: ./.github/actions/pattern-at-pin\n"
+                  "        with:\n"
+                  f"          token: ${{{{ {self.SECRET} }}}}\n")
+        else:
+            s += "      - run: echo ok\n"
+        return s
+
+    def run_workflows(self, files: dict, required=("build",)):
+        """Analiza varios workflows a la vez (para el grafo de los reutilizables)."""
+        with tempfile.TemporaryDirectory() as d:
+            args = []
+            for name, text in files.items():
+                p = Path(d, name)
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text, encoding="utf-8")
+                args += ["--workflow", str(p)]
+            policy = Path(d, "policy.json")
+            policy.write_text(json.dumps({"required_jobs": list(required),
+                                          "events": {"pull_request": {"accepted_skips": []}},
+                                          "state_dependent_gates": []}), encoding="utf-8")
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", str(policy), "--base-branch", "main"],
+                                 capture_output=True, text=True)
+        return out.returncode, out.stdout + out.stderr
+
+    def test_a_pull_request_job_that_reads_the_secret_is_a_finding(self):
+        code, out = self.run_gate(self.wf())
+        self.assertEqual(code, 1, out)
+        self.assertIn(self.SECRET, out)
+        self.assertIn("#1270", out)
+
+    def test_the_same_job_in_pull_request_target_is_clean(self):
+        code, out = self.run_gate(self.wf(on="on:\n  pull_request_target:\n"))
+        self.assertEqual(code, 0, out)
+
+    def test_schedule_and_dispatch_are_clean(self):
+        """Un workflow programado puede tener el token: no evalúa el PR."""
+        for on in ("on:\n  schedule:\n    - cron: \"0 4 * * 1\"\n", "on:\n  workflow_dispatch:\n"):
+            with self.subTest(on=on):
+                code, out = self.run_workflows({
+                    "wf.yml": self.wf(on=on, job="other"),
+                    "pr.yml": self.wf(job="build", secret=False),
+                }, required=("build",))
+                self.assertEqual(code, 0, out)
+
+    def test_a_job_that_cannot_run_on_a_pr_is_clean(self):
+        """La condición del job lo excluye del PR: no lo puede leer."""
+        code, out = self.run_gate(self.wf(cond="github.event_name != 'pull_request'"))
+        self.assertEqual(code, 0, out)
+
+    def test_a_workflow_without_the_secret_is_clean(self):
+        code, out = self.run_gate(self.wf(secret=False))
+        self.assertEqual(code, 0, out)
+
+    def test_a_reusable_workflow_called_from_a_pr_inherits_the_event(self):
+        """El workflow reusable corre con los eventos de quien lo llama."""
+        caller = ("on:\n  pull_request:\nconcurrency:\n  group: wf-${{ github.ref }}\njobs:\n"
+                  "  call:\n    name: call\n    timeout-minutes: 5\n"
+                  "    uses: ./.github/workflows/callee.yml\n")
+        code, out = self.run_workflows({
+            ".github/workflows/callee.yml": self.wf(on="on:\n  workflow_call:\n", job="gate"),
+            ".github/workflows/caller.yml": caller,
+        }, required=("call",))
+        self.assertEqual(code, 1, out)
+        self.assertIn(self.SECRET, out)
+
+    def test_a_reusable_workflow_called_only_from_a_target_is_clean(self):
+        caller = ("on:\n  pull_request_target:\nconcurrency:\n  group: wf-${{ github.ref }}\njobs:\n"
+                  "  call:\n    name: call\n    timeout-minutes: 5\n"
+                  "    uses: ./.github/workflows/callee.yml\n")
+        code, out = self.run_workflows({
+            ".github/workflows/callee.yml": self.wf(on="on:\n  workflow_call:\n", job="gate"),
+            ".github/workflows/caller.yml": caller,
+        }, required=("call",))
+        self.assertEqual(code, 0, out)
