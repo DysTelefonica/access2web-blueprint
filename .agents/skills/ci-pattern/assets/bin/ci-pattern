@@ -1479,7 +1479,7 @@ def cmd_report_friction(args):
 ADOPTION_HELP = """\
 adoption — generación y gate por fase de la adopción (#276, #279)
 
-uso: ci-pattern adoption check (--phase N | --all) <repo>
+uso: ci-pattern adoption check (--phase N | --all) <repo> [--seal-baseline <dir>]
      ci-pattern adoption generate-doc <repo> --out <ruta>
 
 check: valida el contrato .github/ci-pattern-adoption.json del consumer y
@@ -1487,6 +1487,14 @@ verifica cada fase del porting-guide contra el árbol real. Exit: 0 la fase
 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2
 contrato ilegible, esquema inválido, sujeto vacío o entrada ausente de un
 gate.
+
+--seal-baseline <dir>: la fase 3 mide además contra la BASE del PR (un
+checkout de <dir> con su contrato de adopción). El conjunto que hay que
+sellar es la UNIÓN de los 'pattern_paths' de la base y los de la cabeza: lo
+que la base sellaba no puede reducir un PR mientras el fichero siga en el
+árbol, y lo nuevo de la cabeza también se sella. Retirar un workflow sí se
+permite: si el fichero ya no existe, no hay nada que sellar. Sin la opción
+el gate se mide como siempre; una base sin contrato legible es exit 2.
 
 generate-doc: escribe el documento operativo del consumer (--out), generado
 desde sus datos (ci-pattern.yaml, host-contract, required-jobs, formularios
@@ -3282,7 +3290,7 @@ def _incident_line_findings(rel, number, line):
     return findings
 
 
-def _check_phase_three(repo, decl, contract):
+def _check_phase_three(repo, decl, contract, seal_paths=None):
     """#277: sustitución del gobierno de destino ejecutada, no declarada."""
     pattern_paths = decl.get("pattern_paths")
     if not isinstance(pattern_paths, list) or not pattern_paths:
@@ -3320,6 +3328,19 @@ def _check_phase_three(repo, decl, contract):
             if isinstance(e, dict) and isinstance(e.get("artifact"), str):
                 inventory[e["artifact"]] = e
     declared_paths = {r for r in pattern_paths if isinstance(r, str)}
+    # #1317: la base de sellado no se reduce en un PR. El conjunto que hay que
+    # sellar es la UNIÓN de los 'pattern_paths' de la base y los de la cabeza:
+    # lo que la base sellaba no puede desaparecer mientras el fichero siga en
+    # el árbol. Retirar un workflow sí se permite: si el fichero ya no existe,
+    # no hay nada que sellar y la base deja de exigirlo.
+    if seal_paths:
+        for rel in sorted(seal_paths - declared_paths):
+            if (repo / rel).exists():
+                findings.append(
+                    f"fase 3: '{rel}' lo sellaba la BASE y el PR lo deja de declarar "
+                    "en 'pattern_paths', pero el fichero sigue en el árbol: la base de "
+                    "sellado no se reduce en un PR (--seal-baseline); decláralo en "
+                    "'pattern_paths' y séllalo, o borra el fichero si lo retiras")
     # Identidad del patrón: el manifiesto de gobierno verificado EN PROCESO
     # con load_manifest + sha256_governed (las mismas funciones de `verify`),
     # nunca la autodeclaración del contrato de adopción (#277; hallazgo del
@@ -4266,7 +4287,7 @@ def cmd_dependabot(args):
     return EXIT_FINDINGS if findings else EXIT_OK
 
 
-def _phase_findings(repo, n, decl, contract):
+def _phase_findings(repo, n, decl, contract, seal_paths=None):
     """Hallazgos de la fase n contra el árbol real; [] si cumple."""
     if not isinstance(decl, dict):
         return [f"fase {n}: sin declaración en el contrato"]
@@ -4277,7 +4298,7 @@ def _phase_findings(repo, n, decl, contract):
     if n == 1:
         return _check_evidence_phase(repo, n, decl)
     if n == 3:
-        return _check_phase_three(repo, decl, contract) + \
+        return _check_phase_three(repo, decl, contract, seal_paths) + \
             _check_evidence_phase(repo, n, decl) + \
             _check_agents_structure(repo, contract) + \
             _check_governance_seals(repo, contract)
@@ -4296,6 +4317,32 @@ def _phase_findings(repo, n, decl, contract):
     if n == 6:
         return _check_acceptance_phase(repo, decl)
     return [f"fase {n}: fase fuera del rango 0..{ADOPTION_PHASES - 1}"]
+
+
+def _seal_baseline_paths(base_dir):
+    """Conjunto que la BASE sellaba en la fase 3 (#1317).
+
+    Lee el contrato de adopción del checkout de la base y devuelve sus
+    `pattern_paths`: lo que la base sellaba no puede reducir un PR. Un
+    contrato ausente o ilegible es exit 2 (fallo cerrado): un gate que no
+    puede medir la base no da verde (HR-3)."""
+    try:
+        contract = load_adoption_contract(base_dir)
+    except UsageError as exc:
+        raise UsageError(
+            f"adoption check: --seal-baseline no puede medirse: {exc}") from exc
+    decl = (contract.get("phases") or {}).get("3")
+    if not isinstance(decl, dict):
+        return set()
+    paths = decl.get("pattern_paths")
+    if paths is None:
+        return set()
+    if not isinstance(paths, list) or not all(
+            isinstance(rel, str) and rel.strip() for rel in paths):
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            "base declara 'pattern_paths' que no es una lista de rutas")
+    return set(paths)
 
 
 def cmd_adoption(args):
@@ -4322,6 +4369,7 @@ def cmd_adoption(args):
     all_phases = False
     repo = None
     config_from = None
+    seal_baseline = None
     i = 0
     while i < len(rest):
         arg = rest[i]
@@ -4338,6 +4386,11 @@ def cmd_adoption(args):
                 raise UsageError("--config-from requiere un directorio")
             config_from = rest[i + 1]
             i += 2
+        elif arg == "--seal-baseline":
+            if i + 1 >= len(rest):
+                raise UsageError("--seal-baseline requiere un directorio")
+            seal_baseline = rest[i + 1]
+            i += 2
         elif arg.startswith("-"):
             raise UsageError(f"adoption check: opción no reconocida: {arg}")
         else:
@@ -4351,6 +4404,9 @@ def cmd_adoption(args):
         raise UsageError("adoption check: exactamente una de --phase N o --all")
     if not Path(repo).is_dir():
         raise UsageError(f"repo inexistente o no es un directorio: {repo}")
+    if seal_baseline is not None and not Path(seal_baseline).is_dir():
+        raise UsageError(
+            f"adoption check: --seal-baseline no es un directorio: {seal_baseline}")
     if all_phases:
         last = ADOPTION_PHASES - 1
     else:
@@ -4361,10 +4417,16 @@ def cmd_adoption(args):
     # #1270: la configuracion que gobierna el gate puede venir de la BASE
     # (--config-from); el estado que se mide sigue siendo el del repo.
     contract = load_adoption_contract(config_from or repo)
+    # #1317: la fase 3 mide además contra la BASE (--seal-baseline): el
+    # conjunto que hay que sellar es la unión de los 'pattern_paths' de la
+    # base y los de la cabeza. Sin la opción, no hay conjunto de la base y el
+    # gate se mide exactamente como antes.
+    seal_paths = _seal_baseline_paths(seal_baseline) if seal_baseline else None
     blocked_at = None
     findings = []
     for n in range(last + 1):
-        phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)), contract)
+        phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)),
+                                         contract, seal_paths)
         if phase_findings:
             blocked_at = n
             findings.extend(phase_findings)

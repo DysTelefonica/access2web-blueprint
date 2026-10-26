@@ -166,6 +166,7 @@ exige campo `relaxation`.
 | `docs_only_lane` | No | Lane condicional: `event`, `gate_job`, `output` y `skips`. El job `gate_job` debe publicar `output` = `"true"` en `event`; si no, esos skips no se aceptan (#857) |
 | `marker_lanes` | No | Lista de lanes condicionales con la misma forma que `docs_only_lane` más `equals` opcional: el lane acepta sus `skips` solo si el marker de `gate_job.output` vale exactamente `equals` en `event` (#863) |
 | `state_dependent_gates` | No | Lista de gates cuyo veredicto depende de estado externo (HR-39). La lee el gate de política de workflows del **mismo** fichero: cada entrada declara `name`, `command`, `pr_workflow`, `pr_job`, `manifests`, `scheduled_workflow` y `alert_command` |
+| `external_jobs` | No | Objeto `job -> fichero de workflow` para un job de `required_jobs` cuyo cableado vive en otro workflow (DysTelefonica/team-skills#1313). El job sigue en `required_jobs` (HR-72); no puede aparecer en el `needs` del agregador ni en el workflow del agregador, y el fichero nombrado debe estar junto al del agregador y definirlo. Su veredicto lo da el check de host, no este agregador |
 | `check_names` | No | Nombre con el que el runner publica cada check: `job -> nombre`. Solo las divergencias; `{event}` se sustituye por el evento en curso (#1219) |
 | `relaxation` | Solo al relajar | Objeto con `reason` y `reference`, ambos cadenas no vacías |
 
@@ -207,6 +208,14 @@ Ejemplo, el carril `no_ui`: una PR que no toca UI puede saltar `e2e`, y solo `e2
 Con `ui_changed` igual a `"true"`, el skip de `e2e` sale por exit 1. Añadir un lane
 o un skip a un lane existente es una relajación frente a la base (tabla anterior)
 y exige `relaxation`. `tests/test_readme_marker_lanes.py` ejecuta este ejemplo.
+
+## Jobs con cableado en otro workflow (`external_jobs`)
+
+Un job de `required_jobs` que vive en otro workflow (por ejemplo `pr-gates.yml`, en `pull_request_target`) no puede estar en el `needs:` del agregador: GitHub Actions sólo admite `needs` dentro del mismo fichero. Se declara en `external_jobs` con el nombre del fichero. La paridad comprueba que el job está definido en ese fichero y que no aparece en el `needs` del agregador; el agregador no lo exige. Su enforcement queda en el check de host (`required_checks` con clase `runner-enforced`).
+
+```json
+"external_jobs": {"governance-seals": "pr-gates.yml"}
+```
 
 ## Comparación contra la rama base (HR-15)
 

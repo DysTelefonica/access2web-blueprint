@@ -148,11 +148,24 @@ def _unreadable_policy(rel: str, policy_rel: str) -> str:
     )
 
 
+def _policy_path(repo: Path, policy_rel: str) -> Path:
+    """Where the gate's policy lives on this tree (DysTelefonica/team-skills#1313).
+
+    In CI the canonical template checks the base out into `base/`, which is the
+    trusted copy. Outside CI there is no `base/`, and the consumer's committed copy of
+    the same file is what the gate would read, so that copy is used. With neither
+    present the read fails and the caller reports it unreadable (fail closed).
+    """
+    if policy_rel.startswith("base/") and not (repo / "base").is_dir():
+        return repo / policy_rel[len("base/"):]
+    return repo / policy_rel
+
+
 def _gate_findings(repo: Path, rel: str, gate: str, commands: list[str]) -> list[str]:
     """Los hallazgos de una invocación del gate de contrato de PR."""
     policy_rel = _flag_value(gate, POLICY_FLAG) or DEFAULT_POLICY
     try:
-        policy = json.loads((repo / policy_rel).read_text(encoding="utf-8"))
+        policy = json.loads(_policy_path(repo, policy_rel).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return [_unreadable_policy(rel, policy_rel)]
     if not budget_active(policy):

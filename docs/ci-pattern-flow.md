@@ -52,7 +52,7 @@ detecta el gate de documentación operativa de `ci-pattern adoption check`.
 
 - Jobs requeridos del agregador: ci-images, codeql, docs-architecture, docs-codeguide, docs-commands, docs-decisions, docs-links, e2e-smoke, governance-seals, integration, pip-audit, pip-audit-alert, pr-gate, quality, security. Tabla generada 1:1 desde ellos: ningún check puede fallar por una regla que no esté aquí.
 - Contextos requeridos declarados: required.
-- Checks del contrato de host: required.
+- Checks del contrato de host: pr-gate, required.
 
 | `ci-images` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |
 | `codeql` | verificación del agregador del patrón | `bash scripts/local-preflight.sh` | → ejecute el preflight (HR-4), lea el fallo y corrija la causa responsable; si la regla no está en este documento, deténgase y pregunte |

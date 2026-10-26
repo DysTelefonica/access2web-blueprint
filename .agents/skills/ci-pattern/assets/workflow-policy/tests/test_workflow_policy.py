@@ -418,6 +418,171 @@ class TestHR30DeclaredRequiredChecks(RepoCase):
                 self.check(self.wf(), bad, 2)
 
 
+class TestHR30ReusableDeclaredNames(unittest.TestCase):
+    """#1311: el nombre de check que publica un workflow reutilizable es compuesto
+    (`<job que llama> / <job llamado>`), no el nombre del job solo.
+
+    El gate lo reconoce solo cuando puede PROBARlo (el workflow llamado está entre
+    los ficheros analizados); si no, falla cerrado: el nombre declarado sigue sin
+    publicarse y el finding se mantiene."""
+
+    PINNED = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
+
+    #: El workflow que llama: su job `pr-size` llama al reusable con el mismo nombre.
+    CALLER = (
+        "name: pr-metadata\n"
+        "on:\n"
+        "  pull_request:\n"
+        "concurrency:\n"
+        "  group: wf-${{ github.ref }}\n"
+        "jobs:\n"
+        "  pr-size:\n"
+        "    name: pr-size\n"
+        "    uses: ./.github/workflows/pr-size.yml\n"
+    )
+
+    #: El workflow reutilizable: su job `pr-size` publica `pr-size / pr-size`.
+    REUSABLE = (
+        "name: pr-size\n"
+        "on:\n"
+        "  workflow_call:\n"
+        "  pull_request:\n"
+        "  schedule:\n"
+        "    - cron: '0 3 * * *'\n"
+        "concurrency:\n"
+        "  group: reusable-${{ github.workflow }}\n"
+        "jobs:\n"
+        "  pr-size:\n"
+        "    name: pr-size\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - uses: " + PINNED + "\n"
+    )
+
+    #: Control: el mismo nombre, publicado por un job propio del workflow.
+    PLAIN = (
+        "name: plain\n"
+        "on:\n"
+        "  pull_request:\n"
+        "  schedule:\n"
+        "    - cron: '0 3 * * *'\n"
+        "concurrency:\n"
+        "  group: wf-${{ github.ref }}\n"
+        "jobs:\n"
+        "  pr-size:\n"
+        "    name: pr-size / pr-size\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - uses: " + PINNED + "\n"
+    )
+
+    #: La forma medida en access2web-blueprint: `security (pull_request) / gitleaks`.
+    SECURITY_CALLER = (
+        "name: security\n"
+        "on:\n"
+        "  pull_request:\n"
+        "concurrency:\n"
+        "  group: wf-${{ github.ref }}\n"
+        "jobs:\n"
+        "  security:\n"
+        "    name: security (${{ github.event_name }})\n"
+        "    uses: ./.github/workflows/security.yml\n"
+    )
+
+    SECURITY_REUSABLE = (
+        "name: security\n"
+        "on:\n"
+        "  workflow_call:\n"
+        "concurrency:\n"
+        "  group: reusable-${{ github.ref }}\n"
+        "jobs:\n"
+        "  gitleaks:\n"
+        "    name: gitleaks\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - uses: " + PINNED + "\n"
+    )
+
+    def policy(self, required="pr-size"):
+        return {"required_jobs": [required], "events": {"pull_request": {"accepted_skips": []}},
+                "state_dependent_gates": []}
+
+    def run_files(self, files, contract, required="pr-size"):
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            (d_path / "policy.json").write_text(json.dumps(self.policy(required)), encoding="utf-8")
+            (d_path / "host-contract.json").write_text(json.dumps(contract), encoding="utf-8")
+            args = []
+            for name, text in files.items():
+                (d_path / name).parent.mkdir(parents=True, exist_ok=True)
+                (d_path / name).write_text(text, encoding="utf-8")
+                args += ["--workflow", name]
+            out = subprocess.run([sys.executable, str(GATE), *args,
+                                  "--required-jobs", "policy.json", "--base-branch", "main",
+                                  "--host-contract", "host-contract.json"],
+                                 capture_output=True, text=True, cwd=str(d_path))
+        return out.returncode, out.stdout + out.stderr
+
+    def test_the_reusable_publishes_the_composite_name_and_enters_the_hr30_scope(self):
+        """(a) El nombre compuesto se reconoce y el job que lo publica entra en el
+        alcance de HR-30: el reusable dispara en `schedule` y eso es hallazgo."""
+        code, out = self.run_files({
+            ".github/workflows/pr-metadata.yml": self.CALLER,
+            ".github/workflows/pr-size.yml": self.REUSABLE,
+        }, contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("publishes its check name on 'schedule'", out)
+        self.assertNotIn("but no analyzed workflow job publishes it", out)
+
+    def test_the_control_keeps_todays_finding(self):
+        """(b) Control: el mismo nombre publicado por un job propio del workflow
+        conserva el finding de HR-30 de hoy."""
+        code, out = self.run_files({".github/workflows/plain.yml": self.PLAIN},
+                                   contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("publishes its check name on 'schedule'", out)
+        self.assertNotIn("but no analyzed workflow job publishes it", out)
+
+    def test_a_declared_name_nobody_publishes_is_still_a_finding(self):
+        """(c) Fail closed: un nombre declarado que nada publica sigue siendo hallazgo."""
+        code, out = self.run_files({
+            ".github/workflows/pr-metadata.yml": self.CALLER,
+            ".github/workflows/pr-size.yml": self.REUSABLE,
+        }, contract_of("pr-size / pr-size", "lint / lint"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'lint / lint'", out)
+        self.assertNotIn("requires check 'pr-size / pr-size'", out)
+
+    def test_the_reusable_outside_the_analysed_files_publishes_nothing(self):
+        """(d) Fail closed: sin el workflow reusable entre los ficheros analizados no
+        se puede probar ningún nombre compuesto; el declarado sigue sin publicarse."""
+        code, out = self.run_files({".github/workflows/pr-metadata.yml": self.CALLER},
+                                   contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-size / pr-size'", out)
+        self.assertIn("pass the workflow that does", out)
+        self.assertNotIn("publishes its check name on 'schedule'", out)
+
+    def test_a_remote_reusable_publishes_nothing(self):
+        """(e) Fail closed: un `uses:` remoto no está entre los ficheros analizados."""
+        caller = self.CALLER.replace("uses: ./.github/workflows/pr-size.yml",
+                                     "uses: otro/repo/.github/workflows/pr-size.yml@" + "a" * 40)
+        code, out = self.run_files({".github/workflows/pr-metadata.yml": caller},
+                                   contract_of("pr-size / pr-size"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-size / pr-size'", out)
+
+    def test_the_composite_name_keeps_the_wildcard_of_the_caller(self):
+        """(f) La forma medida en access2web-blueprint: `security (pull_request) /
+        gitleaks`; el `${{ }}` del nombre del llamador sigue siendo comodín."""
+        code, out = self.run_files({
+            ".github/workflows/pr-metadata.yml": self.SECURITY_CALLER,
+            ".github/workflows/security.yml": self.SECURITY_REUSABLE,
+        }, contract_of("security (pull_request) / gitleaks"), required="security")
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("requires check 'security (pull_request) / gitleaks'", out)
+
+
 SCHED_PINNED = "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683"
 
 
@@ -1088,6 +1253,68 @@ class TestInstanceIsolatedGroups(GateCase):
                         inputs=inputs))
         self.assertEqual(code, 1, out)
         self.assertIn("HR-73", out)
+
+
+class TestHR30ApiPublishedCheckNames(RepoCase):
+    """A check the job POSTs through the check-runs API counts as published
+    under its literal CONTEXT (DysTelefonica/team-skills#1313, G3). The shape is the
+    canonical pr-contract template: a pull_request_target job, a name the host contract
+    requires, and no job display name that equals it."""
+
+    CONTRACT = {"contract_version": 1,
+                "required_checks": [{"name": "pr-contract / pr-contract", "class": "runner-enforced"}]}
+    POLICY_PRT = {"required_jobs": ["publish"],
+                  "events": {"pull_request_target": {"accepted_skips": []}},
+                  "state_dependent_gates": []}
+
+    @staticmethod
+    def workflow(context="\"pr-contract / pr-contract\"", on="on:\n  pull_request_target:\n",
+                 publish=True):
+        step = ""
+        if publish:
+            step = ("      - name: Publish the verdict as a check run on the PR head\n"
+                    "        env:\n"
+                    f"          CONTEXT: {context}\n"
+                    "        run: |\n"
+                    "          gh api --method POST \"repos/$GITHUB_REPOSITORY/check-runs\" --input x.json\n")
+        else:
+            step = "      - name: Verdict\n        run: |\n          echo ok\n"
+        return (on + "concurrency:\n  group: wf-${{ github.ref }}\njobs:\n  publish:\n"
+                "    name: publish\n    timeout-minutes: 5\n    steps:\n"
+                "      - " + PINNED + "\n" + step)
+
+    def run_prt(self, text):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            w, p, c = root / "wf.yml", root / "policy.json", root / "host-contract.json"
+            w.write_text(text, encoding="utf-8")
+            p.write_text(json.dumps(self.POLICY_PRT), encoding="utf-8")
+            c.write_text(json.dumps(self.CONTRACT), encoding="utf-8")
+            out = subprocess.run([sys.executable, str(GATE), "--workflow", str(w),
+                                  "--required-jobs", str(p), "--base-branch", "main",
+                                  "--repo-root", str(root), "--host-contract", str(c)],
+                                 capture_output=True, text=True)
+        return out.returncode, out.stdout + out.stderr
+
+    def test_literal_context_publishes_the_declared_name(self):
+        code, out = self.run_prt(self.workflow())
+        self.assertEqual(code, 0, out)
+        self.assertNotIn("no analyzed workflow job publishes it", out)
+
+    def test_without_the_check_runs_step_the_name_is_still_a_finding(self):
+        code, out = self.run_prt(self.workflow(publish=False))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-contract / pr-contract'", out)
+
+    def test_non_literal_context_declares_no_name(self):
+        code, out = self.run_prt(self.workflow(context="\"${{ matrix.check }}\""))
+        self.assertEqual(code, 1, out)
+        self.assertIn("requires check 'pr-contract / pr-contract'", out)
+
+    def test_api_published_name_on_schedule_is_in_hr30_scope(self):
+        code, out = self.run_prt(self.workflow(on="on:\n  pull_request_target:\n  schedule:\n    - cron: '0 3 * * *'\n"))
+        self.assertEqual(code, 1, out)
+        self.assertIn("does not evaluate the PR", out)
 
 
 if __name__ == "__main__":

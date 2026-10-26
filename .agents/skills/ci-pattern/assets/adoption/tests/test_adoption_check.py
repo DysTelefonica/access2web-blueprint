@@ -1074,6 +1074,144 @@ class Phase3SubstitutionTests(unittest.TestCase):
             self.assertIn("name", err)
 
 
+class SealBaselineTests(unittest.TestCase):
+    """#1317: la fase 3 no puede reducir la base de sellado del patrón.
+
+    El conjunto que hay que sellar es la UNIÓN de los `pattern_paths` de la
+    base y los de la cabeza: lo que la base sellaba no puede desaparecer en un
+    PR y lo nuevo de la cabeza también se sella. La referencia a la base es
+    opt-in (`--seal-baseline <dir>`); sin ella el gate se mide como hoy.
+    """
+
+    BASE_WORKFLOW = ".github/workflows/coverage.yml"
+
+    def _base(self, tmp, pattern_paths, phase3=True):
+        """Checkout de la BASE: solo su contrato de adopción."""
+        base = Path(tmp) / "base"
+        (base / ".github").mkdir(parents=True, exist_ok=True)
+        phases = {"3": {"pattern_paths": list(pattern_paths)}} if phase3 else {}
+        (base / ".github" / "ci-pattern-adoption.json").write_text(
+            json.dumps({"schema_version": 1, "phases": phases}, indent=2),
+            encoding="utf-8")
+        return base
+
+    def _consumer(self, tmp, head_pattern_paths=None, base_pattern_paths=None,
+                  keep_workflow=True, declare_inventory=True):
+        """Consumer con dos workflows del patrón: `ci.yml` (siempre) y
+        `coverage.yml` (el que el PR puede dejar de sellar)."""
+        contract = complete_contract(upto=3)
+        if head_pattern_paths is not None:
+            contract["phases"]["3"]["pattern_paths"] = list(head_pattern_paths)
+        if declare_inventory:
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": self.BASE_WORKFLOW, "disposition": "adopted",
+                 "target": self.BASE_WORKFLOW})
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        touch(repo, self.BASE_WORKFLOW, text="on: push\njobs:\n  coverage:\n    runs-on: ubuntu-latest\n")
+        # El manifiesto se re-sella con el workflow incluido: la BASE lo sella.
+        seed_manifest(repo, list(PATTERN_MANIFEST_FILES) + [self.BASE_WORKFLOW])
+        if not keep_workflow:
+            (repo / self.BASE_WORKFLOW).unlink()
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES))
+        base = self._base(tmp, base_pattern_paths
+                          if base_pattern_paths is not None
+                          else [".github/workflows/ci.yml", self.BASE_WORKFLOW])
+        return repo, base
+
+    def test_el_pr_que_reduce_pattern_paths_es_rojo_con_la_base(self):
+        """E8b: el PR deja de sellar un workflow que la base sellaba y el
+        fichero sigue en el árbol. Con la base, rojo y nombrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, base = self._consumer(tmp, head_pattern_paths=[".github/workflows/ci.yml"])
+            code, _, err = run_cli(["adoption", "check", "--phase", "3",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn(self.BASE_WORKFLOW, err)
+
+    def test_sin_la_opcion_el_comportamiento_no_cambia(self):
+        """Sin `--seal-baseline` el gate se mide como hoy: el comportamiento
+        por defecto no cambia."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, base = self._consumer(tmp, head_pattern_paths=[".github/workflows/ci.yml"])
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_anade_un_artefacto_nuevo_sigue_en_verde(self):
+        """E9: añadir un artefacto de gobierno y sellarlo es legítimo; el
+        conjunto que hay que sellar es la unión, no un tope."""
+        with tempfile.TemporaryDirectory() as tmp:
+            new_workflow = ".github/workflows/new-gate.yml"
+            contract = complete_contract(upto=3)
+            contract["phases"]["3"]["pattern_paths"].append(new_workflow)
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": new_workflow, "disposition": "adopted", "target": new_workflow})
+            repo, _ = make_contract_repo(tmp, contract=contract)
+            seed_evidence(repo, 3)
+            touch(repo, new_workflow, text="on: push\njobs:\n  new-gate:\n    runs-on: ubuntu-latest\n")
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES) + [new_workflow])
+            base = self._base(tmp, [".github/workflows/ci.yml"])
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_retirada_real_de_un_workflow_no_bloquea(self):
+        """Retirar un workflow sí se permite: si el fichero ya no existe en el
+        árbol, la base no puede exigir que se siga sellando."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, base = self._consumer(
+                tmp, head_pattern_paths=[".github/workflows/ci.yml"],
+                keep_workflow=False, declare_inventory=False)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_base_sin_contrato_falla_cerrado(self):
+        """Un gate que no puede medir la base no da verde (HR-3): exit 2."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._consumer(tmp)
+            empty = Path(tmp) / "empty"
+            empty.mkdir()
+            code, _, err = run_cli(["adoption", "check", "--phase", "3",
+                                    "--seal-baseline", str(empty), str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("contrato de adopción ausente", err)
+
+    def test_base_inexistente_falla_cerrado(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._consumer(tmp)
+            code, _, err = run_cli(["adoption", "check", "--phase", "3",
+                                    "--seal-baseline", str(Path(tmp) / "nope"),
+                                    str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("no es un directorio", err)
+
+    def test_base_sin_fase_3_no_exige_nada(self):
+        """Una base que todavía no ha llegado a la fase 3 no sella nada: no
+        hay conjunto que conservar."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._consumer(tmp, head_pattern_paths=[".github/workflows/ci.yml"])
+            base = self._base(tmp, [], phase3=False)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_base_con_pattern_paths_ilegibles_falla_cerrado(self):
+        """Una base cuyo sello no se puede leer no se mide a medias."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._consumer(tmp)
+            base = Path(tmp) / "base-roto"
+            (base / ".github").mkdir(parents=True)
+            (base / ".github" / "ci-pattern-adoption.json").write_text(
+                json.dumps({"schema_version": 1,
+                            "phases": {"3": {"pattern_paths": "no-es-una-lista"}}}),
+                encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "3",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("pattern_paths", err)
+
+
 class Phase3WiringTests(unittest.TestCase):
     """#1027 (HR-72): la fase 3 se mide en un pull request.
 

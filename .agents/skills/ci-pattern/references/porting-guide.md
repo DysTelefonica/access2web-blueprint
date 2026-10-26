@@ -505,6 +505,12 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
          - name: Governance identity (HR-46, HR-72)
            run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 pr-head --config-from base
 
+         # La BASE DE SELLADO no se reduce en un PR (#1317): la fase 3 mide el
+         # conjunto que hay que sellar como la union de los 'pattern_paths' de la
+         # base y los de la cabeza. El checkout de la base ya esta en 'base/'.
+         - name: Governance identity against the seal baseline (#1317)
+           run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 pr-head --seal-baseline base
+
          # Un run de `pull_request_target` se atribuye a la BASE: su check run no
          # aparece en el PR ni satisface un check requerido. El veredicto se publica
          # como CHECK RUN sobre la CABEZA del PR, que es lo que bloquea el merge
@@ -568,6 +574,18 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    gobernanza y los ficheros gobernados— sigue siendo el del PR. Un PR no puede
    reescribir el contrato que lo mide: si lo cambia, el gate sigue midiendo con
    el de la base, y el cambio solo surte efecto al llegar a `main`.
+
+   La BASE DE SELLADO no se reduce en un PR (#1317). Con `--seal-baseline <dir>`
+   la fase 3 mide el conjunto que hay que sellar como la UNIÓN de los
+   `pattern_paths` de la base y los de la cabeza: lo que la base sellaba no
+   puede desaparecer de un PR mientras el fichero siga en el árbol, y lo nuevo
+   de la cabeza también se sella. Retirar un workflow sí se permite: si el
+   fichero ya no existe, no hay nada que sellar y la base deja de exigirlo. Sin
+   la opción el gate se mide como siempre, y una base sin contrato legible
+   falla cerrado (exit 2). Es una alternativa a `--config-from`: no lo
+   reemplaza. `--config-from` cambia el contrato que gobierna TODAS las fases y
+   con ello relaja las fases 0, 4 y 5; `--seal-baseline` solo añade la base de
+   sellado a la fase 3.
 
    El sello entra del PR como **dato**: el job hace checkout de un solo fichero
    (`.team-skills.yaml`) y lo copia al workspace, porque la acción lo lee de ahí.

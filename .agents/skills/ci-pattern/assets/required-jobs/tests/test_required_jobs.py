@@ -508,5 +508,35 @@ class ExitCodeContractTests(unittest.TestCase):
         self.assertIn("exit 2", readme)
 
 
+class ExternalJobsTests(unittest.TestCase):
+    """`external_jobs` (DysTelefonica/team-skills#1313, G1): a required job whose
+    verdict is enforced by the host check, not by this aggregator's `needs`."""
+
+    POLICY = {"required_jobs": ["lint", "governance-seals"],
+              "events": {"pull_request": {"accepted_skips": []}},
+              "external_jobs": {"governance-seals": "pr-gates.yml"}}
+
+    def test_external_job_absent_from_needs_passes(self) -> None:
+        result = run_gate(self.POLICY, {"lint": {"result": "success"}})
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_external_job_in_needs_exits_nonzero(self) -> None:
+        needs = {"lint": {"result": "success"}, "governance-seals": {"result": "success"}}
+        result = run_gate(self.POLICY, needs)
+        self.assertNotEqual(result.returncode, 0)
+
+    def test_external_job_outside_required_jobs_exits_nonzero(self) -> None:
+        policy = dict(self.POLICY, external_jobs={"ghost": "pr-gates.yml"})
+        result = run_gate(policy, {"lint": {"result": "success"}})
+        self.assertNotEqual(result.returncode, 0)
+
+    def test_external_job_without_a_workflow_name_exits_nonzero(self) -> None:
+        for bad in ({"governance-seals": ""}, {"governance-seals": 3}, ["governance-seals"]):
+            with self.subTest(external_jobs=bad):
+                policy = dict(self.POLICY, external_jobs=bad)
+                result = run_gate(policy, {"lint": {"result": "success"}})
+                self.assertNotEqual(result.returncode, 0)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
