@@ -52,6 +52,19 @@ PR's), whether or not they are in the required-jobs policy; a name no
 analyzed job publishes is a finding, and a malformed contract exits 2.
 Without the option every job of the required-jobs policy is in scope.
 
+A check that arrives through a reusable workflow is published under a composed
+name, ``<job that calls> / <job called>``: the gate recognizes that name when
+both workflows are among the analyzed files, and the job that publishes it
+enters the scope of the ``schedule``/``workflow_dispatch`` rule. A called
+workflow that is not among the analyzed files (or a remote one) proves no
+composed name, so nothing is declared published for it (fail closed: a name
+that cannot be proven is not published).
+
+A check a job POSTs through the check-runs API (a step that calls `check-runs`) is
+published under the literal value of its `CONTEXT` variable (DysTelefonica/team-skills#1313):
+the canonical `pr-contract` template publishes its verdict that way. A `CONTEXT` with `${{ }}`
+cannot be proven and declares nothing.
+
 The list of required jobs always comes from the required-jobs policy,
 never from code. A required job named by the policy but absent from every
 analyzed workflow is a finding: silence there would be a gate reporting
@@ -599,11 +612,26 @@ def load_declared_checks(path: str) -> list[str]:
     return [e["name"] for e in entries]
 
 
-def declared_name(jid: str, job: dict, declared: list[str]) -> str | None:
-    """The declared required check this job publishes, or None. `${{ }}` in a name matches anything."""
-    name = job.get("name") if isinstance(job.get("name"), str) else jid
-    rx = ".+".join(re.escape(part) for part in re.split(r"\$\{\{.*?\}\}", name))
-    return next((d for d in declared if re.fullmatch(rx, d)), None)
+def job_display_name(jid: str, job: dict) -> str:
+    """El nombre de pantalla del job: su `name:` o, si no lo tiene, su id de job."""
+    name = job.get("name")
+    return name if isinstance(name, str) else jid
+
+
+def name_matches(template: str, declared: str) -> bool:
+    """Si un nombre publicado casa con un nombre declarado; `${{ }}` en el nombre es comodín."""
+    rx = ".+".join(re.escape(part) for part in re.split(r"\$\{\{.*?\}\}", template))
+    return re.fullmatch(rx, declared) is not None
+
+
+def declared_name(jid: str, job: dict, declared: list[str],
+                  names: set[str] | None = None) -> str | None:
+    """The declared required check this job publishes, or None. `${{ }}` in a name matches anything.
+
+    `names` son los nombres que publica el job (plantillas); sin ellos, solo el
+    nombre propio del job."""
+    published = names if names is not None else {job_display_name(jid, job)}
+    return next((d for d in declared for n in published if name_matches(n, d)), None)
 
 
 DOCKER_RUN = re.compile(r"\bdocker\s+run\b")
@@ -745,7 +773,7 @@ def _needs_output_findings(wf: str, jid: str, job: dict) -> list[str]:
 
 
 def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str, out: list,
-              root: Path = Path("."), declared: list[str] | None = None):
+              root: Path = Path("."), contract: HostContract | None = None):
     def finding(msg):
         out.append(f"{wf} job '{jid}': {msg}")
 
@@ -768,8 +796,11 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
                 finding("`push` trigger reaches branches other than the base (HR-30)")
     # With a host contract, only the names it requires are in scope for schedule/dispatch;
     # without one, every job of the required-jobs policy is (a job that is not a required
-    # check cannot satisfy one from a run that is not the PR's).
-    if (declared_name(jid, job, declared) is not None) if declared is not None else required:
+    # check cannot satisfy one from a run that is not the PR's). The scope matches ANY of
+    # the names the job publishes, including the composed one of a reusable workflow.
+    scope = required if contract is None else \
+        declared_name(jid, job, contract.names, contract.published.get((wf, jid))) is not None
+    if scope:
         for ev in ("schedule", "workflow_dispatch"):
             if ev in events and not qualified and not never_on_pr and (allowed is None or ev in allowed):
                 finding(f"publishes its check name on '{ev}', which does not evaluate the PR (HR-30)")
@@ -1106,6 +1137,100 @@ def local_workflow_target(uses: object) -> str | None:
     return m.group(1) if m else None
 
 
+def _analysed_workflow(target: str, workflows: list[tuple[str, dict]]) -> tuple[str, dict] | None:
+    """El workflow de los analizados al que apunta `target` (nombre de fichero), o None.
+
+    Solo si el nombre apunta a UNO de los workflows analizados: con dos homónimos no se
+    sabe a cuál se llama, así que no se compone ningún nombre (fail closed)."""
+    matches = [(p, d) for p, d in workflows if Path(p).name == target]
+    return matches[0] if len(matches) == 1 else None
+
+
+def _caller_names(path: str, workflows: list[tuple[str, dict]]) -> list[str]:
+    """Los nombres de pantalla de los jobs que llaman a este workflow (reutilizable).
+
+    Sin prueba de a qué workflow llama cada `uses:` (el nombre del fichero no es único
+    entre los analizados) no se compone ningún nombre (fail closed)."""
+    target = Path(path).name
+    if _analysed_workflow(target, workflows) is None:
+        return []
+    names = []
+    for cpath, cdoc in workflows:
+        if cpath == path:
+            continue
+        for cjid, cjob in (cdoc.get("jobs") or {}).items():
+            if not isinstance(cjob, dict):
+                continue
+            if local_workflow_target(cjob.get("uses")) == target:
+                names.append(job_display_name(cjid, cjob))
+    return names
+
+
+def api_check_names(job: dict) -> set[str]:
+    """Check names a job publishes through the check-runs API (DysTelefonica/team-skills#1313).
+
+    A step that POSTs to `repos/.../check-runs` names its check in an env var, the
+    canonical `pr-contract` template does it with `CONTEXT`. The literal value is the
+    name; a value with `${{ }}` cannot be proven, so it declares nothing (fail closed).
+    """
+    names: set[str] = set()
+    for step in job.get("steps") or []:
+        if not isinstance(step, dict) or "check-runs" not in str(step.get("run", "")):
+            continue
+        env = step.get("env")
+        context = env.get("CONTEXT") if isinstance(env, dict) else None
+        if isinstance(context, str) and context.strip() and "${{" not in context:
+            names.add(context)
+    return names
+
+
+def published_names(path: str, jid: str, job: dict, doc: dict,
+                    workflows: list[tuple[str, dict]]) -> set[str]:
+    """Los nombres de check que publica el job (plantillas; `${{ }}` es comodín).
+
+    Un job publica su nombre de pantalla. Un job de un workflow reutilizable publica
+    además `<llamador> / <job>` por cada job que lo llama, y un job que llama a un
+    workflow reutilizable publica `<este job> / <job llamado>` por cada job del workflow
+    llamado: así compone GitHub el nombre del check. Un workflow llamado que no está
+    entre los ficheros analizados (o uno remoto) no prueba ningún nombre compuesto:
+    no se declara nada publicado (fail closed)."""
+    display = job_display_name(jid, job)
+    names = {display} | api_check_names(job)
+    target = local_workflow_target(job.get("uses"))
+    called = _analysed_workflow(target, workflows) if target is not None else None
+    if called is not None:
+        for cid, cjob in (called[1].get("jobs") or {}).items():
+            if isinstance(cjob, dict):
+                names.add(f"{display} / {job_display_name(cid, cjob)}")
+    if "workflow_call" in workflow_events(doc):
+        for caller in _caller_names(path, workflows):
+            names.add(f"{caller} / {display}")
+    return names
+
+
+def published_names_by_job(docs: list[tuple[str, dict]]) -> dict[tuple[str, str], set[str]]:
+    """Los nombres que publica cada job analizado, indexados por (workflow, job)."""
+    out: dict[tuple[str, str], set[str]] = {}
+    for path, doc in docs:
+        for jid, job in doc["jobs"].items():
+            out[(path, jid)] = published_names(path, jid, job, doc, docs)
+    return out
+
+
+class HostContract(NamedTuple):
+    """El contrato del host y los nombres que publica cada job de los workflows analizados."""
+    names: list[str]
+    published: dict[tuple[str, str], set[str]]
+
+
+def host_contract(declared: list[str] | None,
+                  docs: list[tuple[str, dict]]) -> HostContract | None:
+    """El contrato del host con los nombres publicados de cada job, o None si no hay contrato."""
+    if declared is None:
+        return None
+    return HostContract(declared, published_names_by_job(docs))
+
+
 def _instances_of(path: str, doc: dict, workflows: list[tuple[str, dict]]) -> list[Instance]:
     """Las instancias en las que puede correr este workflow: su propio disparador y cada
     job de otro workflow que lo llame con `uses:` local."""
@@ -1231,15 +1356,17 @@ def main(argv):
         print(f"WORKFLOW-POLICY ERROR: {exc}", file=sys.stderr)
         return 2
     findings, seen, published = [], set(), set()
+    contract = host_contract(declared, docs)
     for w, doc in docs:
         findings.extend(cancel_in_progress_findings(w, doc))
         for jid, job in doc["jobs"].items():
             if jid in required:
                 seen.add(jid)
-            if declared is not None:
-                published.add(declared_name(jid, job, declared))
+            if contract is not None:
+                published.add(declared_name(jid, job, contract.names,
+                                            contract.published.get((w, jid))))
             check_job(w, jid, job, doc, jid in required, args.base_branch, findings,
-                      repo_root(w, args.repo_root), declared)
+                      repo_root(w, args.repo_root), contract)
             findings.extend(_needs_output_findings(w, jid, job))
     pull_request_secret_findings(docs, findings)
     for name in (declared or []):

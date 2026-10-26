@@ -84,7 +84,8 @@ POLICY_KEYS = frozenset({"required_jobs", "events"})
 #: fichero: declararlo aqui es lo que permite a un consumer exigir HR-39 sin que el
 #: gate de required jobs rechace la politica por clave desconocida (fail-closed, HR-3).
 OPTIONAL_POLICY_KEYS = frozenset({"relaxation", "dependencies", "docs_only_lane",
-                                 "marker_lanes", "state_dependent_gates", "check_names"})
+                                 "marker_lanes", "state_dependent_gates", "check_names",
+                                 "external_jobs"})
 EVENT_KEYS = frozenset({"accepted_skips"})
 RELAXATION_KEYS = frozenset({"reason", "reference", "actor", "issue"})
 RELAXATION_REQUIRED = frozenset({"reason", "reference"})
@@ -159,6 +160,27 @@ def validate_check_names(field: object, jobs: list, label: str) -> None:
         if not isinstance(name, str) or not name.strip():
             raise GateError(  # noqa: TRY003
                 f"{label}: check_names['{job}'] must be a non-empty string")
+
+
+def validate_external_jobs(data: dict, jobs: list, label: str) -> None:
+    """``external_jobs``: job -> workflow file that wires it (DysTelefonica/team-skills#1313).
+
+    The job stays in ``required_jobs`` (HR-72); its verdict comes from the host check,
+    not from this aggregator's ``needs``, so the entry must name a workflow file."""
+    if "external_jobs" not in data:
+        return
+    field = data["external_jobs"]
+    if not isinstance(field, dict):
+        raise GateError(  # noqa: TRY003
+            f"{label}: external_jobs must be an object of job -> workflow file")
+    known = set(jobs)
+    for job, workflow in field.items():
+        if job not in known:
+            raise GateError(  # noqa: TRY003
+                f"{label}: external_jobs names unknown job '{job}' (not in required_jobs)")
+        if not isinstance(workflow, str) or not workflow.strip():
+            raise GateError(  # noqa: TRY003
+                f"{label}: external_jobs['{job}'] must be a non-empty workflow file name")
 
 
 def validate_relaxation(field: object, label: str) -> None:
@@ -462,6 +484,7 @@ def load_policy(path: str, label: str = "policy file") -> dict:
         raise GateError(f"{label}: required_jobs contains duplicate job names")
     events = data["events"]
     validate_events(events, jobs, label)
+    validate_external_jobs(data, jobs, label)
     if "docs_only_lane" in data:
         # Validated whenever present, base copy or not: a malformed field must
         # not sit in the policy waiting to "cover" a later lane skip (#857).
@@ -693,8 +716,13 @@ def policy_violations(needs: dict, policy: dict, event: str) -> tuple[list[str],
     # without updating the policy; fail-closed instead of silently ignoring it.
     for job in sorted(set(needs) - set(required)):
         violations.append(f"needs key '{job}' is not covered by the policy")
+    # external_jobs (DysTelefonica/team-skills#1313): their wiring lives in another
+    # workflow, so this aggregator's needs must not name them and must not miss them.
+    externals = set(policy.get("external_jobs") or {})
+    for job in sorted(externals & set(needs)):
+        violations.append(f"external job '{job}' is in this aggregator's needs; its workflow owns it")
     for job in required:
-        if job not in needs:
+        if job not in needs and job not in externals:
             violations.append(f"required job '{job}' is absent from needs")
     return violations, accepted
 

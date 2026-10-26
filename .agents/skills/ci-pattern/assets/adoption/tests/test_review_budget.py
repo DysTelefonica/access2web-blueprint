@@ -64,6 +64,14 @@ WORKFLOW_SOLO_PR_SIZE = """jobs:
       - run: python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$E"
 """
 
+# La plantilla canonica lee la politica de la BASE (`base/`, un checkout en CI). Fuera
+# de CI no existe `base/`: la copia versionada del repo es la misma politica (#1313).
+WORKFLOW_BASE = WORKFLOW_CABLEADO.replace("--policy-file    .github/pr-contract.policy.json",
+                                          "--policy-file    base/.github/pr-contract.policy.json")
+WORKFLOW_BASE_SIN_MAPA = WORKFLOW_SIN_MAPA.replace(
+    "--policy-file    .github/pr-contract.policy.json",
+    "--policy-file    base/.github/pr-contract.policy.json")
+
 POLICY_BUDGET_ACTIVO = {"checks": {"budget": True, "commits": True}}
 POLICY_BUDGET_APAGADO = {"checks": {"budget": False, "commits": True}}
 POLICY_SIN_CHECKS = {"review_budget_lines": 400}
@@ -144,6 +152,35 @@ class ReviewBudgetTests(unittest.TestCase):
                                policy_name=".github/otra.policy.json")
         self.assertTrue(found, "el gate usa .github/pr-contract.policy.json: esa "
                                "politica no existe y no hay medicion")
+
+
+class ReviewBudgetBasePolicyTests(unittest.TestCase):
+    """La politica que la plantilla lee de `base/` (DysTelefonica/team-skills#1313, G4)."""
+
+    def _findings(self, workflow, repo_policy=POLICY_BUDGET_ACTIVO, base_policy=None):
+        with tempfile.TemporaryDirectory() as d:
+            repo = _repo(d, workflow=workflow, policy=repo_policy)
+            if base_policy is not None:
+                _write(repo / "base" / ".github" / "pr-contract.policy.json",
+                       json.dumps(base_policy))
+            return CLI._check_review_budget(repo)
+
+    def test_sin_base_checkout_se_lee_la_copia_del_repo(self):
+        # Fuera de CI no hay `base/`: la politica versionada en el repo es la que cuenta.
+        self.assertEqual(self._findings(WORKFLOW_BASE), [])
+
+    def test_sin_base_ni_copia_sigue_siendo_ilegible(self):
+        # Fail closed: ninguna de las dos copias existe, no hay medicion.
+        found = self._findings(WORKFLOW_BASE, repo_policy=None)
+        self.assertTrue(found, "sin ninguna politica no puede dar verde")
+        self.assertIn("ilegible", " ".join(found))
+
+    def test_el_checkout_de_base_gana_a_la_copia_del_repo(self):
+        # La copia de la base es la de confianza: con `budget` apagado en la base,
+        # la copia del repo (encendida) no exige el mapa.
+        self.assertEqual(self._findings(WORKFLOW_BASE_SIN_MAPA,
+                                        repo_policy=POLICY_BUDGET_ACTIVO,
+                                        base_policy=POLICY_BUDGET_APAGADO), [])
 
 
 class ReviewBudgetPhaseTests(unittest.TestCase):
