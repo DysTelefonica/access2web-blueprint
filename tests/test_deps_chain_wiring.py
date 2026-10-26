@@ -18,7 +18,7 @@ GATE = "check_deps_chain.py"
 def _ci_run() -> str:
     text = (ROOT / ".github" / "workflows" / "pr-gate.yml").read_text(encoding="utf-8")
     start = text.index("      - name: Dependency chain (HR-76)")
-    block = text[start : text.index("      - name: pr size", start)]
+    block = text[start : text.index("      - name: walkthrough schema", start)]
     runs = [line.strip() for line in block.splitlines() if line.strip().startswith("run:")]
     assert len(runs) == 1, runs
     return runs[0].removeprefix("run:").strip()

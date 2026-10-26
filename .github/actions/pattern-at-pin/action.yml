@@ -1,0 +1,104 @@
+# Resuelve el catálogo del canon en el sello de `.team-skills.yaml` (#1461).
+#
+# La acción se carga desde el checkout de la BASE (el job `canon` la invoca
+# con `uses: ./.github/actions/pattern-at-pin`), así que el sello que lee y el
+# propio código de la acción son los de la base: un pull request no puede
+# tocar la una ni elegir el commit que lo mide.
+#
+# El token del catálogo vive en UN solo paso —el que clona— y nunca llega al
+# `git config` del clon: viaja como cabecera HTTP y el clon se hace contra la
+# URL pública del catálogo.
+name: pattern-at-pin
+description: >-
+  Resuelve el catálogo del canon en el sello `catalog @ <sha>` de
+  `.team-skills.yaml` y publica su directorio en `PATTERN_DIR`.
+
+inputs:
+  token:
+    description: Token de solo lectura del repositorio del catálogo.
+    required: true
+  repository:
+    description: Repositorio del catálogo.
+    required: false
+    default: DysTelefonica/team-skills
+
+runs:
+  using: composite
+  steps:
+    - name: Leer el sello del catálogo
+      id: seal
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ ! -f .team-skills.yaml ]; then
+          echo "no existe .team-skills.yaml: sin su sello 'catalog @ <sha>' no hay commit del catálogo que medir (HR-3)." >&2
+          exit 1
+        fi
+        seal=$(head -n 1 .team-skills.yaml)
+        case "$seal" in
+          *"catalog @ "*) ;;
+          *)
+            echo "la primera línea de .team-skills.yaml no trae el sello 'catalog @ <sha>' (HR-3)." >&2
+            exit 1
+            ;;
+        esac
+        commit=${seal#*catalog @ }
+        commit=${commit%%)*}
+        case "$commit" in
+          "" | *[!0-9a-f]*)
+            echo "el sello no trae un sha en hexadecimal: '$commit' (HR-3)." >&2
+            exit 1
+            ;;
+        esac
+        if [ "${#commit}" -lt 7 ] || [ "${#commit}" -gt 40 ]; then
+          echo "el sello trae un commit de ${#commit} caracteres, no entre 7 y 40: '$commit' (HR-3)." >&2
+          exit 1
+        fi
+        echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+    - name: Clonar el catálogo en el commit del sello
+      shell: bash
+      env:
+        TOKEN: ${{ inputs.token }}
+        REPOSITORY: ${{ inputs.repository }}
+        SEAL_COMMIT: ${{ steps.seal.outputs.commit }}
+      run: |
+        set -euo pipefail
+        if [ -z "${TOKEN:-}" ]; then
+          echo "no hay token del catálogo: el canon no se puede resolver (HR-3)." >&2
+          exit 1
+        fi
+        commit="$SEAL_COMMIT"
+        if [ "${#commit}" -lt 40 ]; then
+          # El sello abreviado se expande con la API del catálogo.
+          commit=$(GH_TOKEN="$TOKEN" gh api "repos/${REPOSITORY}/commits/${commit}" --jq .sha) || {
+            echo "no se pudo resolver el sello abreviado '$commit' (HR-3)." >&2
+            exit 1
+          }
+        fi
+        # El scratch se crea con `mktemp -d` y no se borra: lo que crea un
+        # agente, lo borra el agente.
+        scratch=$(mktemp -d)
+        pattern="${scratch}/pattern"
+        # El token viaja como cabecera: no queda en la URL ni en el `git config`
+        # del clon, y el clon no deja de ser reproducible sin él.
+        auth=$(printf 'x-access-token:%s' "$TOKEN" | base64 -w0)
+        header="http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth}"
+        git -c "$header" clone --filter=blob:none --no-checkout \
+          "https://github.com/${REPOSITORY}.git" "$pattern"
+        git -C "$pattern" -c "$header" fetch --depth 1 origin "$commit"
+        # El checkout también lleva la cabecera: un clon parcial pide los
+        # ficheros que faltan cuando los materializa, y esa petición sale del
+        # mismo proceso.
+        git -C "$pattern" -c "$header" checkout --detach FETCH_HEAD
+        resolved=$(git -C "$pattern" rev-parse HEAD)
+        if [ "$resolved" != "$commit" ]; then
+          echo "el commit del catálogo no coincide con el sello: '$resolved' != '$commit' (HR-3)." >&2
+          exit 1
+        fi
+        pattern_dir="${pattern}/personal/ardelperal/ci-pattern"
+        if [ ! -d "$pattern_dir" ]; then
+          echo "el commit del catálogo no contiene personal/ardelperal/ci-pattern (HR-3)." >&2
+          exit 1
+        fi
+        echo "PATTERN_DIR=${pattern_dir}" >> "$GITHUB_ENV"

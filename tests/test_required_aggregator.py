@@ -1,9 +1,10 @@
 """#1464: the `required` aggregator must not publish the host-required check name
 outside the events that evaluate the pull request (HR-30).
 
-The host contract of this repository declares exactly one required check, `required`
+The host contract of this repository declares the required check `required`
 (`.github/host-contract.json`: `required_checks[0].name = "required"`, class
-`host-enforced`). The aggregator published that name from every event the workflow
+`host-enforced`), alongside the H1 context `pr-gate`. The aggregator
+published that name from every event the workflow
 listens to, so a manual `workflow_dispatch` over a pull request branch published a
 green `required` even though `pr-gate` — the gate of the issue link and the review
 budget — had never run.
