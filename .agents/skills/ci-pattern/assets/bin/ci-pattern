@@ -1479,7 +1479,8 @@ def cmd_report_friction(args):
 ADOPTION_HELP = """\
 adoption — generación y gate por fase de la adopción (#276, #279)
 
-uso: ci-pattern adoption check (--phase N | --all) <repo> [--seal-baseline <dir>]
+uso: ci-pattern adoption check (--phase N | --all) <repo> [--config-from <dir>]
+     [--seal-baseline <dir>]
      ci-pattern adoption generate-doc <repo> --out <ruta>
 
 check: valida el contrato .github/ci-pattern-adoption.json del consumer y
@@ -1487,6 +1488,20 @@ verifica cada fase del porting-guide contra el árbol real. Exit: 0 la fase
 cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2
 contrato ilegible, esquema inválido, sujeto vacío o entrada ausente de un
 gate.
+
+--config-from <dir>: el contrato de adopción que GOBIERNA el gate sale de <dir>
+(un checkout de la base del PR, sin credenciales); el estado que se mide sigue
+siendo el del repo. Con la base como suelo el PR puede AÑADIR y no QUITAR: el
+inventario de la fase 0 y las rutas gobernadas declaradas se miden con la UNIÓN
+de la base y la cabeza (la base manda en el conflicto) y los 'pattern_paths' de
+la fase 3 son los que declara el PR, con el suelo de sellado de la base: lo que
+la base sellaba no puede reducir un PR mientras el fichero siga en el árbol
+(E8b). El `host-contract` y el `ci-pattern.yaml` NO salen de la base: son el
+estado del consumer (#1351), pero el INVENTARIO manda sobre la lista de
+exenciones del host-contract: un ruleset que el inventario declara retirado no
+se exime por declararlo en el contrato del host. Es la forma que mide el
+fragmento canónico del job `governance-seals` (#1339) y es una alternativa a
+--seal-baseline: no lo sustituye.
 
 --seal-baseline <dir>: mide el gate también contra la BASE del PR (un
 checkout de <dir> con su contrato de adopción). Un operador por fase:
@@ -1559,6 +1574,95 @@ def load_adoption_contract(repo):
             + f"; fases válidas 0..{ADOPTION_PHASES - 1}"
         )
     return doc
+
+
+def _head_contract(repo):
+    """El contrato del repo medido (la cabeza del PR), o None si no hay.
+
+    Con `--config-from` el contrato que gobierna es el de la base, pero lo que
+    el PR declara de mas se mide con el suyo: sin esto, un PR que anade un
+    artefacto de gobierno es rojo (E9) y la unica forma de que pase seria no
+    medirlo. Un contrato ausente no dice nada (la base manda); uno ilegible es
+    exit 2: no se mide a medias (HR-3)."""
+    if not (Path(repo) / ADOPTION_CONTRACT_NAME).is_file():
+        return None
+    return load_adoption_contract(repo)
+
+
+def _union_inventory(base_entries, head_entries):
+    """Inventario por union, con la base mandando en el conflicto (#1339).
+
+    El PR puede anadir una entrada (el artefacto de gobierno que acaba de
+    crear), no reapuntar la que la base declara: si la base dice que un
+    artefacto se adopto hacia otro sitio, el PR no puede decir que se adopto
+    hacia si mismo para que el residuo deje de nombrarse."""
+    if not isinstance(base_entries, list):
+        return None
+    if not isinstance(head_entries, list):
+        return list(base_entries)
+    merged = list(base_entries)
+    seen = {e.get("artifact") for e in base_entries
+            if isinstance(e, dict) and isinstance(e.get("artifact"), str)}
+    for entry in head_entries:
+        if isinstance(entry, dict):
+            key = entry.get("artifact")
+            if isinstance(key, str):
+                if key in seen:
+                    continue
+                seen.add(key)
+        merged.append(entry)
+    return merged
+
+
+def _union_paths(base_paths, head_paths):
+    """Rutas por union, con la base mandando en el conflicto (#1339)."""
+    if not isinstance(base_paths, list):
+        return None
+    if not isinstance(head_paths, list):
+        return list(base_paths)
+    merged = list(base_paths)
+    for rel in head_paths:
+        if rel not in merged:
+            merged.append(rel)
+    return merged
+
+
+def _contract_with_additions(base_contract, head_contract):
+    """El contrato que gobierna con la BASE como suelo; el PR puede AÑADIR.
+
+    Lo que el PR declara de mas se mide tambien: el inventario de la fase 0 y
+    las rutas gobernadas declaradas, por union, y los `pattern_paths` de la
+    fase 3, que son los que declara el PR (puede anadir y retirar). El suelo
+    es el de la base: en el inventario la entrada de la base manda en el
+    conflicto, y en la fase 3 lo que la base sellaba no se reduce mientras el
+    fichero siga en el arbol (E8b, el suelo de sellado).
+
+    Con solo el contrato de la base, un PR que anade un artefacto de gobierno
+    sale en rojo (E9): el inventario de la base no puede conocer un artefacto
+    que el PR acaba de crear."""
+    if not isinstance(head_contract, dict):
+        return base_contract
+    base_phases = base_contract.get("phases")
+    head_phases = head_contract.get("phases")
+    if not isinstance(base_phases, dict) or not isinstance(head_phases, dict):
+        return base_contract
+    base_zero = base_phases.get("0")
+    head_zero = head_phases.get("0")
+    if isinstance(base_zero, dict) and isinstance(head_zero, dict):
+        inventory = _union_inventory(base_zero.get("inventory"),
+                                     head_zero.get("inventory"))
+        if inventory is not None:
+            base_zero["inventory"] = inventory
+        declared = _union_paths(base_zero.get("declared_governed_paths"),
+                                head_zero.get("declared_governed_paths"))
+        if declared is not None:
+            base_zero["declared_governed_paths"] = declared
+    base_three = base_phases.get("3")
+    head_three = head_phases.get("3")
+    if isinstance(base_three, dict) and isinstance(head_three, dict) \
+            and isinstance(head_three.get("pattern_paths"), list):
+        base_three["pattern_paths"] = list(head_three["pattern_paths"])
+    return base_contract
 
 
 def _is_canonical_pattern_target(target, repo=None, declared=()):
@@ -1683,8 +1787,13 @@ def _check_evidence_phase(repo, n, decl, seal=None):
         return [f"fase {n}: falta 'evidence.path': la evidencia de la fase se declara como ruta"]
     rel = evidence["path"]
     # #1321: la evidencia que mide la cabeza tiene que ser la que mide la base.
+    # #1348: la de SU fase. La evidencia es una declaracion por fase (la 1 y
+    # la 3 miden documentos distintos), asi que la base guarda una ruta por
+    # fase; comparar la de la fase 3 contra la de la fase 1 era comparar dos
+    # declaraciones que no se corresponden y daba un hallazgo falso.
+    base_route = ((seal or {}).get("evidence_paths") or {}).get(str(n))
     findings = _seal_identity_findings(
-        n, rel, (seal or {}).get("evidence_path"), repo,
+        n, rel, base_route, repo,
         (seal or {}).get("base_dir"), "la evidencia de la fase")
     if findings:
         return findings
@@ -2664,7 +2773,7 @@ def _check_gates_phase(repo, decl, contract, seal=None):
     # base. El conjunto de gates lo fija el canon (el consumer elige las
     # ENTRADAS), asi que no se compara la lista entera: solo las rutas
     # declaradas. La retirada real (la ruta de la base ya no esta en el arbol)
-    # la admite el mismo criterio de las fases 0 y 2.
+    # la admite el mismo criterio de las fases 0 y 2: un movimiento puro.
     base_routes = (seal or {}).get("gate_routes")
     if base_routes:
         head_routes = set()
@@ -2674,15 +2783,35 @@ def _check_gates_phase(repo, decl, contract, seal=None):
             for arg in entry.get("args") or []:
                 if isinstance(arg, str) and arg.startswith("@"):
                     head_routes.add(arg[1:].strip())
+        # #1344: la excepcion de retirada es la de las fases 0, 1, 2 y 5
+        # (#1323): si la ruta de la base ya no esta en el arbol medido, solo se
+        # admite un MOVIMIENTO PURO, la cabeza mide una ruta nueva con el
+        # mismo contenido byte a byte. Las candidatas son las rutas que la
+        # cabeza mide y la base no: una ruta que la base ya media no puede ser
+        # la nueva.
+        base_dir = (seal or {}).get("base_dir")
+        new_routes = sorted(head_routes - base_routes)
         for rel in sorted(base_routes):
             if rel in head_routes:
                 continue
-            if not (repo / rel).exists():
+            if (repo / rel).exists():
+                findings.append(
+                    f"fase 4: la ruta '{rel}' la mide la BASE y la cabeza no la "
+                    f"mide: el PR no puede apartar el gate de la base "
+                    f"(--seal-baseline); mide '{rel}' o retira la ruta de la base")
                 continue
-            findings.append(
-                f"fase 4: la ruta '{rel}' la mide la BASE y la cabeza no la "
-                f"mide: el PR no puede apartar el gate de la base "
-                f"(--seal-baseline); mide '{rel}' o retira la ruta de la base")
+            # la ruta de la base desaparecio: el movimiento se mide con el
+            # helper de las demas fases, no con un criterio propio.
+            moves = [(r, _seal_identity_findings(
+                4, r, rel, repo, base_dir, "la ruta que mide el gate"))
+                for r in new_routes]
+            if any(not detail for _, detail in moves):
+                continue
+            findings.append(next((detail for _, detail in moves if detail), (
+                f"fase 4: la ruta '{rel}' la mide la BASE y la cabeza no la mide, "
+                f"y no es un movimiento puro: la base mide '{rel}' y la cabeza no "
+                f"mide ninguna ruta nueva con su contenido (--seal-baseline); "
+                f"mide '{rel}' o mueve la ruta sin editarla")))
     names = []
     for entry in gates:
         name = entry.get("gate") if isinstance(entry, dict) else None
@@ -3494,9 +3623,22 @@ def _check_phase_three(repo, decl, contract, seal=None):
         pattern_rulesets = _pattern_rulesets_from_host_contract(repo)
         for entry in ruleset_data:
             name = entry["name"]
-            if name in pattern_rulesets:
-                continue
             e = inventory.get(f"ruleset:{name}")
+            # #1353: un ruleset adoptado HACIA SI MISMO es el del patron, no un
+            # residual: nada lo sustituyo. Solo es residual el que el inventario
+            # dice que el patron sustituyo por OTRO destino.
+            if (e is not None and e.get("disposition") == "adopted"
+                    and e.get("target") == f"ruleset:{name}"
+                    and name in pattern_rulesets):
+                continue
+            # #1351: el INVENTARIO del patron manda sobre la lista de
+            # exenciones del host-contract. El PR no puede declarar en su
+            # contrato un ruleset que el inventario dice que el patron
+            # sustituyo: la exencion solo aplica a lo que nadie inventario.
+            # Con `--config-from` el inventario sale de la base (#1339), asi
+            # que el PR tampoco lo puede quitar.
+            if e is None and name in pattern_rulesets:
+                continue
             if e is None:
                 findings.append(
                     f"fase 3: artefacto de gobierno del host no inventariado: "
@@ -4430,6 +4572,30 @@ def _seal_baseline(base_dir):
     except UsageError as exc:
         raise UsageError(
             f"adoption check: --seal-baseline no puede medirse: {exc}") from exc
+    return _seal_from_contract(contract, base_dir)
+
+
+def _seal_floor(contract, base_dir):
+    """El suelo de sellado: lo que la base sellaba (#1317).
+
+    Es la parte de `--seal-baseline` que sigue valiendo con `--config-from`:
+    alli el contrato que gobierna ya sale de la base, asi que las fases 0, 1,
+    2, 4, 5 y 6 miden con el de la base y no necesitan un operador de
+    identidad. Lo que la base SELLABA sigue siendo el suelo de la fase 3
+    (E8b): un PR no puede reducir su propia base de sellar mientras el
+    fichero siga en el arbol."""
+    phases = contract.get("phases")
+    phases = phases if isinstance(phases, dict) else {}
+    decl = phases.get("3")
+    decl = decl if isinstance(decl, dict) else {}
+    return {
+        "pattern_paths": _seal_baseline_paths(decl),
+        "base_dir": str(Path(base_dir).resolve()),
+    }
+
+
+def _seal_from_contract(contract, base_dir):
+    """Las declaraciones de la BASE, fase por fase (#1317, #1319, #1321)."""
     phases = contract.get("phases")
     phases = phases if isinstance(phases, dict) else {}
 
@@ -4440,8 +4606,6 @@ def _seal_baseline(base_dir):
     env = _phase(2).get("env_isolation")
     env = env if isinstance(env, dict) else {}
     # #1321: las fases 1, 4, 5 y 6 declaran tambien QUE se mide.
-    evidence = _phase(1).get("evidence")
-    evidence = evidence if isinstance(evidence, dict) else {}
     operating_doc = _phase(5).get("operating_doc")
     operating_doc = operating_doc if isinstance(operating_doc, dict) else {}
     return {
@@ -4449,13 +4613,46 @@ def _seal_baseline(base_dir):
         "host_labels": _seal_baseline_route(_phase(0), "host_labels"),
         "env_allowlist": _seal_baseline_route(env, "allowlist"),
         "env_root": _seal_baseline_route(env, "root"),
-        "evidence_path": _seal_baseline_route(evidence, "path"),
+        "evidence_paths": _seal_baseline_evidence_paths(phases),
         "gate_routes": _seal_baseline_gate_routes(_phase(4)),
         "operating_doc": _seal_baseline_route(operating_doc, "doc"),
         "operating_linked_from": _seal_baseline_route(operating_doc, "linked_from"),
         "acceptance_prs": _seal_baseline_prs(_phase(6)),
         "base_dir": str(Path(base_dir).resolve()),
     }
+
+
+#: Fases que declaran su propia evidencia. La 1 mide la evidencia de la
+#: propagacion y la 3 la del reemplazo de gobernanza: son documentos
+#: distintos, y cada uno se mide contra el de SU fase (#1348).
+EVIDENCE_PHASES = ("1", "3")
+
+
+def _seal_baseline_evidence_paths(phases):
+    """Rutas de evidencia que declara la BASE, POR FASE (#1348).
+
+    La base declara la evidencia de cada fase por separado: la 1 y la 3
+    declaran rutas distintas. Con una sola ruta (la de la fase 1) la fase 3
+    se comparaba contra la declaracion de otra fase y el gate daba un
+    hallazgo falso.
+
+    Una fase que la base no declara no obliga: su ruta es None. Una
+    declaracion ilegible es exit 2: la base esta rota y el gate no puede
+    medirla (HR-3)."""
+    paths = {}
+    for n in EVIDENCE_PHASES:
+        decl = phases.get(n)
+        decl = decl if isinstance(decl, dict) else {}
+        evidence = decl.get("evidence")
+        if evidence is None:
+            paths[n] = None
+            continue
+        if not isinstance(evidence, dict):
+            raise UsageError(
+                "adoption check: --seal-baseline no puede medirse: el contrato de la "
+                f"base declara 'evidence' de la fase {n} que no es un objeto")
+        paths[n] = _seal_baseline_route(evidence, "path")
+    return paths
 
 
 def _seal_baseline_gate_routes(decl):
@@ -4685,13 +4882,26 @@ def cmd_adoption(args):
 
     # #1270: la configuracion que gobierna el gate puede venir de la BASE
     # (--config-from); el estado que se mide sigue siendo el del repo.
-    contract = load_adoption_contract(config_from or repo)
-    # #1317: la fase 3 mide además contra la BASE (--seal-baseline): el
-    # conjunto que hay que sellar es la unión de los 'pattern_paths' de la
-    # base y los de la cabeza. #1319: las fases 0 y 2 comparan con la base
-    # la ruta que miden (identidad). Sin la opción, no hay base y el gate se
-    # mide exactamente como antes.
-    seal = _seal_baseline(seal_baseline) if seal_baseline else None
+    # #1339: con la base como suelo, el PR puede AÑADIR y no QUITAR: lo que
+    # declara de mas se mide con la union de la base y la cabeza, y el suelo
+    # de sellado (E8b) lo pone la base.
+    if config_from:
+        base_contract = load_adoption_contract(config_from)
+        # El suelo de sellado lo pone la base que gobierna; si ademas hay
+        # --seal-baseline, el suelo es el de ese checkout.
+        floor_contract = base_contract
+        if seal_baseline:
+            floor_contract = load_adoption_contract(seal_baseline)
+        seal = _seal_floor(floor_contract, seal_baseline or config_from)
+        contract = _contract_with_additions(base_contract, _head_contract(repo))
+    else:
+        contract = load_adoption_contract(repo)
+        # #1317: la fase 3 mide además contra la BASE (--seal-baseline): el
+        # conjunto que hay que sellar es la unión de los 'pattern_paths' de la
+        # base y los de la cabeza. #1319: las fases 0 y 2 comparan con la base
+        # la ruta que miden (identidad). Sin la opción, no hay base y el gate se
+        # mide exactamente como antes.
+        seal = _seal_baseline(seal_baseline) if seal_baseline else None
     blocked_at = None
     findings = []
     for n in range(last + 1):

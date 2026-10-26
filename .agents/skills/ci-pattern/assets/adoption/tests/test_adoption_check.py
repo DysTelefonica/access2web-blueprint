@@ -1482,6 +1482,290 @@ class SealBaselineSubjectsTests(unittest.TestCase):
             self.assertIn("--seal-baseline", err)
 
 
+class ConfigFromBaseAdditionsTests(unittest.TestCase):
+    """#1339: con `--config-from` el PR puede AÑADIR, pero no QUITAR.
+
+    El contrato que gobierna el gate sale de la BASE (#1270): un PR no puede
+    reescribir el contrato que lo mide. Si solo gobierna la base, el PR que
+    AÑADE un artefacto de gobierno sale en rojo (E9): el inventario de la base
+    no puede conocer un artefacto que el PR acaba de crear, y la unica forma de
+    que ese PR pase seria no medirlo.
+
+    Las declaraciones ADITIVAS se miden con la UNION de la base y la cabeza, y
+    la base manda en el conflicto: el PR puede anadir una entrada, no reapuntar
+    la que la base declara. En la fase 3 el PR declara los `pattern_paths` que
+    instala (puede anadir y retirar) y la base conserva el suelo de sellado
+    (E8b): lo que la base sellaba no se reduce mientras el fichero siga en el
+    arbol.
+    """
+
+    NEW_WORKFLOW = ".github/workflows/nuevo-gate.yml"
+    COVERAGE = ".github/workflows/coverage.yml"
+    LEGACY = ".github/workflows/legacy.yml"
+
+    def _consumer(self, tmp, contract=None):
+        contract = contract or complete_contract(upto=3)
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        return repo, contract
+
+    def _base(self, tmp, repo):
+        """Checkout de la BASE: el consumer tal como esta antes del PR."""
+        base = Path(tmp) / "base"
+        shutil.copytree(repo, base)
+        return base
+
+    def test_el_pr_que_anade_un_artefacto_de_gobierno_es_verde(self):
+        """E9: anadir un artefacto de gobierno, declararlo y re-sellar es
+        legitimo. Con `--config-from` el gate no puede ponerlo en rojo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, contract = self._consumer(tmp)
+            base = self._base(tmp, repo)
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": self.NEW_WORKFLOW, "disposition": "adopted",
+                 "target": self.NEW_WORKFLOW})
+            contract["phases"]["3"]["pattern_paths"].append(self.NEW_WORKFLOW)
+            write_contract(repo, contract)
+            touch(repo, self.NEW_WORKFLOW,
+                  text="on: push\njobs:\n  nuevo-gate:\n    runs-on: ubuntu-latest\n")
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES) + [self.NEW_WORKFLOW])
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      str(repo), "--config-from", str(base)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_reapunta_una_entrada_de_inventario_no_aparta_la_base(self):
+        """La entrada que declara la base sigue mandando: el PR no puede
+        reapuntarla para que un residuo deje de nombrarse."""
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = complete_contract(upto=3)
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": self.LEGACY, "disposition": "adopted",
+                 "target": ".github/workflows/nuevo.yml"})
+            repo, contract = self._consumer(tmp, contract)
+            touch(repo, self.LEGACY,
+                  text="on: push\njobs:\n  legacy:\n    runs-on: ubuntu-latest\n")
+            write_contract(repo, contract)
+            base = self._base(tmp, repo)
+            for entry in contract["phases"]["0"]["inventory"]:
+                if entry["artifact"] == self.LEGACY:
+                    entry["target"] = self.LEGACY
+            write_contract(repo, contract)
+            code, _, err = run_cli(["adoption", "check", "--phase", "3",
+                                    str(repo), "--config-from", str(base)])
+            self.assertEqual(code, 1)
+            self.assertIn("gobierno residual", err)
+
+    def test_el_pr_que_reduce_el_sellado_de_la_base_es_rojo(self):
+        """E8b: lo que la base sellaba no se reduce en un PR mientras el
+        fichero siga en el arbol."""
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = complete_contract(upto=3)
+            contract["phases"]["3"]["pattern_paths"].append(self.COVERAGE)
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": self.COVERAGE, "disposition": "adopted",
+                 "target": self.COVERAGE})
+            repo, contract = self._consumer(tmp, contract)
+            touch(repo, self.COVERAGE,
+                  text="on: push\njobs:\n  coverage:\n    runs-on: ubuntu-latest\n")
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES) + [self.COVERAGE])
+            base = self._base(tmp, repo)
+            contract["phases"]["3"]["pattern_paths"].remove(self.COVERAGE)
+            write_contract(repo, contract)
+            code, _, err = run_cli(["adoption", "check", "--phase", "3",
+                                    str(repo), "--config-from", str(base)])
+            self.assertEqual(code, 1)
+            self.assertIn(self.COVERAGE, err)
+
+    def test_el_pr_que_retira_un_workflow_es_verde(self):
+        """Retirar un workflow si se permite: si el fichero ya no esta, no hay
+        nada que sellar."""
+        with tempfile.TemporaryDirectory() as tmp:
+            contract = complete_contract(upto=3)
+            contract["phases"]["3"]["pattern_paths"].append(self.COVERAGE)
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": self.COVERAGE, "disposition": "adopted",
+                 "target": self.COVERAGE})
+            repo, contract = self._consumer(tmp, contract)
+            touch(repo, self.COVERAGE,
+                  text="on: push\njobs:\n  coverage:\n    runs-on: ubuntu-latest\n")
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES) + [self.COVERAGE])
+            base = self._base(tmp, repo)
+            contract["phases"]["3"]["pattern_paths"].remove(self.COVERAGE)
+            contract["phases"]["0"]["inventory"] = [
+                e for e in contract["phases"]["0"]["inventory"]
+                if e["artifact"] != self.COVERAGE]
+            (repo / self.COVERAGE).unlink()
+            write_contract(repo, contract)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      str(repo), "--config-from", str(base)])
+            self.assertEqual(code, 0, out + err)
+
+
+class SelfAdoptedRulesetTests(unittest.TestCase):
+    """#1353: un ruleset adoptado HACIA SI MISMO y exento no es residual.
+
+    El inventario declara `ruleset:<nombre>` como `adopted` con target
+    `ruleset:<nombre>` (el mismo ruleset del patron), y el host-contract lo
+    lista como ruleset del patron. Con #1351 el inventario manda sobre la
+    exencion, y el caso caia en «gobierno residual» aunque nada sustituyo
+    nada: es un falso positivo.
+
+    Residual de verdad sigue siendo el ruleset que el inventario dice que el
+    patron sustituyo por OTRO destino: ese control no cambia.
+    """
+
+    RULESET = "main-maintainers-and-admins-merge"
+
+    def _consumer(self, tmp, target=None):
+        contract = complete_contract(upto=3)
+        contract["phases"]["0"]["inventory"].append({
+            "artifact": "ruleset:" + self.RULESET, "disposition": "adopted",
+            "target": target or "ruleset:" + self.RULESET})
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        host_path = repo / ".github" / "host-contract.json"
+        host = json.loads(host_path.read_text(encoding="utf-8"))
+        host["rulesets"] = list(host["rulesets"]) + [
+            {"name": self.RULESET, "enforcement": "active", "class": "host-enforced"}]
+        host_path.write_text(json.dumps(host, indent=2, ensure_ascii=False), encoding="utf-8")
+        seed_evidence(repo, 3)
+        # el ruleset sigue activo en el host (la instantanea lo muestra)
+        seed_phase3(repo, snapshot_rulesets=[
+            {"name": self.RULESET, "enforcement": "active", "class": "host-enforced"}])
+        return repo
+
+    def test_ruleset_adoptado_hacia_si_mismo_y_exento_no_es_residual(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_ruleset_adoptado_hacia_otro_destino_sigue_siendo_residual(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp, target="ruleset:otro-ruleset")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn(self.RULESET, err)
+
+
+class ConfigFromBaseHostContractTests(unittest.TestCase):
+    """#1351: el host-contract no sale de la base, y el INVENTARIO manda.
+
+    El fragmento canonico promete que la CONFIGURACION que gobierna el gate
+    sale de la base, y la CLI solo movia el contrato de adopcion: el
+    host-contract se leia del repo MEDIDO.
+
+    Medido: el host-contract NO puede leerse de la base. Describe el estado
+    actual del host (sus rulesets, su plan) y va pegado a las instantaneas que
+    mide el PR, asi que con el valor de la base:
+    - el PR que declara su ruleset propio (el unico canal que el canon ofrece
+      para el gobierno del host que el consumer conserva) quedaria rojo para
+      siempre;
+    - el PR que corrige una lectura obsoleta del plan del host (el 403 de plan
+      solo vale como capacidad no disponible si el area se declara asi)
+      quedaria rojo para siempre.
+    Su cambio solo surtiria efecto al llegar a main: el veredicto se moveria
+    con el, y el PR quedaria bloqueado.
+
+    El hueco se cierra por la PRECEDENCIA: el inventario del patron (que con
+    `--config-from` sale de la base, #1339) manda sobre la lista de exenciones
+    del host-contract. El PR no puede declarar en su host-contract un ruleset
+    que el inventario dice que el patron sustituyo: la exencion solo aplica a
+    lo que nadie ha inventariado.
+    """
+
+    HOST_RULESET = "mi-ruleset"
+    RETIRED_RULESET = "legacy-apap"
+
+    def _consumer(self, tmp, capabilities=None, retired_ruleset=None):
+        contract = complete_contract(upto=3)
+        if retired_ruleset:
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": "ruleset:" + retired_ruleset, "disposition": "retired"})
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        if capabilities is not None:
+            self._write_host(repo, {"host_capabilities": capabilities})
+        seed_evidence(repo, 3)
+        return repo
+
+    def _write_host(self, repo, changes):
+        path = repo / ".github" / "host-contract.json"
+        host = json.loads(path.read_text(encoding="utf-8"))
+        host.update(changes)
+        path.write_text(json.dumps(host, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    def _declare_host_ruleset(self, repo, name):
+        """El PR declara en su host-contract un ruleset del host."""
+        path = repo / ".github" / "host-contract.json"
+        host = json.loads(path.read_text(encoding="utf-8"))
+        host["rulesets"] = list(host["rulesets"]) + [
+            {"name": name, "enforcement": "active", "class": "host-enforced"}]
+        path.write_text(json.dumps(host, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    def _base(self, tmp, repo):
+        base = Path(tmp) / "base"
+        shutil.copytree(repo, base)
+        return base
+
+    def _snapshot_with_host_ruleset(self, repo, name):
+        """La instantanea del host declara un ruleset que sigue vivo."""
+        touch(repo, "docs/adoption/rulesets.json", json.dumps(
+            [{"name": name, "enforcement": "active", "class": "host-enforced"}],
+            indent=2))
+
+    def test_el_pr_que_declara_un_ruleset_retirado_no_lo_silencia(self):
+        """El inventario del patron manda sobre la lista de exenciones: el PR
+        no puede declarar en su host-contract un ruleset que el inventario
+        dice que el patron sustituyo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp, retired_ruleset=self.RETIRED_RULESET)
+            # El ruleset retirado sigue vivo en el host.
+            self._snapshot_with_host_ruleset(repo, self.RETIRED_RULESET)
+            base = self._base(tmp, repo)
+            # El PR lo declara en su host-contract (la lista de exenciones) y
+            # re-sella el manifiesto.
+            self._declare_host_ruleset(repo, self.RETIRED_RULESET)
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES))
+            code, _, err = run_cli(["adoption", "check", "--phase", "3",
+                                    str(repo), "--config-from", str(base)])
+            self.assertEqual(code, 1)
+            self.assertIn(self.RETIRED_RULESET, err)
+
+    def test_el_pr_que_declara_su_ruleset_propio_sigue_en_verde(self):
+        """Un ruleset propio del host, que el inventario no menciona, se
+        exime declarandolo en el host-contract: es el canal del consumer y no
+        puede quedar rojo para siempre."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp)
+            self._snapshot_with_host_ruleset(repo, self.HOST_RULESET)
+            base = self._base(tmp, repo)
+            self._declare_host_ruleset(repo, self.HOST_RULESET)
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES))
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      str(repo), "--config-from", str(base)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_corrige_la_capacidad_del_host_sigue_en_verde(self):
+        """`host_capabilities` es la lectura del PLAN del host, pegada a la
+        instantanea que mide el PR: el PR que la corrige no puede quedar rojo
+        para siempre."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp, capabilities={
+                "branch_protection": "available", "rulesets": "available"})
+            # El host responde el 403 de plan en las dos areas.
+            touch(repo, "docs/adoption/branch-protection.json",
+                  json.dumps(PLAN_403, indent=2, ensure_ascii=False))
+            touch(repo, "docs/adoption/rulesets.json",
+                  json.dumps(PLAN_403, indent=2, ensure_ascii=False))
+            base = self._base(tmp, repo)
+            # El PR corrige la lectura: el area ya no esta disponible.
+            self._write_host(repo, {"host_capabilities": {
+                "branch_protection": "unavailable", "rulesets": "unavailable"}})
+            seed_manifest(repo, list(PATTERN_MANIFEST_FILES))
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      str(repo), "--config-from", str(base)])
+            self.assertEqual(code, 0, out + err)
+
+
 class Phase3WiringTests(unittest.TestCase):
     """#1027 (HR-72): la fase 3 se mide en un pull request.
 
@@ -4254,6 +4538,215 @@ class SealBaselinePhases146Tests(unittest.TestCase):
             self._reseal(repo)
             code, out, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
             self.assertEqual(code, 0, out + err)
+
+
+class SealBaselineEvidenciaPorFaseTests(unittest.TestCase):
+    """#1348: la ruta de evidencia de la base se guarda POR FASE.
+
+    La evidencia es una declaración por fase: la fase 1 mide el documento de
+    evidencia de la propagación y la fase 3 el del reemplazo de gobernanza.
+    Son documentos distintos, y el contrato de referencia del propio canon lo
+    dice así (`docs/adoption/propagation-evidence.md` y
+    `docs/adoption/governance-replacement-pr.md`).
+
+    Con una sola ruta en la base de sellado (la de la fase 1), la fase 3 se
+    comparaba contra la declaración de OTRA fase: el gate daba un hallazgo
+    falso y, peor, el hallazgo no dependía del PR. Una base y una cabeza
+    idénticas tampoco pueden estar en rojo: el PR no apartó nada.
+
+    Estos tests fijan las dos mitades del arreglo: la base idéntica a la
+    cabeza está en verde, y un cambio real de la evidencia de cada fase
+    sigue en rojo nombrando la ruta de SU fase en la base.
+    """
+
+    EVIDENCE_1 = "docs/adoption/propagation-evidence.md"
+    EVIDENCE_3 = "docs/adoption/governance-replacement-pr.md"
+
+    def _consumer(self, tmp, evidence_1=None, evidence_3=None):
+        """Consumer con el contrato de REFERENCIA del canon (fases 0..3)."""
+        contract = complete_contract(upto=3)
+        if evidence_1 is not None:
+            contract["phases"]["1"] = {"evidence": {"path": evidence_1}}
+        if evidence_3 is not None:
+            phase3 = dict(contract["phases"]["3"])
+            phase3["evidence"] = {"path": evidence_3}
+            contract["phases"]["3"] = phase3
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        if evidence_1 is not None:
+            touch(repo, evidence_1)
+        if evidence_3 is not None:
+            touch(repo, evidence_3)
+        return repo
+
+    def _base_of(self, tmp):
+        """Una base con el contrato de REFERENCIA: cada fase con su evidencia."""
+        with tempfile.TemporaryDirectory() as base_tmp:
+            base_repo = self._consumer(base_tmp)
+            base = Path(tmp) / "base"
+            shutil.copytree(base_repo, base)
+        return base
+
+    def _base_like_head(self, tmp, repo):
+        """La base es el árbol de la cabeza, byte a byte: no hay PR que medir."""
+        base = Path(tmp) / "base"
+        shutil.copytree(repo, base)
+        return base
+
+    def test_base_y_cabeza_identicas_siguen_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp)
+            base = self._base_like_head(tmp, repo)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_fase3_el_pr_que_aparta_la_evidencia_de_la_fase_3_es_rojo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp, evidence_3="docs/adoption/otra-copia.md")
+            base = self._base_of(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            # el mensaje nombra la ruta de la fase 3 de la BASE, no la de la 1
+            self.assertIn(self.EVIDENCE_3, err)
+            self.assertIn("docs/adoption/otra-copia.md", err)
+
+    def test_fase1_el_pr_que_aparta_la_evidencia_de_la_fase_1_es_rojo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp, evidence_1="docs/adoption/copia.md")
+            base = self._base_of(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "1",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn(self.EVIDENCE_1, err)
+            self.assertIn("docs/adoption/copia.md", err)
+
+    def test_sin_la_opcion_el_gate_desviado_sigue_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp, evidence_3="docs/adoption/otra-copia.md")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_base_con_la_evidencia_ilegible_falla_cerrado(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer(tmp)
+            base = self._base_of(tmp)
+            contract = json.loads(
+                (base / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+            phase3 = dict(contract["phases"]["3"])
+            phase3["evidence"] = "no-es-un-objeto"
+            contract["phases"]["3"] = phase3
+            (base / ".github" / "ci-pattern-adoption.json").write_text(
+                json.dumps(contract, indent=2), encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "3",
+                                      "--seal-baseline", str(base), str(repo)])
+            # la base esta rota y el gate no puede medirla: exit 2 (HR-3)
+            self.assertEqual(code, 2, out + err)
+            self.assertIn("evidence", err)
+
+
+class SealBaselineFase4MovimientoPuroTests(unittest.TestCase):
+    """#1344: la fase 4 aplica a las rutas `@` la misma excepción de retirada
+    que las demás fases de identidad.
+
+    La fase 4 trae su propio operador (el consumer elige las ENTRADAS de cada
+    gate, así que se comparan las rutas que los gates declaran medir, no la
+    lista entera), pero la excepción es la de `_seal_identity_findings`: si la
+    ruta que mide la base ya no está en el árbol medido, solo se admite un
+    MOVIMIENTO PURO — la cabeza mide una ruta nueva con el mismo contenido,
+    byte a byte. Un movimiento con edición en el mismo PR da hallazgo, como en
+    las fases 0, 1, 2 y 5 (#1323).
+    """
+
+    POLICY = ".github/required-jobs-policy.json"
+    COPIA = "docs/politica.copia.json"
+    ANTIGUA = "docs/politica.antigua.json"
+
+    def _base_phase4(self, tmp, policy_bytes=None, extra_route=None):
+        """El checkout de la base: su contrato declara las rutas que mide y los
+        ficheros que mide están en el árbol (sin ellos, el movimiento no se
+        puede medir)."""
+        gates = full_phase4_gates()["gates"]
+        if extra_route:
+            for entry in gates:
+                if entry["gate"] == "required-jobs":
+                    entry["args"] = list(entry["args"]) + ["--extra", "@" + extra_route]
+        base = Path(tmp) / "base"
+        (base / ".github").mkdir(parents=True, exist_ok=True)
+        (base / ".github" / "ci-pattern-adoption.json").write_text(
+            json.dumps({"schema_version": 1, "phases": {
+                "4": {"gates": gates}}}, indent=2),
+            encoding="utf-8")
+        if policy_bytes is not None:
+            (base / self.POLICY).write_bytes(policy_bytes)
+        if extra_route:
+            target = base / extra_route
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(b'{"policy": "antigua"}\n')
+        return base
+
+    def _consumer_moviendo_la_politica(self, tmp, edited):
+        """Consumer que mide la política en otra ruta y borra la original.
+
+        `edited=True` deja la copia con OTRO contenido (movimiento con
+        edición); `edited=False` la deja byte a byte igual (movimiento puro).
+        Devuelve el repo y los bytes originales de la política.
+        """
+        gates = full_phase4_gates()["gates"]
+        for entry in gates:
+            if entry["gate"] == "required-jobs":
+                entry["args"] = ["--policy", "@" + self.COPIA,
+                                 "--event", "pull_request",
+                                 "--needs-file", "@.github/needs/needs.json"]
+            if entry["gate"] == "workflow-policy":
+                entry["args"] = ["--workflow", "@.github/workflows/ci.yml",
+                                 "--required-jobs", "@" + self.COPIA]
+        contract = complete_contract(upto=4)
+        contract["phases"]["4"] = {"gates": gates}
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        original = (repo / self.POLICY).read_bytes()
+        copia = repo / self.COPIA
+        copia.parent.mkdir(parents=True, exist_ok=True)
+        copia.write_bytes(original + b"\n" if edited else original)
+        (repo / self.POLICY).unlink()
+        # el manifiesto de gobierno sella la ruta nueva: el fichero movido
+        # cambia de sitio y el sello va con el.
+        seed_manifest(repo, [p for p in PATTERN_MANIFEST_FILES if p != self.POLICY]
+                      + [self.COPIA])
+        return repo, original
+
+    def test_fase4_el_pr_que_mueve_la_politica_y_la_edita_es_rojo_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, original = self._consumer_moviendo_la_politica(tmp, edited=True)
+            base = self._base_phase4(tmp, original)
+            code, out, err = run_cli(["adoption", "check", "--phase", "4",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn("movimiento puro", err)
+            self.assertIn(self.POLICY, err)
+
+    def test_fase4_el_pr_que_mueve_la_politica_sin_editarla_sigue_en_verde_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, original = self._consumer_moviendo_la_politica(tmp, edited=False)
+            base = self._base_phase4(tmp, original)
+            code, out, err = run_cli(["adoption", "check", "--phase", "4",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_fase4_el_pr_que_retira_la_ruta_de_la_base_sin_reemplazo_es_rojo_con_la_base(self):
+        """La base mide una ruta que la cabeza no mide y que ya no está en el
+        árbol: sin una ruta nueva con su contenido, no es un movimiento puro."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = make_contract_repo(tmp, contract=complete_contract(upto=4))
+            seed_evidence(repo, 3)
+            base = self._base_phase4(tmp, extra_route=self.ANTIGUA)
+            code, out, err = run_cli(["adoption", "check", "--phase", "4",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn("movimiento puro", err)
+            self.assertIn(self.ANTIGUA, err)
 
 if __name__ == "__main__":
     unittest.main()
