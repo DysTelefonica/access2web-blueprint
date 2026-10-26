@@ -1,0 +1,3 @@
+type: patch
+
+`--seal-baseline <dir>` mide también las fases 0 y 2 contra la BASE del PR, con un operador por fase: identidad en lugar de unión (DysTelefonica/team-skills#1319). La instantánea de etiquetas del host (`host_labels`, fase 0) y el allowlist y el árbol que escanea el gate de aislamiento (`env_isolation.allowlist` y `env_isolation.root`, fase 2) tienen que ser los que mide la base: el PR no puede apartar el gate cambiando lo que el gate lee. Retirar de verdad una ruta sí se permite — si la ruta de la base ya no existe en el árbol medido, la base deja de exigirla — y una base sin contrato legible sigue fallando cerrado con exit 2. Sin la opción el gate se mide como siempre.
