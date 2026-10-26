@@ -119,12 +119,13 @@ Para invocar: `python -m app.src.modules.lanzadera.delivery.cli.platform_user <s
 | `scripts/check_dry.py` | Gate | `ci.yml::quality` | DRY. |
 | `scripts/check_deadcode.py` | Gate | `ci.yml::quality` | Código muerto. |
 | `scripts/check_change_scope.py` | Gate | `pr-gate.yml::pr-gate` | Superficie del diff: `e2e` (`app/`, `e2e/`) y `codeql` (`app/`, `scripts/`); el pr-gate publica un marcador por superficie y el job pesado se salta cuando vale `false` (issue #1376). |
-| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | Gate | `pr-gate.yml::pr-gate` | ≤400 líneas. |
+| `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | Gate del canon | `pr-gates.yml::pr-gate` | ≤400 líneas; se ejecuta desde el artefacto del catálogo publicado por `canon`. |
 | `scripts/check_workflows.py` | Gate | `ci.yml::quality` | Valida `.github/workflows/*.yml`. |
 | `.github/required-jobs-policy.json` | Política del gate del canon | `ci.yml::required` | Declara la matriz `required` y los saltos aceptados por evento. |
 | `scripts/check_decision_guards.py` | Gate | `ci.yml::quality` | Decisiones D-<n> con guardia. |
 | `scripts/check_walkthrough_schema.py` | Gate | `pr-gate.yml::pr-gate` | `docs/03-aplicaciones/<app>/walkthrough-G*.json`. |
-| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` | Gate del canon | `pr-gate.yml::pr-gate` | Cuerpo de issue conforme a `docs/08-decisiones-y-preguntas-abiertas.md`. |
+| `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` | Gate del canon | `pr-gates.yml::pr-gate` | Cuerpo de issue conforme; se ejecuta desde el artefacto del catálogo publicado por `canon`. |
+| `.github/actions/pattern-at-pin/action.yml` | Acción del repositorio | `pr-gates.yml::canon` | Resuelve el catálogo del canon en el sello de la base y publica su ruta en `PATTERN_DIR`. |
 | `scripts/check_suites_populated.py` | Gate | `ci.yml::quality` | Suites obligatorias no vacías. |
 | `scripts/check_test_classification.py` | Gate | `ci.yml::quality` | Marca tests según marcador. |
 | `scripts/check_legacy_retirement.py` | Gate | `ci.yml::quality` | Retirada de paths legacy. |
