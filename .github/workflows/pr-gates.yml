@@ -85,24 +85,10 @@ jobs:
       # El catálogo publicado por el job `canon`.
       PATTERN_DIR: .canon
     steps:
-      # La cabeza del PR entra como DATOS: el gate la lee, no la ejecuta.
-      - name: Check out the pull request head (data)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          path: pr-head
-          fetch-depth: 0
-          persist-credentials: false
-
-      # La CONFIGURACIÓN que gobierna el gate sale de la BASE: sin esto un PR
-      # podría reescribir su propia política y debilitar el gate. Checkout sin
-      # credenciales: la base no necesita ninguna.
-      - name: Check out the base (trusted configuration)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: base
-          persist-credentials: false
+      # No hay checkout ni de la base ni de la cabeza del PR: la política y los
+      # scripts del gate salen del catálogo que publica `canon`, y el PR se lee
+      # por la API. Un PR no puede reescribir lo que lo mide ni hay árbol suyo
+      # en disco que el job pueda ejecutar.
 
       - name: Get the canon
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
