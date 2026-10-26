@@ -296,8 +296,8 @@ jobs:
         # duplicadas, `timeout-minutes`, puertos fijos, pines por SHA, preflight de docker y grupo de
         # `concurrency` (HR-3, HR-26, HR-30). El `workflow gate` local conserva solo lo que el canon no
         # comprueba: permisos, PYTHON_VERSION, unicidad del grupo y runners alcanzables por PR.
-        # #1464: `--host-contract` es lo que le dice al gate quais nombres exige el host
-        # (`required`); sin el, la regla HR-30 no tiene sobre que aplicar y el defecto
+        # #1464: `--host-contract` es lo que le dice al gate qué nombres exige el host
+        # (`required`); sin él, la regla HR-30 no tiene sobre que aplicar y el defecto
         # queda invisible en CI.
         run: |
           args=()
