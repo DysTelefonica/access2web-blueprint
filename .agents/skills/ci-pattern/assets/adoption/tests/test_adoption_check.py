@@ -21,6 +21,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -1210,6 +1211,275 @@ class SealBaselineTests(unittest.TestCase):
                                     "--seal-baseline", str(base), str(repo)])
             self.assertEqual(code, 2)
             self.assertIn("pattern_paths", err)
+
+
+class SealBaselineSubjectsTests(unittest.TestCase):
+    """#1319: `--seal-baseline` mide también las rutas de las fases 0 y 2.
+
+    La fase 3 compara CONJUNTOS (unión de los `pattern_paths` de la base y de
+    la cabeza). Las fases 0 y 2 declaran QUÉ se mide: la instantánea de
+    etiquetas del host (fase 0) y el allowlist y el árbol que escanea el gate
+    de aislamiento (fase 2). Ahí el operador es IDENTIDAD: la cabeza tiene
+    que medir lo mismo que la base. Cuando la ruta de la base ya no está, solo
+    se admite un MOVIMIENTO PURO: el contenido de la cabeza tiene que ser el
+    de la base, byte a byte. Un movimiento con edición en el mismo PR abre el
+    hueco que la excepción cierra, así que da hallazgo.
+    """
+
+    LABELS_SNAPSHOT = ".github/host-labels-snapshot.json"
+    ALLOWLIST = ".github/env-isolation-allowlist.json"
+
+    def _base(self, tmp, repo=None, routes=(), **phases):
+        """Checkout de la BASE: su contrato de adopción y, si se pasan rutas,
+        los ficheros que la base mide (copiados del estado del consumer)."""
+        base = Path(tmp) / "base"
+        (base / ".github").mkdir(parents=True, exist_ok=True)
+        (base / ".github" / "ci-pattern-adoption.json").write_text(
+            json.dumps({"schema_version": 1, "phases": phases}, indent=2),
+            encoding="utf-8")
+        for rel in routes:
+            src = repo / rel
+            dst = base / rel
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            if src.is_dir():
+                shutil.copytree(src, dst)
+            else:
+                dst.write_bytes(src.read_bytes())
+        return base
+
+    def _base_phase2(self, tmp, repo, root="tests", allowlist=None):
+        allowlist = allowlist or self.ALLOWLIST
+        return self._base(tmp, repo, routes=(root, allowlist), **{
+            "2": {"env_isolation": {"root": root, "allowlist": allowlist}}})
+
+    def _base_phase0(self, tmp, repo, host_labels=None):
+        host_labels = host_labels or self.LABELS_SNAPSHOT
+        return self._base(tmp, repo, routes=(host_labels,), **{
+            "0": {"host_labels": host_labels}})
+
+    def _move(self, repo, src, dst, content=None):
+        """El PR mueve un fichero: el original desaparece y el nuevo lleva el
+        contenido dado (o el del original, si no se dice nada)."""
+        data = (repo / src).read_bytes() if content is None else content
+        (repo / src).unlink()
+        path = repo / dst
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(data)
+        return path
+
+    def _consumer_phase2(self, tmp, head=None, leak=False):
+        """Consumer con la fase 2 declarada; `head` sustituye a la
+        declaración de `env_isolation` de la cabeza."""
+        contract = complete_contract(upto=2)
+        if head is not None:
+            contract["phases"]["2"]["env_isolation"] = head
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        touch(repo, "docs/adoption/propagation-evidence.md")
+        if leak:
+            touch(repo, "tests/test_smoke.sh", text='#!/bin/sh\necho "$DEPLOY_TOKEN"\n')
+        return repo
+
+    def _consumer_phase0(self, tmp, head_labels=None, labels=("status:approved",),
+                         inventoried=False):
+        """Consumer con la fase 0 declarada; `head_labels` sustituye a la
+        instantánea declarada y `labels` es lo que declara la instantánea."""
+        contract = complete_contract(upto=0)
+        if not inventoried:
+            # fuera la entrada que inventaría las etiquetas: la instantánea
+            # desviada tiene que ser la que exige la cobertura.
+            contract["phases"]["0"]["inventory"] = [
+                e for e in contract["phases"]["0"]["inventory"]
+                if not str(e.get("artifact", "")).startswith("labels ")]
+        if head_labels is not None:
+            contract["phases"]["0"]["host_labels"] = head_labels
+        contract["phases"]["0"]["inventory"].append(
+            {"artifact": self.LABELS_SNAPSHOT, "disposition": "adopted",
+             "target": self.LABELS_SNAPSHOT})
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        touch(repo, "docs/adoption/propagation-evidence.md")
+        (repo / self.LABELS_SNAPSHOT).write_text(
+            json.dumps(list(labels)), encoding="utf-8")
+        return repo
+
+    def test_el_pr_que_cambia_el_allowlist_es_rojo_con_la_base(self):
+        """El PR aparta el allowlist del gate de aislamiento: con la base,
+        rojo y nombrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "tests", "allowlist": "docs/permissive.json"},
+                leak=True)
+            touch(repo, "docs/permissive.json",
+                  text=json.dumps({"env_vars": ["DEPLOY_TOKEN"]}))
+            base = self._base_phase2(tmp, repo)
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn(self.ALLOWLIST, err)
+            self.assertIn("docs/permissive.json", err)
+
+    def test_sin_la_opcion_el_allowlist_desviado_sigue_en_verde(self):
+        """Sin la opción el gate se mide como siempre: el PR puede apartar el
+        allowlist y la fase 2 sale en verde."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "tests", "allowlist": "docs/permissive.json"},
+                leak=True)
+            touch(repo, "docs/permissive.json",
+                  text=json.dumps({"env_vars": ["DEPLOY_TOKEN"]}))
+            code, out, err = run_cli(["adoption", "check", "--phase", "2", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_cambia_el_root_es_rojo_con_la_base(self):
+        """El PR estrecha el árbol que escanea el gate: con la base, rojo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "tests/sub", "allowlist": self.ALLOWLIST},
+                leak=True)
+            (repo / "tests" / "sub").mkdir(parents=True)
+            touch(repo, "tests/sub/test_ok.sh", text='#!/bin/sh\necho ok\n')
+            base = self._base_phase2(tmp, repo)
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("tests/sub", err)
+
+    def test_el_pr_que_desvia_la_instantanea_de_etiquetas_es_rojo_con_la_base(self):
+        """El PR aparta la instantánea de etiquetas del host: con la base,
+        rojo y nombrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase0(tmp, head_labels="docs/empty-labels.json")
+            touch(repo, "docs/empty-labels.json", text="[]")
+            base = self._base_phase0(tmp, repo)
+            code, _, err = run_cli(["adoption", "check", "--phase", "0",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn(self.LABELS_SNAPSHOT, err)
+            self.assertIn("docs/empty-labels.json", err)
+
+    def test_sin_la_opcion_la_instantanea_desviada_sigue_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase0(tmp, head_labels="docs/empty-labels.json")
+            touch(repo, "docs/empty-labels.json", text="[]")
+            code, out, err = run_cli(["adoption", "check", "--phase", "0", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_mueve_y_edita_el_allowlist_es_rojo_con_la_base(self):
+        """El PR mueve el allowlist a otra ruta y EDITA su contenido: con la
+        base, rojo. Un movimiento con edición en el mismo PR abre el hueco
+        que la excepción de movimiento puro cierra."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "tests", "allowlist": "docs/env-allowlist.json"},
+                leak=True)
+            base = self._base_phase2(tmp, repo)
+            self._move(repo, self.ALLOWLIST, "docs/env-allowlist.json",
+                       content=json.dumps({"env_vars": ["DEPLOY_TOKEN"]}).encode())
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn(self.ALLOWLIST, err)
+            self.assertIn("movimiento", err)
+
+    def test_el_pr_que_mueve_y_edita_la_instantanea_es_rojo_con_la_base(self):
+        """Igual que el allowlist, con la instantánea de etiquetas."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase0(
+                tmp, head_labels="docs/host-labels-snapshot.json")
+            base = self._base_phase0(tmp, repo)
+            self._move(repo, self.LABELS_SNAPSHOT, "docs/host-labels-snapshot.json",
+                       content=json.dumps([]).encode())
+            code, _, err = run_cli(["adoption", "check", "--phase", "0",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn(self.LABELS_SNAPSHOT, err)
+            self.assertIn("movimiento", err)
+
+    def test_el_pr_que_mueve_y_estrecha_el_root_es_rojo_con_la_base(self):
+        """El PR mueve el árbol que escanea el gate y deja atrás un fichero
+        de la base: la cabeza mediría menos, y eso no es un movimiento."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "scripts", "allowlist": self.ALLOWLIST})
+            touch(repo, "tests/test_leak.sh", text='#!/bin/sh\necho "$DEPLOY_TOKEN"\n')
+            base = self._base_phase2(tmp, repo)
+            shutil.move(str(repo / "tests"), str(repo / "scripts"))
+            (repo / "scripts" / "test_leak.sh").unlink()
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("movimiento", err)
+
+    def test_el_pr_que_mueve_el_allowlist_sin_tocarlo_sigue_en_verde(self):
+        """Un movimiento PURO sí se admite: el allowlist cambia de ruta pero
+        su contenido es el de la base."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "tests", "allowlist": "docs/env-allowlist.json"})
+            base = self._base_phase2(tmp, repo)
+            self._move(repo, self.ALLOWLIST, "docs/env-allowlist.json")
+            code, out, err = run_cli(["adoption", "check", "--phase", "2",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_mueve_el_allowlist_sin_tocarlo_sigue_viendo_la_fuga(self):
+        """El movimiento puro no aparta la medición: la fuga que la base veía
+        la sigue viendo la cabeza."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "tests", "allowlist": "docs/env-allowlist.json"},
+                leak=True)
+            base = self._base_phase2(tmp, repo)
+            self._move(repo, self.ALLOWLIST, "docs/env-allowlist.json")
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("DEPLOY_TOKEN", err)
+            self.assertNotIn("movimiento", err)
+
+    def test_el_pr_que_mueve_el_root_sin_tocarlo_sigue_en_verde(self):
+        """Un movimiento puro del árbol también se admite."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(
+                tmp, head={"root": "scripts", "allowlist": self.ALLOWLIST})
+            base = self._base_phase2(tmp, repo)
+            shutil.move(str(repo / "tests"), str(repo / "scripts"))
+            code, out, err = run_cli(["adoption", "check", "--phase", "2",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_mueve_la_instantanea_sin_tocarla_sigue_en_verde(self):
+        """Un movimiento puro de la instantánea de etiquetas también se
+        admite."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase0(
+                tmp, head_labels="docs/host-labels-snapshot.json",
+                inventoried=True)
+            base = self._base_phase0(tmp, repo)
+            self._move(repo, self.LABELS_SNAPSHOT, "docs/host-labels-snapshot.json")
+            code, out, err = run_cli(["adoption", "check", "--phase", "0",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_base_sin_contrato_falla_cerrado(self):
+        """Un gate que no puede medir la base no da verde (HR-3): exit 2."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp)
+            empty = Path(tmp) / "empty"
+            empty.mkdir()
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(empty), str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("contrato de adopción ausente", err)
+
+    def test_base_con_env_isolation_ilegible_falla_cerrado(self):
+        """Una base cuya fase 2 no se puede leer no se mide a medias."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp)
+            base = self._base(tmp, **{"2": {"env_isolation": {"root": 7}}})
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("--seal-baseline", err)
 
 
 class Phase3WiringTests(unittest.TestCase):
@@ -3677,6 +3947,313 @@ class TestDependabotPhaseFiveWithApapFixture(unittest.TestCase):
             found = CLI._check_dependabot_config(repo, {"dependabot": APAP_DEPENDABOT_DECLARATION})
             self.assertEqual(found, [], found)
 
+
+class SealBaselinePhases146Tests(unittest.TestCase):
+    """#1321: `--seal-baseline` mide también las fases 1, 4, 5 y 6 contra la base.
+
+    La clase de hueco es la misma que en las fases 0 y 2 (#1319): lo que mide
+    el gate lo declara el PR. Aquí el operador cambia con la fase, porque la
+    declaración no siempre es UNA ruta:
+
+    - fase 1: identidad de `evidence.path` (una ruta).
+    - fase 4: identidad de las rutas `@` dentro de `gates[].args`. El conjunto
+      de gates lo fija el canon (el consumer elige las ENTRADAS, no el
+      subconjunto), así que no se compara la lista entera: solo las rutas que
+      cada gate declara medir.
+    - fase 5: identidad de `operating_doc.doc` y de `operating_doc.linked_from`.
+    - fase 6: CONTENCIÓN. La cadena de aceptación crece (cada PR aceptado
+      añade una entrada), así que las entradas de la base tienen que seguir
+      ahí y sin cambios, y se pueden añadir entradas nuevas.
+
+    La excepción de retirada (la ruta de la base ya no existe en el árbol
+    medido) la trae `_seal_identity_findings` de #1319; estas fases la
+    heredan, de modo que la corrección del renombrado puro que prepara
+    skills3 se aplica sin tocar estos tests.
+    """
+
+    EVIDENCE = "docs/adoption/propagation-evidence.md"
+    OPERATING_DOC = "docs/ci-pattern-flow.md"
+    AGENTS = "AGENTS.md"
+    POLICY = ".github/required-jobs-policy.json"
+
+    # --- base: solo su contrato de adopcion ---
+
+    def _base(self, tmp, **phases):
+        base = Path(tmp) / "base"
+        (base / ".github").mkdir(parents=True, exist_ok=True)
+        (base / ".github" / "ci-pattern-adoption.json").write_text(
+            json.dumps({"schema_version": 1, "phases": phases}, indent=2),
+            encoding="utf-8")
+        return base
+
+    def _base_phase1(self, tmp, path=None):
+        return self._base(tmp, **{"1": {"evidence": {"path": path or self.EVIDENCE}}})
+
+    def _base_phase4(self, tmp, gates=None):
+        return self._base(tmp, **{"4": {"gates": gates or full_phase4_gates()["gates"]}})
+
+    def _base_phase5(self, tmp, doc=None, linked_from=None):
+        return self._base(tmp, **{"5": {"operating_doc": {
+            "doc": doc or self.OPERATING_DOC, "linked_from": linked_from or self.AGENTS}}})
+
+    def _base_phase6(self, tmp, prs=None):
+        return self._base(tmp, **{"6": {"prs": prs or []}})
+
+    # --- consumers ---
+
+    def _consumer_phase1(self, tmp, head_path=None):
+        contract = complete_contract(upto=1)
+        if head_path is not None:
+            contract["phases"]["1"] = {"evidence": {"path": head_path}}
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        touch(repo, self.EVIDENCE)
+        if head_path:
+            touch(repo, head_path, text="evidencia copiada\n")
+        return repo
+
+    def _consumer_phase4(self, tmp, head_gates=None):
+        contract = complete_contract(upto=4)
+        if head_gates is not None:
+            contract["phases"]["4"] = {"gates": head_gates}
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        return repo
+
+    def _copy_policy(self, repo, rel="docs/politica.copia.json"):
+        """Copia valida de la politica de jobs: el gate la tiene que poder leer."""
+        policy = json.loads((repo / self.POLICY).read_text(encoding="utf-8"))
+        (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+        (repo / rel).write_text(json.dumps(policy), encoding="utf-8")
+        return rel
+
+    def _reseal(self, repo):
+        """Re-sella el manifiesto de gobierno tras tocar un fichero sellado.
+
+        Un PR que cambia un fichero sellado re-sella (el manifiesto es la
+        identidad verificada en proceso, no la autodeclaracion del
+        contrato). Sin re-sellar, la fase 3 falla por el sello y el resto de
+        fases ni se evaluan.
+        """
+        path = repo / ".governance-manifest.json"
+        if not path.is_file():
+            return
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        for rel in list(manifest.get("files", {})):
+            if (repo / rel).is_file():
+                manifest["files"][rel] = CLI.sha256_governed(repo / rel, rel)
+        path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+
+    def _consumer_phase5(self, tmp, head_doc=None, head_linked=None):
+        contract = complete_contract(upto=5)
+        if head_doc is not None:
+            contract["phases"]["5"] = {"operating_doc": {
+                "doc": head_doc, "linked_from": head_linked or self.AGENTS}}
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        seed_operating_doc(repo)
+        if head_doc and head_doc != self.OPERATING_DOC:
+            # la copia del doc: generada y enlazada desde AGENTS.md, para que la
+            # fase 5 la mida sin quejarse de que el fichero no existe.
+            CLI.main(["adoption", "generate-doc", str(repo),
+                      "--out", str(repo / head_doc)])
+            agents = repo / (head_linked or self.AGENTS)
+            agents.write_text(agents.read_text(encoding="utf-8")
+                              + f"\n[{head_doc}]({head_doc})\n", encoding="utf-8")
+            self._reseal(repo)
+        return repo
+
+    def _consumer_phase6(self, tmp, head_prs=None):
+        contract = complete_contract(upto=6)
+        if head_prs is not None:
+            contract["phases"]["6"] = {"prs": head_prs}
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        seed_evidence(repo, 3)
+        seed_operating_doc(repo)
+        init_git_with_commit(repo)
+        # dos commits: el declarado puede apuntar al ANTERIOR (que sigue en el
+        # historial y en verde), que es la desviacion que hay que cazar.
+        (repo / "segunda.txt").write_text("segunda\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(repo), "add", "-A"], capture_output=True, text=True)
+        subprocess.run(["git", "-C", str(repo), "-c", "user.email=t@e", "-c", "user.name=t",
+                        "commit", "-qm", "segunda"], capture_output=True, text=True)
+        return repo
+
+    def _head_sha(self, repo):
+        return subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
+                              capture_output=True, text=True).stdout.strip()
+
+    def _old_sha(self, repo):
+        """El commit ANTERIOR: sigue en el historial y en verde."""
+        return subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD~1"],
+                              capture_output=True, text=True).stdout.strip()
+
+    # --- fase 1 ---
+
+    def test_fase1_el_pr_que_aparta_la_evidencia_es_rojo_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase1(tmp, head_path="docs/adoption/copia.md")
+            base = self._base_phase1(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "1",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn(self.EVIDENCE, err)
+            self.assertIn("docs/adoption/copia.md", err)
+
+    def test_fase1_sin_la_opcion_la_evidencia_desviada_sigue_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase1(tmp, head_path="docs/adoption/copia.md")
+            code, out, err = run_cli(["adoption", "check", "--phase", "1", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_fase1_la_misma_evidencia_sigue_en_verde_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase1(tmp)
+            base = self._base_phase1(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "1",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    # --- fase 4 ---
+
+    def test_fase4_el_pr_que_aparta_la_politica_de_un_gate_es_rojo_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            gates = full_phase4_gates()["gates"]
+            # la ruta de la politica se mide en DOS gates (required-jobs y
+            # workflow-policy): apartarla exige quitarla de los dos
+            for entry in gates:
+                if entry["gate"] == "required-jobs":
+                    entry["args"] = ["--policy", "@docs/politica.copia.json",
+                                     "--event", "pull_request",
+                                     "--needs-file", "@.github/needs/needs.json"]
+                if entry["gate"] == "workflow-policy":
+                    entry["args"] = ["--workflow", "@.github/workflows/ci.yml",
+                                     "--required-jobs", "@docs/politica.copia.json"]
+            repo = self._consumer_phase4(tmp, head_gates=gates)
+            self._copy_policy(repo)
+            base = self._base_phase4(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "4",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            # el mensaje nombra la ruta que la base mide y la cabeza ya no
+            self.assertIn(".github/required-jobs-policy.json", err)
+
+    def test_fase4_cambiar_un_argumento_que_no_es_ruta_sigue_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            gates = full_phase4_gates()["gates"]
+            for entry in gates:
+                if entry["gate"] == "required-jobs":
+                    entry["args"] = ["--policy", "@.github/required-jobs-policy.json",
+                                     "--event", "push",
+                                     "--needs-file", "@.github/needs/needs.json"]
+            repo = self._consumer_phase4(tmp, head_gates=gates)
+            base = self._base_phase4(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "4",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_fase4_sin_la_opcion_el_gate_desviado_sigue_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            gates = full_phase4_gates()["gates"]
+            for entry in gates:
+                if entry["gate"] == "required-jobs":
+                    entry["args"] = ["--policy", "@docs/politica.copia.json",
+                                     "--event", "pull_request",
+                                     "--needs-file", "@.github/needs/needs.json"]
+            repo = self._consumer_phase4(tmp, head_gates=gates)
+            self._copy_policy(repo)
+            code, out, err = run_cli(["adoption", "check", "--phase", "4", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    # --- fase 5 ---
+
+    def test_fase5_el_pr_que_aparta_el_doc_operativo_es_rojo_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase5(tmp, head_doc="docs/flow.copia.md")
+            base = self._base_phase5(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "5",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn(self.OPERATING_DOC, err)
+            self.assertIn("docs/flow.copia.md", err)
+
+    def test_fase5_el_pr_que_aparta_el_enlace_es_rojo_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase5(tmp, head_doc=self.OPERATING_DOC,
+                                         head_linked="AGENTS.copia.md")
+            base = self._base_phase5(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "5",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn(self.AGENTS, err)
+            self.assertIn("AGENTS.copia.md", err)
+
+    def test_fase5_el_mismo_doc_sigue_en_verde_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase5(tmp)
+            base = self._base_phase5(tmp)
+            code, out, err = run_cli(["adoption", "check", "--phase", "5",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_fase5_sin_la_opcion_el_doc_desviado_sigue_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase5(tmp, head_doc="docs/flow.copia.md")
+            code, out, err = run_cli(["adoption", "check", "--phase", "5", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    # --- fase 6 ---
+
+    def test_fase6_el_pr_que_cambia_el_sha_de_la_base_es_rojo_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase6(tmp)
+            head = self._head_sha(repo)
+            other = self._old_sha(repo)
+            base_prs = [{"number": 101, "sha": head, "conclusion": "success"}]
+            contract = json.loads(
+                (repo / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+            contract["phases"]["6"] = {"prs": [
+                {"number": 101, "sha": other, "conclusion": "success"}]}
+            (repo / ".github" / "ci-pattern-adoption.json").write_text(
+                json.dumps(contract, indent=2), encoding="utf-8")
+            self._reseal(repo)
+            base = self._base_phase6(tmp, prs=base_prs)
+            code, out, err = run_cli(["adoption", "check", "--phase", "6",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1, out + err)
+            self.assertIn(head, err)
+            self.assertIn(other, err)
+
+    def test_fase6_anadir_una_entrada_legitima_sigue_en_verde_con_la_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase6(tmp)
+            head = self._head_sha(repo)
+            other = self._old_sha(repo)
+            base_prs = [{"number": 101, "sha": other, "conclusion": "success"}]
+            head_prs = base_prs + [{"number": 102, "sha": head, "conclusion": "success"}]
+            contract = json.loads(
+                (repo / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+            contract["phases"]["6"] = {"prs": head_prs}
+            (repo / ".github" / "ci-pattern-adoption.json").write_text(
+                json.dumps(contract, indent=2), encoding="utf-8")
+            self._reseal(repo)
+            base = self._base_phase6(tmp, prs=base_prs)
+            code, out, err = run_cli(["adoption", "check", "--phase", "6",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_fase6_sin_la_opcion_el_sha_cambiado_sigue_en_verde(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase6(tmp)
+            other = self._old_sha(repo)
+            contract = json.loads(
+                (repo / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+            contract["phases"]["6"] = {"prs": [
+                {"number": 101, "sha": other, "conclusion": "success"}]}
+            (repo / ".github" / "ci-pattern-adoption.json").write_text(
+                json.dumps(contract, indent=2), encoding="utf-8")
+            self._reseal(repo)
+            code, out, err = run_cli(["adoption", "check", "--phase", "6", str(repo)])
+            self.assertEqual(code, 0, out + err)
 
 if __name__ == "__main__":
     unittest.main()

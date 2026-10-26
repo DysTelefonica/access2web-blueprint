@@ -1488,13 +1488,32 @@ cumple · 1 hallazgos nombrando cada artefacto o condición que falta · 2
 contrato ilegible, esquema inválido, sujeto vacío o entrada ausente de un
 gate.
 
---seal-baseline <dir>: la fase 3 mide además contra la BASE del PR (un
-checkout de <dir> con su contrato de adopción). El conjunto que hay que
-sellar es la UNIÓN de los 'pattern_paths' de la base y los de la cabeza: lo
-que la base sellaba no puede reducir un PR mientras el fichero siga en el
-árbol, y lo nuevo de la cabeza también se sella. Retirar un workflow sí se
-permite: si el fichero ya no existe, no hay nada que sellar. Sin la opción
-el gate se mide como siempre; una base sin contrato legible es exit 2.
+--seal-baseline <dir>: mide el gate también contra la BASE del PR (un
+checkout de <dir> con su contrato de adopción). Un operador por fase:
+
+  fase 3: el conjunto que hay que sellar es la UNIÓN de los 'pattern_paths'
+  de la base y los de la cabeza: lo que la base sellaba no puede reducir un
+  PR mientras el fichero siga en el árbol, y lo nuevo de la cabeza también
+  se sella.
+
+  fases 0 y 2: IDENTIDAD. La instantánea de etiquetas del host (fase 0) y el
+  allowlist y el árbol que escanea el gate de aislamiento (fase 2) tienen que
+  ser los que mide la base: el PR no puede apartar el gate cambiando lo que
+  el gate lee.
+
+  fases 1, 4, 5 y 6 (#1321): la evidencia (fase 1), las rutas `@` que miden los
+  gates (fase 4), el documento operativo y el fichero que lo enlaza (fase 5)
+  usan IDENTIDAD; las entradas de aceptación (fase 6) usan CONTENCIÓN: la
+  cadena crece, así que las entradas de la base tienen que seguir presentes y
+  sin cambios, y la cabeza puede añadir las suyas. En la fase 4 el conjunto
+  de gates lo fija el canon: el consumer elige las entradas, no el subconjunto.
+
+Si la ruta de la base ya no existe en la cabeza, solo se admite un MOVIMIENTO
+PURO: la ruta nueva tiene que tener el mismo contenido que la base, byte a byte
+(en un directorio, cada fichero de la base con el mismo contenido; la cabeza
+puede añadir ficheros, que solo añaden medición). Un movimiento con edición
+en el mismo PR da hallazgo. Sin la opción el gate se mide como siempre; una base
+sin contrato legible es exit 2.
 
 generate-doc: escribe el documento operativo del consumer (--out), generado
 desde sus datos (ci-pattern.yaml, host-contract, required-jobs, formularios
@@ -1560,7 +1579,7 @@ def _is_canonical_pattern_target(target, repo=None, declared=()):
             and target in _referenced_governance_scripts(repo, refs))
 
 
-def _check_phase_zero(repo, decl):
+def _check_phase_zero(repo, decl, seal=None):
     findings = []
     declared_paths = _declared_governed_paths(decl)
     inventory = decl.get("inventory")
@@ -1649,15 +1668,26 @@ def _check_phase_zero(repo, decl):
             "fase 0: 'removal_confirmed' debe ser true: la lista de eliminación "
             "de gobernanza la confirma el operador (porting-guide, fase 0)"
         )
+    # #1319: la instantánea que mide la fase 0 tiene que ser la que mide la
+    # base: el PR no puede apartar la cobertura de las etiquetas del host.
+    findings.extend(_seal_identity_findings(
+        0, decl.get("host_labels"), (seal or {}).get("host_labels"), repo,
+        (seal or {}).get("base_dir"), "la instantánea de etiquetas del host"))
     return findings
 
 
-def _check_evidence_phase(repo, n, decl):
+def _check_evidence_phase(repo, n, decl, seal=None):
     evidence = decl.get("evidence")
     if not isinstance(evidence, dict) or not isinstance(evidence.get("path"), str) \
             or not evidence["path"].strip():
         return [f"fase {n}: falta 'evidence.path': la evidencia de la fase se declara como ruta"]
     rel = evidence["path"]
+    # #1321: la evidencia que mide la cabeza tiene que ser la que mide la base.
+    findings = _seal_identity_findings(
+        n, rel, (seal or {}).get("evidence_path"), repo,
+        (seal or {}).get("base_dir"), "la evidencia de la fase")
+    if findings:
+        return findings
     path = repo / rel
     if not path.is_file():
         return [f"fase {n}: la evidencia declarada no existe: {rel}"]
@@ -1680,7 +1710,7 @@ def _sha_in_history(repo, sha):
     return proc.returncode == 0
 
 
-def _check_acceptance_phase(repo, decl):
+def _check_acceptance_phase(repo, decl, seal=None):
     prs = decl.get("prs")
     if not isinstance(prs, list) or not prs:
         return [
@@ -1688,6 +1718,27 @@ def _check_acceptance_phase(repo, decl):
             "PRs de aceptación (número, SHA y veredicto de CI)"
         ]
     findings = []
+    # #1321: contencion. La cadena de aceptacion CRECE (cada PR aceptado anade
+    # una entrada), asi que las entradas de la base tienen que seguir presentes
+    # y sin cambios; la cabeza puede anadir entradas nuevas.
+    base_prs = (seal or {}).get("acceptance_prs")
+    if base_prs:
+        head_entries = [
+            (e.get("number"), e.get("sha"), e.get("conclusion"))
+            for e in prs if isinstance(e, dict)]
+        for number, sha, conclusion in base_prs:
+            if (number, sha, conclusion) in head_entries:
+                continue
+            # la cabeza muestra lo que declara para ESE PR, para que la
+            # desviacion sea visible sin abrir el contrato
+            head_now = [h for h in head_entries if h[0] == number]
+            now = (f"la cabeza declara sha {head_now[0][1]}, veredicto {head_now[0][2]!r}"
+                   if head_now else "la cabeza no lo declara")
+            findings.append(
+                f"fase 6: la entrada de aceptacion del PR {number!r} (sha {sha}, "
+                f"veredicto {conclusion!r}) la declara la BASE y {now}: una "
+                f"aceptacion no puede apartarse de la base (--seal-baseline); "
+                f"dejala como estaba o anade la cadena nueva")
     for entry in prs:
         if not isinstance(entry, dict):
             findings.append("fase 6: entrada de 'prs' no-objeto: " + repr(entry)[:80])
@@ -2466,7 +2517,7 @@ def _run_gate_binary(repo, binary, args):
     return _run_cmd(cmd, timeout=600)
 
 
-def _check_env_isolation_phase(repo, decl):
+def _check_env_isolation_phase(repo, decl, seal=None):
     spec = decl.get("env_isolation")
     if not isinstance(spec, dict) or not isinstance(spec.get("root"), str) \
             or not spec["root"].strip() or not isinstance(spec.get("allowlist"), str) \
@@ -2476,12 +2527,25 @@ def _check_env_isolation_phase(repo, decl):
             "'allowlist' (JSON versionado): el gate EJECUTA env-isolation (HR-28) "
             "sobre el árbol; una declaración con evidencia en un .md no lo prueba"
         ]
+    # #1319: el allowlist y el árbol que mide la fase 2 tienen que ser los que
+    # mide la base: el PR no puede apartar una fuga del gate HR-28 cambiando
+    # lo que el gate lee. La comprobación va DESPUÉS de la existencia: una
+    # ruta declarada que no existe es duda (exit 2), no un hallazgo.
     root = repo / spec["root"]
     allowlist = repo / spec["allowlist"]
     if not root.is_dir():
         raise UsageError(f"fase 2: el árbol de tests declarado no existe: {spec['root']}")
     if not allowlist.is_file():
         raise UsageError(f"fase 2: el allowlist declarado no existe: {spec['allowlist']}")
+    findings = []
+    findings.extend(_seal_identity_findings(
+        2, spec.get("allowlist"), (seal or {}).get("env_allowlist"), repo,
+        (seal or {}).get("base_dir"), "el allowlist del gate de aislamiento"))
+    findings.extend(_seal_identity_findings(
+        2, spec.get("root"), (seal or {}).get("env_root"), repo,
+        (seal or {}).get("base_dir"), "el árbol que escanea el gate de aislamiento"))
+    if findings:
+        return findings
     proc = _run_gate_binary(repo, skill_dir() / ENV_ISOLATION_GATE,
                             ["--root", str(root), "--allowlist", str(allowlist)])
     if proc.returncode == 0:
@@ -2585,7 +2649,7 @@ def _ci_images_findings(repo):
     return findings
 
 
-def _check_gates_phase(repo, decl, contract):
+def _check_gates_phase(repo, decl, contract, seal=None):
     runner = _runner_label(repo)
     gate_map = {**ADOPTION_GATES, **RUNNER_BINDING_GATES} if runner else ADOPTION_GATES
     gates = decl.get("gates")
@@ -2596,6 +2660,29 @@ def _check_gates_phase(repo, decl, contract):
             "parseen no es 'en verde'"
         ]
     findings = []
+    # #1321: las rutas `@` que mide la cabeza tienen que ser las que mide la
+    # base. El conjunto de gates lo fija el canon (el consumer elige las
+    # ENTRADAS), asi que no se compara la lista entera: solo las rutas
+    # declaradas. La retirada real (la ruta de la base ya no esta en el arbol)
+    # la admite el mismo criterio de las fases 0 y 2.
+    base_routes = (seal or {}).get("gate_routes")
+    if base_routes:
+        head_routes = set()
+        for entry in gates:
+            if not isinstance(entry, dict):
+                continue
+            for arg in entry.get("args") or []:
+                if isinstance(arg, str) and arg.startswith("@"):
+                    head_routes.add(arg[1:].strip())
+        for rel in sorted(base_routes):
+            if rel in head_routes:
+                continue
+            if not (repo / rel).exists():
+                continue
+            findings.append(
+                f"fase 4: la ruta '{rel}' la mide la BASE y la cabeza no la "
+                f"mide: el PR no puede apartar el gate de la base "
+                f"(--seal-baseline); mide '{rel}' o retira la ruta de la base")
     names = []
     for entry in gates:
         name = entry.get("gate") if isinstance(entry, dict) else None
@@ -3290,7 +3377,7 @@ def _incident_line_findings(rel, number, line):
     return findings
 
 
-def _check_phase_three(repo, decl, contract, seal_paths=None):
+def _check_phase_three(repo, decl, contract, seal=None):
     """#277: sustitución del gobierno de destino ejecutada, no declarada."""
     pattern_paths = decl.get("pattern_paths")
     if not isinstance(pattern_paths, list) or not pattern_paths:
@@ -3333,6 +3420,7 @@ def _check_phase_three(repo, decl, contract, seal_paths=None):
     # lo que la base sellaba no puede desaparecer mientras el fichero siga en
     # el árbol. Retirar un workflow sí se permite: si el fichero ya no existe,
     # no hay nada que sellar y la base deja de exigirlo.
+    seal_paths = (seal or {}).get("pattern_paths") or set()
     if seal_paths:
         for rel in sorted(seal_paths - declared_paths):
             if (repo / rel).exists():
@@ -3453,7 +3541,7 @@ def _first_diff_line(expected, actual):
     return "contenido distinto"
 
 
-def _check_docs_phase(repo, decl):
+def _check_docs_phase(repo, decl, seal=None):
     """Fase 5 (#279): el documento operativo existe, está enlazado desde el
     fichero declarado y coincide byte a byte (por secciones) con el doc
     REGENERADO en este mismo proceso desde los datos reales del consumer.
@@ -3471,6 +3559,16 @@ def _check_docs_phase(repo, decl):
         ]
     doc_rel = spec["doc"].strip()
     linked_rel = spec["linked_from"].strip()
+    # #1321: el documento que mide la cabeza tiene que ser el que mide la
+    # base, y el fichero que lo enlaza tambien.
+    findings = _seal_identity_findings(
+        5, doc_rel, (seal or {}).get("operating_doc"), repo,
+        (seal or {}).get("base_dir"), "el documento operativo")
+    findings += _seal_identity_findings(
+        5, linked_rel, (seal or {}).get("operating_linked_from"), repo,
+        (seal or {}).get("base_dir"), "el fichero que enlaza el documento operativo")
+    if findings:
+        return findings
     generated = build_operating_doc(repo)  # entradas ilegibles → UsageError (exit 2)
     doc_path = repo / doc_rel
     if not doc_path.is_file():
@@ -4287,25 +4385,25 @@ def cmd_dependabot(args):
     return EXIT_FINDINGS if findings else EXIT_OK
 
 
-def _phase_findings(repo, n, decl, contract, seal_paths=None):
+def _phase_findings(repo, n, decl, contract, seal=None):
     """Hallazgos de la fase n contra el árbol real; [] si cumple."""
     if not isinstance(decl, dict):
         return [f"fase {n}: sin declaración en el contrato"]
     if n == 0:
-        return _check_phase_zero(repo, decl)
+        return _check_phase_zero(repo, decl, seal)
     if n == 2:
-        return _check_env_isolation_phase(repo, decl)
+        return _check_env_isolation_phase(repo, decl, seal)
     if n == 1:
-        return _check_evidence_phase(repo, n, decl)
+        return _check_evidence_phase(repo, n, decl, seal)
     if n == 3:
-        return _check_phase_three(repo, decl, contract, seal_paths) + \
-            _check_evidence_phase(repo, n, decl) + \
+        return _check_phase_three(repo, decl, contract, seal) + \
+            _check_evidence_phase(repo, n, decl, seal) + \
             _check_agents_structure(repo, contract) + \
             _check_governance_seals(repo, contract)
     if n == 4:
-        return _check_gates_phase(repo, decl, contract) + _check_review_budget(repo)
+        return _check_gates_phase(repo, decl, contract, seal) + _check_review_budget(repo)
     if n == 5:
-        return (_check_docs_phase(repo, decl) + _check_agents_structure(repo, contract)
+        return (_check_docs_phase(repo, decl, seal) + _check_agents_structure(repo, contract)
                 + _check_docs_map(repo, contract) + _check_architecture(repo, contract)
                 + _check_docs_manifest(repo, contract)
                 + _check_docs_links(repo, contract)
@@ -4315,25 +4413,103 @@ def _phase_findings(repo, n, decl, contract, seal_paths=None):
                 + _check_dependabot_config(repo, contract)
                 + _incident_contract_findings(_operating_doc_params(repo)))
     if n == 6:
-        return _check_acceptance_phase(repo, decl)
+        return _check_acceptance_phase(repo, decl, seal)
     return [f"fase {n}: fase fuera del rango 0..{ADOPTION_PHASES - 1}"]
 
 
-def _seal_baseline_paths(base_dir):
-    """Conjunto que la BASE sellaba en la fase 3 (#1317).
+def _seal_baseline(base_dir):
+    """Lo que la BASE declara como sujeto de cada fase (#1317, #1319).
 
     Lee el contrato de adopción del checkout de la base y devuelve sus
-    `pattern_paths`: lo que la base sellaba no puede reducir un PR. Un
-    contrato ausente o ilegible es exit 2 (fallo cerrado): un gate que no
-    puede medir la base no da verde (HR-3)."""
+    declaraciones: el conjunto que hay que sellar en la fase 3, la
+    instantánea de etiquetas de la fase 0 y el allowlist y el árbol que mide
+    la fase 2. Un contrato ausente o ilegible es exit 2 (fallo cerrado): un
+    gate que no puede medir la base no da verde (HR-3)."""
     try:
         contract = load_adoption_contract(base_dir)
     except UsageError as exc:
         raise UsageError(
             f"adoption check: --seal-baseline no puede medirse: {exc}") from exc
-    decl = (contract.get("phases") or {}).get("3")
-    if not isinstance(decl, dict):
-        return set()
+    phases = contract.get("phases")
+    phases = phases if isinstance(phases, dict) else {}
+
+    def _phase(n):
+        decl = phases.get(str(n))
+        return decl if isinstance(decl, dict) else {}
+
+    env = _phase(2).get("env_isolation")
+    env = env if isinstance(env, dict) else {}
+    # #1321: las fases 1, 4, 5 y 6 declaran tambien QUE se mide.
+    evidence = _phase(1).get("evidence")
+    evidence = evidence if isinstance(evidence, dict) else {}
+    operating_doc = _phase(5).get("operating_doc")
+    operating_doc = operating_doc if isinstance(operating_doc, dict) else {}
+    return {
+        "pattern_paths": _seal_baseline_paths(_phase(3)),
+        "host_labels": _seal_baseline_route(_phase(0), "host_labels"),
+        "env_allowlist": _seal_baseline_route(env, "allowlist"),
+        "env_root": _seal_baseline_route(env, "root"),
+        "evidence_path": _seal_baseline_route(evidence, "path"),
+        "gate_routes": _seal_baseline_gate_routes(_phase(4)),
+        "operating_doc": _seal_baseline_route(operating_doc, "doc"),
+        "operating_linked_from": _seal_baseline_route(operating_doc, "linked_from"),
+        "acceptance_prs": _seal_baseline_prs(_phase(6)),
+        "base_dir": str(Path(base_dir).resolve()),
+    }
+
+
+def _seal_baseline_gate_routes(decl):
+    """Rutas `@` que la BASE declara medir en la fase 4 (#1321).
+
+    El conjunto de gates lo fija el canon (el consumer elige las ENTRADAS),
+    asi que lo que se compara son las rutas que cada gate declara medir: la
+    cabeza tiene que medir las mismas. Una declaracion ilegible es exit 2: la
+    base esta rota y el gate no puede medirla (HR-3)."""
+    gates = decl.get("gates")
+    if gates is None:
+        return None
+    if not isinstance(gates, list):
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            "base declara 'gates' que no es una lista")
+    routes = set()
+    for entry in gates:
+        if not isinstance(entry, dict):
+            continue
+        for arg in entry.get("args") or []:
+            if isinstance(arg, str) and arg.startswith("@"):
+                routes.add(arg[1:].strip())
+    return routes
+
+
+def _seal_baseline_prs(decl):
+    """Entradas de aceptacion que la BASE declara en la fase 6 (#1321).
+
+    La cadena de aceptacion CRECE (cada PR aceptado anade una entrada), asi
+    que el operador es contencion: las entradas de la base tienen que seguir
+    presentes y sin cambios en la cabeza. Se comparan los tres campos
+    (numero, sha y veredicto): cambiar el veredicto tambien es apartar la
+    aceptacion."""
+    prs = decl.get("prs")
+    if prs is None:
+        return None
+    if not isinstance(prs, list):
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            "base declara 'prs' que no es una lista")
+    entries = []
+    for entry in prs:
+        if not isinstance(entry, dict):
+            continue
+        entries.append((entry.get("number"), entry.get("sha"), entry.get("conclusion")))
+    return entries
+
+
+def _seal_baseline_paths(decl):
+    """Conjunto que la BASE sellaba en la fase 3 (#1317).
+
+    Lo que la base sellaba no puede reducir un PR. Una lista ilegible es exit
+    2: la base está rota y el gate no puede medirla (HR-3)."""
     paths = decl.get("pattern_paths")
     if paths is None:
         return set()
@@ -4343,6 +4519,99 @@ def _seal_baseline_paths(base_dir):
             "adoption check: --seal-baseline no puede medirse: el contrato de la "
             "base declara 'pattern_paths' que no es una lista de rutas")
     return set(paths)
+
+
+def _seal_baseline_route(decl, key):
+    """Ruta que la BASE declara, o None si no la declara (#1319).
+
+    Una declaración presente que no es una ruta no vacía es exit 2: la base
+    está rota y el gate no puede medirla (HR-3)."""
+    value = decl.get(key)
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise UsageError(
+            "adoption check: --seal-baseline no puede medirse: el contrato de la "
+            f"base declara '{key}' que no es una ruta")
+    return value.strip()
+
+
+def _seal_identity_findings(phase, head_route, base_route, repo, base_dir, what):
+    """Identidad con la base: lo que mide la cabeza tiene que ser lo que mide
+    la base (#1319).
+
+    Es el operador de las fases 0 y 2, donde la declaración es UNA ruta y no
+    un conjunto: no hay unión que hacer, hay la misma ruta.
+
+    Cuando la ruta de la base ya no está en el árbol medido, solo se admite un
+    MOVIMIENTO PURO: el contenido de la cabeza tiene que ser el de la base,
+    byte a byte. La excepción de la retirada (la ruta que ya no está, se
+    se acota aquí: sin esta comprobación, un PR que mueve el allowlist y lo
+    edita en el mismo paso se apartaba del gate sin que nada lo detectara."""
+    head_route = head_route.strip() if isinstance(head_route, str) else None
+    if not base_route or not head_route or head_route == base_route:
+        return []
+    if (repo / base_route).exists():
+        return [
+            f"fase {phase}: {what} '{head_route}' no es el que mide la BASE "
+            f"('{base_route}'): el PR no puede apartar el gate de la base "
+            f"(--seal-baseline); mide '{base_route}'"
+        ]
+    # La ruta de la base ya no está: solo se admite un movimiento puro.
+    detail = _move_detail(Path(base_dir) / base_route, repo / head_route)
+    if detail is None:
+        return []
+    return [
+        f"fase {phase}: {what} '{head_route}' no es el que mide la BASE "
+        f"('{base_route}') y no es un movimiento puro: {detail} (--seal-baseline); "
+        f"un movimiento con edición en el mismo PR abre el hueco que la base de "
+        f"sellado cierra"
+    ]
+
+
+def _move_detail(base_path, head_path):
+    """Qué impide que el cambio sea un movimiento puro; None si lo es.
+
+    Un fichero: idéntico byte a byte. Un árbol: la cabeza contiene todos los
+    ficheros de la base con el mismo contenido — puede medir MÁS (ficheros
+    nuevos), nunca menos ni con otro contenido. Medir más endurece el gate;
+    medir menos lo aparta, y eso es lo que la excepción no admite."""
+    if not base_path.exists():
+        return "la ruta de la BASE no existe en el checkout de la base"
+    if not head_path.exists():
+        return "la ruta declarada no existe en el árbol medido"
+    if base_path.is_dir() != head_path.is_dir():
+        return "la ruta cambia de tipo"
+    if not base_path.is_dir():
+        try:
+            if base_path.read_bytes() == head_path.read_bytes():
+                return None
+        except OSError:
+            return "el contenido no se puede leer"
+        return "el contenido del fichero cambió"
+    base_files = _tree_digest(base_path)
+    head_files = _tree_digest(head_path)
+    missing = sorted(set(base_files) - set(head_files))
+    changed = sorted(rel for rel in set(base_files) & set(head_files)
+                     if base_files[rel] != head_files[rel])
+    if missing:
+        return "faltan ficheros de la base: " + ", ".join(missing[:5])
+    if changed:
+        return "el contenido cambió en: " + ", ".join(changed[:5])
+    return None
+
+
+def _tree_digest(root):
+    """Mapa ruta relativa → sha256 de los BYTES de cada fichero del árbol.
+
+    Sin normalizar saltos de línea: la identidad del movimiento es byte a byte
+    (#1319), no la de `sha256_file`, que ignora CRLF."""
+    digest = {}
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and not path.is_symlink():
+            data = path.read_bytes()
+            digest[path.relative_to(root).as_posix()] = hashlib.sha256(data).hexdigest()
+    return digest
 
 
 def cmd_adoption(args):
@@ -4419,14 +4688,15 @@ def cmd_adoption(args):
     contract = load_adoption_contract(config_from or repo)
     # #1317: la fase 3 mide además contra la BASE (--seal-baseline): el
     # conjunto que hay que sellar es la unión de los 'pattern_paths' de la
-    # base y los de la cabeza. Sin la opción, no hay conjunto de la base y el
-    # gate se mide exactamente como antes.
-    seal_paths = _seal_baseline_paths(seal_baseline) if seal_baseline else None
+    # base y los de la cabeza. #1319: las fases 0 y 2 comparan con la base
+    # la ruta que miden (identidad). Sin la opción, no hay base y el gate se
+    # mide exactamente como antes.
+    seal = _seal_baseline(seal_baseline) if seal_baseline else None
     blocked_at = None
     findings = []
     for n in range(last + 1):
         phase_findings = _phase_findings(Path(repo), n, contract["phases"].get(str(n)),
-                                         contract, seal_paths)
+                                         contract, seal)
         if phase_findings:
             blocked_at = n
             findings.extend(phase_findings)
