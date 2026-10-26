@@ -136,6 +136,77 @@ class Line(NamedTuple):
     text: str
 
 
+
+#: Los eventos que evalúan un PR. `pull_request_target` corre el workflow de la base, así que
+#: también puede publicar el nombre de un check requerido (#1270).
+PR_EVENTS = ("pull_request", "pull_request_target")
+
+
+#: El token del catálogo. En `pull_request` el workflow, las acciones locales y el sello
+#: vienen de la cabeza del PR, así que un job que puede correr ahí puede leerlo (#1270).
+PR_CATALOG_SECRET = "secrets.TEAM_SKILLS_READ_TOKEN"  # noqa: S105 — el NOMBRE del secreto, no un valor.
+
+
+def _mentions_catalog_secret(node) -> bool:
+    """Whether the catalog token appears anywhere in the node."""
+    if isinstance(node, str):
+        return PR_CATALOG_SECRET in node
+    if isinstance(node, dict):
+        return any(_mentions_catalog_secret(v) for v in node.values())
+    if isinstance(node, list):
+        return any(_mentions_catalog_secret(v) for v in node)
+    return False
+def workflow_id(path: str) -> str:
+    """El nombre del workflow dentro de `.github/workflows/`, comparable entre rutas."""
+    marker = ".github/workflows/"
+    return path.split(marker)[-1] if marker in path else path
+def caller_map(docs: list[tuple[str, dict]]) -> dict[str, set[str]]:
+    """Quién llama a cada workflow reutilizable."""
+    callers: dict[str, set[str]] = {}
+    for w, doc in docs:
+        for job in doc["jobs"].values():
+            uses = job.get("uses")
+            if isinstance(uses, str) and uses.startswith("./.github/workflows/"):
+                callers.setdefault(workflow_id(uses[2:]), set()).add(workflow_id(w))
+    return callers
+def effective_events(ident: str, by_id: dict, callers: dict, seen: frozenset) -> set[str]:
+    """Los eventos del workflow, más los de quienes lo llaman."""
+    if ident in seen:
+        return set()
+    doc = by_id.get(ident)
+    events = set(workflow_events(doc)) if doc is not None else set()
+    for caller in callers.get(ident, ()):
+        events |= effective_events(caller, by_id, callers, seen | {ident})
+    return events
+def reads_secret_on_pull_request(job: dict, events: set[str]) -> bool:
+    """Si el job puede correr en un PR y lee el token del catálogo."""
+    allowed = allowed_events(job, events)
+    if allowed is not None and "pull_request" not in allowed:
+        return False
+    return _mentions_catalog_secret(job)
+def pull_request_secret_findings(docs: list[tuple[str, dict]], out: list[str]) -> None:
+    """#1270: a job that can run on `pull_request` must not read the catalog token.
+
+    On that event the workflow file, the local actions and the seal all come from
+    the PR head: any job that can run there can read the token and hand it on.
+    Only `pull_request_target` (whose workflow is the base's), `schedule` and
+    `workflow_dispatch` may hold it.
+
+    A reusable workflow inherits the events of whoever calls it, so the callers
+    are followed: a `workflow_call` workflow called from a `pull_request` workflow
+    is a `pull_request` workflow too, and the secret it declares reaches the PR.
+    """
+    by_id = {workflow_id(w): doc for w, doc in docs}
+    callers = caller_map(docs)
+    for w, doc in docs:
+        events = effective_events(workflow_id(w), by_id, callers, frozenset())
+        if "pull_request" not in events:
+            continue
+        for jid, job in doc["jobs"].items():
+            if reads_secret_on_pull_request(job, events):
+                out.append(f"{w} job '{jid}': reads '{PR_CATALOG_SECRET}' in a job that can run on "
+                           "pull_request, where the workflow, the local actions and the seal come "
+                           "from the PR head (#1270)")
 def strip_comment(text: str) -> str:
     quote = None
     for i, c in enumerate(text):
@@ -603,7 +674,7 @@ def cancel_in_progress_findings(wf: str, doc: dict) -> list[str]:
     the merge even when a later run of the same SHA is green. A pending run that is replaced
     creates no check run, so `cancel-in-progress: ${{ github.event.action == 'synchronize' }}`
     keeps the saving where it matters (the superseded run belongs to an old SHA)."""
-    if "pull_request" not in workflow_events(doc):
+    if not any(ev in workflow_events(doc) for ev in PR_EVENTS):
         return []
     why = ("`cancel-in-progress` can cancel a run of the same head SHA and leave a cancelled "
            "required check that blocks the merge: use `false` or an expression on "
@@ -683,13 +754,13 @@ def check_job(wf: str, jid: str, job: dict, doc: dict, required: bool, base: str
     qualified = isinstance(job.get("name"), str) and "github.event_name" in job["name"]
     # A job whose provable if excludes pull_request never publishes a PR check name,
     # so its schedule/dispatch runs cannot satisfy one (HR-30).
-    never_on_pr = allowed is not None and "pull_request" not in allowed
+    never_on_pr = allowed is not None and not any(ev in allowed for ev in PR_EVENTS)
     if required:
         if doc.get("continue-on-error") is True:
             finding("workflow-level `continue-on-error: true` masks failure (HR-3)")
         if job.get("continue-on-error") is True or isinstance(job.get("continue-on-error"), str):
             finding("`continue-on-error` masks failure (HR-3)")
-        if "pull_request" not in events:
+        if not any(ev in events for ev in PR_EVENTS):
             finding("required check name is never published from a PR event (HR-30)")
         if "push" in events:
             if not qualified and push_reaches_base_and_others(events["push"], base) and \
@@ -1170,6 +1241,7 @@ def main(argv):
             check_job(w, jid, job, doc, jid in required, args.base_branch, findings,
                       repo_root(w, args.repo_root), declared)
             findings.extend(_needs_output_findings(w, jid, job))
+    pull_request_secret_findings(docs, findings)
     for name in (declared or []):
         if name not in published:
             findings.append(f"host contract requires check '{name}' but no analyzed workflow job "
