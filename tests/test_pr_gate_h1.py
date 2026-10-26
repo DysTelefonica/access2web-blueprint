@@ -78,9 +78,7 @@ def _run_blocks(job: dict) -> list[str]:
 
 def _checkouts(job: dict) -> list[dict]:
     return [
-        step
-        for step in _steps(job)
-        if str(step.get("uses", "")).startswith("actions/checkout@")
+        step for step in _steps(job) if str(step.get("uses", "")).startswith("actions/checkout@")
     ]
 
 
@@ -215,11 +213,7 @@ def test_the_verdict_is_published_as_a_check_run_on_the_head(h1: dict) -> None:
     job = h1["jobs"]["pr-gate"]
     assert job["permissions"]["checks"] == "write", "publishing a check run needs `checks: write`"
 
-    publish = [
-        step
-        for step in _steps(job)
-        if "check-runs" in str(step.get("run", ""))
-    ]
+    publish = [step for step in _steps(job) if "check-runs" in str(step.get("run", ""))]
     assert len(publish) == 1, "the gate job publishes its verdict once"
     step = publish[0]
     assert step["env"]["CONTEXT"] == H1_CONTEXT, (
@@ -318,7 +312,7 @@ def test_the_action_clones_the_catalog_with_the_token_in_one_step(action: dict) 
 def test_the_action_exports_the_pattern_dir_and_fails_closed(action: dict) -> None:
     """The path of the canon travels in `PATTERN_DIR` and every hole fails loud."""
     blocks = "\n".join(str(step.get("run", "")) for step in action["runs"]["steps"])
-    assert 'PATTERN_DIR=' in blocks and '>> "$GITHUB_ENV"' in blocks, (
+    assert "PATTERN_DIR=" in blocks and '>> "$GITHUB_ENV"' in blocks, (
         "the action publishes the directory of the canon in `PATTERN_DIR`"
     )
     assert "personal/ardelperal/ci-pattern" in blocks, (

@@ -51,7 +51,7 @@ Vive en `.github/workflows/pr-gate.yml` (issue #1368) y `ci.yml` lo invoca con e
 
 ### Gate H1 del pull request
 
-`.github/workflows/pr-gates.yml` corre en `pull_request_target`, por lo que ejecuta el workflow de la base. El job `canon` hace checkout de la base sin credenciales persistidas, usa `TEAM_SKILLS_READ_TOKEN` en un único paso para resolver el catálogo en el sello y publica la skill `ci-pattern` como artefacto. El job `pr-gate` no contiene secretos: consume ese artefacto, lee la cabeza del PR como dato y ejecuta desde `.canon/` los gates `pr size` (presupuesto de 400 líneas) e `issue spec` (enlace a una issue del repositorio) con el token de solo lectura. El veredicto se publica con `POST /check-runs` como `pr-gate` sobre la cabeza del PR; la protección de rama exige tanto ese contexto como `required` (#1461).
+`.github/workflows/pr-gates.yml` corre en `pull_request_target`, por lo que ejecuta el workflow de la base. El job `canon` hace checkout de la base sin credenciales persistidas, usa `TEAM_SKILLS_READ_TOKEN` en un único paso para resolver el catálogo en el sello y publica la skill `ci-pattern` como artefacto. El job `pr-gate` no contiene secretos: consume ese artefacto, lee la cabeza del PR como dato y ejecuta desde `.canon/` los gates `pr size` (presupuesto de 400 líneas) e `issue spec` (enlace a una issue del repositorio) con el token de solo lectura. El veredicto se publica como check run de `pr-gate` sobre la cabeza del PR, con la API de check runs de GitHub (un `POST` sobre el recurso de check runs del repo); la protección de rama exige tanto ese contexto como `required` (#1461).
 
 ### `quality` (suite principal)
 
