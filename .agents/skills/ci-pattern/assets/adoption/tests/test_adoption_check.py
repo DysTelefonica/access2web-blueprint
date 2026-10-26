@@ -1738,6 +1738,29 @@ class GovernedMergeDocTests(unittest.TestCase):
             text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
             self.assertNotIn("gh workflow run", text)
             self.assertNotIn("Camino gobernado", text)
+            self.assertNotIn("árbol integrado", text)
+
+    def test_merge_lines_publish_integrated_tree_evidence_with_governed_merge(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp, "merge.yml", invoke_asset=True)
+            text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
+            self.assertIn("árbol integrado", text)
+            for field in ("merge commit", "merge tree", "verified head", "head tree", "verdict"):
+                self.assertIn(field, text)
+
+    def test_merge_lines_copy_exit_codes_from_the_reference(self):
+        # El generador no reformula la tabla de codigos: cada fila de la
+        # referencia tiene que aparecer tal cual en el doc generado.
+        reference = (Path(__file__).resolve().parents[3] / "references"
+                     / "integrated-tree-evidence.md")
+        rows = re.findall(r"^\| ([0-5]) \| (.+?) \|$",
+                          reference.read_text(encoding="utf-8"), re.MULTILINE)
+        self.assertEqual([code for code, _ in rows], ["0", "1", "2", "3", "4", "5"])
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._repo(tmp, "merge.yml", invoke_asset=True)
+            text = "\n".join(CLI._operating_doc_merge_lines(repo, ["merge"]))
+            for code, meaning in rows:
+                self.assertIn(f"`{code}`: {meaning}", text)
 
 
 class DocsPhaseTests(unittest.TestCase):
