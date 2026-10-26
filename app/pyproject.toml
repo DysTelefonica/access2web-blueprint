@@ -39,7 +39,7 @@ dependencies = [
     # transitiva y el motor async de la app (`sqlalchemy.ext.asyncio`) lo
     # necesita en tiempo de import (#1405).
     "sqlalchemy[asyncio]>=2.0,<2.2",  # Core ORM for adapters (Phase 4).
-    "alembic==1.13.*",             # Migrations 0001..0006 (Phase 2).
+    "alembic>=1.13,<1.21",             # Migrations 0001..0006 (Phase 2).
     "asyncpg>=0.30,<0.33",             # Postgres driver for SQLAlchemy (Phase 4).
     "fastapi>=0.142,<0.162",           # Sobre 0.121.3: es la versión cuya restricción deja entrar starlette 1.x.
     "starlette>=1.0,<2",           # Línea con los arreglos de PYSEC-2026-161/248/249/2280/2281.
@@ -55,7 +55,7 @@ dependencies = [
 # Dev pins — exact, per Hard Rule 2. Drift graduates rules; the gate enforces
 # the version it was designed against.
 dev = [
-    "ruff==0.17.1",               # QC-3 lint.
+    "ruff==0.17.2",               # QC-3 lint.
     "mypy==2.4.0",                # QC-4 typecheck (platform/src/ only).
     "pytest==9.0.*",               # Strict-TDD runner. Sobre 8.4.2 por PYSEC-2026-1845.
     "pytest-asyncio==1.4.0",       # Async test runner (DR2 reset-flow fixtures in tests/lanzadera/auth/ use async; pytest-asyncio honours asyncio_mode = \"auto\").

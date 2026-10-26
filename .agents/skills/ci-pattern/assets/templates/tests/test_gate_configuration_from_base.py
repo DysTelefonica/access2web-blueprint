@@ -55,6 +55,24 @@ class GateConfigurationFromBaseTests(unittest.TestCase):
         self.assertIn("path: base", text)
         self.assertRegex(text, r"ref: \$\{\{ github\.event\.pull_request\.base\.sha \}\}")
 
+    def test_the_fragment_measures_the_gate_once(self):
+        """#1339: una sola forma de medir.
+
+        El fragmento llevaba DOS invocaciones del gate (`--config-from base` y
+        `--seal-baseline base`) y su combinacion ponia en rojo un PR
+        legitimo: la que gobierna con el contrato de la base no puede conocer
+        el artefacto de gobierno que el PR acaba de crear (E9). Medir dos
+        veces con dos configuraciones distintas no es medir mas: es medir con
+        dos reglas, y el veredicto es el peor de los dos.
+
+        El canon mide una vez, con la base como suelo: el PR puede anadir y no
+        puede quitar.
+        """
+        text = guide_fragment()
+        runs = [line.strip() for line in text.splitlines() if "adoption check" in line]
+        self.assertEqual(len(runs), 1, runs)
+        self.assertIn("--config-from base", runs[0])
+
     def test_the_base_checkout_leaves_no_credentials(self):
         text = guide_fragment()
         base = text[text.index("path: base"):]

@@ -489,10 +489,10 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
              persist-credentials: false
 
          # La CONFIGURACION que gobierna el gate sale de la BASE (#1270): el
-         # contrato de adopcion, el `ci-pattern.yaml` y el host-contract se
-         # leen de ahi, sin credenciales. Un PR no puede reescribir el
-         # contrato que lo mide. El estado (el manifiesto de gobernanza y los
-         # ficheros gobernados) sigue siendo el del PR.
+         # CONTRATO DE ADOPCION se lee de ahi, sin credenciales. Un PR no puede
+         # reescribir el contrato que lo mide. El estado (el manifiesto de
+         # gobernanza, los ficheros gobernados y las instantaneas del host)
+         # sigue siendo el del PR (#1351).
          - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
            with:
              ref: ${{ github.event.pull_request.base.sha }}
@@ -510,14 +510,14 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
              set -euo pipefail
              tar -xzf .canon/canon.tar.gz -C .canon
 
+         # UNA sola forma de medir (#1339): el gate corre una vez y la base es
+         # el suelo. El PR puede AÑADIR (el artefacto de gobierno que acaba de
+         # crear, con su entrada de inventario y su sello) y no puede QUITAR
+         # (lo que la base sellaba no se reduce mientras el fichero siga en el
+         # arbol). Antes el fragmento llevaba DOS invocaciones y su
+         # combinacion ponia en rojo un PR legitimo (E9).
          - name: Governance identity (HR-46, HR-72)
            run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 pr-head --config-from base
-
-         # La BASE DE SELLADO no se reduce en un PR (#1317): la fase 3 mide el
-         # conjunto que hay que sellar como la union de los 'pattern_paths' de la
-         # base y los de la cabeza. El checkout de la base ya esta en 'base/'.
-         - name: Governance identity against the seal baseline (#1317)
-           run: python3 "$PATTERN_DIR/assets/bin/ci-pattern" adoption check --phase 3 pr-head --seal-baseline base
 
          # Un run de `pull_request_target` se atribuye a la BASE: su check run no
          # aparece en el PR ni satisface un check requerido. El veredicto se publica
@@ -577,11 +577,53 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    merge.
 
    La CONFIGURACION que gobierna el gate sale de la base (`--config-from base`):
-   el contrato de adopción, el `ci-pattern.yaml` y el host-contract se leen del
-   checkout de la base, sin credenciales. El estado —el manifiesto de
-   gobernanza y los ficheros gobernados— sigue siendo el del PR. Un PR no puede
-   reescribir el contrato que lo mide: si lo cambia, el gate sigue midiendo con
-   el de la base, y el cambio solo surte efecto al llegar a `main`.
+   el **contrato de adopción** se lee del checkout de la base, sin
+   credenciales. Un PR no puede reescribir el contrato que lo mide: si lo
+   cambia, el gate sigue midiendo con el de la base, y el cambio solo surte
+   efecto al llegar a `main`. El ESTADO —el manifiesto de gobernanza, los
+   ficheros gobernados y las instantáneas del host— sigue siendo el del PR.
+
+   El `host-contract` y el `ci-pattern.yaml` NO salen de la base (#1351): son la
+   declaración del consumer sobre su host y sus parámetros, y miden contra las
+   instantáneas que el PR trae. Medir el contrato del host con el de la base
+   haría que un PR legítimo quedara rojo para siempre: el que declara un
+   ruleset propio del host —el único canal que el canon ofrece para el
+   gobierno del host que el consumer conserva— y el que corrige una lectura
+   obsoleta del plan del host. Su cambio surtiría efecto al llegar a `main`,
+   con el veredicto, y el PR quedaría bloqueado.
+
+   Lo que el PR no puede es apartar la medición: el INVENTARIO del patrón (que
+   con `--config-from` sale de la base) manda sobre la lista de exenciones del
+   `host-contract`. Un ruleset que el inventario declara retirado no se exime
+   por declararlo en el contrato del host: la sustitución del patrón tiene que
+   verse en el host, y el gate lo nombra mientras siga vivo.
+
+   Con la base como suelo, el PR puede AÑADIR y no puede QUITAR (#1339). El
+   fragmento mide el gate UNA vez: antes llevaba dos invocaciones
+   (`--config-from base` y `--seal-baseline base`) y su combinación ponía en
+   rojo un PR legítimo, porque la que gobierna con el contrato de la base no
+   puede conocer el artefacto de gobierno que el PR acaba de crear (E9).
+   Medir dos veces con dos reglas no es medir más: es medir con dos
+   configuraciones, y el veredicto es el peor de los dos.
+
+   - **AÑADIR**: lo que el PR declara de más se mide con la unión de la base y
+     la cabeza. El inventario de la fase 0 y las rutas gobernadas declaradas se
+     unen, y los `pattern_paths` de la fase 3 son los que declara el PR: el
+     artefacto de gobierno que el PR acaba de crear, con su entrada de
+     inventario y su sello, es un PR legítimo y sale en verde (E9). Retirar un
+     workflow también se permite: si el fichero ya no existe, no hay nada que
+     sellar.
+   - **QUITAR**: la base manda en el conflicto. La entrada de inventario que
+     declara la base sigue siendo la que mide (un PR no puede reapuntarla
+     para que un residuo deje de nombrarse) y lo que la base sellaba no se
+     reduce en un PR mientras el fichero siga en el árbol (E8b): el PR que
+     deja de declararlo recibe un hallazgo, y el que lo retira de verdad
+     (borrando el fichero) sale en verde.
+
+   `--seal-baseline <dir>` sigue siendo la opción para el consumer que quiere
+   que gobierne el contrato de SU CABEZA, con el de la base como suelo por
+   fases. Es una alternativa a `--config-from`, no un añadido: el canon mide
+   con `--config-from` y no con las dos.
 
    La BASE DE SELLADO no se reduce en un PR (#1317). Con `--seal-baseline <dir>`
    la fase 3 mide el conjunto que hay que sellar como la UNIÓN de los
@@ -590,10 +632,7 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    de la cabeza también se sella. Retirar un workflow sí se permite: si el
    fichero ya no existe, no hay nada que sellar y la base deja de exigirlo. Sin
    la opción el gate se mide como siempre, y una base sin contrato legible
-   falla cerrado (exit 2). Es una alternativa a `--config-from`: no lo
-   reemplaza. `--config-from` cambia el contrato que gobierna TODAS las fases y
-   con ello relaja las fases 0, 4 y 5; `--seal-baseline` solo añade la base de
-   sellado a la fase 3.
+   falla cerrado (exit 2).
 
    La misma opción mide las fases 0 y 2 contra la base (#1319), con el
    operador de IDENTIDAD: la instantánea de etiquetas del host
@@ -615,6 +654,7 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    | 2 | `env_isolation.allowlist`, `env_isolation.root` | identidad |
    | 0 | `host_labels` | identidad |
    | 1 | `evidence.path` | identidad |
+   | 3 | `evidence.path` | identidad (la evidencia se declara por fase) |
    | 4 | rutas `@` de `gates[].args` | identidad (el conjunto de gates lo fija el canon) |
    | 5 | `operating_doc.doc`, `operating_doc.linked_from` | identidad |
    | 6 | `prs` (número, sha y veredicto de cada entrada) | contención (la cadena crece) |
@@ -622,6 +662,22 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    En la fase 6 la base solo obliga a conservar sus entradas tal como están:
    la cabeza puede añadir las suyas. Cambiar el sha o el veredicto de una
    entrada de la base es apartar una aceptación, y el gate lo rechaza.
+
+   La evidencia es una declaración POR FASE (#1348): la fase 1 mide la
+   evidencia de la propagación y la fase 3 la del reemplazo de gobernanza, y
+   son documentos distintos. Cada fase se compara con la de SU fase en la
+   base. Con una sola ruta para las dos, la fase 3 se comparaba contra la
+   declaración de la fase 1 y el gate daba un hallazgo falso: con base y
+   cabeza idénticas salía en rojo, y el rojo no dependía del PR.
+
+   La fase 4 mide el conjunto de rutas que los gates declaran medir (el
+   consumer elige las entradas de cada gate, no el subconjunto), así que su
+   operador es de conjunto y no de ruta. La excepción de retirada es la misma
+   que en las demás fases de identidad (#1344): si una ruta que mide la base
+   ya no está en el árbol medido, solo se admite un movimiento puro — la
+   cabeza mide una ruta nueva con el mismo contenido, byte a byte. Un
+   movimiento con edición en el mismo PR da hallazgo, y retirar la ruta sin
+   medir otra con su contenido también.
 
    El sello entra del PR como **dato**: el job hace checkout de un solo fichero
    (`.team-skills.yaml`) y lo copia al workspace, porque la acción lo lee de ahí.
