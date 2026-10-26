@@ -49,7 +49,7 @@ Vive en `.github/workflows/pr-gate.yml` (issue #1368) y `ci.yml` lo invoca con e
 - `walkthrough schema`: valida que cada `docs/03-aplicaciones/<app>/walkthrough-G*.json` cumple el esquema vigente.
 - `classify the diff (docs-only lane)`: calcula el diff contra el merge-base con la rama base y publica el marcador `docs_changed` (`true` solo si todo el diff cae bajo `docs/`). Es un clasificador, no un gate: no falla nunca; su salida decide qué jobs pesados corren.
 
-`pr size` e `issue spec` ejecutan los scripts del canon desde el árbol de la propia PR y leen el `GITHUB_TOKEN` con permisos de solo lectura (el desglose por fichero de la PR y la consulta de la issue). El checkout no persiste la credencial, y mover esa ejecución a `pull_request_target` espera al modelo del canon en `DysTelefonica/team-skills#1270` (#1461).
+`pr size` e `issue spec` ejecutan los scripts del canon desde el árbol de la propia PR y leen el `GITHUB_TOKEN` con permisos de solo lectura (el desglose por fichero de la PR y la consulta de la issue). El checkout no persiste la credencial, y mover esa ejecución a `pull_request_target` espera al modelo del canon en team-skills#1270 (#1461).
 
 ### `quality` (suite principal)
 
@@ -75,7 +75,7 @@ El job instala `app/requirements-dev.lock`, donde vive `pytest`, y migra con ese
 
 ### Credenciales en los jobs de `pull_request`
 
-Los checkouts de los jobs que corren en `pull_request` llevan `persist-credentials: false`: `actions/checkout` deja el `GITHUB_TOKEN` en la configuración local de git durante todo el job, y cualquier paso que ejecute código de la PR podría leerlo (#1462). Un test de contrato lo exige en los 16 checkouts alcanzables desde `pull_request`, directamente o a través de un `workflow_call`. Los checkouts de los workflows que no corren en PR (`operating-doc-drift`, `security-deep`, `release`) conservan la credencial: no son vector de PR.
+Los checkouts de los jobs que corren en `pull_request` llevan `persist-credentials: false`: la acción de checkout deja el `GITHUB_TOKEN` en la configuración local de git durante todo el job, y cualquier paso que ejecute código de la PR podría leerlo (#1462). Un test de contrato lo exige en los 16 checkouts alcanzables desde `pull_request`, directamente o a través de un `workflow_call`. Los checkouts de los workflows que no corren en PR (`operating-doc-drift`, `security-deep`, `release`) conservan la credencial: no son vector de PR.
 
 El repositorio es público y los tokens son de solo lectura, así que el riesgo era bajo; la forma era la que la auditoría H1 señalaba en otros repositorios. El token del catálogo (`TEAM_SKILLS_READ_TOKEN`) no lo usa ningún job alcanzable desde `pull_request`: vive en `operating-doc-drift`, que solo corre por `schedule` y `workflow_dispatch` (#1461).
 
