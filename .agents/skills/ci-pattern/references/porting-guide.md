@@ -313,6 +313,16 @@ Cierre: `ci-pattern adoption check --phase 1 <repo>` = 0.
   movimiento puro: la ruta nueva tiene el mismo contenido que la base, byte a
   byte. Un movimiento con edición en el mismo PR da hallazgo. Sin la opción,
   la fase 2 se mide como siempre.
+- **G2.7 — Con la misma ruta, el contenido tampoco mide menos (#1341).** La
+  identidad de la ruta no dice nada de lo que hay dentro: un PR que reescribe
+  el allowlist en su sitio (una variable de entorno nueva, una extensión
+  excluida nueva) se lleva la medición sin que nada lo detecte. Con
+  `--seal-baseline`, el allowlist no puede autorizar de más y la instantánea
+  de etiquetas del host no puede dejar de cubrir las que cubría. Medir más se
+  admite. Una ampliación del allowlist se admite si el allowlist la declara
+  como **exención con identidad** (HR-33): la superficie, el elemento y quién
+  la autoriza (`actor` o `issue`). Sin identidad la exención no exime de
+  nada: nadie puede responder por ella.
 
 ### Camino Windows/WSL — worktree y `git`
 
@@ -651,13 +661,31 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    | Fase | Declaración | Operador |
    |---|---|---|
    | 3 | `pattern_paths` | unión de conjuntos |
-   | 2 | `env_isolation.allowlist`, `env_isolation.root` | identidad |
-   | 0 | `host_labels` | identidad |
+   | 2 | `env_isolation.allowlist`, `env_isolation.root` | identidad; contenido del allowlist |
+   | 0 | `host_labels` | identidad; contenido |
    | 1 | `evidence.path` | identidad |
    | 3 | `evidence.path` | identidad (la evidencia se declara por fase) |
    | 4 | rutas `@` de `gates[].args` | identidad (el conjunto de gates lo fija el canon) |
    | 5 | `operating_doc.doc`, `operating_doc.linked_from` | identidad |
    | 6 | `prs` (número, sha y veredicto de cada entrada) | contención (la cadena crece) |
+
+   Con la MISMA ruta, el contenido tampoco puede medir menos que el de la base
+   (#1341): la identidad de la ruta no dice nada de lo que hay dentro, y un PR
+   que reescribe el allowlist en su sitio se llevaría la medición sin que nada
+   lo detectara. El allowlist no puede **autorizar de más** —una variable de
+   entorno, una extensión excluida o un fichero de datos nuevo es una
+   autorización que la base no daba— y la instantánea de etiquetas no puede
+   **dejar de cubrir** las que cubría: una etiqueta que desaparece apaga la
+   obligación de inventariarla. Medir más sí se admite: quitar una
+   autorización o añadir una etiqueta endurece la medición. La ampliación
+   legítima se declara como exención con identidad en el propio allowlist
+   (`exemptions`), que nombra la superficie, el elemento y quién la autoriza:
+   sin `actor` o `issue` la exención no exime de nada.
+
+   El contenido del árbol que escanea la fase 2 (`env_isolation.root`) NO se
+   compara con el de la base: ese árbol es el código que el PR cambia, y
+   compararlo pondría en rojo todo PR legítimo. Lo que sí vigila la identidad
+   es que la ruta sea la misma y que un movimiento sea puro.
 
    En la fase 6 la base solo obliga a conservar sus entradas tal como están:
    la cabeza puede añadir las suyas. Cambiar el sha o el veredicto de una
