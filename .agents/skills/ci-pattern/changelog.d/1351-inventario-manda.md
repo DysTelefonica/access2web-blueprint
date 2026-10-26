@@ -1,0 +1,5 @@
+type: patch
+
+El inventario del patrón manda sobre la lista de exenciones del `host-contract` (DysTelefonica/team-skills#1351). La fase 3 exime de la medición los rulesets del host que el `host-contract` declara; ahora la exención solo aplica a lo que nadie ha inventariado: un ruleset que el inventario declara retirado no se exime por declararlo en el contrato del host, y la sustitución del patrón tiene que verse en el host. Con `--config-from` el inventario sale de la base (#1339), así que el PR tampoco lo puede quitar.
+
+El fragmento canónico del job `governance-seals` deja de prometer lo que la CLI no cumple: el `host-contract` y el `ci-pattern.yaml` no salen de la base, son el estado del consumer (declaran su host y sus parámetros y miden contra las instantáneas que trae el PR). Medido: leerlos de la base dejaría en rojo para siempre al PR que declara un ruleset propio del host —el único canal del canon para el gobierno del host que el consumer conserva— y al que corrige una lectura obsoleta del plan del host.
