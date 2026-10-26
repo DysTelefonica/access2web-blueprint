@@ -1482,6 +1482,229 @@ class SealBaselineSubjectsTests(unittest.TestCase):
             self.assertIn("--seal-baseline", err)
 
 
+class SealBaselineContentTests(unittest.TestCase):
+    """#1341: `--seal-baseline` compara también el CONTENIDO de lo que miden
+    las fases 0 y 2.
+
+    La IDENTIDAD de la ruta (#1319) no dice nada del contenido: con la misma
+    ruta, el PR reescribe lo que el gate mide y el gate lo acepta. Aquí la
+    cabeza no puede medir MENOS que la base:
+
+    - el allowlist no puede autorizar de más (una variable de entorno nueva,
+      una extensión excluida nueva o una exención de `.env` nueva es una
+      autorización que la base no daba);
+    - la instantánea de etiquetas del host no puede dejar de cubrir lo que
+      cubría (una etiqueta que desaparece es una obligación que se apaga).
+
+    Medir MÁS sí se admite: quitar una autorización o añadir una etiqueta
+    que el host tiene es endurecer la medición.
+    """
+
+    LABELS_SNAPSHOT = ".github/host-labels-snapshot.json"
+    ALLOWLIST = ".github/env-isolation-allowlist.json"
+
+    def _base(self, tmp, repo, **phases):
+        """Checkout de la BASE: copia del consumer con el contrato de la fase
+        que se mide."""
+        base = Path(tmp) / "base"
+        shutil.copytree(repo, base)
+        (base / ".github" / "ci-pattern-adoption.json").write_text(
+            json.dumps({"schema_version": 1, "phases": phases}, indent=2),
+            encoding="utf-8")
+        return base
+
+    def _consumer_phase2(self, tmp, allowlist):
+        """Consumer con la fase 2 declarada y el allowlist dado."""
+        contract = complete_contract(upto=2)
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        touch(repo, "docs/adoption/propagation-evidence.md")
+        (repo / self.ALLOWLIST).write_text(json.dumps(allowlist), encoding="utf-8")
+        return repo
+
+    def _consumer_phase0(self, tmp, labels):
+        """Consumer con la fase 0 declarada y la instantánea de etiquetas
+        dada."""
+        contract = complete_contract(upto=0)
+        repo, _ = make_contract_repo(tmp, contract=contract)
+        touch(repo, "docs/adoption/propagation-evidence.md")
+        (repo / self.LABELS_SNAPSHOT).write_text(
+            json.dumps(list(labels)), encoding="utf-8")
+        return repo
+
+    def test_el_pr_que_amplia_el_allowlist_en_su_sitio_es_rojo_con_la_base(self):
+        """El PR declara en el allowlist, EN SU SITIO, una variable de entorno
+        que la base no autorizaba: con la base, rojo y nombrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": ["DEPLOY_TOKEN"]})
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (repo / self.ALLOWLIST).write_text(
+                json.dumps({"env_vars": ["DEPLOY_TOKEN", "SECRETO_DEL_PR"]}),
+                encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("SECRETO_DEL_PR", err)
+            self.assertIn(self.ALLOWLIST, err)
+
+    def test_el_pr_que_amplia_las_extensiones_excluidas_es_rojo_con_la_base(self):
+        """Excluir una extensión apaga el hallazgo de dominio: también es
+        medir menos."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": []})
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (repo / self.ALLOWLIST).write_text(
+                json.dumps({"env_vars": [], "excluded_extensions": [".php"]}),
+                encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn(".php", err)
+
+    def test_el_pr_que_amplia_los_ficheros_de_datos_es_rojo_con_la_base(self):
+        """Declarar un fichero de `.env` como dato es una exención que la
+        base no daba."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": []})
+            touch(repo, "tests/test_dotenv.sh",
+                  text='#!/bin/sh\ncat .env >/dev/null\n')
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (repo / self.ALLOWLIST).write_text(json.dumps({
+                "env_vars": [],
+                "dotenv_data_files": [
+                    {"file": "test_dotenv.sh", "reason": "es un dato"}]}),
+                encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("test_dotenv.sh", err)
+
+    def test_el_pr_que_estrecha_el_allowlist_sigue_en_verde_con_la_base(self):
+        """Quitar una autorización no mide menos: el gate sigue midiendo lo
+        que la base medía, y además mide de más."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": ["DEPLOY_TOKEN", "OTRO"]})
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (repo / self.ALLOWLIST).write_text(
+                json.dumps({"env_vars": ["DEPLOY_TOKEN"]}), encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "2",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_el_pr_que_oculta_una_etiqueta_del_host_es_rojo_con_la_base(self):
+        """El PR quita de la instantánea una etiqueta que la base cubría: la
+        obligación de inventariarla se apaga. Con la base, rojo y nombrado."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase0(
+                tmp, ["status:approved", "chain:partial", "status:blocked"])
+            base = self._base(tmp, repo, **{"0": {"host_labels": self.LABELS_SNAPSHOT}})
+            (repo / self.LABELS_SNAPSHOT).write_text(
+                json.dumps(["status:approved", "chain:partial"]), encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "0",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("status:blocked", err)
+            self.assertIn(self.LABELS_SNAPSHOT, err)
+
+    def test_el_pr_que_amplia_la_instantanea_de_etiquetas_sigue_en_verde(self):
+        """Una etiqueta más es más cobertura, no menos: se admite."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase0(
+                tmp, ["status:approved", "chain:partial", "status:blocked"])
+            base = self._base(tmp, repo, **{"0": {"host_labels": self.LABELS_SNAPSHOT}})
+            contract = json.loads(
+                (repo / ".github" / "ci-pattern-adoption.json").read_text(encoding="utf-8"))
+            contract["phases"]["0"]["inventory"].append(
+                {"artifact": "labels type:ci", "disposition": "adopted",
+                 "target": ".github/host-contract.json"})
+            (repo / ".github" / "ci-pattern-adoption.json").write_text(
+                json.dumps(contract, indent=2), encoding="utf-8")
+            (repo / self.LABELS_SNAPSHOT).write_text(
+                json.dumps(["status:approved", "chain:partial", "status:blocked",
+                            "type:ci"]), encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "0",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_sin_la_opcion_el_allowlist_ampliado_sigue_en_verde(self):
+        """Sin la opción el gate se mide como siempre: la comparación con la
+        base es opt-in."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": ["DEPLOY_TOKEN"]})
+            (repo / self.ALLOWLIST).write_text(
+                json.dumps({"env_vars": ["DEPLOY_TOKEN", "SECRETO_DEL_PR"]}),
+                encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "2", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_una_ampliacion_con_exencion_con_identidad_sigue_en_verde(self):
+        """La ampliación que el allowlist declara como exención con identidad
+        (HR-33: quién la autoriza y en qué issue) se admite."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": ["DEPLOY_TOKEN"]})
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (repo / self.ALLOWLIST).write_text(json.dumps({
+                "env_vars": ["DEPLOY_TOKEN", "SECRETO_DEL_PR"],
+                "exemptions": [{"surface": "env_vars", "element": "SECRETO_DEL_PR",
+                                "exemption": {"actor": "ardelperal", "issue": 1341}}]}),
+                encoding="utf-8")
+            code, out, err = run_cli(["adoption", "check", "--phase", "2",
+                                      "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_una_ampliacion_con_exencion_sin_identidad_es_rojo(self):
+        """Una exención sin identidad no exime de nada: nadie puede responder
+        por ella (HR-33)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": ["DEPLOY_TOKEN"]})
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (repo / self.ALLOWLIST).write_text(json.dumps({
+                "env_vars": ["DEPLOY_TOKEN", "SECRETO_DEL_PR"],
+                "exemptions": [{"surface": "env_vars", "element": "SECRETO_DEL_PR",
+                                "exemption": {}}]}),
+                encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("SECRETO_DEL_PR", err)
+            self.assertIn("identidad", err)
+
+    def test_una_exencion_para_otro_elemento_no_exime(self):
+        """La exención nombra el elemento que exime: otra ampliación sigue sin
+        estar autorizada."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": ["DEPLOY_TOKEN"]})
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (repo / self.ALLOWLIST).write_text(json.dumps({
+                "env_vars": ["DEPLOY_TOKEN", "SECRETO_DEL_PR"],
+                "exemptions": [{"surface": "env_vars", "element": "OTRO_SECRETO",
+                                "exemption": {"actor": "ardelperal", "issue": 1341}}]}),
+                encoding="utf-8")
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 1)
+            self.assertIn("SECRETO_DEL_PR", err)
+
+    def test_base_sin_el_allowlist_falla_cerrado(self):
+        """Una base que declara un allowlist que no tiene es una base rota:
+        el gate no puede medirla y falla cerrado (HR-3)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = self._consumer_phase2(tmp, {"env_vars": []})
+            base = self._base(tmp, repo, **{"2": {"env_isolation": {
+                "root": "tests", "allowlist": self.ALLOWLIST}}})
+            (base / self.ALLOWLIST).unlink()
+            code, _, err = run_cli(["adoption", "check", "--phase", "2",
+                                    "--seal-baseline", str(base), str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn(self.ALLOWLIST, err)
+
+
 class ConfigFromBaseAdditionsTests(unittest.TestCase):
     """#1339: con `--config-from` el PR puede AÑADIR, pero no QUITAR.
 
