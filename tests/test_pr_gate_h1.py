@@ -153,19 +153,16 @@ def test_the_gate_job_holds_no_secret(h1: dict) -> None:
     assert "secrets." not in gate, "the gate job must not reference any secret"
 
 
-def test_the_gate_job_checks_out_the_base_and_the_head_in_separate_paths(h1: dict) -> None:
-    """The head of the pull request enters as data, in its own path."""
+def test_the_gate_job_checks_out_only_the_head_as_data(h1: dict) -> None:
+    """The head of the pull request enters as data, in its own path; no base checkout."""
     checkouts = _checkouts(h1["jobs"]["pr-gate"])
-    assert len(checkouts) == 2, "the gate job checks out the base and the head"
-    paths = {checkout["with"]["path"] for checkout in checkouts}
-    assert paths == {"base", "pr-head"}, f"unexpected checkout paths: {sorted(paths)}"
-    for checkout in checkouts:
-        assert checkout["with"]["persist-credentials"] is False, (
-            "every checkout of a pull request job must leave no credentials behind"
-        )
-    refs = {checkout["with"]["path"]: checkout["with"]["ref"] for checkout in checkouts}
-    assert refs["pr-head"] == "${{ github.event.pull_request.head.sha || github.sha }}"
-    assert refs["base"] == "${{ github.event.pull_request.base.sha }}"
+    assert len(checkouts) == 1, "the gate job checks out only the pull request head"
+    checkout = checkouts[0]
+    assert checkout["with"]["path"] == "pr-head", f"unexpected path: {checkout['with']['path']}"
+    assert checkout["with"]["persist-credentials"] is False, (
+        "every checkout of a pull request job must leave no credentials behind"
+    )
+    assert checkout["with"]["ref"] == "${{ github.event.pull_request.head.sha || github.sha }}"
 
 
 def test_the_canon_travels_to_the_gate_as_an_artifact(h1: dict) -> None:
