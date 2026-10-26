@@ -1511,10 +1511,17 @@ checkout de <dir> con su contrato de adopción). Un operador por fase:
   PR mientras el fichero siga en el árbol, y lo nuevo de la cabeza también
   se sella.
 
-  fases 0 y 2: IDENTIDAD. La instantánea de etiquetas del host (fase 0) y el
-  allowlist y el árbol que escanea el gate de aislamiento (fase 2) tienen que
-  ser los que mide la base: el PR no puede apartar el gate cambiando lo que
-  el gate lee.
+  fases 0 y 2: IDENTIDAD y CONTENIDO. La instantánea de etiquetas del host
+  (fase 0) y el allowlist y el árbol que escanea el gate de aislamiento
+  (fase 2) tienen que ser los que mide la base: el PR no puede apartar el
+  gate cambiando lo que el gate lee. Con la misma ruta, el contenido tampoco
+  puede medir MENOS que el de la base: el allowlist no puede autorizar de más
+  (una variable de entorno, una extensión excluida o un fichero de datos
+  nuevo) y la instantánea de etiquetas no puede dejar de cubrir las que
+  cubría. Medir más sí se admite: quitar una autorización o añadir una
+  etiqueta es endurecer la medición. Una ampliación del allowlist se admite
+  si el allowlist la declara como exención con identidad (HR-33): la
+  superficie, el elemento y quién la autoriza ('actor' o 'issue').
 
   fases 1, 4, 5 y 6 (#1321): la evidencia (fase 1), las rutas `@` que miden los
   gates (fase 4), el documento operativo y el fichero que lo enlaza (fase 5)
@@ -1777,6 +1784,12 @@ def _check_phase_zero(repo, decl, seal=None):
     findings.extend(_seal_identity_findings(
         0, decl.get("host_labels"), (seal or {}).get("host_labels"), repo,
         (seal or {}).get("base_dir"), "la instantánea de etiquetas del host"))
+    # #1341: además de ser la misma ruta, tiene que COBRIR lo que cubría la
+    # base: una etiqueta que desaparece de la instantánea apaga la
+    # obligación de inventariarla.
+    findings.extend(_seal_labels_findings(
+        0, decl.get("host_labels"), (seal or {}).get("host_labels"), repo,
+        (seal or {}).get("base_dir")))
     return findings
 
 
@@ -2653,6 +2666,9 @@ def _check_env_isolation_phase(repo, decl, seal=None):
     findings.extend(_seal_identity_findings(
         2, spec.get("root"), (seal or {}).get("env_root"), repo,
         (seal or {}).get("base_dir"), "el árbol que escanea el gate de aislamiento"))
+    findings.extend(_seal_allowlist_findings(
+        2, spec.get("allowlist"), (seal or {}).get("env_allowlist"), repo,
+        (seal or {}).get("base_dir")))
     if findings:
         return findings
     proc = _run_gate_binary(repo, skill_dir() / ENV_ISOLATION_GATE,
@@ -4796,6 +4812,155 @@ def _move_detail(base_path, head_path):
     if changed:
         return "el contenido cambió en: " + ", ".join(changed[:5])
     return None
+
+
+def _seal_content_pair(head_route, base_route, repo, base_dir):
+    """(fichero de la base, fichero de la cabeza) cuando hay contenido que
+    comparar; None si la ruta no es la misma.
+
+    El contenido solo se compara cuando la ruta coincide: si la ruta cambia,
+    la mide `_seal_identity_findings` (#1319, #1323). Una base que declara una
+    ruta que no tiene es una base rota y el gate no puede medirla: exit 2
+    (HR-3)."""
+    if not base_route or not head_route or head_route != base_route:
+        return None
+    base_path = Path(base_dir) / base_route
+    if not base_path.is_file():
+        raise UsageError(
+            "--seal-baseline no puede medirse: la BASE declara "
+            f"'{base_route}' y no lo tiene en el checkout de la base")
+    return base_path, repo / head_route
+
+
+def _allowlist_surface(path):
+    """Lo que el allowlist AUTORIZA: las variables de entorno que la batería
+    puede leer, las extensiones que quedan fuera del dominio declarado y los
+    ficheros cuyas menciones de `.env` son datos.
+
+    El formato se lee del gate que lo consume (`load_allowlist`), para que la
+    lista de lo autorizado tenga una sola fuente de verdad. Un allowlist que
+    no se puede leer es exit 2 (HR-3)."""
+    spec = importlib.util.spec_from_file_location(
+        "check_env_isolation", skill_dir() / ENV_ISOLATION_GATE)
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    try:
+        env, excluded, dotenv = gate.load_allowlist(str(path))
+    except gate.GateError as exc:
+        raise UsageError(f"el allowlist no se puede leer ({path}): {exc}") from exc
+    return {"env_vars": env, "excluded_extensions": excluded,
+            "dotenv_data_files": set(dotenv)}
+
+
+def _labels_surface(path):
+    """Las etiquetas del host que la instantánea declara: cada una es una
+    obligación de inventario (fase 0)."""
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(
+            f"la instantánea de etiquetas no se puede leer ({path}): {exc}") from exc
+    if not isinstance(doc, list) or not all(isinstance(x, str) for x in doc):
+        raise UsageError(
+            f"la instantánea de etiquetas no es una lista de nombres ({path})")
+    return set(doc)
+
+
+def _allowlist_exemptions(path):
+    """Exenciones declaradas en el allowlist: cada una nombra la superficie y
+    el elemento que exime, y lleva su identidad (HR-33: `actor` o `issue`).
+
+    Sin identidad no hay quién responder por la exención, y una exención sin
+    identidad no exime de nada: el gate no puede medir quién autorizó la
+    ampliación (HR-3)."""
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UsageError(
+            f"el allowlist no se puede leer ({path}): {exc}") from exc
+    entries = doc.get("exemptions", []) if isinstance(doc, dict) else None
+    if not isinstance(entries, list):
+        raise UsageError(
+            f"el allowlist declara 'exemptions' que no es una lista ({path})")
+    granted = set()
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise UsageError(f"el allowlist declara una exención que no es un objeto ({path})")
+        surface = entry.get("surface")
+        element = entry.get("element")
+        identity = entry.get("exemption")
+        if not isinstance(surface, str) or not surface.strip() \
+                or not isinstance(element, str) or not element.strip() \
+                or not isinstance(identity, dict):
+            raise UsageError(
+                f"el allowlist declara una exención sin superficie, elemento o "
+                f"identidad ({path})")
+        actor = identity.get("actor")
+        issue = identity.get("issue")
+        if not ((isinstance(actor, str) and actor.strip())
+                or (isinstance(issue, int) and not isinstance(issue, bool) and issue > 0)):
+            raise UsageError(
+                f"la exención de '{element}' no trae identidad (actor o issue) ({path})")
+        granted.add((surface, element))
+    return granted
+
+
+def _seal_allowlist_findings(phase, head_route, base_route, repo, base_dir):
+    """El allowlist de la cabeza no puede autorizar MÁS que el de la base
+    (#1341).
+
+    Autorizar de más es medir menos: una variable de entorno nueva, una
+    extensión excluida nueva o un fichero de datos nuevo es una autorización
+    que la base no daba. Quitar una autorización sí se admite: eso endurece la
+    medición.
+
+    Una ampliación sí se admite si el allowlist la declara como exención con
+    identidad (HR-33): quién la autoriza y en qué issue queda escrito."""
+    pair = _seal_content_pair(head_route, base_route, repo, base_dir)
+    if pair is None:
+        return []
+    base_path, head_path = pair
+    base = _allowlist_surface(base_path)
+    head = _allowlist_surface(head_path)
+    granted = _allowlist_exemptions(head_path)
+    findings = []
+    for key, what, article in (
+            ("env_vars", "variable de entorno", "la"),
+            ("excluded_extensions", "extensión excluida", "la"),
+            ("dotenv_data_files", "fichero de datos", "el")):
+        extra = sorted(x for x in head[key] - base[key] if (key, x) not in granted)
+        if extra:
+            findings.append(
+                f"fase {phase}: el allowlist del gate de aislamiento "
+                f"'{head_route}' autoriza de más que el de la BASE: "
+                + ", ".join(f"{article} {what} '{x}'" for x in extra)
+                + " (--seal-baseline); el PR no puede ampliar lo que la base "
+                "autorizaba sin una exención con identidad (actor o issue)")
+    return findings
+
+
+def _seal_labels_findings(phase, head_route, base_route, repo, base_dir):
+    """La instantánea de la cabeza no puede dejar de CUBRIR lo que cubría la
+    de la base (#1341).
+
+    Cada etiqueta de la instantánea es una obligación de inventario: si
+    desaparece de la instantánea, la cobertura se apaga. Añadir una etiqueta
+    es más cobertura, y se admite."""
+    pair = _seal_content_pair(head_route, base_route, repo, base_dir)
+    if pair is None:
+        return []
+    base_path, head_path = pair
+    base = _labels_surface(base_path)
+    head = _labels_surface(head_path)
+    dropped = sorted(base - head)
+    if not dropped:
+        return []
+    return [
+        f"fase {phase}: la instantánea de etiquetas del host '{head_route}' "
+        "deja de cubrir lo que cubría la BASE: "
+        + ", ".join(f"la etiqueta '{x}'" for x in dropped)
+        + " (--seal-baseline); el PR no puede reducir la cobertura de la base"
+    ]
 
 
 def _tree_digest(root):
