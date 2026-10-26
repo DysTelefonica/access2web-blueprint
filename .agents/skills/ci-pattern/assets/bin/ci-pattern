@@ -2183,6 +2183,28 @@ def _governed_merge_workflow(repo):
         return str(files[0])
 
 
+def _integrated_tree_lines():
+    """#1303: evidencia del arbol integrado del merge gobernado (#1265). Los codigos
+    de salida son los de references/integrated-tree-evidence.md, copiados tal cual;
+    el test de la referencia impide que se desvien."""
+    return [
+        "- Evidencia del árbol integrado: tras fusionar, el merge gobernado compara el "
+        "árbol del commit de merge con el árbol del head verificado y escribe el veredicto "
+        "en el resumen del job, con `merge commit`, `merge tree`, `verified head`, "
+        "`head tree` y `verdict`.",
+        "- Códigos de salida del merge gobernado:",
+        "  - `0`: Merge hecho y el árbol integrado es el del head verificado.",
+        "  - `1`: El contrato no se cumplió: no se fusiona.",
+        "  - `2`: Fallo cerrado: el entorno o la medición no son salvables.",
+        "  - `3`: Merge hecho, las issues enlazadas no se cerraron.",
+        "  - `4`: Merge hecho, el dispatch post-merge falló.",
+        "  - `5`: Merge hecho, **el árbol integrado no es el árbol que revisó el CI**.",
+        "- Si sale `5`, el merge no se deshace. Compare el commit de merge con el head "
+        "verificado (`git diff <head> <merge>`), compruebe si la base se movió entre la "
+        "comprobación y el merge, corrija y vuelva a fusionar: un rerun no sirve.",
+    ]
+
+
 def _operating_doc_merge_lines(repo, allowed_merges):
     """#351: seccion Merge; el camino gobernado solo con declaracion."""
     _or_none = lambda items: ", ".join(items) if items else "ninguno declarado"
@@ -2199,6 +2221,7 @@ def _operating_doc_merge_lines(repo, allowed_merges):
             f"- Camino gobernado: el workflow `{name}` (workflow_dispatch) "
             "audita el PR antes de merge y exige CI en verde; lo lanza un "
             f"mantenedor con `gh workflow run {name} -f pr=<N>`.")
+        lines += _integrated_tree_lines()
     return lines
 
 
