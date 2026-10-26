@@ -47,10 +47,22 @@ REQUIRED_COMMANDS = (
     "python scripts/check_workflows.py",
     "scripts/quality_report.py",
     DEPS_CHAIN_COMMAND,
-    ".agents/skills/ci-pattern/assets/pr-size/check_pr_size.py",
-    ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
+    # The H1 model (BP #1461): the CI runs these two gates from the catalog
+    # published by the job `canon`, so the identity of the gate is its path
+    # inside the catalog. The local preflight runs the same gates from the
+    # vendored tree (see LOCAL_GATE_FORMS).
+    "assets/pr-size/check_pr_size.py",
+    "assets/issue-spec/check_issue_spec.py",
     "python scripts/check_walkthrough_schema.py --strict",
     ".agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py",
+)
+
+#: The local form of the gates that the CI runs from the catalog published by
+#: the job `canon` (BP #1461): the CI executes the copy at the seal, the local
+#: preflight the vendored one. Both forms are the same gate.
+LOCAL_GATE_FORMS = (
+    ".agents/skills/ci-pattern/assets/pr-size/check_pr_size.py",
+    ".agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py",
 )
 
 #: Gates CI runs that `make verify` deliberately does not (Hard Rule 19).
@@ -134,9 +146,27 @@ def pr_gate_workflow() -> dict:
 
 
 @pytest.fixture(scope="module")
-def steps(workflow: dict, pr_gate_workflow: dict) -> list[dict]:
+def h1_gate_workflow() -> dict:
+    """The H1 workflow that owns the pull request gates (BP #1461).
+
+    Since #1461 the gates run in `pull_request_target`: the workflow comes
+    from the base, the job `canon` publishes the catalog at the seal and the
+    gate job runs the scripts of that artifact instead of the ones that come
+    with the pull request.
+    """
+    path = _find_workflow().parent / "pr-gates.yml"
+    assert path.is_file(), (
+        "the pull request gates live in .github/workflows/pr-gates.yml since #1461: "
+        "they must run in pull_request_target, against the catalog published by the "
+        "job `canon`"
+    )
+    return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+@pytest.fixture(scope="module")
+def steps(workflow: dict, pr_gate_workflow: dict, h1_gate_workflow: dict) -> list[dict]:
     collected: list[dict] = []
-    for doc in (workflow, pr_gate_workflow):
+    for doc in (workflow, pr_gate_workflow, h1_gate_workflow):
         for job in doc["jobs"].values():
             collected.extend(job.get("steps", []))
     return collected
@@ -344,6 +374,11 @@ def test_make_verify_runs_every_local_gate(verify_commands: str) -> None:
     for command in expected:
         normalized = " ".join(command.split())
         allowed |= {normalized, normalized.removeprefix("python "), f"python {normalized}"}
+    # BP #1461: the CI runs these two gates from the catalog published by the
+    # job `canon` and the local preflight runs the same gates from the vendored
+    # tree. Both forms are the same gate, so both are accepted here.
+    for local_form in LOCAL_GATE_FORMS:
+        allowed |= {local_form, f"python {local_form}"}
     extra = [
         command
         for command in _local_preflight_commands()
@@ -687,31 +722,34 @@ def test_integration_job_runs_alembic_upgrade_before_pytest() -> None:
     )
 
 
-def test_pr_size_gate_runs_in_pr_event_mode(pr_gate_workflow: dict) -> None:
+def test_pr_size_gate_runs_in_pr_event_mode(h1_gate_workflow: dict) -> None:
     """Issue #857, PR-C: the size gate reads the PR event, not the runner state.
 
     The local mode depends on a `git diff` against `origin/main`, which is only
     present on a checked-out runner. Switching to `pr-event` lets the gate
     answer the same question from `$GITHUB_EVENT_PATH` alone.
+
+    BP #1461: the gate moved to the H1 workflow, where it runs the script of
+    the catalog published by the job `canon`.
     """
-    steps = [s for s in pr_gate_workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
-    assert len(steps) == 1, "pr-gate must have exactly one `pr size` step"
+    steps = [s for s in h1_gate_workflow["jobs"]["pr-gate"]["steps"] if s.get("name") == "pr size"]
+    assert len(steps) == 1, "the H1 gate must have exactly one `pr size` step"
     step = steps[0]
     assert step["run"] == (
-        'python .agents/skills/ci-pattern/assets/pr-size/check_pr_size.py --event "$GITHUB_EVENT_PATH"'
+        'python3 "$PATTERN_DIR/assets/pr-size/check_pr_size.py" --event "$GITHUB_EVENT_PATH"'
     )
     env = step.get("env") or {}
     assert "BASE_REF" not in env
     assert "PR_BODY" not in env
 
 
-def test_pr_size_gate_gets_the_token_for_the_files_breakdown(pr_gate_workflow: dict) -> None:
+def test_pr_size_gate_gets_the_token_for_the_files_breakdown(h1_gate_workflow: dict) -> None:
     """Issue #918: the size gate reads the per-file breakdown from the PR Files API.
 
     It needs `pull-requests: read` (the job-level grant) and the runner token, so the
     step gets the token explicitly; without it the gate counts the whole PR.
     """
-    job = pr_gate_workflow["jobs"]["pr-gate"]
+    job = h1_gate_workflow["jobs"]["pr-gate"]
     assert job["permissions"]["pull-requests"] == "read"
     step = [s for s in job["steps"] if s.get("name") == "pr size"][0]
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
@@ -772,7 +810,7 @@ def test_pip_audit_audits_the_hash_locked_set_strictly() -> None:
     ), "the dependency scan moved out of security.yml (issue #1377)"
 
 
-def test_issue_spec_is_wired_into_pr_gate(pr_gate_workflow: dict) -> None:
+def test_issue_spec_is_wired_into_pr_gate(h1_gate_workflow: dict) -> None:
     """Issue #857, PR-C: the issue-spec gate reads the PR event and the linked issue.
 
     It needs `issues: read` (the job-level grant) and the runner token, so the
@@ -780,14 +818,17 @@ def test_issue_spec_is_wired_into_pr_gate(pr_gate_workflow: dict) -> None:
     `--host-contract` made the gate check who applied `status:approved`; that rule
     was retired (team-skills#1103), so the flag went with it and the gate no longer
     takes it (team-skills#1121 keeps accepting it as an obsolete no-op).
+
+    BP #1461: the gate moved to the H1 workflow, where it runs the script of
+    the catalog published by the job `canon`.
     """
-    job = pr_gate_workflow["jobs"]["pr-gate"]
-    assert job["permissions"] == {"contents": "read", "issues": "read", "pull-requests": "read"}
+    job = h1_gate_workflow["jobs"]["pr-gate"]
+    assert job["permissions"]["issues"] == "read"
     steps = [step for step in job["steps"] if step.get("name") == "issue spec"]
-    assert len(steps) == 1, "pr-gate must have exactly one `issue spec` step"
+    assert len(steps) == 1, "the H1 gate must have exactly one `issue spec` step"
     step = steps[0]
     assert step["run"] == (
-        'python .agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py pr-event "$GITHUB_EVENT_PATH"'
+        'python3 "$PATTERN_DIR/assets/issue-spec/check_issue_spec.py" pr-event "$GITHUB_EVENT_PATH"'
     )
     assert step["env"]["GITHUB_TOKEN"] == "${{ github.token }}"
 

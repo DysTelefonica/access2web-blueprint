@@ -46,6 +46,10 @@
     {
       "name": "required",
       "class": "host-enforced"
+    },
+    {
+      "name": "pr-gate",
+      "class": "host-enforced"
     }
   ],
   "merge_methods": {
