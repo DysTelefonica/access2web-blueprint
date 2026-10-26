@@ -53,6 +53,16 @@ Vive en `.github/workflows/pr-gate.yml` (issue #1368) y `ci.yml` lo invoca con e
 
 `.github/workflows/pr-gates.yml` corre en `pull_request_target`, por lo que ejecuta el workflow de la base. El job `canon` hace checkout de la base sin credenciales persistidas, usa `TEAM_SKILLS_READ_TOKEN` en un único paso para resolver el catálogo en el sello y publica la skill `ci-pattern` como artefacto. El job `pr-gate` no contiene secretos: consume ese artefacto, lee el PR por la API (sin checkout de su árbol) y ejecuta desde `.canon/` los gates `pr size` (presupuesto de 400 líneas) e `issue spec` (enlace a una issue del repositorio) con el token de solo lectura. El veredicto se publica como check run de `pr-gate` sobre la cabeza del PR, con la API de check runs de GitHub (un `POST` sobre el recurso de check runs del repo); la protección de rama exige tanto ese contexto como `required` (#1461).
 
+### Bootstrap del gate H1 (rojo y verde)
+
+El workflow H1 corre en `pull_request_target`, es decir, ejecuta el workflow de la **base**: el pull request que introduce el modelo no puede validarse a sí mismo, porque en ese pull request el veredicto todavía no existe. En `#1468` se ve: su cabeza no tiene ningún check run `pr-gate`. Por eso la adopción se midió en tres pasos, el mismo bootstrap de `cadete#712`:
+
+1. **Guard** — `#1468` introduce `pr-gates.yml` con el job `canon`, retira `pr size` e `issue spec` del workflow de `pull_request` y amplía `required_checks` del contrato del host con `pr-gate` (el snapshot de la protección de rama, `docs/adoption/branch-protection.json`, lo refleja). La regla que lo hace cumplir es del canon (`workflow-policy`, `team-skills#1270`): un job alcanzable desde `pull_request` no puede referenciar `secrets.TEAM_SKILLS_READ_TOKEN`. El job `quality` de `ci.yml` la corre sobre todos los workflows del repositorio.
+2. **Rojo a propósito** — un verde no distingue «funciona» de «no mide nada», así que el rojo se provoca a propósito y se comprueba en cada corrida de la suite (`tests/test_pr_gate_h1.py`): el gate del canon sale con código 1 y nombra el token y la regla cuando un job de `pull_request` lo referencia, y la acción `pattern-at-pin` falla cerrada (código distinto de 0 y mensaje que nombra el sello) cuando el sello no trae un commit del catálogo. Una propagación rota se ve en rojo en lugar de medir en silencio.
+3. **Verde real** — con el modelo ya en la base, el veredicto llega al pull request como check run sobre su cabeza: en `#1469` el check run `pr-gate` es `success` ([121395665064](https://github.com/DysTelefonica/access2web-blueprint/runs/121395665064)) y en `#1476` también ([121731599982](https://github.com/DysTelefonica/access2web-blueprint/runs/121731599982)).
+
+El sello que el job `canon` resuelve sale de la base: es la primera línea de `.team-skills.yaml`, con su comentario, y de ahí se extrae el marcador `catalog @ <sha>`. Un pull request no puede cambiarlo ni apuntarlo a un commit más antiguo del catálogo, así que el residuo del «sello antiguo» no existe en este modelo.
+
 ### `quality` (suite principal)
 
 Orden interno de los steps (ver `ci.yml` línea 188 a línea 360):

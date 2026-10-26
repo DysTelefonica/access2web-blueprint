@@ -305,6 +305,14 @@ Cierre: `ci-pattern adoption check --phase 1 <repo>` = 0.
   la rama por defecto. Previene C1: la batería se lanzó con los tests de main
   contra la revisión desplegada y produjo 18 falsos fallos; el worktree en la
   revisión correcta tuvo que prepararlo la IA de otra sesión.
+- **G2.6 — Lo que la fase 2 mide lo declara la base, si la hay.** Con
+  `--seal-baseline <dir>` la fase 2 exige que el allowlist y el árbol que
+  escanea el gate HR-28 sean los que mide la base (operador de identidad, ver
+  la fase 3): el PR no puede apartar una fuga del gate cambiando lo que el
+  gate lee. Si la ruta de la base ya no existe en la cabeza, solo se admite un
+  movimiento puro: la ruta nueva tiene el mismo contenido que la base, byte a
+  byte. Un movimiento con edición en el mismo PR da hallazgo. Sin la opción,
+  la fase 2 se mide como siempre.
 
 ### Camino Windows/WSL — worktree y `git`
 
@@ -586,6 +594,34 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    reemplaza. `--config-from` cambia el contrato que gobierna TODAS las fases y
    con ello relaja las fases 0, 4 y 5; `--seal-baseline` solo añade la base de
    sellado a la fase 3.
+
+   La misma opción mide las fases 0 y 2 contra la base (#1319), con el
+   operador de IDENTIDAD: la instantánea de etiquetas del host
+   (`host_labels`, fase 0) y el allowlist y el árbol que escanea el gate de
+   aislamiento (`env_isolation.allowlist` y `env_isolation.root`, fase 2)
+   tienen que ser los que mide la base. El motivo es el mismo que en la fase
+   3: el PR no puede apartar el gate cambiando lo que el gate lee — con un
+   allowlist propio o con un árbol más corto, una fuga deja de medirse y la
+   fase sale en verde. Si la ruta de la base ya no existe en la cabeza, solo se
+   admite un MOVIMIENTO PURO: la ruta nueva tiene el mismo contenido que la base,
+   byte a byte (en un directorio, cada fichero de la base con el mismo contenido;
+   la cabeza puede añadir ficheros, que solo añaden medición). Un movimiento
+   con edición en el mismo PR da hallazgo: es el hueco que cerraba la excepción
+   de retirada en la primera versión. Un operador por fase, la misma opción:
+
+   | Fase | Declaración | Operador |
+   |---|---|---|
+   | 3 | `pattern_paths` | unión de conjuntos |
+   | 2 | `env_isolation.allowlist`, `env_isolation.root` | identidad |
+   | 0 | `host_labels` | identidad |
+   | 1 | `evidence.path` | identidad |
+   | 4 | rutas `@` de `gates[].args` | identidad (el conjunto de gates lo fija el canon) |
+   | 5 | `operating_doc.doc`, `operating_doc.linked_from` | identidad |
+   | 6 | `prs` (número, sha y veredicto de cada entrada) | contención (la cadena crece) |
+
+   En la fase 6 la base solo obliga a conservar sus entradas tal como están:
+   la cabeza puede añadir las suyas. Cambiar el sha o el veredicto de una
+   entrada de la base es apartar una aceptación, y el gate lo rechaza.
 
    El sello entra del PR como **dato**: el job hace checkout de un solo fichero
    (`.team-skills.yaml`) y lo copia al workspace, porque la acción lo lee de ahí.

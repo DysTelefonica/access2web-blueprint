@@ -15,7 +15,10 @@ against its own fixtures.
 from __future__ import annotations
 
 import json
+import os
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,6 +29,22 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 H1_WORKFLOW = WORKFLOWS / "pr-gates.yml"
 LEGACY_WORKFLOW = WORKFLOWS / "pr-gate.yml"
 ACTION = ROOT / ".github" / "actions" / "pattern-at-pin" / "action.yml"
+
+#: The gate of the canon that enforces the H1 rule (DysTelefonica/team-skills#1270):
+#: a job that can run on a pull request must not read the token of the catalog.
+#: The `quality` job of `ci.yml` runs it over every workflow of the repository.
+WORKFLOW_POLICY_GATE = (
+    ROOT
+    / ".agents"
+    / "skills"
+    / "ci-pattern"
+    / "assets"
+    / "workflow-policy"
+    / "check_workflow_policy.py"
+)
+
+#: The name of the token of the catalog, as the canon names it.
+CATALOG_SECRET = "secrets.TEAM_SKILLS_READ_TOKEN"
 
 #: The context the host contract requires: the name of the workflow and the
 #: name of the gate job. With another name the required check does not appear
@@ -336,3 +355,175 @@ def test_the_host_contract_requires_the_h1_context() -> None:
     contexts = snapshot["required_status_checks"]["contexts"]
     assert H1_CONTEXT in contexts
     assert "required" in contexts
+
+
+# --- The bootstrap: the model in red and in green ----------------------------------------------
+
+# The workflow of `pull_request_target` is the one of the BASE, so the pull
+# request that introduces the model cannot validate itself: in that pull
+# request the verdict does not exist yet. The adoption was therefore measured
+# in three steps (the bootstrap of DysTelefonica/cadete#712): the guard, a
+# propagation broken on purpose —in red— and a real one —in green. A green
+# that cannot be red does not distinguish «the gate works» from «the gate
+# measures nothing», so the red is reproduced here, on every run of the suite.
+
+
+def _workflow_reading_the_catalog_token(event: str) -> str:
+    """A workflow whose only job reads the token of the catalog."""
+    return (
+        "on:\n  " + event + ":\n"
+        "concurrency:\n"
+        "  group: gate-${{ github.ref }}\n"
+        "jobs:\n"
+        "  build:\n"
+        "    name: build (${{ github.event_name }})\n"
+        "    timeout-minutes: 5\n"
+        "    steps:\n"
+        "      - name: Resolve the canon at the seal\n"
+        "        uses: ./.github/actions/pattern-at-pin\n"
+        "        with:\n"
+        "          token: ${{ secrets.TEAM_SKILLS_READ_TOKEN }}\n"
+    )
+
+
+def _run_workflow_policy(workflows: dict[str, str], tmp_path: Path) -> tuple[int, str]:
+    """Runs the gate of the canon over the given workflows."""
+    args: list[str] = []
+    for name, text in workflows.items():
+        path = tmp_path / name
+        path.write_text(text, encoding="utf-8")
+        args += ["--workflow", str(path)]
+    policy = tmp_path / "policy.json"
+    policy.write_text(
+        json.dumps(
+            {
+                "required_jobs": ["build"],
+                "events": {"pull_request": {"accepted_skips": []}},
+                "state_dependent_gates": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(WORKFLOW_POLICY_GATE),
+            *args,
+            "--required-jobs",
+            str(policy),
+            "--base-branch",
+            "main",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode, result.stdout + result.stderr
+
+
+def _seal_step(action: dict) -> str:
+    """The shell of the step of the action that reads the seal."""
+    steps = [step for step in action["runs"]["steps"] if step.get("id") == "seal"]
+    assert len(steps) == 1, "the action reads the seal in exactly one step"
+    return str(steps[0]["run"])
+
+
+def _run_seal_step(action: dict, tmp_path: Path, seal: str) -> tuple[int, str, str]:
+    """Runs the step that reads the seal over a tree whose seal is `seal`."""
+    (tmp_path / ".team-skills.yaml").write_text(seal + "\n", encoding="utf-8")
+    output = tmp_path / "github-output"
+    output.write_text("", encoding="utf-8")
+    result = subprocess.run(
+        ["bash", "-c", _seal_step(action)],
+        cwd=tmp_path,
+        env={**os.environ, "GITHUB_OUTPUT": str(output)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode, result.stdout + result.stderr, output.read_text(encoding="utf-8")
+
+
+def test_the_guard_is_red_when_a_pull_request_job_reads_the_catalog_token(
+    tmp_path: Path,
+) -> None:
+    """The control positive of the guard: the rule is red, not silent.
+
+    The rule that keeps the token of the catalog out of the jobs that run the
+    code of the pull request is the one of the canon (`workflow-policy`,
+    DysTelefonica/team-skills#1270), and the `quality` job of `ci.yml` runs it
+    over every workflow of the repository.
+    """
+    code, out = _run_workflow_policy(
+        {"broken.yml": _workflow_reading_the_catalog_token("pull_request")}, tmp_path
+    )
+    assert code == 1, f"the gate must be red on a pull request job that reads the token: {out}"
+    assert CATALOG_SECRET in out, f"the finding must name the token: {out}"
+    assert "#1270" in out, f"the finding must name the rule: {out}"
+
+
+def test_the_same_job_in_pull_request_target_is_clean(tmp_path: Path) -> None:
+    """Only the events that run the workflow of the base may hold the token."""
+    code, out = _run_workflow_policy(
+        {"allowed.yml": _workflow_reading_the_catalog_token("pull_request_target")}, tmp_path
+    )
+    assert code == 0, f"the gate must be green where the workflow is the base's: {out}"
+
+
+def test_the_workflows_of_the_repository_are_clean_under_the_guard() -> None:
+    """The green side of the guard, measured on the real workflows.
+
+    The same gate the `quality` job runs, over the workflows of the
+    repository: no job reachable from a pull request reads the token of the
+    catalog. The paths are relative to the root, as the step of the workflow
+    passes them: the gate matches them against the policy by name.
+    """
+    args: list[str] = []
+    for path in sorted(WORKFLOWS.glob("*.yml")):
+        args += ["--workflow", str(path.relative_to(ROOT))]
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(WORKFLOW_POLICY_GATE),
+            *args,
+            "--base-branch",
+            "main",
+            "--required-jobs",
+            ".github/required-jobs-policy.json",
+            "--host-contract",
+            ".github/host-contract.json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=ROOT,
+    )
+    out = result.stdout + result.stderr
+    assert result.returncode == 0, f"the workflows of the repository must be clean: {out}"
+    assert CATALOG_SECRET not in out, out
+
+
+def test_a_broken_seal_fails_the_canon_job_closed(action: dict, tmp_path: Path) -> None:
+    """A propagation that is broken is red, not silent.
+
+    The job `canon` resolves the catalog at the seal of the base. A seal that
+    does not name a commit of the catalog is a broken propagation, and the
+    action has to fail closed: a gate that measures nothing is a green that
+    lies.
+    """
+    for seal in (
+        "# Auto-generado (sin sello)",
+        "# Auto-generado (catalog @ not-a-sha)",
+        "# Auto-generado (catalog @ 123)",
+    ):
+        code, out, _ = _run_seal_step(action, tmp_path, seal)
+        assert code != 0, f"a broken seal must fail closed: {seal!r} -> {out}"
+        assert "sello" in out, f"the message must name the seal: {seal!r} -> {out}"
+
+
+def test_the_seal_of_the_base_names_the_commit_of_the_catalog(action: dict, tmp_path: Path) -> None:
+    """The green side of the propagation: the seal of the repository resolves."""
+    seal = (ROOT / ".team-skills.yaml").read_text(encoding="utf-8").splitlines()[0]
+    code, out, values = _run_seal_step(action, tmp_path, seal)
+    assert code == 0, f"the seal of the repository must resolve: {out}"
+    assert "commit=" in values, f"the step must publish the commit of the catalog: {values}"
