@@ -1512,3 +1512,44 @@ def test_health_wait_stops_early_when_the_container_is_not_running(workflow: dic
         "the wait loop must check that test-app is still running"
     )
     assert "seq 1 60" in run, "the 60 s wait must stay unchanged"
+
+
+# --- BP #1461: no credentials persisted into jobs that can run pull request code ----------
+
+
+def _pull_request_reachable_checkouts() -> list[tuple[str, str, dict]]:
+    """Every actions/checkout step in a workflow that runs on pull_request, directly or via workflow_call."""
+    found: list[tuple[str, str, dict]] = []
+    for path in sorted((_repo_root() / ".github" / "workflows").glob("*.yml")):
+        wf = yaml.safe_load(path.read_text(encoding="utf-8"))
+        triggers = wf.get("on", wf.get(True, {}))
+        if isinstance(triggers, dict):
+            names = set(triggers)
+        elif isinstance(triggers, str):
+            names = {triggers}
+        else:
+            names = set(triggers)
+        if not names & {"pull_request", "workflow_call"}:
+            continue
+        for job_id, job in wf.get("jobs", {}).items():
+            for step in job.get("steps", []):
+                if str(step.get("uses", "")).startswith("actions/checkout@"):
+                    found.append((path.name, job_id, step))
+    return found
+
+
+def test_pull_request_checkouts_do_not_persist_credentials() -> None:
+    """BP #1461: a checkout that persists GITHUB_TOKEN leaves it in git config for the whole job.
+
+    Any step in that job, including ones that run code from the pull request, could read it.
+    Every checkout that can run on pull_request must set `persist-credentials: false`.
+    """
+    checkouts = _pull_request_reachable_checkouts()
+    assert checkouts, "no pull_request-reachable checkout found: the test would be vacuous"
+
+    offenders = [
+        f"{file}:{job}"
+        for file, job, step in checkouts
+        if (step.get("with") or {}).get("persist-credentials") is not False
+    ]
+    assert not offenders, f"checkouts that persist credentials: {offenders}"
