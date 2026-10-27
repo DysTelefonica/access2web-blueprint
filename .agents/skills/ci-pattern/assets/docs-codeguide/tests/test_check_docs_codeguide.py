@@ -256,6 +256,36 @@ class TestForwardDocsToRepo(unittest.TestCase):
             self.assertIn("internal/ghost-a/", missing)
             self.assertIn("internal/ghost-b/", missing)
 
+    def test_github_action_name_is_not_a_repo_path(self) -> None:
+        """Caso real de #1359 (BP, «missing actions/checkout»): un nombre de acción no es una ruta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(
+                repo, "ci.md",
+                "# CI\n\nEl job usa `actions/checkout` antes de los tests.\n",
+            )
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
+            self.assertEqual(result["missing_in_repo"], [])
+
+    def test_cross_repo_reference_is_not_a_repo_path(self) -> None:
+        """Caso real de #1359 (BP, «missing DysTelefonica/team-skills#1270»): una referencia cruzada no es una ruta."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(
+                repo, "ci.md",
+                "# CI\n\nVer `DysTelefonica/team-skills#1270` para el contrato.\n",
+            )
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
+            self.assertEqual(result["missing_in_repo"], [])
+
+    def test_dead_directory_citation_with_slash_still_fails(self) -> None:
+        """Guardia: un directorio muerto citado con barra final sigue siendo un enlace muerto."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = _make_repo(Path(tmp))
+            _add_codeguide_page(repo, "map.md", "| `docs/ghost/` | x |\n")
+            result = gate.check_docs_codeguide(repo, **GO_ROOT)
+            self.assertEqual(result["missing_in_repo"], ["docs/ghost/"])
+
 
 class TestGlobsMarkersAndBraces(unittest.TestCase):
     """#737: globs con coincidencias, marcadores con prefijo existente y llaves son citas válidas."""

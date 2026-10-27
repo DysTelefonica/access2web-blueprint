@@ -446,6 +446,24 @@ class ClosureTestsGateTests(unittest.TestCase):
                              "- `tests/test_x.py::test_algo`\n\n" + AI_OK)
         self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
 
+    def test_closure_naming_a_test_under_a_dot_directory_passes(self):
+        tmp = tempfile.mkdtemp()
+        repo, base_sha, _head_sha = make_closure_repo(tmp)
+        rel = ".agents/skills/ejemplo/tests/test_x.py"
+        path = repo / rel
+        path.parent.mkdir(parents=True)
+        path.write_text("def test_algo():\n    assert True\n", encoding="utf-8")
+        _commit_all(repo, "test: añade test propagado")
+        head_sha = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"],
+                                  check=True, capture_output=True, text=True).stdout.strip()
+        event = make_event(tmp, body=f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
+                           f"- `{rel}`\n\n" + AI_OK + chain_block("main"),
+                           labels=["type:chore"], base="main",
+                           base_sha=base_sha, head_sha=head_sha)
+        proc = run_gate(event, make_policy(tmp), repo=repo)
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        self.assertNotIn("HR-53", proc.stdout + proc.stderr)
+
     def test_closure_case_not_defined_in_the_file_is_an_advisory(self):
         proc = self.run_case(f"Closes #12\n\n## {CLOSURE_HEADING}\n\n"
                              "- `tests/test_x.py::test_que_no_esta`\n")

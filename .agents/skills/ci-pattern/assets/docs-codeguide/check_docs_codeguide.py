@@ -284,6 +284,26 @@ def check_docs_codeguide(
     return check_docs_codeguide_roots(repo, [(code_root, code_glob)], docs_path)
 
 
+_OWNER_REPO_RE = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+
+
+def _is_external_reference(repo: Path, token: str) -> bool:
+    """La cita nombra otro repo o una acción de GitHub, no una ruta del repo (#1359).
+
+    ``owner/repo#N`` y ``owner/repo@ref`` tienen sintaxis propia. Un ``owner/name``
+    desnudo (sin barra final ni extensión) cuyo primer segmento no existe en la raíz
+    del repo se toma por nombre de acción (``actions/checkout``). Un directorio muerto
+    con barra final, o bajo un árbol que sí existe, sigue siendo enlace muerto.
+    """
+    name = re.split(r"[#@]", token, maxsplit=1)[0]
+    if name != token:
+        return _OWNER_REPO_RE.fullmatch(name) is not None
+    if _OWNER_REPO_RE.fullmatch(token) is None:
+        return False
+    first, last = token.split("/")
+    return not (repo / first).exists() and "." not in last
+
+
 def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str]:
     """Sentido adelante: citas del codeguide que no existen (o ``<empty docs/>``)."""
     if not pages:
@@ -292,7 +312,8 @@ def _forward_findings(repo: Path, docs_path: str, pages: list[Path]) -> list[str
     cited: set[str] = set()
     for page in pages:
         cited.update(extract_path_refs(page.read_text(encoding="utf-8")))
-    problems = (check_citation(repo, path) for path in sorted(cited))
+    paths = [path for path in sorted(cited) if not _is_external_reference(repo, path)]
+    problems = (check_citation(repo, path) for path in paths)
     return [problem for problem in problems if problem is not None]
 
 

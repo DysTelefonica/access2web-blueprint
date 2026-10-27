@@ -729,6 +729,29 @@ class TestHR39StateDependentGates(unittest.TestCase):
         self.assertIn("HR-39", out)
         self.assertIn("wf_sched.yml", out)
 
+    def test_absolute_workflow_inputs_match_declared_relative_paths(self):
+        """(f) el adoption check pasa rutas absolutas (`@ruta` resuelta contra
+        el repo) y la política declara rutas relativas (`.github/workflows/x.yml`):
+        el mismo workflow tiene que casar, o HR-39 da un falso negativo en fase 4
+        del consumer con la política ya verde en CI."""
+        pol = {"required_jobs": ["build"], "state_dependent_gates": [dict(
+            GOOD_STATE_ENTRY,
+            pr_workflow=".github/workflows/wf_pr.yml",
+            scheduled_workflow=".github/workflows/wf_sched.yml")]}
+        with tempfile.TemporaryDirectory() as d:
+            d_path = Path(d)
+            wf_dir = d_path / ".github" / "workflows"
+            wf_dir.mkdir(parents=True)
+            (d_path / "policy.json").write_text(json.dumps(pol), encoding="utf-8")
+            (wf_dir / "wf_pr.yml").write_text(pr_wf(), encoding="utf-8")
+            (wf_dir / "wf_sched.yml").write_text(sched_wf(), encoding="utf-8")
+            cmd = [sys.executable, str(GATE),
+                   "--workflow", str(wf_dir / "wf_pr.yml"),
+                   "--workflow", str(wf_dir / "wf_sched.yml"),
+                   "--required-jobs", str(d_path / "policy.json"), "--base-branch", "main"]
+            out = subprocess.run(cmd, capture_output=True, text=True, cwd=str(d_path))
+        self.assert_clean_hr39(out.returncode, out.stdout, out.stderr)
+
     def test_scheduled_without_alert_is_finding(self):
         """(e) el workflow programado no ejecuta el alert_command: finding."""
         pol = {"state_dependent_gates": [GOOD_STATE_ENTRY]}

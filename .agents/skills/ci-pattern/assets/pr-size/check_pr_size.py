@@ -31,8 +31,11 @@ the event (a newer push), the event is superseded: it exits 0, because the newer
 event measures the new head (#1113).
 
 The only override is the ``size:exception`` label, applied by the
-maintainer (never by the author, never read from the PR body). It comes from
-the event payload, from ``--labels`` or from ``$PR_LABELS`` (comma separated).
+maintainer (never by the author, never read from the PR body). With
+``--event`` it is read live from the API (``GET issues/N/labels``), because the
+event payload is a snapshot from the moment the event fired: a label added right
+after the ``opened`` event (cadete#715) would otherwise be missed (#1359). Local
+runs take it from ``--labels`` or from ``$PR_LABELS`` (comma separated).
 
 Exit codes:
     0  within budget, or overridden by the ``size:exception`` label
@@ -81,6 +84,8 @@ OVERRIDE_LABEL = "size:exception"
 FILES_PER_PAGE = 100
 #: GitHub lists at most 3000 files of a PR.
 MAX_FILE_PAGES = 30
+#: Labels are read page by page too (#1359); a PR carries a handful, so one page is the norm.
+MAX_LABEL_PAGES = 10
 #: Reads of the PR's breakdown before the gate gives up (#1113: one retry).
 MEASURE_ATTEMPTS = 2
 DEFAULT_API_URL = "https://api.github.com"
@@ -348,6 +353,27 @@ def event_head(event_path: str) -> str | None:
     return sha if isinstance(sha, str) and sha else None
 
 
+def api_labels(api_url: str, token: str, repo: str, number: int) -> set[str]:
+    """The PR's labels right now, page by page (``GET issues/N/labels``) (#1359).
+
+    Not the event payload: that is a snapshot of the moment the event fired.
+    """
+    names: set[str] = set()
+    for page in range(1, MAX_LABEL_PAGES + 1):
+        path = f"/repos/{repo}/issues/{number}/labels?per_page={FILES_PER_PAGE}&page={page}"
+        try:
+            with _open(api_url, path, token) as response:
+                chunk = json.loads(response.read().decode("utf-8"))
+        except (OSError, ValueError) as exc:
+            raise ApiFailedError(path, exc) from exc
+        if not is_file_list(chunk):
+            raise ApiShapeError(path)
+        names.update(item["name"] for item in chunk if isinstance(item.get("name"), str))
+        if len(chunk) < FILES_PER_PAGE:
+            break
+    return names
+
+
 def api_pull(api_url: str, token: str, repo: str, number: int) -> tuple[str | None, int | None]:
     """``(head sha, changed_files)`` of the PR right now (``GET pulls/N``)."""
     path = f"/repos/{repo}/pulls/{number}"
@@ -365,14 +391,14 @@ def api_pull(api_url: str, token: str, repo: str, number: int) -> tuple[str | No
 
 
 def api_changed_lines(event_path: str) -> tuple[int, int, int, list[tuple[str, int]], set[str]]:
-    """``changed_lines`` for a pull_request event, plus the PR's labels.
+    """``changed_lines`` for a pull_request event, plus the PR's labels read live (#1359).
 
     The PR's head and its breakdown are read around the file listing, so a push or a
     moved base between the reads shows up as a mismatch instead of a false failure
     (#1113): a moved head means a newer event measures it (superseded, exit 0); a
     mismatch with the head unchanged is retried once, then fails closed.
     """
-    repo, number, labels, _declared = read_event(event_path)
+    repo, number, _payload_labels, _declared = read_event(event_path)
     token = os.environ.get("GITHUB_TOKEN", "")
     if not token:
         raise MissingCredentialError
@@ -389,7 +415,7 @@ def api_changed_lines(event_path: str) -> tuple[int, int, int, list[tuple[str, i
             raise SupersededError(expected_head, head_after)
         if want is None or len(files) == want:
             counted, vendored, generated, per_file = count_api_files(files)
-            return counted, vendored, generated, per_file, labels
+            return counted, vendored, generated, per_file, api_labels(api_url, token, repo, number)
         got = len(files)
     raise BreakdownMismatchError(got, want)
 
