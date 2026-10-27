@@ -79,7 +79,7 @@ Contenedor principal de la ficha de un usuario **histórico** (un HPS dado de ba
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. La escritura no pasa por este formulario sino por un coordinador transaccional, lo que ayuda: la regla de negocio no está en la capa de presentación. Quedan dos ataduras a Access sin equivalente directo: `Application.TempVars` como memoria compartida entre formularios (`:81`) y el subformulario cuyo `SourceObject` intercambia otro formulario (`:78-80`). El reloj de arena (`:27, 30, 33, 44`) no tiene traducción; su equivalente web es un estado de carga en la vista.
+Pendiente de la coexistencia (documento aún no redactado). La escritura no pasa por este formulario sino por un coordinador transaccional, lo que ayuda: la regla de negocio no está en la capa de presentación. Quedan dos ataduras a Access sin equivalente directo: `Application.TempVars` como memoria compartida entre formularios (`:81`) y el subformulario cuyo `SourceObject` intercambia otro formulario (`:78-80`). El reloj de arena (`:27, 30, 33, 44`) no tiene traducción; su equivalente web es un estado de carga en la vista.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

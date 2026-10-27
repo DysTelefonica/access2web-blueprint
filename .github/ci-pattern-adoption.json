@@ -265,7 +265,28 @@
       "version"
     ],
     "dry_run_flag": "--help",
-    "job": "docs-commands"
+    "job": "docs-commands",
+    "existence": {
+      "makefile": "Makefile",
+      "path_executables": [
+        "pytest",
+        "python",
+        "python3",
+        "pip",
+        "pip3",
+        "make",
+        "bash",
+        "sh",
+        "git",
+        "docker",
+        "docker-compose",
+        "node",
+        "npm",
+        "pre-commit",
+        "ruff",
+        "vulture"
+      ]
+    }
   },
   "dependabot": {
     "ecosystems": {
