@@ -31,6 +31,7 @@ capa de existencia, mas abajo, comprueba otra cosa: que lo que el comando invoca
 from __future__ import annotations
 
 import importlib.util
+import posixpath
 import re
 import shlex
 import shutil
@@ -273,14 +274,39 @@ def _hallazgo(span, veredicto):
     return f"HR-65: {span['file']}:{span['line']}: «{span['text']}» {veredicto}"
 
 
+def _script_candidates(doc_file, subject):
+    """Las rutas del script que el documento cita, en orden: la resuelta contra el
+    DIRECTORIO del documento (la convencion de los enlaces markdown, #1385) y la
+    resuelta contra la RAIZ del repo (un comando entre comillas invertidas se
+    ejecuta desde la raiz). Una ruta que sale del repositorio no es candidata: si
+    las dos salen, la lista queda vacia y la cita es roja."""
+    candidates = []
+    for base in (posixpath.dirname(doc_file), ""):
+        resolved = posixpath.normpath(posixpath.join(base, subject))
+        if resolved == ".." or resolved.startswith("../") or resolved in candidates:
+            continue
+        candidates.append(resolved)
+    return candidates
+
+
 def _subject_findings(repo, span, kind, subject):
     """El script local que el comando cita tiene que existir, y el ejecutable del
     `PATH` que la politica declara permitido tiene que resolver."""
     if kind == "script":
-        rel = Path(subject).as_posix()
-        if (repo / rel).is_file():
+        candidates = _script_candidates(span["file"], subject)
+        if not candidates:
+            return [_hallazgo(span, f"apunta fuera del repositorio: la cita «{subject}» "
+                                   f"no puede ser un script del repo; corrija la ruta en "
+                                   f"la documentacion o quite la cita.")]
+        if any((repo / rel).is_file() for rel in candidates):
             return []
-        return [_hallazgo(span, f"no existe: el repositorio no tiene el script «{rel}»; "
+        existing = [rel for rel in candidates if (repo / rel).exists()]
+        if existing:
+            return [_hallazgo(span, f"no es un script: «{existing[0]}» existe en el "
+                                   f"repositorio pero no es un fichero; corrija la cita "
+                                   f"en la documentacion o quite la cita.")]
+        tried = " ni ".join(f"«{rel}»" for rel in candidates)
+        return [_hallazgo(span, f"no existe: el repositorio no tiene el script {tried}; "
                                f"corrija la ruta en la documentacion o quite la cita.")]
     if shutil.which(subject):
         return []

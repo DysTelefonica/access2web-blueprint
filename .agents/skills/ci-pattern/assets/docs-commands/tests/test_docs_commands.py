@@ -80,6 +80,8 @@ DOC_MAKE = "Mida con `pytest app/tests` y luego `make {target}`.\n"
 DOC_SCRIPT = "Prepare el repo con `pytest app/tests` y luego `./scripts/{script}`.\n"
 DOC_PATH = "Prepare el repo con `pytest app/tests` y luego `{tool}`.\n"
 DOC_OTRO = "Mida con `pytest app/tests`, `make test` y revise `ruff check --fix`.\n"
+# Una cita con ruta, en un documento que NO esta en la raiz del repo (#1385).
+DOC_CITA = "Mida con `pytest app/tests` y lea `{cita}`.\n"
 
 
 
@@ -458,9 +460,20 @@ class ExistenceTests(unittest.TestCase):
         self.assertTrue(any("no tiene el script" in f and "scripts/no-existe.sh" in f for f in findings), findings)
 
     def test_un_script_local_que_existe_no_es_hallazgo(self):
+        # La cita se resuelve contra el directorio del documento que la escribe
+        # (#1385): este documento vive en `docs/`, asi que `./scripts/x.sh` es
+        # `docs/scripts/x.sh`.
         findings, _ = self._bp(doc=DOC_SCRIPT.format(script="preflight.sh"),
-                               files={"scripts/preflight.sh": "#!/bin/sh\n"})
+                               files={"docs/scripts/preflight.sh": "#!/bin/sh\n"})
         self.assertEqual(findings, [])
+
+    def test_un_documento_en_la_raiz_sigue_resolviendo_desde_la_raiz(self):
+        # El documento esta en la raiz: su directorio es la raiz del repo, y la
+        # cita se resuelve igual que antes (#1385).
+        findings, _ = _run({"README.md": README + "\nPrepare con `./scripts/preflight.sh`.\n",
+                            "scripts/preflight.sh": "#!/bin/sh\n"},
+                           {**CONFIG, "existence": {"makefile": "Makefile"}})
+        self.assertFalse(any("no tiene el script" in f for f in findings), findings)
 
     def test_un_ejecutable_del_path_que_no_resuelve_es_rojo(self):
         findings, _ = self._bp(doc=DOC_PATH.format(tool="herramienta-ficticia-xyz"),
@@ -490,6 +503,63 @@ class ExistenceTests(unittest.TestCase):
                                config={"exclude": ["./scripts/no-existe.sh"]})
         self.assertFalse(any("no tiene el script" in f for f in findings), findings)
         self.assertFalse(any("STALE" in f for f in findings), findings)
+
+    # --- La cita se resuelve contra el documento que la cita (#1385) ----------
+    #
+    # El caso vivo de BP: `docs/03-aplicaciones/brass/prd/capacidades.md` cita
+    # `../capacidades.md` y el fichero esta en el directorio de ese documento,
+    # no en la raiz del repo. La capa lo buscaba desde la raiz y daba 234 rojos
+    # falsos. Los enlaces markdown ya se resuelven contra el directorio de su
+    # fichero; la capa de existencia se iguala a ellos.
+
+    def _cita(self, cita, doc="docs/prd/guia.md", files=None, config=None):
+        return _run({doc: DOC_CITA.format(cita=cita),
+                     "fake_pytest.py": FAKE_PYTEST, **(files or {})},
+                    {**BP_CONFIG, **(config or {})})
+
+    def test_el_script_se_busca_junto_al_documento_que_lo_cita(self):
+        findings, _ = self._cita("../capacidades.md",
+                                  files={"docs/capacidades.md": "# capacidades\n"})
+        self.assertEqual(findings, [], findings)
+
+    def test_una_cita_que_sale_del_repositorio_es_rojo(self):
+        findings, _ = self._cita("../../../fuera.sh")
+        self.assertTrue(any("fuera del repositorio" in f for f in findings), findings)
+
+    def test_una_ruta_sin_punto_guion_sigue_resolviendose_en_el_path(self):
+        # La capa solo mide scripts con `./` o `../`. Una ruta desnuda se
+        # resuelve en el PATH, como antes: el defecto no la cambia.
+        findings, _ = self._cita("guia.sh", files={"docs/prd/guia.sh": "#!/bin/sh\n"},
+                                  config={"existence": {"makefile": "Makefile",
+                                                       "path_executables": ["guia.sh"]}})
+        self.assertTrue(any("no se resuelve" in f and "guia.sh" in f for f in findings), findings)
+        self.assertFalse(any("no tiene el script" in f for f in findings), findings)
+
+    def test_una_cita_que_es_un_directorio_no_es_un_script(self):
+        findings, _ = self._cita("../prd", files={"docs/prd/guia.sh": "#!/bin/sh\n"})
+        self.assertTrue(any("no es un script" in f for f in findings), findings)
+
+    # --- Una cita vale si existe contra el documento O contra la raiz (#1385) ---
+    #
+    # Un comando entre comillas invertidas se ejecuta desde la raiz del repo, no
+    # desde la carpeta del documento que lo muestra: `docs/guia.md` que dice
+    # «ejecute `./scripts/check.sh`» apunta a `scripts/check.sh`. La regla nueva
+    # acepta la cita si el fichero existe resuelto contra el documento O contra
+    # la raiz; si sale del repo por las dos vias, sigue en rojo.
+
+    def test_una_cita_de_la_raiz_desde_un_documento_anidado_es_valida(self):
+        findings, _ = self._cita("./scripts/check.sh", doc="docs/guia.md",
+                                  files={"scripts/check.sh": "#!/bin/sh\n"})
+        self.assertEqual(findings, [], findings)
+
+    def test_una_cita_que_no_existe_ni_en_el_documento_ni_en_la_raiz_es_rojo(self):
+        findings, _ = self._cita("./scripts/check.sh", doc="docs/guia.md")
+        self.assertTrue(any("no tiene el script" in f and "docs/scripts/check.sh" in f
+                            and "scripts/check.sh" in f for f in findings), findings)
+
+    def test_una_cita_que_sale_del_repo_por_las_dos_vias_sigue_en_rojo(self):
+        findings, _ = self._cita("../../../fuera.sh", doc="docs/prd/guia.md")
+        self.assertTrue(any("fuera del repositorio" in f for f in findings), findings)
 
     def test_clave_desconocida_en_existence_es_hallazgo(self):
         findings, _ = self._bp(config={"existence": {"inventada": "x"}})
