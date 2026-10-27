@@ -33,7 +33,7 @@ Antes de empujar:
 
 ### Comprobaciones automáticas
 
-La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué verifica cada uno, cómo aprobarlo localmente y el comando que lo replica. La tabla cubre los gates `pr-gate` (revisión barata, primer corte), `quality` (tests, typecheck, cobertura, ratchets de calidad), `security` (gitleaks, pip-audit, trivy-config) y `codeql` (análisis estático). El agregador `required` exige los cuatro jobs verdes sobre la base actual (`ci.yml:497-529`).
+La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué verifica cada uno, cómo aprobarlo localmente y el comando que lo replica. La tabla cubre los gates `pr-gate` (revisión barata, primer corte), `quality` (tests, typecheck, ratchets de calidad), `security` (gitleaks, pip-audit, trivy-config) y `codeql` (análisis estático). El agregador `required` exige los jobs verdes sobre la base actual (job `required` de `ci.yml`).
 
 | Check | Qué comprueba | Cómo pasarlo | Comando local |
 |---|---|---|---|
@@ -45,7 +45,7 @@ La siguiente tabla recoge los checks que `ci.yml` ejecuta sobre la PR, qué veri
 | Formato (quality) | `ruff format` sin cambios en el árbol | `ruff format .` antes de commit | `ruff format --check --config app/pyproject.toml .` |
 | Typecheck (quality) | `mypy --explicit-package-bases app/` verde | `mypy app/` antes de push | `mypy --explicit-package-bases app/` |
 | Workflow gate (quality) | Ningún job de `.github/workflows/*.yml` usa `|| true`, `continue-on-error` ni `pull_request_target`; todos declaran `timeout-minutes` | Diseñar el job con Hard Rule 1, 13 y 15 | `python scripts/check_workflows.py` |
-| Tests y cobertura (quality) | `pytest` verde con `--cov-fail-under` ≥ suelo | Correr la suite antes del push | `pytest -c app/pyproject.toml --rootdir=app -m "not integration" --cov` |
+| Tests (quality) | `pytest` verde (la cobertura se retiró en #877; la ratchet shrink-only viva es la de mutación, en el release) | Correr la suite antes del push | `pytest -c app/pyproject.toml --rootdir=app -m "not integration"` |
 | Quality report (quality) | `quality_report.py` verde en orden `layers → complexity → DRY` | `python scripts/quality_report.py` antes del push | `python scripts/quality_report.py` |
 | Security (gitleaks, pip-audit, trivy-config) | Sin secretos en el diff, sin CVEs en el grafo de dependencias, sin misconfiguraciones trivy | Auditar el diff localmente antes del push; abrir issue de incidente si aparece algo | — (solo CI) |
 | CodeQL | Análisis estático sin alertas de severidad alta | — | — (solo CI) |

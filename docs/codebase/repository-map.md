@@ -28,7 +28,7 @@
 | `tests/lanzadera/`, `tests/expedientes/` | Suites TDD por módulo. | Generadores de legacy. |
 | `e2e/` | Suite Playwright (F1-F5, 5 fases merged). | Tests unitarios. |
 | `scripts/check_*.py` | Quality gates deterministas (ver `docs/gates.md` §2). | Lógica de aplicación. |
-| `docs/03-aplicaciones/<app>/` | Research por app: `epic.md`, `walkthrough-G*.json`, `capabilities.md`, `data-model.md`, `forms.md`, `integrations-security.md`, `ERD`. | Código fuente. |
+| `docs/03-aplicaciones/<app>/` | Research por app: `epic.md`, `walkthrough-G*.json`, `capabilities.md` (el estudio por sistema), `data-model.md`, `forms.md`, `integrations-security.md`, `ERD`. Las fichas de capacidad tienen su ruta canónica en `capabilities/CAP-00X-*.md`, con el índice del sistema en `capabilities/index.md` (#1288). | Código fuente. |
 | `data/staging/<app>/` | Binarios `.accdb` R2-pulled (NO se commitean). | Scripts reproducibles; van en `scripts/`. |
 | `openspec/changes/<change>/` | Specs SDD: `proposal.md`, `design.md`, `openspec/changes/<change>/specs/<capability>/spec.md`, `tasks.md`. | Implementación. |
 | `inputs/` | Material externo versionado ligero (automatizaciones-legacy, etc.). | — |

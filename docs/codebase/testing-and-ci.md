@@ -65,17 +65,19 @@ El sello que el job `canon` resuelve sale de la base: es la primera línea de `.
 
 ### `quality` (suite principal)
 
-Orden interno de los steps (ver `ci.yml` línea 188 a línea 360):
+Orden interno de los steps (job `quality` de `ci.yml`: `install` en la línea 164 y `quality gates and indicators` en la 340):
 
 1. `install` — instalación con hashes exigidos desde `app/requirements-dev.lock`. Hard Rule 2: pins exactos en `app/pyproject.toml` y `app/requirements-dev.lock`.
 2. `format scripts` — `ruff format` sobre `scripts/` (no sobre `app/`).
 3. `format` — `ruff format --check` sobre `app/src`, `tests/`, `openspec/`. Si falla, el runner reporta el diff.
-5. `lint` — `ruff check` con la `select` de `app/pyproject.toml`.
-6. `typecheck` — `mypy --explicit-package-bases` con la config en `app/pyproject.toml` (Hard Rule 15: pins de mypy==1.13.0).
-7. `workflow gate` — ejecuta `scripts/check_workflows.py`; la matriz `required` la comprueba el job `required` con el gate del canon.
+4. `lint` — `ruff check` con la `select` de `app/pyproject.toml`.
+5. `typecheck` — `mypy --explicit-package-bases` con la config en `app/pyproject.toml` (Hard Rule 15: pins de mypy==1.13.0).
+6. `workflow gate` — ejecuta `scripts/check_workflows.py`; la matriz `required` la comprueba el job `required` con el gate del canon.
+7. `workflow policy` — ejecuta el gate del canon (`check_workflow_policy.py`) sobre todos los workflows: claves duplicadas, `timeout-minutes`, puertos fijos, pines por SHA y grupo de `concurrency` (BP #1040, #1464).
 8. `suites populated` — ejecuta `scripts/check_suites_populated.py`. Issue #882: una suite obligatoria vacía es una garantía falsa; cada suite (`unit`, `integration`, `e2e_smoke`) debe recoger al menos un test bajo `--collect-only -m <expr>`.
 9. `tests` — la suite sin el marker `integration` (comando 1 de «Comandos de referencia»). El flag `--rootdir=app` es load-bearing: sin él, `pytest` no encuentra la configuración y cada test falla con `import error`.
-10. `quality gates and indicators` — ejecuta `scripts/quality_report.py`. Renderiza el quality report en el step summary del job.
+10. `record policy time` — fija `POLICY_DATE` (fecha UTC) en el entorno del job, para que los gates con `BASELINE` juzguen contra una fecha explícita y no contra el reloj (BP #1324).
+11. `quality gates and indicators` — ejecuta `scripts/quality_report.py`. Renderiza el quality report en el step summary del job.
 
 Cobertura: el plugin `coverage` se retiró en #877; el `pytest-cov` ya no está en `app/pyproject.toml` y los flags `--cov` no existen. La ratchet shrink-only actual es la de mutación (release), no de cobertura.
 
@@ -137,6 +139,8 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 | `.agents/skills/ci-pattern/assets/pr-size/check_pr_size.py` | `pr-gates.yml::pr-gate` | PR ≤ 400 líneas. |
 | `.agents/skills/ci-pattern/assets/issue-spec/check_issue_spec.py` (canon) | `pr-gates.yml::pr-gate` | Cuerpo de issue conforme. |
 | `scripts/check_walkthrough_schema.py` | `pr-gate` | `walkthrough-*.json` válidos. |
+| `scripts/check_change_scope.py` | `pr-gate` | Superficie del diff por job pesado: `e2e`, `codeql` y `lockfile` (issue #1376). |
+| `scripts/check_docs_only_lane.py` | `pr-gate` | Clasificador fail-closed del carril docs-only (issue #1368). |
 | `scripts/check_workflows.py` | `quality` (`workflow gate`) | `.github/workflows/*.yml` bien formado. |
 | `.agents/skills/ci-pattern/assets/required-jobs/check_required_jobs.py` (canon) | `required` (enforce) | Matriz `required` completa. |
 | `.importlinter` | `docs-architecture` (job requerido) | DA-1 hexagonalidad: derivado del bloque `architecture` de `docs/architecture.md`. |
@@ -144,10 +148,10 @@ Los quality gates son scripts `scripts/check_*.py` que el runner invoca como ste
 | `scripts/check_mutation_sites.py` | `quality` | DA-13 pin AST. |
 | `scripts/check_complexity.py` | `quality` | Complejidad. |
 | `scripts/check_dry.py` | `quality` | DRY. |
-| `scripts/check_deadcode.py` | `quality` | Código muerto. |
-| `scripts/check_decision_guards.py` | `quality` | Decisiones D-<n> con guardia. |
+| `scripts/check_deadcode.py` | — (no cableado; `KNOWN_PENDING_GATES`) | Código muerto (`vulture` frente a `.deadcode-baseline.txt`). |
+| `scripts/check_decision_guards.py` | — (no cableado; `KNOWN_PENDING_GATES`) | Decisiones D-<n> con guardia. |
 | `scripts/check_suites_populated.py` | `quality` | Suites obligatorias no vacías (#882). |
-| `scripts/check_test_classification.py` | `quality` | Tests bien clasificados. |
+| `scripts/check_test_classification.py` | — (no cableado; `KNOWN_PENDING_GATES`) | Tests bien clasificados. |
 | `scripts/check_legacy_retirement.py` | `quality` | Retirada de paths legacy. |
 | `scripts/check_mutation.py` | `release.yml::mutation` | Ratchet shrink-only de mutación. |
 

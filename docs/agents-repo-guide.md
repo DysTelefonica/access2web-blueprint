@@ -12,6 +12,12 @@ alwaysApply: true
 > bloque propagado + una sola sección local). El contenido se conserva
 > verbatim; su destino natural es este documento, no el `AGENTS.md`.
 
+> **Índice de referencia del registro de skills.** Este documento es el índice de
+> referencia del registro de skills del repositorio: las tablas de aquí son la
+> puerta de entrada del contribuyente. El registro generado —
+> `.atl/skill-registry.md`, refrescado con `gentle-ai skill-registry refresh` —
+> es la fuente de verdad de descubrimiento (`AGENTS.md` §«Skill Registry
+> Protocol»); este índice no lo sustituye, lo señala.
 
 When working on this project, load the relevant skill(s) BEFORE writing any code or docs.
 
