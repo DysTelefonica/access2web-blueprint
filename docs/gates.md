@@ -6,36 +6,43 @@
 
 ## 1. El contrato global
 
-Los gates se agrupan en tres familias, y cada una corre en un sitio distinto:
+Los gates se agrupan en cuatro familias, y cada una corre en un sitio distinto:
 
 | Familia | Qué protege | Dónde corre |
 |---|---|---|
-| Forma del cambio | nombre de rama, tamaño del PR, contrato del workflow de CI, esquema de los walkthroughs | job `review-budget` (barato: segundos, tope 5 min) |
-| Pruebas y calidad del código | formato y lint, capas hexagonales, complejidad, DRY, hashes legacy, retirada legacy, densidad de sitios de mutación | job `quality` (tope 30 min) |
-| Contrato del host y del arnés | protección de rama, jobs requeridos, paridad local, política del workflow y matriz de reglas | fase 4 del contrato de adopción: `ci-pattern adoption check --phase 4 .` |
+| Forma del cambio | tamaño del PR (≤400 líneas), `Closes #N` y `issue-spec`, walkthroughs, dependencias entre cadenas de PRs, carriles de documentación y de superficie | `pr-gates.yml::pr-gate` (gate H1, tope 10 min, `pr-gates.yml:71`) y `pr-gate.yml::pr-gate` (tope 5 min, `pr-gate.yml:112`), llamado desde `ci.yml:93` |
+| Calidad y pruebas | formato, lint, tipos, tests, complejidad, DRY, sitios de mutación estáticos, hashes legacy, retirada legacy, suites pobladas | `ci.yml::quality` (tope 30 min, `ci.yml:129`); `ci.yml::integration` (tope 25 min, `ci.yml:380`) y `ci.yml::e2e-smoke` (`ci.yml:894`) |
+| Seguridad, gobierno y documentación | secretos, configuración de contenedores, dependencias, CodeQL, sellos de gobierno, imágenes pinneadas por digest, enlaces, comandos y decisiones documentadas | `security.yml`, `pip-audit.yml` y `codeql.yml` (reusable, llamados desde `ci.yml`); `governance-seals` (`ci.yml:652`), `docs-*` (`ci.yml:608` a `:835`) y `ci-images` (`ci.yml:1034`) |
+| Contrato del host y del arnés | protección de rama, jobs requeridos, paridad de la política, matriz de reglas | agregador `ci.yml::required` (`ci.yml:1080`) y fase 4 del contrato de adopción: `ci-pattern adoption check --phase 4 .` |
 
 El recorrido de un PR hasta el merge:
 
 ```text
-PR  (rama `tipo/nº-slug`, cuerpo con `## Chain Context`, ≤400 líneas o excepción declarada)
+PR  (rama `tipo/nº-slug`, cuerpo con `Closes #N` y `## Chain Context`, ≤400 líneas o `size:exception`)
  │  push a la rama
  ▼
 GitHub Actions
- ├── review-budget ──┐
- ├── quality ────────┤
- ├── security ───────┼──► required  (agregador; needs: los cuatro; if: always())
- └── codeql ─────────┘        │
-                              │  único contexto requerido por la protección de `main`
-                              ▼
-                    merge del mantenedor (ruleset `main-maintainers-and-admins-merge`)
+ ├── pr-gates.yml::pr-gate   pull_request_target: tamaño e issue-spec sobre el catálogo de la base
+ ├── ci.yml::pr-gate ──────► pr-gate.yml   workflow_call: walkthroughs, carriles, dependencias
+ ├── ci.yml::quality, integration, e2e-smoke, docs-*, governance-seals, ci-images
+ ├── ci.yml::security, pip-audit, codeql   ──► security.yml, pip-audit.yml, codeql.yml
+ │
+ └── ci.yml::required   (agregador; needs: los jobs de ci.yml; if por evento)
+              │
+              ▼
+     .github/host-contract.json → required_checks: `required` y `pr-gate`
+              │
+              ▼
+     merge del mantenedor (ruleset `main-maintainers-and-admins-merge`)
 ```
 
-Cuatro reglas que el diagrama no muestra y que conviene saber:
+Cinco reglas que el diagrama no muestra y que conviene saber:
 
-- **`required` es el único contexto requerido.** Los demás jobs publican su nombre, pero la protección de rama solo exige `required`; por eso un job que no queremos bloqueante no se añade a su lista de `needs`.
-- **`required` lleva `if: always()`**: sin él, un dependency saltado (por ejemplo `review-budget` fuera de un `pull_request`) marcaría el propio `required` como *skipped*, y un check requerido saltado no bloquea el merge.
-- **`security.yml` y `codeql.yml` son *reusable workflows*** (`workflow_call`): `needs:` no cruza archivos de workflow, así que la única forma de que `required` dependa de sus job ids es invocarlos con `uses:` desde `ci.yml`.
-- **Cada job declara `timeout-minutes`**: un gate que se cuelga es un gate que no mide, y el tope convierte el cuelgue en un fallo con diagnóstico.
+- **`pr-gate` está partido en dos workflows a propósito.** `pr-gates.yml` corre en `pull_request_target` y ejecuta el catálogo que publica la base, para que la cabeza del PR no pueda alterar el gate que lo mide (`pr-gates.yml:1-13`). `pr-gate.yml` corre en `pull_request` y en `workflow_call`; lo que lee es el árbol y el diff, sin token (`pr-gate.yml:1-16`, `:63-81`).
+- **`required` es el agregador.** Su `needs:` (`ci.yml:1115`) reúne los jobs de `ci.yml`, y `pr-gate` y `required` son los dos `required_checks` que declara el contrato del host. Un job que no queremos bloqueante no se añade a `needs`.
+- **`required` no usa `always()`.** Su `if:` (`ci.yml:1110`) fija el evento a `pull_request` o `push` y añade `!cancelled()`: un job saltado como dependencia no salta este check, y un check requerido saltado no bloquea el merge. El comentario de `ci.yml:1080-1110` explica por qué no es `always()` literal (HR-30, #1464).
+- **`security.yml`, `pip-audit.yml`, `codeql.yml` y `pr-gate.yml` son *reusable workflows*** (`workflow_call`): `needs:` no cruza ficheros de workflow, así que `ci.yml` los invoca con `uses:` (`ci.yml:93`, `:520`, `:540`, `:592`).
+- **Cada job declara `timeout-minutes`**: un gate que se cuelga es un gate que no mide, y el tope convierte el cuelgue en un fallo con diagnóstico (lo verifica `check_workflows.py`, §2).
 
 ## 2. Los `check_*.py`, uno por uno
 
@@ -83,15 +90,24 @@ Los tres scripts de `scripts/` que ningún job invoca (`check_decision_guards.py
 
 | Workflow | Dispara | Jobs | Runner |
 |---|---|---|---|
-| `ci.yml` | `pull_request`, `push` a `main`, `schedule` (lunes 03:00 UTC) y `workflow_dispatch` | `review-budget`, `quality`, `mutation`, `security`, `codeql`, `required` | `ubuntu-24.04` (`mutation`: `ubuntu-24.04-arm`) |
+| `ci.yml` | `pull_request` (`opened`, `synchronize`, `reopened`), `push` a `main`, `schedule` diario 03:00 UTC (`0 3 * * *`, `ci.yml:68`) y `workflow_dispatch` | `pr-gate`, `quality`, `integration`, `security`, `pip-audit`, `pip-audit-alert`, `codeql`, `docs-architecture`, `governance-seals`, `docs-codeguide`, `docs-links`, `docs-commands`, `docs-decisions`, `e2e-smoke`, `ci-images`, `required` | `ubuntu-24.04` |
+| `pr-gate.yml` | `pull_request` (seis tipos, incluidos `edited`, `labeled` y `unlabeled`) y `workflow_call` desde `ci.yml` | `pr-gate` | `ubuntu-24.04` |
+| `pr-gates.yml` | `pull_request_target` (`opened`, `edited`, `labeled`, `unlabeled`, `synchronize`, `reopened`) | `canon`, `pr-gate` | `ubuntu-24.04` |
 | `security.yml` | `workflow_call` desde `ci.yml` | `gitleaks`, `trivy-config` | `ubuntu-24.04` |
 | `pip-audit.yml` | `workflow_call` desde `ci.yml` | `dependency-scan` | `ubuntu-24.04` |
-| `codeql.yml` | `workflow_call` desde `ci.yml` | `codeql` | `ubuntu-24.04` |
-| `security-deep.yml` | `schedule` (domingo 03:00 UTC) y manual | `gitleaks-history`, `trivy-image` | `ubuntu-24.04-arm` |
-| `operating-doc-drift.yml` | `push` a `main` y `schedule` (lunes 04:00 UTC) | `operating-doc-drift` | `ubuntu-24.04` |
-| `release.yml` | `push` de un tag `v*` | `preflight`, `e2e`, `publish`, `verify` | `ubuntu-24.04` (`e2e`/`publish`: `-arm`) |
+| `codeql.yml` | `workflow_call` desde `ci.yml` | `analyze` | `ubuntu-24.04` |
+| `security-deep.yml` | `schedule` (domingo 03:00 UTC, `0 3 * * 0`) y manual | `gitleaks-history`, `trivy-image` | `ubuntu-24.04-arm` |
+| `operating-doc-drift.yml` | `schedule` (lunes 04:00 UTC, `0 4 * * 1`) y manual | `operating-doc-drift` | `ubuntu-24.04` |
+| `release.yml` | `push` de un tag `v*` | `preflight`, `mutation`, `stage`, `e2e`, `publish`, `verify` | `ubuntu-24.04`; `mutation`, `stage`, `e2e` y `publish`: `ubuntu-24.04-arm` |
+| `dysflow-erd.yml` | `workflow_dispatch` | `extract` | runner `self-hosted` Windows del propietario (`dysflow-erd.yml:29`) |
 
-Dos particularidades con motivo escrito en el propio workflow: el `schedule` existe para lo que no cabe en un PR (mutación semanal, escaneo profundo de historial), y `release.yml` no publica sin el `mutation` sobre los **bytes exactos de la etiqueta** (contrato de `XCUT #703`). El aislamiento de runner está medido por `check_workflows.py`: en este repositorio público **ningún** job usa `self-hosted` (`docs/10-runners.md`).
+Particularidades con motivo escrito en el propio workflow:
+
+- **`ci.yml` corre una vez por PR y una vez por push a `main`.** El `schedule` nocturno es la red de seguridad sobre la base; no hay cola de merge (`ci.yml:55-68`).
+- **La mutación ya no corre en `ci.yml`.** Se retiró del CI de PR (#881) y vive en `release.yml::mutation`; `publish` depende de ella, así que un tag no se publica sin ese gate sobre sus bytes exactos (`release.yml:72`, `:82`).
+- **El único job `self-hosted` es `dysflow-erd.yml`**, y solo por `workflow_dispatch`: `check_workflows.py` lo admite únicamente para ese tipo de fichero (`dysflow-erd.yml:1-5`). El resto de runners son `ubuntu-24.04` y `ubuntu-24.04-arm` hospedados por GitHub.
+
+El aislamiento de runner lo mide `check_workflows.py` (§2), que prohíbe `self-hosted` en cualquier otro job.
 
 ## 4. El `mutation` semanal
 
