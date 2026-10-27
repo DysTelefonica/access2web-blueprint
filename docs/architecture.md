@@ -39,11 +39,10 @@
 │  │                       di,delivery}                              │
 │  ├── src/shared/  (cross-cutting: cache, audit, lockout)          │
 │  ├── migrations/versions/   (Alembic; Expand and Contract, D82)    │
-│  ├── tests/   (TDD + Playwright E2E; gates por módulo)            │
-│  └── pytest_plugin/   (coverage_gate, etc.)                       │
+│  └── tests/   (TDD + Playwright E2E; gates por módulo)            │
 │                                                                   │
 │  openspec/changes/<change>/{proposal,design,specs/*,tasks}.md    │
-│  scripts/check_*.py   (16 quality gates, ver §CI)                  │
+│  scripts/check_*.py   (14 quality gates, ver §CI)                  │
 │  skills/    (copy de las skills internalizadas)                    │
 └──────────────────────────────────────────────────────────────────┘
                                    │
@@ -100,7 +99,7 @@ access2web-blueprint/
 ├── e2e/                         ← suite Playwright (gate de release)
 ├── inputs/                      ← material de entrada legacy (automatizaciones-legacy)
 ├── openspec/changes/<change>/{proposal,design,specs/*,tasks}.md
-├── scripts/check_*.py           ← 16 quality gates (ver §CI gates)
+├── scripts/check_*.py           ← 14 quality gates (ver §CI gates)
 ├── .github/workflows/{ci,security,security-deep,codeql,release,operating-doc-drift}.yml
 ├── data/staging/                ← binarios legacy (R2-pulled)
 └── skills/                      ← copia internalizada de skills del proyecto
@@ -361,7 +360,7 @@ Las capas son las capas hexagonales de cada aplicación: una capa agrupa la carp
 
 ## CI gates
 
-Dieciséis `scripts/check_*.py` + `.github/workflows/`:
+Catorce `scripts/check_*.py` + `.github/workflows/`:
 
 | Gate | Vive en | QC |
 |---|---|---|
@@ -382,7 +381,6 @@ Dieciséis `scripts/check_*.py` + `.github/workflows/`:
 | `check_workflows.py` | scripts/ | Integridad YAML, pins, concurrencia y aislamiento de PRs públicos |
 | `quality_report.py` | scripts/ | QC-11 (agregador) |
 | `check_walkthrough_schema.py` | scripts/ | MUST fields del template `walkthrough.json` |
-| `pytest_plugin/coverage_gate.py` | app/ | QC-5 |
 | ci.yml | .github/workflows/ | orquesta todo por PR |
 | security.yml | .github/workflows/ | gitleaks, trivy config |
 | pip-audit.yml | .github/workflows/ | auditoria del lockfile bloqueado por hashes |
