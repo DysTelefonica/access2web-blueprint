@@ -99,7 +99,7 @@ Todos los manejadores repiten el patrón: `Err.Number <> 1000` ⇒ anexar descri
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. El patrón dominante aquí no es el SQL sino el **estado global**: la pantalla no recibe identificadores, los lee de variables públicas de módulo, y emite un evento propio que el contenedor debe conocer. En web eso es un parámetro de ruta y un callback explícito. El reloj de arena (`:247-249`, `:279`, `:291`) y el cierre con `acSaveNo` del principal (`:284`) no tienen equivalente directo.
+Pendiente de la coexistencia (documento aún no redactado). El patrón dominante aquí no es el SQL sino el **estado global**: la pantalla no recibe identificadores, los lee de variables públicas de módulo, y emite un evento propio que el contenedor debe conocer. En web eso es un parámetro de ruta y un callback explícito. El reloj de arena (`:247-249`, `:279`, `:291`) y el cierre con `acSaveNo` del principal (`:284`) no tienen equivalente directo.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

@@ -111,7 +111,7 @@ No hay `INSERT`/`UPDATE`/`DELETE` directos en este `.cls`.
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Ya se ve: **acoplamiento por `RaiseEvent Seleccionado(m_Exp)`** (`:68`): quien abra el formulario debe suscribirse al evento `WithEvents` y guardar el `Expediente` antes de que el `DoCmd.Close` lo desmonte; **concatenación SQL** `WHERE IDExpediente=<valor>` (`Constructor.bas:581-583`) sin sanitizar — aquí siempre viene de `Nz(Me.ListaFiltrados.Column(0), "")`, lo que blinda parcialmente la entrada; **`ListBox` con `Value List`** en lugar de consulta, con la sustitución `;` → `:`; `m_PalabraClaveUltima` y `m_IDResponsableCalidadUltimo` declarados a nivel módulo (`:8-9`) son **estado mutable entre llamadas** que mezcla este formulario con su(s) consumidor(es), el segundo campo sin uso en `src/`.
+Pendiente de la coexistencia (documento aún no redactado). Ya se ve: **acoplamiento por `RaiseEvent Seleccionado(m_Exp)`** (`:68`): quien abra el formulario debe suscribirse al evento `WithEvents` y guardar el `Expediente` antes de que el `DoCmd.Close` lo desmonte; **concatenación SQL** `WHERE IDExpediente=<valor>` (`Constructor.bas:581-583`) sin sanitizar — aquí siempre viene de `Nz(Me.ListaFiltrados.Column(0), "")`, lo que blinda parcialmente la entrada; **`ListBox` con `Value List`** en lugar de consulta, con la sustitución `;` → `:`; `m_PalabraClaveUltima` y `m_IDResponsableCalidadUltimo` declarados a nivel módulo (`:8-9`) son **estado mutable entre llamadas** que mezcla este formulario con su(s) consumidor(es), el segundo campo sin uso en `src/`.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

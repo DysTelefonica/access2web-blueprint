@@ -97,7 +97,7 @@ Los 38 handlers repiten el mismo esquema: `On Error GoTo errores`, acumulación 
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo que ya se ve: la pantalla es un mapa de fases con botones por fase, no un formulario de datos; el `EnumTipoEnvioCorreo` de 14 valores (`VG.bas:150-165`) y el `EnumEstado` de 16 (`VG.bas:122-139`) son el modelo de dominio que debe sobrevivir a la traducción, no los rótulos de los botones. El borrado y el registro se expresan como `UPDATE` con SQL concatenado sobre `TbSolicitudesFechas` (`SolicitudOperaciones.cls:1337-1345`); la versión web necesita transacciones explícitas, porque aquí cada fase se persiste por separado. La reprogramación de avisos depende de un planificador del sistema de ficheros, sin equivalente directo en PostgreSQL.
+Pendiente de la coexistencia (documento aún no redactado). Lo que ya se ve: la pantalla es un mapa de fases con botones por fase, no un formulario de datos; el `EnumTipoEnvioCorreo` de 14 valores (`VG.bas:150-165`) y el `EnumEstado` de 16 (`VG.bas:122-139`) son el modelo de dominio que debe sobrevivir a la traducción, no los rótulos de los botones. El borrado y el registro se expresan como `UPDATE` con SQL concatenado sobre `TbSolicitudesFechas` (`SolicitudOperaciones.cls:1337-1345`); la versión web necesita transacciones explícitas, porque aquí cada fase se persiste por separado. La reprogramación de avisos depende de un planificador del sistema de ficheros, sin equivalente directo en PostgreSQL.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 

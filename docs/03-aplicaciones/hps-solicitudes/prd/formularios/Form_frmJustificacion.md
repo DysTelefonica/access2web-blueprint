@@ -87,7 +87,7 @@ La escritura es la única parte parametrizada de todo el camino; las lecturas y 
 
 ## Coexistencia
 
-Pendiente de `../coexistencia.md`. Lo que este formulario aporta al plan: la arquitectura de tres capas (servicio → repositorio → entidad con propiedades) es el patrón más limpio del legacy y el candidato natural a equivalente web, donde `JustificacionRepositorio.Guardar` se traduce en un `INSERT` parametrizado y `JustificarServicio.GuardarJustificacion` en una operación de API. Los tres puntos que no sobreviven tal cual son el `Max(id)+1` como generador de claves (debe ser `IDENTITY`/`GENERATED`), la segunda lectura de `Max` para recuperar el id (debería devolverlo el propio `INSERT`) y la validación de duplicados por código.
+Pendiente de la coexistencia (documento aún no redactado). Lo que este formulario aporta al plan: la arquitectura de tres capas (servicio → repositorio → entidad con propiedades) es el patrón más limpio del legacy y el candidato natural a equivalente web, donde `JustificacionRepositorio.Guardar` se traduce en un `INSERT` parametrizado y `JustificarServicio.GuardarJustificacion` en una operación de API. Los tres puntos que no sobreviven tal cual son el `Max(id)+1` como generador de claves (debe ser `IDENTITY`/`GENERATED`), la segunda lectura de `Max` para recuperar el id (debería devolverlo el propio `INSERT`) y la validación de duplicados por código.
 
 ## Comportamiento actual · Posibles defectos · Propuestas web pendientes de decisión
 
