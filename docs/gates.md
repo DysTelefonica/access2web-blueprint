@@ -109,12 +109,13 @@ Particularidades con motivo escrito en el propio workflow:
 
 El aislamiento de runner lo mide `check_workflows.py` (§2), que prohíbe `self-hosted` en cualquier otro job.
 
-## 4. El `mutation` semanal
+## 4. El `mutation` en el release
 
 - **Qué detecta:** los tests que pasan sin afirmar nada. Mutar el código y ver que la suite sigue verde delata un assert vacío o un test que no ejercita el camino.
-- **Cuándo corre:** lunes 03:00 UTC, en un tag de release y bajo demanda (`workflow_dispatch`). Nunca en un PR: cuesta hasta una hora.
-- **Por qué no bloquea:** queda fuera del agregador `required` a propósito, así que su rojo no impide un merge; por eso su seguimiento es por issue y no por protección de rama.
-- **Estado (2026-10-10):** el job recibía un runner propio del VPS que no existía —cero runners registrados— y llevaba cuatro semanas en rojo sin seguimiento; el pin se corrigió y el gate que lo prohíbe quedó cableado en #834, y su ejecución real depende de que aterrice la instalación de `cosmic-ray` y su configuración (#799).
+- **Cuándo corre:** solo en un tag `v*` (`release.yml:7-9`). `release.yml` no tiene `schedule` ni `workflow_dispatch`, y no corre en PR ni en `ci.yml`, que lo retiró en #881 (`release.yml:82`). Nunca en un PR: su tope es de 150 minutos (`release.yml:96`).
+- **Dónde corre:** el job `mutation` es `ubuntu-24.04-arm` (`release.yml:90`). Reparte cosmic-ray en 10 shards (`release.yml:150-163`) y el ratchet `check_mutation.py` corre sobre las sesiones fusionadas (`release.yml:166-174`).
+- **Por qué bloquea un release y no un merge:** `publish` depende de `mutation` (`release.yml:350`), así que un tag no se publica sin este gate sobre sus bytes exactos. Queda fuera del agregador `required` (`ci.yml:1115`), que es el de PR; su rojo no impide un merge.
+- **Historia:** el 2026-10-10 el job exigía un runner propio del VPS sin runners registrados y llevó cuatro semanas en rojo sin seguimiento. El pin se corrigió y el gate que lo prohíbe quedó cableado en #834.
 
 ## 5. Cómo añadir un gate nuevo
 
