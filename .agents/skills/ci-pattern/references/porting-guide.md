@@ -413,7 +413,10 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    fijo, de modo que un bump de Dependabot no los desalinea y un cambio de lógica
    sí. Lo que no se normaliza (un `docker run` dentro de `run:`, una `image:`
    entre comillas, un `container:` en forma corta) falla cerrado: su bump exige
-   re-sellar.
+   re-sellar. El hash se calcula con el algoritmo del formato que declara el
+   manifiesto: el canon vigente mide el formato 2 y el 3, cada uno con el suyo
+   (#1371), porque la base del consumer mide el PR con su canon y su formato
+   puede ser el anterior.
 4. Registre la evidencia del PR de sustitución en
    `docs/adoption/governance-replacement-pr.md` y declárela en `evidence.path`
    de la fase: el gate también la comprueba.
@@ -906,6 +909,26 @@ dedujeron sobre la marcha las reglas de cadenas (`Closes #N` en prosa cerró
   mide existencia y secciones. La plantilla canónica está en
   `assets/templates/docs/CONTRIBUTING.md.tmpl`; copiada byte a byte en
   títulos, el repo la reescribe a su gusto en contenido.
+
+- **G5.7 — Las tablas de checks escritas a mano, declaradas (HR-82, #1382).**
+  El consumer que tenga una tabla de jobs escrita a mano (la que explica qué
+  hace cada check del CI) la declara en su contrato de adopción:
+
+  ```json
+  "checks_tables": {
+    "tables": [
+      {"path": "docs/codebase/testing-and-ci.md", "workflow": "ci.yml",
+       "section": "Los jobs de CI"}
+    ]
+  }
+  ```
+
+  La fase 5 mide cada fila contra los workflows reales: un job que ningún
+  workflow define (fabricado), un job que vive en otro workflow (la fila lo
+  atribuye a otro) y un job requerido que no aparece en ninguna tabla
+  declarada son rojos. La clave es **opcional**: sin ella el gate no se mide y
+  el consumer no cambia de veredicto hasta que la declara. La página del gate
+  es `assets/checks-table/README.md`.
 
 Gate de salida de fase: el doc operativo generado, enlazado y en verde en el
 gate de deriva sobre el árbol real del consumer.

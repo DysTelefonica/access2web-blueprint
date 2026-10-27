@@ -14,6 +14,61 @@ Recorrer cero ficheros es un fallo.
 Activación: `docs_links` en el contrato de adopción (claves en el esquema); sin
 declaración, `adoption check --phase 5` avisa por `stderr` y sale 0.
 
+## Alcanzabilidad: todo `.md` del alcance tiene que ser alcanzable (HR-80, #1379)
+
+Un enlace que resuelve no dice si la documentación *completa* se ve. Un `.md` al
+que nadie enlaza no rompe ningún enlace, así que ningún gate lo cazaba: la
+auditoría de p3 en `DysTelefonica/cadete` encontró 45 documentos huérfanos
+(`docs/skills-catalog.md`, `PRD_ENTITY_MAP.md`…) que un agente no encuentra «con
+un solo vistazo».
+
+La regla vive **en este gate**, no en uno nuevo: la clave opcional `reachable` del
+bloque `docs_links` enciende la exigencia. La exige el mismo job `docs-links` y la
+fase 5 de `adoption check`; no hay job nuevo ni declaración nueva.
+
+```json
+"docs_links": {
+  "hub": "docs/CODEBASE-GUIDE.md",
+  "spokes": "docs/codebase",
+  "job": "docs-links",
+  "reachable": {
+    "from": ["README.md", "docs/CODEBASE-GUIDE.md"],
+    "scope": ["docs"],
+    "exceptions": ["docs/releases/"]
+  }
+}
+```
+
+| Clave | Qué significa |
+|---|---|
+| `from` | Puntos de entrada del grafo de enlaces. **Obligatoria**: sin ella la declaración está incompleta y el gate falla nombrando la clave. Cada punto de entrada tiene que existir. |
+| `scope` | Rutas (fichero o directorio) donde se exige la completitud. Por defecto, `["docs"]`. |
+| `exceptions` | Rutas o globs exentos: `docs/releases/` cubre todo lo que cuelga de él; `docs/adr/*.md` cubre los ficheros de un patrón. |
+
+Qué mide:
+
+- Todo `.md` bajo `scope` tiene que ser **alcanzable** desde `from` siguiendo
+  enlaces markdown. El recorrido es **transitivo**: si el hub lleva a A y A lleva a
+  B, B está alcanzable. Solo se sigue el enlace de dentro del repositorio; un
+  enlace a otro sitio no trae la documentación de este repo.
+- Lo que no se alcanza es un **documento huérfano** y sale en rojo con su ruta.
+- El `.md` que nadie enlaza desde un `.md` inalcanzable no cuenta: la cadena
+  empieza en los puntos de entrada, no en cualquier fichero.
+- Un `.md` fuera del alcance no se exige; un fichero que no es Markdown, tampoco.
+
+Es determinista y **falla cerrado** (HR-3): la declaración incompleta o mal formada
+—`reachable` sin `from`, `from` que no es una lista de rutas, un punto de entrada
+que no existe, un alcance que no existe— sale en rojo nombrando la clave. El rojo
+nombra el fichero huérfano y los puntos de entrada desde los que no se alcanza.
+
+La excepción es **explícita y declarativa**: una ruta mal escrita no desactiva
+nada en silencio, porque los ficheros que pretendía cubrir salen en rojo como
+huérfanos.
+
+Mientras un consumer no declare `reachable`, esta regla no midió nada y el gate
+sigue midiendo exactamente lo que medía: ningún consumer cambia de comportamiento
+hasta declararla.
+
 **La fuente única es ese bloque del contrato**, igual que en HR-65 (#1020):
 
 ```bash

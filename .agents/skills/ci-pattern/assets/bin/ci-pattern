@@ -39,8 +39,17 @@ SCHEMA_VERSION = 3
 #: Versiones del manifiesto que `manifest seal` sabe migrar. El sello cambia de
 #: formato porque los workflows se sellan normalizados: v1 (#1199) en crudo; v2
 #: (#1199) con los `uses:` normalizados; v3 (#1361) con las imágenes por digest
-#: normalizadas también. Ningún gate mide v1 ni v2.
+#: normalizadas también. El v1 no lo mide ningún gate: `manifest seal` lo
+#: migra. El v2 lo miden los gates del canon vigente (ver
+#: `MEASURED_SCHEMA_VERSIONS`).
 LEGACY_SCHEMA_VERSIONS = (1, 2)
+#: Formatos del manifiesto que los gates miden (#1371). El vigente y el
+#: anterior: la migración es de dos pasos. Mientras la base de un consumer
+#: mida un manifiesto v2 con SU canon (el de su rama base), el canon nuevo
+#: tiene que medir también el v2; si no, el gate de la base rechaza el PR
+#: con rc=2 aunque el canon de la cabeza lo entienda. El formato 1 sigue sin
+#: medirse: `manifest seal` lo migra.
+MEASURED_SCHEMA_VERSIONS = (SCHEMA_VERSION, SCHEMA_VERSION - 1)
 
 #: Los workflows se sellan sobre su contenido NORMALIZADO (#1199): la
 #: referencia pineada de cada `uses:` (y su comentario de versión) es un dato
@@ -87,10 +96,12 @@ Comandos:
                              Verifica el cumplimiento dirigido por el manifiesto.
   status <repo> [--json]     Resumen de una línea por clase del repo destino.
   manifest show <repo>       Imprime el manifiesto leído.
-  manifest seal <repo> [--out <ruta>]
+  manifest seal <repo> [--out <ruta>] [--schema-version N]
                              Re-sella el manifiesto (sha256 de los ficheros y
                              de los bloques de slice declarados). Con --out
                              escribe la copia re-sellada y no toca el árbol.
+                             Con --schema-version N sella en el formato N (2 o
+                             3), con el algoritmo de N.
   pr preflight --pr-body <file> [--issue N] [--branch <ref>] [--repository owner/name]
   pr preflight --draft --pr-body <file> --base <branch> [--label L]...
                              Modo borrador API-free: cuerpo y tamaño local; --base es obligatorio.
@@ -179,10 +190,12 @@ class ParamsFileError(Exception):
 def load_manifest(repo, allow_legacy=False):
     """El manifiesto de gobierno, leído y validado.
 
-    Solo se acepta el formato vigente. `allow_legacy=True` lo usa `manifest
-    seal`, que es la vía de migración: un manifiesto de formato viejo se puede
-    re-sellar al nuevo, pero ningun gate lo mide (HR-3: un formato que el gate
-    no entiende no puede pasar por conforme).
+    Los gates miden los formatos vivos (#1371): el vigente y el anterior, con
+    el algoritmo de cada uno (el hash se calcula con el formato que declara el
+    manifiesto, no con el del canon que lo lee). `allow_legacy=True` lo usa
+    `manifest seal`, que es la vía de migración: un manifiesto de formato viejo
+    se puede re-sellar al nuevo, pero ningun gate lo mide (HR-3: un formato
+    que el gate no entiende no puede pasar por conforme).
     """
     path = Path(repo) / MANIFEST_NAME
     if not path.is_file():
@@ -197,10 +210,11 @@ def load_manifest(repo, allow_legacy=False):
     except (OSError, json.JSONDecodeError) as exc:
         raise MissingResourceError(f"manifest: {path} ilegible o corrupto ({exc}).") from exc
     version = manifest.get("schema_version") if isinstance(manifest, dict) else None
-    accepted = (SCHEMA_VERSION,) if not allow_legacy else (SCHEMA_VERSION, *LEGACY_SCHEMA_VERSIONS)
+    accepted = MEASURED_SCHEMA_VERSIONS if not allow_legacy else (SCHEMA_VERSION, *LEGACY_SCHEMA_VERSIONS)
     if version not in accepted:
+        medidos = " o ".join(str(v) for v in MEASURED_SCHEMA_VERSIONS)
         raise MissingResourceError(
-            f"manifest: schema_version debe ser {SCHEMA_VERSION}; revise {path}. "
+            f"manifest: schema_version debe ser {medidos}; revise {path}. "
             "El formato del sello cambió (#1199, #1361): los workflows se sellan "
             f"normalizados. Re-selle el manifiesto con: ci-pattern manifest seal {repo}"
         )
@@ -768,6 +782,10 @@ def verify_repo(repo, slice_canonical=None):
     findings = []
     manifest = load_manifest(repo)
     repo = Path(repo)
+    # El hash se calcula con el algoritmo del formato que declara el
+    # manifiesto (#1371): un manifiesto v2 se mide con el algoritmo v2, que es
+    # el que mide la base del consumer con su canon viejo.
+    schema = manifest.get("schema_version")
 
     # Validación de forma del manifiesto (#182): entradas degeneradas o
     # mal tipadas fallan cerrado con exit 2, sin traceback.
@@ -843,7 +861,7 @@ def verify_repo(repo, slice_canonical=None):
         if not target.is_file():
             findings.append(("files", "missing", f"{rel} está en el manifiesto pero no existe en el repo."))
             continue
-        actual = sha256_governed(target, rel)
+        actual = sha256_governed(target, rel, schema=schema)
         if actual != expected:
             findings.append(
                 (
@@ -1125,7 +1143,7 @@ def cmd_manifest_show(args):
 
 
 def cmd_manifest_seal(args):
-    """`manifest seal <repo> [--out <ruta>] [--reeseal <ruta>...]`: re-sella el manifiesto (#1172).
+    """`manifest seal <repo> [--out <ruta>] [--reeseal <ruta>...] [--schema-version N]`.
 
     Recalcula el sha256 de cada fichero declarado en `files` y de cada bloque
     de slice declarado en `slice_blocks`, y escribe el manifiesto re-sellado.
@@ -1145,12 +1163,19 @@ def cmd_manifest_seal(args):
     otro (#1199) se comprobarían los hashes del formato viejo y un fichero
     cuya deriva se quiso esconder no podria pasar como re-sellado.
 
+    `--schema-version N` sella en el formato N, con el algoritmo de N (#1371).
+    La ronda de propagación lo usa para sellar en el formato que mide la BASE
+    del consumer (la base mide el PR con su canon): un manifiesto en un
+    formato que la base no mide es un rojo en el gate de la base. Sin la
+    opción, sella en el formato vigente.
+
     Salida: 0 sellado · 1 algo declarado no existe en el árbol, o una migración
     con deriva sin declarar · 2 uso inválido o manifiesto ausente (3 si el
     manifiesto no está).
     """
     out_path = None
     reseal = []
+    schema_version = SCHEMA_VERSION
     positional = []
     index = 0
     while index < len(args):
@@ -1167,6 +1192,16 @@ def cmd_manifest_seal(args):
             reseal.append(args[index + 1])
             index += 2
             continue
+        if arg == "--schema-version":
+            if index + 1 >= len(args):
+                raise UsageError("manifest seal: --schema-version requiere un número.")
+            raw = args[index + 1]
+            if not raw.isdigit():
+                raise UsageError(
+                    f"manifest seal: --schema-version debe ser un número; se recibió {raw!r}.")
+            schema_version = int(raw)
+            index += 2
+            continue
         if arg.startswith("--"):
             raise UsageError(f"manifest seal: opción no reconocida: {arg}")
         positional.append(arg)
@@ -1174,6 +1209,11 @@ def cmd_manifest_seal(args):
     if len(positional) != 1:
         raise UsageError(
             "manifest seal requiere exactamente un argumento: <repo> [--out <ruta>].")
+    if schema_version not in MEASURED_SCHEMA_VERSIONS:
+        medidos = " o ".join(str(v) for v in MEASURED_SCHEMA_VERSIONS)
+        raise UsageError(
+            f"manifest seal: --schema-version debe ser {medidos}; el canon no sella "
+            f"el formato {schema_version}.")
     repo = Path(positional[0])
     manifest = load_manifest(repo, allow_legacy=True)
     files = manifest.get("files")
@@ -1188,7 +1228,7 @@ def cmd_manifest_seal(args):
             "manifest seal: estos ficheros declarados no existen en el árbol y no "
             "se re-sellan: " + ", ".join(missing), file=sys.stderr)
         return EXIT_FINDINGS
-    if manifest.get("schema_version") != SCHEMA_VERSION:
+    if manifest.get("schema_version") != schema_version:
         # Migrar de formato cambia la manera de hashear (#1199, #1361): antes de
         # re-sellar, los hashes del formato viejo (con su algoritmo) tienen que
         # cuadrar con el árbol. Si no cuadran, el manifiesto describe un contenido que no
@@ -1209,11 +1249,11 @@ def cmd_manifest_seal(args):
                 file=sys.stderr)
             return EXIT_FINDINGS
     sealed = dict(manifest)
-    sealed["schema_version"] = SCHEMA_VERSION
+    sealed["schema_version"] = schema_version
     sealed_files = dict(files)
     changed = []
     for rel in sorted(files):
-        current = sha256_governed(repo / rel, rel)
+        current = hash_for_schema(repo / rel, rel, schema_version)
         if current != files[rel]:
             changed.append(rel)
         sealed_files[rel] = current
@@ -1246,8 +1286,8 @@ def cmd_manifest_seal(args):
         write_manifest(repo, sealed)
     destino = out_path or str(repo / MANIFEST_NAME)
     print(
-        f"manifest seal: {len(sealed_files)} fichero(s) re-sellados, "
-        f"{len(changed)} con el hash cambiado -> {destino}")
+        f"manifest seal: formato v{schema_version}, {len(sealed_files)} fichero(s) "
+        f"re-sellados, {len(changed)} con el hash cambiado -> {destino}")
     for rel in changed:
         print(f"  {rel}: {files[rel]} -> {sealed_files[rel]}")
     return EXIT_OK
@@ -3246,6 +3286,9 @@ def _manifest_identity_findings(repo, declared_paths):
     if not isinstance(manifest_files, dict):
         raise UsageError(
             f"fase 3: {MANIFEST_NAME} debe declarar 'files' como objeto ruta→sha256")
+    # El hash se calcula con el algoritmo del formato que declara el
+    # manifiesto (#1371): la fase 3 mide un manifiesto v2 con el algoritmo v2.
+    schema = manifest.get("schema_version")
     unsafe = [rel for rel in manifest_files
               if not isinstance(rel, str)]
     for rel in manifest_files:
@@ -3267,7 +3310,7 @@ def _manifest_identity_findings(repo, declared_paths):
                 f"fase 3: '{rel}' figura en el manifiesto de gobierno pero no "
                 "existe en el árbol (HR-46)")
             continue
-        actual = sha256_governed(target, rel)
+        actual = sha256_governed(target, rel, schema=schema)
         if actual != manifest_files[rel]:
             findings.append(
                 f"fase 3: '{rel}' difiere del sha256 del manifiesto de gobierno "
@@ -4538,6 +4581,32 @@ def _check_docs_decisions(repo, contract):
     return findings
 
 
+def _check_checks_tables(repo, contract):
+    """HR-82 (#1382): las tablas de checks ESCRITAS A MANO, contra los jobs reales
+    de los workflows. La fase 5 ya mide la tabla del documento operativo generado;
+    una tabla escrita a mano es tan vinculante como esa y no se media. Activacion
+    por DECLARACION `checks_tables`: sin ella avisa por stderr y sale 0, para no
+    poner en rojo a los consumers existentes; con ella la fase 5 mide cada tabla
+    declarada (el nombre del check y el workflow que lo define) y exige que esten
+    los jobs requeridos."""
+    decl = contract.get("checks_tables") if isinstance(contract, dict) else None
+    if decl is None:
+        print("HR-82: checks_tables no declarado en el contrato de adopcion; las "
+              "tablas de checks escritas a mano no se miden todavia (se activa con "
+              "checks_tables).", file=sys.stderr)
+        return []
+    if not isinstance(decl, dict):
+        return ["HR-82: checks_tables debe ser un objeto"]
+    spec = importlib.util.spec_from_file_location(
+        "check_checks_table", skill_dir() / "assets" / "checks-table" / "check_checks_table.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    findings = [f"HR-82: clave desconocida en checks_tables: {k}"
+                for k in sorted(set(decl) - set(gate.CONFIG_KEYS))]
+    findings += [f"HR-82: {finding}" for finding in gate.check(repo, decl)]
+    return findings
+
+
 def _load_dependabot_config():
     """Importa el activo de configuracion de Dependabot en proceso (nunca subproceso)."""
     path = skill_dir() / "assets" / "dependabot" / "config.py"
@@ -4609,6 +4678,7 @@ def _phase_findings(repo, n, decl, contract, seal=None):
                 + _check_docs_commands(repo, contract)
                 + _check_where_to_work(repo, contract)
                 + _check_docs_decisions(repo, contract)
+                + _check_checks_tables(repo, contract)
                 + _check_dependabot_config(repo, contract)
                 + _incident_contract_findings(_operating_doc_params(repo)))
     if n == 6:
