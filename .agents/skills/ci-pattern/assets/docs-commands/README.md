@@ -34,9 +34,32 @@ no cambie de comportamiento.
 
 | Cita del documento | Qué se comprueba |
 |---|---|
-| `./scripts/x.sh` | El script existe en el repositorio |
+| `./scripts/x.sh` | El script existe en el repositorio, resuelto desde el directorio del documento que lo cita **o** desde la raíz del repo |
 | `make <target>` | El target existe en el Makefile, y los flags que la documentación le atribuye están en su receta |
 | `<ejecutable>` | El ejecutable que `path_executables` declara permitido resuelve en el `PATH` del runner |
+
+Una cita con `./` o `../` puede ser relativa a dos sitios, y vale si el fichero existe
+en **cualquiera** de los dos:
+
+- **el documento que la escribe**: es la convención de los enlaces markdown, y el gate
+  de `docs-links` ya resuelve así. En `DysTelefonica/access2web-blueprint` la capa daba
+  234 rojos falsos sin esta vía: `docs/03-aplicaciones/brass/prd/capacidades.md` cita
+  `../capacidades.md`, que vive en `docs/03-aplicaciones/brass/` (#1385);
+- **la raíz del repo**: un comando entre comillas invertidas se ejecuta desde la raíz,
+  no desde la carpeta del documento que lo muestra. `docs/guia.md` que dice «ejecute
+  `./scripts/check.sh`» apunta a `scripts/check.sh` (#1385, seguimiento).
+
+Tres casos, todos deterministas:
+
+- el fichero existe resuelto por una de las dos vías → nada que decir;
+- no existe por ninguna → rojo, nombrando las rutas que el gate ha mirado;
+- sale del repositorio por las dos vías → rojo, con su propio motivo: un script de fuera
+  del repo no es un script del repo. Si una sola vía sale del repo, la otra decide.
+
+Una cita **sin** `./` ni `../` no se resuelve contra el repo: sigue siendo un
+ejecutable del `PATH` que la política declara permitido, o no se mide. Un documento
+en la raíz del repo tiene por directorio la raíz, así que ahí la cita se resuelve
+como antes.
 
 La declaración es `existence` en el bloque `docs_commands`: `makefile` es el Makefile
 que se consulta (por defecto `Makefile`; un `make` con `-C` o `-f` no se mide, porque
