@@ -273,5 +273,19 @@
       "github-actions": {"directory": ".", "groups": {"codeql-action": {"patterns": ["github/codeql-action/*"]}}},
       "npm": {"directory": "e2e"}
     }
+  },
+  "checks_tables": {
+    "tables": [
+      {
+        "path": "docs/codebase/testing-and-ci.md",
+        "workflow": "ci.yml",
+        "section": "Nivel PR (`.github/workflows/ci.yml`)"
+      },
+      {
+        "path": "docs/codebase/testing-and-ci.md",
+        "workflow": "release.yml",
+        "section": "Level release (`.github/workflows/release.yml`)"
+      }
+    ]
   }
 }
