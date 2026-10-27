@@ -61,7 +61,7 @@ de adopción + `adoption check` (#276).
 
 ```json
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "adopted_at": "2026-10-02T12:00:00Z",
   "canonical_version": "0.4",
   "canonical_source": {
@@ -82,13 +82,33 @@ de adopción + `adoption check` (#276).
 }
 ```
 
-- `schema_version`: `2`. Un manifiesto con otra versión se rechaza con exit 3.
+- `schema_version`: `3`. Un manifiesto con otra versión se rechaza con exit 3.
 - `canonical_source`: repo + ruta del catálogo canónico del que se adoptó.
 - `parameters`: mapa `P<NN>_<snake_name>` → valor validado contra el esquema.
 - `files`: ruta repo-relativa → `sha256:<hex>` del contenido adoptado.
 - `slice_blocks`: nombre del bloque de slice (`<!-- personal-skills:slice:NAME @ … -->`
   en `AGENTS.md`) → `sha256:<hex>` del contenido entre marcadores (sin las líneas
   de marcador, saltos incluidos tal cual).
+
+**Imágenes fijadas por digest (`schema_version: 3`, #1361).** El formato 3 normaliza la clave
+`image:` con digest, también la anidada en `container:` o `services:` en forma larga:
+`image: <nombre>[:<tag>]@sha256:<64 hex>` se sella como `image: <nombre>@<PIN>`. Un bump de esa
+clave (tag y digest juntos) no mueve el sello; el nombre de la imagen sí, y quitar el digest
+también.
+
+No se normalizan, y por tanto **fallan cerrado**: el sello mide la línea tal cual y su bump exige
+re-sellar.
+
+- `docker run <imagen>@sha256:…` dentro de `run:`, en línea o en un bloque `run: |`. Es shell,
+  no una clave YAML. `cadete#665` usa esta forma y queda fuera a propósito: el requisito cubre
+  lo que Dependabot edita, nunca una línea de shell.
+- `image:` entre comillas (`image: "<imagen>@sha256:…"`).
+- `container: <imagen>@sha256:…` en forma corta.
+
+El gate HR-78 rechaza además una imagen sin digest, aparte del sello. El formato 2 ya no lo mide
+ningún gate: `ci-pattern manifest seal` lo migra a 3 comprobando antes sus hashes con el
+algoritmo del 2, así que una deriva no se esconde; la ronda de propagación re-sella todas las
+entradas porque la migración cambia el algoritmo.
 
 **Sello normalizado de los workflows (`schema_version: 2`, #1199).** Para un
 fichero bajo `.github/workflows/`, el hash es el del contenido **normalizado**:

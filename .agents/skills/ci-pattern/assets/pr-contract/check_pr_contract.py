@@ -511,9 +511,10 @@ CLOSES_RX = re.compile(r"\b(?:Closes|Fixes|Resolves)\s+#\d+", re.IGNORECASE)
 # dejaba pasar prosa —«test assert» da el token `assert`, presente en
 # cualquier fichero de test— y a la vez producía falsos «no existe» con «test
 # cubre». La ruta debe estar versionada (git ls-files) y el caso, DEFINIDO en
-# ese fichero, no solo aparecer como subcadena.
+# ese fichero, no solo aparecer como subcadena. Un directorio de primer nivel
+# puede empezar por punto (`.agents/...`) porque es una ruta relativa válida.
 CLOSURE_ENTRY_RX = re.compile(
-    r"`([A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+(?:::[A-Za-z_][A-Za-z0-9_]*)?)`")
+    r"`(\.?[A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+(?:::[A-Za-z_][A-Za-z0-9_]*)?)`")
 TEST_FILE_RX = re.compile(
     r"(?:^|/)(?:tests?|__tests__|spec)/|(?:^|/)test_[^/]+$|_test\.[a-z]+$", re.IGNORECASE)
 # Definiciones admitidas del caso, por ecosistema. `\b` y el nombre exacto: la

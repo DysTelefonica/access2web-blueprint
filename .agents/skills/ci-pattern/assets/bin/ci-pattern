@@ -35,10 +35,12 @@ MANIFEST_NAME = ".governance-manifest.json"
 ADOPTION_CONTRACT_NAME = ".github/ci-pattern-adoption.json"
 ADOPTION_SCHEMA_VERSION = 1
 ADOPTION_PHASES = 7  # fases 0..6 del porting-guide (5 = docs, #279)
-SCHEMA_VERSION = 2
-#: Versiones del manifiesto que `manifest seal` sabe migrar (#1199). El sello
-#: cambia de formato porque los workflows se sellan normalizados.
-LEGACY_SCHEMA_VERSIONS = (1,)
+SCHEMA_VERSION = 3
+#: Versiones del manifiesto que `manifest seal` sabe migrar. El sello cambia de
+#: formato porque los workflows se sellan normalizados: v1 (#1199) en crudo; v2
+#: (#1199) con los `uses:` normalizados; v3 (#1361) con las imágenes por digest
+#: normalizadas también. Ningún gate mide v1 ni v2.
+LEGACY_SCHEMA_VERSIONS = (1, 2)
 
 #: Los workflows se sellan sobre su contenido NORMALIZADO (#1199): la
 #: referencia pineada de cada `uses:` (y su comentario de versión) es un dato
@@ -58,8 +60,16 @@ WORKFLOW_USES_RX = re.compile(
     r"(?P<action>[A-Za-z0-9._-]+/[A-Za-z0-9._/-]+)@(?P<sha>[0-9a-f]{40})"
     r"(?P<comment>[ \t]+#[ \t]*v?[\w.\-]*[ \t]*)?$"
 )
+#: La referencia de imagen fijada por digest (#1361): `image: <nombre>[:<tag>]@sha256:<64 hex>`,
+#: con un comentario de versión opcional. El tag y el digest son el pin; el nombre
+#: de la imagen es lógica y se queda dentro del sello. Igual que `uses:`, una forma
+#: que no casa (comillas, sin digest) se sella en crudo: fallo cerrado.
+WORKFLOW_IMAGE_RX = re.compile(
+    r"^(?P<indent>[ \t]*)(?P<dash>-[ \t]+)?image:[ \t]+"
+    r"(?P<name>[A-Za-z0-9._/:-]+?)(?::[A-Za-z0-9._-]+)?@sha256:[0-9a-f]{64}"
+    r"(?P<comment>[ \t]+#[ \t]*v?[\w.\-]*[ \t]*)?$"
+)
 PIN_MARKER = "@<PIN>"
-
 EXIT_OK = 0
 EXIT_FINDINGS = 1
 EXIT_USAGE = 2
@@ -191,7 +201,7 @@ def load_manifest(repo, allow_legacy=False):
     if version not in accepted:
         raise MissingResourceError(
             f"manifest: schema_version debe ser {SCHEMA_VERSION}; revise {path}. "
-            "El formato del sello cambió (#1199): los workflows se sellan "
+            "El formato del sello cambió (#1199, #1361): los workflows se sellan "
             f"normalizados. Re-selle el manifiesto con: ci-pattern manifest seal {repo}"
         )
     return manifest
@@ -218,26 +228,39 @@ def _indent_of(line):
     return len(line) - len(line.lstrip(" \t"))
 
 
-def normalize_workflow_content(text):
-    """El contenido de un workflow con cada pin de `uses:` a un marcador fijo (#1199).
+def normalize_workflow_content(text, images=True):
+    """El contenido de un workflow con cada pin a un marcador fijo (#1199, #1361).
 
     Solo se normaliza una clave YAML `uses:`: la referencia `owner/repo@<sha de 40
     hex>` y un comentario final de versión (` # v1.2.3`, con espacio delante del
     `#` y nada detrás). El NOMBRE de la action se conserva: cambiar que action se
     usa sigue cambiando el sello, que es lo que el guardián tiene que ver.
 
-    Dos cosas NO se normalizan, y por eso el sello sigue viendo la lógica:
+    Con `images` (formato v3, #1361) también se normaliza una clave `image:` con
+    digest, `<nombre>[:<tag>]@sha256:<64 hex>`: el tag y el digest son el pin, y
+    el nombre se conserva. `images=False` reproduce el formato v2 (solo `uses:`).
+
+    No se normaliza, y por eso el sello sigue viendo la lógica:
 
     - lo que va dentro de un bloque escalar (`run: |`): es shell, no YAML, y
       tragar sus lineas dejaria una carga util fuera del sello;
-    - un `uses:` con otra forma de pin: una etiqueta en vez de un sha (el
-      patron exige pins de 40 hex, HR-26), un `uses:` local
-      (`./.github/actions/...`, cuya ruta es logica) o un comentario que no es
-      una version (`@<sha>#algo` sin espacio, o `# lo que sea`).
+    - un `docker run <imagen>@sha256:...` dentro de `run:` (en linea o en un
+      bloque): es shell, no una clave `image:`. Su bump sigue exigiendo re-sellar
+      (cadete#665 queda fuera a proposito);
+    - la forma corta `container: <imagen>@sha256:...`: no es una clave `image:`;
+    - un pin con otra forma: una etiqueta en vez de un sha (el patron exige pins
+      de 40 hex, HR-26; una imagen sin digest, HR-78), un `uses:` local
+      (`./.github/actions/...`, cuya ruta es logica), un comentario que no es
+      una version (`@<sha>#algo` sin espacio, o `# lo que sea`) o una imagen
+      entre comillas. Todo eso sigue dentro del sello.
     """
-    def swap(match):
+    def swap_uses(match):
         dash = match.group("dash") or ""
         return f"{match.group('indent')}{dash}uses: {match.group('action')}{PIN_MARKER}"
+
+    def swap_image(match):
+        dash = match.group("dash") or ""
+        return f"{match.group('indent')}{dash}image: {match.group('name')}{PIN_MARKER}"
 
     out = []
     block_indent = None
@@ -251,25 +274,41 @@ def normalize_workflow_content(text):
         block = BLOCK_SCALAR_RX.match(line)
         if block:
             block_indent = len(block.group("indent"))
-        out.append(WORKFLOW_USES_RX.sub(swap, line))
+        line = WORKFLOW_USES_RX.sub(swap_uses, line)
+        if images:
+            line = WORKFLOW_IMAGE_RX.sub(swap_image, line)
+        out.append(line)
     return "\n".join(out)
 
 
-def sha256_governed(path, rel):
-    """sha256 del contenido GOBERNADO: los workflows se sellan normalizados (#1199).
+def sha256_governed(path, rel, schema=SCHEMA_VERSION):
+    """sha256 del contenido GOBERNADO según el formato `schema` (#1199, #1361).
 
-    Un bump de Dependabot cambia el sha y el comentario de version de un
-    `uses:`; con el contenido normalizado el sello no se mueve y el gate no
-    bloquea un PR sin defecto. Cualquier otro cambio del workflow (steps, run,
-    permissions, if, needs) sigue cambiando el hash y sigue rompiendo el sello.
+    Los workflows se sellan normalizados: un bump de Dependabot cambia el sha y
+    el comentario de un `uses:`, o el tag y el digest de una imagen; con el
+    contenido normalizado el sello no se mueve y el gate no bloquea un PR sin
+    defecto. Cualquier otro cambio del workflow (steps, run, permissions, if,
+    needs, el nombre de la imagen o de la action) sigue cambiando el hash.
     """
     if not str(rel).replace("\\", "/").startswith(WORKFLOW_DIR):
         return sha256_file(path)
     raw = Path(path).read_bytes().replace(b"\r\n", b"\n")
     raw = normalize_workflow_content(
-        raw.decode("utf-8", "surrogateescape")
+        raw.decode("utf-8", "surrogateescape"), images=schema >= 3
     ).encode("utf-8", "surrogateescape")
     return "sha256:" + hashlib.sha256(raw).hexdigest()
+
+
+def hash_for_schema(path, rel, schema):
+    """El hash que el formato `schema` sellaba para `rel` (#1361).
+
+    El formato 1 (#1199) sellaba todo en crudo; desde el 2 los workflows se
+    sellan normalizados. Lo usa la migración para comprobar los hashes viejos
+    antes de re-sellar: una deriva no se esconde al cambiar de algoritmo.
+    """
+    if schema == 1:
+        return sha256_file(path)
+    return sha256_governed(path, rel, schema)
 
 
 # ---------------------------------------------------------------------------
@@ -1150,14 +1189,16 @@ def cmd_manifest_seal(args):
             "se re-sellan: " + ", ".join(missing), file=sys.stderr)
         return EXIT_FINDINGS
     if manifest.get("schema_version") != SCHEMA_VERSION:
-        # Migrar de formato cambia la manera de hashear (#1199): antes de
-        # re-sellar, los hashes del formato viejo (en crudo) tienen que cuadrar
-        # con el árbol. Si no cuadran, el manifiesto describe un contenido que no
+        # Migrar de formato cambia la manera de hashear (#1199, #1361): antes de
+        # re-sellar, los hashes del formato viejo (con su algoritmo) tienen que
+        # cuadrar con el árbol. Si no cuadran, el manifiesto describe un contenido que no
         # es el del repo, y firmarlo en el formato nuevo escondería esa deriva.
         # Los ficheros que esta operación declara que cambia (--reeseal) quedan
         # fuera de la comprobación: de eso responde quien los declara.
+        old_schema = manifest.get("schema_version")
         drifted = [rel for rel in sorted(files)
-                   if rel not in reseal and sha256_file(repo / rel) != files[rel]]
+                   if rel not in reseal
+                   and hash_for_schema(repo / rel, rel, old_schema) != files[rel]]
         if drifted:
             print(
                 "manifest seal: no se migra un manifiesto desalineado: "

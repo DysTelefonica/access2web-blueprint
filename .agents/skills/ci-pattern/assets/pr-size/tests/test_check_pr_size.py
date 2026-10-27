@@ -649,13 +649,17 @@ class _Api:
     - ``listings``: secuencia de listados de ficheros; cada primera página toma el
       siguiente listado y las siguientes páginas siguen el mismo.
     - ``paths``: cada petición de la API, en orden (la sonda ajena no cuenta).
+    - ``live_labels``: etiquetas que devuelve ``GET issues/N/labels`` (#1359).
+    - ``labels_status``: código de respuesta de ``GET issues/N/labels`` (#1359).
     """
 
     def __init__(self, files: list[dict], status: int = 200, pulls: list | None = None,
-                 listings: list | None = None) -> None:
+                 listings: list | None = None, live_labels: list | None = None,
+                 labels_status: int = 200) -> None:
         import threading
         from http.server import HTTPServer
         self.files, self.status, self.auth, self.paths = files, status, [], []
+        self.live_labels, self.labels_status = list(live_labels or []), labels_status
         self.pulls = _Seq(pulls if pulls is not None
                           else [{"head": {"sha": "HEAD1"}, "changed_files": len(files)}])
         self.listings = _Seq(listings if listings is not None else [files])
@@ -699,6 +703,14 @@ def _make_handler(api: _Api):
             if api.status != 200:
                 self._send(api.status, {"message": "error"})
                 return
+            if _re.search(r"/issues/\d+/labels$", url.path):
+                if api.labels_status != 200:
+                    self._send(api.labels_status, {"message": "error"})
+                    return
+                per_i = int(query.get("per_page", ["100"])[0])
+                page_i = int(query.get("page", ["1"])[0])
+                self._send(200, [{"name": name} for name in api.live_labels][(page_i - 1) * per_i:page_i * per_i])
+                return
             if _re.search(r"/pulls/\d+$", url.path):
                 self._send(200, api.pulls.take())
                 return
@@ -732,9 +744,13 @@ class TestApiMode(unittest.TestCase):
         self._tmp.cleanup()
 
     def run_api(self, files, labels=(), changed=None, token="tok", status=200, url=None, extra=(),
-                head="HEAD1", pulls=None, listings=None):
+                head="HEAD1", pulls=None, listings=None, live_labels=None, labels_status=200):
         import json
-        api = _Api(files, status, pulls=pulls, listings=listings)
+        # Por defecto las etiquetas vivas son las del payload; un caso de etiqueta añadida
+        # o quitada tras el evento pasa `live_labels` distinto (#1359).
+        api = _Api(files, status, pulls=pulls, listings=listings,
+                   live_labels=labels if live_labels is None else live_labels,
+                   labels_status=labels_status)
         self.apis.append(api)
         event = self.tmp / "event.json"
         event.write_text(json.dumps({
@@ -797,10 +813,35 @@ class TestApiMode(unittest.TestCase):
         self.assertIn("4 changed line(s)", result.stdout)
         self.assertIn("444 generated line(s) excluded", result.stdout)
 
-    def test_label_in_the_payload_overrides(self) -> None:
+    def test_label_overrides(self) -> None:
         result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",))
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("overridden", result.stdout)
+
+    def test_label_added_after_the_event_overrides(self) -> None:
+        """RED (#1359): el payload del `opened` no trae la etiqueta; la API ya la tiene.
+
+        cadete#715: `size:exception` se puso 7 s después de abrir el PR. El run del
+        `opened` leyó el snapshot del payload, sin etiqueta, y falló; el run siguiente
+        pasó. El gate lee las etiquetas en vivo, no del snapshot del evento.
+        """
+        result, api = self.run_api([_file("app/a.py", 900)], labels=(),
+                                   live_labels=("size:exception",))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("overridden", result.stdout)
+        self.assertTrue(any("/issues/7/labels" in path for path in api.paths))
+
+    def test_a_label_removed_after_the_event_does_not_override(self) -> None:
+        """RED (#1359): la etiqueta del payload ya no está en la API: no exime."""
+        result, _ = self.run_api([_file("app/a.py", 900)], labels=("size:exception",),
+                                 live_labels=())
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+
+    def test_labels_api_failure_fails_closed(self) -> None:
+        """RED (#1359): sin etiquetas vivas no hay veredicto: falla cerrado, aunque quepa."""
+        result, _ = self.run_api([_file("app/a.py", 10)], labels_status=500)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("labels", result.stdout + result.stderr)
 
     def test_a_foreign_probe_is_not_counted(self) -> None:
         """RED (#941): un `GET /` ajeno al gate (sin Authorization) no entra en ``auth``."""

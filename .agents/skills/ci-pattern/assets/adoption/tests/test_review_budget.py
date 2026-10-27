@@ -154,6 +154,32 @@ class ReviewBudgetTests(unittest.TestCase):
                                "politica no existe y no hay medicion")
 
 
+FIXTURE_CADETE_643 = Path(__file__).resolve().parent / "fixtures" / "cadete-643-pr-contract.yml"
+TEMPLATE = SKILL_ROOT / "assets" / "templates" / ".github" / "workflows" / "pr-contract.yml.tmpl"
+
+
+class ReviewBudgetRealIncidentTests(unittest.TestCase):
+    """Las formas reales: el workflow que dio el A1 falso y la plantilla que lo cierra (#1359).
+
+    El fixture es `DysTelefonica/cadete` en `d9ade645` (cabeza de la PR #643), copiado
+    tal cual. Esa PR se abrió antes de cablear el mapa en `main` (`1985caac`): la fase 4
+    es lo que la habría parado antes de la propagación.
+    """
+
+    def _findings(self, workflow_text):
+        with tempfile.TemporaryDirectory() as d:
+            return CLI._check_review_budget(_repo(d, workflow=workflow_text))
+
+    def test_el_workflow_de_cadete_643_da_hallazgo(self):
+        found = self._findings(FIXTURE_CADETE_643.read_text(encoding="utf-8"))
+        self.assertEqual(len(found), 1, found)
+        self.assertIn("--origins-file", found[0])
+
+    def test_la_plantilla_canonica_da_verde(self):
+        # Lo que la propagación tiene que dejar en el consumer: la plantilla tal cual.
+        self.assertEqual(self._findings(TEMPLATE.read_text(encoding="utf-8")), [])
+
+
 class ReviewBudgetBasePolicyTests(unittest.TestCase):
     """La politica que la plantilla lee de `base/` (DysTelefonica/team-skills#1313, G4)."""
 

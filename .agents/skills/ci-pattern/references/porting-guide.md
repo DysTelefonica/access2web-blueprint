@@ -408,9 +408,12 @@ ejecuta la comprobación sobre el árbol real y sobre las instantáneas del host
    instantáneas — workflows, CODEOWNERS, dependabot, `.pre-commit-config.yaml`,
    `.husky/`, `lefthook.yml`, `.github/*.json` — que no esté en el manifiesto
    o inventariado es residual y el gate lo nombra uno a uno. Los workflows se
-   sellan NORMALIZADOS (`schema_version: 2`, #1199): el hash es el del
-   contenido con cada pin de `uses:` a un marcador fijo, de modo que un bump de
-   Dependabot no los desalinea y un cambio de lógica sí.
+   sellan NORMALIZADOS (`schema_version: 3`, #1199 y #1361): el hash es el del
+   contenido con cada pin de `uses:` y cada `image:` con digest a un marcador
+   fijo, de modo que un bump de Dependabot no los desalinea y un cambio de lógica
+   sí. Lo que no se normaliza (un `docker run` dentro de `run:`, una `image:`
+   entre comillas, un `container:` en forma corta) falla cerrado: su bump exige
+   re-sellar.
 4. Registre la evidencia del PR de sustitución en
    `docs/adoption/governance-replacement-pr.md` y declárela en `evidence.path`
    de la fase: el gate también la comprueba.
@@ -767,7 +770,10 @@ Cierre: `ci-pattern adoption check --phase 3 <repo>` = 0.
   `assets/templates/.github/workflows/pr-contract.yml.tmpl`; generador:
   `assets/bin/origins_file.py`): sin el mapa el árbol vendorizado cuenta como
   líneas de autoría y la primera PR de propagación revienta el presupuesto
-  (#1133, #1149). La fase 4 lo mide (#1159, HR-74).
+  (#1133, #1149). La fase 4 lo mide (#1159, HR-74). Y el CI del consumer `MUST`
+  ejecutarla en cada PR (`adoption check --phase 4 pr-head`), como ya hace con la
+  fase 5: si solo la lanza quien la corre a mano, ningún gate ve la deriva del
+  cableado (#1359).
 - **G4.3 — Preflight ejecutable** en local con un solo comando, paridad con el
   job de lint (HR-4). La política de paridad declara lo que cada comprobación
   necesita del entorno: `requires` en cada exclusión y `local.capabilities` con

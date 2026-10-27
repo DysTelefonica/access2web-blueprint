@@ -963,10 +963,16 @@ def _any_job_runs_command(doc: dict, command: str) -> bool:
 def _find_workflow(workflows: list[tuple[str, dict]], target: str):
     """Busca un workflow por igualdad de ruta normalizada. Sin red y sin
     adivinar: la ruta declarada en el policy debe coincidir con una de las
-    que el consumer paso por --workflow."""
-    t = str(Path(target))
+    que el consumer paso por --workflow.
+
+    Una ruta absoluta (el adoption check resuelve `@ruta` contra el repo) casa
+    con una declarada relativa si acaba en los mismos componentes: por
+    componentes, nunca por subcadena (HR-39 falso en fase 4 de BP, Refs #1359)."""
+    t = Path(target)
     for path, doc in workflows:
-        if str(Path(path)) == t:
+        p = Path(path)
+        if p == t or (p.is_absolute() and not t.is_absolute()
+                      and p.parts[-len(t.parts):] == t.parts):
             return path, doc
     return None, None
 

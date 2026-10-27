@@ -29,6 +29,8 @@ on:
     # Weekly mutation run. Mutation is the only mechanical answer to "do these tests assert
     # anything", and it is far too slow for every PR — so it runs on a cadence and ratchets.
     - cron: "0 3 * * 1"
+    # Nightly dependency scan (D11, #1093). The advisory database changes every day, not the diff.
+    - cron: "30 3 * * *"
   workflow_dispatch:
 
 permissions:
@@ -135,7 +137,7 @@ jobs:
     # Scheduled and manual only. THIS IS THE ONE JOB THE SKILL COULD NOT EXECUTE END TO END —
     # `check_mutation.py` is fully tested against synthetic sessions, but producing a real
     # session needs the mutation runner on a real codebase. Verify it once on adoption.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'schedule' && github.event.schedule == '0 3 * * 1') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -177,6 +179,28 @@ jobs:
           path: mutation-session.sqlite
           if-no-files-found: error
 
+  dependency-scan:
+    # Nightly and manual only (D11, #1093). Its verdict depends on the advisory database of the
+    # day, not on the diff: as a required check per PR it blocked pull requests that could not
+    # fix it. It is a signal for the maintainer, not a gate on merges.
+    if: (github.event_name == 'schedule' && github.event.schedule == '30 3 * * *') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: dependency scan
+        # Throwaway venv: the runner's ambient site-packages drags in CVEs that are not ours,
+        # which trains everyone to ignore the report.
+        run: |
+          python -m venv .venv-audit
+          .venv-audit/bin/python -m pip install --require-hashes --requirement requirements-dev.lock
+          .venv-audit/bin/python -m pip install --no-deps --editable .
+          .venv-audit/bin/pip-audit --skip-editable
+
   security:
     runs-on: ubuntu-24.04
     steps:
@@ -188,15 +212,6 @@ jobs:
 
       - name: adoption preflight
         run: python scripts/check_adoption.py
-
-      - name: dependency scan
-        # Throwaway venv: the runner's ambient site-packages drags in CVEs that are not ours,
-        # which trains everyone to ignore the report.
-        run: |
-          python -m venv .venv-audit
-          .venv-audit/bin/python -m pip install --require-hashes --requirement requirements-dev.lock
-          .venv-audit/bin/python -m pip install --no-deps --editable .
-          .venv-audit/bin/pip-audit --skip-editable
 
       - name: secret scan
         # Scanner images are pinned by digest, not tag. Tags mutate; digests do not.
