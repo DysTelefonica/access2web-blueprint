@@ -688,16 +688,26 @@ class NormalizedWorkflowSealTests(unittest.TestCase):
             self.assertIn("no se migra un manifiesto desalineado", err)
             self.assertEqual(self._sealed(repo)["schema_version"], 2)
 
-    def test_the_gate_does_not_measure_a_v2_manifest(self):
-        """El gate no mide el formato 2: pide re-sellar antes de dar verde (HR-3)."""
+    def test_the_gate_measures_a_v2_manifest_with_the_v2_algorithm(self):
+        """El gate mide el formato 2 con el algoritmo 2 (#1371).
+
+        Antes el canon nuevo no medía el formato 2: la base del consumer, que
+        mide el PR con su canon viejo, lo rechazaba con rc=2. Ahora los dos
+        formatos vivos se miden, cada uno con su algoritmo: el v2 con la
+        imagen en crudo, que es lo que el canon de la base mide.
+        """
         with tempfile.TemporaryDirectory() as tmp:
             repo, target = self._repo(tmp, workflow=self.IMAGE_WORKFLOW)
             manifest = self._sealed(repo)
             manifest["schema_version"] = 2
+            text = target.read_text(encoding="utf-8")
+            v2_text = text.replace(self.CHECKOUT_OLD, "actions/checkout@<PIN>")
+            manifest["files"][".github/workflows/ci.yml"] = (
+                "sha256:" + hashlib.sha256(v2_text.encode("utf-8")).hexdigest())
             (repo / ".governance-manifest.json").write_text(
                 json.dumps(manifest, indent=2), encoding="utf-8")
-            with self.assertRaises(CLI.UsageError):
-                CLI._manifest_identity_findings(repo, set())
+            findings, _files = CLI._manifest_identity_findings(repo, set())
+            self.assertEqual(findings, [])
 
     def test_the_migration_is_refused_when_a_declared_file_drifted(self):
         """Migrar de formato no puede esconder una deriva (#1199).
@@ -750,6 +760,126 @@ class NormalizedWorkflowSealTests(unittest.TestCase):
             code, out, err = run_cli(["manifest", "seal", str(repo)])
             self.assertEqual(code, 0, out + err)
             self.assertEqual(self._sealed(repo)["schema_version"], CLI.SCHEMA_VERSION)
+
+
+class SealSchemaNegotiationTests(unittest.TestCase):
+    """#1371: el formato del sello se negocia con la base del consumer.
+
+    La base de un consumer mide el PR con SU canon (el que lleva en su rama
+    base): un manifiesto en un formato que la base no mide es un rojo (rc=2)
+    en el gate de la base, aunque el canon de la cabeza lo entienda. Por eso
+    el canon nuevo mide los dos formatos vivos (v2 y v3) y `manifest seal`
+    puede sellar en el formato que la base mide.
+    """
+
+    IMAGE = "mcr.microsoft.com/playwright"
+    IMAGE_OLD = IMAGE + ":v1.60.0-noble@sha256:" + "1" * 64
+    REL = ".github/workflows/ci.yml"
+    WORKFLOW = (
+        "name: ci\n"
+        "jobs:\n"
+        "  build:\n"
+        "    runs-on: ubuntu-24.04\n"
+        "    container:\n"
+        f"      image: {IMAGE_OLD}\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1\n"
+        "      - run: echo hola\n"
+    )
+
+    def _expected_hash(self, schema):
+        """El hash que el formato `schema` sella para este workflow.
+
+        v2 enmascara solo el `uses:`; v3 enmascara tambien la imagen por
+        digest. El hash se calcula aqui, a mano, para no depender de la
+        funcion que se esta probando.
+        """
+        text = self.WORKFLOW.replace(
+            "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v7.0.1",
+            "actions/checkout@<PIN>")
+        if schema >= 3:
+            text = text.replace(self.IMAGE_OLD, self.IMAGE + "@<PIN>")
+        return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+    def _repo(self, tmp, schema=CLI.SCHEMA_VERSION):
+        repo = Path(tmp) / "repo"
+        target = repo / self.REL
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(self.WORKFLOW, encoding="utf-8")
+        manifest = {
+            "schema_version": schema,
+            "parameters": {"P23_required_jobs": ["build"]},
+            "files": {self.REL: self._expected_hash(schema)},
+        }
+        (repo / ".governance-manifest.json").write_text(
+            json.dumps(manifest, indent=2), encoding="utf-8")
+        return repo, target
+
+    def _sealed(self, repo):
+        return json.loads((repo / ".governance-manifest.json").read_text(encoding="utf-8"))
+
+    def test_the_gate_measures_a_v2_manifest(self):
+        """El canon nuevo mide el formato 2: es el que mide la base de un consumer
+        mientras su canon siga siendo el viejo (#1371)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=2)
+            findings, files = CLI._manifest_identity_findings(repo, set())
+            self.assertEqual(findings, [])
+            self.assertIn(self.REL, files)
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_the_gate_refuses_an_unknown_schema_version(self):
+        """Un formato que el canon no conoce falla cerrado (#1371)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=4)
+            with self.assertRaises(CLI.UsageError):
+                CLI._manifest_identity_findings(repo, set())
+            code, _out, err = run_cli(["verify", str(repo)])
+            self.assertNotEqual(code, 0)
+            self.assertIn("ci-pattern manifest seal", err)
+
+    def test_the_gate_refuses_the_v1_format(self):
+        """El formato 1 sigue sin medirse: `manifest seal` lo migra (#1199)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=1)
+            with self.assertRaises(CLI.UsageError):
+                CLI._manifest_identity_findings(repo, set())
+            code, _out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 3)
+            self.assertIn("ci-pattern manifest seal", err)
+
+    def test_seal_with_the_v2_format_writes_a_v2_manifest(self):
+        """`manifest seal --schema-version 2` sella en el formato que mide la base."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=3)
+            code, out, err = run_cli(["manifest", "seal", "--schema-version", "2", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            sealed = self._sealed(repo)
+            self.assertEqual(sealed["schema_version"], 2)
+            self.assertEqual(sealed["files"][self.REL], self._expected_hash(2))
+            code, out, err = run_cli(["verify", str(repo)])
+            self.assertEqual(code, 0, out + err)
+
+    def test_seal_with_the_v3_format_writes_a_v3_manifest(self):
+        """`manifest seal --schema-version 3` sella en el formato vigente."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=2)
+            code, out, err = run_cli(["manifest", "seal", "--schema-version", "3", str(repo)])
+            self.assertEqual(code, 0, out + err)
+            sealed = self._sealed(repo)
+            self.assertEqual(sealed["schema_version"], 3)
+            self.assertEqual(sealed["files"][self.REL], self._expected_hash(3))
+
+    def test_seal_with_an_unknown_format_is_a_usage_error(self):
+        """Un formato que el canon no sabe sellar no se sella: error de uso."""
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, _ = self._repo(tmp, schema=3)
+            before = self._sealed(repo)
+            code, _out, err = run_cli(["manifest", "seal", "--schema-version", "4", str(repo)])
+            self.assertEqual(code, 2)
+            self.assertIn("--schema-version", err)
+            self.assertEqual(self._sealed(repo), before)
 
 
 class VerifyTests(unittest.TestCase):

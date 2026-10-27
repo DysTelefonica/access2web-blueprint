@@ -23,6 +23,9 @@ Es además la única que baja a **aviso**: si la política no declara ninguna fo
 ejecutar, todo comando es presence-only, el gate no ejecuta nada y no hay medición
 que la CLI ausente pueda ocultar (#1038). El aviso va a `stderr` con prefijo `AVISO`
 y los hallazgos vuelven al llamador, como el resto de la familia.
+
+Los niveles de arriba prueban la FORMA de un comando: que el parser real lo acepte. La
+capa de existencia, mas abajo, comprueba otra cosa: que lo que el comando invoca exista.
 """
 
 from __future__ import annotations
@@ -42,7 +45,9 @@ TIMEOUT = 20
 # (#1020), las mismas que el esquema `adoption-contract.schema.json`. La fase 5
 # rechaza lo que no esté aquí, igual que con docs_links y docs_decisions.
 CONFIG_KEYS = ("cli_name", "cli_command", "executed_verbs", "dry_run_flag",
-               "rejection_exit_codes", "roots", "exclude", "job")
+               "rejection_exit_codes", "roots", "exclude", "job", "existence")
+# Claves que admite la declaración `existence` (la capa de existencia, #1374).
+EXISTENCE_KEYS = ("makefile", "path_executables")
 _PLACEHOLDER = re.compile(r"<[^<>\s]+>")
 _SHELL = re.compile(r"[|><;&$`*(){}\\]")
 
@@ -163,6 +168,214 @@ def _run(argv, config, filled, tier):
     return ""
 
 
+# --- Capa de existencia ---------------------------------------------------
+#
+# Esta capa comprueba que lo que el comando invoca exista: los niveles de arriba solo
+# prueban la forma. Con `dry_run_flag --help` un comando documentado se pasa aunque lo
+# que invoca ya no este (el `make test` de la documentacion de BP sigue citando un
+# target cuyo `--cov` dejo de ejecutarse, #1374). No ejecuta nada: solo mira ficheros,
+# el Makefile y el `PATH`. La activa la declaracion `existence` del contrato.
+
+MAKE = "make"
+_INLINE_SPAN = re.compile(r"`([^`\n]+)`")
+_RULE = re.compile(r"^([^\t#][^:=]*?)\s*:(?!=)(.*)$")
+
+
+def _tokens(text):
+    """Las palabras de un comando, o `[]` si no se pueden tokenizar."""
+    try:
+        return shlex.split(text)
+    except ValueError:
+        return []
+
+
+def _flags(tokens):
+    """Los flags de una lista de palabras, sin placeholders ni shell: los que se
+    pueden comparar con la receta de un target."""
+    return {t for t in tokens if t.startswith("-") and len(t) > 1
+            and not _PLACEHOLDER.search(t) and not _SHELL.search(t)}
+
+
+def _spans(repo, config):
+    """[{file, line, text}] de los fragmentos de codigo de la documentacion: la
+    linea entera de un bloque cercado y cada fragmento en linea fuera de el."""
+    spans = []
+    for path in _files(repo, config.get("roots", ROOTS)):
+        rel = path.relative_to(repo).as_posix()
+        for number, line, fenced in _FENCES.classify_lines(path.read_text(encoding="utf-8")):
+            if fenced:
+                text = line.strip().removeprefix("$ ").strip()
+                if text:
+                    spans.append({"file": rel, "line": number, "text": text})
+            else:
+                spans += [{"file": rel, "line": number, "text": m.strip()}
+                          for m in _INLINE_SPAN.findall(line) if m.strip()]
+    return spans
+
+
+def _make_target(tokens, default_makefile):
+    """(target, makefile) del comando `make`, o `(None, None)` cuando no se puede
+    determinar de forma determinista: sin target, con target de patron, o con
+    `-C`/`-f`, que consultan otro Makefile."""
+    target, rest, i = None, tokens[1:], 0
+    while i < len(rest):
+        tok = rest[i]
+        if tok in ("-C", "--directory", "-f", "--file"):
+            return None, None
+        if tok.startswith("-") or "=" in tok:
+            i += 1
+            continue
+        target = tok
+        break
+    if not target or "%" in target:
+        return None, None
+    return target, default_makefile
+
+
+def _makefile_rules(text):
+    """{target: [lineas de receta]} de un Makefile: el nombre de cada regla, las
+    lineas de receta (las que empiezan por tabulador) y los targets `.PHONY`. Una
+    regla repartida en varias lineas con `\\` se lee como una sola."""
+    rules, current, buffer = {}, [], ""
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if line.endswith("\\"):
+            buffer += line[:-1] + " "
+            continue
+        line, buffer = buffer + line, ""
+        if line.startswith("\t"):
+            for name in current:
+                rules[name].append(line.strip())
+            continue
+        match = _RULE.match(line)
+        names = match.group(1).split() if match else []
+        if names == [".PHONY"]:
+            names = line.split(":", 1)[1].split()
+        elif names and names[-1].endswith(("?", "+", "!")):
+            names = []
+        current = names
+        for name in current:
+            rules.setdefault(name, [])
+    return rules
+
+
+def _kind(subject, path_executables):
+    """Que existencia se le comprueba a un fragmento, si alguna."""
+    if subject == MAKE:
+        return "make"
+    if subject.startswith("./") or subject.startswith("../"):
+        return "script"
+    return "path" if subject in path_executables else None
+
+
+def _hallazgo(span, veredicto):
+    """El hallazgo de la capa de existencia, con `fichero:línea` como los demas."""
+    return f"HR-65: {span['file']}:{span['line']}: «{span['text']}» {veredicto}"
+
+
+def _subject_findings(repo, span, kind, subject):
+    """El script local que el comando cita tiene que existir, y el ejecutable del
+    `PATH` que la politica declara permitido tiene que resolver."""
+    if kind == "script":
+        rel = Path(subject).as_posix()
+        if (repo / rel).is_file():
+            return []
+        return [_hallazgo(span, f"no existe: el repositorio no tiene el script «{rel}»; "
+                               f"corrija la ruta en la documentacion o quite la cita.")]
+    if shutil.which(subject):
+        return []
+    return [_hallazgo(span, f"no se resuelve: «{subject}» no esta en el `PATH` del runner; "
+                           f"installe la herramienta en la imagen del runner o quite la cita.")]
+
+
+def _make_findings(repo, config, span, tokens, group):
+    """El target de `make` que el comando cita tiene que existir en el Makefile, y
+    los flags que la documentacion le atribuye tienen que estar en su receta.
+
+    La segunda parte es el caso vivo de BP (`docs/adopcion-fase-2-aislamiento.md:41`):
+    la documentacion dice que `make test` mide con `--cov`, y el target dejo de
+    medirlo. La atribucion es de la misma linea y solo con la CLI declarada, que
+    es lo que hace la regla estrecha: una linea que cita un target y otro comando
+    que no es la CLI no se cruza con el."""
+    declared = config.get("existence", {}).get("makefile", "Makefile")
+    target, rel = _make_target(tokens, declared)
+    if target is None:
+        return []
+    makefile = repo / rel
+    rules = _makefile_rules(makefile.read_text(encoding="utf-8")) if makefile.is_file() else {}
+    if target not in rules:
+        return [_hallazgo(span, f"no existe: el target «{target}» no esta en el Makefile «{rel}»; "
+                               f"corrija el comando en la documentacion o quite la cita.")]
+    recipe = " ".join(rules[target])
+    cli, attributed = config.get("cli_name"), set()
+    for other in group:
+        other_tokens = _tokens(other["text"])
+        if other is not span and other_tokens and other_tokens[0] == cli:
+            attributed |= _flags(other_tokens)
+    missing = sorted(attributed - _flags(_tokens(recipe)))
+    if not missing:
+        return []
+    quoted = " ni ".join(f"«{flag}»" for flag in missing)
+    return [_hallazgo(span, f"no hace lo que la documentacion dice: el target «{target}» no "
+                           f"ejecuta {quoted}, que la documentacion le atribuye; su receta es "
+                           f"«{recipe}»; corrija la documentacion o el Makefile.")]
+
+
+def _declaracion_existence(config):
+    """(hallazgos, ejecutables del PATH) de la declaracion `existence`, o `None` si el
+    consumer no la declara. Una declaracion mal formada es un hallazgo, no un
+    fallo del gate (HR-3)."""
+    decl = config.get("existence")
+    if decl is None:
+        return None
+    if not isinstance(decl, dict):
+        return ["HR-65: la declaracion «existence» debe ser un objeto"], []
+    findings = [f"HR-65: clave desconocida en docs_commands.existence: «{key}»"
+                for key in sorted(set(decl) - set(EXISTENCE_KEYS))]
+    path_executables = decl.get("path_executables", [])
+    if not isinstance(path_executables, list):
+        findings.append("HR-65: la declaracion «existence.path_executables» debe ser una lista")
+        path_executables = []
+    return findings, path_executables
+
+
+def _linea_findings(repo, config, group, path_executables, excluded):
+    """(hallazgos, textos) de los fragmentos de una linea."""
+    findings, documented, makes = [], set(), []
+    for span in group:
+        tokens = _tokens(span["text"])
+        kind = _kind(tokens[0] if tokens else "", path_executables)
+        if kind is None:
+            continue
+        documented.add(span["text"])
+        if span["text"] in excluded:
+            continue
+        if kind == "make":
+            makes.append((span, tokens))
+            continue
+        findings += _subject_findings(repo, span, kind, tokens[0])
+    if len(makes) == 1:
+        findings += _make_findings(repo, config, makes[0][0], makes[0][1], group)
+    return findings, documented
+
+
+def _existence(repo, config, spans, excluded):
+    """(hallazgos, textos documentados) de la capa de existencia."""
+    declaracion = _declaracion_existence(config)
+    if declaracion is None:
+        return [], set()
+    findings, path_executables = declaracion
+    grouped = {}
+    for span in spans:
+        grouped.setdefault((span["file"], span["line"]), []).append(span)
+    documented = set()
+    for group in grouped.values():
+        lineas, textos = _linea_findings(repo, config, group, path_executables, excluded)
+        findings += lineas
+        documented |= textos
+    return findings, documented
+
+
 def check(repo, config):
     """(hallazgos, resumen por nivel)."""
     repo = Path(repo).resolve()
@@ -172,8 +385,10 @@ def check(repo, config):
         return ["HR-65: no se extrajo ningún comando de la documentación (extractor obsoleto; "
                 "sin medición no hay veredicto)"], summary
     excluded = set(config.get("exclude", []))
+    spans = _spans(repo, config)
+    existence_findings, existence_texts = _existence(repo, config, spans, excluded)
     findings = [f"HR-65: STALE en exclude: «{e}» ya no se documenta; elimine la entrada"
-                for e in sorted(excluded - {c["command"] for c in commands})]
+                for e in sorted(excluded - {c["command"] for c in commands} - existence_texts)]
     argv, ausente = _entorno(repo, config)
     if ausente and _nunca_ejecuta(config):
         # Aviso, no hallazgo: aquí el gate no iba a ejecutar nada, así que la CLI
@@ -203,4 +418,5 @@ def check(repo, config):
         if seen[item["command"]]:
             findings.append(f"HR-65: {item['file']}:{item['line']}: «{item['command']}» "
                             f"{seen[item['command']]}")
+    findings += existence_findings
     return findings, summary

@@ -4,7 +4,9 @@ Asset de `ci-pattern` (HR-65, DysTelefonica/team-skills#711). Generaliza la prue
 de invocaciones documentadas de gentle-ai: `check_docs_commands.py` (stdlib, sin
 red) **extrae** de `README.md`, `AGENTS.md` y `docs/**` los comandos que empiezan por
 el nombre de la CLI del consumer (`cli_name`, parámetro) y los prueba; añadir un
-comando a un documento lo añade al corpus sin tocar ningún test.
+comando a un documento lo añade al corpus sin tocar ningún test. Con la
+declaración `existence` el gate comprueba además que lo que el comando documentado
+invoca existe (ver «La capa de existencia»).
 
 | Nivel | Qué es | Qué se prueba |
 |---|---|---|
@@ -15,6 +17,37 @@ comando a un documento lo añade al corpus sin tocar ningún test.
 Un comando rechazado (`rejection_exit_codes`, por defecto 2) es rojo con
 `fichero:línea`. Extraer cero comandos falla. `exclude` exime comandos
 ilustrativos y solo puede encoger (una entrada obsoleta es `STALE`).
+
+## La capa de existencia: el comando tiene que existir
+
+Los tres niveles de arriba prueban la **forma** del comando: que el parser real lo
+acepte. Con `dry_run_flag --help` eso es todo lo que se mide, y no basta: el caso vivo
+de `DysTelefonica/access2web-blueprint` (`docs/adopcion-fase-2-aislamiento.md:41`)
+cita `make test` con `--cov` y da el `Makefile` como fuente, pero el target `test` dejó
+de medir cobertura (#1374). El comando se validaba en su forma (`pytest --help` sale 0
+sin mirar el resto) y el gate no veía que lo que invocaba ya no estaba.
+
+La capa de existencia comprueba que **lo que el comando invoca existe**, sin ejecutar
+nada. La regla es estrecha y determinista —solo mira ficheros, Makefile y `PATH`— y la
+activa la declaración `existence` del contrato, para que un consumer que no la declara
+no cambie de comportamiento.
+
+| Cita del documento | Qué se comprueba |
+|---|---|
+| `./scripts/x.sh` | El script existe en el repositorio |
+| `make <target>` | El target existe en el Makefile, y los flags que la documentación le atribuye están en su receta |
+| `<ejecutable>` | El ejecutable que `path_executables` declara permitido resuelve en el `PATH` del runner |
+
+La declaración es `existence` en el bloque `docs_commands`: `makefile` es el Makefile
+que se consulta (por defecto `Makefile`; un `make` con `-C` o `-f` no se mide, porque
+consulta otro) y `path_executables` son los ejecutables del `PATH` que la documentación
+puede citar. Sin esta lista el gate no mira el `PATH`, porque un ejecutable ausente en
+el runner es un problema del runner, no de la documentación (el mismo criterio que el
+hallazgo de entorno de arriba). La atribución de flags es de la misma línea y solo con
+la CLI declarada, y una línea que cita dos targets no se cruza con ninguno (es
+ambigua): un target de patrón (`%`) o un comando sin target no se comprueban. La capa
+no depende de que la CLI esté donde corre el job —no ejecuta nada— y `exclude` exime
+sus citas igual que exime un comando de ejecución.
 
 ## Tres causas, tres hallazgos
 
