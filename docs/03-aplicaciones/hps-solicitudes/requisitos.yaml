@@ -1,0 +1,2758 @@
+# Inventario de requisitos de Solicitudes HPS para Calidad (issue #1494).
+# Esquema y reglas de redacción: docs/07-migracion/inventario-requisitos.md.
+#
+# Títulos de formulario: las ventanas sustituyen su título por
+# «SOLICITUDES HPS Versión <versión> <nombre del usuario>» al abrirse. Ese texto
+# no identifica la ventana y contiene nombres de personas, así que en su lugar
+# se usa el rótulo visible de la cabecera. Las partes que cambian se escriben
+# entre « ». Los subformularios de la ficha de solicitud usan el texto de su
+# pestaña («Datos», «Fechas»).
+#
+# Botones con icono: muchos botones no tienen texto visible, solo un icono y una
+# etiqueta emergente. En esos casos `control` es «icono» seguido del texto de la
+# etiqueta emergente, o el rótulo que el usuario ve junto al icono.
+#
+# Perfiles: la aplicación reconoce dos perfiles. «Administrador» (administrador
+# general o con permiso de administrador en la aplicación) y «Técnico» (permiso
+# de técnico, título «Sólo lectura»). Los tramitadores y gestores que aparecen
+# en las listas son los usuarios con permiso de administrador en la aplicación.
+
+aplicacion: Solicitudes HPS
+prefijo: SHP
+repositorio: DysTelefonica/HPS_SOLICITUDES
+rama: main
+commit: cfa1937ab05a9e40150ea9236243898de96f84da
+
+formularios:
+  - interno: Form_Form0BDOpciones
+    titulo: "SOLICITUDES HPS"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAdjuntaTraspasoONS
+    titulo: "ENVÍO DOC PARA LA ONS"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAdjuntarExcelSolicitante
+    titulo: "EXCEL DEL SOLICITANTE"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAltaDatosSolicitante
+    titulo: "ALTA DE DATOS DEL SOLICITANTE"
+    estado: no aplicable
+    motivo: "formulario sin uso; ningún formulario ni código lo abre ni lo menciona en el commit fijado"
+  - interno: Form_FormCambioTipo
+    titulo: "CAMBIO DE TIPO"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormConfiguracion
+    titulo: "PARÁMETROS DE CONFIGURACIÓN"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormCorreo
+    titulo: "CORREO"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormCorreoPruebas
+    titulo: "ENVIAR CORREOS DE PRUEBA"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormCorreosGestion
+    titulo: "GESTIÓN DE LOS CORREOS"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormEntidades
+    titulo: "ENTIDADES"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormEnvioCorreo
+    titulo: "«tipo de correo» (por ejemplo SOLICITUD DATOS POR EXCEL)"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormExpedienteDetalle
+    titulo: "DETALLE DE EXPEDIENTE"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormExpedientesBusqueda
+    titulo: "EXPEDIENTES REGISTRADOS"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormMotivoHPS
+    titulo: "MOTIVO HPS"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormMotivosHPS
+    titulo: "MOTIVOS HPS"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPlantillasHTML
+    titulo: "PLANTILLAS HTML"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormResponsable
+    titulo: "ALTA DE RESPONSABLE | EDICIÓN DE RESPONSABLE"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormResponsablesGestion
+    titulo: "RESPONSABLES"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudAlta
+    titulo: "ALTA DE SOLICITUD"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudAltaTraspaso
+    titulo: "SOLICITUD DE «tipo» PARA «nombre»"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudRenovacion
+    titulo: "RENOVACIÓN PARA «nombre»"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudRenovacionDatos
+    titulo: "Datos"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudRenovacionFechas
+    titulo: "Fechas"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudesAltaFechas
+    titulo: "Fechas"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudesAltaRenovacionFechas
+    titulo: ""
+    estado: no aplicable
+    motivo: "formulario sin uso como ventana; no es pestaña de ninguna ficha ni se abre desde ningún botón; solo la ventana de envío de correo le pide refrescarse, sin mostrarlo, en solicitudes que no son de alta ni de traspaso (src/forms/Form_FormEnvioCorreo.cls:287)"
+  - interno: Form_FormSolicitudesAltaTraspasoDatos
+    titulo: "Datos"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudesGestion
+    titulo: "SOLICITUDES"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormSolicitudesTraspasoFechas
+    titulo: "Fechas"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormTareasTramitadorPendientes
+    titulo: "TAREAS PENDIENTES DEL TRAMITADOR"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuariosHPSBusqueda
+    titulo: "USUARIOS HPS"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormWeb
+    titulo: "EXPEDIENTES Versión 2024-001 Administrador"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmBuscarJustificacion
+    titulo: "JUSTIFICACIONES"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmJustificacion
+    titulo: "Nueva Justificación | Editar Justificación"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_frmSplash
+    titulo: "HPS SOLICITUDES"
+    estado: cubierto
+    motivo: ""
+
+features:
+  # ---------------------------------------------------------------------------
+  # Arranque y menú principal
+  # ---------------------------------------------------------------------------
+  - id: SHP-F001
+    area: Arranque
+    nombre: Iniciar la aplicación e identificar al usuario
+    descripcion: >-
+      Al abrir la aplicación se muestra una ventana de carga que identifica al usuario, comprueba sus permisos,
+      carga la configuración y calcula las tareas pendientes antes de abrir el menú principal.
+    formulario: HPS SOLICITUDES
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      Se abre el menú principal con el usuario identificado, su perfil y los contadores de pendientes calculados.
+    tecnico:
+      formulario: Form_frmSplash
+      control: Form_Timer
+      evidencia:
+        - "src/forms/Form_frmSplash.cls:25"
+        - "src/modules/Variables Globales.bas:231"
+      prd: prd/formularios/Form_frmSplash.md
+    reglas:
+      - id: SHP-F001-R01
+        descripcion: Si la aplicación se abre con un correo como parámetro de arranque, el usuario se identifica por ese correo; si no, por el usuario de Windows conectado.
+        evidencia: ["src/modules/Variables Globales.bas:289", "src/modules/Variables Globales.bas:300"]
+      - id: SHP-F001-R02
+        descripcion: Si no se puede determinar el usuario se muestra «No se ha podido determinar el usuario que está usando la herramienta».
+        evidencia: ["src/modules/Variables Globales.bas:312"]
+      - id: SHP-F001-R03
+        descripcion: Es administrador el usuario marcado como administrador general o el que tiene permiso de administrador en la aplicación.
+        evidencia: ["src/classes/Usuario.cls:66", "src/classes/Usuario.cls:76"]
+      - id: SHP-F001-R04
+        descripcion: Si el usuario no es administrador ni tiene permiso de técnico en la aplicación, se muestra «Usuario no autorizado».
+        evidencia: ["src/modules/Variables Globales.bas:323", "src/modules/Variables Globales.bas:329"]
+      # posible defecto: ante cualquier error de arranque (incluido «Usuario no autorizado») la ventana de carga
+      # muestra el error y abre igualmente el menú principal.
+      - id: SHP-F001-R05
+        descripcion: Si se produce un error durante el arranque se muestra «Ha habido un error en el inicio» con el detalle y, a continuación, se abre el menú principal.
+        evidencia: ["src/forms/Form_frmSplash.cls:57"]
+      - id: SHP-F001-R06
+        descripcion: El usuario se considera en la oficina si alguna de las direcciones de red del equipo pertenece a la subred de la oficina; esto condiciona las operaciones que consultan la base de datos de HPS.
+        evidencia: ["src/modules/Variables Globales.bas:341", "src/modules/FUNCIONES UTILES.bas:850"]
+      - id: SHP-F001-R07
+        descripcion: Si algún dato de entorno no se puede cargar se muestra «Se han producido los siguientes Errores» con la lista de datos fallidos.
+        evidencia: ["src/modules/Variables Globales.bas:382"]
+      - id: SHP-F001-R08
+        descripcion: Si no se puede obtener la configuración se muestra «No se ha podido obtener la configuración».
+        evidencia: ["src/modules/Variables Globales.bas:405"]
+      - id: SHP-F001-R09
+        descripcion: Para el perfil técnico el título de las ventanas añade «(Sólo lectura)».
+        evidencia: ["src/modules/Variables Globales.bas:386"]
+      - id: SHP-F001-R10
+        descripcion: Al arrancar se comprueba si la configuración está completa; el resultado se muestra en el menú principal (ver SHP-F002).
+        evidencia: ["src/modules/Variables Globales.bas:409"]
+      - id: SHP-F001-R11
+        descripcion: Al terminar la carga se calculan los totales de solicitudes pendientes, globales y del usuario conectado (ver SHP-F002).
+        evidencia: ["src/forms/Form_frmSplash.cls:47"]
+      - id: SHP-F001-R12
+        descripcion: Salvo que la aplicación se abra en modo desarrollo, se oculta la cinta de opciones de Access.
+        evidencia: ["src/forms/Form_frmSplash.cls:12"]
+
+  - id: SHP-F002
+    area: Menú principal
+    nombre: Consultar el estado general en el menú principal
+    descripcion: >-
+      El menú principal muestra la versión, el número de solicitudes pendientes y si la configuración está completa.
+    formulario: SOLICITUDES HPS
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve «Pendientes (propias/totales)» y «Parámetros COMPLETOS» o «Parámetros INCOMPLETOS».
+    tecnico:
+      formulario: Form_Form0BDOpciones
+      control: Form_Open
+      evidencia: ["src/forms/Form_Form0BDOpciones.cls:291", "src/forms/Form_Form0BDOpciones.cls:246"]
+      prd: prd/formularios/Form_Form0BDOpciones.md
+    reglas:
+      - id: SHP-F002-R01
+        descripcion: El rótulo de pendientes muestra «Pendientes (n/total)», donde n son las pendientes del usuario conectado y total las de todos los tramitadores; se pinta en rojo si el total es mayor que cero.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:357"]
+      # posible defecto: para el perfil técnico el primer número es siempre 0, no se calcula.
+      - id: SHP-F002-R02
+        descripcion: Para el perfil técnico el rótulo muestra siempre «Pendientes (0/total)».
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:349", "src/classes/Entorno.cls:2485"]
+      - id: SHP-F002-R03
+        descripcion: El total de pendientes suma las solicitudes pendientes de envío del Excel, de los recordatorios del Excel, de alta en MARGA, de los recordatorios y del envío del DPS, de envío a la ONS y de fin de tramitación.
+        evidencia: ["src/classes/Entorno.cls:2474"]
+      - id: SHP-F002-R04
+        descripcion: Se muestra «Parámetros INCOMPLETOS» si falta algún dato obligatorio de la configuración (ver SHP-F074) y «Parámetros COMPLETOS» en caso contrario.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:266", "src/modules/FUNCIONES UTILES.bas:2355"]
+      - id: SHP-F002-R05
+        descripcion: Los botones de tareas pendientes, configuración, solicitudes y correos quedan activos para todos los perfiles.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:262", "src/forms/Form_Form0BDOpciones.cls:280"]
+      - id: SHP-F002-R06
+        descripcion: Si el menú no se puede cargar, se muestra el error y la aplicación se cierra, salvo en modo desarrollo.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:322"]
+      - id: SHP-F002-R07
+        descripcion: Al guardar la configuración se actualiza el rótulo de parámetros completos o incompletos del menú.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:374"]
+
+  - id: SHP-F003
+    area: Menú principal
+    nombre: Recalcular los pendientes del menú
+    descripcion: >-
+      Vuelve a consultar la base de datos para actualizar el contador de pendientes del menú.
+    formulario: SOLICITUDES HPS
+    control: icono «Actualizar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      El contador «Pendientes (n/total)» refleja los datos actuales.
+    tecnico:
+      formulario: Form_Form0BDOpciones
+      control: ComandoActualizar
+      evidencia: ["src/forms/Form_Form0BDOpciones.cls:27"]
+      prd: prd/formularios/Form_Form0BDOpciones.md
+    reglas:
+      - id: SHP-F003-R01
+        descripcion: El recálculo descarta los datos en memoria y vuelve a consultar todas las listas de pendientes.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:39", "src/classes/Entorno.cls:2457"]
+
+  - id: SHP-F004
+    area: Menú principal
+    nombre: Abrir la ayuda de la ventana
+    descripcion: >-
+      Abre el documento PDF de ayuda asociado a la ventana activa. El mismo botón existe en la mayoría de ventanas.
+    formulario: SOLICITUDES HPS
+    control: icono «Ayuda»
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre una copia local del PDF de ayuda de la ventana.
+    tecnico:
+      formulario: Form_Form0BDOpciones
+      control: ComandoAyuda
+      evidencia: ["src/forms/Form_Form0BDOpciones.cls:67", "src/modules/FUNCIONES UTILES.bas:475"]
+      prd: prd/formularios/Form_Form0BDOpciones.md
+    reglas:
+      - id: SHP-F004-R01
+        descripcion: El PDF de ayuda se busca en la carpeta de ayuda con el nombre interno de la ventana activa.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:493"]
+      - id: SHP-F004-R02
+        descripcion: Si no existe el PDF se muestra «No se ha generado la ayuda para este formulario aún».
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:495"]
+      - id: SHP-F004-R03
+        descripcion: El PDF se copia a la carpeta local antes de abrirlo; si la copia local ya está abierta se muestra «Tiene el archivo abierto».
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:456", "src/modules/FUNCIONES UTILES.bas:458"]
+      # posible defecto: el botón de ayuda del menú principal envía un correo al administrador con el texto «Prueba de Error» cada vez que se pulsa.
+      - id: SHP-F004-R04
+        descripcion: En el menú principal, pulsar «Ayuda» deja además en la cola de correos un aviso al administrador con el texto «Prueba de Error».
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:73", "src/modules/FUNCIONES UTILES.bas:585"]
+
+  - id: SHP-F005
+    area: Menú principal
+    nombre: Abrir las ventanas de trabajo desde el menú
+    descripcion: >-
+      Desde el menú principal se abren la gestión de solicitudes, las tareas pendientes, las entidades, la gestión de correos y la configuración.
+    formulario: SOLICITUDES HPS
+    control: Solicitudes | Pendientes | Entidades | Correos | icono «Parámetros de configuración del aplicativo»
+    tipo: menú
+    roles: []
+    resultado: >-
+      Se abre la ventana elegida.
+    tecnico:
+      formulario: Form_Form0BDOpciones
+      control: ComandoGestionSolicitudes, ComandoTareasPendientes, ComandoEntidades, ComandoGestionCorreos, ComandoConfiguracion
+      evidencia:
+        - "src/forms/Form_Form0BDOpciones.cls:186"
+        - "src/forms/Form_Form0BDOpciones.cls:216"
+        - "src/forms/Form_Form0BDOpciones.cls:128"
+        - "src/forms/Form_Form0BDOpciones.cls:156"
+        - "src/forms/Form_Form0BDOpciones.cls:96"
+      prd: prd/formularios/Form_Form0BDOpciones.md
+    reglas:
+      - id: SHP-F005-R01
+        descripcion: Las tareas pendientes y la configuración se cierran y se vuelven a abrir si ya estaban abiertas; las demás ventanas solo se abren si no lo estaban.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:106", "src/forms/Form_Form0BDOpciones.cls:223", "src/forms/Form_Form0BDOpciones.cls:137"]
+      - id: SHP-F005-R02
+        descripcion: Cuando en las tareas pendientes se modifica una solicitud, el contador de pendientes del menú se recalcula.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:405"]
+      - id: SHP-F005-R03
+        descripcion: Ninguna de estas entradas comprueba el perfil del usuario.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:262"]
+
+  - id: SHP-F006
+    area: Menú principal
+    nombre: Salir de la aplicación
+    descripcion: >-
+      Cierra la aplicación tras pedir confirmación.
+    formulario: SOLICITUDES HPS
+    control: Salir
+    tipo: botón
+    roles: []
+    resultado: >-
+      La aplicación se cierra guardando los objetos abiertos.
+    tecnico:
+      formulario: Form_Form0BDOpciones
+      control: cmdSalir
+      evidencia: ["src/forms/Form_Form0BDOpciones.cls:9"]
+      prd: prd/formularios/Form_Form0BDOpciones.md
+    reglas:
+      - id: SHP-F006-R01
+        descripcion: Antes de salir se pregunta «¿Desea realmente salir de la aplicación»; si no se responde Sí, no se sale.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:14"]
+
+  - id: SHP-F007
+    area: Transversal
+    nombre: Avisar al administrador de errores inesperados
+    descripcion: >-
+      Cuando una acción falla por un error no previsto, la aplicación deja en la cola de correos un aviso para el administrador con el detalle.
+    formulario: (todas las ventanas)
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      Queda un correo pendiente de envío al administrador con la ventana, el control, el equipo y el detalle del error.
+    tecnico:
+      formulario: FUNCIONES UTILES
+      control: CorreoAlAdministrador
+      evidencia: ["src/modules/FUNCIONES UTILES.bas:585"]
+    reglas:
+      - id: SHP-F007-R01
+        descripcion: El asunto del aviso es «Error en SOLICITUD HPS» seguido del nombre del usuario y de si está en la oficina o fuera.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:635"]
+      - id: SHP-F007-R02
+        descripcion: El cuerpo indica la ventana, el control, el nombre del equipo y el detalle del error.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:637"]
+      # posible defecto: los destinatarios del aviso están fijados en el código, incluida una dirección personal externa.
+      - id: SHP-F007-R03
+        descripcion: Los destinatarios del aviso están fijados en el código, no en la configuración.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:649"]
+      - id: SHP-F007-R04
+        descripcion: Los errores de validación previstos (mensajes de negocio) no generan aviso; solo los errores inesperados.
+        evidencia: ["src/forms/Form_Form0BDOpciones.cls:57"]
+
+  - id: SHP-F008
+    area: Transversal
+    nombre: Registrar el historial de acciones de cada solicitud
+    descripcion: >-
+      Cada acción relevante sobre una solicitud (alta, registro de fechas, envíos de correo, cambios de tipo, eliminaciones de fases) queda anotada en su historial.
+    formulario: (todas las ventanas de solicitud)
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El historial de la solicitud guarda la acción, una descripción, si los correos automáticos estaban activos y quién la hizo.
+    tecnico:
+      formulario: FUNCIONES UTILES
+      control: RegistrarLogGeneral
+      evidencia: ["src/modules/FUNCIONES UTILES.bas:895"]
+    reglas:
+      - id: SHP-F008-R01
+        descripcion: Cada anotación indica si los correos automáticos estaban activos; vale «No» si están desactivados en la configuración general y, si no, el valor de la propia solicitud.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:906", "src/modules/FUNCIONES UTILES.bas:1749"]
+      - id: SHP-F008-R02
+        descripcion: Al guardar cambios en una solicitud se anota el usuario y la fecha de creación o, si ya existía, del último cambio, y se recalcula su estado.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:106", "src/modules/FUNCIONES UTILES.bas:114"]
+      - id: SHP-F008-R03
+        descripcion: Cada cambio guardado actualiza el registro de última modificación; los administradores lo ven en las ventanas de solicitudes y de tareas pendientes.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:123", "src/modules/FUNCIONES UTILES.bas:127"]
+
+  - id: SHP-F009
+    area: Transversal
+    nombre: Calcular el estado de la solicitud
+    descripcion: >-
+      El estado de una solicitud no se elige: se calcula a partir de las fechas de los trámites registrados y de su tipo.
+    formulario: (todas las ventanas de solicitud)
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      La solicitud muestra un estado entre Pendiente de Envío Excel, Pendiente Excel Relleno, Pendiente Alta Marga, Pendiente Envío DPS, Pendiente Envío ONS,
+      Pendiente de Enviar Tramitación a la ONS (Traspaso), Pendiente fin tramitación, Tramitado, Desestimado y Cancelado.
+    tecnico:
+      formulario: SolicitudFechas
+      control: EstadoCalculado
+      evidencia: ["src/classes/SolicitudFechas.cls:434", "src/classes/Solicitud.cls:1039"]
+    reglas:
+      - id: SHP-F009-R01
+        descripcion: Una solicitud sin ninguna fecha registrada está «Pendiente de Envío Excel».
+        evidencia: ["src/classes/Solicitud.cls:1052"]
+      - id: SHP-F009-R02
+        descripcion: Si tiene fecha de desestimación está «Desestimado», prevalezca sobre cualquier otra fecha.
+        evidencia: ["src/classes/SolicitudFechas.cls:442"]
+      - id: SHP-F009-R03
+        descripcion: Si tiene fecha de cancelación (y no de desestimación) está «Cancelado».
+        evidencia: ["src/classes/SolicitudFechas.cls:447"]
+      - id: SHP-F009-R04
+        descripcion: Sin fecha de envío del Excel está «Pendiente de Envío Excel»; con envío pero sin recepción del Excel relleno está «Pendiente Excel Relleno».
+        evidencia: ["src/classes/SolicitudFechas.cls:452", "src/classes/SolicitudFechas.cls:457"]
+      - id: SHP-F009-R05
+        descripcion: En altas, renovaciones y elevaciones de grado, tras recibir el Excel el orden es Pendiente Alta Marga, Pendiente Envío DPS, Pendiente Envío ONS, Pendiente fin tramitación y Tramitado.
+        evidencia: ["src/classes/SolicitudFechas.cls:462"]
+      - id: SHP-F009-R06
+        descripcion: En traspasos, tras recibir el Excel el orden es Pendiente de Enviar Tramitación a la ONS (Traspaso), Pendiente fin tramitación y Tramitado.
+        evidencia: ["src/classes/SolicitudFechas.cls:487"]
+      - id: SHP-F009-R07
+        descripcion: La solicitud pasa a «Tramitado» cuando tiene fecha de registro en HPS.
+        evidencia: ["src/classes/SolicitudFechas.cls:478", "src/classes/SolicitudFechas.cls:493"]
+      - id: SHP-F009-R08
+        descripcion: Cada vez que se registra o elimina una fecha se vuelve a calcular y guardar el estado.
+        evidencia: ["src/classes/Solicitud.cls:1246"]
+
+  # ---------------------------------------------------------------------------
+  # Gestión de solicitudes
+  # ---------------------------------------------------------------------------
+  - id: SHP-F010
+    area: Solicitudes
+    nombre: Buscar y filtrar solicitudes
+    descripcion: >-
+      Lista las solicitudes y permite filtrarlas por tipo, estado, gestor, nombre, empresa del usuario, expediente, nemotécnico y DNI.
+    formulario: SOLICITUDES
+    control: Tipo | Estado | Gestor | Nombre | Empresa Usuario | Expediente | Nemot. | DNI
+    tipo: campo
+    roles: []
+    resultado: >-
+      La lista muestra ID, tipo, DNI, nombre y estado de las solicitudes que cumplen todos los filtros, con el total en «Registros filtrados (n)».
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: Filtrar
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:150", "src/forms/Form_FormSolicitudesGestion.cls:760"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F010-R01
+        descripcion: Al abrir la ventana el filtro de estado es «Pendiente de algún trámite» y el de tipo «Todos».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:60", "src/forms/Form_FormSolicitudesGestion.cls:136"]
+      - id: SHP-F010-R02
+        descripcion: Al abrir la ventana el filtro de gestor es el usuario conectado si figura entre los tramitadores; si no, «Todos».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:113"]
+      - id: SHP-F010-R03
+        descripcion: La lista de gestores contiene los usuarios con permiso de administrador en la aplicación que no están de baja.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:101", "src/modules/constructor.bas:228"]
+      - id: SHP-F010-R04
+        descripcion: «Pendiente de algún trámite» incluye las solicitudes no desestimadas ni canceladas a las que les falta el registro en HPS o el envío a la ONS.
+        evidencia: ["src/modules/constructor.bas:1848"]
+      # posible defecto: el estado «Pendiente Excel Relleno» del filtro muestra en realidad las solicitudes pendientes de envío del Excel.
+      - id: SHP-F010-R05
+        descripcion: Al filtrar por «Pendiente Excel Relleno» se muestran las mismas solicitudes que con «Pendiente de Envío Excel».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:211"]
+      # posible defecto: el estado «Pendiente fin tramitación» aparece en el filtro pero no está contemplado al filtrar.
+      - id: SHP-F010-R06
+        descripcion: Al filtrar por un estado no contemplado (por ejemplo «Pendiente fin tramitación») se produce el error «El tipo no está codificado».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:278", "src/classes/Entorno.cls:1803"]
+      - id: SHP-F010-R07
+        descripcion: El filtro por nombre busca el texto en el nombre completo sin distinguir mayúsculas; el de DNI busca el texto dentro del DNI.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:316", "src/forms/Form_FormSolicitudesGestion.cls:353"]
+      - id: SHP-F010-R08
+        descripcion: El filtro por nemotécnico usa el nemotécnico de la solicitud y, si está vacío, el de su expediente.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:340"]
+      - id: SHP-F010-R09
+        descripcion: Cada cambio en un filtro vuelve a filtrar la lista.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:723", "src/forms/Form_FormSolicitudesGestion.cls:909"]
+      - id: SHP-F010-R10
+        descripcion: Si la lista tiene resultados, la primera solicitud queda seleccionada; los botones «Editar/Ver», «Eliminar» y «Ver Logs» solo se activan con una solicitud seleccionada.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:368", "src/forms/Form_FormSolicitudesGestion.cls:862"]
+      - id: SHP-F010-R11
+        descripcion: Los administradores ven en el pie quién hizo la última modificación y cuándo; el resto de perfiles no lo ve.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:778"]
+
+  - id: SHP-F011
+    area: Solicitudes
+    nombre: Restablecer los filtros y recargar la lista de solicitudes
+    descripcion: >-
+      Vuelve a los filtros iniciales y recarga las solicitudes desde la base de datos.
+    formulario: SOLICITUDES
+    control: icono «Actualizar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      La lista muestra las solicitudes del usuario conectado con los datos actuales.
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: ComandoActualizar
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:380"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F011-R01
+        descripcion: Los filtros vuelven a tipo «Todos», gestor el usuario conectado, empresa y expediente «Todos», estado «Todos» y nombre vacío.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:387"]
+      - id: SHP-F011-R02
+        descripcion: Se descartan las listas en memoria para que se vuelvan a consultar.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:393"]
+
+  - id: SHP-F012
+    area: Solicitudes
+    nombre: Recalcular el estado de todas las solicitudes
+    descripcion: >-
+      Recalcula y guarda el estado de todas las solicitudes del sistema a partir de sus fechas.
+    formulario: SOLICITUDES
+    control: Actualizar Estado
+    tipo: botón
+    roles: []
+    resultado: >-
+      Todas las solicitudes cuyo estado guardado no coincide con el calculado quedan con el estado calculado.
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: ComandoActualizarEstado
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:426", "src/modules/FUNCIONES UTILES.bas:2315"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F012-R01
+        descripcion: Solo se actualizan las solicitudes cuyo estado guardado difiere del calculado según SHP-F009.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:2337"]
+      - id: SHP-F012-R02
+        descripcion: El botón no pide confirmación ni comprueba el perfil del usuario.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:426"]
+
+  - id: SHP-F013
+    area: Solicitudes
+    nombre: Iniciar el alta de una solicitud
+    descripcion: >-
+      Abre la ventana en la que se elige el tipo de solicitud que se va a dar de alta.
+    formulario: SOLICITUDES
+    control: Alta
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la ventana «ALTA DE SOLICITUD».
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: ComandoAlta
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:478"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F013-R01
+        descripcion: Si la ventana de alta ya estaba abierta se cierra y se vuelve a abrir vacía.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:489"]
+
+  - id: SHP-F014
+    area: Solicitudes
+    nombre: Elegir el tipo de solicitud a dar de alta
+    descripcion: >-
+      El usuario elige si la solicitud es un alta, un traspaso, una renovación o una elevación de grado y pasa a la ventana correspondiente.
+    formulario: ALTA DE SOLICITUD
+    control: Registrar
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      Para alta o traspaso se abre la ficha de la nueva solicitud; para renovación o elevación de grado se abre la búsqueda de usuarios HPS.
+    tecnico:
+      formulario: Form_FormSolicitudAlta
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormSolicitudAlta.cls:41"]
+      prd: prd/formularios/Form_FormSolicitudAlta.md
+    reglas:
+      - id: SHP-F014-R01
+        descripcion: Los tipos posibles son Alta, Traspaso, Renovación y Elevación Grado.
+        evidencia: ["src/forms/Form_FormSolicitudAlta.form.txt:940"]
+      - id: SHP-F014-R02
+        descripcion: Si no se elige un tipo se muestra «Seleccione un tipo».
+        evidencia: ["src/forms/Form_FormSolicitudAlta.cls:52"]
+      - id: SHP-F014-R03
+        descripcion: Para renovación o elevación de grado hay que estar en la oficina; si no, se muestra «Para poder hacer una renovación se ha de estar en la oficina. No se puede acceder a los datos de HPS».
+        evidencia: ["src/forms/Form_FormSolicitudAlta.cls:63"]
+      - id: SHP-F014-R04
+        descripcion: Para el perfil técnico el botón «Registrar» queda desactivado.
+        evidencia: ["src/forms/Form_FormSolicitudAlta.cls:106", "src/forms/Form_FormSolicitudAlta.cls:109"]
+      - id: SHP-F014-R05
+        descripcion: Al pulsar «Registrar» no se guarda nada; la solicitud se crea al registrar sus datos en la ficha (SHP-F021).
+        evidencia: ["src/forms/Form_FormSolicitudAlta.cls:56"]
+
+  - id: SHP-F015
+    area: Solicitudes
+    nombre: Abrir la ficha de una solicitud
+    descripcion: >-
+      Abre la ficha de la solicitud seleccionada; la ficha depende del tipo (alta o traspaso, o renovación y elevación de grado).
+    formulario: SOLICITUDES
+    control: Editar/Ver (o doble clic en la lista)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la ficha de la solicitud con las pestañas «Datos» y «Fechas».
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: ComandoEditar
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:510", "src/forms/Form_FormSolicitudesGestion.cls:747"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F015-R01
+        descripcion: Sin solicitud seleccionada se muestra «Seleccione una Solicitud de la lista».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:521"]
+      - id: SHP-F015-R02
+        descripcion: Las solicitudes de alta y de traspaso se abren en la ficha de alta y traspaso; las de renovación y elevación de grado, en la ficha de renovación.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:527", "src/forms/Form_FormSolicitudesGestion.cls:537"]
+      - id: SHP-F015-R03
+        descripcion: Una renovación o elevación de grado sin usuario HPS asociado no se puede abrir; se muestra «No se puede identificar el usuario HPS al ser una renovación».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:538"]
+      - id: SHP-F015-R04
+        descripcion: El doble clic en la lista equivale a «Editar/Ver» solo si ese botón está activo.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:750"]
+
+  - id: SHP-F016
+    area: Solicitudes
+    nombre: Eliminar una solicitud
+    descripcion: >-
+      Borra definitivamente la solicitud seleccionada con sus fechas, sus correos y su Excel adjunto.
+    formulario: SOLICITUDES
+    control: Eliminar
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud desaparece del sistema junto con sus fechas, sus correos enviados o programados y su carpeta de adjuntos si queda vacía.
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: ComandoEliminar
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:567", "src/classes/SolicitudOperaciones.cls:284"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F016-R01
+        descripcion: Sin solicitud seleccionada se muestra «Seleccione una Solicitud de la lista».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:578"]
+      - id: SHP-F016-R02
+        descripcion: Se pide confirmación con «¿Desea realmente eliminar definitivamente la Solicitud Seleccionada?»; la opción por defecto es No.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:584"]
+      - id: SHP-F016-R03
+        descripcion: Si el Excel adjunto de la solicitud está abierto se muestra «Ha de cerrar el anexo antes de eliminar la solicitud.» y no se borra nada.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:299"]
+      - id: SHP-F016-R04
+        descripcion: Se borran todos los correos de la solicitud, enviados y programados.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:309"]
+      - id: SHP-F016-R05
+        descripcion: Se borran las fechas y la solicitud, el Excel adjunto y su carpeta si queda vacía.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:314", "src/classes/SolicitudOperaciones.cls:323"]
+      # posible defecto: el borrado definitivo no comprueba el perfil ni el estado de la solicitud y no queda anotado en ningún historial.
+      - id: SHP-F016-R06
+        descripcion: El borrado no comprueba el perfil del usuario ni el estado de la solicitud, y no deja anotación en el historial.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:588"]
+      - id: SHP-F016-R07
+        descripcion: Tras borrar se restablecen los filtros y se recarga la lista.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:596"]
+
+  - id: SHP-F017
+    area: Solicitudes
+    nombre: Ver el historial de acciones de una solicitud
+    descripcion: >-
+      Muestra un informe con todas las acciones registradas sobre la solicitud seleccionada.
+    formulario: SOLICITUDES
+    control: Ver Logs
+    tipo: informe
+    roles: []
+    resultado: >-
+      Se abre un visor con la tabla «REGISTROS LOGS DE ACTIVIDADES DE SOLICITUD n» con fecha, acción, descripción, si había correo automático y registrador.
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: ComandoVerLogs
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:687", "src/modules/FUNCIONES UTILES.bas:1721"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F017-R01
+        descripcion: Sin solicitud seleccionada se muestra «Seleccione una Solicitud de la lista».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:697"]
+      - id: SHP-F017-R02
+        descripcion: El informe incluye, por cada acción, la fecha, la acción, la descripción, si los correos automáticos estaban activos y el nombre del registrador («Desconocido» si no se encuentra).
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:1683", "src/modules/FUNCIONES UTILES.bas:1694"]
+      - id: SHP-F017-R03
+        descripcion: El mismo informe se abre con el botón «Ver Logs» de la ficha de la solicitud (alta, traspaso o renovación).
+        evidencia: ["src/forms/Form_FormSolicitudAltaTraspaso.cls:27", "src/forms/Form_FormSolicitudRenovacion.cls:25"]
+      - id: SHP-F017-R04
+        descripcion: El informe se muestra en el visor interno de la aplicación (SHP-F047).
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:1741"]
+
+  - id: SHP-F018
+    area: Solicitudes
+    nombre: Exportar a Excel las solicitudes filtradas
+    descripcion: >-
+      Genera un libro de Excel con todos los datos de las solicitudes que se ven en la lista y lo abre.
+    formulario: SOLICITUDES
+    control: icono de exportar a Excel (sin texto)
+    tipo: informe
+    roles: []
+    resultado: >-
+      Se abre un Excel con una fila por solicitud filtrada y una columna por dato, en formato de tabla.
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: ComandoExportarExcel
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:619", "src/modules/FUNCIONES UTILES.bas:2108"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F018-R01
+        descripcion: El botón solo se activa cuando la consulta de la lista ha devuelto datos; si la lista está vacía no hace nada.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:299", "src/forms/Form_FormSolicitudesGestion.cls:634"]
+      - id: SHP-F018-R02
+        descripcion: En el Excel el expediente, la empresa del usuario y la empresa tramitadora se muestran por su descripción en lugar de su código.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:2138"]
+      - id: SHP-F018-R03
+        descripcion: Si no se genera el fichero se muestra «No se ha podido obtener la consulta».
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:664"]
+
+  - id: SHP-F019
+    area: Correos automáticos
+    nombre: Reprogramar los correos automáticos pendientes de una solicitud
+    descripcion: >-
+      Programa los recordatorios y cancelaciones automáticos que le faltan a la solicitud seleccionada, según las fechas de sus trámites.
+    formulario: SOLICITUDES
+    control: Reprogramar correos pendientes
+    tipo: botón
+    roles: []
+    resultado: >-
+      Quedan programados los correos automáticos que corresponden a la fase de la solicitud y cuya fecha prevista es hoy o posterior.
+    tecnico:
+      formulario: Form_FormSolicitudesGestion
+      control: cmdReprogramarCorreos
+      evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:12", "src/classes/SolicitudOperaciones.cls:2428"]
+      prd: prd/formularios/Form_FormSolicitudesGestion.md
+    reglas:
+      - id: SHP-F019-R01
+        descripcion: El botón solo se activa si los correos automáticos están activos en la configuración general y en la solicitud seleccionada.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:872"]
+      - id: SHP-F019-R02
+        descripcion: Se pide confirmación indicando que solo se programarán correos cuya fecha calculada sea hoy o futura.
+        evidencia: ["src/forms/Form_FormSolicitudesGestion.cls:18"]
+      - id: SHP-F019-R03
+        descripcion: Si los correos automáticos están desactivados en la configuración se muestra «La configuración global de correos automáticos está desactivada.»; si lo están en la solicitud, «Esta solicitud tiene desactivado el envío de correos automáticos.».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2442", "src/classes/SolicitudOperaciones.cls:2447"]
+      - id: SHP-F019-R04
+        descripcion: En la fase de espera del Excel (enviado, no recibido, ni cancelada ni desestimada) se programan el recordatorio 1, el recordatorio 2 y, si está activada, la autocancelación previa a MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2467"]
+      - id: SHP-F019-R05
+        descripcion: En la fase de espera del DPS (alta en MARGA hecha, sin envío de DPS ni de ONS, ni cancelada ni desestimada) se programan los recordatorios 1 y 2 del DPS y, si está activada, la autocancelación de MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2533"]
+      - id: SHP-F019-R06
+        descripcion: Si la solicitud no tiene guardada una fecha prevista, se calcula a partir de la configuración y se guarda.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2472", "src/classes/SolicitudOperaciones.cls:2599"]
+      - id: SHP-F019-R07
+        descripcion: No se programa un correo si su fecha prevista ya ha pasado o si ya existe uno pendiente del mismo tipo para la solicitud.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2482", "src/classes/SolicitudOperaciones.cls:2483"]
+      - id: SHP-F019-R08
+        descripcion: Si algo falla se deshacen todos los cambios de la reprogramación y se muestra «Hubo un error al reprogramar».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2618", "src/forms/Form_FormSolicitudesGestion.cls:35"]
+      - id: SHP-F019-R09
+        descripcion: Cada correo programado se anota en el historial como «Programación Automática» con su fecha prevista.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2307"]
+
+  # ---------------------------------------------------------------------------
+  # Ficha de solicitud de alta o traspaso: pestaña «Datos»
+  # ---------------------------------------------------------------------------
+  - id: SHP-F020
+    area: Ficha de alta y traspaso
+    nombre: Abrir la ficha de una solicitud de alta o traspaso
+    descripcion: >-
+      Ventana con las pestañas «Datos» y «Fechas» de una solicitud de alta o de traspaso, nueva o existente.
+    formulario: SOLICITUD DE «tipo» PARA «nombre»
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      La ficha muestra la pestaña «Datos» y, si la solicitud ya existe, permite pasar a «Fechas».
+    tecnico:
+      formulario: Form_FormSolicitudAltaTraspaso
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormSolicitudAltaTraspaso.cls:94", "src/forms/Form_FormSolicitudAltaTraspaso.cls:46"]
+    reglas:
+      - id: SHP-F020-R01
+        descripcion: La ficha solo se abre para solicitudes de tipo Alta o Traspaso; en otro caso se muestra «El formulario se ha abierto con parámetros insuficientes» y se cierra.
+        evidencia: ["src/forms/Form_FormSolicitudAltaTraspaso.cls:109"]
+      - id: SHP-F020-R02
+        descripcion: Mientras la solicitud no se ha registrado la pestaña «Fechas» está desactivada.
+        evidencia: ["src/forms/Form_FormSolicitudAltaTraspaso.cls:55", "src/forms/Form_FormSolicitudAltaTraspaso.cls:80"]
+      - id: SHP-F020-R03
+        descripcion: La cabecera muestra «SOLICITUD DE «tipo» PARA «nombre completo»» y el pie «Última modificación por «usuario» el «fecha»» (si no hay modificaciones, los datos de creación).
+        evidencia: ["src/forms/Form_FormSolicitudAltaTraspaso.cls:72", "src/classes/Solicitud.cls:254"]
+      - id: SHP-F020-R04
+        descripcion: La pestaña «Fechas» muestra los trámites de alta en las solicitudes de alta y los de traspaso en las de traspaso.
+        evidencia: ["src/forms/Form_FormSolicitudAltaTraspaso.cls:119"]
+      - id: SHP-F020-R05
+        descripcion: Al abrir la ficha de una solicitud existente se refresca la lista de la ventana de solicitudes si está abierta.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:468"]
+
+  - id: SHP-F021
+    area: Ficha de alta y traspaso
+    nombre: Registrar los datos de la solicitud
+    descripcion: >-
+      Guarda los datos personales, de contacto, de empresa, de expediente, el motivo y la justificación de la solicitud. Si es nueva, la crea.
+    formulario: Datos
+    control: icono «Registrar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud queda creada o actualizada, con su estado calculado y el usuario y la fecha del cambio anotados; se muestra «Datos grabados correctamente».
+    tecnico:
+      formulario: Form_FormSolicitudesAltaTraspasoDatos
+      control: ComandoRegistrar
+      evidencia:
+        - "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:617"
+        - "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:788"
+        - "src/classes/SolicitudOperaciones.cls:42"
+    reglas:
+      - id: SHP-F021-R01
+        descripcion: Si ninguno de los datos ha cambiado se muestra «No hay cambios que guardar».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:801"]
+      - id: SHP-F021-R02
+        descripcion: El gestor es obligatorio; si no se conoce se muestra «No se conoce el Gestor».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:363"]
+      - id: SHP-F021-R03
+        descripcion: El nombre es obligatorio («No se conoce el Nombre») y el primer apellido también («Al menos ha de tener el primer apellido»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:368", "src/classes/SolicitudOperaciones.cls:372"]
+      - id: SHP-F021-R04
+        descripcion: El email es obligatorio y debe tener formato de correo; si no, se muestra «email no tiene un formato correcto de email». Se admiten varias direcciones separadas por punto y coma.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:376", "src/modules/FUNCIONES UTILES.bas:1000"]
+      - id: SHP-F021-R05
+        descripcion: El correo del responsable es opcional, pero si se indica debe tener formato de correo; si no, se muestra «emailResponsable no tiene un formato correcto de email».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:380"]
+      - id: SHP-F021-R06
+        descripcion: Si se indica un expediente, debe existir («El expediente es obligatorio») y tener al menos una empresa contratista («El expediente al menos ha de tener un contratista principal»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:386", "src/classes/SolicitudOperaciones.cls:391"]
+      - id: SHP-F021-R07
+        descripcion: Es obligatorio indicar si habrá correos automáticos (Sí o No); si no, se muestra «Ha de indicar si va a haber correos automáticos para este usuario».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:397"]
+      - id: SHP-F021-R08
+        descripcion: Si se indica empresa tramitadora debe estar registrada; si no, se muestra «No se conoce ha rellenado una empresa tramitadora registrada».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:401"]
+      - id: SHP-F021-R09
+        descripcion: Si se indica DNI o NIE debe tener 9 caracteres y la letra de control correcta; si no, se muestra «El DNI no es válido. Rellene los números para que haya 8 y ponga la letra».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:415", "src/modules/constructor.bas:2985"]
+      - id: SHP-F021-R10
+        descripcion: No se comprueba si el DNI ya existe en otra solicitud.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:421"]
+      - id: SHP-F021-R11
+        descripcion: Al crear la solicitud se le asigna el siguiente número de solicitud disponible y se anotan el usuario y la fecha de creación.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:81", "src/classes/SolicitudOperaciones.cls:144"]
+      - id: SHP-F021-R12
+        descripcion: Al modificar una solicitud los campos que se dejan vacíos se borran y se anotan el usuario y la fecha del cambio.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:159", "src/classes/SolicitudOperaciones.cls:260"]
+      - id: SHP-F021-R13
+        descripcion: Antes de guardar se recalcula el estado de la solicitud (SHP-F009).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:65"]
+      - id: SHP-F021-R14
+        descripcion: En una solicitud nueva el gestor propuesto es el usuario conectado.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:379"]
+      - id: SHP-F021-R15
+        descripcion: La lista de gestores contiene los tramitadores; la de empresa tramitadora, solo las empresas marcadas como tramitadoras de HPS; la de empresa del usuario, todas las empresas.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:722", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:729", "src/modules/constructor.bas:2406"]
+      - id: SHP-F021-R16
+        descripcion: Tras guardar se cierra la ventana «ALTA DE SOLICITUD» si estaba abierta y se actualiza la cabecera de la ficha.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:690", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:818"]
+      - id: SHP-F021-R17
+        descripcion: La pestaña «Datos» no comprueba el perfil del usuario; el técnico puede registrar datos.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:323"]
+      # posible defecto: si la solicitud no existe al modificarla el mensaje habla de una factura.
+      - id: SHP-F021-R18
+        descripcion: Si la solicitud a modificar no se encuentra se muestra «No se ha encontrado la factura registrada».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:155"]
+
+  - id: SHP-F022
+    area: Correos automáticos
+    nombre: Activar o desactivar los correos automáticos de una solicitud
+    descripcion: >-
+      El campo «@ Auto.» decide si la solicitud recibe recordatorios y cancelaciones automáticos. Al cambiarlo y registrar, se sincroniza la cola de correos.
+    formulario: Datos
+    control: "@ Auto."
+    tipo: campo
+    roles: []
+    resultado: >-
+      Al activarlos se ofrece reprogramar los correos pendientes; al desactivarlos se borran los correos programados que aún no han salido.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaTraspasoDatos
+      control: CorreosAutomaticos
+      evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:633"]
+    reglas:
+      - id: SHP-F022-R01
+        descripcion: La sincronización solo se hace si los correos automáticos están activos en la configuración general.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:633"]
+      - id: SHP-F022-R02
+        descripcion: Al pasar de No a Sí, si la solicitud ya tiene registrado el envío del Excel o el alta en MARGA, se pregunta si se desea reprogramar los correos pendientes; si se acepta se reprograma como en SHP-F019.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:636", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:654"]
+      - id: SHP-F022-R03
+        descripcion: Si la reprogramación falla se muestra «Datos guardados, pero hubo un error reprogramando» y los datos quedan guardados.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:663"]
+      - id: SHP-F022-R04
+        descripcion: Al pasar de Sí a No se borran los correos programados de la solicitud que aún no se han enviado y se informa con «Al desactivar los correos automáticos, se han eliminado las programaciones de envío pendientes para esta solicitud.».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:672", "src/classes/SolicitudOperaciones.cls:2640"]
+
+  - id: SHP-F023
+    area: Ficha de alta y traspaso
+    nombre: Buscar el expediente de la solicitud por palabra clave
+    descripcion: >-
+      Busca un expediente por número, nemotécnico, título o código y lo asigna a la solicitud; si hay varios candidatos abre la ventana de búsqueda de expedientes.
+    formulario: Datos
+    control: Buscar Exp (icono «Buscar Expediente por palabra clave» o tecla Intro)
+    tipo: campo
+    roles: []
+    resultado: >-
+      El expediente encontrado queda en el campo «Expediente» con su título.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaTraspasoDatos
+      control: ComandoBuscarExpediente
+      evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:57", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:195"]
+    reglas:
+      - id: SHP-F023-R01
+        descripcion: Si la palabra clave está vacía no se hace nada.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:72"]
+      - id: SHP-F023-R02
+        descripcion: Un expediente coincide si su número es igual a la palabra clave o si su nemotécnico, título, código o código largo la contienen.
+        evidencia: ["src/modules/constructor.bas:3888"]
+      - id: SHP-F023-R03
+        descripcion: Si la palabra clave es un número de expediente existente, ese expediente se asigna directamente.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:99"]
+      - id: SHP-F023-R04
+        descripcion: Si solo hay un expediente que coincide, se asigna directamente; si hay varios o ninguno, se abre la ventana «EXPEDIENTES REGISTRADOS».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:118", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:83", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:132"]
+      - id: SHP-F023-R05
+        descripcion: El botón de búsqueda avanzada abre siempre «EXPEDIENTES REGISTRADOS» con la palabra clave escrita.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:20"]
+      - id: SHP-F023-R06
+        descripcion: El icono «Contador» descarta la lista de expedientes en memoria para que se vuelva a consultar.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:927"]
+
+  - id: SHP-F024
+    area: Ficha de alta y traspaso
+    nombre: Elegir un expediente en la lista de expedientes registrados
+    descripcion: >-
+      Ventana de búsqueda de expedientes por palabra clave, con elección del expediente para la solicitud y acceso a su detalle.
+    formulario: EXPEDIENTES REGISTRADOS
+    control: Palabra Clave | Elegir | Ver Detalle
+    tipo: lista
+    roles: []
+    resultado: >-
+      El expediente elegido se asigna a la solicitud desde la que se abrió la búsqueda.
+    tecnico:
+      formulario: Form_FormExpedientesBusqueda
+      control: ComandoElegir
+      evidencia: ["src/forms/Form_FormExpedientesBusqueda.cls:74", "src/forms/Form_FormExpedientesBusqueda.cls:202"]
+      prd: prd/formularios/Form_FormExpedientesBusqueda.md
+    reglas:
+      - id: SHP-F024-R01
+        descripcion: La lista muestra número, código, nemotécnico, tipo de informe, ordinal y título de los expedientes que coinciden con la palabra clave (criterio de SHP-F023-R02).
+        evidencia: ["src/forms/Form_FormExpedientesBusqueda.cls:221", "src/forms/Form_FormExpedientesBusqueda.cls:233"]
+      - id: SHP-F024-R02
+        descripcion: La lista se vuelve a filtrar al salir del campo de palabra clave si su valor ha cambiado; el icono de limpiar vacía la palabra clave y vuelve a filtrar.
+        evidencia: ["src/forms/Form_FormExpedientesBusqueda.cls:319", "src/forms/Form_FormExpedientesBusqueda.cls:112"]
+      - id: SHP-F024-R03
+        descripcion: Al seleccionar un expediente se muestran su título y sus códigos, y se activan «Elegir» y «Ver Detalle».
+        evidencia: ["src/forms/Form_FormExpedientesBusqueda.cls:293", "src/forms/Form_FormExpedientesBusqueda.cls:299"]
+      - id: SHP-F024-R04
+        descripcion: Sin expediente seleccionado, «Elegir» y «Ver Detalle» muestran «Se ha de seleccionar un elemento de la lista».
+        evidencia: ["src/forms/Form_FormExpedientesBusqueda.cls:87", "src/forms/Form_FormExpedientesBusqueda.cls:144"]
+      - id: SHP-F024-R05
+        descripcion: Al elegir, el expediente se pasa a la ficha de la solicitud y la ventana se cierra.
+        evidencia: ["src/forms/Form_FormExpedientesBusqueda.cls:94", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:890"]
+      - id: SHP-F024-R06
+        descripcion: El icono «Actualizar» vuelve a filtrar la lista.
+        evidencia: ["src/forms/Form_FormExpedientesBusqueda.cls:13"]
+
+  - id: SHP-F025
+    area: Ficha de alta y traspaso
+    nombre: Ver el detalle de un expediente
+    descripcion: >-
+      Muestra el número, título, nemotécnico, códigos y número ordinal del expediente.
+    formulario: DETALLE DE EXPEDIENTE
+    control: icono «Ver detalle del expediente» | Ver Detalle
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la ventana de detalle del expediente, solo de consulta.
+    tecnico:
+      formulario: Form_FormExpedienteDetalle
+      control: Form_Open
+      evidencia: ["src/forms/Form_FormExpedienteDetalle.cls:14", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:157", "src/forms/Form_FormExpedientesBusqueda.cls:130"]
+      prd: prd/formularios/Form_FormExpedienteDetalle.md
+    reglas:
+      - id: SHP-F025-R01
+        descripcion: Si no hay expediente se muestra «El formulario se ha abierto con parámetros insuficientes» y la ventana se cierra.
+        evidencia: ["src/forms/Form_FormExpedienteDetalle.cls:49"]
+      - id: SHP-F025-R02
+        descripcion: El detalle se abre desde la pestaña «Datos» de la ficha y desde «EXPEDIENTES REGISTRADOS».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:176", "src/forms/Form_FormExpedientesBusqueda.cls:153"]
+
+  - id: SHP-F026
+    area: Ficha de alta y traspaso
+    nombre: Añadir un motivo de HPS nuevo desde la ficha
+    descripcion: >-
+      Permite escribir un motivo de HPS que no está en la lista y dejarlo seleccionado en la solicitud.
+    formulario: Datos
+    control: icono «Comando que da de alta un nuevo motivo» (junto a «Motivo»)
+    tipo: botón
+    roles: []
+    resultado: >-
+      El motivo queda añadido a la lista de motivos y seleccionado en la solicitud.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaTraspasoDatos
+      control: ComandoMotivos
+      evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:260", "src/modules/FUNCIONES UTILES.bas:1442"]
+    reglas:
+      - id: SHP-F026-R01
+        descripcion: Se pide el motivo con «Introduzca el motivo si no existe en la lista anterior»; si se deja vacío no se hace nada.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:266"]
+      - id: SHP-F026-R02
+        descripcion: Se quitan los espacios de los extremos y el motivo solo se añade si no existe ya uno igual.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:1455", "src/modules/FUNCIONES UTILES.bas:1462"]
+      # posible defecto: el motivo nuevo se guarda en la base de datos de HPS, pero la lista de motivos se lee de la base de datos de la aplicación.
+      - id: SHP-F026-R03
+        descripcion: El motivo nuevo se guarda en la base de datos de HPS, compartida con la aplicación HPS, mientras que la lista de motivos de la ficha se lee de la base de datos de Solicitudes HPS.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:1460", "src/modules/constructor.bas:2114"]
+
+  - id: SHP-F027
+    area: Ficha de alta y traspaso
+    nombre: Dar de alta o editar un responsable
+    descripcion: >-
+      Registra el nombre, el correo y una descripción de un responsable, para usar su correo en las solicitudes.
+    formulario: ALTA DE RESPONSABLE | EDICIÓN DE RESPONSABLE
+    control: icono «Registrar»
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      El responsable queda registrado y, si se abrió desde la ficha, su correo queda seleccionado en «@ Resp.».
+    tecnico:
+      formulario: Form_FormResponsable
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormResponsable.cls:42", "src/classes/ResponsableOperaciones.cls:15"]
+    reglas:
+      - id: SHP-F027-R01
+        descripcion: Se abre en alta desde el icono «Alta» junto a «@ Resp.» de la pestaña «Datos» y en alta o edición desde la gestión de responsables (SHP-F068).
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:292", "src/forms/Form_FormResponsablesGestion.cls:146"]
+      - id: SHP-F027-R02
+        descripcion: Para el perfil técnico el botón «Registrar» queda desactivado.
+        evidencia: ["src/forms/Form_FormResponsable.cls:187", "src/forms/Form_FormResponsable.cls:190"]
+      - id: SHP-F027-R03
+        descripcion: Si no hay cambios se muestra «No hay cambios que guardar».
+        evidencia: ["src/forms/Form_FormResponsable.cls:58"]
+      - id: SHP-F027-R04
+        descripcion: El nombre es obligatorio («Falta el campo Nombre») y el correo debe tener formato de correo («Correo no tiene un formato correcto de email»).
+        evidencia: ["src/classes/ResponsableOperaciones.cls:27", "src/classes/ResponsableOperaciones.cls:31"]
+      - id: SHP-F027-R05
+        descripcion: No puede haber dos responsables con el mismo correo; si ya existe se muestra «Ese correo de Responsable ya está registrado».
+        evidencia: ["src/classes/ResponsableOperaciones.cls:42", "src/classes/ResponsableOperaciones.cls:48"]
+      - id: SHP-F027-R06
+        descripcion: Tras registrar un responsable nuevo desde la ficha, la lista de responsables se recarga y su correo queda seleccionado.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:861"]
+
+  - id: SHP-F028
+    area: Ficha de alta y traspaso
+    nombre: Elegir la justificación de la solicitud
+    descripcion: >-
+      Abre la lista de justificaciones en modo de selección para asignar una a la solicitud, o vacía la justificación asignada.
+    formulario: Datos
+    control: icono «Comando que busca una justificación» | icono «Quita el contenido del campo» (junto a «Justificación»)
+    tipo: botón
+    roles: []
+    resultado: >-
+      La justificación elegida aparece en «Justificación» con su título y el inicio de su descripción; se guarda al registrar los datos.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaTraspasoDatos
+      control: btnBuscarJustif
+      evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:930", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:15"]
+    reglas:
+      - id: SHP-F028-R01
+        descripcion: En modo de selección la ventana «JUSTIFICACIONES» muestra el botón «Elejir», que solo se activa si la justificación seleccionada está activa.
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:34", "src/forms/Form_frmBuscarJustificacion.cls:301"]
+      - id: SHP-F028-R02
+        descripcion: El doble clic en una justificación la elige; si la búsqueda por texto deja un único resultado, se elige automáticamente.
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:253", "src/forms/Form_frmBuscarJustificacion.cls:51"]
+      - id: SHP-F028-R03
+        descripcion: Si en modo de selección se da de alta o se edita una justificación, queda elegida al guardarla.
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:212"]
+      - id: SHP-F028-R04
+        descripcion: El campo muestra el título y la descripción entre paréntesis, recortada a 100 caracteres seguidos de «...».
+        evidencia: ["src/classes/JustificacionServicio.cls:106"]
+      - id: SHP-F028-R05
+        descripcion: Sin justificación seleccionada, «Elejir» muestra «Debes seleccionar una justificación de la lista.».
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:238"]
+
+  - id: SHP-F029
+    area: Ficha de alta y traspaso
+    nombre: Cambiar el tipo de una solicitud
+    descripcion: >-
+      Cambia una solicitud entre Alta, Renovación y Elevación Grado.
+    formulario: CAMBIO DE TIPO
+    control: icono «Registrar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud queda con el nuevo tipo, se anota en su historial y la ficha se cierra.
+    tecnico:
+      formulario: Form_FormCambioTipo
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormCambioTipo.cls:40", "src/classes/SolicitudOperaciones.cls:1267"]
+    reglas:
+      - id: SHP-F029-R01
+        descripcion: Se abre con el icono «Cambio de Tipo» de la pestaña «Datos», que solo está activo en solicitudes ya registradas que no son de traspaso.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:231", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:396"]
+      - id: SHP-F029-R02
+        descripcion: Los tipos futuros posibles son Alta, Renovación y Elevación Grado.
+        evidencia: ["src/forms/Form_FormCambioTipo.form.txt:436"]
+      - id: SHP-F029-R03
+        descripcion: Sin tipo futuro se muestra «Seleccione un tipo»; si es igual al actual, «Ya tiene ese tipo».
+        evidencia: ["src/forms/Form_FormCambioTipo.cls:50", "src/classes/SolicitudOperaciones.cls:1282"]
+      - id: SHP-F029-R04
+        descripcion: Una solicitud de traspaso no admite cambio de tipo; se muestra «El tipo actual es traspaso y no admite cambio de tipo».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1287"]
+      - id: SHP-F029-R05
+        descripcion: El cambio se anota en el historial como «Cambio del tipo «anterior» al «nuevo»».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1300"]
+      - id: SHP-F029-R06
+        descripcion: Tras el cambio se recalculan los pendientes y se cierra la ficha de la solicitud.
+        evidencia: ["src/forms/Form_FormCambioTipo.cls:64", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:834"]
+      - id: SHP-F029-R07
+        descripcion: El cambio de tipo no comprueba el perfil del usuario.
+        evidencia: ["src/forms/Form_FormCambioTipo.cls:80"]
+
+  - id: SHP-F030
+    area: Ficha de alta y traspaso
+    nombre: Consultar el estado actual de la solicitud
+    descripcion: >-
+      La pestaña «Datos» muestra el estado calculado de la solicitud; el icono «Actualizar» lo vuelve a calcular.
+    formulario: Datos
+    control: icono «Actualizar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      El rótulo de estado muestra el estado calculado de la solicitud.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaTraspasoDatos
+      control: ComandoActualizar
+      evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:213", "src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:467"]
+    reglas:
+      - id: SHP-F030-R01
+        descripcion: En una solicitud nueva el rótulo de estado y el icono no se muestran.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaTraspasoDatos.cls:382"]
+
+  # ---------------------------------------------------------------------------
+  # Ficha de solicitud de alta: pestaña «Fechas» y envío de correos de trámite
+  # ---------------------------------------------------------------------------
+  - id: SHP-F031
+    area: Tramitación del alta
+    nombre: Consultar las fechas de tramitación de un alta
+    descripcion: >-
+      La pestaña «Fechas» muestra la fecha de cada trámite del alta, la fecha prevista del próximo correo automático de cada fase y los días que faltan para la autocancelación.
+    formulario: Fechas
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve qué trámites están hechos y qué botones de registro o de borrado de fase puede usar.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: EstablecerDatos
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1435", "src/forms/Form_FormSolicitudesAltaFechas.cls:1493"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F031-R01
+        descripcion: Las fechas de los trámites no se escriben a mano en la pestaña; se registran con los botones de cada trámite.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.form.txt:597"]
+      - id: SHP-F031-R02
+        descripcion: El icono para borrar una fase solo aparece cuando esa fase tiene fecha registrada.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1510", "src/forms/Form_FormSolicitudesAltaFechas.cls:1546", "src/forms/Form_FormSolicitudesAltaFechas.cls:1631"]
+      - id: SHP-F031-R03
+        descripcion: El botón para abrir el Excel devuelto por el solicitante solo aparece cuando se ha registrado su recepción.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1549"]
+      - id: SHP-F031-R04
+        descripcion: «Registro» del envío ONS solo está activo si hay fecha de envío del DPS y no se ha registrado aún en HPS.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1600", "src/forms/Form_FormSolicitudesAltaFechas.cls:1612"]
+      - id: SHP-F031-R05
+        descripcion: «Registrar en HPS (Fin tramitación solicitud)» solo está activo si hay fecha de envío ONS y no se ha registrado aún en HPS.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1598", "src/forms/Form_FormSolicitudesAltaFechas.cls:1621"]
+      - id: SHP-F031-R06
+        descripcion: Las fechas previstas de los correos automáticos se calculan sumando a la fecha de envío del Excel (o a la del alta en MARGA) los días configurados; el segundo recordatorio suma los días del primero y del segundo.
+        evidencia: ["src/classes/SolicitudFechas.cls:80", "src/classes/SolicitudFechas.cls:114", "src/classes/SolicitudFechas.cls:177"]
+      - id: SHP-F031-R07
+        descripcion: Una solicitud sin ninguna fecha registrada muestra la pestaña vacía.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1505"]
+      # posible defecto: en el alta el campo «DÍAS PARA AUTOCANCELACIÓN» no se rellena nunca; en traspasos y renovaciones sí.
+      - id: SHP-F031-R08
+        descripcion: En la pestaña de un alta el campo «DÍAS PARA AUTOCANCELACIÓN» se muestra siempre vacío.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.form.txt:1233", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:1129"]
+
+  - id: SHP-F032
+    area: Tramitación del alta
+    nombre: Enviar el Excel de solicitud de información al solicitante
+    descripcion: >-
+      Registra la fecha de envío del Excel de recogida de datos y envía al solicitante el correo con la plantilla del Excel adjunta.
+    formulario: Fechas
+    control: ENVÍO EXCEL SOLICITUD INFORMACIÓN
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud pasa a «Pendiente Excel Relleno», el correo queda en la cola de envío y, si procede, se programan los recordatorios y la autocancelación.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoRegistrarExcelEnviado
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:914", "src/classes/SolicitudOperaciones.cls:452"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F032-R01
+        descripcion: El botón abre la ventana de envío de correo (SHP-F033) preparada para el envío del Excel.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:928"]
+      - id: SHP-F032-R02
+        descripcion: La fecha de envío no puede ser posterior a hoy; si lo es se muestra «La fecha no puede ser superior a la del día de hoy».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:476"]
+      - id: SHP-F032-R03
+        descripcion: Al registrar el envío se guardan las fechas previstas del primer recordatorio y, si procede, de la autocancelación previa a MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:497"]
+      - id: SHP-F032-R04
+        descripcion: Si los correos automáticos están activos en la configuración y en la solicitud, se programan el recordatorio 1 a los días configurados, el recordatorio 2 a la suma de ambos plazos y, si está activada, la autocancelación previa a MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:510"]
+      - id: SHP-F032-R05
+        descripcion: Un plazo configurado de cero días o vacío no programa el correo correspondiente.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2275"]
+      - id: SHP-F032-R06
+        descripcion: El correo de envío del Excel lleva adjunta la plantilla del Excel (la de alta para altas y renovaciones, la de traspaso para traspasos).
+        evidencia: ["src/modules/Automiatizacion.bas:180", "src/classes/Solicitud.cls:922"]
+      - id: SHP-F032-R07
+        descripcion: El asunto es «SOLICITUD HPS – «día» – «mes» – «año» – «nombre completo»» con la fecha del día en que se prepara el correo.
+        evidencia: ["src/classes/Solicitud.cls:574"]
+      - id: SHP-F032-R08
+        descripcion: Si el registro se guarda pero el correo falla, se muestra «Registro OK, pero error al enviar correo» con el detalle.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:533"]
+      - id: SHP-F032-R09
+        descripcion: Se anota en el historial «Registro Envío Excel» con los destinatarios o «Solo registro de fecha (Sin correo)»; en un reenvío se añade «(REENVÍO SIN CAMBIO DE FECHA)».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:541", "src/classes/SolicitudOperaciones.cls:548"]
+
+  - id: SHP-F033
+    area: Tramitación del alta
+    nombre: Registrar un trámite y enviar su correo
+    descripcion: >-
+      Ventana común a todos los correos de trámite (envío del Excel, recordatorios y cancelaciones). Permite revisar destinatarios y asunto, registrar la fecha del trámite y enviar, reenviar sin cambiar la fecha o grabar solo la fecha.
+    formulario: «tipo de correo» (por ejemplo SOLICITUD DATOS POR EXCEL)
+    control: Registrar y Enviar | Reenviar Correo | Grabar Solo Fecha
+    tipo: botón
+    roles: []
+    resultado: >-
+      Queda registrada la fecha del trámite, el correo queda en la cola de envío, o ambas cosas; se muestra «Operación completada».
+    tecnico:
+      formulario: Form_FormEnvioCorreo
+      control: ComandoEnviar
+      evidencia: ["src/forms/Form_FormEnvioCorreo.cls:45", "src/forms/Form_FormEnvioCorreo.cls:137", "src/forms/Form_FormEnvioCorreo.cls:210"]
+      prd: prd/formularios/Form_FormEnvioCorreo.md
+    reglas:
+      - id: SHP-F033-R01
+        descripcion: La cabecera muestra el tipo de correo (por ejemplo «SOLICITUD DATOS POR EXCEL» o «RECORDATORIO 1 ENVÍO DPS»).
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:153", "src/classes/Entorno.cls:1920"]
+      - id: SHP-F033-R02
+        descripcion: «PARA» propone el email de la solicitud; «CC.» propone el buzón de seguridad y, en los recordatorios, también el correo del responsable; los tres campos y el asunto se pueden modificar.
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:155", "src/classes/Solicitud.cls:1330", "src/classes/Solicitud.cls:1426"]
+      - id: SHP-F033-R03
+        descripcion: Si el trámite aún no tiene fecha, la casilla «Registrar/Actualizar fecha del Hito en la Base de Datos» queda marcada y bloqueada, la fecha propuesta es hoy y el botón dice «Registrar y Enviar».
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:189"]
+      - id: SHP-F033-R04
+        descripcion: Si el trámite ya tiene fecha, la casilla queda desmarcada, se muestra la fecha registrada y el botón dice «Reenviar Correo»; marcando la casilla se corrige la fecha además de reenviar.
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:183"]
+      - id: SHP-F033-R05
+        descripcion: Antes de enviar se pide confirmación; en un reenvío se avisa de que no se modificará la fecha del hito ni los plazos.
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:52", "src/forms/Form_FormEnvioCorreo.cls:61"]
+      - id: SHP-F033-R06
+        descripcion: Cuando se registra la fecha, debe ser una fecha válida («Debe indicar una fecha válida.») y no posterior a hoy («No se permite una fecha posterior a la fecha de edición (hoy).»).
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:387"]
+      - id: SHP-F033-R07
+        descripcion: «Grabar Solo Fecha» avisa de que no se enviará correo, pide confirmación, valida la fecha y registra solo la fecha del trámite.
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:297", "src/forms/Form_FormEnvioCorreo.cls:229"]
+      - id: SHP-F033-R08
+        descripcion: Para que el correo entre en la cola debe tener al menos un destinatario con «@» («No hay destinatarios») y asunto («Ha de indicar el asunto»); si lleva adjunto, este debe ser accesible («El Adjunto no es alcanzable»).
+        evidencia: ["src/classes/CorreoOperaciones.cls:54", "src/classes/CorreoOperaciones.cls:60", "src/classes/CorreoOperaciones.cls:72"]
+      - id: SHP-F033-R09
+        descripcion: El cuerpo del correo se compone con la plantilla de la versión configurada para ese tipo de correo y los datos de la solicitud (gestor, responsable, plazos, días transcurridos).
+        evidencia: ["src/modules/Automiatizacion.bas:192", "src/classes/Solicitud.cls:353"]
+      - id: SHP-F033-R10
+        descripcion: Los correos no se envían desde la ventana; quedan en la cola de correos con la fecha de grabación y quien lo desencadenó, para su envío posterior.
+        evidencia: ["src/classes/CorreoOperaciones.cls:149", "src/classes/CorreoOperaciones.cls:185"]
+      # posible defecto: todos los correos que entran en la cola llevan en copia oculta una dirección personal fijada en el código.
+      - id: SHP-F033-R11
+        descripcion: Todo correo que entra en la cola lleva en copia oculta una dirección fija definida en el código.
+        evidencia: ["src/classes/CorreoOperaciones.cls:163"]
+      # posible defecto: el campo «PROGRAMADO» de la ventana siempre vale «No» y no influye en el envío.
+      - id: SHP-F033-R12
+        descripcion: El campo «PROGRAMADO» se inicia en «No» y su valor no se usa al registrar el correo.
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:164", "src/forms/Form_FormEnvioCorreo.cls:240"]
+      - id: SHP-F033-R13
+        descripcion: Tras enviar se actualiza la pestaña «Fechas» de la ficha abierta y los contadores de pendientes.
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:98", "src/forms/Form_FormEnvioCorreo.cls:108"]
+      - id: SHP-F033-R14
+        descripcion: La ventana no comprueba el perfil del usuario.
+        evidencia: ["src/forms/Form_FormEnvioCorreo.cls:343"]
+
+  - id: SHP-F034
+    area: Tramitación del alta
+    nombre: Enviar los recordatorios del Excel
+    descripcion: >-
+      Envía al solicitante el primer o el segundo recordatorio para que devuelva el Excel relleno y registra su fecha.
+    formulario: Fechas
+    control: Envío Recordatorio 1 | Envío Recordatorio 2 (RECORDATORIO EXCEL 1 y 2)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Queda registrada la fecha del recordatorio y el correo en la cola de envío.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoEnvioRecordatorioExcel1, ComandoEnvioRecordatorioExcel2
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:947", "src/forms/Form_FormSolicitudesAltaFechas.cls:979", "src/classes/SolicitudOperaciones.cls:559", "src/classes/SolicitudOperaciones.cls:624"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F034-R01
+        descripcion: Cada botón abre la ventana de envío de correo (SHP-F033) con su tipo de recordatorio.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:961", "src/forms/Form_FormSolicitudesAltaFechas.cls:993"]
+      - id: SHP-F034-R02
+        descripcion: Al registrar el primer recordatorio se recalcula la fecha prevista del segundo; al registrar el segundo, la de la autocancelación previa a MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:586", "src/classes/SolicitudOperaciones.cls:670"]
+      - id: SHP-F034-R03
+        descripcion: Los recordatorios van en copia al responsable de la solicitud y al buzón de seguridad.
+        evidencia: ["src/classes/Solicitud.cls:1334"]
+      - id: SHP-F034-R04
+        descripcion: Los asuntos son «1º RECORDATORIO SOLICITUD HPS – «fecha» – «nombre»» y «2º RECORDATORIO SOLICITUD HPS – «fecha» – «nombre»».
+        evidencia: ["src/classes/Solicitud.cls:605", "src/classes/Solicitud.cls:636"]
+      - id: SHP-F034-R05
+        descripcion: Se anota en el historial «Recordatorio Excel 1» o «Registro Recordatorio Envio Excel 2» con los destinatarios o «Registro Manual».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:618", "src/classes/SolicitudOperaciones.cls:710"]
+      - id: SHP-F034-R06
+        descripcion: Registrar un recordatorio no exige que se haya enviado antes el Excel ni el recordatorio anterior.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:581", "src/classes/SolicitudOperaciones.cls:646"]
+
+  - id: SHP-F035
+    area: Tramitación del alta
+    nombre: Adjuntar el Excel devuelto por el solicitante
+    descripcion: >-
+      Registra la recepción del Excel relleno por el solicitante y guarda una copia en la carpeta de la solicitud.
+    formulario: EXCEL DEL SOLICITANTE
+    control: icono «Registrar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      El Excel queda copiado en la documentación de la solicitud, se registra la fecha de recepción y la solicitud avanza de estado.
+    tecnico:
+      formulario: Form_FormAdjuntarExcelSolicitante
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormAdjuntarExcelSolicitante.cls:41", "src/classes/SolicitudOperaciones.cls:1453"]
+      prd: prd/formularios/Form_FormAdjuntarExcelSolicitante.md
+    reglas:
+      - id: SHP-F035-R01
+        descripcion: Se abre con «ADJUNTAR EXCEL RECIBIDO DE SOLCITUD DE INFORMACIÓN» de la pestaña «Fechas».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:474"]
+      - id: SHP-F035-R02
+        descripcion: El fichero se elige con el botón de selección; si no se elige ninguno se muestra «Debe seleccionar el archivo a registrar».
+        evidencia: ["src/forms/Form_FormAdjuntarExcelSolicitante.cls:115", "src/forms/Form_FormAdjuntarExcelSolicitante.cls:50"]
+      - id: SHP-F035-R03
+        descripcion: La fecha propuesta es hoy o la recepción ya registrada; si se deja vacía se usa la de hoy.
+        evidencia: ["src/forms/Form_FormAdjuntarExcelSolicitante.cls:96", "src/classes/SolicitudOperaciones.cls:1471"]
+      - id: SHP-F035-R04
+        descripcion: Antes hay que haber registrado el envío del Excel («Primero hay que registrar el envío del Excel») y la fecha de recepción no puede ser anterior a la de envío («La fecha no puede ser anterior a la del envío del Excel»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1484", "src/classes/SolicitudOperaciones.cls:1488"]
+      - id: SHP-F035-R05
+        descripcion: Si el fichero elegido no es accesible se muestra «El adjunto no es alcanzable»; si el Excel de destino está abierto, «Parece que el adjunto existe en el destino y está abierto o de sólo lectura».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1475", "src/classes/SolicitudOperaciones.cls:1497"]
+      - id: SHP-F035-R06
+        descripcion: El fichero se copia en la carpeta de documentación de la solicitud, identificada por su número con seis cifras.
+        evidencia: ["src/classes/Solicitud.cls:1005", "src/classes/SolicitudOperaciones.cls:1509"]
+      - id: SHP-F035-R07
+        descripcion: Al registrar la recepción se anulan los recordatorios del Excel y la autocancelación previa a MARGA que estuvieran programados.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1535", "src/modules/AutomatizacionRepositorio.bas:16"]
+      - id: SHP-F035-R08
+        descripcion: Se anota en el historial «Registro Excel del Solicitante».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1530"]
+      - id: SHP-F035-R09
+        descripcion: La ventana permite abrir el Excel ya adjuntado pulsando su icono.
+        evidencia: ["src/forms/Form_FormAdjuntarExcelSolicitante.cls:182"]
+
+  - id: SHP-F036
+    area: Tramitación del alta
+    nombre: Registrar el alta en MARGA por el tramitador
+    descripcion: >-
+      Registra la fecha en que el tramitador dio de alta la ficha del solicitante en MARGA.
+    formulario: Fechas
+    control: ALTA EN MARGA POR TRAMITADOR
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud pasa a «Pendiente Envío DPS» y, si procede, se programan los recordatorios del DPS y la autocancelación de MARGA.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoRegistrarAltaMarga
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:505", "src/classes/SolicitudOperaciones.cls:1773"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F036-R01
+        descripcion: Se pide «Fecha de Alta en Marga» proponiendo hoy; si se deja vacía no se registra nada y si no es una fecha válida se usa la de hoy.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:512", "src/classes/SolicitudOperaciones.cls:1787"]
+      # posible defecto: el mensaje habla del envío del Excel aunque lo que se comprueba es la recepción del Excel relleno.
+      - id: SHP-F036-R02
+        descripcion: Antes hay que haber registrado la recepción del Excel relleno; si no, se muestra «Primero hay que registrar el envío del Excel».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1801"]
+      - id: SHP-F036-R03
+        descripcion: La fecha no puede ser anterior a la de recepción del Excel («La fecha no puede ser anterior a la de alta de recepción del Excel»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1805"]
+      - id: SHP-F036-R04
+        descripcion: No se comprueba que la fecha no sea posterior a hoy.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1787"]
+      - id: SHP-F036-R05
+        descripcion: Se guardan las fechas previstas de los recordatorios del DPS y de la autocancelación de MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1810"]
+      - id: SHP-F036-R06
+        descripcion: Si los correos automáticos están activos se programan el recordatorio 1 del DPS, el recordatorio 2 a la suma de ambos plazos y, si está activada, la autocancelación de MARGA, y se anulan los correos programados de la fase del Excel.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1827", "src/classes/SolicitudOperaciones.cls:1849"]
+      - id: SHP-F036-R07
+        descripcion: Se anota en el historial «Registro Alta en Marga».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1822"]
+
+  - id: SHP-F037
+    area: Tramitación del alta
+    nombre: Enviar los recordatorios de cumplimentación del DPS
+    descripcion: >-
+      Envía al solicitante el primer o el segundo recordatorio para que cumplimente el DPS en la plataforma MARGA y registra su fecha.
+    formulario: Fechas
+    control: Envío Recordatorio 1 | Envío Recordatorio 2 (RECORDATORIO MARGA 1 y 2)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Queda registrada la fecha del recordatorio y el correo en la cola de envío.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoEnvioRecordatorioMarga1, ComandoEnvioRecordatorioMarga2
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1012", "src/forms/Form_FormSolicitudesAltaFechas.cls:1045", "src/classes/SolicitudOperaciones.cls:809", "src/classes/SolicitudOperaciones.cls:901"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F037-R01
+        descripcion: Cada botón abre la ventana de envío de correo (SHP-F033) con su tipo de recordatorio.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1026", "src/forms/Form_FormSolicitudesAltaFechas.cls:1059"]
+      - id: SHP-F037-R02
+        descripcion: La fecha no puede ser posterior a hoy («La fecha no puede ser superior a la del día de hoy»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:833", "src/classes/SolicitudOperaciones.cls:925"]
+      - id: SHP-F037-R03
+        descripcion: Al registrar el primero se recalculan las fechas previstas del segundo y de la autocancelación de MARGA; al registrar el segundo, la de la autocancelación.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:855", "src/classes/SolicitudOperaciones.cls:947"]
+      - id: SHP-F037-R04
+        descripcion: Los asuntos son «1º RECORDATORIO» y «2º RECORDATORIO» seguidos de «Cumplimentación DPS en plataforma MARGA (Gobernanza de Ciberseguridad Nacional)», la fecha y el nombre.
+        evidencia: ["src/classes/Solicitud.cls:721", "src/classes/Solicitud.cls:752"]
+      - id: SHP-F037-R05
+        descripcion: Van en copia al responsable y al buzón de seguridad, y se anotan en el historial como «Registro Recordatorio Marga 1» o «Registro Recordatorio Marga 2».
+        evidencia: ["src/classes/Solicitud.cls:1346", "src/classes/SolicitudOperaciones.cls:892", "src/classes/SolicitudOperaciones.cls:981"]
+
+  - id: SHP-F038
+    area: Tramitación del alta
+    nombre: Registrar el envío del DPS
+    descripcion: >-
+      Registra la fecha en que el solicitante envió el DPS.
+    formulario: Fechas
+    control: Registro (FECHA ENVÍO DPS)
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud pasa a «Pendiente Envío ONS» y se anulan los recordatorios y la autocancelación de MARGA programados.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoRegistrarDPS
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:373", "src/classes/SolicitudOperaciones.cls:1914"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F038-R01
+        descripcion: Antes hay que haber registrado el alta en MARGA; si no, se muestra «Primero hay que registrar el alta de la ficha en Marga».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:379"]
+      - id: SHP-F038-R02
+        descripcion: Se pide «Fecha de Registro DPS» proponiendo hoy; si se deja vacía no se registra nada.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:383"]
+      - id: SHP-F038-R03
+        descripcion: La fecha no puede ser anterior al alta en MARGA («La fecha no puede ser anterior a la de alta de tramitación Marga»); no se comprueba que no sea posterior a hoy.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1946"]
+      - id: SHP-F038-R04
+        descripcion: Se anulan los correos programados de recordatorio del DPS y de autocancelación de MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1965", "src/modules/AutomatizacionRepositorio.bas:28"]
+      - id: SHP-F038-R05
+        descripcion: Se anota en el historial «Alta Envío DPS».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1959"]
+
+  - id: SHP-F039
+    area: Tramitación del alta
+    nombre: Registrar el envío a la ONS
+    descripcion: >-
+      Registra la fecha de envío de la documentación a la ONS.
+    formulario: Fechas
+    control: Registro (ENVÍO ONS)
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud pasa a «Pendiente fin tramitación».
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoRegistrarEnvioONS
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:418", "src/classes/SolicitudOperaciones.cls:2017"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F039-R01
+        descripcion: Antes hay que haber registrado el alta en MARGA («Primero hay que registrar el alta en Marga») y el envío del DPS («Primero hay que registrar el envío del DPS»).
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:426", "src/classes/SolicitudOperaciones.cls:2045"]
+      - id: SHP-F039-R02
+        descripcion: Se pide «Fecha de Registro ONS» proponiendo hoy; si se deja vacía no se registra nada.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:430"]
+      - id: SHP-F039-R03
+        descripcion: La fecha no puede ser anterior al envío del DPS («La fecha no puede ser anterior a la del envío del DPS»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2049"]
+      - id: SHP-F039-R04
+        descripcion: Se anulan los recordatorios y la autocancelación de MARGA programados, y se anota «Alta Registro ONS» en el historial.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2068", "src/classes/SolicitudOperaciones.cls:2062"]
+
+  - id: SHP-F040
+    area: Tramitación del alta
+    nombre: Registrar al usuario en HPS y finalizar la tramitación
+    descripcion: >-
+      Crea o actualiza al usuario en la aplicación HPS con los datos de la solicitud y registra la fecha de fin de tramitación.
+    formulario: Fechas
+    control: Registrar en HPS (Fin tramitación solicitud)
+    tipo: botón
+    roles: []
+    resultado: >-
+      El usuario queda dado de alta o actualizado en HPS y la solicitud pasa a «Tramitado».
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoRegistroHPS
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1081", "src/classes/SolicitudOperaciones.cls:1158"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F040-R01
+        descripcion: Antes hay que haber registrado el envío a la ONS; si no, se muestra «Primero hay que registrar la fecha de envío ONS».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1095"]
+      - id: SHP-F040-R02
+        descripcion: Solo se puede hacer en la oficina; si no, se muestra «Esta operación sólo se puede hacer en la oficina».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1087"]
+      - id: SHP-F040-R03
+        descripcion: "Son obligatorios, con su mensaje: DNI, nombre, primer apellido, teléfono, empresa del usuario, empresa de tramitación del HPS, correo con «@», motivo, expediente con al menos un contratista, lugar y fecha de nacimiento."
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1093", "src/classes/SolicitudOperaciones.cls:1142"]
+      - id: SHP-F040-R04
+        descripcion: Si en HPS ya existe un usuario con ese DNI se actualizan sus datos; si no, se crea uno nuevo y se asocia a la solicitud.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1178", "src/classes/SolicitudOperaciones.cls:1182", "src/classes/SolicitudOperaciones.cls:1211"]
+      - id: SHP-F040-R05
+        descripcion: Al crear se informa «Se ha generado un UsuarioHPS en el aplicativo de HPS. La tramitación de la solicitud ya ha terminado»; al actualizar, «Se ha actualizado un UsuarioHPS ya existente en el aplicativo de HPS. La tramitación de la solicitud ya ha terminado».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1121", "src/forms/Form_FormSolicitudesAltaFechas.cls:1124"]
+      - id: SHP-F040-R06
+        descripcion: La fecha de registro en HPS es siempre la de hoy y el estado se recalcula.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1230", "src/classes/SolicitudOperaciones.cls:1254"]
+      - id: SHP-F040-R07
+        descripcion: Si el estado cambia se refresca la lista de solicitudes y se recalculan los pendientes.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1141", "src/forms/Form_FormSolicitudesAltaFechas.cls:1146"]
+      # posible defecto: el fin de tramitación no deja anotación en el historial de la solicitud.
+      - id: SHP-F040-R08
+        descripcion: El registro en HPS no anota ninguna acción en el historial de la solicitud.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1243"]
+
+  - id: SHP-F041
+    area: Tramitación del alta
+    nombre: Desestimar una solicitud
+    descripcion: >-
+      Registra la fecha de desestimación de la solicitud, que pasa a estado «Desestimado».
+    formulario: Fechas
+    control: Desestimar
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud queda desestimada y se borran todos sus correos programados pendientes.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoRegistrarDesestimado
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:332", "src/classes/SolicitudOperaciones.cls:2118"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F041-R01
+        descripcion: Se pide «Fecha de Desestimación» proponiendo hoy; si se deja vacía no se registra nada y si no es una fecha válida se usa la de hoy.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:338", "src/classes/SolicitudOperaciones.cls:2132"]
+      - id: SHP-F041-R02
+        descripcion: Se puede desestimar en cualquier fase; no se comprueba que la fecha no sea futura.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2144"]
+      - id: SHP-F041-R03
+        descripcion: Se borran todos los correos programados que aún no han salido y se anota «Alta Desestimado» en el historial.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2160", "src/classes/SolicitudOperaciones.cls:2156"]
+
+  - id: SHP-F042
+    area: Tramitación del alta
+    nombre: Cancelar una solicitud enviando el correo de cancelación
+    descripcion: >-
+      Envía al solicitante el correo de autocancelación (antes o después del alta en MARGA) y registra la cancelación de la solicitud.
+    formulario: Fechas
+    control: Cancelar | Envío Cancelación
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud pasa a «Cancelado», el correo de cancelación queda en la cola y se borran los correos programados pendientes.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoRegistraCancelacion
+      evidencia:
+        - "src/forms/Form_FormSolicitudesAltaFechas.cls:293"
+        - "src/forms/Form_FormSolicitudesAltaFechas.cls:848"
+        - "src/forms/Form_FormSolicitudesAltaFechas.cls:881"
+        - "src/classes/SolicitudOperaciones.cls:719"
+        - "src/classes/SolicitudOperaciones.cls:990"
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F042-R01
+        descripcion: «Cancelar» abre la ventana de envío de correo (SHP-F033) con la cancelación de MARGA si ya hay alta en MARGA y con la cancelación previa a MARGA si no.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:308"]
+      - id: SHP-F042-R02
+        descripcion: Los dos botones «Envío Cancelación» abren directamente la cancelación previa a MARGA y la de MARGA.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:862", "src/forms/Form_FormSolicitudesAltaFechas.cls:895"]
+      - id: SHP-F042-R03
+        descripcion: La fecha no puede ser posterior a hoy; al registrarla se guarda como fecha de cancelación de la solicitud.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:743", "src/classes/SolicitudOperaciones.cls:764", "src/classes/SolicitudOperaciones.cls:1035"]
+      - id: SHP-F042-R04
+        descripcion: Se borran todos los correos programados pendientes de la solicitud.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:773", "src/classes/SolicitudOperaciones.cls:1044"]
+      - id: SHP-F042-R05
+        descripcion: El asunto es «AUTOCANCELACIÓN DE SOLICITUD HPS – «fecha» – «nombre»» y va en copia al buzón de seguridad.
+        evidencia: ["src/classes/Solicitud.cls:664", "src/classes/Solicitud.cls:1342"]
+      - id: SHP-F042-R06
+        descripcion: Se anota en el historial «Registro Autocancelación Premarga» o «Registro Autocancelación Marga».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:800", "src/classes/SolicitudOperaciones.cls:1071"]
+
+  - id: SHP-F043
+    area: Tramitación del alta
+    nombre: Borrar la fecha de una fase de la tramitación
+    descripcion: >-
+      Cada fase con fecha registrada tiene un icono para borrarla y deshacer ese paso de la tramitación.
+    formulario: Fechas
+    control: iconos «Eliminar la fase de …», «Eliminar la desestimación», «Eliminar la fecha de cancelacion»
+    tipo: botón
+    roles: []
+    resultado: >-
+      La fecha de la fase queda borrada, el estado se recalcula y se anota en el historial.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoEliminar*
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:10", "src/classes/SolicitudOperaciones.cls:1311"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F043-R01
+        descripcion: Cada borrado pide confirmación (por ejemplo «¿Desea borrar la fecha de Registro en Marga?»); la opción por defecto es No.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:556", "src/forms/Form_FormSolicitudesAltaFechas.cls:637"]
+      # posible defecto: el mensaje habla del envío del Excel aunque lo que impide el borrado es que ya se recibió el Excel relleno.
+      - id: SHP-F043-R02
+        descripcion: No se puede borrar el envío del Excel si ya se registró la recepción del Excel relleno; se muestra «Ya se ha registrado el envío del Excel».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1327"]
+      - id: SHP-F043-R03
+        descripcion: Borrar el envío del Excel borra también las fechas de los recordatorios del Excel y sus fechas previstas y la de autocancelación previa a MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1337"]
+      - id: SHP-F043-R04
+        descripcion: En un alta no se puede borrar la recepción del Excel si ya hay alta en MARGA («Tiene registrada el alta de la ficha en Marga»); en renovaciones y elevaciones de grado, si ya hay envío ONS.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1571", "src/classes/SolicitudOperaciones.cls:1577"]
+      - id: SHP-F043-R05
+        descripcion: Borrar la recepción del Excel borra también el fichero adjunto y su carpeta si queda vacía; si el fichero está abierto no se borra.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1560", "src/classes/SolicitudOperaciones.cls:1595"]
+      - id: SHP-F043-R06
+        descripcion: No se puede borrar el alta en MARGA si ya se registró el envío del DPS («Ya se ha registrado el envío del DPS»); al borrarla se borran también los recordatorios del DPS y la autocancelación de MARGA.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1877", "src/classes/SolicitudOperaciones.cls:1889"]
+      - id: SHP-F043-R07
+        descripcion: No se puede borrar el envío del DPS si ya se registró el envío ONS («Ya se ha registrado el envío ONS»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1394"]
+      - id: SHP-F043-R08
+        descripcion: Los recordatorios, el envío ONS, la desestimación y la cancelación se pueden borrar sin más comprobaciones.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1346", "src/classes/SolicitudOperaciones.cls:1404", "src/classes/SolicitudOperaciones.cls:1411", "src/classes/SolicitudOperaciones.cls:1418"]
+      - id: SHP-F043-R09
+        descripcion: Cada borrado se anota en el historial (por ejemplo «Eliminado Registro Envio Excel», «Eliminado Registro Alta Marga», «Eliminado Cancelación»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1345", "src/classes/SolicitudOperaciones.cls:1437", "src/classes/SolicitudOperaciones.cls:1902"]
+      # posible defecto: borrar una fase no anula ni vuelve a programar los correos automáticos ya programados.
+      - id: SHP-F043-R10
+        descripcion: Borrar una fase no anula los correos automáticos ya programados de esa fase.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1429"]
+
+  - id: SHP-F044
+    area: Correos automáticos
+    nombre: Recalcular las fechas previstas de los correos automáticos
+    descripcion: >-
+      Vuelve a calcular, con los plazos configurados, las fechas previstas de los recordatorios y autocancelaciones de la fase del Excel o de la fase de MARGA.
+    formulario: Fechas
+    control: icono «Actualizar Tareas» (dos, uno por fase)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Las fechas «PRÓX CORREO» de la fase quedan recalculadas y guardadas.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoActualizarRecordatoriosExcelPreMarga, ComandoActualizarRecordatoriosExcelMarga
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:48", "src/forms/Form_FormSolicitudesAltaFechas.cls:116"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F044-R01
+        descripcion: Si una fecha prevista no se puede calcular (falta la fecha base o el plazo) queda vacía.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:64", "src/forms/Form_FormSolicitudesAltaFechas.cls:67"]
+      - id: SHP-F044-R02
+        descripcion: El recálculo solo cambia las fechas previstas guardadas; no programa ni anula correos.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:86"]
+      # posible defecto: en la fase de MARGA el segundo recordatorio depende de que se pueda calcular el segundo recordatorio del Excel.
+      - id: SHP-F044-R03
+        descripcion: En la fase de MARGA, la fecha prevista del segundo recordatorio solo se recalcula si también se puede calcular la del segundo recordatorio del Excel.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:139"]
+
+  - id: SHP-F045
+    area: Tramitación del alta
+    nombre: Previsualizar el correo que se va a enviar
+    descripcion: >-
+      Muestra el correo de cada fase (envío del Excel, recordatorios y cancelaciones) tal como se enviaría con los datos de la solicitud.
+    formulario: Fechas
+    control: iconos «Ver HTML que se va a enviar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre el visor interno con el correo compuesto a partir de la plantilla configurada.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoVer*
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1290", "src/modules/FUNCIONES UTILES.bas:1336"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F045-R01
+        descripcion: Cada icono usa la plantilla de su tipo de correo dentro de la versión de plantillas configurada.
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1241", "src/forms/Form_FormSolicitudesAltaFechas.cls:1299", "src/forms/Form_FormSolicitudesAltaFechas.cls:1328"]
+      - id: SHP-F045-R02
+        descripcion: Las variables de la plantilla se sustituyen por los datos de la solicitud y se copian las imágenes de la plantilla para verlas en local.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:1360", "src/modules/FUNCIONES UTILES.bas:1378"]
+      - id: SHP-F045-R03
+        descripcion: Si la plantilla no existe se muestra «Sin no se da el TextoHTM se ha de dar la plantilla y la colección de variables».
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:1195"]
+
+  - id: SHP-F046
+    area: Tramitación del alta
+    nombre: Abrir el Excel que se envía y el Excel devuelto
+    descripcion: >-
+      Abre la plantilla del Excel que se envía al solicitante o el Excel relleno que devolvió.
+    formulario: Fechas
+    control: icono «E» (Excel que se envía al Usuario | Excel que envía el solicitante relleno)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre una copia local del Excel.
+    tecnico:
+      formulario: Form_FormSolicitudesAltaFechas
+      control: ComandoURLExcelSolicitud, ComandoURLExcelRespuesta
+      evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1193", "src/forms/Form_FormSolicitudesAltaFechas.cls:1162"]
+      prd: prd/formularios/Form_FormSolicitudesAltaFechas.md
+    reglas:
+      - id: SHP-F046-R01
+        descripcion: Para altas y renovaciones se abre la plantilla de alta y para traspasos la de traspaso; en otro tipo se muestra «Tipo deconocido».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1204"]
+      - id: SHP-F046-R02
+        descripcion: Si no hay Excel devuelto se muestra «No hay ningún Adjunto del Solicitante».
+        evidencia: ["src/forms/Form_FormSolicitudesAltaFechas.cls:1170"]
+      - id: SHP-F046-R03
+        descripcion: El fichero se copia a la carpeta local antes de abrirlo; si no es accesible se muestra «No es accesible la ruta del archivo que se pretende abrir».
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:448", "src/modules/FUNCIONES UTILES.bas:464"]
+
+  - id: SHP-F047
+    area: Transversal
+    nombre: Ver informes y correos en el visor interno
+    descripcion: >-
+      Ventana de navegador interna donde se muestran el historial de una solicitud, la previsualización de correos y otros informes en HTML.
+    formulario: EXPEDIENTES Versión 2024-001 Administrador
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El documento HTML generado se muestra ajustado al tamaño de la ventana.
+    tecnico:
+      formulario: Form_FormWeb
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormWeb.cls:9"]
+      prd: prd/formularios/Form_FormWeb.md
+    reglas:
+      # posible defecto: el título de la ventana es el de otra aplicación y nunca se cambia.
+      - id: SHP-F047-R01
+        descripcion: La ventana muestra el título guardado «EXPEDIENTES Versión 2024-001 Administrador».
+        evidencia: ["src/forms/Form_FormWeb.form.txt:35"]
+      - id: SHP-F047-R02
+        descripcion: Si el documento a mostrar no existe, la ventana se cierra sin aviso.
+        evidencia: ["src/forms/Form_FormWeb.cls:22"]
+      - id: SHP-F047-R03
+        descripcion: El visor se adapta al tamaño de la ventana al redimensionarla.
+        evidencia: ["src/forms/Form_FormWeb.cls:51"]
+
+  # ---------------------------------------------------------------------------
+  # Ficha de solicitud de traspaso: pestaña «Fechas»
+  # ---------------------------------------------------------------------------
+  - id: SHP-F048
+    area: Tramitación del traspaso
+    nombre: Tramitar las fases comunes de un traspaso
+    descripcion: >-
+      La pestaña «Fechas» de un traspaso tiene el envío del Excel, sus recordatorios, la recepción del Excel relleno, la desestimación, la cancelación previa a MARGA y el fin de tramitación en HPS, pero no las fases de MARGA, DPS ni envío ONS del alta.
+    formulario: Fechas
+    control: ENVÍO EXCEL SOLICITUD INFORMACIÓN | Envío Recordatorio 1 | Envío Recordatorio 2 | ADJUNTAR EXCEL RECIBIDO DE SOLCITUD DE INFORMACIÓN | Desestimar | Envío Cancelación | iconos de borrado, previsualización y Excel
+    tipo: botón
+    roles: []
+    resultado: >-
+      Cada trámite común se registra igual que en el alta y la solicitud avanza hasta «Pendiente de Enviar Tramitación a la ONS (Traspaso)».
+    tecnico:
+      formulario: Form_FormSolicitudesTraspasoFechas
+      control: EstablecerDatos
+      evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:966", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:1025"]
+    reglas:
+      - id: SHP-F048-R01
+        descripcion: El envío del Excel y sus recordatorios siguen las reglas de SHP-F032, SHP-F033 y SHP-F034; el correo lleva adjunta la plantilla de traspaso.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:582", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:613", "src/classes/Solicitud.cls:926"]
+      - id: SHP-F048-R02
+        descripcion: La recepción del Excel relleno sigue las reglas de SHP-F035.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:330"]
+      - id: SHP-F048-R03
+        descripcion: La desestimación sigue las reglas de SHP-F041 y el borrado de fases las de SHP-F043.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:241", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:11"]
+      - id: SHP-F048-R04
+        descripcion: «Envío Cancelación» abre el correo de autocancelación previa a MARGA (SHP-F042).
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:551"]
+      - id: SHP-F048-R05
+        descripcion: La previsualización de correos, la apertura de los Excel y el recálculo de fechas previstas siguen SHP-F045, SHP-F046 y SHP-F044, solo para la fase del Excel.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:878", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:810", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:49"]
+      - id: SHP-F048-R06
+        descripcion: Los iconos de borrado solo aparecen cuando la fase tiene fecha; el de borrar el envío a la ONS solo mientras no se ha registrado en HPS.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:1043", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:1090"]
+
+  - id: SHP-F049
+    area: Tramitación del traspaso
+    nombre: Registrar el envío del formulario de traspaso a la ONS
+    descripcion: >-
+      Adjunta el documento enviado a la ONS para el traspaso y registra la fecha de envío.
+    formulario: ENVÍO DOC PARA LA ONS
+    control: icono «Registrar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      El documento queda en la carpeta de la solicitud, se registra la fecha de envío ONS y la solicitud pasa a «Pendiente fin tramitación».
+    tecnico:
+      formulario: Form_FormAdjuntaTraspasoONS
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormAdjuntaTraspasoONS.cls:46", "src/classes/SolicitudOperaciones.cls:1619"]
+    reglas:
+      - id: SHP-F049-R01
+        descripcion: Se abre con «ENVÍO FORMULARIO TRASPASO A LA ONS» de la pestaña «Fechas» del traspaso, que queda desactivado una vez registrado en HPS.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:285", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:1091"]
+      - id: SHP-F049-R02
+        descripcion: Si no se elige fichero se muestra «Debe seleccionar el archivo a registrar»; si el fichero no es accesible, «El adjunto no es alcanzable».
+        evidencia: ["src/forms/Form_FormAdjuntaTraspasoONS.cls:55", "src/classes/SolicitudOperaciones.cls:1640"]
+      - id: SHP-F049-R03
+        descripcion: Antes hay que haber registrado la recepción del Excel del usuario («Primero hay que registrar la recepción del excel del usuario») y la fecha no puede ser anterior a esa recepción («La fecha no puede ser anterior a la de recepción del excel del usuario»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1649", "src/classes/SolicitudOperaciones.cls:1653"]
+      - id: SHP-F049-R04
+        descripcion: Si el documento de destino está abierto se muestra «Parece que el adjunto existe en el destino y está abierto o de sólo lectura».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1661"]
+      - id: SHP-F049-R05
+        descripcion: La fecha propuesta es hoy o la ya registrada; no se comprueba que no sea posterior a hoy.
+        evidencia: ["src/forms/Form_FormAdjuntaTraspasoONS.cls:112", "src/classes/SolicitudOperaciones.cls:1636"]
+      - id: SHP-F049-R06
+        descripcion: Se anota en el historial «Registro Envío formulario Traspaso a la ONS».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1695"]
+      - id: SHP-F049-R07
+        descripcion: El documento ya adjuntado se puede abrir desde el icono «E» de la pestaña («No hay ningún Adjunto de envío del formulario de traspaso a la ONS» si no hay).
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:746"]
+
+  - id: SHP-F050
+    area: Tramitación del traspaso
+    nombre: Borrar el envío del formulario de traspaso a la ONS
+    descripcion: >-
+      Deshace el registro del envío del formulario de traspaso y borra el documento adjunto.
+    formulario: Fechas
+    control: icono «Eliminar la fase de Envio de Formulario a la ONS»
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se borra el documento enviado a la ONS y la fecha de envío.
+    tecnico:
+      formulario: Form_FormSolicitudesTraspasoFechas
+      control: ComandoEliminarEnvioTraspasoONS
+      evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:154", "src/classes/SolicitudOperaciones.cls:1707"]
+    reglas:
+      - id: SHP-F050-R01
+        descripcion: Se pide confirmación con «¿Desea borrar la fase de Envío del Formulario de traspaso a la ONS?»; la opción por defecto es No.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:160"]
+      - id: SHP-F050-R02
+        descripcion: Si el documento está abierto no se borra («Parece que el adjuntestá abierto o de sólo lectura»).
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1723"]
+      # posible defecto: la orden que borra la fecha de envío ONS tiene una coma de más y falla, aunque el documento ya se ha quitado de la solicitud.
+      - id: SHP-F050-R03
+        descripcion: Se quita el documento de la solicitud y después se intenta borrar la fecha de envío ONS.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1737", "src/classes/SolicitudOperaciones.cls:1741"]
+      - id: SHP-F050-R04
+        descripcion: Se anota en el historial «Eliminado Envío formulario Traspaso a la ONS».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1758"]
+
+  - id: SHP-F051
+    area: Tramitación del traspaso
+    nombre: Cancelar un traspaso sin enviar correo
+    descripcion: >-
+      Registra la fecha de cancelación del traspaso sin enviar ningún correo al solicitante.
+    formulario: Fechas
+    control: Cancelar
+    tipo: botón
+    roles: []
+    resultado: >-
+      El traspaso pasa a «Cancelado» y se borran sus correos programados pendientes.
+    tecnico:
+      formulario: Form_FormSolicitudesTraspasoFechas
+      control: ComandoRegistraCancelacion
+      evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:200", "src/classes/SolicitudOperaciones.cls:2211"]
+    reglas:
+      - id: SHP-F051-R01
+        descripcion: Se pide «Fecha de Cancelación» proponiendo hoy; si se deja vacía no se cancela y si no es una fecha válida se usa la de hoy.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:206", "src/classes/SolicitudOperaciones.cls:2225"]
+      - id: SHP-F051-R02
+        descripcion: Se borran todos los correos programados pendientes de la solicitud.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2253"]
+      # posible defecto: la cancelación se anota en el historial como desestimación.
+      - id: SHP-F051-R03
+        descripcion: La cancelación se anota en el historial como «Alta Desestimado».
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2249"]
+
+  - id: SHP-F052
+    area: Tramitación del traspaso
+    nombre: Registrar en HPS y finalizar un traspaso
+    descripcion: >-
+      Crea o actualiza al usuario en HPS con los datos del traspaso y da por terminada la tramitación.
+    formulario: Fechas
+    control: Registrar en HPS (Fin tramitación solicitud)
+    tipo: botón
+    roles: []
+    resultado: >-
+      El traspaso pasa a «Tramitado».
+    tecnico:
+      formulario: Form_FormSolicitudesTraspasoFechas
+      control: ComandoRegistroHPS
+      evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:664"]
+    reglas:
+      - id: SHP-F052-R01
+        descripcion: Se aplican las mismas comprobaciones y efectos que en el alta (SHP-F040).
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:684", "src/forms/Form_FormSolicitudesTraspasoFechas.cls:696"]
+      # posible defecto: en traspasos el botón sigue activo aunque la solicitud ya esté registrada en HPS.
+      - id: SHP-F052-R02
+        descripcion: El botón se activa siempre que haya fecha de envío a la ONS, aunque ya se haya registrado en HPS.
+        evidencia: ["src/forms/Form_FormSolicitudesTraspasoFechas.cls:1089"]
+
+  # ---------------------------------------------------------------------------
+  # Renovación y elevación de grado
+  # ---------------------------------------------------------------------------
+  - id: SHP-F053
+    area: Renovación y elevación de grado
+    nombre: Buscar el usuario HPS que se va a renovar
+    descripcion: >-
+      Lista los usuarios registrados en HPS y permite buscarlos por nombre, apellidos o DNI para iniciar su renovación o elevación de grado.
+    formulario: USUARIOS HPS
+    control: Palabra Clave | Seleccionar (o doble clic en la lista)
+    tipo: lista
+    roles: []
+    resultado: >-
+      Al seleccionar un usuario se abre la ficha de renovación con sus datos de HPS.
+    tecnico:
+      formulario: Form_FormUsuariosHPSBusqueda
+      control: ComandoSeleccionar
+      evidencia: ["src/forms/Form_FormUsuariosHPSBusqueda.cls:136", "src/forms/Form_FormUsuariosHPSBusqueda.cls:18"]
+    reglas:
+      - id: SHP-F053-R01
+        descripcion: La ventana se abre desde «ALTA DE SOLICITUD» al elegir Renovación o Elevación Grado (SHP-F014), estando en la oficina.
+        evidencia: ["src/forms/Form_FormSolicitudAlta.cls:67"]
+      - id: SHP-F053-R02
+        descripcion: Sin palabra clave se listan todos los usuarios de HPS; con palabra clave, los que la contienen en el nombre, en alguno de los apellidos o en el DNI.
+        evidencia: ["src/forms/Form_FormUsuariosHPSBusqueda.cls:45", "src/modules/constructor.bas:3655", "src/modules/constructor.bas:3761"]
+      - id: SHP-F053-R03
+        descripcion: La lista se filtra al cambiar la palabra clave y muestra ID, DNI y nombre completo con el total en «Registros filtrados (n)»; la primera fila queda seleccionada.
+        evidencia: ["src/forms/Form_FormUsuariosHPSBusqueda.cls:293", "src/forms/Form_FormUsuariosHPSBusqueda.cls:64", "src/forms/Form_FormUsuariosHPSBusqueda.cls:73"]
+      - id: SHP-F053-R04
+        descripcion: Sin usuario seleccionado se muestra «Seleccione una elemento de la lista».
+        evidencia: ["src/forms/Form_FormUsuariosHPSBusqueda.cls:143"]
+      - id: SHP-F053-R05
+        descripcion: Al seleccionar se cierra la búsqueda y se abre una ficha de renovación nueva para ese usuario y el tipo elegido.
+        evidencia: ["src/forms/Form_FormUsuariosHPSBusqueda.cls:149", "src/forms/Form_FormUsuariosHPSBusqueda.cls:155"]
+      - id: SHP-F053-R06
+        descripcion: El icono «Actualizar» vacía la palabra clave y descarta la lista de usuarios en memoria.
+        evidencia: ["src/forms/Form_FormUsuariosHPSBusqueda.cls:85"]
+
+  - id: SHP-F054
+    area: Renovación y elevación de grado
+    nombre: Abrir la ficha de una renovación o elevación de grado
+    descripcion: >-
+      Ventana con las pestañas «Datos» y «Fechas» de una renovación o elevación de grado de un usuario HPS.
+    formulario: RENOVACIÓN PARA «nombre del usuario HPS»
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      La ficha muestra los datos de la solicitud o, si es nueva, los del usuario HPS.
+    tecnico:
+      formulario: Form_FormSolicitudRenovacion
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormSolicitudRenovacion.cls:58", "src/forms/Form_FormSolicitudRenovacion.cls:101"]
+    reglas:
+      - id: SHP-F054-R01
+        descripcion: Solo se abre para Renovación o Elevación Grado y con un usuario HPS seleccionado; si no, se muestra «El formulario se ha abierto con parámetros insuficientes» o «No se ha seleccionado previamente el usuario HPS» y se cierra.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacion.cls:70", "src/forms/Form_FormSolicitudRenovacion.cls:74"]
+      - id: SHP-F054-R02
+        descripcion: La cabecera muestra «RENOVACIÓN PARA «nombre completo del usuario HPS»», también en las elevaciones de grado.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacion.cls:137"]
+      - id: SHP-F054-R03
+        descripcion: Mientras la solicitud no se ha registrado la pestaña «Fechas» está desactivada.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacion.cls:110", "src/forms/Form_FormSolicitudRenovacion.cls:135"]
+      - id: SHP-F054-R04
+        descripcion: El pie muestra la última modificación como en la ficha de alta (SHP-F020-R03) y «Ver Logs» abre el historial (SHP-F017).
+        evidencia: ["src/forms/Form_FormSolicitudRenovacion.cls:126", "src/forms/Form_FormSolicitudRenovacion.cls:25"]
+
+  - id: SHP-F055
+    area: Renovación y elevación de grado
+    nombre: Registrar los datos de una renovación
+    descripcion: >-
+      Guarda los datos de la renovación o elevación de grado; en una solicitud nueva los datos se proponen a partir del usuario HPS.
+    formulario: Datos
+    control: icono «Registrar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      La solicitud queda creada o actualizada y asociada al usuario HPS.
+    tecnico:
+      formulario: Form_FormSolicitudRenovacionDatos
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.cls:656", "src/forms/Form_FormSolicitudRenovacionDatos.cls:826"]
+    reglas:
+      - id: SHP-F055-R01
+        descripcion: En una solicitud nueva se proponen el nombre, los apellidos, la fecha y el lugar de nacimiento, el correo, el teléfono, las empresas, el expediente, el DNI y el motivo del usuario HPS, y el gestor es el usuario conectado.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.cls:378", "src/forms/Form_FormSolicitudRenovacionDatos.cls:381"]
+      - id: SHP-F055-R02
+        descripcion: Las validaciones y el guardado son los de SHP-F021 y el cambio del campo «@ Auto.» sigue SHP-F022.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.cls:851", "src/forms/Form_FormSolicitudRenovacionDatos.cls:672"]
+      - id: SHP-F055-R03
+        descripcion: La solicitud queda asociada al usuario HPS seleccionado.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.cls:640"]
+      - id: SHP-F055-R04
+        descripcion: La ficha de renovación no tiene campo de justificación.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.cls:614"]
+      - id: SHP-F055-R05
+        descripcion: La búsqueda de expediente, el detalle del expediente, el alta de motivo y el alta de responsable funcionan como en la ficha de alta (SHP-F023 a SHP-F027).
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.cls:52", "src/forms/Form_FormSolicitudRenovacionDatos.cls:183", "src/forms/Form_FormSolicitudRenovacionDatos.cls:152", "src/forms/Form_FormSolicitudRenovacionDatos.cls:298"]
+      - id: SHP-F055-R06
+        descripcion: El icono «Cambio de Tipo» abre «CAMBIO DE TIPO» (SHP-F029) y cierra la ficha en el mismo momento.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.cls:918", "src/forms/Form_FormSolicitudRenovacionDatos.cls:922"]
+      # posible defecto: el icono «Alta» junto a la empresa del usuario no tiene ninguna acción asociada.
+      - id: SHP-F055-R07
+        descripcion: El icono «Alta» junto a la empresa del usuario no hace nada al pulsarlo.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionDatos.form.txt:1376"]
+
+  - id: SHP-F056
+    area: Renovación y elevación de grado
+    nombre: Tramitar las fechas de una renovación o elevación de grado
+    descripcion: >-
+      La pestaña «Fechas» de una renovación tiene las mismas fases que el alta: Excel, recordatorios, recepción, alta en MARGA, DPS, envío ONS, desestimación, cancelación y fin de tramitación.
+    formulario: Fechas
+    control: (los mismos botones que la pestaña «Fechas» del alta)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Cada trámite se registra igual que en el alta.
+    tecnico:
+      formulario: Form_FormSolicitudRenovacionFechas
+      control: EstablecerDatos
+      evidencia: ["src/forms/Form_FormSolicitudRenovacionFechas.cls:1422", "src/forms/Form_FormSolicitudRenovacionFechas.cls:1480"]
+    reglas:
+      - id: SHP-F056-R01
+        descripcion: Los trámites siguen las reglas del alta (SHP-F031 a SHP-F046).
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionFechas.cls:910", "src/forms/Form_FormSolicitudRenovacionFechas.cls:505", "src/forms/Form_FormSolicitudRenovacionFechas.cls:373"]
+      - id: SHP-F056-R02
+        descripcion: «Cancelar» pide «Fecha de Cancelación» y registra la cancelación sin enviar correo, como en el traspaso (SHP-F051); los dos «Envío Cancelación» sí envían el correo (SHP-F042).
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionFechas.cls:291", "src/forms/Form_FormSolicitudRenovacionFechas.cls:848"]
+      - id: SHP-F056-R03
+        descripcion: El botón de fin de tramitación se llama «Registrar Envío ONS (Fin tramitación solicitud)» y aplica las reglas de SHP-F040.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionFechas.form.txt:3523", "src/forms/Form_FormSolicitudRenovacionFechas.cls:1068"]
+      - id: SHP-F056-R04
+        descripcion: «DÍAS PARA AUTOCANCELACIÓN» muestra los días que faltan hasta la autocancelación de MARGA o, si no la hay, hasta la previa a MARGA.
+        evidencia: ["src/forms/Form_FormSolicitudRenovacionFechas.cls:1632"]
+      - id: SHP-F056-R05
+        descripcion: En una renovación o elevación de grado no se puede borrar la recepción del Excel si ya hay envío ONS.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:1577"]
+
+  # ---------------------------------------------------------------------------
+  # Tareas pendientes del tramitador
+  # ---------------------------------------------------------------------------
+  - id: SHP-F057
+    area: Tareas pendientes
+    nombre: Consultar las tareas pendientes por tipo y tramitador
+    descripcion: >-
+      Muestra, para un tramitador o para todos, cuántas solicitudes hay pendientes en cada tipo de tarea y la lista de solicitudes del tipo elegido, con una explicación del tipo.
+    formulario: TAREAS PENDIENTES DEL TRAMITADOR
+    control: Tramitador | lista de tipos de tarea
+    tipo: lista
+    roles: []
+    resultado: >-
+      El usuario ve los contadores por tipo de tarea y las solicitudes de la tarea seleccionada con su estado.
+    tecnico:
+      formulario: Form_FormTareasTramitadorPendientes
+      control: ListaTipoTareas
+      evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:307", "src/forms/Form_FormTareasTramitadorPendientes.cls:15", "src/forms/Form_FormTareasTramitadorPendientes.cls:260"]
+    reglas:
+      - id: SHP-F057-R01
+        descripcion: Al abrir, el tramitador es el usuario conectado si figura entre los tramitadores; si no, «Todos».
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:550"]
+      - id: SHP-F057-R02
+        descripcion: Los tipos de tarea son Pendiente de Envío Excel, Recordatorio 1 y 2 del Excel, Pendiente Excel Relleno, Pendiente Alta Marga, Recordatorio 1 y 2 del DPS, Pendiente Envío DPS, Pendiente de Enviar Tramitación a la ONS (Traspaso), Pendiente Envío ONS y Pendiente fin tramitación, cada uno con su número entre paréntesis.
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:427"]
+      - id: SHP-F057-R03
+        descripcion: Ninguna tarea incluye solicitudes desestimadas o canceladas.
+        evidencia: ["src/modules/constructor.bas:804", "src/modules/constructor.bas:1029"]
+      - id: SHP-F057-R04
+        descripcion: Pendiente de Envío Excel incluye las solicitudes sin ninguna fecha y las que no tienen fecha de envío del Excel.
+        evidencia: ["src/modules/constructor.bas:684", "src/modules/constructor.bas:727"]
+      # posible defecto: la explicación dice que se ha alcanzado el plazo, pero la consulta toma las solicitudes cuya fecha prevista es hoy o futura.
+      - id: SHP-F057-R05
+        descripcion: Las tareas de recordatorio del Excel incluyen las solicitudes con Excel enviado y no recibido, sin ese recordatorio enviado y cuya fecha prevista del recordatorio es hoy o posterior.
+        evidencia: ["src/modules/constructor.bas:802", "src/modules/constructor.bas:877", "src/classes/Entorno.cls:1676"]
+      - id: SHP-F057-R06
+        descripcion: Las tareas de recordatorio del DPS incluyen las solicitudes con alta en MARGA, sin DPS, sin ese recordatorio enviado y cuya fecha prevista es hoy o anterior.
+        evidencia: ["src/modules/constructor.bas:1173", "src/modules/constructor.bas:1249"]
+      - id: SHP-F057-R07
+        descripcion: Pendiente Alta Marga y Pendiente Envío DPS excluyen los traspasos; la tarea de envío a la ONS del traspaso solo incluye traspasos con el Excel recibido y sin envío ONS.
+        evidencia: ["src/modules/constructor.bas:1025", "src/modules/constructor.bas:1098", "src/modules/constructor.bas:1462"]
+      - id: SHP-F057-R08
+        descripcion: Pendiente Envío ONS incluye las solicitudes con DPS enviado y sin envío ONS; Pendiente fin tramitación, las que tienen envío ONS y no están registradas en HPS.
+        evidencia: ["src/modules/constructor.bas:1322", "src/modules/constructor.bas:1392"]
+      - id: SHP-F057-R09
+        descripcion: Al elegir un tipo de tarea se muestra su explicación (por ejemplo «Son las solicitudes que aún no se han entregado el Excel al solicitante») y la lista de solicitudes con ID, tipo, DNI, nombre y estado.
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:284", "src/forms/Form_FormTareasTramitadorPendientes.cls:87"]
+      # posible defecto: la preselección pretende abrir «Pendiente Alta Marga» pero lee el contador de la segunda fila, que es el primer recordatorio del Excel.
+      - id: SHP-F057-R10
+        descripcion: Al cargar, si hay pendientes de envío del Excel se selecciona esa tarea; si no, se selecciona la segunda fila (primer recordatorio del Excel) cuando su contador es mayor que cero.
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:499", "src/forms/Form_FormTareasTramitadorPendientes.cls:509"]
+      - id: SHP-F057-R11
+        descripcion: Al cambiar el tramitador se recalculan los contadores; con «Todos» se usan los datos ya cargados y con un tramitador concreto se consulta la base de datos.
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:221", "src/forms/Form_FormTareasTramitadorPendientes.cls:346"]
+      - id: SHP-F057-R12
+        descripcion: Los administradores ven en el pie la última modificación registrada.
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:486"]
+
+  - id: SHP-F058
+    area: Tareas pendientes
+    nombre: Abrir una solicitud desde las tareas pendientes
+    descripcion: >-
+      Abre la ficha de la solicitud seleccionada en la lista de tareas.
+    formulario: TAREAS PENDIENTES DEL TRAMITADOR
+    control: Editar/Ver (o doble clic en la lista)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la ficha de alta, traspaso o renovación de la solicitud.
+    tecnico:
+      formulario: Form_FormTareasTramitadorPendientes
+      control: ComandoEditar
+      evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:160", "src/forms/Form_FormTareasTramitadorPendientes.cls:250"]
+    reglas:
+      - id: SHP-F058-R01
+        descripcion: Se aplican las mismas reglas que al abrir la ficha desde la gestión de solicitudes (SHP-F015).
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:171", "src/forms/Form_FormTareasTramitadorPendientes.cls:188"]
+      - id: SHP-F058-R02
+        descripcion: «Editar/Ver» solo se activa con una solicitud seleccionada.
+        evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:628"]
+
+  - id: SHP-F059
+    area: Tareas pendientes
+    nombre: Recalcular las tareas pendientes
+    descripcion: >-
+      Vuelve a consultar los pendientes y repinta esta ventana y el contador del menú principal.
+    formulario: TAREAS PENDIENTES DEL TRAMITADOR
+    control: icono «Actualizar Tareas»
+    tipo: botón
+    roles: []
+    resultado: >-
+      Los contadores de tareas y del menú reflejan los datos actuales.
+    tecnico:
+      formulario: Form_FormTareasTramitadorPendientes
+      control: ComandoActualizar
+      evidencia: ["src/forms/Form_FormTareasTramitadorPendientes.cls:108", "src/modules/FUNCIONES UTILES.bas:41"]
+    reglas:
+      - id: SHP-F059-R01
+        descripcion: El recálculo es el mismo que se hace tras cada registro de trámite y actualiza a la vez esta ventana y el menú principal si están abiertos.
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:51", "src/modules/FUNCIONES UTILES.bas:59", "src/modules/FUNCIONES UTILES.bas:66"]
+
+  # ---------------------------------------------------------------------------
+  # Gestión de correos
+  # ---------------------------------------------------------------------------
+  - id: SHP-F060
+    area: Correos
+    nombre: Consultar y filtrar los correos de la cola
+    descripcion: >-
+      Lista todos los correos generados por la aplicación (enviados, pendientes y programados) y permite filtrarlos por estado y por solicitud.
+    formulario: GESTIÓN DE LOS CORREOS
+    control: ESTADO | Solicitud | iconos «Quita el contenido del campo» | icono «Actualizar»
+    tipo: lista
+    roles: []
+    resultado: >-
+      La lista muestra ID, estado, solicitud, acción, fecha programada y fecha de envío de los correos filtrados, con el total en «Registros filtrados (n)».
+    tecnico:
+      formulario: Form_FormCorreosGestion
+      control: Filtrar
+      evidencia: ["src/forms/Form_FormCorreosGestion.cls:141", "src/forms/Form_FormCorreosGestion.cls:410", "src/modules/CorreoRepositorio.bas:7"]
+      prd: prd/formularios/Form_FormCorreosGestion.md
+    reglas:
+      - id: SHP-F060-R01
+        descripcion: Los estados posibles son Todos, Enviado, Pendiente y Programado; al abrir se muestran todos los correos de todas las solicitudes.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:93", "src/forms/Form_FormCorreosGestion.cls:138"]
+      - id: SHP-F060-R02
+        descripcion: Un correo está «Enviado» si tiene fecha de envío; «Programado» si no se ha enviado y su fecha programada es futura; «Pendiente» en el resto de casos.
+        evidencia: ["src/classes/Correo.cls:42", "src/modules/CorreoRepositorio.bas:24"]
+      - id: SHP-F060-R03
+        descripcion: La lista de solicitudes muestra «nombre apellidos (número)» ordenada por nombre y, a igualdad, por la más reciente.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:118"]
+      - id: SHP-F060-R04
+        descripcion: Los correos se ordenan del más reciente al más antiguo según su fecha de grabación.
+        evidencia: ["src/modules/CorreoRepositorio.bas:44"]
+      - id: SHP-F060-R05
+        descripcion: Los iconos de limpiar vuelven el estado a «Todos» o la solicitud a «Todas las solicitudes» y vuelven a filtrar.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:65", "src/forms/Form_FormCorreosGestion.cls:71"]
+      - id: SHP-F060-R06
+        descripcion: «Detalle» se activa al seleccionar un correo y «Eliminar» solo si el correo seleccionado no se ha enviado.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:507", "src/forms/Form_FormCorreosGestion.cls:511"]
+      - id: SHP-F060-R07
+        descripcion: La ventana no comprueba el perfil del usuario.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:410"]
+
+  - id: SHP-F061
+    area: Correos
+    nombre: Ver el detalle de un correo
+    descripcion: >-
+      Muestra asunto, acción, fecha de orden de envío, fecha de envío, destinatarios y copias de un correo de la cola.
+    formulario: CORREO
+    control: Detalle (o doble clic en la lista)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la ventana «CORREO» con los datos del correo en modo consulta.
+    tecnico:
+      formulario: Form_FormCorreo
+      control: EstablecerDatos
+      evidencia: ["src/forms/Form_FormCorreo.cls:223", "src/forms/Form_FormCorreosGestion.cls:274"]
+      prd: prd/formularios/Form_FormCorreo.md
+    reglas:
+      - id: SHP-F061-R01
+        descripcion: Sin correo seleccionado se muestra «Seleccione un Correo de la lista».
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:284"]
+      - id: SHP-F061-R02
+        descripcion: Abierta desde la gestión de correos, el botón «Registrar» queda desactivado y la fecha de orden de envío no se puede cambiar.
+        evidencia: ["src/forms/Form_FormCorreo.cls:257", "src/forms/Form_FormCorreo.cls:261", "src/forms/Form_FormCorreo.cls:277"]
+      - id: SHP-F061-R03
+        descripcion: Si el correo ya se envió, todos los campos quedan bloqueados y aparece «Reenviar».
+        evidencia: ["src/forms/Form_FormCorreo.cls:267"]
+      # posible defecto: la ventana solo se abre desde la gestión de correos, donde «Registrar» está siempre desactivado; la edición de correos no es alcanzable.
+      - id: SHP-F061-R04
+        descripcion: La ventana solo se abre desde la gestión de correos, por lo que sus datos no se pueden modificar desde la aplicación.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:297", "src/forms/Form_FormCorreo.cls:261"]
+
+  - id: SHP-F062
+    area: Correos
+    nombre: Reenviar un correo ya enviado
+    descripcion: >-
+      Genera en la cola un correo nuevo, copia del ya enviado, para que salga de nuevo.
+    formulario: CORREO
+    control: Reenviar
+    tipo: botón
+    roles: []
+    resultado: >-
+      Queda en la cola un correo nuevo, sin fecha programada, con el mismo contenido; se informa «Se ha generado un nuevo correo en la cola de envío.».
+    tecnico:
+      formulario: Form_FormCorreo
+      control: ComandoReenviar
+      evidencia: ["src/forms/Form_FormCorreo.cls:127"]
+      prd: prd/formularios/Form_FormCorreo.md
+    reglas:
+      - id: SHP-F062-R01
+        descripcion: Se pide confirmación con «¿Está seguro de que desea generar un NUEVO envío para este correo?».
+        evidencia: ["src/forms/Form_FormCorreo.cls:133"]
+      - id: SHP-F062-R02
+        descripcion: El nuevo correo copia asunto, destinatarios, copias, acción, solicitud, plantilla, datos y adjunto del original, y queda marcado como reenvío por el usuario conectado.
+        evidencia: ["src/forms/Form_FormCorreo.cls:139", "src/forms/Form_FormCorreo.cls:157"]
+      - id: SHP-F062-R03
+        descripcion: El reenvío no cambia ninguna fecha de la solicitud ni se anota en su historial.
+        evidencia: ["src/forms/Form_FormCorreo.cls:161"]
+      - id: SHP-F062-R04
+        descripcion: Solo está disponible para correos ya enviados.
+        evidencia: ["src/forms/Form_FormCorreo.cls:264", "src/forms/Form_FormCorreo.cls:270"]
+
+  - id: SHP-F063
+    area: Correos
+    nombre: Previsualizar un correo de la cola
+    descripcion: >-
+      Muestra el cuerpo del correo con la plantilla que le corresponde y los datos actuales de su solicitud.
+    formulario: CORREO
+    control: Previsualizar
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre el visor interno con el cuerpo del correo.
+    tecnico:
+      formulario: Form_FormCorreo
+      control: ComandoVerHTML
+      evidencia: ["src/forms/Form_FormCorreo.cls:298"]
+      prd: prd/formularios/Form_FormCorreo.md
+    reglas:
+      - id: SHP-F063-R01
+        descripcion: Se usa la plantilla guardada en el correo o, si no tiene, la que corresponde a su tipo; si no se puede determinar se muestra «No se ha podido determinar la plantilla HTML asociada a este correo.».
+        evidencia: ["src/forms/Form_FormCorreo.cls:318", "src/forms/Form_FormCorreo.cls:326"]
+      - id: SHP-F063-R02
+        descripcion: La plantilla se busca en la versión de plantillas configurada actualmente; si no existe se muestra «No se encuentra el archivo de plantilla en la ruta».
+        evidencia: ["src/forms/Form_FormCorreo.cls:334", "src/forms/Form_FormCorreo.cls:336"]
+      - id: SHP-F063-R03
+        descripcion: Las variables se rellenan con los datos actuales de la solicitud, no con los que tenía cuando se generó el correo.
+        evidencia: ["src/forms/Form_FormCorreo.cls:344"]
+
+  - id: SHP-F064
+    area: Correos
+    nombre: Eliminar un correo pendiente o programado
+    descripcion: >-
+      Borra de la cola un correo que todavía no ha salido.
+    formulario: GESTIÓN DE LOS CORREOS
+    control: Eliminar
+    tipo: botón
+    roles: []
+    resultado: >-
+      El correo desaparece de la cola y no se enviará.
+    tecnico:
+      formulario: Form_FormCorreosGestion
+      control: ComandoEliminar
+      evidencia: ["src/forms/Form_FormCorreosGestion.cls:320", "src/classes/CorreoOperaciones.cls:17"]
+      prd: prd/formularios/Form_FormCorreosGestion.md
+    reglas:
+      - id: SHP-F064-R01
+        descripcion: Sin correo seleccionado se muestra «Seleccione un Correo de la lista».
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:333"]
+      - id: SHP-F064-R02
+        descripcion: Un correo ya enviado no se puede eliminar; se muestra «No es posible eliminar un correo que ya ha sido enviado. Solo se pueden eliminar correos pendientes o programados.».
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:339"]
+      - id: SHP-F064-R03
+        descripcion: Se pide confirmación con «¿Desea realmente eliminar definitivamente el Correo Seleccionado?»; la opción por defecto es No.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:351"]
+      - id: SHP-F064-R04
+        descripcion: El borrado no se anota en el historial de la solicitud ni cambia sus fechas.
+        evidencia: ["src/classes/CorreoOperaciones.cls:28"]
+
+  - id: SHP-F065
+    area: Correos
+    nombre: Consultar el informe de control diario
+    descripcion: >-
+      Genera un informe de seguimiento con el estado de los correos automáticos, las solicitudes en trámite, los correos enviados ayer, los pendientes de los próximos cinco días y los correos sin fecha programada.
+    formulario: GESTIÓN DE LOS CORREOS
+    control: Informe Control Diario
+    tipo: informe
+    roles: []
+    resultado: >-
+      Se abre en el navegador el informe «Informe de Seguimiento de Solicitudes HPS (Vista Previa)».
+    tecnico:
+      formulario: Form_FormCorreosGestion
+      control: ComandoInformeControl
+      evidencia: ["src/forms/Form_FormCorreosGestion.cls:24", "src/modules/InformesOperaciones.bas:9"]
+      prd: prd/formularios/Form_FormCorreosGestion.md
+    reglas:
+      - id: SHP-F065-R01
+        descripcion: La cabecera indica «CORREOS AUTOMÁTICOS ACTIVADOS» o «CORREOS AUTOMÁTICOS DESACTIVADOS (OFF)» según la configuración, la fecha de generación y quién lo genera.
+        evidencia: ["src/modules/InformesOperaciones.bas:19", "src/modules/InformesOperaciones.bas:41"]
+      - id: SHP-F065-R02
+        descripcion: La sección 1 lista las solicitudes no registradas en HPS, ni desestimadas ni canceladas, con su estado y gestor («Sin Asignar» si no lo tienen).
+        evidencia: ["src/modules/InformesOperaciones.bas:234", "src/modules/InformesOperaciones.bas:255"]
+      - id: SHP-F065-R03
+        descripcion: La sección 2 lista los correos enviados el día anterior.
+        evidencia: ["src/modules/InformesOperaciones.bas:301"]
+      - id: SHP-F065-R04
+        descripcion: La sección 3 lista los correos no enviados con fecha programada en los próximos cinco días o anterior.
+        evidencia: ["src/modules/InformesOperaciones.bas:111", "src/modules/InformesOperaciones.bas:134"]
+      - id: SHP-F065-R05
+        descripcion: La sección 4 alerta de los correos no enviados que no tienen fecha programada, marcados «SIN FECHA».
+        evidencia: ["src/modules/InformesOperaciones.bas:181", "src/modules/InformesOperaciones.bas:208"]
+      - id: SHP-F065-R06
+        descripcion: Cada consulta del informe se anota en el historial general como «Consulta Informe Control».
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:55"]
+
+  - id: SHP-F066
+    area: Correos
+    nombre: Generar un correo de prueba
+    descripcion: >-
+      Consola para simular cualquier correo de trámite con los datos de una solicitud real y dejarlo en la cola, de inmediato o programado, sin modificar la solicitud.
+    formulario: ENVIAR CORREOS DE PRUEBA
+    control: Cargar Datos Simulados | Previsualizar HTML | ENVIAR PRUEBA
+    tipo: botón
+    roles: []
+    resultado: >-
+      Queda en la cola un correo de prueba no vinculado a ninguna solicitud y se informa de su número y estado.
+    tecnico:
+      formulario: Form_FormCorreoPruebas
+      control: cmdEnviarPrueba
+      evidencia: ["src/forms/Form_FormCorreoPruebas.cls:173", "src/forms/Form_FormCorreosGestion.cls:12", "src/modules/Automiatizacion.bas:86"]
+      prd: prd/formularios/Form_FormCorreoPruebas.md
+    reglas:
+      - id: SHP-F066-R01
+        descripcion: Se abre con «Correo Pruebas» de la gestión de correos.
+        evidencia: ["src/forms/Form_FormCorreosGestion.cls:12"]
+      - id: SHP-F066-R02
+        descripcion: Al elegir la solicitud y la fase se proponen el destinatario, las copias y el asunto que tendría el correo real, con el asunto precedido de «PRUEBA:».
+        evidencia: ["src/forms/Form_FormCorreoPruebas.cls:117", "src/forms/Form_FormCorreoPruebas.cls:119"]
+      - id: SHP-F066-R03
+        descripcion: Sin destinatario se muestra «Indique al menos un destinatario.» y sin solicitud cargada «Debe cargar una solicitud origen primero.».
+        evidencia: ["src/forms/Form_FormCorreoPruebas.cls:186", "src/forms/Form_FormCorreoPruebas.cls:190"]
+      - id: SHP-F066-R04
+        descripcion: Se pide confirmación indicando que se generará un correo de prueba que no modificará la solicitud original.
+        evidencia: ["src/forms/Form_FormCorreoPruebas.cls:195"]
+      - id: SHP-F066-R05
+        descripcion: Si se indica «Fecha. Prog.de Envío» el correo queda programado para esa fecha; si no, sale como envío inmediato. No se valida que la fecha sea futura.
+        evidencia: ["src/forms/Form_FormCorreoPruebas.cls:219", "src/modules/Automiatizacion.bas:122"]
+      - id: SHP-F066-R06
+        descripcion: El correo de prueba se vincula a la solicitud ficticia de prueba, no a la solicitud de la que se tomaron los datos.
+        evidencia: ["src/forms/Form_FormCorreoPruebas.cls:236", "src/modules/Variables Globales.bas:211"]
+      - id: SHP-F066-R07
+        descripcion: «Previsualizar HTML» muestra el correo con la plantilla de la fase y los datos de la solicitud; sin solicitud se muestra «Seleccione primero una solicitud origen.».
+        evidencia: ["src/forms/Form_FormCorreoPruebas.cls:137", "src/forms/Form_FormCorreoPruebas.cls:144"]
+
+  # ---------------------------------------------------------------------------
+  # Entidades (tablas auxiliares)
+  # ---------------------------------------------------------------------------
+  - id: SHP-F067
+    area: Entidades
+    nombre: Elegir la entidad auxiliar a gestionar
+    descripcion: >-
+      Lista las tablas auxiliares de la aplicación (responsables, plantillas HTML, motivos HPS y justificaciones HPS) y abre la ventana de la elegida.
+    formulario: ENTIDADES
+    control: icono «Editar/Ver Registro» (o doble clic en la lista)
+    tipo: lista
+    roles: []
+    resultado: >-
+      Se abre la ventana de gestión de la entidad elegida y se cierra la de entidades.
+    tecnico:
+      formulario: Form_FormEntidades
+      control: ComandoAbrirFormulario
+      evidencia: ["src/forms/Form_FormEntidades.cls:40", "src/forms/Form_FormEntidades.cls:164"]
+      prd: prd/formularios/Form_FormEntidades.md
+    reglas:
+      - id: SHP-F067-R01
+        descripcion: Las entidades disponibles son Responsables, Plantillas HTML, Motivos HPS y Justificaciones HPS.
+        evidencia: ["src/classes/Entorno.cls:194"]
+      - id: SHP-F067-R02
+        descripcion: Sin entidad seleccionada se muestra «No se ha seleccionado ninguna opción»; si la entidad no tiene ventana asociada, «No se ha seleccionado ninguna entidad reconocida».
+        evidencia: ["src/forms/Form_FormEntidades.cls:52", "src/forms/Form_FormEntidades.cls:57"]
+      - id: SHP-F067-R03
+        descripcion: Las justificaciones se abren en modo de gestión, sin el botón de elegir.
+        evidencia: ["src/classes/Entorno.cls:228", "src/forms/Form_frmBuscarJustificacion.cls:38"]
+
+  - id: SHP-F068
+    area: Entidades
+    nombre: Gestionar los responsables
+    descripcion: >-
+      Lista los responsables con su nombre, correo y descripción, permite buscarlos por nombre y darlos de alta, editarlos o eliminarlos.
+    formulario: RESPONSABLES
+    control: Nombre | Alta | Editar/Ver | Eliminar
+    tipo: lista
+    roles: []
+    resultado: >-
+      La lista refleja los responsables registrados tras cada alta, edición o borrado.
+    tecnico:
+      formulario: Form_FormResponsablesGestion
+      control: Filtrar
+      evidencia: ["src/forms/Form_FormResponsablesGestion.cls:17", "src/forms/Form_FormResponsablesGestion.cls:133", "src/forms/Form_FormResponsablesGestion.cls:165"]
+    reglas:
+      - id: SHP-F068-R01
+        descripcion: El filtro por nombre muestra los responsables cuyo nombre contiene el texto escrito.
+        evidencia: ["src/forms/Form_FormResponsablesGestion.cls:48", "src/modules/constructor.bas:2585"]
+      - id: SHP-F068-R02
+        descripcion: «Alta» y «Editar/Ver» abren la ventana de responsable (SHP-F027); al guardar se refresca la lista.
+        evidencia: ["src/forms/Form_FormResponsablesGestion.cls:146", "src/forms/Form_FormResponsablesGestion.cls:184", "src/forms/Form_FormResponsablesGestion.cls:379"]
+      - id: SHP-F068-R03
+        descripcion: Sin responsable seleccionado, «Editar/Ver» y «Eliminar» muestran «Seleccione un Responsable de la lista».
+        evidencia: ["src/forms/Form_FormResponsablesGestion.cls:175", "src/forms/Form_FormResponsablesGestion.cls:216"]
+      - id: SHP-F068-R04
+        descripcion: Eliminar pide confirmación con «¿Desea realmente eliminar definitivamente el responsable Seleccionado?»; la opción por defecto es No.
+        evidencia: ["src/forms/Form_FormResponsablesGestion.cls:222"]
+      - id: SHP-F068-R05
+        descripcion: No se puede eliminar un responsable cuyo correo figure en alguna solicitud; se muestra «El correo de ese responsable está siendo usado en las solicitudes» con la lista de números de solicitud.
+        evidencia: ["src/classes/ResponsableOperaciones.cls:110", "src/classes/ResponsableOperaciones.cls:126"]
+      - id: SHP-F068-R06
+        descripcion: La ventana no comprueba el perfil del usuario para eliminar.
+        evidencia: ["src/forms/Form_FormResponsablesGestion.cls:205"]
+
+  - id: SHP-F069
+    area: Entidades
+    nombre: Consultar las plantillas HTML de los correos
+    descripcion: >-
+      Lista las plantillas de correo (envío del Excel, recordatorios y autocancelaciones) y abre la elegida de la versión configurada.
+    formulario: PLANTILLAS HTML
+    control: icono «Ver Plantilla» (o doble clic en la lista)
+    tipo: lista
+    roles: []
+    resultado: >-
+      Se abre una copia local de la plantilla elegida.
+    tecnico:
+      formulario: Form_FormPlantillasHTML
+      control: ComandoVerPlantilla
+      evidencia: ["src/forms/Form_FormPlantillasHTML.cls:66", "src/forms/Form_FormPlantillasHTML.cls:175"]
+    reglas:
+      - id: SHP-F069-R01
+        descripcion: Las plantillas son ENVIO_EXCEL, RECORDATORIO_EXCEL1, RECORDATORIO_EXCEL2, RECORDATORIO_MARGA1, RECORDATORIO_MARGA2, AUTOCANCELACION_PREMARGA y AUTOCANCELACION_MARGA.
+        evidencia: ["src/classes/Entorno.cls:160"]
+      - id: SHP-F069-R02
+        descripcion: Sin plantilla seleccionada se muestra «Seleccione un elemento de la lista»; si el fichero no existe en la versión configurada, «No se encuetra la URL de la plantilla seleccionada».
+        evidencia: ["src/forms/Form_FormPlantillasHTML.cls:79", "src/forms/Form_FormPlantillasHTML.cls:90"]
+      - id: SHP-F069-R03
+        descripcion: Las plantillas solo se consultan; no se pueden modificar desde la aplicación.
+        evidencia: ["src/forms/Form_FormPlantillasHTML.cls:95"]
+
+  - id: SHP-F070
+    area: Entidades
+    nombre: Gestionar los motivos de HPS
+    descripcion: >-
+      Lista los motivos para tener HPS y permite dar de alta uno nuevo, cambiar su texto o eliminarlo.
+    formulario: MOTIVOS HPS
+    control: Alta | Editar | Eliminar
+    tipo: lista
+    roles: []
+    resultado: >-
+      El motivo queda creado, renombrado (también en las solicitudes y usuarios que lo usaban) o eliminado.
+    tecnico:
+      formulario: Form_FormMotivosHPS
+      control: ComandoAlta, ComandoEditar, ComandoEliminar
+      evidencia: ["src/forms/Form_FormMotivosHPS.cls:49", "src/forms/Form_FormMotivosHPS.cls:81", "src/forms/Form_FormMotivosHPS.cls:118"]
+    reglas:
+      - id: SHP-F070-R01
+        descripcion: Sin motivo seleccionado, «Editar» y «Eliminar» muestran «Seleccione una elemento de la lista».
+        evidencia: ["src/forms/Form_FormMotivosHPS.cls:90", "src/forms/Form_FormMotivosHPS.cls:123"]
+      - id: SHP-F070-R02
+        descripcion: Eliminar solo se puede hacer en la oficina («Sólo puede hacerse en la oficina») y pide confirmación con «¿Desea eliminar el motivo seleccionado?».
+        evidencia: ["src/forms/Form_FormMotivosHPS.cls:127", "src/forms/Form_FormMotivosHPS.cls:131"]
+      - id: SHP-F070-R03
+        descripcion: No se puede eliminar un motivo que tenga algún usuario de HPS («No se puede eliminar ya que los siguientes usuarios HPS lo tienen») o alguna solicitud («No se puede eliminar ya que las siguientes solicitudes lo tienen»).
+        evidencia: ["src/classes/MotivoHPS.cls:126", "src/classes/MotivoHPS.cls:144"]
+      - id: SHP-F070-R04
+        descripcion: Tras eliminar se informa «Motivo borrado correctamente» y se recarga la lista.
+        evidencia: ["src/forms/Form_FormMotivosHPS.cls:145", "src/forms/Form_FormMotivosHPS.cls:149"]
+
+  - id: SHP-F071
+    area: Entidades
+    nombre: Dar de alta o cambiar un motivo de HPS
+    descripcion: >-
+      Registra un motivo nuevo o cambia el texto de uno existente.
+    formulario: MOTIVO HPS
+    control: Registrar
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se informa «Registrado correctamente» y se recarga la lista de motivos.
+    tecnico:
+      formulario: Form_FormMotivoHPS
+      control: ComandoGrabar
+      evidencia: ["src/forms/Form_FormMotivoHPS.cls:38", "src/classes/MotivoHPS.cls:22", "src/classes/MotivoHPS.cls:61"]
+    reglas:
+      - id: SHP-F071-R01
+        descripcion: El motivo es obligatorio («Introduzca el motivo») y solo se puede guardar en la oficina («Sólo puede hacerse en la oficina»).
+        evidencia: ["src/forms/Form_FormMotivoHPS.cls:44", "src/forms/Form_FormMotivoHPS.cls:48"]
+      - id: SHP-F071-R02
+        descripcion: En el alta no puede existir otro motivo igual («Ese motivo ya estaba registrado»).
+        evidencia: ["src/classes/MotivoHPS.cls:78"]
+      - id: SHP-F071-R03
+        descripcion: En la edición, si el texto no cambia se muestra «Sin cambios que guardar».
+        evidencia: ["src/forms/Form_FormMotivoHPS.cls:69"]
+      # posible defecto: el cambio de texto en los usuarios se aplica sobre la base de datos de la aplicación, no sobre la de HPS donde están los usuarios.
+      - id: SHP-F071-R04
+        descripcion: Al cambiar el texto de un motivo se actualiza también en las solicitudes que lo tenían y en los usuarios y su histórico.
+        evidencia: ["src/classes/MotivoHPS.cls:45", "src/classes/MotivoHPS.cls:49", "src/classes/MotivoHPS.cls:208"]
+
+  - id: SHP-F072
+    area: Entidades
+    nombre: Gestionar las justificaciones de HPS
+    descripcion: >-
+      Lista las justificaciones con su título, descripción y si están activas; permite buscarlas, darlas de alta, editarlas y desactivarlas.
+    formulario: JUSTIFICACIONES
+    control: Justificación | Activas | Alta | Editar/Ver | Eliminar
+    tipo: lista
+    roles: []
+    resultado: >-
+      La lista refleja las justificaciones registradas con un símbolo de activa o inactiva.
+    tecnico:
+      formulario: Form_frmBuscarJustificacion
+      control: CargarLista
+      evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:30", "src/forms/Form_frmBuscarJustificacion.cls:88"]
+      prd: prd/formularios/Form_frmBuscarJustificacion.md
+    reglas:
+      - id: SHP-F072-R01
+        descripcion: El filtro de estado ofrece Todas, Activas e Inactivas; al abrir se muestran las activas.
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.form.txt:841", "src/forms/Form_frmBuscarJustificacion.cls:41"]
+      - id: SHP-F072-R02
+        descripcion: La búsqueda por texto busca en el título y en la descripción sin distinguir mayúsculas; si solo queda un resultado se abre directamente (o se elige, en modo de selección).
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:116", "src/forms/Form_frmBuscarJustificacion.cls:51"]
+      - id: SHP-F072-R03
+        descripcion: «Editar/Ver» está siempre permitido para la justificación seleccionada; sin selección se muestra «Por favor, selecciona un registro para editar.».
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:312", "src/forms/Form_frmBuscarJustificacion.cls:156"]
+      - id: SHP-F072-R04
+        descripcion: «Eliminar» solo se activa si la justificación no está en uso en ninguna solicitud; si lo está, su ayuda dice «En uso. No se puede eliminar.».
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:315", "src/modules/JustificacionRepositorio.bas:69"]
+      - id: SHP-F072-R05
+        descripcion: Eliminar pide confirmación («¿Estás seguro de eliminar (desactivar) esta justificación?») y la desactiva, sin borrarla.
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:177", "src/modules/JustificacionRepositorio.bas:62"]
+      - id: SHP-F072-R06
+        descripcion: Tras guardar una justificación la lista se recarga manteniendo el texto de búsqueda y, en modo de gestión, se resalta la justificación guardada.
+        evidencia: ["src/forms/Form_frmBuscarJustificacion.cls:201", "src/forms/Form_frmBuscarJustificacion.cls:223"]
+
+  - id: SHP-F073
+    area: Entidades
+    nombre: Dar de alta o editar una justificación
+    descripcion: >-
+      Registra el título, la descripción y si la justificación está activa.
+    formulario: Nueva Justificación | Editar Justificación
+    control: Guardar
+    tipo: botón
+    roles: []
+    resultado: >-
+      La justificación queda guardada y la lista de justificaciones se actualiza.
+    tecnico:
+      formulario: Form_frmJustificacion
+      control: cmdGuardar
+      evidencia: ["src/forms/Form_frmJustificacion.cls:72", "src/classes/JustificacionServicio.cls:34"]
+      prd: prd/formularios/Form_frmJustificacion.md
+    reglas:
+      - id: SHP-F073-R01
+        descripcion: Una justificación nueva nace activa.
+        evidencia: ["src/forms/Form_frmJustificacion.cls:33"]
+      - id: SHP-F073-R02
+        descripcion: Si la justificación ya se usa en alguna solicitud, el título y la descripción quedan bloqueados y solo se puede cambiar si está activa; se muestra un aviso.
+        evidencia: ["src/forms/Form_frmJustificacion.cls:51", "src/forms/Form_frmJustificacion.cls:60"]
+      - id: SHP-F073-R03
+        descripcion: Si no hay cambios se muestra «No se han detectado cambios para guardar.».
+        evidencia: ["src/forms/Form_frmJustificacion.cls:81"]
+      - id: SHP-F073-R04
+        descripcion: El título es obligatorio («El campo 'Título' es obligatorio.») y no puede superar 255 caracteres («El título es demasiado largo (máx 255 caracteres).»).
+        evidencia: ["src/classes/JustificacionServicio.cls:42", "src/classes/JustificacionServicio.cls:47"]
+      - id: SHP-F073-R05
+        descripcion: Una justificación nueva recibe el siguiente número disponible.
+        evidencia: ["src/modules/JustificacionRepositorio.bas:35"]
+      # posible defecto: la edición intenta crear un registro nuevo con el mismo número y el fallo no se comunica; los cambios no se guardan.
+      - id: SHP-F073-R06
+        descripcion: Guardar siempre crea un registro nuevo, también al editar una justificación existente.
+        evidencia: ["src/modules/JustificacionRepositorio.bas:41", "src/classes/JustificacionServicio.cls:53"]
+      - id: SHP-F073-R07
+        descripcion: «Cancelar» cierra la ventana sin guardar.
+        evidencia: ["src/forms/Form_frmJustificacion.cls:137"]
+
+  # ---------------------------------------------------------------------------
+  # Configuración
+  # ---------------------------------------------------------------------------
+  - id: SHP-F074
+    area: Configuración
+    nombre: Configurar los parámetros de la aplicación
+    descripcion: >-
+      Define si hay correos automáticos, los plazos en días de los recordatorios y autocancelaciones, si las autocancelaciones están activas, el buzón de seguridad, el correo del director de seguridad y las versiones de plantillas.
+    formulario: PARÁMETROS DE CONFIGURACIÓN
+    control: icono «Registrar»
+    tipo: botón
+    roles: []
+    resultado: >-
+      La configuración queda guardada, el entorno se recarga y el menú principal muestra si los parámetros están completos.
+    tecnico:
+      formulario: Form_FormConfiguracion
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormConfiguracion.cls:42", "src/classes/ConfiguracionOperaciones.cls:115"]
+      prd: prd/formularios/Form_FormConfiguracion.md
+    reglas:
+      - id: SHP-F074-R01
+        descripcion: Si no hay cambios se muestra «No hay cambios que guardar».
+        evidencia: ["src/forms/Form_FormConfiguracion.cls:58"]
+      - id: SHP-F074-R02
+        descripcion: Cada plazo en días, si se rellena, debe ser un número no negativo (por ejemplo «DiasParaRecordatorioExcel1 ha de ser un número entero positivo»).
+        evidencia: ["src/classes/ConfiguracionOperaciones.cls:301", "src/classes/ConfiguracionOperaciones.cls:351"]
+      - id: SHP-F074-R03
+        descripcion: El buzón de seguridad y el correo del director de seguridad, si se rellenan, deben tener formato de correo.
+        evidencia: ["src/classes/ConfiguracionOperaciones.cls:361", "src/classes/ConfiguracionOperaciones.cls:368"]
+      - id: SHP-F074-R04
+        descripcion: Las autocancelaciones previa a MARGA y de MARGA deben ser Sí o No («AutocancelacionPreMARGA ha de ser Sí o No»).
+        evidencia: ["src/classes/ConfiguracionOperaciones.cls:375", "src/classes/ConfiguracionOperaciones.cls:379"]
+      - id: SHP-F074-R05
+        descripcion: Son obligatorias las versiones de plantillas HTML y Excel («Se ha de indicar la versión de las plantillas HTML (Vxx)»).
+        evidencia: ["src/classes/ConfiguracionOperaciones.cls:383", "src/classes/ConfiguracionOperaciones.cls:387"]
+      - id: SHP-F074-R06
+        descripcion: Los campos de correo solo están habilitados cuando «Activar Correos Automáticos» vale Sí.
+        evidencia: ["src/forms/Form_FormConfiguracion.cls:173", "src/forms/Form_FormConfiguracion.cls:93"]
+      - id: SHP-F074-R07
+        descripcion: "La configuración se considera incompleta si falta indicar si hay correos automáticos o las autocancelaciones, falta el plazo de una autocancelación activada o, con correos automáticos activos, falta el buzón de seguridad, algún plazo de recordatorio o el correo del director de seguridad."
+        evidencia: ["src/modules/FUNCIONES UTILES.bas:2375", "src/classes/Entorno.cls:459"]
+      - id: SHP-F074-R08
+        descripcion: Tras guardar se recarga todo el entorno de la aplicación y se actualiza el rótulo de parámetros del menú principal.
+        evidencia: ["src/classes/ConfiguracionOperaciones.cls:276", "src/forms/Form_FormConfiguracion.cls:76"]
+      - id: SHP-F074-R09
+        descripcion: Desactivar los correos automáticos en la configuración no borra los correos ya programados; impide programar nuevos y desactiva la reprogramación.
+        evidencia: ["src/classes/SolicitudOperaciones.cls:2413", "src/forms/Form_FormSolicitudesGestion.cls:872"]
+      - id: SHP-F074-R10
+        descripcion: La ventana no comprueba el perfil del usuario y «Salir» cierra sin pedir confirmación aunque haya cambios.
+        evidencia: ["src/forms/Form_FormConfiguracion.cls:11", "src/forms/Form_FormConfiguracion.cls:204"]
+
+  - id: SHP-F075
+    area: Configuración
+    nombre: Abrir las carpetas de plantillas configuradas
+    descripcion: >-
+      Abre en el explorador la carpeta de plantillas Excel o HTML de la versión configurada.
+    formulario: PARÁMETROS DE CONFIGURACIÓN
+    control: iconos junto a «Versión Plantillas EXCEL» y «Versión Plantillas HTML»
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la carpeta de la versión de plantillas.
+    tecnico:
+      formulario: Form_FormConfiguracion
+      control: ComandoURLPlantillasExcel, ComandoURLPlantillasHTML
+      evidencia: ["src/forms/Form_FormConfiguracion.cls:115", "src/forms/Form_FormConfiguracion.cls:143"]
+      prd: prd/formularios/Form_FormConfiguracion.md
+    reglas:
+      - id: SHP-F075-R01
+        descripcion: Si la carpeta no es accesible se muestra «El directorio no es accesible en estos momentos».
+        evidencia: ["src/forms/Form_FormConfiguracion.cls:123", "src/forms/Form_FormConfiguracion.cls:153"]
+      # posible defecto: la etiqueta emergente de ambos iconos habla de anexar un acuerdo con el suministrador.
+      - id: SHP-F075-R02
+        descripcion: La etiqueta emergente de ambos iconos dice «Anexar el acuerdo con el suministrador seleccionado».
+        evidencia: ["src/forms/Form_FormConfiguracion.form.txt:1536", "src/forms/Form_FormConfiguracion.form.txt:1599"]
