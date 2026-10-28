@@ -20,9 +20,9 @@ Inventario exhaustivo, por aplicación, de lo que hace hoy cada aplicación lega
 |---|---|---|---|
 | T1 | S3-S7 | Esquema de la fuente (YAML por aplicación) y generador del Excel con tests (inline) — hecho | 27625a23 |
 | T2 | S2-S7 | Piloto: Gestión de Riesgos (`release/2026-008.2.rc1` `99ffa81df3f56a80e6f713e3afc0fb73fd9b3b25`) (worker) — hecho, área Publicación/Ediciones | (este commit) |
-| T3 | S3-S6 | Validación del piloto con el usuario | |
-| T4 | S1-S7 | Las 7 aplicaciones restantes con PRD | |
-| T5 | S1-S7 | Las 5 aplicaciones nuevas | |
+| T3 | S3-S6 | Validación del piloto con el usuario — hecho | (este commit) |
+| T4 | S1-S7 | Completar Gestión de Riesgos y las 7 aplicaciones restantes con PRD (un worker por aplicación) | |
+| T5 | S1-S7 | Las 5 aplicaciones nuevas (un worker por aplicación) | |
 | T6 | S8 | Decisión que sustituye a D85 — hecho | f4233dab |
 
 ## Log
@@ -33,3 +33,4 @@ Inventario exhaustivo, por aplicación, de lo que hace hoy cada aplicación lega
 - L4 — T1: `openpyxl` no es dependencia del repositorio; el generador usa solo la biblioteca estándar y PyYAML. 12 tests en verde; el fichero abre en openpyxl sin avisos. El commit 27625a23 suma 629 líneas (script 291 + tests 230): la PR de T1 supera el presupuesto de 400 y hay que decidir la estrategia de entrega antes de abrirla. Fallos preexistentes en local, iguales con y sin el cambio: `test_governance_seals`, `test_check_suites_populated`, `test_require_ci_success`, `test_pr_gate_h1` y `test_operating_doc_drift_pin`.
 - L5 — Revisión nativa de T1+T6 (`review-b9622c8aab19e7f7`, lentes legibilidad y fiabilidad): aprobada y acusada; 8 hallazgos informativos no bloqueantes (estilo reutilizado en hojas auxiliares, `prefijo` no validado, helper de test que ignora celdas vacías, entre otros) quedan como trabajo posterior.
 - L6 — Piloto T2: 63 formularios (11 cubiertos, 5 no aplicables con motivo real, 47 pendientes de piloto), 25 funcionalidades, 180 reglas, 15 posibles defectos marcados. Muestra de evidencias contrastada con el código. Convención de títulos: los formularios cambian su Caption en tiempo de ejecución a «Usuario conectado: …» (`src/classes/Entorno.cls:1448`), así que se usa la etiqueta de cabecera visible o la pestaña. Excel generado en `access2web-blueprint-worktrees/_entregables/requisitos-gestion-riesgos-PILOTO.xlsx`.
+- L7 — Usuario: «El piloto estaba muy bien». Formato validado; convenciones del piloto escritas en `docs/07-migracion/inventario-requisitos.md`. Copias de solo lectura del código de cada aplicación en `access2web-blueprint-worktrees/_legacy-src/<app>-<sha8>/`.

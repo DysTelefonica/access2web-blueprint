@@ -66,6 +66,15 @@ features:
 - Los procesos sin botón (tareas al abrir, envíos automáticos, cálculos al guardar) también son features, con `tipo: automático`.
 - Castellano peninsular formal.
 
+## Convenciones validadas en el piloto
+
+El piloto de Gestión de Riesgos (área de publicación) fijó estas convenciones; todas las aplicaciones las siguen.
+
+- **Título del formulario.** Muchas ventanas sustituyen su `Caption` en tiempo de ejecución (por ejemplo por «Usuario conectado: …»), y el `Caption` guardado puede contener nombres de personas. En esos casos `formulario` es el rótulo de cabecera visible, con las partes variables como «…», o el texto de la pestaña cuando el subformulario se muestra dentro de una. Nunca se copian nombres de personas.
+- **Reglas compartidas.** Si varias funcionalidades aplican el mismo conjunto de comprobaciones, se describen una vez en la funcionalidad principal y las demás tienen una regla que remite a ellas por su identificador.
+- **Posibles defectos.** Se describe el comportamiento actual y se añade un comentario YAML `# posible defecto: …` en la regla. No se corrige ni se interpreta.
+- **Formularios no aplicables.** Solo con motivo real y comprobado: nadie los abre, son subformularios sin comportamiento propio, o son copias de prueba.
+
 ## Excel
 
 Una hoja `Requisitos` con una fila por feature y, debajo, una fila por cada una de sus reglas:
