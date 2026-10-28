@@ -23,7 +23,7 @@ Inventario exhaustivo, por aplicación, de lo que hace hoy cada aplicación lega
 | T3 | S3-S6 | Validación del piloto con el usuario | |
 | T4 | S1-S7 | Las 7 aplicaciones restantes con PRD | |
 | T5 | S1-S7 | Las 5 aplicaciones nuevas | |
-| T6 | S8 | Decisión que sustituye a D85 — hecho | (este commit) |
+| T6 | S8 | Decisión que sustituye a D85 — hecho | f4233dab |
 
 ## Log
 
