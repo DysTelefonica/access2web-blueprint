@@ -1,0 +1,1300 @@
+# Inventario de requisitos de Gestión de Riesgos para Calidad (issue #1494).
+# Esquema y reglas de redacción: docs/07-migracion/inventario-requisitos.md.
+# Piloto: solo está levantada el área de publicación de la edición; el resto de
+# formularios queda como «pendiente de levantar (piloto)».
+#
+# Títulos de formulario: la mayoría de las ventanas sustituyen su título por
+# «Usuario conectado: <nombre> ( <perfil> )» al abrirse. Ese texto no identifica
+# la ventana y contiene nombres de personas, así que en su lugar se usa el
+# rótulo visible de la cabecera. Las partes que cambian se escriben entre « ».
+# Los subformularios de una ventana con pestañas usan el texto de su pestaña.
+
+aplicacion: Gestión de Riesgos
+prefijo: RIE
+repositorio: DysTelefonica/GESTION_RIESGOS
+rama: release/2026-008.2.rc1
+commit: 99ffa81df3f56a80e6f713e3afc0fb73fd9b3b25
+
+formularios:
+  - interno: Form_Form0BDOpciones
+    titulo: GESTIÓN DE RIESGOS
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_Form0BDOpcionesTecnico
+    titulo: GESTIÓN DE RIESGOS
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormAnexos
+    titulo: "ANEXOS PROYECTO | EDICIÓN | RIESGO: «código»"
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormAnexos1
+    titulo: "ANEXOS PARA «proyecto | edición | riesgo»"
+    estado: no aplicable
+    motivo: formulario sin uso; ningún formulario ni código lo abre en el commit fijado
+  - interno: Form_FormAnexosTotales
+    titulo: ANEXOS DE LA EDICIÓN
+    estado: no aplicable
+    motivo: formulario sin uso; ningún formulario ni código lo abre en el commit fijado («Ver Anexos» abre la ventana de anexos general)
+  - interno: Form_FormCalidadRiesgoAceptadoRetiradoVisado
+    titulo: VISADO POR CALIDAD
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormCalidadRiesgoMaterializaciones
+    titulo: HISTÓRICO DE MATERIALIZACIONES
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormCalidadTareaExplicacion
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormCalidadTareaRiesgosAceptadosRetirados
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormCalidadTareaRiesgosMaterializadosPorDecidir
+    titulo: Riesgo materializado NC por decidir
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormCalidadTareaRiesgosRetipificacion
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormCalidadTareas
+    titulo: TAREAS PENDIENTES CALIDAD
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormCalidadTareasDetalleEdicion
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormControlCambiosGestion
+    titulo: GESTIÓN DEL CONTROL DE VERSIONES
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormExpedientesBusqueda
+    titulo: EXPEDIENTES REGISTRADOS
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormGestionRiesgos
+    titulo: "ALTA DE GESTIÓN DE RIESGOS | EDICIÓN DE LA GESTIÓN DE RIESGOS: «proyecto»"
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormGestionRiesgosAutorizados
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormGestionRiesgosDatosGenerales
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormGestionRiesgosRiesgosOferta
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormGestionRiesgosSuministradores
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormIndicador
+    titulo: INDICADORES
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormMaterializacionPlanContingencia
+    titulo: Materializar riesgo | Editar materialización
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormPlanAcciones
+    titulo: ALTA ACCIÓN PARA EL PLAN «código del plan»
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormPlanPrincipal
+    titulo: ALTA DE PLAN DE MITIGACIÓN | CONTINGENCIA PARA «riesgo»
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormProyectosGestion
+    titulo: BUSCADOR DE GESTIÓN DE RIESGOS
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormPublicacionCalidad
+    titulo: «código» Ed. «n.º» (edición activa | edición no activa)
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionCalidadNotas
+    titulo: NOTAS PARA PUBLICACIÓN DE CALIDAD
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionCalidadPublicar
+    titulo: Publicación
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionCalidadPublicarEjecutar
+    titulo: PUBLICACIÓN POR CALIDAD
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionCalidadRechazoObservaciones
+    titulo: MOTIVOS DEL RECHAZO DE LA PROPUESTA DE PUBLICACIÓN
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionDatosGenerales
+    titulo: Datos generales
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionSuministradores
+    titulo: Suministradores | Sol. Riesgos suministradores
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionTecnico
+    titulo: «código» Ed. «n.º»
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionTecnicoPropuesta
+    titulo: Propuesta de publicación
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormPublicacionUTE
+    titulo: Acuerdo UTE
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormRiesgo
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoBiblioteca
+    titulo: Alta | Detalle | Edición de riesgo de biblioteca
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoDefinicion
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoDefinicionNoBiblioteca
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoExternoDetalle
+    titulo: DETALLE DEL RIESGO DE OFERTA
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoMaterializado
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoMitigacion
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoNC
+    titulo: Alta de No Conformidad | Detalle de No Conformidad
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoPlazoCosteCalidad
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoPosiblesModificacionesAceptarRetirar
+    titulo: Justificación de aceptación del riesgo | Justificación del retiro del riesgo
+    estado: no aplicable
+    motivo: formulario sin uso; ningún formulario ni código lo abre en el commit fijado
+  - interno: Form_FormRiesgoPosiblesModificacionesQuitarAceptar
+    titulo: Quitar mitigación aceptar
+    estado: no aplicable
+    motivo: formulario sin uso; ningún formulario ni código lo abre en el commit fijado
+  - interno: Form_FormRiesgoRetirado
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgoVulnerabilidad
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgosBibliotecaGestion
+    titulo: LISTA DE RIESGOS DE LA BIBLIOTECA
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgosEstablecerPrioridades
+    titulo: PRIORIZACIÓN DE RIESGOS
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgosGestion
+    titulo: riesgos de la edición «n.º» de «proyecto»
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgosGestionEdicion
+    titulo: «gestión de riesgos» ed. «n.º»
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormRiesgosGestionPlanAcciones
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgosGestionPlanPrincipal
+    titulo: Plan de mitigación | contingencia «código» riesgo «código»
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormRiesgosGestionRiesgo
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormSuministrador
+    titulo: Edición de Suministrador
+    estado: no aplicable
+    motivo: formulario sin uso; ningún formulario ni código lo abre en el commit fijado
+  - interno: Form_FormTecnicoTareaExplicacion
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormTecnicoTareaRiesgosAceptadosRetirados
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormTecnicoTareas
+    titulo: TAREAS PENDIENTES
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormTecnicoTareasDetalleEdicion
+    titulo: ""
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_FormWeb
+    titulo: EXPEDIENTES Versión 2024-001 Administrador
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: Form_formIndicadorProyectos
+    titulo: PROYECTOS INVOLUCRADOS
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+  - interno: frmSplash
+    titulo: GESTIÓN DE RIESGOS - Iniciando...
+    estado: no aplicable
+    motivo: pendiente de levantar (piloto)
+
+features:
+  - id: RIE-F001
+    area: Publicación
+    nombre: Abrir la publicación de la edición
+    descripcion: >-
+      Desde el detalle de una edición, abre la ventana donde se propone, revisa y publica esa edición.
+      El técnico y Calidad ven ventanas distintas.
+    formulario: «gestión de riesgos» ed. «n.º»
+    control: Publicación
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la ventana de propuesta de publicación (técnico) o la de publicación de Calidad (resto de perfiles).
+    tecnico:
+      formulario: Form_FormRiesgosGestionEdicion
+      control: ComandoPublicacion
+      evidencia:
+        - "src/forms/Form_FormRiesgosGestionEdicion.cls:166"
+        - "src/forms/Form_FormRiesgosGestion.cls:44"
+        - "src/forms/Form_FormCalidadTareasDetalleEdicion.cls:138"
+        - "src/forms/Form_FormTecnicoTareasDetalleEdicion.cls:40"
+    reglas:
+      - id: RIE-F001-R01
+        descripcion: El botón «Publicación» está siempre activo, sea cual sea el estado de la edición o el perfil del usuario.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:413"]
+      - id: RIE-F001-R02
+        descripcion: Si el usuario es técnico se abre la ventana de propuesta de publicación; en cualquier otro caso (Calidad o administrador) se abre la ventana de publicación de Calidad.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:175", "src/forms/Form_FormRiesgosGestion.cls:53"]
+      - id: RIE-F001-R03
+        descripcion: Es técnico todo usuario que no es administrador ni pertenece a Calidad.
+        evidencia: ["src/modules/Variables Globales.bas:720"]
+      - id: RIE-F001-R04
+        descripcion: La misma ventana se abre también con el botón «Ir a publicar» del detalle de una edición en las tareas pendientes de Calidad y en las del técnico.
+        evidencia: ["src/forms/Form_FormCalidadTareasDetalleEdicion.cls:150", "src/forms/Form_FormTecnicoTareasDetalleEdicion.cls:58"]
+
+  - id: RIE-F002
+    area: Publicación
+    nombre: Consultar la publicación de la edición (técnico)
+    descripcion: >-
+      Al abrirse, la ventana del técnico muestra el código y el número de la edición y decide qué pestañas y acciones puede usar.
+    formulario: «código» Ed. «n.º»
+    control: ""
+    tipo: automático
+    roles: [Técnico]
+    resultado: >-
+      La ventana queda con las pestañas «Propuesta de publicación», «Acuerdo UTE» y «Sol. Riesgos suministradores» habilitadas según el proyecto.
+    tecnico:
+      formulario: Form_FormPublicacionTecnico
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormPublicacionTecnico.cls:66"]
+      prd: prd/formularios/Form_FormPublicacionTecnico.md
+    reglas:
+      - id: RIE-F002-R01
+        descripcion: Si no hay ninguna edición seleccionada, la ventana muestra «No hay ninguna edición activa» y se cierra.
+        evidencia: ["src/forms/Form_FormPublicacionTecnico.cls:82"]
+      - id: RIE-F002-R02
+        descripcion: El usuario solo puede modificar datos si la edición está activa y está autorizado en el proyecto.
+        evidencia: ["src/forms/Form_FormPublicacionTecnico.cls:91"]
+      - id: RIE-F002-R03
+        descripcion: Una edición está activa si es la última de la gestión de riesgos y todavía no está publicada.
+        evidencia: ["src/classes/Edicion.cls:1376"]
+      - id: RIE-F002-R04
+        descripcion: Está autorizado en el proyecto todo administrador, todo miembro de Calidad y toda persona cuyo nombre figure entre los responsables autorizados del proyecto.
+        evidencia: ["src/modules/Funciones Generales.bas:830", "src/classes/Proyecto.cls:3800"]
+        # posible defecto: el nombre se busca como texto dentro de la lista de autorizados, de modo que un nombre contenido en otro más largo también se acepta (src/classes/Proyecto.cls:3816).
+      - id: RIE-F002-R05
+        descripcion: La pestaña «Acuerdo UTE» solo está habilitada si el proyecto está en UTE.
+        evidencia: ["src/forms/Form_FormPublicacionTecnico.cls:102"]
+      - id: RIE-F002-R06
+        descripcion: La pestaña «Sol. Riesgos suministradores» solo está habilitada si el expediente tiene suministradores que requieren evidencia de acuerdo.
+        evidencia: ["src/forms/Form_FormPublicacionTecnico.cls:108", "src/classes/Edicion.cls:4516"]
+
+  - id: RIE-F003
+    area: Publicación
+    nombre: Consultar la publicación de la edición (Calidad)
+    descripcion: >-
+      Al abrirse, la ventana de Calidad muestra el código, el número de la edición y si está activa, y decide qué pestañas se pueden usar.
+    formulario: «código» Ed. «n.º» (edición activa | edición no activa)
+    control: ""
+    tipo: automático
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La ventana queda con las pestañas «Publicación», «Datos generales», «Acuerdo UTE», «Suministradores» y «Notas Calidad», habilitadas según el proyecto.
+    tecnico:
+      formulario: Form_FormPublicacionCalidad
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormPublicacionCalidad.cls:40"]
+      prd: prd/formularios/Form_FormPublicacionCalidad.md
+    reglas:
+      - id: RIE-F003-R01
+        descripcion: Si no hay ninguna edición seleccionada, la ventana muestra «No hay ninguna edición activa» y se cierra.
+        evidencia: ["src/forms/Form_FormPublicacionCalidad.cls:58"]
+      - id: RIE-F003-R02
+        descripcion: El título indica «(edición activa)» o «(edición no activa)» según el estado de la edición.
+        evidencia: ["src/forms/Form_FormPublicacionCalidad.cls:63"]
+      - id: RIE-F003-R03
+        descripcion: El usuario solo puede modificar evidencias si la edición está activa y está autorizado en el proyecto.
+        evidencia: ["src/forms/Form_FormPublicacionCalidad.cls:72"]
+      - id: RIE-F003-R04
+        descripcion: La pestaña «Acuerdo UTE» solo está habilitada si el proyecto está en UTE.
+        evidencia: ["src/forms/Form_FormPublicacionCalidad.cls:84"]
+      - id: RIE-F003-R05
+        descripcion: La pestaña «Suministradores» solo está habilitada si el expediente tiene suministradores que requieren evidencia de acuerdo.
+        evidencia: ["src/forms/Form_FormPublicacionCalidad.cls:90"]
+      - id: RIE-F003-R06
+        descripcion: La ventana se abre siempre por la pestaña «Publicación».
+        evidencia: ["src/forms/Form_FormPublicacionCalidad.cls:128"]
+
+  - id: RIE-F004
+    area: Publicación
+    nombre: Mostrar el estado de la propuesta y de las evidencias
+    descripcion: >-
+      La pestaña de publicación indica si se exigen y están aportadas las evidencias de acuerdo con la UTE y con los suministradores,
+      y en qué punto está la propuesta de publicación.
+    formulario: Publicación
+    control: ""
+    tipo: automático
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      El usuario ve «Requerido / No requerido», «Complementado / No complementado / N/A» y un rótulo con el estado de la propuesta.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicar
+      control: EstablecerDatos
+      evidencia:
+        - "src/forms/Form_FormPublicacionCalidadPublicar.cls:304"
+        - "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:172"
+      prd: prd/formularios/Form_FormPublicacionCalidadPublicar.md
+    reglas:
+      - id: RIE-F004-R01
+        descripcion: Si el proyecto está en UTE, la evidencia de acuerdo con la UTE figura como «Requerido» y como «Complementado» o «No complementado» según haya anexo; si no, figura «No Requerido» y «N/A».
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:52", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:181"]
+      - id: RIE-F004-R02
+        descripcion: En la vista del técnico, la evidencia de suministradores figura como «Requerido» solo si el expediente tiene suministradores, y como «Complementado» cuando todos tienen anexo.
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:195"]
+      - id: RIE-F004-R03
+        descripcion: En la vista de Calidad, la evidencia de suministradores figura como «Requerido» siempre que el proyecto tenga expediente, aunque el expediente no tenga suministradores.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:318", "src/modules/SuministradoresHelper.bas:203"]
+        # posible defecto: la lista de suministradores siempre existe (aunque esté vacía), por lo que Calidad ve «Requerido» donde el técnico ve «No requerido».
+      - id: RIE-F004-R04
+        descripcion: Con la edición activa y sin propuesta, el rótulo dice «SIN PROPUESTA TÉCNICA».
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:115", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:223"]
+      - id: RIE-F004-R05
+        descripcion: Con la edición activa y propuesta sin rechazo, el rótulo dice «PROPUESTA («fecha») ESPERANDO A CALIDAD».
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:118", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:227"]
+      - id: RIE-F004-R06
+        descripcion: Con la edición activa, propuesta y rechazo registrado, el rótulo dice «PROPUESTA («fecha») RECHAZADA («fecha»)» y aparece el botón «Ver motivos»; en la vista del técnico solo si la propuesta no es posterior al rechazo.
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:124", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:232"]
+        # posible defecto: al rechazar se borra la fecha de propuesta (src/classes/Edicion.cls:3475), así que tras un rechazo el rótulo vuelve a «SIN PROPUESTA TÉCNICA» y el estado «RECHAZADA» no llega a mostrarse.
+      - id: RIE-F004-R07
+        descripcion: Con la edición ya publicada, el botón principal pasa a llamarse «Publicado», las acciones se deshabilitan y el rótulo indica la fecha de propuesta y la de publicación.
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:131", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:246"]
+
+  - id: RIE-F005
+    area: Publicación
+    nombre: Proponer la edición para publicación
+    descripcion: >-
+      El técnico declara que la edición está lista y la propone a Calidad para que la publique.
+    formulario: Propuesta de publicación
+    control: Proponer para publicación
+    tipo: botón
+    roles: [Técnico]
+    resultado: >-
+      La edición queda propuesta con fecha de hoy, se anula cualquier rechazo anterior y se envía un correo al responsable de Calidad del proyecto.
+    tecnico:
+      formulario: Form_FormPublicacionTecnicoPropuesta
+      control: ComandoProponerPublicacion
+      evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:277", "src/classes/Edicion.cls:3281"]
+      prd: prd/formularios/Form_FormPublicacionTecnicoPropuesta.md
+    reglas:
+      - id: RIE-F005-R01
+        descripcion: El botón solo está habilitado si la edición está activa y el usuario está autorizado en el proyecto.
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:210"]
+      - id: RIE-F005-R02
+        descripcion: El botón muestra «Proponer para publicación» si la edición no está propuesta y «Quitar propuesta para publicación» si ya lo está.
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:216"]
+      - id: RIE-F005-R03
+        descripcion: Si la edición no es publicable (mismas comprobaciones que RIE-F014-R04 a RIE-F014-R18), se abre el informe de publicabilidad y se muestra «No ha superado el informe de publicabilidad. Solvente las no conformidades y repita el proceso».
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:302"]
+      - id: RIE-F005-R04
+        descripcion: Antes de proponer se pide confirmación con el recordatorio «No olvide lo siguiente. Riesgos del suministrador. Riesgos de los pedidos. ¿Desea seguir con la propuesta?».
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:317"]
+      - id: RIE-F005-R05
+        descripcion: Si la edición no está activa, la propuesta se rechaza con «La Edición no es susceptible de ser publicada».
+        evidencia: ["src/classes/Edicion.cls:3294"]
+      - id: RIE-F005-R06
+        descripcion: La edición queda propuesta con la fecha de hoy y se guarda qué usuario la propone.
+        evidencia: ["src/classes/Edicion.cls:3312"]
+      - id: RIE-F005-R07
+        descripcion: Proponer borra la fecha y el motivo de un rechazo anterior de Calidad.
+        evidencia: ["src/classes/Edicion.cls:3313"]
+      - id: RIE-F005-R08
+        descripcion: La propuesta queda anotada en el historial de publicaciones con el nombre del usuario.
+        evidencia: ["src/classes/Edicion.cls:3328"]
+      - id: RIE-F005-R09
+        descripcion: Se envía un correo «Propuesta de Publicación de «n.º»:«proyecto» (gestión de riesgos)» al responsable de Calidad del proyecto, con copia a los responsables autorizados y copia oculta a los administradores.
+        evidencia: ["src/modules/Funciones Generales.bas:3041", "src/modules/Funciones Generales.bas:3060"]
+        # posible defecto: este correo no comprueba si el proyecto tiene activados los avisos (src/classes/Correo.cls:101), a diferencia del correo de rechazo.
+      - id: RIE-F005-R10
+        descripcion: Al terminar se muestra «Edición propuesta para publicar. El correo a Calidad para que la publique se enviará al finalizar.» y se recalculan las tareas pendientes.
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:342", "src/classes/Edicion.cls:3342"]
+      - id: RIE-F005-R11
+        descripcion: Tras proponer se cierran la ventana de publicación y la de riesgos de la edición.
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:353"]
+
+  - id: RIE-F006
+    area: Publicación
+    nombre: Quitar la propuesta de publicación
+    descripcion: >-
+      El técnico retira una propuesta de publicación que todavía no ha publicado Calidad.
+    formulario: Propuesta de publicación
+    control: Quitar propuesta para publicación
+    tipo: botón
+    roles: [Técnico]
+    resultado: >-
+      La edición deja de estar propuesta y se avisa por correo al responsable de Calidad del proyecto.
+    tecnico:
+      formulario: Form_FormPublicacionTecnicoPropuesta
+      control: ComandoProponerPublicacion
+      evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:367", "src/classes/Edicion.cls:3359"]
+      prd: prd/formularios/Form_FormPublicacionTecnicoPropuesta.md
+    reglas:
+      - id: RIE-F006-R01
+        descripcion: Se pide confirmación con «¿Desea quitar la propuesta de publicación».
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:367"]
+      - id: RIE-F006-R02
+        descripcion: Si la gestión de riesgos no está activa se muestra «El proyecto no es activo» y no se quita la propuesta.
+        evidencia: ["src/classes/Edicion.cls:3371"]
+      - id: RIE-F006-R03
+        descripcion: Si la edición no está activa se muestra «La Edición no es susceptible de ser publicada».
+        evidencia: ["src/classes/Edicion.cls:3379"]
+      - id: RIE-F006-R04
+        descripcion: Se borran la fecha de propuesta y el usuario que la propuso.
+        evidencia: ["src/classes/Edicion.cls:3385"]
+      - id: RIE-F006-R05
+        descripcion: Se envía un correo «Eliminada Propuesta de Publicación de «n.º»:«proyecto» (gestión de riesgos)» al responsable de Calidad del proyecto, con copia a los responsables autorizados y copia oculta a los administradores.
+        evidencia: ["src/modules/Funciones Generales.bas:3104"]
+      - id: RIE-F006-R06
+        descripcion: La retirada queda anotada en el historial de publicaciones con fecha, hora y nombre del usuario.
+        evidencia: ["src/classes/Edicion.cls:3394"]
+      - id: RIE-F006-R07
+        descripcion: Al terminar se muestra «Propuesta de publicación eliminada. El correo a Calidad se enviará al finalizar.», se recalculan las tareas y se cierran las ventanas de publicación y de riesgos.
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:387", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:393"]
+
+  - id: RIE-F007
+    area: Publicación
+    nombre: Generar el borrador del informe de la edición
+    descripcion: >-
+      El técnico obtiene el informe de la edición tal como quedaría, sin publicarla.
+    formulario: Propuesta de publicación
+    control: Generar Borrador
+    tipo: informe
+    roles: [Técnico]
+    resultado: >-
+      Se genera y se abre el informe de la edición en HTML o en PDF.
+    tecnico:
+      formulario: Form_FormPublicacionTecnicoPropuesta
+      control: ComandoGenerarInforme
+      evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:6"]
+      prd: prd/formularios/Form_FormPublicacionTecnicoPropuesta.md
+    reglas:
+      - id: RIE-F007-R01
+        descripcion: El informe sale en PDF si el selector de tipo de documento indica «PDF»; en cualquier otro caso sale en HTML.
+        evidencia: ["src/forms/Form_FormPublicacionTecnicoPropuesta.cls:9", "src/modules/Funciones Generales.bas:1474"]
+      - id: RIE-F007-R02
+        descripcion: El control de cambios del borrador recoge solo las últimas versiones (resumen de tres), igual que el informe publicado.
+        evidencia: ["src/modules/Funciones Generales.bas:1480"]
+      - id: RIE-F007-R03
+        descripcion: El informe se abre automáticamente al generarse.
+        evidencia: ["src/modules/InformeRiesgoHTML.bas:217"]
+
+  - id: RIE-F008
+    area: Publicación
+    nombre: Generar la información de publicabilidad
+    descripcion: >-
+      Comprueba, riesgo a riesgo y para la edición, si se cumplen las condiciones para publicar y lo muestra en un informe.
+    formulario: Publicación
+    control: Generar información publicabilidad
+    tipo: informe
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      Se abre un informe con cada comprobación marcada como cumple, no cumple o no aplica, y el motivo de cada incumplimiento.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicar
+      control: ComandoGenerarInformePublicabilidad
+      evidencia:
+        - "src/forms/Form_FormPublicacionCalidadPublicar.cls:61"
+        - "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:48"
+        - "src/modules/PublicabilidadEdicion.bas:970"
+      prd: prd/formularios/Form_FormPublicacionCalidadPublicar.md
+    reglas:
+      - id: RIE-F008-R01
+        descripcion: Las comprobaciones son las mismas que se exigen para publicar (RIE-F014-R04 a RIE-F014-R18).
+        evidencia: ["src/modules/PublicabilidadEdicion.bas:1045", "src/modules/PublicabilidadEdicion.bas:1055"]
+      - id: RIE-F008-R02
+        descripcion: Si la edición no tiene riesgos sin retirar, el informe no se genera y se muestra «La edición no tiene riesgos».
+        evidencia: ["src/modules/PublicabilidadEdicion.bas:1032"]
+        # posible defecto: al publicar, una edición sin riesgos se considera publicable (src/modules/PublicabilidadEdicion.bas:934), pero su informe de publicabilidad no se puede generar.
+      - id: RIE-F008-R03
+        descripcion: Todo incumplimiento lleva un motivo legible; si la comprobación no aporta uno, se usa un texto por defecto, por ejemplo «El riesgo no tiene priorización; es obligatoria para publicar».
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:450", "src/modules/PublicabilidadRiesgo.bas:462"]
+      - id: RIE-F008-R04
+        descripcion: El botón está habilitado solo mientras la edición está activa.
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:111", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:221"]
+      - id: RIE-F008-R05
+        descripcion: El informe se abre automáticamente al generarse.
+        evidencia: ["src/modules/PublicabilidadEdicion.bas:1266"]
+
+  - id: RIE-F009
+    area: Publicación
+    nombre: Ver el historial de publicaciones
+    descripcion: >-
+      Muestra todas las propuestas, retiradas de propuesta, rechazos y publicaciones de la gestión de riesgos.
+    formulario: Propuesta de publicación
+    control: Ver historial de publicaciones
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      Se abre un documento con una fila por cada movimiento: fecha de propuesta, fecha de retirada, fecha de publicación, fecha y motivo de rechazo.
+    tecnico:
+      formulario: Form_FormPublicacionTecnicoPropuesta
+      control: ComandoHistorialPublicaciones
+      evidencia:
+        - "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:77"
+        - "src/forms/Form_FormPublicacionCalidadPublicar.cls:91"
+      prd: prd/formularios/Form_FormPublicacionTecnicoPropuesta.md
+    reglas:
+      - id: RIE-F009-R01
+        descripcion: El historial abarca todas las ediciones de la gestión de riesgos, no solo la seleccionada.
+        evidencia: ["src/classes/Edicion.cls:1993", "src/classes/Edicion.cls:4262"]
+      - id: RIE-F009-R02
+        descripcion: Las columnas son «F.Para Publicar», «F.Para Publicar Eliminada», «F. Publicación», «F Rechazo Propuesta por Calidad» y «Motivo Rechazo Propuesta Por Calidad».
+        evidencia: ["src/classes/Edicion.cls:2012"]
+
+  - id: RIE-F010
+    area: Publicación
+    nombre: Pedir a los responsables que revisen la edición
+    descripcion: >-
+      Calidad envía un correo a los responsables del proyecto para que revisen la edición antes de proponerla.
+    formulario: Publicación
+    control: Enviar Correo al técnico para que revise la edición
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Queda un correo «Revisa edición» en la cola de envío y anotado en el historial de correos a responsables.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicar
+      control: ComandoEnviarCorreoTecnicoPropuestaPublicacion
+      evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:11", "src/classes/EdicionCorreoRevision.cls:235"]
+      prd: prd/formularios/Form_FormPublicacionCalidadPublicar.md
+    reglas:
+      - id: RIE-F010-R01
+        descripcion: Se pide confirmación con «¿Desea enviar un correo a los responsables para que revisen la edición para la propuesta de publicación?».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:17"]
+      - id: RIE-F010-R02
+        descripcion: El botón está habilitado solo mientras la edición está activa.
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:112"]
+      - id: RIE-F010-R03
+        descripcion: El correo solo se envía si la gestión de riesgos tiene activados los avisos por correo.
+        evidencia: ["src/classes/EdicionCorreoRevision.cls:50"]
+        # posible defecto: si los avisos están desactivados no se envía nada, pero el usuario ve igualmente «Revisión de propuesta registrada...» (src/forms/Form_FormPublicacionCalidadPublicar.cls:47).
+      - id: RIE-F010-R04
+        descripcion: El correo «Revisa edición :«proyecto» (gestión de riesgos)» va a los responsables autorizados del proyecto, con copia al usuario de Calidad que lo envía y copia oculta a los administradores.
+        evidencia: ["src/modules/Funciones Generales.bas:3411", "src/modules/Funciones Generales.bas:3426"]
+      - id: RIE-F010-R05
+        descripcion: El cuerpo del correo indica edición, fecha, quién elabora, revisa y aprueba, y pide revisar y responder con conformidad u observaciones.
+        evidencia: ["src/modules/Funciones Generales.bas:338"]
+      - id: RIE-F010-R06
+        descripcion: El envío queda anotado con fecha, hora y usuario de Calidad en el historial de correos a responsables de la edición.
+        evidencia: ["src/classes/EdicionCorreoRevision.cls:260"]
+      - id: RIE-F010-R07
+        descripcion: Al terminar se muestra «Revisión de propuesta registrada. El correo a responsables se enviará al finalizar.».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:47"]
+
+  - id: RIE-F011
+    area: Publicación
+    nombre: Ver el historial de correos a responsables
+    descripcion: >-
+      Muestra los correos de revisión y de rechazo enviados a los responsables de la edición.
+    formulario: Publicación
+    control: Ver historial
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Se abre un documento con la fecha de envío y el identificador de cada correo.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicar
+      control: ComandoVerCorreosEnviados
+      evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:120"]
+      prd: prd/formularios/Form_FormPublicacionCalidadPublicar.md
+    reglas:
+      - id: RIE-F011-R01
+        descripcion: El historial muestra las columnas «F.Envío Correo» e «IDCorreo» de los correos de la edición seleccionada.
+        evidencia: ["src/classes/Edicion.cls:2085", "src/classes/Edicion.cls:2104"]
+      - id: RIE-F011-R02
+        descripcion: Además de los correos de revisión, se anotan aquí los correos de rechazo de la propuesta que sí se enviaron.
+        evidencia: ["src/classes/Edicion.cls:3487"]
+
+  - id: RIE-F012
+    area: Publicación
+    nombre: Rechazar la propuesta de publicación
+    descripcion: >-
+      Calidad rechaza la propuesta del técnico indicando los motivos.
+    formulario: Publicación
+    control: Rechazar
+    tipo: botón
+    roles: [Calidad]
+    resultado: >-
+      La propuesta queda rechazada con fecha y motivo, deja de estar propuesta y se avisa por correo a los responsables del proyecto.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicar
+      control: ComandoRechazar
+      evidencia:
+        - "src/forms/Form_FormPublicacionCalidadPublicar.cls:212"
+        - "src/forms/Form_FormPublicacionCalidadPublicar.cls:388"
+        - "src/classes/Edicion.cls:3418"
+      prd: prd/formularios/Form_FormPublicacionCalidadPublicar.md
+    reglas:
+      - id: RIE-F012-R01
+        descripcion: El botón está habilitado solo mientras la edición está activa.
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:108"]
+      - id: RIE-F012-R02
+        descripcion: Si la propuesta ya está rechazada se avisa «En Estos momentos ya está rechazada la propuesta de publicación» y se ofrece ver las observaciones registradas.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:218"]
+      - id: RIE-F012-R03
+        descripcion: Si no está rechazada se avisa «Para poder rechazar la propuesta rellene, en el siguiente formulario, los motivos» y se abre la ventana de motivos.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:225"]
+      - id: RIE-F012-R04
+        descripcion: La ventana de motivos no se abre si la edición no está propuesta ni rechazada; muestra «La edición no aparece como propuesta para publicación».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:149"]
+      - id: RIE-F012-R05
+        descripcion: El motivo es obligatorio; si se deja vacío se muestra «No se puede quedar vacío el campo del motivo del rechazo».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:45"]
+      - id: RIE-F012-R06
+        descripcion: Si el motivo no ha cambiado se muestra «Ningún cambio por grabar».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:49"]
+      - id: RIE-F012-R07
+        descripcion: Solo un miembro de Calidad puede rechazar; un administrador recibe «El usuario no tiene permisos para rechazar propuestas (no es Calidad).».
+        evidencia: ["src/classes/Edicion.cls:3442", "src/modules/Variables Globales.bas:733"]
+      - id: RIE-F012-R08
+        descripcion: Si la edición no está activa se muestra «La Edición no es susceptible de ser publicada».
+        evidencia: ["src/classes/Edicion.cls:3447"]
+      - id: RIE-F012-R09
+        descripcion: Si la edición no está propuesta se muestra «La Edición no aparece como propuesta par publicación».
+        evidencia: ["src/classes/Edicion.cls:3451"]
+      - id: RIE-F012-R10
+        descripcion: Se guardan la fecha de hoy como fecha de rechazo, el motivo y el usuario de Calidad que rechaza, y se borra la fecha de propuesta.
+        evidencia: ["src/classes/Edicion.cls:3459"]
+      - id: RIE-F012-R11
+        descripcion: Si la gestión de riesgos tiene activados los avisos, se envía un correo «Rechazada por Calidad Propuesta de Publicación de «n.º»:«proyecto» (gestión de riesgos)» a los responsables autorizados, con copia al responsable de Calidad del proyecto y copia oculta a los administradores.
+        evidencia: ["src/modules/Funciones Generales.bas:3164", "src/classes/Correo.cls:103", "src/modules/Funciones Generales.bas:3201"]
+      - id: RIE-F012-R12
+        descripcion: El rechazo queda anotado con su fecha y motivo en el historial de publicaciones.
+        evidencia: ["src/classes/Edicion.cls:3497"]
+      - id: RIE-F012-R13
+        descripcion: Se recalculan las tareas pendientes de Calidad.
+        evidencia: ["src/classes/Edicion.cls:3505"]
+      - id: RIE-F012-R14
+        descripcion: Si el correo se envió se muestra «Propuesta de publicación rechazada. Le ha llegado un correo a los responsables del proyecto»; si no, «Rechazo registrado. La notificación por correo no se envía para este proyecto.».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:413"]
+      - id: RIE-F012-R15
+        descripcion: Tras rechazar se cierra la ventana de publicación y el detalle de la edición muestra «PUBLICACIÓN RECHAZADA POR CALIDAD EL «fecha»».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicar.cls:419", "src/modules/Funciones Generales.bas:8569"]
+
+  - id: RIE-F013
+    area: Publicación
+    nombre: Consultar los motivos del rechazo
+    descripcion: >-
+      Muestra la fecha de la propuesta, la fecha del rechazo y el motivo escrito por Calidad.
+    formulario: MOTIVOS DEL RECHAZO DE LA PROPUESTA DE PUBLICACIÓN
+    control: Ver motivos
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      El usuario ve el motivo del rechazo sin poder modificarlo.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadRechazoObservaciones
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:98"
+        - "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:105"
+        - "src/forms/Form_FormPublicacionCalidadPublicar.cls:146"
+    reglas:
+      - id: RIE-F013-R01
+        descripcion: La ventana muestra la fecha de propuesta y la fecha del rechazo con formato día/mes/año.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:153"]
+      - id: RIE-F013-R02
+        descripcion: Si ya hay un motivo registrado, el motivo y el botón «Grabar» quedan deshabilitados.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:160"]
+      - id: RIE-F013-R03
+        descripcion: Un técnico nunca puede escribir ni grabar el motivo.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:166"]
+      - id: RIE-F013-R04
+        descripcion: Al salir con el motivo vacío habiendo un rechazo previo se avisa «Si desea quitar el rechazo, basta con que publique».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadRechazoObservaciones.cls:77"]
+      - id: RIE-F013-R05
+        descripcion: El botón «Ver motivos» solo aparece cuando el rótulo indica que la propuesta está rechazada (ver RIE-F004-R06).
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:126", "src/forms/Form_FormPublicacionTecnicoPropuesta.cls:239"]
+        # posible defecto: como el rechazo borra la fecha de propuesta, el técnico no llega a ver este botón tras un rechazo; Calidad solo accede a los motivos por «Rechazar».
+
+  - id: RIE-F014
+    area: Publicación
+    nombre: Publicar la edición
+    descripcion: >-
+      Calidad publica la edición activa: se genera y archiva el informe oficial, se avisa a los responsables
+      y se abre automáticamente la edición siguiente, o se cierra la gestión de riesgos si es la última publicación.
+    formulario: PUBLICACIÓN POR CALIDAD
+    control: Publicar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La edición queda publicada con fecha de hoy y su informe en PDF archivado; se crea la edición siguiente o se cierra la gestión de riesgos,
+      y los responsables reciben el informe por correo.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicarEjecutar
+      control: ComandoPublicar
+      evidencia:
+        - "src/forms/Form_FormPublicacionCalidadPublicar.cls:176"
+        - "src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:133"
+        - "src/modules/Funciones Generales.bas:5200"
+    reglas:
+      - id: RIE-F014-R01
+        descripcion: El botón «Publicar» de la pestaña Publicación está habilitado siempre que la edición esté activa, aunque no exista propuesta técnica.
+        evidencia: ["src/classes/PublicacionCalidadStatusPresenter.cls:109"]
+      - id: RIE-F014-R02
+        descripcion: Si se elige enviar también al RAC y no hay correo del RAC en la ventana, se muestra «No está definido el correo del RAC en esta gestión de riesgos» y no se publica.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:147"]
+      - id: RIE-F014-R03
+        descripcion: Si el correo del RAC escrito en la ventana es distinto del guardado y no está vacío, se guarda como nuevo correo del RAC de la gestión de riesgos.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:159", "src/classes/Proyecto.cls:4109"]
+      - id: RIE-F014-R04
+        descripcion: Si la edición no es publicable se genera y abre el informe de publicabilidad en PDF y se muestra «La Edición no es publicable».
+        evidencia: ["src/modules/Funciones Generales.bas:5240"]
+      - id: RIE-F014-R05
+        descripcion: Si el proyecto está en UTE, la edición debe tener anexada la evidencia de acuerdo con la otra empresa de la UTE.
+        evidencia: ["src/modules/PublicabilidadEdicion.bas:853"]
+      - id: RIE-F014-R06
+        descripcion: Si el expediente tiene suministradores que requieren evidencia, cada uno debe tener anexada su evidencia de acuerdo; el informe lista los que faltan.
+        evidencia: ["src/modules/PublicabilidadEdicion.bas:865", "src/modules/SuministradoresHelper.bas:470"]
+      - id: RIE-F014-R07
+        descripcion: Requieren evidencia los suministradores del expediente que dependen directamente de una empresa propia del consorcio.
+        evidencia: ["src/modules/SuministradoresHelper.bas:253"]
+      - id: RIE-F014-R08
+        descripcion: Solo se evalúan los riesgos de la edición que no tienen fecha de retirada.
+        evidencia: ["src/modules/PublicabilidadEdicion.bas:1837"]
+      - id: RIE-F014-R09
+        descripcion: Un riesgo aceptado solo necesita tener priorización numérica; el resto de comprobaciones no le aplican.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:79"]
+      - id: RIE-F014-R10
+        descripcion: Todo plan de mitigación y todo plan de contingencia del riesgo debe tener al menos una acción.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:109", "src/modules/PublicabilidadRiesgo.bas:120", "src/modules/PublicabilidadRiesgo.bas:578"]
+      - id: RIE-F014-R11
+        descripcion: Salvo los retirados, el riesgo no puede estar en estado incompleto (datos generales sin cumplimentar).
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:131"]
+      - id: RIE-F014-R12
+        descripcion: Salvo los que están en proceso de retirada, el riesgo debe tener una priorización numérica.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:140"]
+      - id: RIE-F014-R13
+        descripcion: Un riesgo en proceso de aceptación o de retirada impide publicar hasta que Calidad lo apruebe; el informe indica «Pendiente de evaluacion por calidad» o «Rechazada por calidad».
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:149", "src/modules/PublicabilidadRiesgo.bas:163"]
+      - id: RIE-F014-R14
+        descripcion: Un riesgo que debe proceder de la biblioteca no puede estar pendiente de retipificar.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:179"]
+      - id: RIE-F014-R15
+        descripcion: Un riesgo materializado debe tener un plan de mitigación activo y, si no tiene plan de contingencia activo, una justificación escrita del técnico.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:190", "src/modules/PublicabilidadRiesgo.bas:215"]
+      - id: RIE-F014-R16
+        descripcion: Un riesgo alto o muy alto no materializado debe tener un plan de mitigación activo y algún plan de contingencia no finalizado.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:231"]
+      - id: RIE-F014-R17
+        descripcion: Un riesgo bajo o medio no materializado debe tener algún plan de mitigación no finalizado.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:255"]
+      - id: RIE-F014-R18
+        descripcion: Un plan está activo si tiene alguna acción con fecha fin prevista y sin fecha fin real.
+        evidencia: ["src/modules/PublicabilidadRiesgo.bas:644"]
+      - id: RIE-F014-R19
+        descripcion: Para publicar, la edición debe tener quién elabora, quién revisa y quién aprueba, y quien elabora no puede ser quien revisa («El Usuario que Elabora no puede ser el mismo que revisa»).
+        evidencia: ["src/classes/Edicion.cls:3011", "src/classes/Edicion.cls:3023"]
+        # posible defecto: esta validación se hace después de generar el informe y, si es la última publicación, después de cerrar los riesgos (src/modules/Funciones Generales.bas:5255); un fallo aquí deja esos cambios hechos.
+      - id: RIE-F014-R20
+        descripcion: Para publicar, el usuario debe estar autorizado en el proyecto («El perfil de su usuario no tiene autorización para realizar esta operación»).
+        evidencia: ["src/classes/Edicion.cls:2988"]
+      - id: RIE-F014-R21
+        descripcion: La fecha de publicación es la de hoy; si la edición no tenía fecha de propuesta, se le pone también la de hoy.
+        evidencia: ["src/modules/Funciones Generales.bas:5234", "src/modules/Funciones Generales.bas:5285"]
+      - id: RIE-F014-R22
+        descripcion: Quién elabora, revisa y aprueba la edición publicada se toma de la gestión de riesgos en ese momento.
+        evidencia: ["src/modules/Funciones Generales.bas:5289"]
+      - id: RIE-F014-R23
+        descripcion: El informe oficial se genera siempre en PDF y su control de cambios recoge solo las tres últimas versiones, sea cual sea la opción elegida en «Control de cambios».
+        evidencia: ["src/modules/Funciones Generales.bas:5267", "src/modules/Funciones Generales.bas:5197", "src/modules/Funciones Generales.bas:1481"]
+      - id: RIE-F014-R24
+        descripcion: Si la entidad jurídica del proyecto es TdE, el informe se da de alta en el gestor documental AGEDO como «Informe de seguimiento de Riesgos» con el código de documento de la gestión de riesgos.
+        evidencia: ["src/modules/Funciones Generales.bas:5293", "src/modules/Funciones Generales.bas:5447"]
+        # posible defecto: si el alta en AGEDO falla (por ejemplo, «NO se ha podido obtener el código del documento»), el error se descarta y la edición se publica sin informe archivado (src/modules/Funciones Generales.bas:5298).
+      - id: RIE-F014-R25
+        descripcion: Si la entidad jurídica no es TdE, el informe se copia a la carpeta de documentación de la aplicación.
+        evidencia: ["src/modules/Funciones Generales.bas:5306"]
+      - id: RIE-F014-R26
+        descripcion: Publicar borra la fecha y el motivo de cualquier rechazo previo de la propuesta.
+        evidencia: ["src/modules/Funciones Generales.bas:5313"]
+      - id: RIE-F014-R27
+        descripcion: Si no es la última publicación, se crea la edición siguiente con número consecutivo, fecha de hoy y los mismos responsables, y se copian todos los riesgos con sus planes y acciones.
+        evidencia: ["src/modules/Funciones Generales.bas:5319", "src/modules/Funciones Generales.bas:4217", "src/modules/Funciones Generales.bas:4067"]
+      - id: RIE-F014-R28
+        descripcion: Solo se crea la edición siguiente si la publicada es la última, la gestión de riesgos no está cerrada y la edición tiene fecha de publicación.
+        evidencia: ["src/modules/Funciones Generales.bas:3966"]
+      - id: RIE-F014-R29
+        descripcion: Si la gestión de riesgos no exige riesgos de biblioteca, la priorización no se copia a la nueva edición; si los exige, sí se copia.
+        evidencia: ["src/modules/Funciones Generales.bas:4056"]
+      - id: RIE-F014-R30
+        descripcion: La nueva edición se sincroniza con los suministradores que tenga en ese momento el expediente.
+        evidencia: ["src/modules/Funciones Generales.bas:4160"]
+      - id: RIE-F014-R31
+        descripcion: Si falla la creación de la nueva edición, la edición a medio crear se borra.
+        evidencia: ["src/modules/Funciones Generales.bas:4171"]
+      - id: RIE-F014-R32
+        descripcion: Si es la última publicación, antes del informe se cierran las acciones abiertas poniendo hoy como fecha fin real y se guardan sus fechas anteriores para poder reabrir.
+        evidencia: ["src/modules/Funciones Generales.bas:5253", "src/classes/Edicion.cls:2555", "src/classes/Edicion.cls:2641"]
+      - id: RIE-F014-R33
+        descripcion: Si es la última publicación, los riesgos no retirados ni aceptados pasan a estado «Cerrado» con fecha de hoy y la gestión de riesgos queda cerrada con fecha de hoy.
+        evidencia: ["src/classes/Edicion.cls:3643", "src/modules/Funciones Generales.bas:5329"]
+      - id: RIE-F014-R34
+        descripcion: La publicación queda anotada en el historial de publicaciones con fecha y nombre del usuario.
+        evidencia: ["src/modules/Funciones Generales.bas:5339"]
+      - id: RIE-F014-R35
+        descripcion: La edición publicada guarda como fecha máxima de la próxima publicación la de hoy más los meses configurados entre ediciones (tres por defecto).
+        evidencia: ["src/classes/Edicion.cls:3092", "src/classes/Entorno.cls:793"]
+      - id: RIE-F014-R36
+        descripcion: Tras publicar se recalculan las tareas pendientes de Calidad.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:191"]
+      - id: RIE-F014-R37
+        descripcion: Solo si la gestión de riesgos tiene activados los avisos se envía el correo de publicación con el informe adjunto.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:195", "src/classes/Correo.cls:609"]
+      - id: RIE-F014-R38
+        descripcion: El asunto es «Edición Publicada «n.º»:«proyecto» (gestión de riesgos)», o «Última Edición Publicada «n.º»:...» si la gestión de riesgos ha quedado cerrada.
+        evidencia: ["src/classes/Correo.cls:534"]
+      - id: RIE-F014-R39
+        descripcion: El correo va a los responsables autorizados del proyecto, con copia al buzón de Calidad, al RAC solo si se eligió enviárselo, y copia oculta a los administradores.
+        evidencia: ["src/classes/Correo.cls:570", "src/classes/Correo.cls:587", "src/classes/Correo.cls:599"]
+      - id: RIE-F014-R40
+        descripcion: En el entorno de pruebas el correo de publicación va solo al buzón de Calidad y el asunto lleva «EN PRUEBAS».
+        evidencia: ["src/classes/Correo.cls:567", "src/classes/Correo.cls:543"]
+      - id: RIE-F014-R41
+        descripcion: El cuerpo del correo indica edición, fecha, quién elabora, revisa y aprueba, y la fecha de la próxima publicación.
+        evidencia: ["src/modules/Funciones Generales.bas:254"]
+      - id: RIE-F014-R42
+        descripcion: Si hay correos de la aplicación grabados hace más de una hora sin enviar, se avisa «Hay «n» correos pendientes de envío desde hace más de 1 hora. Revise el registro del servicio externo.».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:269", "src/modules/modAvisoPublicacionHelper.bas:210"]
+        # posible defecto: el recuento incluye todos los correos grabados hace más de una hora, sin filtrar si ya se enviaron (src/modules/modAvisoPublicacionHelper.bas:213).
+      - id: RIE-F014-R43
+        descripcion: Al terminar se pregunta «¿Desea ver el informe de la edición generada?» y, si se acepta, se abre el informe.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:209"]
+      - id: RIE-F014-R44
+        descripcion: Al terminar se cierran la ventana de publicación y la de riesgos de la edición.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:231"]
+
+  - id: RIE-F015
+    area: Publicación
+    nombre: Calcular la fecha de la próxima publicación
+    descripcion: >-
+      Al preparar la publicación se propone la fecha máxima de la siguiente publicación, que Calidad puede cambiar,
+      y se indica si esta es la última publicación de la gestión de riesgos.
+    formulario: PUBLICACIÓN POR CALIDAD
+    control: 5) Próxima publicación
+    tipo: campo
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La nueva edición y la gestión de riesgos quedan con la fecha máxima de la próxima publicación.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicarEjecutar
+      control: FechaMaxProximaPublicacion
+      evidencia:
+        - "src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:365"
+        - "src/modules/Funciones Generales.bas:9157"
+    reglas:
+      - id: RIE-F015-R01
+        descripcion: El campo «4) Es última publicación» se abre siempre en «No».
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:433"]
+        # posible defecto: la propuesta automática según la fecha prevista de cierre (src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:424) queda anulada por la línea 433.
+      - id: RIE-F015-R02
+        descripcion: Al cambiar «4) Es última publicación» se recalcula la fecha de la próxima publicación.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:402"]
+      - id: RIE-F015-R03
+        descripcion: Si es la última publicación, o la gestión de riesgos ya está cerrada, la fecha de la próxima publicación queda vacía.
+        evidencia: ["src/modules/Funciones Generales.bas:9191", "src/modules/Funciones Generales.bas:9210"]
+      - id: RIE-F015-R04
+        descripcion: La fecha propuesta es la de hoy más los meses configurados entre ediciones (tres por defecto).
+        evidencia: ["src/modules/Funciones Generales.bas:9217", "src/classes/Entorno.cls:793"]
+      - id: RIE-F015-R05
+        descripcion: Si el expediente tiene fecha prevista de cierre futura, la fecha propuesta no supera esa fecha más quince días.
+        evidencia: ["src/modules/Funciones Generales.bas:9224", "src/modules/Funciones Generales.bas:9228"]
+      - id: RIE-F015-R06
+        descripcion: Calidad puede escribir otra fecha; si la deja vacía se usa la calculada por la gestión de riesgos.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:183", "src/modules/Funciones Generales.bas:4572"]
+      - id: RIE-F015-R07
+        descripcion: Al publicar, si la fecha difiere de la guardada, se guarda en la gestión de riesgos y en la nueva edición todavía sin publicar.
+        evidencia: ["src/modules/Funciones Generales.bas:4580", "src/modules/Funciones Generales.bas:4596"]
+      - id: RIE-F015-R08
+        descripcion: La ventana muestra también, como consulta, las fechas de inicio y fin de contrato que da la herramienta de Expedientes y el correo del RAC del expediente.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:434", "src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:440"]
+
+  - id: RIE-F016
+    area: Publicación
+    nombre: Ver el informe previo a la publicación
+    descripcion: >-
+      Calidad genera el informe de la edición antes de publicarla, con el alcance de control de cambios y el formato elegidos.
+    formulario: PUBLICACIÓN POR CALIDAD
+    control: Ver informe previo
+    tipo: informe
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Se genera y se abre el informe sin publicar la edición.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicarEjecutar
+      control: ComandoGenerarInforme
+      evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:36"]
+    reglas:
+      - id: RIE-F016-R01
+        descripcion: Con «Control de cambios» en «HISTORICO» se genera el informe del control de cambios histórico; con «RESUMIDO» o vacío, el informe de la edición con los últimos cambios.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:50", "src/modules/ControlCambios.bas:351"]
+      - id: RIE-F016-R02
+        descripcion: El informe sale en PDF si el tipo de documento elegido es «PDF»; en cualquier otro caso sale en HTML.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:51"]
+
+  - id: RIE-F017
+    area: Publicación
+    nombre: Ver el control de cambios completo
+    descripcion: >-
+      Muestra el control de cambios completo de la gestión de riesgos, que no forma parte del informe publicado.
+    formulario: PUBLICACIÓN POR CALIDAD
+    control: Control de cambios completo
+    tipo: informe
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Se genera y se abre el control de cambios completo en HTML o PDF.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadPublicarEjecutar
+      control: ComandoControlCambiosCompleto
+      evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:97"]
+    reglas:
+      - id: RIE-F017-R01
+        descripcion: El control de cambios completo nunca se incorpora al informe publicado, que lleva siempre las tres últimas versiones.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:95"]
+      - id: RIE-F017-R02
+        descripcion: Sale en PDF si el tipo de documento elegido es «PDF»; en cualquier otro caso sale en HTML.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadPublicarEjecutar.cls:103"]
+
+  - id: RIE-F018
+    area: Publicación
+    nombre: Registrar notas de Calidad para la publicación
+    descripcion: >-
+      Calidad escribe notas propias sobre la publicación de la edición.
+    formulario: NOTAS PARA PUBLICACIÓN DE CALIDAD
+    control: Grabar
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Las notas quedan guardadas en la edición; si se vacían, se eliminan.
+    tecnico:
+      formulario: Form_FormPublicacionCalidadNotas
+      control: ComandoRegistrar
+      evidencia: ["src/forms/Form_FormPublicacionCalidadNotas.cls:7", "src/classes/Edicion.cls:3520"]
+      prd: prd/formularios/Form_FormPublicacionCalidadNotas.md
+    reglas:
+      - id: RIE-F018-R01
+        descripcion: Las notas solo están en la ventana de Calidad (pestaña «Notas Calidad»); el técnico no las ve.
+        evidencia: ["src/forms/Form_FormPublicacionCalidad.form.txt:645"]
+      - id: RIE-F018-R02
+        descripcion: «Grabar» solo está habilitado si la edición está activa.
+        evidencia: ["src/forms/Form_FormPublicacionCalidadNotas.cls:94"]
+      - id: RIE-F018-R03
+        descripcion: Si la edición no está activa se muestra «La Edición no es activa».
+        evidencia: ["src/classes/Edicion.cls:3531"]
+      - id: RIE-F018-R04
+        descripcion: Grabar con el texto vacío elimina las notas y muestra «Notas eliminadas correctamente»; con texto, muestra «Notas registradas correctamente».
+        evidencia: ["src/classes/Edicion.cls:3535", "src/forms/Form_FormPublicacionCalidadNotas.cls:33"]
+        # posible defecto: el texto se inserta tal cual en la orden de guardado (src/classes/Edicion.cls:3539); un apóstrofo en las notas hace fallar la grabación.
+
+  - id: RIE-F019
+    area: Publicación
+    nombre: Gestionar la evidencia del acuerdo con la UTE
+    descripcion: >-
+      Permite anexar, abrir o quitar el documento que acredita el acuerdo de tratamiento de riesgos con los miembros de la UTE.
+    formulario: Acuerdo UTE
+    control: Anexar el acuerdo con la UTE
+    tipo: botón
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      El documento queda anexado a la edición como evidencia UTE, o se retira, y se recalcula si la edición es publicable.
+    tecnico:
+      formulario: Form_FormPublicacionUTE
+      control: ComandoEvidenciaDeAcuerdo
+      evidencia:
+        - "src/forms/Form_FormPublicacionUTE.cls:6"
+        - "src/forms/Form_FormPublicacionUTE.cls:71"
+        - "src/forms/Form_FormPublicacionUTE.cls:191"
+      prd: prd/formularios/Form_FormPublicacionUTE.md
+    reglas:
+      - id: RIE-F019-R01
+        descripcion: Anexar solo está habilitado si el usuario puede modificar la edición (edición activa y usuario autorizado).
+        evidencia: ["src/forms/Form_FormPublicacionUTE.cls:171"]
+      - id: RIE-F019-R02
+        descripcion: Si el proyecto no está en UTE se muestra «No es un proyecto en UTE» y no se anexa.
+        evidencia: ["src/forms/Form_FormPublicacionUTE.cls:15"]
+      - id: RIE-F019-R03
+        descripcion: El anexo se titula «ED «n.º» Acuerdo tratamiento riesgos con miembros de UTE».
+        evidencia: ["src/forms/Form_FormPublicacionUTE.cls:35"]
+      - id: RIE-F019-R04
+        descripcion: Anexar o quitar la evidencia obliga a recalcular si la edición es publicable.
+        evidencia: ["src/forms/Form_FormPublicacionUTE.cls:46", "src/forms/Form_FormPublicacionUTE.cls:93"]
+      - id: RIE-F019-R05
+        descripcion: El botón para quitar solo aparece si hay anexo y el usuario puede modificar; pide confirmación con «¿Desea eliminar el anexo de la evidencia de acuerdo con la UTE?».
+        evidencia: ["src/forms/Form_FormPublicacionUTE.cls:177", "src/forms/Form_FormPublicacionUTE.cls:80"]
+      - id: RIE-F019-R06
+        descripcion: Al abrir el anexo, si el archivo no es accesible se muestra «El archivo no es alcanzable en estos momentos» y si ya está abierto, «Ya tiene el fichero abierto».
+        evidencia: ["src/forms/Form_FormPublicacionUTE.cls:199"]
+
+  - id: RIE-F020
+    area: Publicación
+    nombre: Gestionar las evidencias de acuerdo con los suministradores
+    descripcion: >-
+      Lista los suministradores del expediente que requieren evidencia y permite anexar, abrir o quitar la evidencia de cada uno,
+      y actualizar la lista con los suministradores actuales del expediente.
+    formulario: Suministradores | Sol. Riesgos suministradores
+    control: Anexar el acuerdo con el suministrador seleccionado
+    tipo: lista
+    roles: [Técnico, Calidad, Administrador]
+    resultado: >-
+      Cada suministrador queda con su evidencia anexada o sin ella, y la lista coincide con el expediente.
+    tecnico:
+      formulario: Form_FormPublicacionSuministradores
+      control: LIstaSuministradores
+      evidencia:
+        - "src/forms/Form_FormPublicacionSuministradores.cls:8"
+        - "src/forms/Form_FormPublicacionSuministradores.cls:97"
+        - "src/forms/Form_FormPublicacionSuministradores.cls:177"
+        - "src/forms/Form_FormPublicacionSuministradores.cls:62"
+      prd: prd/formularios/Form_FormPublicacionSuministradores.md
+    reglas:
+      - id: RIE-F020-R01
+        descripcion: Al abrir la pestaña, la lista se sincroniza con el expediente; se añaden los suministradores nuevos y se quitan los que ya no están.
+        evidencia: ["src/forms/Form_FormPublicacionSuministradores.cls:24", "src/modules/SuministradoresHelper.bas:327"]
+      - id: RIE-F020-R02
+        descripcion: La lista muestra el nombre de cada suministrador y si tiene anexo («Sí» o «No»).
+        evidencia: ["src/forms/Form_FormPublicacionSuministradores.cls:40"]
+      - id: RIE-F020-R03
+        descripcion: Anexar solo está habilitado si el usuario puede modificar la edición; sin suministrador elegido se muestra «Seleccione un elemento de la lista».
+        evidencia: ["src/forms/Form_FormPublicacionSuministradores.cls:394", "src/forms/Form_FormPublicacionSuministradores.cls:118"]
+      - id: RIE-F020-R04
+        descripcion: No se puede anexar en una edición no activa, si el archivo no es accesible o si está abierto («Ha de cerrar primero el anexo»).
+        evidencia: ["src/classes/SuministradorParaEvidencias.cls:188", "src/classes/SuministradorParaEvidencias.cls:192"]
+      - id: RIE-F020-R05
+        descripcion: El anexo se titula «ED «n.º» Acuerdo tratamiento Riesgos con Suministrador «nombre»».
+        evidencia: ["src/classes/SuministradorParaEvidencias.cls:243"]
+      - id: RIE-F020-R06
+        descripcion: Quitar la evidencia pide confirmación con «¿Desea eliminar la evidencia de acuerdo de este suministrador?» y borra el anexo.
+        evidencia: ["src/forms/Form_FormPublicacionSuministradores.cls:204", "src/classes/SuministradorParaEvidencias.cls:287"]
+      - id: RIE-F020-R07
+        descripcion: Anexar o quitar una evidencia obliga a recalcular si la edición es publicable.
+        evidencia: ["src/classes/SuministradorParaEvidencias.cls:259", "src/classes/SuministradorParaEvidencias.cls:298"]
+      - id: RIE-F020-R08
+        descripcion: «Actualizar» solo funciona con la edición activa y el usuario autorizado; si no, muestra «No se puede sincronizar los suministradores registrados para esta edición de los que ahora tiene el expediente».
+        evidencia: ["src/forms/Form_FormPublicacionSuministradores.cls:69", "src/forms/Form_FormPublicacionSuministradores.cls:289"]
+
+  - id: RIE-F021
+    area: Publicación
+    nombre: Consultar los datos generales de la edición
+    descripcion: >-
+      Muestra, sin permitir cambios, los datos de cabecera que llevará el informe de la edición.
+    formulario: Datos generales
+    control: ""
+    tipo: automático
+    roles: [Calidad, Administrador]
+    resultado: >-
+      Calidad ve fecha de edición, código, número de edición, quién elabora, revisa y aprueba, y el correo del RAC.
+    tecnico:
+      formulario: Form_FormPublicacionDatosGenerales
+      control: EstablecerDatos
+      evidencia: ["src/forms/Form_FormPublicacionDatosGenerales.cls:38"]
+    reglas:
+      - id: RIE-F021-R01
+        descripcion: Si la edición está publicada, elabora, revisa y aprueba son los guardados en la edición; si no, los actuales de la gestión de riesgos.
+        evidencia: ["src/forms/Form_FormPublicacionDatosGenerales.cls:51"]
+      - id: RIE-F021-R02
+        descripcion: El correo del RAC mostrado es el de los RAC del expediente.
+        evidencia: ["src/forms/Form_FormPublicacionDatosGenerales.cls:64", "src/classes/Proyecto.cls:543"]
+
+  - id: RIE-F022
+    area: Ediciones
+    nombre: Eliminar la edición
+    descripcion: >-
+      Calidad borra la edición activa y la edición anterior vuelve a quedar sin publicar.
+    formulario: «gestión de riesgos» ed. «n.º»
+    control: Eliminar edición
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La edición desaparece y la anterior pasa a ser la edición activa, sin fecha de publicación ni de propuesta y sin informe archivado.
+    tecnico:
+      formulario: Form_FormRiesgosGestionEdicion
+      control: ComandoEliminarEdicion
+      evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:199", "src/classes/Edicion.cls:2857"]
+    reglas:
+      - id: RIE-F022-R01
+        descripcion: El botón solo se habilita para usuarios que no son técnicos, con permiso de edición y si la edición no es la primera.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:499"]
+        # posible defecto: al seleccionar una edición activa en el árbol, el permiso de edición se concede tanto si el usuario está autorizado como si no (src/forms/Form_FormRiesgosGestion.cls:803).
+      - id: RIE-F022-R02
+        descripcion: No se puede borrar la primera edición («Es la primera edición y una gestión de riesgos al menos ha de tener una. Si lo desea, debe borrar la gestión de riesgos completa»).
+        evidencia: ["src/classes/GestionRiesgosEdicionDeleteDecisionService.cls:34"]
+      - id: RIE-F022-R03
+        descripcion: Un técnico no puede borrar ediciones («Desde el 17/12/2019 sólo un miembro de Calidad puede borrar una edición»).
+        evidencia: ["src/classes/GestionRiesgosEdicionDeleteDecisionService.cls:39"]
+      - id: RIE-F022-R04
+        descripcion: Si hay cambios respecto a la edición anterior se pide confirmación adicional («Se han producido cambios con la edición anterior ¿Desea seguir eliminando la edición?»).
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:240"]
+      - id: RIE-F022-R05
+        descripcion: Siempre se pide confirmación con «¿Desea realmente borrar completamente la edición seleccionada?».
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:253"]
+      - id: RIE-F022-R06
+        descripcion: No se puede borrar si el informe de la edición anterior está abierto («Se tiene abierto el informe de la edición anterior»).
+        evidencia: ["src/classes/GestionRiesgosEdicionDeleteDecisionService.cls:75"]
+      - id: RIE-F022-R07
+        descripcion: Solo se puede borrar la última edición sin publicar y con el usuario autorizado en el proyecto.
+        evidencia: ["src/classes/Edicion.cls:3801", "src/classes/Edicion.cls:3809"]
+      - id: RIE-F022-R08
+        descripcion: Al borrar, la edición anterior pierde su fecha de publicación, su fecha de propuesta y, si lo tenía, su informe en el gestor documental AGEDO, y vuelve a ser la activa.
+        evidencia: ["src/classes/Edicion.cls:2908", "src/classes/Edicion.cls:2916"]
+      - id: RIE-F022-R09
+        descripcion: Se borra el historial de publicaciones de la edición eliminada y se recalculan las tareas de Calidad y la fecha máxima de la próxima publicación.
+        evidencia: ["src/classes/Edicion.cls:2926", "src/forms/Form_FormRiesgosGestionEdicion.cls:285", "src/forms/Form_FormRiesgosGestionEdicion.cls:294"]
+
+  - id: RIE-F023
+    area: Ediciones
+    nombre: Reabrir la gestión de riesgos cerrada
+    descripcion: >-
+      Calidad deshace la última publicación de una gestión de riesgos cerrada para volver a trabajar sobre esa edición.
+    formulario: «gestión de riesgos» ed. «n.º»
+    control: Qutar última publicación
+    tipo: botón
+    roles: [Calidad, Administrador]
+    resultado: >-
+      La última edición deja de estar publicada, sus acciones recuperan las fechas que tenían y la gestión de riesgos deja de estar cerrada.
+    tecnico:
+      formulario: Form_FormRiesgosGestionEdicion
+      control: ComandoAbrirProyecto
+      evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:23", "src/classes/Proyecto.cls:1537"]
+    reglas:
+      - id: RIE-F023-R01
+        descripcion: El botón solo aparece a usuarios que no son técnicos cuando la gestión de riesgos está cerrada, y actúa siempre sobre la última edición, sea cual sea la seleccionada.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:504", "src/forms/Form_FormRiesgosGestionEdicion.cls:534", "src/classes/Proyecto.cls:1569"]
+      - id: RIE-F023-R02
+        descripcion: Se pide confirmación con «¿Desea realmente quitar la última publicación y convertir esa edición e la edición activa?».
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:29"]
+      - id: RIE-F023-R03
+        descripcion: Si la gestión de riesgos no está cerrada se muestra «El Proyecto no aparece como cerrado».
+        evidencia: ["src/classes/Proyecto.cls:1548"]
+      - id: RIE-F023-R04
+        descripcion: Para quitar la publicación el usuario debe estar autorizado, la edición debe estar publicada y ser la última («Ha de ser la última Edición»).
+        evidencia: ["src/classes/Edicion.cls:3933", "src/classes/Edicion.cls:3942", "src/classes/Edicion.cls:3947"]
+      - id: RIE-F023-R05
+        descripcion: Si el informe publicado está abierto se muestra «Antes de borrar la publicación ha de cerrar el informe».
+        evidencia: ["src/classes/Edicion.cls:3868"]
+      - id: RIE-F023-R06
+        descripcion: Se borran la fecha de publicación y el informe archivado (en AGEDO o en la carpeta de documentación).
+        evidencia: ["src/classes/Edicion.cls:3885", "src/classes/Edicion.cls:3895"]
+      - id: RIE-F023-R07
+        descripcion: Las acciones cerradas al publicar recuperan la fecha fin real que tenían antes, o quedan sin ella.
+        evidencia: ["src/classes/Proyecto.cls:1583", "src/classes/Edicion.cls:2760"]
+      - id: RIE-F023-R08
+        descripcion: La gestión de riesgos deja de estar cerrada.
+        evidencia: ["src/classes/Proyecto.cls:1588"]
+
+  - id: RIE-F024
+    area: Ediciones
+    nombre: Generar el informe de la edición
+    descripcion: >-
+      Genera en cualquier momento el informe de la edición seleccionada, publicada o no, sin guardarlo como informe oficial.
+    formulario: «gestión de riesgos» ed. «n.º»
+    control: Generar informe
+    tipo: informe
+    roles: []
+    resultado: >-
+      Se genera y se abre el informe de la edición.
+    tecnico:
+      formulario: Form_FormRiesgosGestionEdicion
+      control: ComandoGenerarInforme
+      evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:114"]
+    reglas:
+      - id: RIE-F024-R01
+        descripcion: El botón está habilitado para todos los usuarios.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:533"]
+      - id: RIE-F024-R02
+        descripcion: Con «Control de cambios» en «HISTORICO» el informe incluye el historial completo; con «RESUMIDO» o vacío, los últimos cambios.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:128", "src/modules/ControlCambios.bas:351"]
+      - id: RIE-F024-R03
+        descripcion: El informe sale siempre en PDF; el selector de tipo de documento de la ventana no se tiene en cuenta.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:134", "src/modules/Funciones Generales.bas:1481"]
+        # posible defecto: el selector «HTML / PDF» de esta ventana no se lee en ningún punto del código.
+      - id: RIE-F024-R04
+        descripcion: El informe se abre al generarse y la ventana lo vuelve a abrir a continuación.
+        evidencia: ["src/modules/InformeRiesgoHTML.bas:217", "src/forms/Form_FormRiesgosGestionEdicion.cls:147"]
+        # posible defecto: el propio código advierte de que el documento puede abrirse dos veces seguidas (src/forms/Form_FormRiesgosGestionEdicion.cls:145).
+
+  - id: RIE-F025
+    area: Ediciones
+    nombre: Abrir el informe publicado de la edición
+    descripcion: >-
+      Abre el informe oficial archivado al publicar la edición.
+    formulario: «gestión de riesgos» ed. «n.º»
+    control: Informe generado
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre el informe publicado de la edición.
+    tecnico:
+      formulario: Form_FormRiesgosGestionEdicion
+      control: ImagenInforme
+      evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:546"]
+    reglas:
+      - id: RIE-F025-R01
+        descripcion: El icono y el rótulo «Informe generado» solo aparecen si la edición tiene informe archivado.
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:517"]
+      - id: RIE-F025-R02
+        descripcion: El informe archivado es el del gestor documental AGEDO si la edición se registró allí; si no, el de la carpeta de documentación.
+        evidencia: ["src/classes/Edicion.cls:1487", "src/classes/Edicion.cls:1502"]
+      - id: RIE-F025-R03
+        descripcion: Si el archivo no es accesible se muestra «El archivo del informe no es alcanzable en estos momentos» y si ya está abierto, «Ya tiene el fichero abierto».
+        evidencia: ["src/forms/Form_FormRiesgosGestionEdicion.cls:553", "src/forms/Form_FormRiesgosGestionEdicion.cls:557"]
