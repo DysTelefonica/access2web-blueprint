@@ -1,0 +1,2593 @@
+# Inventario de requisitos de la Lanzadera para Calidad (issue #1494).
+# Esquema y reglas de redacción: docs/07-migracion/inventario-requisitos.md.
+#
+# Títulos de formulario: los tres menús principales sustituyen su título por
+# «Usuario conectado: <nombre>» al abrirse (src/forms/Form_FormMenuPrincipalAdmin.cls:39).
+# Ese texto contiene nombres de personas, así que se usa el rótulo visible
+# «Lanzadera de Aplicaciones». Las ventanas que se muestran dentro del menú
+# usan el texto de la opción o pestaña que las abre; cuando dos pestañas se
+# llaman igual se antepone la opción de menú («Usuario › Datos Generales»).
+# Las partes que cambian se escriben entre « ».
+#
+# Las direcciones de correo fijas que aparecen en el código se describen como
+# «el administrador de la Lanzadera»; no se copian.
+
+aplicacion: Lanzadera
+prefijo: LAN
+repositorio: DysTelefonica/Lanzadera
+rama: main
+commit: f86b4267dcf73ad02b9611093684766e0e1fd8b8
+
+formularios:
+  - interno: Form_FormAplicacionDatosGenerales
+    titulo: Aplicaciones › Datos Generales
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAplicacionGeneral
+    titulo: "Aplicación Activa: «aplicación»"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAplicaciones
+    titulo: Aplicaciones
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAplicacionesFueraOficina
+    titulo: Fuera de la Oficina CARU
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAplicacionesGestion
+    titulo: Búsqueda de Aplicación
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAplicacionesOficina
+    titulo: Solo Oficina
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormAplicacionesPrueba
+    titulo: En Pruebas
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormEnConstruccion
+    titulo: ""
+    estado: no aplicable
+    motivo: formulario sin uso; no tiene código propio y ningún formulario ni módulo exportado lo abre en el commit fijado (los menús muestran el aviso «En construcción» con un mensaje, no con esta ventana)
+  - interno: Form_FormLogin
+    titulo: Formulario de Acceso
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormMenuPrincipalAdmin
+    titulo: Lanzadera de Aplicaciones
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormMenuPrincipalCalidad
+    titulo: Lanzadera de Aplicaciones
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormMenuPrincipalUsuario
+    titulo: Lanzadera de Aplicaciones
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormObtenerContraseña
+    titulo: Obtener Contraseña
+    estado: no aplicable
+    motivo: formulario sin uso; ningún formulario ni módulo exportado lo abre en el commit fijado. La contraseña de un solo uso se pide con el botón «Obtener» de la ventana de acceso (LAN-F004)
+  - interno: Form_FormPerfil
+    titulo: Perfil
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioCambioPass
+    titulo: Cambio de Contraseña
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioDatosGenerales
+    titulo: Usuario › Datos Generales
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioGeneral
+    titulo: "Usuario Activo: «usuario»"
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuarioPerfilAplicaciones
+    titulo: Usuario › Perfil Aplicaciones
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormUsuariosConectados
+    titulo: ""
+    estado: no aplicable
+    motivo: formulario sin uso; ningún formulario ni módulo exportado lo abre en el commit fijado (los usuarios conectados se muestran en la búsqueda de aplicaciones, LAN-F071)
+  - interno: Form_FormUsuariosGestion
+    titulo: Búsqueda de Usuario
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormVideoDetalle
+    titulo: «título del vídeo»
+    estado: no aplicable
+    motivo: subformulario de la consulta de vídeos para usuarios (Form_FormVideosArbolVideo), que no se puede abrir porque la opción «Videos-Guías» de los menús solo muestra «En construcción» (LAN-F016)
+  - interno: Form_FormVideosArbolVideo
+    titulo: Video
+    estado: no aplicable
+    motivo: subformulario de la consulta de vídeos para usuarios (Form_FormVideosUsuarios), que no se puede abrir porque la opción «Videos-Guías» de los menús solo muestra «En construcción» (LAN-F016)
+  - interno: Form_FormVideosGestion
+    titulo: Configuración › Videos-Guías
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormVideosGestionArbolAplicacion
+    titulo: ALTA DE VÍDEO
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormVideosGestionArbolVideo
+    titulo: Datos
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormVideosGestionArbolVideoDatos
+    titulo: EDICIÓN DE DATOS DE VÍDEO
+    estado: cubierto
+    motivo: ""
+  - interno: Form_FormVideosUsuarios
+    titulo: ""
+    estado: no aplicable
+    motivo: formulario sin uso; solo lo abría la opción «Videos-Guías» de los menús, cuya apertura está comentada en el código y sustituida por el aviso «En construcción» (LAN-F016)
+  - interno: Form_Formulario1
+    titulo: ""
+    estado: no aplicable
+    motivo: copia de prueba; su único código escribe un color en la consola de depuración y ningún formulario ni módulo exportado lo abre
+
+features:
+  # ---------------------------------------------------------------- Acceso
+  - id: LAN-F001
+    area: Acceso
+    nombre: Iniciar sesión
+    descripcion: >-
+      El usuario escribe su correo y su contraseña y entra en la Lanzadera.
+      Según el estado de la contraseña entra al menú, se le obliga a cambiarla o se bloquea la cuenta.
+    formulario: Formulario de Acceso
+    control: Login
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre el menú principal que corresponde al perfil del usuario, o la ventana de cambio de contraseña.
+    tecnico:
+      formulario: Form_FormLogin
+      control: ComandoIniciarSesion
+      evidencia:
+        - "src/forms/Form_FormLogin.cls:59"
+        - "src/modules/Funciones Genreales.bas:1345"
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F001-R01
+        descripcion: Si la contraseña está vacía se muestra «La contraseña no puede estar vacía» y no se continúa.
+        evidencia: ["src/forms/Form_FormLogin.cls:76"]
+      - id: LAN-F001-R02
+        descripcion: Si el correo no contiene «@» se muestra «Se ha de introducir un correo válido» y no se continúa.
+        evidencia: ["src/forms/Form_FormLogin.cls:80"]
+      - id: LAN-F001-R03
+        descripcion: Pulsar Intro en el campo de la contraseña equivale a pulsar «Login».
+        evidencia: ["src/forms/Form_FormLogin.cls:300"]
+      - id: LAN-F001-R04
+        descripcion: Antes de validar, la Lanzadera carga su configuración y sus datos; si alguno no se puede cargar se muestra «Se han producido los siguientes Errores:» con la lista de lo que ha fallado.
+        evidencia: ["src/forms/Form_FormLogin.cls:85", "src/modules/Variables Globales.bas:641"]
+      - id: LAN-F001-R05
+        descripcion: Si el correo no pertenece a ningún usuario registrado se muestra «Está intentando iniciar sesión con un correo electrónico no registrado. Ha de solicitar al alta de esta cuenta» y la Lanzadera se cierra.
+        evidencia: ["src/forms/Form_FormLogin.cls:109", "src/forms/Form_FormLogin.cls:115"]
+        # posible defecto: antes de esa comprobación se lee el correo del usuario no encontrado (src/forms/Form_FormLogin.cls:108), lo que provoca un error interno; el usuario ve un mensaje de error técnico y se avisa al administrador, en lugar del mensaje previsto.
+      - id: LAN-F001-R06
+        descripcion: Si la persona que tiene abierta la sesión de Windows del equipo es administradora de la Lanzadera, se entra con el correo escrito sin comprobar la contraseña.
+        evidencia: ["src/forms/Form_FormLogin.cls:97", "src/forms/Form_FormLogin.cls:118"]
+      - id: LAN-F001-R07
+        descripcion: La contraseña escrita se compara cifrada con la guardada; si no coincide se muestra «Usuario/Pass no válida. Puede solicitar una nueva Pass pulsando el botón Obtener».
+        evidencia: ["src/modules/Funciones Genreales.bas:1362", "src/modules/Funciones Genreales.bas:1368", "src/forms/Form_FormLogin.cls:152"]
+      - id: LAN-F001-R08
+        descripcion: Cada contraseña errónea suma un intento fallido; los intentos se cuentan mientras la Lanzadera sigue abierta y se bloquea la cuenta como describe LAN-F007.
+        evidencia: ["src/modules/Funciones Genreales.bas:1370"]
+      - id: LAN-F001-R09
+        descripcion: Si la cuenta tiene fecha de bloqueo, la contraseña es correcta y no han pasado 20 meses desde el bloqueo, el acceso se trata como cuenta bloqueada (LAN-F007).
+        evidencia: ["src/modules/Funciones Genreales.bas:1383", "src/modules/Funciones Genreales.bas:1385"]
+        # posible defecto: el cálculo resta la fecha de bloqueo a la actual en meses con el orden invertido y siempre da un número negativo, de modo que una cuenta bloqueada no se desbloquea nunca sola; solo la desbloquea un administrador al guardar sus datos (LAN-F059-R08).
+      - id: LAN-F001-R10
+        descripcion: Si el usuario tiene una contraseña de un solo uso pendiente, solo puede entrar con esa contraseña; entonces se muestra «La Pass actual es de un solo uso y ha de cambiarla» y se abre la ventana de cambio de contraseña.
+        evidencia: ["src/modules/Funciones Genreales.bas:1413", "src/forms/Form_FormLogin.cls:155"]
+      - id: LAN-F001-R11
+        descripcion: Si la contraseña ha caducado se muestra «La Pass actual ha caducado y ha de cambiarla» y se abre la ventana de cambio de contraseña.
+        evidencia: ["src/forms/Form_FormLogin.cls:128"]
+        # posible defecto: la comprobación de caducidad está detrás de una salida que da el acceso por correcto (src/modules/Funciones Genreales.bas:1409), así que la caducidad nunca se evalúa y este mensaje no llega a mostrarse.
+      - id: LAN-F001-R12
+        descripcion: El inicio de sesión no comprueba si la cuenta está desactivada ni si tiene fecha de baja.
+        evidencia: ["src/modules/Funciones Genreales.bas:1345"]
+        # posible defecto: un usuario desactivado o dado de baja puede entrar si conoce su contraseña.
+      - id: LAN-F001-R13
+        descripcion: Si se supera el límite de intentos de la ventana se muestra «Se ha intentado más de 5 veces y la cuenta se ha bloqueado. Hable con su administrador».
+        evidencia: ["src/forms/Form_FormLogin.cls:72"]
+        # posible defecto: el contador de esa comprobación nunca se incrementa (src/forms/Form_FormLogin.cls:7), así que el mensaje no se muestra nunca; el bloqueo real lo hace LAN-F007.
+      - id: LAN-F001-R14
+        descripcion: Con el acceso correcto se guarda en el equipo un fichero con el identificador del equipo, el correo y la fecha del día, que permite la entrada sin contraseña de LAN-F002.
+        evidencia: ["src/forms/Form_FormLogin.cls:137", "src/modules/Funciones Genreales.bas:989"]
+      - id: LAN-F001-R15
+        descripcion: Con el acceso correcto se cierra la ventana de acceso y se abre el menú principal del perfil del usuario (LAN-F012).
+        evidencia: ["src/forms/Form_FormLogin.cls:143", "src/modules/Variables Globales.bas:718"]
+
+  - id: LAN-F002
+    area: Acceso
+    nombre: Entrar sin contraseña el mismo día
+    descripcion: >-
+      Si el usuario ya entró hoy desde el mismo equipo, la Lanzadera le abre el menú directamente sin pedirle la contraseña.
+    formulario: Formulario de Acceso
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      Se abre el menú principal del usuario sin pasar por la ventana de acceso.
+    tecnico:
+      formulario: Form_FormLogin
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_FormLogin.cls:219"
+        - "src/modules/Variables Globales.bas:676"
+        - "src/modules/Funciones Genreales.bas:853"
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F002-R01
+        descripcion: La entrada sin contraseña solo funciona si existe el fichero de configuración general de las aplicaciones y en él está activada la opción de permitir un día sin contraseña.
+        evidencia: ["src/modules/Funciones Genreales.bas:860", "src/modules/Funciones Genreales.bas:864", "src/classes/Entorno.cls:164"]
+      - id: LAN-F002-R02
+        descripcion: El fichero guardado en el último acceso correcto tiene que ser del mismo equipo y tener la fecha de hoy.
+        evidencia: ["src/modules/Funciones Genreales.bas:869", "src/modules/Funciones Genreales.bas:878", "src/modules/Funciones Genreales.bas:803", "src/modules/Funciones Genreales.bas:833"]
+      - id: LAN-F002-R03
+        descripcion: Se entra con el usuario cuyo correo figura en ese fichero; si el correo ya no corresponde a ningún usuario se muestra la ventana de acceso normal.
+        evidencia: ["src/modules/Variables Globales.bas:688", "src/modules/Variables Globales.bas:692"]
+      - id: LAN-F002-R04
+        descripcion: Cerrar sesión no anula esta entrada automática; al volver a la ventana de acceso el mismo día se vuelve a entrar sin contraseña.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:94", "src/forms/Form_FormLogin.cls:219"]
+        # posible defecto: el indicador de «sesión cerrada» se guarda (src/modules/Variables Globales.bas:127) pero ningún código lo consulta.
+
+  - id: LAN-F003
+    area: Acceso
+    nombre: Preparar la ventana de acceso
+    descripcion: >-
+      Al abrir la Lanzadera se comprueba que el equipo tiene el componente de cifrado y se rellena el correo del último acceso.
+    formulario: Formulario de Acceso
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      La ventana de acceso queda con el correo rellenado y el cursor en la contraseña, o la Lanzadera se cierra si falta el componente.
+    tecnico:
+      formulario: Form_FormLogin
+      control: Form_Load
+      evidencia: ["src/forms/Form_FormLogin.cls:201"]
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F003-R01
+        descripcion: Si el equipo no puede cifrar una contraseña de prueba se muestra «No tiene instalado el NetFrameWork 3.5.Siga el manual para hacerlo» y la Lanzadera se cierra.
+        evidencia: ["src/forms/Form_FormLogin.cls:230"]
+      - id: LAN-F003-R02
+        descripcion: Si el fichero del último acceso del equipo tiene un correo, ese correo se escribe en el campo «email» y el cursor pasa a la contraseña.
+        evidencia: ["src/forms/Form_FormLogin.cls:242", "src/modules/Funciones Genreales.bas:655"]
+      - id: LAN-F003-R03
+        descripcion: Si se produce un error al preparar la ventana, se muestra el error y la Lanzadera se cierra.
+        evidencia: ["src/forms/Form_FormLogin.cls:252", "src/forms/Form_FormLogin.cls:261"]
+
+  - id: LAN-F004
+    area: Acceso
+    nombre: Obtener una contraseña de un solo uso
+    descripcion: >-
+      El usuario que ha olvidado la contraseña pide una nueva; la Lanzadera genera una contraseña de un solo uso y se la envía por correo.
+    formulario: Formulario de Acceso
+    control: Obtener
+    tipo: botón
+    roles: []
+    resultado: >-
+      La cuenta queda con una contraseña de un solo uso y el usuario la recibe en su correo.
+    tecnico:
+      formulario: Form_FormLogin
+      control: ComandoCambioDeContrasenia
+      evidencia:
+        - "src/forms/Form_FormLogin.cls:9"
+        - "src/classes/Usuario.cls:729"
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F004-R01
+        descripcion: Si el correo escrito no corresponde a ningún usuario se muestra «No hay registrado ningún usuario con ese correo. Hable con su administrador».
+        evidencia: ["src/forms/Form_FormLogin.cls:27"]
+      - id: LAN-F004-R02
+        descripcion: No se comprueba el formato del correo; basta con que exista un usuario con ese correo.
+        evidencia: ["src/forms/Form_FormLogin.cls:20", "src/forms/Form_FormLogin.cls:23"]
+      - id: LAN-F004-R03
+        descripcion: La contraseña nueva tiene 8 caracteres y al menos una mayúscula, una minúscula y un dígito.
+        evidencia: ["src/classes/Usuario.cls:740", "src/modules/Funciones Genreales.bas:1150", "src/modules/Funciones Genreales.bas:1177"]
+      - id: LAN-F004-R04
+        descripcion: La contraseña nueva sustituye a la anterior y la cuenta queda marcada para cambiar la contraseña en el siguiente acceso (LAN-F001-R10).
+        evidencia: ["src/classes/Usuario.cls:758", "src/classes/Usuario.cls:760"]
+      - id: LAN-F004-R05
+        descripcion: La contraseña de un solo uso se guarda también sin cifrar hasta que el usuario la cambia.
+        evidencia: ["src/classes/Usuario.cls:763"]
+        # posible defecto: guardar la contraseña sin cifrar permite leerla desde la base de datos.
+      - id: LAN-F004-R06
+        descripcion: Se envía al usuario un correo «Envio de Pass (LANZADERA)» con la contraseña de un solo uso y el aviso de que hable con su administrador si no la ha pedido él.
+        evidencia: ["src/classes/Usuario.cls:770", "src/classes/Usuario.cls:801", "src/classes/Usuario.cls:809"]
+      - id: LAN-F004-R07
+        descripcion: Al terminar se muestra «En un periodo máximo de 10 minutos recibirá un correo electrónico con una contraseña de un solo uso».
+        evidencia: ["src/forms/Form_FormLogin.cls:42"]
+
+  - id: LAN-F005
+    area: Acceso
+    nombre: Salir de la Lanzadera desde la ventana de acceso
+    descripcion: >-
+      Cierra la Lanzadera sin entrar.
+    formulario: Formulario de Acceso
+    control: Salir
+    tipo: botón
+    roles: []
+    resultado: >-
+      La Lanzadera se cierra.
+    tecnico:
+      formulario: Form_FormLogin
+      control: ComandoSalir
+      evidencia: ["src/forms/Form_FormLogin.cls:190"]
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F005-R01
+        descripcion: Se pide confirmación con «¿Desea salir de la lanzadera»; si no se responde «Sí», no se cierra.
+        evidencia: ["src/forms/Form_FormLogin.cls:192"]
+
+  - id: LAN-F006
+    area: Acceso
+    nombre: Abrir la ayuda de la ventana
+    descripcion: >-
+      El botón de ayuda de la ventana de acceso y de la de cambio de contraseña busca el documento de ayuda de esa ventana para abrirlo.
+    formulario: Formulario de Acceso
+    control: Ayuda (botón con icono)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Debería abrirse el documento de ayuda de la ventana.
+    tecnico:
+      formulario: Form_FormLogin
+      control: ComandoAyudaFormulario
+      evidencia:
+        - "src/forms/Form_FormLogin.cls:265"
+        - "src/forms/Form_FormUsuarioCambioPass.cls:106"
+        - "src/modules/Funciones Genreales.bas:525"
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F006-R01
+        descripcion: El documento se busca en la lista de documentos de ayuda por el nombre de la ventana; si no hay ninguno registrado no ocurre nada.
+        evidencia: ["src/modules/Funciones Genreales.bas:538", "src/modules/Funciones Genreales.bas:549"]
+      - id: LAN-F006-R02
+        descripcion: Aunque haya documento registrado, no se abre nada y no se muestra ningún mensaje.
+        evidencia: ["src/modules/Funciones Genreales.bas:552", "src/forms/Form_FormLogin.cls:266"]
+        # posible defecto: la línea que construye la ruta del documento está comentada, así que se intenta abrir una ruta vacía y el error se descarta.
+
+  - id: LAN-F007
+    area: Acceso
+    nombre: Bloquear la cuenta por intentos fallidos
+    descripcion: >-
+      Tras varias contraseñas erróneas la cuenta se bloquea, se avisa al administrador y la Lanzadera se cierra.
+    formulario: Formulario de Acceso
+    control: Login
+    tipo: automático
+    roles: []
+    resultado: >-
+      La cuenta queda bloqueada y desactivada, y el administrador recibe un aviso por correo.
+    tecnico:
+      formulario: Form_FormLogin
+      control: ComandoIniciarSesion
+      evidencia:
+        - "src/modules/Funciones Genreales.bas:1370"
+        - "src/classes/Usuario.cls:680"
+        - "src/forms/Form_FormLogin.cls:163"
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F007-R01
+        descripcion: La cuenta se bloquea en el sexto intento fallido seguido dentro de la misma apertura de la Lanzadera, y el contador vuelve a cero.
+        evidencia: ["src/modules/Funciones Genreales.bas:1370", "src/modules/Funciones Genreales.bas:1375"]
+        # posible defecto: el contador no distingue usuarios; los fallos con correos distintos en la misma apertura suman para bloquear la cuenta del último correo escrito.
+      - id: LAN-F007-R02
+        descripcion: Bloquear guarda la fecha y hora del bloqueo y desactiva la cuenta.
+        evidencia: ["src/classes/Usuario.cls:688"]
+      - id: LAN-F007-R03
+        descripcion: El intento que provoca el bloqueo se trata como contraseña errónea; el aviso de cuenta bloqueada aparece en el siguiente intento con la contraseña correcta.
+        evidencia: ["src/modules/Funciones Genreales.bas:1369", "src/modules/Funciones Genreales.bas:1383"]
+      - id: LAN-F007-R04
+        descripcion: Con la cuenta bloqueada se envía al administrador de la Lanzadera el correo «Usuario Bloqueado por exceso de intentos de acceso (LANZADERA)» indicando el correo del usuario.
+        evidencia: ["src/forms/Form_FormLogin.cls:164", "src/modules/Funciones Genreales.bas:1311", "src/modules/Funciones Genreales.bas:1317"]
+      - id: LAN-F007-R05
+        descripcion: Se muestra «Cuenta bloqueada por exceso de intentos fallidos» y la Lanzadera se cierra.
+        evidencia: ["src/forms/Form_FormLogin.cls:170", "src/forms/Form_FormLogin.cls:172"]
+
+  - id: LAN-F008
+    area: Acceso
+    nombre: Cambiar la contraseña
+    descripcion: >-
+      El usuario escribe dos veces una contraseña nueva que cumpla las normas; la Lanzadera la guarda y le pide entrar de nuevo.
+    formulario: Cambio de Contraseña
+    control: Registrar
+    tipo: botón
+    roles: []
+    resultado: >-
+      La contraseña queda cambiada, se anota en el histórico y se vuelve a la ventana de acceso.
+    tecnico:
+      formulario: Form_FormUsuarioCambioPass
+      control: ComandoRegistrar
+      evidencia:
+        - "src/forms/Form_FormUsuarioCambioPass.cls:8"
+        - "src/classes/Usuario.cls:881"
+      prd: prd/formularios/Form_FormUsuarioCambioPass.md
+    reglas:
+      - id: LAN-F008-R01
+        descripcion: La ventana se abre desde el acceso (contraseña de un solo uso o caducada), desde «Cambiar Pass» del perfil y desde «Cambiar Pass» de los datos del propio usuario.
+        evidencia: ["src/forms/Form_FormLogin.cls:159", "src/forms/Form_FormPerfil.cls:205", "src/forms/Form_FormUsuarioDatosGenerales.cls:225"]
+      - id: LAN-F008-R02
+        descripcion: Al abrirse muestra, sin permitir cambiarlos, el nombre y el correo del usuario que está entrando; si no hay usuario muestra «No hay usuario activo» y se cierra.
+        evidencia: ["src/forms/Form_FormUsuarioCambioPass.cls:83", "src/forms/Form_FormUsuarioCambioPass.cls:87"]
+      - id: LAN-F008-R03
+        descripcion: Las dos contraseñas escritas tienen que ser idénticas, distinguiendo mayúsculas y minúsculas; si no, se muestra «Las Passs no coinciden».
+        evidencia: ["src/forms/Form_FormUsuarioCambioPass.cls:24"]
+      - id: LAN-F008-R04
+        descripcion: La contraseña tiene que tener entre 8 y 16 caracteres, sin espacios, con al menos un dígito, una minúscula y una mayúscula; si no, se muestra «La Pass debe tener al entre 8 y 16 caracteres, al menos un dígito, al menos una minúscula y al menos una mayúscula.».
+        evidencia: ["src/classes/Usuario.cls:897", "src/classes/Usuario.cls:902", "src/modules/Funciones Genreales.bas:1177"]
+      - id: LAN-F008-R05
+        descripcion: Si la contraseña ya se usó antes se muestra «La Pass ha sido ya usada las últimas 10 veces».
+        evidencia: ["src/classes/Usuario.cls:906", "src/classes/Usuario.cls:911"]
+        # posible defecto: la comprobación busca en todo el histórico del usuario (src/classes/Usuario.cls:971), no solo en las 10 últimas contraseñas que indica el mensaje.
+      - id: LAN-F008-R06
+        descripcion: Se guarda la contraseña cifrada, se quita la marca de contraseña de un solo uso y se borra la contraseña sin cifrar.
+        evidencia: ["src/classes/Usuario.cls:924", "src/classes/Usuario.cls:931", "src/classes/Usuario.cls:932"]
+      - id: LAN-F008-R07
+        descripcion: Si la contraseña del usuario caduca, la próxima fecha de cambio queda a tres meses de hoy; si nunca caduca, queda vacía.
+        evidencia: ["src/classes/Usuario.cls:925"]
+      - id: LAN-F008-R08
+        descripcion: El cambio se anota en el histórico de contraseñas con fecha y hora; si no se puede anotar se muestra «La Pass se guardó pero no quedó registrada en el histórico».
+        evidencia: ["src/classes/Usuario.cls:937", "src/classes/Usuario.cls:944"]
+      - id: LAN-F008-R09
+        descripcion: Al terminar se muestra «Se ha cambiado la Pass satisfactoriamente», se cierran la ventana de acceso y los menús de administrador y de usuario, y se abre la ventana de acceso con la contraseña vacía.
+        evidencia: ["src/forms/Form_FormUsuarioCambioPass.cls:40", "src/forms/Form_FormUsuarioCambioPass.cls:41", "src/forms/Form_FormUsuarioCambioPass.cls:52"]
+
+  - id: LAN-F009
+    area: Acceso
+    nombre: Cerrar la ventana de cambio de contraseña
+    descripcion: >-
+      Cierra la ventana sin cambiar la contraseña.
+    formulario: Cambio de Contraseña
+    control: Salir
+    tipo: botón
+    roles: []
+    resultado: >-
+      La ventana se cierra sin cambios.
+    tecnico:
+      formulario: Form_FormUsuarioCambioPass
+      control: ComandoSalir
+      evidencia: ["src/forms/Form_FormUsuarioCambioPass.cls:65"]
+      prd: prd/formularios/Form_FormUsuarioCambioPass.md
+    reglas:
+      - id: LAN-F009-R01
+        descripcion: Se cierra sin pedir confirmación.
+        evidencia: ["src/forms/Form_FormUsuarioCambioPass.cls:67"]
+      - id: LAN-F009-R02
+        descripcion: Si se llegó desde el acceso con una contraseña de un solo uso, la ventana de acceso ya está cerrada y no se vuelve a abrir.
+        evidencia: ["src/forms/Form_FormLogin.cls:158", "src/forms/Form_FormUsuarioCambioPass.cls:67"]
+        # posible defecto: el usuario se queda sin ninguna ventana de la Lanzadera abierta.
+
+  - id: LAN-F010
+    area: Acceso
+    nombre: Avisar al administrador de errores inesperados
+    descripcion: >-
+      Cuando una operación falla por un error no previsto, la Lanzadera muestra el error al usuario y envía un aviso por correo al administrador.
+    formulario: Formulario de Acceso
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El administrador recibe un correo con la ventana, el equipo y el detalle del error.
+    tecnico:
+      formulario: Form_FormLogin
+      control: CorreoAlAdministrador
+      evidencia:
+        - "src/modules/Funciones Genreales.bas:1447"
+        - "src/forms/Form_FormLogin.cls:179"
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F010-R01
+        descripcion: Solo se avisa de los errores no previstos; los mensajes de validación que ve el usuario no generan aviso.
+        evidencia: ["src/forms/Form_FormLogin.cls:177"]
+      - id: LAN-F010-R02
+        descripcion: El asunto es «Error en LANZADERA «nombre del usuario» «En Oficina | Fuera de Oficina»».
+        evidencia: ["src/modules/Funciones Genreales.bas:1474", "src/modules/Funciones Genreales.bas:1492"]
+      - id: LAN-F010-R03
+        descripcion: El cuerpo indica la ventana activa, el nombre del equipo y el detalle del error.
+        evidencia: ["src/modules/Funciones Genreales.bas:1493", "src/modules/Funciones Genreales.bas:1496", "src/modules/Funciones Genreales.bas:1500"]
+      - id: LAN-F010-R04
+        descripcion: El correo va a direcciones fijas del administrador escritas en el código.
+        evidencia: ["src/modules/Funciones Genreales.bas:1506"]
+
+  - id: LAN-F011
+    area: Acceso
+    nombre: Enviar los correos de la Lanzadera
+    descripcion: >-
+      Todos los correos de la Lanzadera (contraseñas, bloqueos, errores, altas) se dejan en la cola de envío común, desde donde salen más tarde.
+    formulario: Formulario de Acceso
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El correo queda registrado en la cola de envío con remitente «Lanzadera».
+    tecnico:
+      formulario: Form_FormLogin
+      control: Correo.EnviarCorreo
+      evidencia: ["src/classes/Correo.cls:46"]
+      prd: prd/formularios/Form_FormLogin.md
+    reglas:
+      - id: LAN-F011-R01
+        descripcion: Un correo sin ningún destinatario con «@» no se registra y se muestra «No hay destinatarios de ningún tipo».
+        evidencia: ["src/classes/Correo.cls:62"]
+      - id: LAN-F011-R02
+        descripcion: Un correo sin asunto no se registra y se muestra «Falta el asunto».
+        evidencia: ["src/classes/Correo.cls:73"]
+      - id: LAN-F011-R03
+        descripcion: Todos los correos llevan en copia oculta una dirección fija del administrador.
+        evidencia: ["src/classes/Correo.cls:66"]
+      - id: LAN-F011-R04
+        descripcion: El correo se guarda con la aplicación «Lanzadera», el usuario que lo origina y la fecha de grabación; el envío real lo hace otro proceso.
+        evidencia: ["src/classes/Correo.cls:86", "src/classes/Correo.cls:91", "src/classes/Correo.cls:93"]
+
+  # ---------------------------------------------------------------- Menú principal
+  - id: LAN-F012
+    area: Menú principal
+    nombre: Abrir el menú principal según el perfil
+    descripcion: >-
+      Tras entrar, la Lanzadera abre uno de tres menús: el de administrador, el de Calidad o el de usuario.
+      La cabecera muestra quién está conectado, su equipo, si está en la oficina y la versión de la Lanzadera.
+    formulario: Lanzadera de Aplicaciones
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      El usuario ve su menú con la pestaña «Fuera de la Oficina CARU» de aplicaciones abierta.
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: Form_Load
+      evidencia:
+        - "src/modules/Variables Globales.bas:718"
+        - "src/forms/Form_FormMenuPrincipalAdmin.cls:16"
+        - "src/forms/Form_FormMenuPrincipalCalidad.cls:7"
+        - "src/forms/Form_FormMenuPrincipalUsuario.cls:7"
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F012-R01
+        descripcion: Es administrador quien tiene «Admin» a «Sí» en sus datos generales; recibe el menú de administrador.
+        evidencia: ["src/modules/Variables Globales.bas:724", "src/classes/Usuario.cls:72"]
+      - id: LAN-F012-R02
+        descripcion: Es de Calidad quien no es administrador y tiene el perfil «Calidad» en la propia Lanzadera; recibe el menú de Calidad.
+        evidencia: ["src/modules/Variables Globales.bas:726", "src/classes/Usuario.cls:527", "src/classes/Usuario.cls:560"]
+      - id: LAN-F012-R03
+        descripcion: El resto de usuarios recibe el menú de usuario.
+        evidencia: ["src/modules/Variables Globales.bas:728"]
+      - id: LAN-F012-R04
+        descripcion: "La cabecera muestra «Usuario Conectado: «nombre» Miembro del equipo de «equipo»», donde el equipo es «Administradores» si tiene el perfil de administrador en la Lanzadera, «Calidad» si tiene el de Calidad y «Técnico» en cualquier otro caso."
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:41", "src/classes/Usuario.cls:605"]
+      - id: LAN-F012-R05
+        descripcion: "La cabecera muestra «Ubicación: En Oficina» si el equipo tiene una dirección de la red interna de la oficina y «Ubicación: Fuera de la Oficina» en otro caso."
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:44", "src/modules/Funciones Genreales.bas:1003", "src/modules/Variables Globales.bas:137"]
+      - id: LAN-F012-R06
+        descripcion: El pie muestra «Versión «n.º»» con la versión de la Lanzadera instalada.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:38"]
+      - id: LAN-F012-R07
+        descripcion: Al abrirse, el menú muestra las aplicaciones con la pestaña «Fuera de la Oficina CARU» seleccionada.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:69", "src/forms/Form_FormMenuPrincipalCalidad.cls:63", "src/forms/Form_FormMenuPrincipalUsuario.cls:58"]
+        # posible defecto: en los menús de administrador y de Calidad se intenta abrir la pestaña de la última aplicación usada (src/forms/Form_FormMenuPrincipalAdmin.cls:133), pero justo después se fuerza la pestaña «Fuera de la Oficina CARU».
+
+  - id: LAN-F013
+    area: Menú principal
+    nombre: Cerrar sesión
+    descripcion: >-
+      Cierra el menú y vuelve a la ventana de acceso para que entre otra persona.
+    formulario: Lanzadera de Aplicaciones
+    control: Cerrar Sesión (icono)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se cierra el menú y se abre la ventana de acceso.
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: ImagenLogout
+      evidencia:
+        - "src/forms/Form_FormMenuPrincipalAdmin.cls:87"
+        - "src/forms/Form_FormMenuPrincipalCalidad.cls:130"
+        - "src/forms/Form_FormMenuPrincipalUsuario.cls:117"
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F013-R01
+        descripcion: Se pide confirmación con «¿Desea cerrar sesión?»; si no se responde «Sí», no se cierra.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:89"]
+      - id: LAN-F013-R02
+        descripcion: La ventana de acceso que se abre puede volver a entrar sin contraseña el mismo día (LAN-F002-R04).
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:98", "src/forms/Form_FormLogin.cls:219"]
+
+  - id: LAN-F014
+    area: Menú principal
+    nombre: Salir de la Lanzadera desde el menú
+    descripcion: >-
+      Cierra la Lanzadera desde cualquiera de los tres menús.
+    formulario: Lanzadera de Aplicaciones
+    control: Salir de la Aplicación (icono)
+    tipo: botón
+    roles: []
+    resultado: >-
+      La Lanzadera se cierra.
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: ImagenSalir
+      evidencia:
+        - "src/forms/Form_FormMenuPrincipalAdmin.cls:110"
+        - "src/forms/Form_FormMenuPrincipalCalidad.cls:153"
+        - "src/forms/Form_FormMenuPrincipalUsuario.cls:140"
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F014-R01
+        descripcion: Se pide confirmación con «¿Desea salir de la lanzadera»; si no se responde «Sí», no se cierra.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:112"]
+
+  - id: LAN-F015
+    area: Menú principal
+    nombre: Abrir la lista de aplicaciones
+    descripcion: >-
+      La opción «Aplicaciones» del menú muestra los iconos de las aplicaciones agrupados en pestañas.
+    formulario: Lanzadera de Aplicaciones
+    control: Aplicaciones
+    tipo: menú
+    roles: []
+    resultado: >-
+      Se muestran las pestañas «Fuera de la Oficina CARU», «Solo Oficina» y «En Pruebas».
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: MENU1
+      evidencia:
+        - "src/forms/Form_FormMenuPrincipalAdmin.cls:125"
+        - "src/forms/Form_FormMenuPrincipalCalidad.cls:163"
+        - "src/forms/Form_FormMenuPrincipalUsuario.cls:150"
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F015-R01
+        descripcion: La opción responde igual al pulsar el recuadro, el icono o el texto «Aplicaciones».
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:179", "src/forms/Form_FormMenuPrincipalAdmin.cls:182", "src/forms/Form_FormMenuPrincipalAdmin.cls:185"]
+      - id: LAN-F015-R02
+        descripcion: En los menús de administrador y de Calidad, si el usuario tiene registrada una última aplicación abierta, se selecciona la pestaña «Solo Oficina» cuando esa aplicación es solo de oficina y «Fuera de la Oficina CARU» en otro caso.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:133", "src/classes/Usuario.cls:650"]
+      - id: LAN-F015-R03
+        descripcion: En el menú de usuario se abre la lista sin seleccionar pestaña.
+        evidencia: ["src/forms/Form_FormMenuPrincipalUsuario.cls:155"]
+
+  - id: LAN-F016
+    area: Menú principal
+    nombre: Abrir los vídeos-guía para usuarios
+    descripcion: >-
+      La opción «Videos-Guías» del menú debería mostrar los vídeos de ayuda de las aplicaciones; hoy solo avisa de que está en construcción.
+    formulario: Lanzadera de Aplicaciones
+    control: Videos-Guías
+    tipo: menú
+    roles: []
+    resultado: >-
+      Se muestra el aviso «En construcción».
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: MENU2
+      evidencia:
+        - "src/forms/Form_FormMenuPrincipalAdmin.cls:188"
+        - "src/forms/Form_FormMenuPrincipalCalidad.cls:235"
+        - "src/forms/Form_FormMenuPrincipalUsuario.cls:222"
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F016-R01
+        descripcion: En los tres menús la opción muestra «En construcción» y no abre nada.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:189", "src/forms/Form_FormMenuPrincipalCalidad.cls:236", "src/forms/Form_FormMenuPrincipalUsuario.cls:223"]
+      - id: LAN-F016-R02
+        descripcion: La apertura de la ventana de vídeos para usuarios está desactivada en el código.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:191"]
+
+  - id: LAN-F017
+    area: Menú principal
+    nombre: Abrir el perfil propio
+    descripcion: >-
+      La opción «Perfil» del menú de usuario muestra los datos y los perfiles del usuario conectado.
+    formulario: Lanzadera de Aplicaciones
+    control: Perfil
+    tipo: menú
+    roles: [Técnico]
+    resultado: >-
+      Se muestra la ventana «Perfil» del usuario conectado (LAN-F065).
+    tecnico:
+      formulario: Form_FormMenuPrincipalUsuario
+      control: MENU3
+      evidencia: ["src/forms/Form_FormMenuPrincipalUsuario.cls:247"]
+      prd: prd/formularios/Form_FormMenuPrincipalUsuario.md
+    reglas:
+      - id: LAN-F017-R01
+        descripcion: En el menú de usuario la opción abre la ventana «Perfil».
+        evidencia: ["src/forms/Form_FormMenuPrincipalUsuario.cls:250"]
+      - id: LAN-F017-R02
+        descripcion: En el menú de Calidad la opción «Perfil» aparece pero no hace nada al pulsarla.
+        evidencia: ["src/forms/Form_FormMenuPrincipalCalidad.form.txt:615", "src/forms/Form_FormMenuPrincipalCalidad.form.txt:649"]
+        # posible defecto: la opción visible no tiene ninguna acción asociada en el menú de Calidad.
+      - id: LAN-F017-R03
+        descripcion: El menú de administrador no tiene opción «Perfil»; su tercera opción es «Configuración».
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.form.txt:986"]
+
+  - id: LAN-F018
+    area: Menú principal
+    nombre: Desplegar el menú de configuración
+    descripcion: >-
+      La opción «Configuración» despliega u oculta sus subopciones.
+    formulario: Lanzadera de Aplicaciones
+    control: Configuración
+    tipo: menú
+    roles: [Administrador, Calidad]
+    resultado: >-
+      Se muestran u ocultan las subopciones y se vacía la zona de trabajo.
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: MENU3
+      evidencia:
+        - "src/forms/Form_FormMenuPrincipalAdmin.cls:205"
+        - "src/forms/Form_FormMenuPrincipalCalidad.cls:255"
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F018-R01
+        descripcion: En el menú de administrador las subopciones son «Usuario», «Aplicaciones» y «Videos-Guías».
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.form.txt:1033", "src/forms/Form_FormMenuPrincipalAdmin.form.txt:1081", "src/forms/Form_FormMenuPrincipalAdmin.form.txt:1129"]
+      - id: LAN-F018-R02
+        descripcion: En el menú de Calidad la única subopción es «Videos-Guías».
+        evidencia: ["src/forms/Form_FormMenuPrincipalCalidad.form.txt:1583"]
+      - id: LAN-F018-R03
+        descripcion: El menú de usuario no tiene la opción «Configuración»; sus opciones son «Aplicaciones», «Videos-Guías» y «Perfil».
+        evidencia: ["src/forms/Form_FormMenuPrincipalUsuario.form.txt:501", "src/forms/Form_FormMenuPrincipalUsuario.form.txt:591", "src/forms/Form_FormMenuPrincipalUsuario.form.txt:652"]
+      - id: LAN-F018-R04
+        descripcion: Al desplegar o plegar se vacía la zona de trabajo del menú.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:11", "src/forms/Form_FormMenuPrincipalAdmin.cls:265"]
+
+  - id: LAN-F019
+    area: Menú principal
+    nombre: Abrir la gestión de usuarios
+    descripcion: >-
+      La subopción «Usuario» de «Configuración» abre la búsqueda de usuarios.
+    formulario: Lanzadera de Aplicaciones
+    control: Configuración › Usuario
+    tipo: menú
+    roles: [Administrador]
+    resultado: >-
+      Se muestra la gestión de usuarios con la pestaña «Búsqueda» abierta y sin usuario activo.
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: SUBMENU1
+      evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:222"]
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F019-R01
+        descripcion: Al entrar se olvida el usuario que estuviera seleccionado.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:224"]
+      - id: LAN-F019-R02
+        descripcion: Se abre directamente la pestaña «Búsqueda».
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:237"]
+
+  - id: LAN-F020
+    area: Menú principal
+    nombre: Abrir la gestión de aplicaciones
+    descripcion: >-
+      La subopción «Aplicaciones» de «Configuración» abre la búsqueda de las aplicaciones registradas en la Lanzadera.
+    formulario: Lanzadera de Aplicaciones
+    control: Configuración › Aplicaciones
+    tipo: menú
+    roles: [Administrador]
+    resultado: >-
+      Se muestra la gestión de aplicaciones con la pestaña «Búsqueda» abierta.
+    tecnico:
+      formulario: Form_FormMenuPrincipalAdmin
+      control: SUBMENU2
+      evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:242"]
+      prd: prd/formularios/Form_FormMenuPrincipalAdmin.md
+    reglas:
+      - id: LAN-F020-R01
+        descripcion: Se abre directamente la pestaña «Búsqueda» y se olvida la aplicación que estuviera seleccionada.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:257", "src/forms/Form_FormAplicacionGeneral.cls:67"]
+
+  - id: LAN-F021
+    area: Menú principal
+    nombre: Abrir la gestión de vídeos-guía
+    descripcion: >-
+      La subopción «Videos-Guías» de «Configuración» abre el árbol de aplicaciones y sus vídeos de ayuda para darlos de alta, modificarlos o borrarlos.
+    formulario: Lanzadera de Aplicaciones
+    control: Configuración › Videos-Guías
+    tipo: menú
+    roles: [Administrador, Calidad]
+    resultado: >-
+      Se muestra la gestión de vídeos-guía (LAN-F075).
+    tecnico:
+      formulario: Form_FormMenuPrincipalCalidad
+      control: SUBMENU1
+      evidencia:
+        - "src/forms/Form_FormMenuPrincipalAdmin.cls:269"
+        - "src/forms/Form_FormMenuPrincipalCalidad.cls:272"
+      prd: prd/formularios/Form_FormMenuPrincipalCalidad.md
+    reglas:
+      - id: LAN-F021-R01
+        descripcion: En el menú de administrador es la tercera subopción; en el de Calidad, la única.
+        evidencia: ["src/forms/Form_FormMenuPrincipalAdmin.cls:272", "src/forms/Form_FormMenuPrincipalCalidad.cls:275"]
+
+  # ---------------------------------------------------------------- Aplicaciones
+  - id: LAN-F022
+    area: Aplicaciones
+    nombre: Ver las aplicaciones que funcionan fuera de la oficina
+    descripcion: >-
+      La pestaña «Fuera de la Oficina CARU» muestra los iconos de las aplicaciones que se pueden abrir desde cualquier sitio.
+    formulario: Aplicaciones
+    control: Fuera de la Oficina CARU
+    tipo: menú
+    roles: []
+    resultado: >-
+      Se muestran los iconos de AGEDYS ECO, REGISTRO, AGEDYS TÉCNICO, GEST. DE RIESGOS, BRASS, NO CONFORMIDADES, EXPEDIENTES, SOLICITUDES HPS y CONDOR.
+    tecnico:
+      formulario: Form_FormAplicaciones
+      control: MENU1
+      evidencia: ["src/forms/Form_FormAplicaciones.cls:40"]
+      prd: prd/formularios/Form_FormAplicaciones.md
+    reglas:
+      - id: LAN-F022-R01
+        descripcion: La pestaña está disponible para cualquier usuario; qué iconos se pueden pulsar lo decide LAN-F025.
+        evidencia: ["src/forms/Form_FormAplicaciones.cls:43"]
+
+  - id: LAN-F023
+    area: Aplicaciones
+    nombre: Ver las aplicaciones que solo funcionan en la oficina
+    descripcion: >-
+      La pestaña «Solo Oficina» muestra los iconos de las aplicaciones que solo se pueden abrir desde la red de la oficina.
+    formulario: Aplicaciones
+    control: Solo Oficina
+    tipo: menú
+    roles: []
+    resultado: >-
+      Se muestran los iconos de SEGURIDAD, HPS, CONTRATOS y AGEDO, y el de SICA para administradores.
+    tecnico:
+      formulario: Form_FormAplicaciones
+      control: MENU2
+      evidencia: ["src/forms/Form_FormAplicaciones.cls:52"]
+      prd: prd/formularios/Form_FormAplicaciones.md
+    reglas:
+      - id: LAN-F023-R01
+        descripcion: La pestaña está disponible para cualquier usuario; qué iconos se pueden pulsar lo decide LAN-F026.
+        evidencia: ["src/forms/Form_FormAplicaciones.cls:55"]
+
+  - id: LAN-F024
+    area: Aplicaciones
+    nombre: Ver las aplicaciones en pruebas
+    descripcion: >-
+      La pestaña «En Pruebas» muestra los iconos de las versiones de prueba de algunas aplicaciones.
+    formulario: Aplicaciones
+    control: En Pruebas
+    tipo: menú
+    roles: []
+    resultado: >-
+      Se muestran los iconos de prueba de CONDOR, NO CONFORMIDADES, EXPEDIENTES y HPS.
+    tecnico:
+      formulario: Form_FormAplicaciones
+      control: MENU3
+      evidencia: ["src/forms/Form_FormAplicaciones.cls:64"]
+      prd: prd/formularios/Form_FormAplicaciones.md
+    reglas:
+      - id: LAN-F024-R01
+        descripcion: La pestaña está disponible para cualquier usuario; qué iconos se pueden pulsar lo decide LAN-F027.
+        evidencia: ["src/forms/Form_FormAplicaciones.cls:67"]
+      - id: LAN-F024-R02
+        descripcion: La marca «Aplicaciones Prueba» de los datos del usuario no se tiene en cuenta para mostrar esta pestaña ni sus iconos.
+        evidencia: ["src/forms/Form_FormAplicaciones.cls:64", "src/forms/Form_FormAplicacionesPrueba.cls:7"]
+        # posible defecto: la marca se puede editar en los datos del usuario pero ningún código la consulta.
+
+  - id: LAN-F025
+    area: Aplicaciones
+    nombre: Preparar los iconos fuera de la oficina
+    descripcion: >-
+      Al abrir la pestaña, cada icono se muestra en color y activo si el usuario puede abrir la aplicación, o en gris e inactivo si no puede.
+      Debajo de cada icono se muestra la versión del servidor y la instalada en el equipo.
+    formulario: Fuera de la Oficina CARU
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      Los iconos quedan activos o inactivos según los permisos del usuario y su ubicación, con las versiones visibles.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_FormAplicacionesFueraOficina.cls:276"
+        - "src/forms/Form_FormAplicacionesFueraOficina.cls:8"
+        - "src/modules/Funciones Genreales.bas:2285"
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F025-R01
+        descripcion: Si no se sabe qué usuario ha entrado se muestra «No se puede determinar el usuario que ha abierto la aplicación».
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:289"]
+      - id: LAN-F025-R02
+        descripcion: Solo se tienen en cuenta las aplicaciones marcadas con «Icono En Lanzadera».
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:42"]
+      - id: LAN-F025-R03
+        descripcion: Una aplicación marcada como de oficina aparece en gris e inactiva cuando el usuario está fuera de la oficina, también para los administradores.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:56"]
+      - id: LAN-F025-R04
+        descripcion: Un administrador tiene activas todas las aplicaciones; cualquier otro usuario solo las que tienen algún perfil asignado en «Perfil Aplicaciones».
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:26", "src/forms/Form_FormAplicacionesFueraOficina.cls:90"]
+      - id: LAN-F025-R05
+        descripcion: Basta con tener un perfil asignado en la aplicación, sea cual sea, para que el icono esté activo.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:90", "src/modules/Constructor.bas:1019"]
+      - id: LAN-F025-R06
+        descripcion: El icono de EXPEDIENTES está siempre activo, tenga o no perfil el usuario.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:99"]
+      - id: LAN-F025-R07
+        descripcion: "Debajo de cada icono se muestran «Ver. Servidor: «versión»» y «Ver. Usuario: «versión»», leídas del fichero de versión del servidor y del de la copia del equipo."
+        evidencia: ["src/modules/Funciones Genreales.bas:2325", "src/classes/Aplicacion.cls:1133", "src/classes/Aplicacion.cls:1154"]
+
+  - id: LAN-F026
+    area: Aplicaciones
+    nombre: Preparar los iconos de solo oficina
+    descripcion: >-
+      Al abrir la pestaña, cada icono de las aplicaciones de oficina se muestra activo o inactivo según la ubicación y los permisos del usuario.
+    formulario: Solo Oficina
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      Los iconos quedan activos o inactivos y se muestran las versiones.
+    tecnico:
+      formulario: Form_FormAplicacionesOficina
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_FormAplicacionesOficina.cls:340"
+        - "src/forms/Form_FormAplicacionesOficina.cls:7"
+      prd: prd/formularios/Form_FormAplicacionesOficina.md
+    reglas:
+      - id: LAN-F026-R01
+        descripcion: Aplican LAN-F025-R01, LAN-F025-R02, LAN-F025-R03 y LAN-F025-R07.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:352", "src/forms/Form_FormAplicacionesOficina.cls:46", "src/forms/Form_FormAplicacionesOficina.cls:59", "src/forms/Form_FormAplicacionesOficina.cls:360"]
+      - id: LAN-F026-R02
+        descripcion: Estando en la oficina, un administrador tiene todos los iconos activos.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:67"]
+      - id: LAN-F026-R03
+        descripcion: El icono de SICA, con su rótulo y sus versiones, solo se muestra a los administradores; para el resto está oculto.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:68", "src/forms/Form_FormAplicacionesOficina.cls:79", "src/forms/Form_FormAplicacionesOficina.form.txt:2009"]
+      - id: LAN-F026-R04
+        descripcion: Para los demás usuarios, un icono está activo si tienen algún perfil asignado en esa aplicación.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:93"]
+      - id: LAN-F026-R05
+        descripcion: El icono de HPS está siempre inactivo para quien no es administrador, aunque tenga perfil.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:104"]
+      - id: LAN-F026-R06
+        descripcion: Las versiones mostradas bajo SICA y bajo AGEDO son las de CONTRATOS.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.form.txt:2320", "src/forms/Form_FormAplicacionesOficina.form.txt:2894"]
+        # posible defecto: los rótulos de versión de SICA y AGEDO apuntan a la aplicación CONTRATOS en lugar de a la suya.
+
+  - id: LAN-F027
+    area: Aplicaciones
+    nombre: Preparar los iconos de aplicaciones en pruebas
+    descripcion: >-
+      Al abrir la pestaña, cada icono de prueba se muestra activo o inactivo según los permisos del usuario.
+    formulario: En Pruebas
+    control: ""
+    tipo: automático
+    roles: []
+    resultado: >-
+      Los iconos quedan activos o inactivos y se muestran las versiones.
+    tecnico:
+      formulario: Form_FormAplicacionesPrueba
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_FormAplicacionesPrueba.cls:250"
+        - "src/forms/Form_FormAplicacionesPrueba.cls:7"
+      prd: prd/formularios/Form_FormAplicacionesPrueba.md
+    reglas:
+      - id: LAN-F027-R01
+        descripcion: Aplican LAN-F025-R01, LAN-F025-R02 y LAN-F025-R07.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:262", "src/forms/Form_FormAplicacionesPrueba.cls:46", "src/forms/Form_FormAplicacionesPrueba.cls:270"]
+      - id: LAN-F027-R02
+        descripcion: Un administrador tiene todos los iconos activos; el resto, solo los de las aplicaciones en las que tiene algún perfil.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:58", "src/forms/Form_FormAplicacionesPrueba.cls:70"]
+      - id: LAN-F027-R03
+        descripcion: Esta pestaña no comprueba si el usuario está en la oficina al preparar los iconos; la comprobación se hace al pulsar (LAN-F028-R02).
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:49"]
+      - id: LAN-F027-R04
+        descripcion: El icono de prueba de CONDOR está siempre inactivo.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:87"]
+
+  - id: LAN-F028
+    area: Aplicaciones
+    nombre: Abrir una aplicación desde su icono
+    descripcion: >-
+      Al pulsar un icono activo, la Lanzadera comprueba que la aplicación se puede abrir, actualiza la copia del equipo si hay una versión nueva en el servidor y la abre con el usuario conectado.
+      Son las reglas comunes a todos los iconos (LAN-F029 a LAN-F046).
+    formulario: Fuera de la Oficina CARU
+    control: Icono de la aplicación
+    tipo: botón
+    roles: []
+    resultado: >-
+      La aplicación se abre con el correo del usuario conectado y, si así lo indica su configuración, la Lanzadera se cierra.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: Lanzar
+      evidencia:
+        - "src/modules/Funciones Genreales.bas:1792"
+        - "src/classes/Aplicacion.cls:1323"
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F028-R01
+        descripcion: "Cada icono identifica su aplicación; si no existe en la lista de aplicaciones se muestra «No se ha encontrado una aplicación con el ID: «n.º»»."
+        evidencia: ["src/modules/Funciones Genreales.bas:1803", "src/modules/Funciones Genreales.bas:1813"]
+      - id: LAN-F028-R02
+        descripcion: Si la aplicación es solo de oficina y el usuario no está en la oficina se muestra «Esta aplicación sólo se puede ejecutar desde la Oficina».
+        evidencia: ["src/modules/Funciones Genreales.bas:1817"]
+      - id: LAN-F028-R03
+        descripcion: Si no se conoce el correo del usuario conectado se muestra «No se sabe el usuario que ha hecho login».
+        evidencia: ["src/classes/Aplicacion.cls:1345", "src/classes/Aplicacion.cls:1352"]
+      - id: LAN-F028-R04
+        descripcion: La carpeta de la aplicación en el perfil del usuario del equipo se crea si no existe; si no se puede obtener se muestra «No se ha podido obtener la carpeta del aplicativo en local del usuario».
+        evidencia: ["src/classes/Aplicacion.cls:288", "src/classes/Aplicacion.cls:1361"]
+      - id: LAN-F028-R05
+        descripcion: Si no se encuentra la carpeta de la aplicación en el servidor se muestra «No se ha podido obtener la carpeta del aplicativo en el servidor».
+        evidencia: ["src/classes/Aplicacion.cls:1369"]
+      - id: LAN-F028-R06
+        descripcion: Si no se encuentra el fichero de versión del servidor se muestra «No se ha podido obtener el archivo de configuración del servidor».
+        evidencia: ["src/classes/Aplicacion.cls:1382"]
+      - id: LAN-F028-R07
+        descripcion: Si no se encuentra el programa de la aplicación en el servidor se muestra «No se ha podido obtener el ejecutable del servidor» con su ruta.
+        evidencia: ["src/classes/Aplicacion.cls:1396"]
+      - id: LAN-F028-R08
+        descripcion: Si no se encuentra el icono de la aplicación en el servidor se muestra un mensaje técnico con la ruta del icono.
+        evidencia: ["src/classes/Aplicacion.cls:1411"]
+      - id: LAN-F028-R09
+        descripcion: Antes de copiar se comprueba de nuevo el icono del servidor en lugar de la imagen de presentación.
+        evidencia: ["src/classes/Aplicacion.cls:1425"]
+        # posible defecto: si falta la imagen de presentación en el servidor no se avisa y la copia falla con un error técnico.
+      - id: LAN-F028-R10
+        descripcion: Si la versión de la copia del equipo es distinta de la del servidor, se copian al equipo el programa, el icono, la imagen de presentación y el fichero de versión, y se pone el icono a la copia.
+        evidencia: ["src/classes/Aplicacion.cls:1434", "src/classes/Aplicacion.cls:1444", "src/classes/Aplicacion.cls:1457"]
+      - id: LAN-F028-R11
+        descripcion: Si la versión coincide, solo se copian los ficheros que falten en el equipo.
+        evidencia: ["src/classes/Aplicacion.cls:1468"]
+        # posible defecto: si en el equipo no existe el fichero de versión (primera apertura o tras «Recargar Versiones»), leer la versión del equipo devuelve un error (src/classes/Aplicacion.cls:1731) que interrumpe la apertura (src/classes/Aplicacion.cls:1435) en lugar de forzar la copia.
+      - id: LAN-F028-R12
+        descripcion: CONDOR y «No Conformidades Prueba» se abren en modo de solo ejecución cuando la configuración del equipo lo indica.
+        evidencia: ["src/classes/Aplicacion.cls:1499"]
+      - id: LAN-F028-R13
+        descripcion: La aplicación se abre desde la copia del equipo pasándole el correo del usuario conectado, para que no vuelva a pedir el acceso.
+        evidencia: ["src/classes/Aplicacion.cls:1509"]
+      - id: LAN-F028-R14
+        descripcion: Si el usuario no tiene marcada «Mantener Lanzadera Abierta», la Lanzadera se cierra después de abrir la aplicación.
+        evidencia: ["src/classes/Aplicacion.cls:1514"]
+      - id: LAN-F028-R15
+        descripcion: Cuando la apertura falla, el mensaje de error se muestra dos veces.
+        evidencia: ["src/modules/Funciones Genreales.bas:1838", "src/forms/Form_FormAplicacionesFueraOficina.cls:217"]
+        # posible defecto: el mensaje lo muestra la rutina común y lo vuelve a mostrar el botón.
+      - id: LAN-F028-R16
+        descripcion: Abrir una aplicación no deja registro de la apertura en la Lanzadera.
+        evidencia: ["src/modules/Funciones Genreales.bas:3080", "src/modules/Funciones Genreales.bas:1823"]
+
+  - id: LAN-F029
+    area: Aplicaciones
+    nombre: Abrir AGEDYS económico
+    descripcion: >-
+      Abre AGEDYS económico desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: AGEDYS ECO
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre AGEDYS económico con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoAgedysEco
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:349"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F029-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:349", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F030
+    area: Aplicaciones
+    nombre: Abrir Registro
+    descripcion: >-
+      Abre Registro desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: REGISTRO
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Registro con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoRegistro
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:378"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F030-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:378", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F031
+    area: Aplicaciones
+    nombre: Abrir AGEDYS técnico
+    descripcion: >-
+      Abre AGEDYS técnico desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: AGEDYS TÉCNICO
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre AGEDYS técnico con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoAgedysTec
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:319"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F031-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:319", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F032
+    area: Aplicaciones
+    nombre: Abrir Gestión de Riesgos
+    descripcion: >-
+      Abre Gestión de Riesgos desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: GEST. DE RIESGOS
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Gestión de Riesgos con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoGestionRiesgos
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:407"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F032-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:407", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F033
+    area: Aplicaciones
+    nombre: Abrir Brass
+    descripcion: >-
+      Abre Brass desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: BRASS
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Brass con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoBrass
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:465"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F033-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:465", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F034
+    area: Aplicaciones
+    nombre: Abrir No Conformidades
+    descripcion: >-
+      Abre No Conformidades desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: NO CONFORMIDADES
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre No Conformidades con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoNC
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:436"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F034-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:436", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F035
+    area: Aplicaciones
+    nombre: Abrir Expedientes
+    descripcion: >-
+      Abre Expedientes desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: EXPEDIENTES
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Expedientes con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoExpediente
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:193"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F035-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:193", "src/modules/Funciones Genreales.bas:1792"]
+      - id: LAN-F035-R02
+        descripcion: El icono está siempre activo, tenga o no perfil el usuario (LAN-F025-R06).
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:99"]
+
+  - id: LAN-F036
+    area: Aplicaciones
+    nombre: Abrir Solicitudes HPS
+    descripcion: >-
+      Abre Solicitudes HPS desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: SOLICITUDES HPS
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Solicitudes HPS con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoSHPS
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:249"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F036-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:249", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F037
+    area: Aplicaciones
+    nombre: Abrir Condor
+    descripcion: >-
+      Abre Condor desde su icono en la pestaña «Fuera de la Oficina CARU».
+    formulario: Fuera de la Oficina CARU
+    control: CONDOR
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Condor con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoCondor
+      evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:222"]
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F037-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:222", "src/modules/Funciones Genreales.bas:1792"]
+      - id: LAN-F037-R02
+        descripcion: Se abre en modo de solo ejecución cuando la configuración del equipo lo indica (LAN-F028-R12).
+        evidencia: ["src/classes/Aplicacion.cls:1499"]
+
+  - id: LAN-F038
+    area: Aplicaciones
+    nombre: Abrir Seguridad
+    descripcion: >-
+      Abre Seguridad desde su icono en la pestaña «Solo Oficina».
+    formulario: Solo Oficina
+    control: SEGURIDAD
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Seguridad con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesOficina
+      control: ComandoSeguridad
+      evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:284"]
+      prd: prd/formularios/Form_FormAplicacionesOficina.md
+    reglas:
+      - id: LAN-F038-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:284", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F039
+    area: Aplicaciones
+    nombre: Abrir HPS
+    descripcion: >-
+      Abre HPS desde su icono en la pestaña «Solo Oficina».
+    formulario: Solo Oficina
+    control: HPS
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre HPS con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesOficina
+      control: ComandoHPS
+      evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:254"]
+      prd: prd/formularios/Form_FormAplicacionesOficina.md
+    reglas:
+      - id: LAN-F039-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:254", "src/modules/Funciones Genreales.bas:1792"]
+      - id: LAN-F039-R02
+        descripcion: Solo los administradores pueden pulsar el icono; para el resto está siempre inactivo (LAN-F026-R05).
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:104"]
+
+  - id: LAN-F040
+    area: Aplicaciones
+    nombre: Abrir Gestión Contratos
+    descripcion: >-
+      Abre Gestión Contratos desde su icono en la pestaña «Solo Oficina».
+    formulario: Solo Oficina
+    control: CONTRATOS
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre Gestión Contratos con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesOficina
+      control: ComandoGestionContratos
+      evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:227"]
+      prd: prd/formularios/Form_FormAplicacionesOficina.md
+    reglas:
+      - id: LAN-F040-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:227", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F041
+    area: Aplicaciones
+    nombre: Abrir SICA
+    descripcion: >-
+      Abre SICA desde su icono en la pestaña «Solo Oficina».
+    formulario: Solo Oficina
+    control: SICA
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre SICA con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesOficina
+      control: ComandoSICA
+      evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:313"]
+      prd: prd/formularios/Form_FormAplicacionesOficina.md
+    reglas:
+      - id: LAN-F041-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:313", "src/modules/Funciones Genreales.bas:1792"]
+      - id: LAN-F041-R02
+        descripcion: El icono solo es visible para los administradores (LAN-F026-R03).
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:68", "src/forms/Form_FormAplicacionesOficina.form.txt:2009"]
+
+  - id: LAN-F042
+    area: Aplicaciones
+    nombre: Abrir AGEDO
+    descripcion: >-
+      Abre AGEDO desde su icono en la pestaña «Solo Oficina».
+    formulario: Solo Oficina
+    control: AGEDO
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre AGEDO con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesOficina
+      control: ComandoAGEDO
+      evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:200"]
+      prd: prd/formularios/Form_FormAplicacionesOficina.md
+    reglas:
+      - id: LAN-F042-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:200", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F043
+    area: Aplicaciones
+    nombre: Abrir la versión de prueba de No Conformidades
+    descripcion: >-
+      Abre la versión de prueba de No Conformidades desde su icono en la pestaña «En Pruebas».
+    formulario: En Pruebas
+    control: NO CONFORMIDADES
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la versión de prueba de No Conformidades con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesPrueba
+      control: ComandoNoConformidadesPrueba
+      evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:223"]
+      prd: prd/formularios/Form_FormAplicacionesPrueba.md
+    reglas:
+      - id: LAN-F043-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:223", "src/modules/Funciones Genreales.bas:1792"]
+      - id: LAN-F043-R02
+        descripcion: Se abre en modo de solo ejecución cuando la configuración del equipo lo indica (LAN-F028-R12).
+        evidencia: ["src/classes/Aplicacion.cls:1499"]
+
+  - id: LAN-F044
+    area: Aplicaciones
+    nombre: Abrir la versión de prueba de Expedientes
+    descripcion: >-
+      Abre la versión de prueba de Expedientes desde su icono en la pestaña «En Pruebas».
+    formulario: En Pruebas
+    control: EXPEDIENTES
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la versión de prueba de Expedientes con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesPrueba
+      control: ComandoExpedientePrueba
+      evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:169"]
+      prd: prd/formularios/Form_FormAplicacionesPrueba.md
+    reglas:
+      - id: LAN-F044-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:169", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F045
+    area: Aplicaciones
+    nombre: Abrir la versión de prueba de HPS
+    descripcion: >-
+      Abre la versión de prueba de HPS desde su icono en la pestaña «En Pruebas».
+    formulario: En Pruebas
+    control: HPS
+    tipo: botón
+    roles: []
+    resultado: >-
+      Se abre la versión de prueba de HPS con el usuario conectado.
+    tecnico:
+      formulario: Form_FormAplicacionesPrueba
+      control: ComandoHPSPrueba
+      evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:196"]
+      prd: prd/formularios/Form_FormAplicacionesPrueba.md
+    reglas:
+      - id: LAN-F045-R01
+        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:196", "src/modules/Funciones Genreales.bas:1792"]
+
+  - id: LAN-F046
+    area: Aplicaciones
+    nombre: Abrir la versión de prueba de Condor
+    descripcion: >-
+      El icono de prueba de CONDOR aparece en la pestaña «En Pruebas» pero está desactivado.
+    formulario: En Pruebas
+    control: CONDOR
+    tipo: botón
+    roles: []
+    resultado: >-
+      No ocurre nada: el icono está inactivo y no tiene acción.
+    tecnico:
+      formulario: Form_FormAplicacionesPrueba
+      control: ComandoCondorPrueba
+      evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:140"]
+      prd: prd/formularios/Form_FormAplicacionesPrueba.md
+    reglas:
+      - id: LAN-F046-R01
+        descripcion: El icono se deja siempre inactivo, también para los administradores.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:87", "src/forms/Form_FormAplicacionesPrueba.form.txt:565"]
+      - id: LAN-F046-R02
+        descripcion: La acción de abrir la aplicación está desactivada en el código del icono.
+        evidencia: ["src/forms/Form_FormAplicacionesPrueba.cls:141"]
+
+  - id: LAN-F047
+    area: Aplicaciones
+    nombre: Recargar las versiones de las aplicaciones
+    descripcion: >-
+      Vuelve a preparar los iconos de la pestaña y borra del equipo los ficheros de versión de las aplicaciones,
+      de modo que la siguiente apertura de cada aplicación copia de nuevo la versión del servidor.
+    formulario: Fuera de la Oficina CARU
+    control: Recargar Versiones
+    tipo: botón
+    roles: []
+    resultado: >-
+      Los iconos y las versiones se actualizan y las aplicaciones se reinstalarán desde el servidor al abrirlas.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoActualizar
+      evidencia:
+        - "src/forms/Form_FormAplicacionesFueraOficina.cls:117"
+        - "src/forms/Form_FormAplicacionesOficina.cls:129"
+        - "src/forms/Form_FormAplicacionesPrueba.cls:99"
+        - "src/modules/Funciones Genreales.bas:2986"
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F047-R01
+        descripcion: El botón está en las pestañas «Fuera de la Oficina CARU», «Solo Oficina» y «En Pruebas» y actúa sobre los iconos de la pestaña en la que se pulsa.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:127", "src/forms/Form_FormAplicacionesOficina.cls:139", "src/forms/Form_FormAplicacionesPrueba.cls:109"]
+      - id: LAN-F047-R02
+        descripcion: Se borra del equipo el fichero de versión de todas las aplicaciones con icono en la Lanzadera, tenga o no permiso el usuario, y también el de la versión de prueba de Gestión de Riesgos.
+        evidencia: ["src/modules/Funciones Genreales.bas:2998", "src/modules/Funciones Genreales.bas:3006", "src/modules/Funciones Genreales.bas:3014"]
+      - id: LAN-F047-R03
+        descripcion: Después se vuelven a mostrar las versiones; la del equipo queda vacía hasta que se abre la aplicación.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:140", "src/classes/Aplicacion.cls:1151"]
+
+  - id: LAN-F048
+    area: Aplicaciones
+    nombre: Actualizar las versiones mostradas
+    descripcion: >-
+      Vuelve a leer y mostrar la versión del servidor y la del equipo de cada aplicación, sin borrar nada.
+    formulario: Fuera de la Oficina CARU
+    control: Actualizar versiones (icono)
+    tipo: botón
+    roles: []
+    resultado: >-
+      Los rótulos de versión quedan actualizados.
+    tecnico:
+      formulario: Form_FormAplicacionesFueraOficina
+      control: ComandoActualizarVersiones
+      evidencia:
+        - "src/forms/Form_FormAplicacionesFueraOficina.cls:162"
+        - "src/forms/Form_FormAplicacionesOficina.cls:171"
+      prd: prd/formularios/Form_FormAplicacionesFueraOficina.md
+    reglas:
+      - id: LAN-F048-R01
+        descripcion: El botón está en las pestañas «Fuera de la Oficina CARU» y «Solo Oficina»; la pestaña «En Pruebas» no lo tiene.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.form.txt:3628", "src/forms/Form_FormAplicacionesOficina.form.txt:2433"]
+      - id: LAN-F048-R02
+        descripcion: Solo se actualizan los rótulos de versión (LAN-F025-R07); los iconos no se recalculan.
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:171"]
+
+  # ---------------------------------------------------------------- Usuarios
+  - id: LAN-F049
+    area: Usuarios
+    nombre: Ver la pestaña de búsqueda de usuarios
+    descripcion: >-
+      En la gestión de usuarios, la pestaña «Búsqueda» muestra el buscador de usuarios.
+    formulario: "Usuario Activo: «usuario»"
+    control: Búsqueda
+    tipo: menú
+    roles: [Administrador]
+    resultado: >-
+      Se muestra la búsqueda de usuarios sin usuario activo.
+    tecnico:
+      formulario: Form_FormUsuarioGeneral
+      control: MENU1
+      evidencia: ["src/forms/Form_FormUsuarioGeneral.cls:67"]
+      prd: prd/formularios/Form_FormUsuarioGeneral.md
+    reglas:
+      - id: LAN-F049-R01
+        descripcion: Al entrar en la pestaña se olvida el usuario activo.
+        evidencia: ["src/forms/Form_FormUsuarioGeneral.cls:71"]
+      - id: LAN-F049-R02
+        descripcion: "La cabecera muestra «Usuario Activo: «nombre»» al seleccionar un usuario y se vacía al quitarlo."
+        evidencia: ["src/forms/Form_FormUsuarioGeneral.cls:63", "src/forms/Form_FormUsuarioGeneral.cls:59"]
+
+  - id: LAN-F050
+    area: Usuarios
+    nombre: Ver la pestaña de datos generales del usuario
+    descripcion: >-
+      La pestaña «Datos Generales» muestra la ficha del usuario activo o, si no hay ninguno, una ficha vacía para dar de alta uno nuevo.
+    formulario: "Usuario Activo: «usuario»"
+    control: Datos Generales
+    tipo: menú
+    roles: [Administrador]
+    resultado: >-
+      Se muestra la ficha del usuario (LAN-F057).
+    tecnico:
+      formulario: Form_FormUsuarioGeneral
+      control: MENU2
+      evidencia: ["src/forms/Form_FormUsuarioGeneral.cls:78"]
+      prd: prd/formularios/Form_FormUsuarioGeneral.md
+    reglas:
+      - id: LAN-F050-R01
+        descripcion: La pestaña se abre aunque no haya usuario activo; en ese caso la ficha sirve para el alta.
+        evidencia: ["src/forms/Form_FormUsuarioGeneral.cls:79", "src/forms/Form_FormUsuarioDatosGenerales.cls:102"]
+
+  - id: LAN-F051
+    area: Usuarios
+    nombre: Ver la pestaña de perfiles del usuario
+    descripcion: >-
+      La pestaña «Perfil Aplicaciones» muestra los perfiles que tiene el usuario activo en cada aplicación.
+    formulario: "Usuario Activo: «usuario»"
+    control: Perfil Aplicaciones
+    tipo: menú
+    roles: [Administrador]
+    resultado: >-
+      Se muestran los perfiles del usuario activo (LAN-F061).
+    tecnico:
+      formulario: Form_FormUsuarioGeneral
+      control: MENU3
+      evidencia: ["src/forms/Form_FormUsuarioGeneral.cls:87"]
+      prd: prd/formularios/Form_FormUsuarioGeneral.md
+    reglas:
+      - id: LAN-F051-R01
+        descripcion: Si no hay usuario activo se muestra «No se ha establecido un usuario activo» y no se cambia de pestaña.
+        evidencia: ["src/forms/Form_FormUsuarioGeneral.cls:88"]
+
+  - id: LAN-F052
+    area: Usuarios
+    nombre: Buscar usuarios por nombre
+    descripcion: >-
+      Al escribir un texto en «Nombre» se listan los usuarios cuyo nombre lo contiene.
+    formulario: Búsqueda de Usuario
+    control: Nombre
+    tipo: campo
+    roles: [Administrador]
+    resultado: >-
+      La lista muestra el identificador, el correo y el nombre de cada usuario encontrado.
+    tecnico:
+      formulario: Form_FormUsuariosGestion
+      control: Nombre
+      evidencia:
+        - "src/forms/Form_FormUsuariosGestion.cls:170"
+        - "src/forms/Form_FormUsuariosGestion.cls:36"
+      prd: prd/formularios/Form_FormUsuariosGestion.md
+    reglas:
+      - id: LAN-F052-R01
+        descripcion: Se buscan los usuarios cuyo nombre contiene el texto escrito; con el campo vacío se listan todos.
+        evidencia: ["src/modules/Constructor.bas:841", "src/modules/Constructor.bas:846"]
+      - id: LAN-F052-R02
+        descripcion: Se listan también los usuarios desactivados.
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:49", "src/forms/Form_FormUsuariosGestion.cls:67"]
+      - id: LAN-F052-R03
+        descripcion: Cada búsqueda quita el usuario seleccionado y desactiva «Resetear Pass».
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:52"]
+      - id: LAN-F052-R04
+        descripcion: Si la búsqueda encuentra un solo usuario, queda seleccionado automáticamente.
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:79"]
+
+  - id: LAN-F053
+    area: Usuarios
+    nombre: Limpiar la búsqueda de usuarios
+    descripcion: >-
+      Vacía el campo «Nombre» y vuelve a listar todos los usuarios.
+    formulario: Búsqueda de Usuario
+    control: Vacía el campo de usuario de búsqueda (icono junto a «Nombre»)
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      La lista muestra todos los usuarios.
+    tecnico:
+      formulario: Form_FormUsuariosGestion
+      control: ComandoLimpiarNombre
+      evidencia: ["src/forms/Form_FormUsuariosGestion.cls:11"]
+      prd: prd/formularios/Form_FormUsuariosGestion.md
+    reglas:
+      - id: LAN-F053-R01
+        descripcion: Aplican LAN-F052-R01 a LAN-F052-R04 con el campo vacío.
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:18", "src/forms/Form_FormUsuariosGestion.cls:19"]
+
+  - id: LAN-F054
+    area: Usuarios
+    nombre: Seleccionar un usuario de la lista
+    descripcion: >-
+      Al pulsar un usuario de la lista pasa a ser el usuario activo para ver o modificar su ficha y sus perfiles.
+    formulario: Búsqueda de Usuario
+    control: Lista de usuarios
+    tipo: lista
+    roles: [Administrador]
+    resultado: >-
+      El usuario queda activo, su nombre aparece en «Usuario Seleccionado» y en la cabecera, y se activa «Resetear Pass».
+    tecnico:
+      formulario: Form_FormUsuariosGestion
+      control: ListaUsuarios
+      evidencia: ["src/forms/Form_FormUsuariosGestion.cls:140"]
+      prd: prd/formularios/Form_FormUsuariosGestion.md
+    reglas:
+      - id: LAN-F054-R01
+        descripcion: Pulsar la fila de títulos de la lista no selecciona ningún usuario y quita el que hubiera.
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:146"]
+      - id: LAN-F054-R02
+        descripcion: Al seleccionar se muestra el nombre en «Usuario Seleccionado», se actualiza la cabecera y se activa «Resetear Pass».
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:156", "src/forms/Form_FormUsuariosGestion.cls:157", "src/forms/Form_FormUsuariosGestion.cls:158"]
+
+  - id: LAN-F055
+    area: Usuarios
+    nombre: Quitar el usuario seleccionado
+    descripcion: >-
+      Deja la gestión sin usuario activo.
+    formulario: Búsqueda de Usuario
+    control: Vacía el campo de usuario de búsqueda (icono junto a «Usuario Seleccionado»)
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      No queda ningún usuario activo y «Resetear Pass» se desactiva.
+    tecnico:
+      formulario: Form_FormUsuariosGestion
+      control: ComandoQuitarUsuarioActivo
+      evidencia: ["src/forms/Form_FormUsuariosGestion.cls:96"]
+      prd: prd/formularios/Form_FormUsuariosGestion.md
+    reglas:
+      - id: LAN-F055-R01
+        descripcion: Se vacían «Usuario Seleccionado» y la cabecera y se desactiva «Resetear Pass».
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:97", "src/forms/Form_FormUsuariosGestion.cls:99", "src/forms/Form_FormUsuariosGestion.cls:100"]
+      - id: LAN-F055-R02
+        descripcion: El botón muestra la misma ayuda emergente que el de limpiar la búsqueda, «Vacía el campo de usuario de búsqueda».
+        evidencia: ["src/forms/Form_FormUsuariosGestion.form.txt:643"]
+
+  - id: LAN-F056
+    area: Usuarios
+    nombre: Resetear la contraseña de un usuario
+    descripcion: >-
+      El administrador genera para el usuario seleccionado una contraseña de un solo uso que se le envía por correo.
+    formulario: Búsqueda de Usuario
+    control: Resetear Pass
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      El usuario recibe por correo una contraseña de un solo uso y tendrá que cambiarla al entrar.
+    tecnico:
+      formulario: Form_FormUsuariosGestion
+      control: ComandoResetearPass
+      evidencia:
+        - "src/forms/Form_FormUsuariosGestion.cls:103"
+        - "src/classes/Usuario.cls:729"
+      prd: prd/formularios/Form_FormUsuariosGestion.md
+    reglas:
+      - id: LAN-F056-R01
+        descripcion: El botón está inactivo hasta que se selecciona un usuario de la lista.
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:137", "src/forms/Form_FormUsuariosGestion.cls:158"]
+      - id: LAN-F056-R02
+        descripcion: Sin usuario seleccionado se muestra «Seleccione un usuario de la lista».
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:106"]
+      - id: LAN-F056-R03
+        descripcion: La contraseña nueva, la marca de cambio obligatorio y el correo al usuario siguen LAN-F004-R03 a LAN-F004-R06.
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:113", "src/classes/Usuario.cls:740"]
+      - id: LAN-F056-R04
+        descripcion: Al terminar se muestra «Se le ha mandado una clave de un solo uso al usuario por correo».
+        evidencia: ["src/forms/Form_FormUsuariosGestion.cls:120"]
+
+  - id: LAN-F057
+    area: Usuarios
+    nombre: Consultar la ficha de un usuario
+    descripcion: >-
+      Muestra los datos generales del usuario activo; si no hay usuario activo, prepara una ficha vacía con los valores por defecto para un alta.
+    formulario: Usuario › Datos Generales
+    control: ""
+    tipo: automático
+    roles: [Administrador]
+    resultado: >-
+      Se ven nombre, matrícula, teléfono, móvil, correo, administrador, activado, fechas, usuario de red, responsable, caducidad de la contraseña y opciones de la cuenta.
+    tecnico:
+      formulario: Form_FormUsuarioDatosGenerales
+      control: Form_Open
+      evidencia:
+        - "src/forms/Form_FormUsuarioDatosGenerales.cls:337"
+        - "src/forms/Form_FormUsuarioDatosGenerales.cls:88"
+      prd: prd/formularios/Form_FormUsuarioDatosGenerales.md
+    reglas:
+      - id: LAN-F057-R01
+        descripcion: Sin usuario activo, la ficha nueva propone Admin «No», Activado «Sí», Imborrable «No», Pass nunca caduca «No», Mantener Lanzadera Abierta «Sí», Aplicaciones Prueba «No» y la fecha de hoy como fecha de alta.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:102"]
+      - id: LAN-F057-R02
+        descripcion: La lista «Responsable» ofrece todos los usuarios registrados.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:370", "src/forms/Form_FormUsuarioDatosGenerales.cls:185"]
+      - id: LAN-F057-R03
+        descripcion: «Pass Caduca en» muestra «Su Pass nunca caduca», «Su Pass expira hoy», «Falta 1 día para que su Pass expire», «Faltan «n» días para que su Pass expire» o «Su Pass expiró hace «n» dias»; queda vacío si la cuenta está desactivada.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:188", "src/classes/Usuario.cls:847", "src/classes/Usuario.cls:851", "src/classes/Usuario.cls:862"]
+      - id: LAN-F057-R04
+        descripcion: La caducidad se calcula como 90 días desde el último cambio anotado en el histórico de contraseñas.
+        evidencia: ["src/classes/Usuario.cls:142", "src/classes/Usuario.cls:147"]
+      - id: LAN-F057-R05
+        descripcion: Solo un administrador puede modificar la ficha y pulsar «Registrar».
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:191"]
+      - id: LAN-F057-R06
+        descripcion: «Cambiar Pass» solo está activo cuando la ficha es la del propio usuario conectado.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:198"]
+
+  - id: LAN-F058
+    area: Usuarios
+    nombre: Dar de alta un usuario
+    descripcion: >-
+      El administrador rellena la ficha vacía y la registra; la Lanzadera crea la cuenta con una contraseña de un solo uso.
+    formulario: Usuario › Datos Generales
+    control: Registrar
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      El usuario queda registrado, con una contraseña de un solo uso que tendrá que cambiar al entrar.
+    tecnico:
+      formulario: Form_FormUsuarioDatosGenerales
+      control: ComandoRegistrar
+      evidencia:
+        - "src/forms/Form_FormUsuarioDatosGenerales.cls:242"
+        - "src/classes/Usuario.cls:1572"
+      prd: prd/formularios/Form_FormUsuarioDatosGenerales.md
+    reglas:
+      - id: LAN-F058-R01
+        descripcion: El nombre es obligatorio; si falta se muestra «Ha de indicar el nombre».
+        evidencia: ["src/classes/Usuario.cls:1588"]
+      - id: LAN-F058-R02
+        descripcion: El correo es obligatorio; si falta se muestra «Ha de indicar el correo».
+        evidencia: ["src/classes/Usuario.cls:1593"]
+      - id: LAN-F058-R03
+        descripcion: El usuario de red es obligatorio; si falta se muestra «Se ha de indicar el usuario de red».
+        evidencia: ["src/classes/Usuario.cls:1597"]
+      - id: LAN-F058-R04
+        descripcion: La matrícula es obligatoria; si falta se muestra «Se ha de indicar la Matricula».
+        evidencia: ["src/classes/Usuario.cls:1601"]
+      - id: LAN-F058-R05
+        descripcion: La fecha de alta tiene que ser una fecha válida; si no, se muestra «Se ha de indicar FechaAlta».
+        evidencia: ["src/classes/Usuario.cls:1605"]
+      - id: LAN-F058-R06
+        descripcion: El correo tiene que terminar en «@telefonica.com» y llevar un punto antes de la arroba; si no, se muestra «Ha de indicar el correo con formato válido».
+        evidencia: ["src/classes/Usuario.cls:1609", "src/modules/Funciones Genreales.bas:1053", "src/modules/Funciones Genreales.bas:1057"]
+      - id: LAN-F058-R07
+        descripcion: No puede haber otro usuario con el mismo nombre, correo, usuario de red o matrícula; se muestra «Ya existe en la base de datos un nombre idéntico», «Ya existe en la base de datos un Correo idéntico», «Ya existe en la base de datos un Usuario de Red idéntico» o «Ya existe en la base de datos una Matricula idéntica».
+        evidencia: ["src/classes/Usuario.cls:1631", "src/classes/Usuario.cls:1641", "src/classes/Usuario.cls:1651", "src/classes/Usuario.cls:1660"]
+      - id: LAN-F058-R08
+        descripcion: Se genera una contraseña de un solo uso de 8 caracteres y la cuenta queda obligada a cambiarla en el primer acceso.
+        evidencia: ["src/classes/Usuario.cls:1617", "src/classes/Usuario.cls:1628", "src/classes/Usuario.cls:1701"]
+      - id: LAN-F058-R09
+        descripcion: El correo se guarda en minúsculas y la fecha de alta se guarda con el momento del registro, no con la escrita en la ficha.
+        evidencia: ["src/classes/Usuario.cls:1686", "src/classes/Usuario.cls:1693"]
+      - id: LAN-F058-R10
+        descripcion: La próxima fecha de cambio de contraseña queda a tres meses del alta.
+        evidencia: ["src/classes/Usuario.cls:1699"]
+      - id: LAN-F058-R11
+        descripcion: Se anota en las observaciones «Usuario dado de Registrar por «correo del administrador»».
+        evidencia: ["src/classes/Usuario.cls:1709"]
+      - id: LAN-F058-R12
+        descripcion: Si «Activado» es «No», la cuenta se crea desactivada y con fecha de bloqueo la del registro.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:302", "src/classes/Usuario.cls:1695"]
+      - id: LAN-F058-R13
+        descripcion: Tras el alta no se envía correo al usuario ni se anota la contraseña en el histórico.
+        evidencia: ["src/classes/Usuario.cls:1721", "src/classes/Usuario.cls:1762"]
+        # posible defecto: el correo «Alta Usuario (LANZADERA)» con la contraseña de un solo uso (src/classes/Usuario.cls:1143) solo se enviaría en una «edición» que nunca se marca como tal, así que el usuario nuevo no recibe su contraseña y el administrador tiene que usar «Resetear Pass».
+      - id: LAN-F058-R14
+        descripcion: «Responsable», «Fecha Baja» y «Aplicaciones Prueba» se leen de la ficha pero no se guardan.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:284", "src/forms/Form_FormUsuarioDatosGenerales.cls:292", "src/forms/Form_FormUsuarioDatosGenerales.cls:297", "src/classes/Usuario.cls:1677"]
+        # posible defecto: el registro no escribe esos tres datos, ni en el alta ni en la modificación.
+      - id: LAN-F058-R15
+        descripcion: Al terminar no se muestra ningún mensaje; la ficha queda con el identificador del usuario nuevo.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:315", "src/forms/Form_FormUsuarioDatosGenerales.cls:319"]
+
+  - id: LAN-F059
+    area: Usuarios
+    nombre: Modificar los datos de un usuario
+    descripcion: >-
+      El administrador cambia la ficha del usuario activo y la registra; sirve también para activar o desactivar la cuenta y para desbloquearla.
+    formulario: Usuario › Datos Generales
+    control: Registrar
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      Los datos del usuario quedan actualizados.
+    tecnico:
+      formulario: Form_FormUsuarioDatosGenerales
+      control: ComandoRegistrar
+      evidencia:
+        - "src/forms/Form_FormUsuarioDatosGenerales.cls:242"
+        - "src/classes/Usuario.cls:1723"
+      prd: prd/formularios/Form_FormUsuarioDatosGenerales.md
+    reglas:
+      - id: LAN-F059-R01
+        descripcion: Si no ha cambiado ninguno de los datos comparados se muestra «Ningún cambio que registrar».
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:249"]
+      - id: LAN-F059-R02
+        descripcion: Se comparan correo, nombre, matrícula, administrador, activado, imborrable, caducidad, mantener abierta, aplicaciones de prueba, fecha de alta, fecha de baja y usuario de red; teléfono, móvil y responsable no cuentan como cambio.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:7"]
+        # posible defecto: si solo se cambia el teléfono, el móvil o el responsable, se muestra «Ningún cambio que registrar» y no se guarda.
+      - id: LAN-F059-R03
+        descripcion: Aplican las mismas validaciones que en el alta (LAN-F058-R01 a LAN-F058-R07), excluyendo al propio usuario de la comprobación de duplicados.
+        evidencia: ["src/classes/Usuario.cls:1588", "src/classes/Usuario.cls:1546"]
+      - id: LAN-F059-R04
+        descripcion: Se guardan nombre, matrícula, teléfono, móvil, usuario de red, activado, imborrable, administrador, caducidad de la contraseña y mantener la Lanzadera abierta; la contraseña no cambia.
+        evidencia: ["src/classes/Usuario.cls:1725", "src/classes/Usuario.cls:1749"]
+      - id: LAN-F059-R05
+        descripcion: Un teléfono o un móvil vaciados no se borran; se conserva el valor anterior.
+        evidencia: ["src/classes/Usuario.cls:1731", "src/classes/Usuario.cls:1734"]
+      - id: LAN-F059-R06
+        descripcion: La fecha de alta se sobrescribe con el momento de la modificación.
+        evidencia: ["src/classes/Usuario.cls:1738"]
+        # posible defecto: cada modificación pierde la fecha de alta real del usuario.
+      - id: LAN-F059-R07
+        descripcion: Si se cambia el correo, se crea un usuario nuevo con ese correo en lugar de modificar el existente.
+        evidencia: ["src/classes/Usuario.cls:1671", "src/classes/Usuario.cls:1676"]
+        # posible defecto: la ficha se localiza por el correo nuevo, no lo encuentra y da de alta otra cuenta con los mismos datos.
+      - id: LAN-F059-R08
+        descripcion: Con «Activado» distinto de «No» se borra la fecha de bloqueo y la cuenta queda activa, lo que desbloquea una cuenta bloqueada por intentos fallidos.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:302", "src/classes/Usuario.cls:1740", "src/classes/Usuario.cls:1743"]
+      - id: LAN-F059-R09
+        descripcion: Con «Activado» a «No» la cuenta queda desactivada y con fecha de bloqueo la de la modificación.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:306", "src/classes/Usuario.cls:1739"]
+      - id: LAN-F059-R10
+        descripcion: Se anota en las observaciones «Usuario actualizado por «correo del administrador»».
+        evidencia: ["src/classes/Usuario.cls:1750"]
+      - id: LAN-F059-R11
+        descripcion: Aplican LAN-F058-R14 y LAN-F058-R15.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:297", "src/forms/Form_FormUsuarioDatosGenerales.cls:315"]
+
+  - id: LAN-F060
+    area: Usuarios
+    nombre: Cambiar la contraseña propia desde la ficha
+    descripcion: >-
+      Desde su propia ficha, el administrador abre la ventana de cambio de contraseña.
+    formulario: Usuario › Datos Generales
+    control: Cambiar Pass
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      Se abre la ventana «Cambio de Contraseña» (LAN-F008).
+    tecnico:
+      formulario: Form_FormUsuarioDatosGenerales
+      control: ComandoCambiarPass
+      evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:216"]
+      prd: prd/formularios/Form_FormUsuarioDatosGenerales.md
+    reglas:
+      - id: LAN-F060-R01
+        descripcion: El botón solo está activo en la ficha del propio usuario conectado (LAN-F057-R06).
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:201"]
+      - id: LAN-F060-R02
+        descripcion: Si la ventana de cambio ya estaba abierta, se cierra y se vuelve a abrir.
+        evidencia: ["src/forms/Form_FormUsuarioDatosGenerales.cls:222"]
+
+  - id: LAN-F061
+    area: Usuarios
+    nombre: Consultar los perfiles de un usuario por aplicación
+    descripcion: >-
+      Lista, para el usuario activo, cada aplicación en la que tiene perfiles y si es administrador, Calidad, economía, técnico, secretaría o recibe avisos de Calidad.
+    formulario: Usuario › Perfil Aplicaciones
+    control: ""
+    tipo: automático
+    roles: [Administrador]
+    resultado: >-
+      Se ve la lista de aplicaciones con sus perfiles y la lista de aplicaciones disponibles para asignar.
+    tecnico:
+      formulario: Form_FormUsuarioPerfilAplicaciones
+      control: Form_Open
+      evidencia:
+        - "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:174"
+        - "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:220"
+      prd: prd/formularios/Form_FormUsuarioPerfilAplicaciones.md
+    reglas:
+      - id: LAN-F061-R01
+        descripcion: Si no hay usuario activo se muestra «No hay un usuario activo».
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:182"]
+      - id: LAN-F061-R02
+        descripcion: La lista muestra por aplicación las columnas Admin, Calidad, Economia, Técnico, Secretaría y Cal Avisos con «Sí» o «No».
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:240", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:284"]
+      - id: LAN-F061-R03
+        descripcion: La lista «Aplicación» ofrece las aplicaciones con icono en la Lanzadera y, además, la propia Lanzadera.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:319", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:324"]
+      - id: LAN-F061-R04
+        descripcion: Solo un administrador puede modificar; «Alta» está activo para él desde el principio y «Eliminar» se activa al elegir una aplicación de la lista.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:186", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:199", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:200"]
+
+  - id: LAN-F062
+    area: Usuarios
+    nombre: Elegir una aplicación de la lista de perfiles
+    descripcion: >-
+      Al pulsar una aplicación de la lista queda elegida para eliminar sus permisos.
+    formulario: Usuario › Perfil Aplicaciones
+    control: Lista de aplicaciones del usuario
+    tipo: lista
+    roles: [Administrador]
+    resultado: >-
+      La aplicación queda elegida y «Eliminar» se activa.
+    tecnico:
+      formulario: Form_FormUsuarioPerfilAplicaciones
+      control: ListaUsuarios
+      evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:334"]
+      prd: prd/formularios/Form_FormUsuarioPerfilAplicaciones.md
+    reglas:
+      - id: LAN-F062-R01
+        descripcion: Pulsar sin elegir una aplicación deja «Eliminar» inactivo.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:342", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:345"]
+      - id: LAN-F062-R02
+        descripcion: «Eliminar» y «Alta» solo se activan si el usuario conectado es administrador.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:366"]
+
+  - id: LAN-F063
+    area: Usuarios
+    nombre: Asignar perfiles en una aplicación
+    descripcion: >-
+      El administrador elige una aplicación, marca los perfiles que tendrá el usuario activo y los registra.
+    formulario: Usuario › Perfil Aplicaciones
+    control: Alta
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      El usuario tiene en esa aplicación exactamente los perfiles marcados y la lista se actualiza.
+    tecnico:
+      formulario: Form_FormUsuarioPerfilAplicaciones
+      control: ComandoAltaPerfil
+      evidencia:
+        - "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:9"
+        - "src/classes/UsuarioAplicacionPermisos.cls:335"
+      prd: prd/formularios/Form_FormUsuarioPerfilAplicaciones.md
+    reglas:
+      - id: LAN-F063-R01
+        descripcion: Si no se ha elegido aplicación en «Aplicación» se muestra «Seleccione un elemento de la lista».
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:25", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:33"]
+      - id: LAN-F063-R02
+        descripcion: Los perfiles posibles son Admin, Calidad, Economia, Secretaria, Tecnico y Calidad Avisos.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:37", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:62"]
+      - id: LAN-F063-R03
+        descripcion: Hay que marcar al menos un perfil; si no, se muestra «Para dar de alta una aplicación, al menos ha de haber uno de los permisos».
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:67"]
+      - id: LAN-F063-R04
+        descripcion: Si el usuario ya tenía perfiles en esa aplicación se sustituyen por los marcados; si no, se crean.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:76", "src/classes/UsuarioAplicacionPermisos.cls:358", "src/classes/UsuarioAplicacionPermisos.cls:373"]
+      - id: LAN-F063-R05
+        descripcion: El usuario queda siempre marcado como «con acceso» en esa aplicación.
+        evidencia: ["src/classes/UsuarioAplicacionPermisos.cls:369", "src/classes/UsuarioAplicacionPermisos.cls:404"]
+      - id: LAN-F063-R06
+        descripcion: Tener cualquier perfil en una aplicación activa su icono en la Lanzadera (LAN-F025-R05).
+        evidencia: ["src/forms/Form_FormAplicacionesFueraOficina.cls:90"]
+      - id: LAN-F063-R07
+        descripcion: Al terminar se recarga la lista de perfiles sin mostrar mensaje.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:94", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:98"]
+
+  - id: LAN-F064
+    area: Usuarios
+    nombre: Eliminar los perfiles de una aplicación
+    descripcion: >-
+      El administrador quita al usuario activo todos sus perfiles en la aplicación elegida de la lista.
+    formulario: Usuario › Perfil Aplicaciones
+    control: Eliminar
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      El usuario deja de tener perfiles en esa aplicación y su icono pasa a inactivo.
+    tecnico:
+      formulario: Form_FormUsuarioPerfilAplicaciones
+      control: ComandoEliminar
+      evidencia:
+        - "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:116"
+        - "src/classes/UsuarioAplicacionPermisos.cls:417"
+      prd: prd/formularios/Form_FormUsuarioPerfilAplicaciones.md
+    reglas:
+      - id: LAN-F064-R01
+        descripcion: Si no se ha elegido aplicación en la lista se muestra «Seleccione un elemento de la lista».
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:123"]
+      - id: LAN-F064-R02
+        descripcion: Si el usuario no tiene perfiles en esa aplicación se muestra «No registrado».
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:132"]
+      - id: LAN-F064-R03
+        descripcion: Se pide confirmación con «¿Desea eliminar los permisos de la aplicación seleccionada?»; si no se responde «Sí», no se elimina.
+        evidencia: ["src/forms/Form_FormUsuarioPerfilAplicaciones.cls:139"]
+      - id: LAN-F064-R04
+        descripcion: Se borran todos los perfiles de esa aplicación y se recarga la lista sin mostrar mensaje.
+        evidencia: ["src/classes/UsuarioAplicacionPermisos.cls:440", "src/forms/Form_FormUsuarioPerfilAplicaciones.cls:154"]
+
+  # ---------------------------------------------------------------- Perfil
+  - id: LAN-F065
+    area: Perfil
+    nombre: Consultar el perfil propio
+    descripcion: >-
+      El usuario ve sus datos generales y los perfiles que tiene en cada aplicación, sin poder modificarlos.
+    formulario: Perfil
+    control: ""
+    tipo: automático
+    roles: [Técnico]
+    resultado: >-
+      Se ven nombre, correo, usuario de red, fecha de alta, matrícula, teléfono, móvil, caducidad de la contraseña, mantener abierta, fecha de baja, responsable y perfiles.
+    tecnico:
+      formulario: Form_FormPerfil
+      control: Form_Open
+      evidencia:
+        - "src/forms/Form_FormPerfil.cls:167"
+        - "src/forms/Form_FormPerfil.cls:9"
+      prd: prd/formularios/Form_FormPerfil.md
+    reglas:
+      - id: LAN-F065-R01
+        descripcion: Si no se sabe quién ha entrado se muestra «No se sabe quién ha hecho login».
+        evidencia: ["src/forms/Form_FormPerfil.cls:16"]
+      - id: LAN-F065-R02
+        descripcion: Los datos se muestran bloqueados para que no se puedan editar.
+        evidencia: ["src/forms/Form_FormPerfil.cls:66"]
+      - id: LAN-F065-R03
+        descripcion: «Pass Caduca en» sigue los textos de LAN-F057-R03.
+        evidencia: ["src/forms/Form_FormPerfil.cls:43"]
+      - id: LAN-F065-R04
+        descripcion: «Responsable» muestra el nombre del responsable si lo tiene.
+        evidencia: ["src/forms/Form_FormPerfil.cls:54"]
+      - id: LAN-F065-R05
+        descripcion: La lista de perfiles tiene las mismas columnas que LAN-F061-R02.
+        evidencia: ["src/forms/Form_FormPerfil.cls:108", "src/forms/Form_FormPerfil.cls:156"]
+
+  - id: LAN-F066
+    area: Perfil
+    nombre: Cambiar la contraseña desde el perfil
+    descripcion: >-
+      Desde su perfil, el usuario abre la ventana de cambio de contraseña.
+    formulario: Perfil
+    control: Cambiar Pass
+    tipo: botón
+    roles: [Técnico]
+    resultado: >-
+      Se abre la ventana «Cambio de Contraseña» (LAN-F008).
+    tecnico:
+      formulario: Form_FormPerfil
+      control: ComandoCambiarPass
+      evidencia: ["src/forms/Form_FormPerfil.cls:196"]
+      prd: prd/formularios/Form_FormPerfil.md
+    reglas:
+      - id: LAN-F066-R01
+        descripcion: Si la ventana de cambio ya estaba abierta, se cierra y se vuelve a abrir.
+        evidencia: ["src/forms/Form_FormPerfil.cls:202"]
+      - id: LAN-F066-R02
+        descripcion: Al terminar el cambio se cierran el menú de usuario y la ventana de acceso, y se abre la ventana de acceso (LAN-F008-R09).
+        evidencia: ["src/forms/Form_FormUsuarioCambioPass.cls:48", "src/forms/Form_FormUsuarioCambioPass.cls:52"]
+
+  # ---------------------------------------------------------------- Gestión de aplicaciones
+  - id: LAN-F067
+    area: Gestión de aplicaciones
+    nombre: Ver la pestaña de búsqueda de aplicaciones
+    descripcion: >-
+      En la gestión de aplicaciones, la pestaña «Búsqueda» muestra el buscador de aplicaciones registradas.
+    formulario: "Aplicación Activa: «aplicación»"
+    control: Búsqueda
+    tipo: menú
+    roles: [Administrador]
+    resultado: >-
+      Se muestra la búsqueda de aplicaciones sin aplicación activa.
+    tecnico:
+      formulario: Form_FormAplicacionGeneral
+      control: MENU1
+      evidencia: ["src/forms/Form_FormAplicacionGeneral.cls:63"]
+      prd: prd/formularios/Form_FormAplicacionGeneral.md
+    reglas:
+      - id: LAN-F067-R01
+        descripcion: Al entrar en la pestaña se olvida la aplicación activa.
+        evidencia: ["src/forms/Form_FormAplicacionGeneral.cls:67"]
+      - id: LAN-F067-R02
+        descripcion: "La cabecera muestra «Aplicación Activa: «nombre»» al seleccionar una aplicación y se vacía al quitarla."
+        evidencia: ["src/forms/Form_FormAplicacionGeneral.cls:59", "src/forms/Form_FormAplicacionGeneral.cls:55"]
+
+  - id: LAN-F068
+    area: Gestión de aplicaciones
+    nombre: Ver la pestaña de datos generales de la aplicación
+    descripcion: >-
+      La pestaña «Datos Generales» muestra la configuración de la aplicación activa.
+    formulario: "Aplicación Activa: «aplicación»"
+    control: Datos Generales
+    tipo: menú
+    roles: [Administrador]
+    resultado: >-
+      Se muestra la ficha de la aplicación (LAN-F073).
+    tecnico:
+      formulario: Form_FormAplicacionGeneral
+      control: MENU2
+      evidencia: ["src/forms/Form_FormAplicacionGeneral.cls:74"]
+      prd: prd/formularios/Form_FormAplicacionGeneral.md
+    reglas:
+      - id: LAN-F068-R01
+        descripcion: La pestaña se abre aunque no haya aplicación activa; en ese caso la ficha aparece vacía.
+        evidencia: ["src/forms/Form_FormAplicacionGeneral.cls:75", "src/forms/Form_FormAplicacionDatosGenerales.cls:91"]
+
+  - id: LAN-F069
+    area: Gestión de aplicaciones
+    nombre: Buscar aplicaciones por nombre
+    descripcion: >-
+      Al escribir un texto en «Nombre» se listan las aplicaciones cuyo nombre lo contiene.
+    formulario: Búsqueda de Aplicación
+    control: Nombre
+    tipo: campo
+    roles: [Administrador]
+    resultado: >-
+      La lista muestra el identificador y el nombre de cada aplicación encontrada.
+    tecnico:
+      formulario: Form_FormAplicacionesGestion
+      control: NombreAplicacion
+      evidencia:
+        - "src/forms/Form_FormAplicacionesGestion.cls:125"
+        - "src/forms/Form_FormAplicacionesGestion.cls:34"
+      prd: prd/formularios/Form_FormAplicacionesGestion.md
+    reglas:
+      - id: LAN-F069-R01
+        descripcion: Se buscan las aplicaciones cuyo nombre contiene el texto escrito; con el campo vacío se listan todas, tengan o no icono.
+        evidencia: ["src/modules/Constructor.bas:917", "src/modules/Constructor.bas:922"]
+      - id: LAN-F069-R02
+        descripcion: Cada búsqueda quita la aplicación activa.
+        evidencia: ["src/forms/Form_FormAplicacionesGestion.cls:45"]
+      - id: LAN-F069-R03
+        descripcion: Si la búsqueda encuentra una sola aplicación, queda seleccionada automáticamente.
+        evidencia: ["src/forms/Form_FormAplicacionesGestion.cls:65"]
+
+  - id: LAN-F070
+    area: Gestión de aplicaciones
+    nombre: Limpiar la búsqueda de aplicaciones
+    descripcion: >-
+      Vacía el campo «Nombre» y vuelve a listar todas las aplicaciones.
+    formulario: Búsqueda de Aplicación
+    control: Vacía el campo de usuario de búsqueda (icono junto a «Nombre»)
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      La lista muestra todas las aplicaciones.
+    tecnico:
+      formulario: Form_FormAplicacionesGestion
+      control: ComandoLimpiarNombre
+      evidencia: ["src/forms/Form_FormAplicacionesGestion.cls:8"]
+      prd: prd/formularios/Form_FormAplicacionesGestion.md
+    reglas:
+      - id: LAN-F070-R01
+        descripcion: Aplican LAN-F069-R01 a LAN-F069-R03 con el campo vacío.
+        evidencia: ["src/forms/Form_FormAplicacionesGestion.cls:15", "src/forms/Form_FormAplicacionesGestion.cls:16"]
+
+  - id: LAN-F071
+    area: Gestión de aplicaciones
+    nombre: Seleccionar una aplicación y ver quién la está usando
+    descripcion: >-
+      Al pulsar una aplicación de la lista pasa a ser la aplicación activa y se muestran los correos de las personas que la tienen abierta.
+    formulario: Búsqueda de Aplicación
+    control: Lista de aplicaciones
+    tipo: lista
+    roles: [Administrador]
+    resultado: >-
+      La aplicación queda activa, su nombre aparece en «Aplicación Seleccionada» y en la cabecera, y «Usuarios conectados» muestra quién la usa.
+    tecnico:
+      formulario: Form_FormAplicacionesGestion
+      control: ListaAplicaciones
+      evidencia:
+        - "src/forms/Form_FormAplicacionesGestion.cls:94"
+        - "src/classes/Aplicacion.cls:1680"
+      prd: prd/formularios/Form_FormAplicacionesGestion.md
+    reglas:
+      - id: LAN-F071-R01
+        descripcion: Pulsar la fila de títulos de la lista no selecciona ninguna aplicación y quita la que hubiera.
+        evidencia: ["src/forms/Form_FormAplicacionesGestion.cls:100"]
+      - id: LAN-F071-R02
+        descripcion: Los usuarios conectados se obtienen del fichero de bloqueo que crea el programa sobre el fichero de datos de la aplicación, reconociendo los usuarios de red registrados en la Lanzadera.
+        evidencia: ["src/classes/Aplicacion.cls:1555", "src/classes/Aplicacion.cls:1567", "src/classes/Aplicacion.cls:1613"]
+      - id: LAN-F071-R03
+        descripcion: Si nadie tiene la aplicación abierta se muestra «Nadie está usando la aplicación».
+        evidencia: ["src/classes/Aplicacion.cls:1695"]
+      - id: LAN-F071-R04
+        descripcion: Si no se encuentra el fichero de datos de la aplicación, «Usuarios conectados» queda vacío sin aviso.
+        evidencia: ["src/classes/Aplicacion.cls:1556", "src/forms/Form_FormAplicacionesGestion.cls:112"]
+
+  - id: LAN-F072
+    area: Gestión de aplicaciones
+    nombre: Quitar la aplicación seleccionada
+    descripcion: >-
+      Deja la gestión sin aplicación activa.
+    formulario: Búsqueda de Aplicación
+    control: Vacía el campo de usuario de búsqueda (icono junto a «Aplicación Seleccionada»)
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      No queda ninguna aplicación activa.
+    tecnico:
+      formulario: Form_FormAplicacionesGestion
+      control: ComandoQuitarAplicacionActiva
+      evidencia: ["src/forms/Form_FormAplicacionesGestion.cls:81"]
+      prd: prd/formularios/Form_FormAplicacionesGestion.md
+    reglas:
+      - id: LAN-F072-R01
+        descripcion: Se vacían «Aplicación Seleccionada» y la cabecera.
+        evidencia: ["src/forms/Form_FormAplicacionesGestion.cls:82", "src/forms/Form_FormAplicacionesGestion.cls:84"]
+
+  - id: LAN-F073
+    area: Gestión de aplicaciones
+    nombre: Consultar la ficha de una aplicación
+    descripcion: >-
+      Muestra la configuración de la aplicación activa: nombres, programa, fichero de datos, contraseña, si es de oficina, si está en pruebas, si tiene icono y sus carpetas e iconos.
+    formulario: Aplicaciones › Datos Generales
+    control: ""
+    tipo: automático
+    roles: [Administrador]
+    resultado: >-
+      Se ve la ficha de la aplicación activa.
+    tecnico:
+      formulario: Form_FormAplicacionDatosGenerales
+      control: Form_Open
+      evidencia:
+        - "src/forms/Form_FormAplicacionDatosGenerales.cls:241"
+        - "src/forms/Form_FormAplicacionDatosGenerales.cls:85"
+      prd: prd/formularios/Form_FormAplicacionDatosGenerales.md
+    reglas:
+      - id: LAN-F073-R01
+        descripcion: Solo un administrador puede modificar la ficha y pulsar «Registrar».
+        evidencia: ["src/forms/Form_FormAplicacionDatosGenerales.cls:159"]
+      - id: LAN-F073-R02
+        descripcion: Sin aplicación activa la ficha queda vacía y «Registrar» inactivo, por lo que no se puede dar de alta una aplicación nueva.
+        evidencia: ["src/forms/Form_FormAplicacionDatosGenerales.cls:91", "src/forms/Form_FormAplicacionDatosGenerales.form.txt:943"]
+        # posible defecto: la ficha prepara un alta pero sale antes de activar «Registrar», que está inactivo por defecto.
+
+  - id: LAN-F074
+    area: Gestión de aplicaciones
+    nombre: Modificar la ficha de una aplicación
+    descripcion: >-
+      El administrador cambia la configuración de la aplicación activa y la registra.
+    formulario: Aplicaciones › Datos Generales
+    control: Registrar
+    tipo: botón
+    roles: [Administrador]
+    resultado: >-
+      La configuración de la aplicación queda actualizada; afecta a cómo la Lanzadera muestra y abre su icono.
+    tecnico:
+      formulario: Form_FormAplicacionDatosGenerales
+      control: ComandoRegistrar
+      evidencia:
+        - "src/forms/Form_FormAplicacionDatosGenerales.cls:176"
+        - "src/classes/Aplicacion.cls:1801"
+      prd: prd/formularios/Form_FormAplicacionDatosGenerales.md
+    reglas:
+      - id: LAN-F074-R01
+        descripcion: Si no ha cambiado ninguno de los datos comparados se muestra «Ningún cambio que registrar».
+        evidencia: ["src/forms/Form_FormAplicacionDatosGenerales.cls:183"]
+      - id: LAN-F074-R02
+        descripcion: «Icono En Lanzadera» y «Nombre Icono Arbol» no cuentan como cambio.
+        evidencia: ["src/forms/Form_FormAplicacionDatosGenerales.cls:7"]
+        # posible defecto: si solo se cambia uno de esos dos datos se muestra «Ningún cambio que registrar» y no se guarda.
+      - id: LAN-F074-R03
+        descripcion: El nombre es obligatorio y no puede repetirse; se muestra «Ha de indicar el NombreAplicacion» o «Ya existe en la base de datos un nombre idéntico».
+        evidencia: ["src/classes/Aplicacion.cls:1812", "src/classes/Aplicacion.cls:1820"]
+      - id: LAN-F074-R04
+        descripcion: El nombre corto es obligatorio y no puede repetirse; se muestra «Ha de indicar el NombreCorto» o «Ya existe en la base de datos un nombre corto idéntico».
+        evidencia: ["src/classes/Aplicacion.cls:1824", "src/classes/Aplicacion.cls:1832"]
+      - id: LAN-F074-R05
+        descripcion: Son obligatorios el ejecutable, el fichero de datos, la carpeta, la carpeta temporal, los tres iconos, la carpeta de iconos y la carpeta de recursos; si falta uno se muestra «Se ha de indicar …» seguido del nombre interno del dato.
+        evidencia: ["src/classes/Aplicacion.cls:1836", "src/classes/Aplicacion.cls:1840", "src/classes/Aplicacion.cls:1844", "src/classes/Aplicacion.cls:1848", "src/classes/Aplicacion.cls:1852", "src/classes/Aplicacion.cls:1856", "src/classes/Aplicacion.cls:1860", "src/classes/Aplicacion.cls:1868", "src/classes/Aplicacion.cls:1872"]
+      - id: LAN-F074-R06
+        descripcion: «En OFicina», «En Pruebas» e «Icono En Lanzadera» tienen que valer «Sí» o «No»; si no, se muestra «Se ha de indicar la EjecucionEnOficina», «Se ha de indicar la EnPruebas» o «Se ha de indicar la ConIconoEnLanzadera».
+        evidencia: ["src/classes/Aplicacion.cls:1864", "src/classes/Aplicacion.cls:1876", "src/classes/Aplicacion.cls:1880"]
+      - id: LAN-F074-R07
+        descripcion: «Pass», «Dir Documentos» y «Dir Ayuda» son opcionales; un dato vaciado se borra.
+        evidencia: ["src/classes/Aplicacion.cls:1976", "src/classes/Aplicacion.cls:2011", "src/classes/Aplicacion.cls:2021"]
+      - id: LAN-F074-R08
+        descripcion: Al terminar no se muestra ningún mensaje; la ficha vuelve a leer la aplicación guardada.
+        evidencia: ["src/forms/Form_FormAplicacionDatosGenerales.cls:219"]
+
+  # ---------------------------------------------------------------- Vídeos-guía
+  - id: LAN-F075
+    area: Vídeos-guía
+    nombre: Ver el árbol de aplicaciones y vídeos-guía
+    descripcion: >-
+      Al abrir la gestión de vídeos se muestra un árbol con una rama por aplicación y, dentro, sus vídeos de ayuda.
+    formulario: Configuración › Videos-Guías
+    control: ""
+    tipo: automático
+    roles: [Administrador, Calidad]
+    resultado: >-
+      El árbol queda cargado y la zona de la derecha vacía hasta elegir una rama.
+    tecnico:
+      formulario: Form_FormVideosGestion
+      control: Form_Load
+      evidencia:
+        - "src/forms/Form_FormVideosGestion.cls:110"
+        - "src/modules/Funciones Genreales.bas:2498"
+      prd: prd/formularios/Form_FormVideosGestion.md
+    reglas:
+      - id: LAN-F075-R01
+        descripcion: No aparece la aplicación con identificador 1 ni las aplicaciones marcadas «En Pruebas».
+        evidencia: ["src/modules/Funciones Genreales.bas:2560", "src/modules/Funciones Genreales.bas:2564"]
+      - id: LAN-F075-R02
+        descripcion: Tampoco aparecen las aplicaciones que no tienen icono para el árbol.
+        evidencia: ["src/modules/Funciones Genreales.bas:2577"]
+      - id: LAN-F075-R03
+        descripcion: Bajo cada aplicación solo se muestran los vídeos de uso «Vídeo-Guía» o «Ambos»; los de solo encuesta no aparecen.
+        evidencia: ["src/modules/Funciones Genreales.bas:2568", "src/classes/Aplicacion.cls:1263"]
+
+  - id: LAN-F076
+    area: Vídeos-guía
+    nombre: Recargar el árbol de vídeos
+    descripcion: >-
+      Vuelve a cargar el árbol de aplicaciones y vídeos.
+    formulario: Configuración › Videos-Guías
+    control: Contador
+    tipo: botón
+    roles: [Administrador, Calidad]
+    resultado: >-
+      El árbol se vuelve a cargar con los datos actuales.
+    tecnico:
+      formulario: Form_FormVideosGestion
+      control: ComandoActualizarContador
+      evidencia: ["src/forms/Form_FormVideosGestion.cls:84"]
+      prd: prd/formularios/Form_FormVideosGestion.md
+    reglas:
+      - id: LAN-F076-R01
+        descripcion: Aplican LAN-F075-R01 a LAN-F075-R03.
+        evidencia: ["src/forms/Form_FormVideosGestion.cls:92"]
+      - id: LAN-F076-R02
+        descripcion: La ayuda emergente del botón dice «Actualizar Tareas».
+        evidencia: ["src/forms/Form_FormVideosGestion.form.txt:2149"]
+
+  - id: LAN-F077
+    area: Vídeos-guía
+    nombre: Elegir una aplicación o un vídeo en el árbol
+    descripcion: >-
+      Al pulsar una aplicación se abre el alta de un vídeo para ella; al pulsar un vídeo se abren sus datos para modificarlo o eliminarlo.
+    formulario: Configuración › Videos-Guías
+    control: Árbol de aplicaciones y vídeos
+    tipo: lista
+    roles: [Administrador, Calidad]
+    resultado: >-
+      A la derecha se muestra «ALTA DE VÍDEO» o la pestaña «Datos» con «EDICIÓN DE DATOS DE VÍDEO».
+    tecnico:
+      formulario: Form_FormVideosGestion
+      control: Arbol
+      evidencia: ["src/forms/Form_FormVideosGestion.cls:24"]
+      prd: prd/formularios/Form_FormVideosGestion.md
+    reglas:
+      - id: LAN-F077-R01
+        descripcion: Una rama de aplicación abre «ALTA DE VÍDEO» con el nombre y el icono de la aplicación.
+        evidencia: ["src/forms/Form_FormVideosGestion.cls:56", "src/forms/Form_FormVideosGestionArbolAplicacion.cls:27"]
+      - id: LAN-F077-R02
+        descripcion: Una rama de vídeo abre la pestaña «Datos» con los datos de ese vídeo.
+        evidencia: ["src/forms/Form_FormVideosGestion.cls:63", "src/forms/Form_FormVideosGestionArbolVideo.cls:19"]
+      - id: LAN-F077-R03
+        descripcion: Si la rama no corresponde ni a una aplicación ni a un vídeo, la zona de la derecha se vacía.
+        evidencia: ["src/forms/Form_FormVideosGestion.cls:49"]
+
+  - id: LAN-F078
+    area: Vídeos-guía
+    nombre: Ajustar el ancho del árbol
+    descripcion: >-
+      Arrastrando la barra entre el árbol y la ficha se cambia el ancho de cada parte.
+    formulario: Configuración › Videos-Guías
+    control: Barra separadora
+    tipo: campo
+    roles: [Administrador, Calidad]
+    resultado: >-
+      El árbol y la ficha quedan con el nuevo ancho.
+    tecnico:
+      formulario: Form_FormVideosGestion
+      control: Sep
+      evidencia: ["src/forms/Form_FormVideosGestion.cls:155"]
+      prd: prd/formularios/Form_FormVideosGestion.md
+    reglas:
+      - id: LAN-F078-R01
+        descripcion: El árbol no puede ocupar más de la mitad de la ventana.
+        evidencia: ["src/forms/Form_FormVideosGestion.cls:172", "src/forms/Form_FormVideosGestion.cls:193"]
+
+  - id: LAN-F079
+    area: Vídeos-guía
+    nombre: Ver la pestaña de datos del vídeo
+    descripcion: >-
+      La pestaña «Datos» muestra la ficha del vídeo elegido en el árbol.
+    formulario: Datos
+    control: Datos
+    tipo: menú
+    roles: [Administrador, Calidad]
+    resultado: >-
+      Se muestra «EDICIÓN DE DATOS DE VÍDEO» con los datos del vídeo.
+    tecnico:
+      formulario: Form_FormVideosGestionArbolVideo
+      control: MENU1
+      evidencia: ["src/forms/Form_FormVideosGestionArbolVideo.cls:19"]
+      prd: prd/formularios/Form_FormVideosGestionArbolVideo.md
+    reglas:
+      - id: LAN-F079-R01
+        descripcion: La ficha solo se carga si no estaba ya abierta.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideo.cls:20"]
+
+  - id: LAN-F080
+    area: Vídeos-guía
+    nombre: Elegir el fichero del vídeo
+    descripcion: >-
+      Abre el explorador de ficheros para elegir el vídeo que se va a subir.
+    formulario: ALTA DE VÍDEO
+    control: Seleccionar vídeo (icono junto a «Video»)
+    tipo: botón
+    roles: [Administrador, Calidad]
+    resultado: >-
+      La ruta del fichero elegido aparece en «Video».
+    tecnico:
+      formulario: Form_FormVideosGestionArbolAplicacion
+      control: ComandoAnadirVideo
+      evidencia:
+        - "src/forms/Form_FormVideosGestionArbolAplicacion.cls:251"
+        - "src/modules/Funciones Genreales.bas:2624"
+      prd: prd/formularios/Form_FormVideosGestionArbolAplicacion.md
+    reglas:
+      - id: LAN-F080-R01
+        descripcion: El explorador se abre con el título «Seleccione el Vídeo a subir» y permite elegir un solo fichero de cualquier tipo.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolAplicacion.cls:255", "src/modules/Funciones Genreales.bas:2646", "src/modules/Funciones Genreales.bas:2650"]
+      - id: LAN-F080-R02
+        descripcion: Si se cancela, «Video» queda vacío.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolAplicacion.cls:259"]
+      - id: LAN-F080-R03
+        descripcion: En la ficha de un vídeo ya registrado el botón está inactivo; el fichero no se puede cambiar.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideoDatos.cls:52"]
+
+  - id: LAN-F081
+    area: Vídeos-guía
+    nombre: Dar de alta un vídeo-guía
+    descripcion: >-
+      Se sube un vídeo para la aplicación elegida con su título, descripción, uso y público.
+    formulario: ALTA DE VÍDEO
+    control: Registrar
+    tipo: botón
+    roles: [Administrador, Calidad]
+    resultado: >-
+      El vídeo queda copiado en la carpeta de vídeos de la aplicación, registrado y añadido al árbol.
+    tecnico:
+      formulario: Form_FormVideosGestionArbolAplicacion
+      control: ComandoRegistrar
+      evidencia:
+        - "src/forms/Form_FormVideosGestionArbolAplicacion.cls:326"
+        - "src/classes/Video.cls:421"
+      prd: prd/formularios/Form_FormVideosGestionArbolAplicacion.md
+    reglas:
+      - id: LAN-F081-R01
+        descripcion: La ficha nueva propone «Dirigido a» «Para Todos» y «Uso» «Vídeo-Guía».
+        evidencia: ["src/forms/Form_FormVideosGestionArbolAplicacion.cls:42"]
+      - id: LAN-F081-R02
+        descripcion: El fichero elegido tiene que existir; si no, se muestra «No es alcanzable el video en local».
+        evidencia: ["src/classes/Video.cls:436"]
+      - id: LAN-F081-R03
+        descripcion: No puede haber en la misma aplicación otro vídeo con el mismo nombre de fichero; se muestra «Ya existe para esta misma aplicación un archivo con el mismo nombre».
+        evidencia: ["src/classes/Video.cls:441", "src/classes/Video.cls:446"]
+      - id: LAN-F081-R04
+        descripcion: Si en la carpeta de vídeos del servidor ya hay un fichero con ese nombre se muestra «En el servidor hay un vídeo con el mismo nombre».
+        evidencia: ["src/classes/Video.cls:454"]
+      - id: LAN-F081-R05
+        descripcion: El título es obligatorio y no puede repetirse en la misma aplicación; se muestra «Ha de indicar el Título» o «Ya existe para esta misma aplicación un título idéntico para otro vídeo».
+        evidencia: ["src/classes/Video.cls:464", "src/classes/Video.cls:473"]
+      - id: LAN-F081-R06
+        descripcion: «Uso» puede ser «Vídeo-Guía», «Encuesta» o «Ambos»; si se deja vacío se muestra «El vídeo ha de ser de ayuda o de encuesta».
+        evidencia: ["src/forms/Form_FormVideosGestionArbolAplicacion.cls:182", "src/classes/Video.cls:484"]
+      - id: LAN-F081-R07
+        descripcion: La descripción es obligatoria; si falta se muestra «Ha de indicar la descripción». Las observaciones son opcionales.
+        evidencia: ["src/classes/Video.cls:488", "src/classes/Video.cls:531"]
+      - id: LAN-F081-R08
+        descripcion: «Dirigido a» «Para Todos» lo dirige a administradores, Calidad y técnicos; «No Para Técnicos», a administradores y Calidad; «No Para Calidad», solo a administradores.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolAplicacion.cls:215"]
+      - id: LAN-F081-R09
+        descripcion: Se guarda quién sube el vídeo y la fecha y hora de subida.
+        evidencia: ["src/classes/Video.cls:534"]
+      - id: LAN-F081-R10
+        descripcion: El fichero se copia a la carpeta de vídeos de la aplicación en el servidor, que se crea si no existe.
+        evidencia: ["src/classes/Video.cls:561", "src/classes/Video.cls:564"]
+      - id: LAN-F081-R11
+        descripcion: El vídeo queda clasificado como de ayuda, de encuesta o de ambos según «Uso».
+        evidencia: ["src/classes/Video.cls:572", "src/classes/Video.cls:583"]
+      - id: LAN-F081-R12
+        descripcion: El vídeo nuevo se añade al árbol bajo su aplicación y queda seleccionado con su ficha abierta.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolAplicacion.cls:385", "src/modules/Funciones Genreales.bas:2728", "src/modules/Funciones Genreales.bas:2732"]
+
+  - id: LAN-F082
+    area: Vídeos-guía
+    nombre: Modificar los datos de un vídeo-guía
+    descripcion: >-
+      Se cambian el título, la descripción, las observaciones, el uso o el público de un vídeo ya registrado.
+    formulario: EDICIÓN DE DATOS DE VÍDEO
+    control: Registrar
+    tipo: botón
+    roles: [Administrador, Calidad]
+    resultado: >-
+      Los datos del vídeo quedan actualizados y el árbol muestra el título nuevo.
+    tecnico:
+      formulario: Form_FormVideosGestionArbolVideoDatos
+      control: ComandoRegistrar
+      evidencia:
+        - "src/forms/Form_FormVideosGestionArbolVideoDatos.cls:178"
+        - "src/classes/Video.cls:540"
+      prd: prd/formularios/Form_FormVideosGestionArbolVideoDatos.md
+    reglas:
+      - id: LAN-F082-R01
+        descripcion: Si no ha cambiado ningún dato se muestra «Ningún cambio que grabar».
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideoDatos.cls:186"]
+      - id: LAN-F082-R02
+        descripcion: Aplican LAN-F081-R05 a LAN-F081-R08, excluyendo al propio vídeo de la comprobación de título repetido.
+        evidencia: ["src/classes/Video.cls:468", "src/classes/Video.cls:390"]
+      - id: LAN-F082-R03
+        descripcion: El fichero del vídeo y la aplicación no se pueden cambiar.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideoDatos.cls:195", "src/classes/Video.cls:541"]
+      - id: LAN-F082-R04
+        descripcion: Si cambia el uso, se rehace la clasificación del vídeo como de ayuda, de encuesta o de ambos.
+        evidencia: ["src/classes/Video.cls:598"]
+      - id: LAN-F082-R05
+        descripcion: Si cambia el título, se actualiza el texto de la rama en el árbol.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideoDatos.cls:244"]
+
+  - id: LAN-F083
+    area: Vídeos-guía
+    nombre: Eliminar un vídeo-guía
+    descripcion: >-
+      Borra un vídeo registrado y su fichero del servidor.
+    formulario: EDICIÓN DE DATOS DE VÍDEO
+    control: Eliminar
+    tipo: botón
+    roles: [Administrador, Calidad]
+    resultado: >-
+      El vídeo desaparece del registro, del servidor y del árbol.
+    tecnico:
+      formulario: Form_FormVideosGestionArbolVideoDatos
+      control: ComandoEliminar
+      evidencia:
+        - "src/forms/Form_FormVideosGestionArbolVideoDatos.cls:134"
+        - "src/classes/Video.cls:645"
+      prd: prd/formularios/Form_FormVideosGestionArbolVideoDatos.md
+    reglas:
+      - id: LAN-F083-R01
+        descripcion: El botón solo aparece en la ficha de un vídeo ya registrado.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideoDatos.cls:53", "src/forms/Form_FormVideosGestionArbolVideoDatos.cls:34"]
+      - id: LAN-F083-R02
+        descripcion: Se pide confirmación con «Desea eliminar el vídeo seleccionado»; si no se responde «Sí», no se elimina.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideoDatos.cls:146"]
+      - id: LAN-F083-R03
+        descripcion: Si el fichero del vídeo está abierto o es de solo lectura se muestra «El vídeo parece estar siendo usado o estar de sólo lectura» y no se elimina.
+        evidencia: ["src/classes/Video.cls:659"]
+      - id: LAN-F083-R04
+        descripcion: Se borran la clasificación del vídeo, su registro y su fichero en el servidor.
+        evidencia: ["src/classes/Video.cls:666", "src/classes/Video.cls:670", "src/classes/Video.cls:675"]
+      - id: LAN-F083-R05
+        descripcion: Al terminar se recarga el árbol completo sin mostrar mensaje.
+        evidencia: ["src/forms/Form_FormVideosGestionArbolVideoDatos.cls:160"]
