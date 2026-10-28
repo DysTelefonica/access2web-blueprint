@@ -1350,27 +1350,6 @@ features:
         descripcion: El icono solo es visible para los administradores (LAN-F026-R03).
         evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:68", "src/forms/Form_FormAplicacionesOficina.form.txt:2009"]
 
-  - id: LAN-F042
-    area: Aplicaciones
-    nombre: Abrir AGEDO
-    descripcion: >-
-      Abre AGEDO desde su icono en la pestaña «Solo Oficina».
-    formulario: Solo Oficina
-    control: AGEDO
-    tipo: botón
-    roles: []
-    resultado: >-
-      Se abre AGEDO con el usuario conectado.
-    tecnico:
-      formulario: Form_FormAplicacionesOficina
-      control: ComandoAGEDO
-      evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:200"]
-      prd: prd/formularios/Form_FormAplicacionesOficina.md
-    reglas:
-      - id: LAN-F042-R01
-        descripcion: Aplican las reglas comunes de apertura LAN-F028-R01 a LAN-F028-R16.
-        evidencia: ["src/forms/Form_FormAplicacionesOficina.cls:200", "src/modules/Funciones Genreales.bas:1792"]
-
   - id: LAN-F043
     area: Aplicaciones
     nombre: Abrir la versión de prueba de No Conformidades
