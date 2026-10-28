@@ -18,15 +18,16 @@ Inventario exhaustivo, por aplicación, de lo que hace hoy cada aplicación lega
 
 | ID | Specs | Ruta | Commit |
 |---|---|---|---|
-| T1 | S3-S7 | Esquema de la fuente (YAML por aplicación) y generador del Excel con tests (inline) | |
+| T1 | S3-S7 | Esquema de la fuente (YAML por aplicación) y generador del Excel con tests (inline) — hecho | 27625a23 |
 | T2 | S2-S7 | Piloto: Gestión de Riesgos (`release/2026-008.2.rc1` `99ffa81df3f56a80e6f713e3afc0fb73fd9b3b25`) (worker) | |
 | T3 | S3-S6 | Validación del piloto con el usuario | |
 | T4 | S1-S7 | Las 7 aplicaciones restantes con PRD | |
 | T5 | S1-S7 | Las 5 aplicaciones nuevas | |
-| T6 | S8 | Decisión que sustituye a D85 | |
+| T6 | S8 | Decisión que sustituye a D85 — hecho | (este commit) |
 
 ## Log
 
 - L1 — Petición original: «me piden que todas las bases de datos que hay ahora en la lanzadera (access legacy) saquemos un documento de features que llevan, levantando todas las features, para que cuando tengamos que pasar a web, los usuarios le echen un vistazo y vean cuales nunca se ha usado para retirarla.»
 - L2 — Ramas base (2026-10-28): Riesgos `release/2026-008.2.rc1` 99ffa81d; No Conformidades `release/2026-009.rc1` 49c257cc; Expedientes `release/2026-008.2.rc1` 7ecda391; Brass `2026-004.rc1` cb279512; Lanzadera `main` f86b4267; Condor `main` 752fde2d; Solicitudes HPS `main` cfa1937a; HPS `main` dc194f4c (su rc1 ya está en main); Seguridad `main` 6dd63d68 (su rc1 no aporta código); Contratos `main` effb968c; AGEDYS técnico `main` 350896d1; AGEDYS económico `main` 424b8bde; Registro `main` 44f36d37.
 - L3 — `TbAplicacionesAperturas` deja de registrar a finales de 2024: no sirve como indicador de uso.
+- L4 — T1: `openpyxl` no es dependencia del repositorio; el generador usa solo la biblioteca estándar y PyYAML. 12 tests en verde; el fichero abre en openpyxl sin avisos. El commit 27625a23 suma 629 líneas (script 291 + tests 230): la PR de T1 supera el presupuesto de 400 y hay que decidir la estrategia de entrega antes de abrirla. Fallos preexistentes en local, iguales con y sin el cambio: `test_governance_seals`, `test_check_suites_populated`, `test_require_ci_success`, `test_pr_gate_h1` y `test_operating_doc_drift_pin`.
